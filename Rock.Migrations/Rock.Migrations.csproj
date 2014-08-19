@@ -1105,6 +1105,10 @@
     <Compile Include="Migrations\201408152138171_AddIdleTimeoutsBack.Designer.cs">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408191153260_DefinedValueValue.cs" />
+    <Compile Include="Migrations\201408191153260_DefinedValueValue.Designer.cs">
+      <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1916,6 +1920,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408152138171_AddIdleTimeoutsBack.resx">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408191153260_DefinedValueValue.resx">
+      <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -797,7 +797,7 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
+        public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid, bool isRequired = false )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
@@ -830,7 +830,7 @@ namespace Rock.Data
                 VALUES(
                     1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
                     '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
+                    {5},0,'{6}',0,{8},
                     '{7}')
 ",
                     blockTypeGuid,
@@ -840,7 +840,8 @@ namespace Rock.Data
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue.Replace( "'", "''" ),
-                    guid )
+                    guid,
+                    isRequired ? "1" : "0" )
             );
         }
 
@@ -1263,11 +1264,11 @@ namespace Rock.Data
         /// Adds a new DefinedValue for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        public void AddDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1279,7 +1280,7 @@ namespace Rock.Data
 
                 INSERT INTO [DefinedValue] (
                     [IsSystem],[DefinedTypeId],[Order],
-                    [Name],[Description],
+                    [Value],[Description],
                     [Guid])
                 VALUES(
                     {4},@DefinedTypeId,@Order,
@@ -1287,7 +1288,7 @@ namespace Rock.Data
                     '{3}')
 ",
                     definedTypeGuid,
-                    name,
+                    value,
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" )
@@ -1298,11 +1299,11 @@ namespace Rock.Data
         /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
 
@@ -1315,7 +1316,7 @@ namespace Rock.Data
                     SET 
                         [IsSystem] = {4}
                         ,[DefinedTypeId] = @DefinedTypeId
-                        ,[Name] = '{1}'
+                        ,[Value] = '{1}'
                         ,[Description] = '{2}'
                     WHERE
                         [Guid] = '{3}'
@@ -1329,7 +1330,7 @@ namespace Rock.Data
                         ([IsSystem]
                         ,[DefinedTypeId]
                         ,[Order]
-                        ,[Name]
+                        ,[Value]
                         ,[Description]
                         ,[Guid])
                     VALUES
@@ -1342,7 +1343,7 @@ namespace Rock.Data
                 END
 ",
                     definedTypeGuid,
-                    name.Replace( "'", "''" ),
+                    value.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" )
@@ -1353,11 +1354,11 @@ namespace Rock.Data
         /// Updates the name of the defined value by.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateDefinedValueByName( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
+        public void UpdateDefinedValueByValue( string definedTypeGuid, string value, string description, int order, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
 
@@ -1372,14 +1373,14 @@ namespace Rock.Data
                         ,[Description] = '{2}'
                         ,[Order] = {3}
                     WHERE [DefinedTypeId] = @DefinedTypeId
-                    AND [Name] = '{1}'
+                    AND [Value] = '{1}'
                 END
                 ELSE
                 BEGIN
                     INSERT INTO [DefinedValue]
                         ([IsSystem]
                         ,[DefinedTypeId]
-                        ,[Name]
+                        ,[Value]
                         ,[Description]
                         ,[Order]
                         ,[Guid])
@@ -1393,12 +1394,14 @@ namespace Rock.Data
                 END
 ",
                     definedTypeGuid,
-                    name.Replace( "'", "''" ),
+                    value.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     order,
                     ( isSystem ? "1" : "0" )
                     ) );
-        }        /// <summary>
+        }        
+        
+        /// <summary>
         /// Deletes the DefinedValue.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -1452,10 +1455,10 @@ namespace Rock.Data
         /// Adds the name of the defined value attribute value by.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="definedValueName">Name of the defined value.</param>
+        /// <param name="definedValueValue">The defined value value.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="value">The value.</param>
-        public void AddDefinedValueAttributeValueByName( string definedTypeGuid, string definedValueName, string attributeKey, string value )
+        public void AddDefinedValueAttributeValueByValue( string definedTypeGuid, string definedValueValue, string attributeKey, string value )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1463,7 +1466,7 @@ namespace Rock.Data
                 SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
 
                 DECLARE @DefinedValueId int
-                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Value] = '{1}' )
 
                 DECLARE @AttributeId int
                 SET @AttributeId = (
@@ -1489,7 +1492,7 @@ namespace Rock.Data
                     NEWID())
 ",
                     definedTypeGuid,
-                    definedValueName,
+                    definedValueValue,
                     attributeKey,
                     value.Replace( "'", "''" )
                 )
@@ -3128,5 +3131,197 @@ INSERT INTO [dbo].[Auth]
 
         #endregion
 
+        #region Deprecated Methods
+
+        /// <summary>
+        /// Adds a new DefinedValue for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void AddDefinedValue_pre20140819( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                INSERT INTO [DefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Name],[Description],
+                    [Guid])
+                VALUES(
+                    {4},@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    '{3}')
+",
+                    definedTypeGuid,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates (or Adds) the defined value for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateDefinedValue_pre20140819( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                        [IsSystem] = {4}
+                        ,[DefinedTypeId] = @DefinedTypeId
+                        ,[Name] = '{1}'
+                        ,[Description] = '{2}'
+                    WHERE
+                        [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Order int
+                    SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Order]
+                        ,[Name]
+                        ,[Description]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,@Order
+                        ,'{1}'
+                        ,'{2}'
+                        ,'{3}')
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    guid,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates the name of the defined value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateDefinedValueByName_pre20140819( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                         [IsSystem] = {4}
+                        ,[Description] = '{2}'
+                        ,[Order] = {3}
+                    WHERE [DefinedTypeId] = @DefinedTypeId
+                    AND [Name] = '{1}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Name]
+                        ,[Description]
+                        ,[Order]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,'{1}'
+                        ,'{2}'
+                        ,{3}
+                        ,NEWID())
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    order,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the name of the defined value attribute value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="definedValueName">Name of the defined value.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void AddDefinedValueAttributeValueByName_pre20140819( string definedTypeGuid, string definedValueName, string attributeKey, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @DefinedValueId int
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{2}'
+                )
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @DefinedValueId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@DefinedValueId,
+                    0,'{3}',
+                    NEWID())
+",
+                    definedTypeGuid,
+                    definedValueName,
+                    attributeKey,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
+        #endregion
     }
 }

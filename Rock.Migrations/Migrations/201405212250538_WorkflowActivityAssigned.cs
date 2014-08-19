@@ -38,9 +38,9 @@ namespace Rock.Migrations
 
             RockMigrationHelper.AddDefinedType( "Global", "CSS Classes", "Contain common css class definitions", "407A3A73-A3EF-4970-B856-2A33F62AC72E", @"" );
             RockMigrationHelper.AddDefinedTypeAttribute( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "9C204CD0-1233-41C5-818A-C5DA439445AA", "CSS Class", "CSSClass", "The css class", 28, "", "6FF59F53-28EA-4BFE-AFE1-A459CC588495" );
-            RockMigrationHelper.AddDefinedValue( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Primary Button", "", "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Primary Button", "", "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"btn btn-primary" );
-            RockMigrationHelper.AddDefinedValue( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Red Button", "", "FDEB8E6C-70C3-4033-B307-7D0DEE1AC29D", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Red Button", "", "FDEB8E6C-70C3-4033-B307-7D0DEE1AC29D", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FDEB8E6C-70C3-4033-B307-7D0DEE1AC29D", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"btn btn-danger" );
 
             RockMigrationHelper.AddDefinedType( "Location", "Countries", "Defines how addresses are displayed and formatted for each country", "D7979EA1-44E9-46E2-BF37-DDAF7F741378", @"" );
@@ -52,7 +52,7 @@ namespace Rock.Migrations
 {{ Street2 }}
 {{ City }}, {{ State }} {{ Zip }}
 ", "B6EF4138-C488-4043-A628-D35F91503843" );
-            RockMigrationHelper.AddDefinedValue( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "United States", "United States", "F4DAEB01-A0E5-426A-A425-7F6D21DF1CE7", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "United States", "United States", "F4DAEB01-A0E5-426A-A425-7F6D21DF1CE7", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "F4DAEB01-A0E5-426A-A425-7F6D21DF1CE7", "DA46DC37-5398-4520-B6A5-6E57C9C46F7A", @"US" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "F4DAEB01-A0E5-426A-A425-7F6D21DF1CE7", "A4E00B14-8CFF-4719-A43F-462851C7BBEF", @"State" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "F4DAEB01-A0E5-426A-A425-7F6D21DF1CE7", "7D785A5D-53CA-4FEC-BC88-DFBD7439B547", @"Zip" );
@@ -60,7 +60,7 @@ namespace Rock.Migrations
 {{ Street2 }}
 {{ City }}, {{ State }} {{ Zip }}" );
 
-            RockMigrationHelper.AddDefinedValue( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "Canada", "Canada", "60D86635-8E4A-4F4B-8052-26048DAE0335", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "Canada", "Canada", "60D86635-8E4A-4F4B-8052-26048DAE0335", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "60D86635-8E4A-4F4B-8052-26048DAE0335", "DA46DC37-5398-4520-B6A5-6E57C9C46F7A", @"CA" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "60D86635-8E4A-4F4B-8052-26048DAE0335", "A4E00B14-8CFF-4719-A43F-462851C7BBEF", @"Province" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "60D86635-8E4A-4F4B-8052-26048DAE0335", "7D785A5D-53CA-4FEC-BC88-DFBD7439B547", @"Postal Code" );
@@ -73,19 +73,19 @@ namespace Rock.Migrations
             RockMigrationHelper.AddAttributeQualifier( "3B234A62-B87D-47CD-A33F-32CC6C840A02", "allowmultiple", "False", "0177244E-D113-4752-8C89-2DD05BA5FAE0" );
             RockMigrationHelper.AddAttributeQualifier( "3B234A62-B87D-47CD-A33F-32CC6C840A02", "definedtype", "46", "50019CC0-BBD9-4CE8-B04D-15DD9698F8BD" );
 
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "AB", "Alberta", "50ABDD73-C7BF-4439-994F-EE3ADD60910B" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "BC", "British Columbia", "2651DEE8-30D6-477D-88CA-48EBA769683E" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "MB", "Manitoba", "5A59DC0E-97E0-45EA-83CD-586EB9D4BD49" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NB", "New Brunswick", "C975FD3B-2A25-473A-8CD4-ABBCD0757CA0" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NL", "Newfoundland and Labrador", "C8ABE4D8-6B88-47ED-80DB-CDF8EEF47A7F" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NT", "Northwest Territories", "67E0BC8B-BE23-40B0-ADB1-ACA50CEF8825" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NS", "Nova Scotia", "F91359C1-D6F9-495E-A475-9D7DEF7AA67B" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NU", "Nunavut", "B6AC22E5-676E-4FB9-909D-4E047A21B703" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "ON", "Ontario", "0EF0F132-69C3-480F-801A-59145F417277" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "PE", "Prince Edward Island", "25DE8C9B-9F69-4B4E-A21F-D976FE1D0D41" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "QC", "Quebec", "BE1A052A-ABCD-48C2-AA04-BDE4F394D001" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "SK", "Saskatchewan", "63B48AA0-8904-4415-9F5E-7218454D3D0F" );
-            RockMigrationHelper.AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "YT", "Yukon", "91D87671-F309-4908-ABE1-57FA27B2C7F6" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "AB", "Alberta", "50ABDD73-C7BF-4439-994F-EE3ADD60910B" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "BC", "British Columbia", "2651DEE8-30D6-477D-88CA-48EBA769683E" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "MB", "Manitoba", "5A59DC0E-97E0-45EA-83CD-586EB9D4BD49" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NB", "New Brunswick", "C975FD3B-2A25-473A-8CD4-ABBCD0757CA0" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NL", "Newfoundland and Labrador", "C8ABE4D8-6B88-47ED-80DB-CDF8EEF47A7F" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NT", "Northwest Territories", "67E0BC8B-BE23-40B0-ADB1-ACA50CEF8825" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NS", "Nova Scotia", "F91359C1-D6F9-495E-A475-9D7DEF7AA67B" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "NU", "Nunavut", "B6AC22E5-676E-4FB9-909D-4E047A21B703" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "ON", "Ontario", "0EF0F132-69C3-480F-801A-59145F417277" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "PE", "Prince Edward Island", "25DE8C9B-9F69-4B4E-A21F-D976FE1D0D41" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "QC", "Quebec", "BE1A052A-ABCD-48C2-AA04-BDE4F394D001" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "SK", "Saskatchewan", "63B48AA0-8904-4415-9F5E-7218454D3D0F" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "YT", "Yukon", "91D87671-F309-4908-ABE1-57FA27B2C7F6" );
 
             RockMigrationHelper.AddDefinedValueAttributeValue( "0EF0F132-69C3-480F-801A-59145F417277", "3B234A62-B87D-47CD-A33F-32CC6C840A02", "60D86635-8E4A-4F4B-8052-26048DAE0335" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "BE1A052A-ABCD-48C2-AA04-BDE4F394D001", "3B234A62-B87D-47CD-A33F-32CC6C840A02", "60D86635-8E4A-4F4B-8052-26048DAE0335" );

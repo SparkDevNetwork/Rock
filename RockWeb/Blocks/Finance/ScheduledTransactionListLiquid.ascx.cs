@@ -160,10 +160,10 @@ namespace RockWeb.Blocks.Finance
                     scheduleSummary.Add( "DaysSinceLastPayment", null );
                 }
 
-                scheduleSummary.Add( "CurrencyType", transactionSchedule.CurrencyTypeValue.Name );
-                scheduleSummary.Add( "CreditCardType", transactionSchedule.CreditCardTypeValue.Name );
+                scheduleSummary.Add( "CurrencyType", transactionSchedule.CurrencyTypeValue.Value );
+                scheduleSummary.Add( "CreditCardType", transactionSchedule.CreditCardTypeValue.Value );
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
-                scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Name );
+                scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Value );
                 scheduleSummary.Add( "FrequencyDescription", transactionSchedule.TransactionFrequencyValue.Description );
 
                 List<Dictionary<string, object>> summaryDetails = new List<Dictionary<string, object>>();

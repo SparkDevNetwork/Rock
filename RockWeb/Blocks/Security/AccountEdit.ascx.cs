@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Security
                         {
                             var numberType = new DefinedValue();
                             numberType.Id = phoneNumberType.Id;
-                            numberType.Name = phoneNumberType.Name;
+                            numberType.Value = phoneNumberType.Value;
 
                             phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                             phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;

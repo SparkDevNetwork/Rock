@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
 
                 var countryValue = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
-                    .Where( v => v.Name.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
+                    .Where( v => v.Value.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
                 if (countryValue != null)
                 {
@@ -696,7 +696,7 @@ namespace Rock.Web.UI.Controls
             var countryValues = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .DefinedValues
                 .OrderBy( v => v.Order )
-                .ThenBy( v => v.Name )
+                .ThenBy( v => v.Value )
                 .ToList();
             
             // Move default country to the top of the list
@@ -704,17 +704,17 @@ namespace Rock.Web.UI.Controls
             if (!string.IsNullOrWhiteSpace(defaultCountryCode))
             {
                 var defaultCountry = countryValues
-                    .Where( v => v.Name.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
+                    .Where( v => v.Value.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
                 if (defaultCountry != null)
                 {
-                    _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Name : defaultCountry.Description, defaultCountry.Name ) );
+                    _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
                     _ddlCountry.Items.Add( new ListItem( "------------------------", "" ) );
                 }
             }
             foreach ( var country in countryValues )
             {
-                _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Name : country.Description, country.Name ) );
+                _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Value : country.Description, country.Value ) );
             }
 
             bool? showCountry = GlobalAttributesCache.Read().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
@@ -725,7 +725,7 @@ namespace Rock.Web.UI.Controls
         {
             string countryGuid = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
-                .Where( v => v.Name.Equals( country, StringComparison.OrdinalIgnoreCase ) )
+                .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
                 .Select( v => v.Guid )
                 .FirstOrDefault()
                 .ToString();
@@ -746,8 +746,8 @@ namespace Rock.Web.UI.Controls
                         v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase)
                     ) )
                 .OrderBy( v => v.Order )
-                .ThenBy( v => v.Name )
-                .Select( v => new { Id = v.Name, Value = v.Description } )
+                .ThenBy( v => v.Value )
+                .Select( v => new { Id = v.Value, Value = v.Description } )
                 .ToList();
 
             if ( stateList.Any() )

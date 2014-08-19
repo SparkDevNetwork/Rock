@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedValue( "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF", "Rock Windows Check-in Client", "The Windows Check-in Client hosts the Rock check-in screens and allows client based printing to either networked or USB printers.", "C162F21E-7D86-4BB4-A72C-7F4A0E5B02C3" );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF", "Rock Windows Check-in Client", "The Windows Check-in Client hosts the Rock check-in screens and allows client based printing to either networked or USB printers.", "C162F21E-7D86-4BB4-A72C-7F4A0E5B02C3" );
             
             Sql( @"
 declare

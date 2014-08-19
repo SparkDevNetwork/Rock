@@ -261,11 +261,11 @@ namespace Rock.Web.UI.Controls
                     {
                         var definedValues = definedType.DefinedValues;
 
-                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Name).Distinct() )
+                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value).Distinct() )
                         {
                             sbScript.AppendFormat( "\t\t'{0}' : [\n", countryCode );
 
-                            foreach( var definedValue in definedValues.Where( v => v.Name == countryCode).OrderBy( v => v.Order))
+                            foreach( var definedValue in definedValues.Where( v => v.Value == countryCode).OrderBy( v => v.Order))
                             {
                                 string match = definedValue.GetAttributeValue( "MatchRegEx" );
                                 string replace = definedValue.GetAttributeValue( "FormatRegEx" );
@@ -381,7 +381,7 @@ namespace Rock.Web.UI.Controls
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
-                var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Name ).Distinct();
+                var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
 
                 if ( countryCodes != null && countryCodes.Any() )
                 {
