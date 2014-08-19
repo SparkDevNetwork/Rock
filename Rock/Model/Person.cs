@@ -420,7 +420,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
-        public int? PrimaryAliasId
+        public virtual int? PrimaryAliasId
         {
             get
             {
