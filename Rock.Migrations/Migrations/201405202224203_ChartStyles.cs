@@ -109,8 +109,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddAttributeQualifier( "173E1A89-A84E-48EC-BFD5-0C8D65A84276", "editorHeight", "", "AB54A928-73C8-4172-97A5-1A1C0C7F4439" );
             RockMigrationHelper.AddAttributeQualifier( "173E1A89-A84E-48EC-BFD5-0C8D65A84276", "editorMode", "4", "8DCD60DF-C48C-41FA-A9B0-978855A3FB47" );
             RockMigrationHelper.AddAttributeQualifier( "173E1A89-A84E-48EC-BFD5-0C8D65A84276", "editorTheme", "0", "7C894CCE-5BC6-4A12-A9F4-BBBC27672A23" );
-            RockMigrationHelper.AddDefinedValue( "FC684FD7-FE68-493F-AF38-1656FBF67E6B", "Flot", "The standard Flot chart style", "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC", false );
-            RockMigrationHelper.AddDefinedValue( "FC684FD7-FE68-493F-AF38-1656FBF67E6B", "Rock", "The default styling for Rock charts.", "2ABB2EA0-B551-476C-8F6B-478CD08C2227", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "FC684FD7-FE68-493F-AF38-1656FBF67E6B", "Flot", "The standard Flot chart style", "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC", false );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "FC684FD7-FE68-493F-AF38-1656FBF67E6B", "Rock", "The default styling for Rock charts.", "2ABB2EA0-B551-476C-8F6B-478CD08C2227", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "2ABB2EA0-B551-476C-8F6B-478CD08C2227", "173E1A89-A84E-48EC-BFD5-0C8D65A84276", @"{
   ""SeriesColors"": [
     ""#8498ab"",

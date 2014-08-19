@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             // Add a defined value for the Rest User record type
-            RockMigrationHelper.AddDefinedValue( "26BE73A6-A9C5-4E94-AE00-3AFDCF8C9275", "RestUser", "Rest User Record", "E2261A84-831D-4234-9BE0-4D628BBE751E", true );
+            RockMigrationHelper.AddDefinedValue_pre20140819( "26BE73A6-A9C5-4E94-AE00-3AFDCF8C9275", "RestUser", "Rest User Record", "E2261A84-831D-4234-9BE0-4D628BBE751E", true );
 
             // Add the rest key list page
             RockMigrationHelper.AddPage( "91CCB1C9-5F9F-44F5-8BE2-9EC3A3CFD46F", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rest Keys", "A list of REST API Keys", "881AB1C2-4E00-4A73-80CC-9886B3717A20", "fa fa-key" );

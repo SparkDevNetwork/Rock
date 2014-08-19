@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Groups
                                                     PostalCode = l.Location.PostalCode,
                                                     Latitude = l.Location.GeoPoint.Latitude,
                                                     Longitude = l.Location.GeoPoint.Longitude,
-                                                    l.GroupLocationTypeValue.Name
+                                                    Name = l.GroupLocationTypeValue.Value
                                                 } ).FirstOrDefault(),
                             GroupMembers = g.Members,
                             AttributeValues = attributeValues
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Groups
                             foreach ( PhoneNumber p in member.Person.PhoneNumbers )
                             {
                                 var dictPhoneNumber = new Dictionary<string, object>();
-                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Name );
+                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Value );
                                 dictPhoneNumber.Add( "Number", p.ToString() );
                                 phoneTypes.Add( dictPhoneNumber );
                             }

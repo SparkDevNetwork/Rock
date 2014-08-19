@@ -384,7 +384,7 @@ namespace Rock.Model
                                             gl.GroupId == family.Id &&
                                             gl.GroupLocationTypeValueId == locationType.Id ))
                                     {
-                                        History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Name, prevLocationType.Name );
+                                        History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
                                         prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
                                         prevLoc.IsMailingLocation = false;
                                         prevLoc.IsMappedLocation = false;
@@ -392,7 +392,7 @@ namespace Rock.Model
                                 }
                             }
 
-                            string addressChangeField = locationType.Name;
+                            string addressChangeField = locationType.Value;
 
                             var groupLocation = groupLocationService.Queryable()
                                 .Where( gl =>

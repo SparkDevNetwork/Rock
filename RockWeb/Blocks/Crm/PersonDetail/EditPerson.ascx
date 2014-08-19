@@ -72,7 +72,7 @@
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
                                         <div class="form-group">
-                                            <div class="control-label col-sm-2"><%# Eval("NumberTypeValue.Name")  %></div>
+                                            <div class="control-label col-sm-2"><%# Eval("NumberTypeValue.Value")  %></div>
                                             <div class="controls col-sm-10">
                                                 <div class="row">
                                                     <div class="col-sm-7">

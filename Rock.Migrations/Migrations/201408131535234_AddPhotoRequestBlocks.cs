@@ -139,10 +139,10 @@ namespace Rock.Migrations
             #region Financial Source Defined Values
 
             RockMigrationHelper.DeleteDefinedValue( "0149EB64-00C4-4C69-B1A6-2FD0EDFC6ACB" );  // Delete 'Mailer'
-            RockMigrationHelper.UpdateDefinedValue( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Website", "Transactions that originated from the website", "7D705CE7-7B11-4342-A58E-53617C5B4E69", true );
-            RockMigrationHelper.UpdateDefinedValue( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Kiosk", "Transactions that originated from a kiosk", "260EEA80-821A-4F79-973F-49DF79C955F7", false );
-            RockMigrationHelper.UpdateDefinedValue( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Mobile Application", "Transactions that originated from a mobile application", "8ADCEC72-63FC-4F08-A4CC-72BCE470172C", false );
-            RockMigrationHelper.UpdateDefinedValue( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "On-Site Collection", "Transactions that were collected on-site", "BE7ECF50-52BC-4774-808D-574BA842DB98", false );
+            RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Website", "Transactions that originated from the website", "7D705CE7-7B11-4342-A58E-53617C5B4E69", true );
+            RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Kiosk", "Transactions that originated from a kiosk", "260EEA80-821A-4F79-973F-49DF79C955F7", false );
+            RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Mobile Application", "Transactions that originated from a mobile application", "8ADCEC72-63FC-4F08-A4CC-72BCE470172C", false );
+            RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "On-Site Collection", "Transactions that were collected on-site", "BE7ECF50-52BC-4774-808D-574BA842DB98", false );
 
             // Set default source to website on Financial Entry block
             RockMigrationHelper.AddBlockAttributeValue( "8ADB1C1F-299B-461A-8469-0FF4E2C98216", "5C54E6E7-1C21-4959-98EA-FB1C2D0A0D61", @"7D705CE7-7B11-4342-A58E-53617C5B4E69" );

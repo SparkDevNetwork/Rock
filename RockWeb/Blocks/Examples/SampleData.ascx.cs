@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Examples
                     nbMessage.Text = string.Format(
 @"<p>Happy tire-kicking! The data is in your database. Hint: try <a href='{0}'>searching for the Decker family</a>.</p>
 <p>Here are some of the things you'll find in the sample data:</p>{1}",
-                        ResolveRockUrl( "~/Person/Search/name/Decker" ),
+                        ResolveRockUrl( "~/Person/Search/name/?SearchTerm=Decker" ),
                         GetStories( saveFile ) );
                     pnlInputForm.Visible = false;
                     RecordSuccess();

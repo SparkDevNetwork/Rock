@@ -451,8 +451,8 @@ namespace Rock.Model
 
                 fullName.AppendFormat( "{0} {1}", NickName, LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
 
                 return fullName.ToString();
             }
@@ -474,8 +474,8 @@ namespace Rock.Model
                 var fullName = new StringBuilder();
                 fullName.Append( LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
 
                 fullName.AppendFormat( ", {0}", NickName );
                 return fullName.ToString();
@@ -498,8 +498,8 @@ namespace Rock.Model
 
                 fullName.AppendFormat( "{0} {1}", FirstName, LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
 
                 return fullName.ToString();
             }
@@ -520,8 +520,8 @@ namespace Rock.Model
                 var fullName = new StringBuilder();
                 fullName.Append( LastName );
 
-                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
-                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
 
                 fullName.AppendFormat( ", {0}", FirstName );
                 return fullName.ToString();

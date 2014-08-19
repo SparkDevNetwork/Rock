@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
                 if ( definedValue != null )
                 {
                     definedValue.LoadAttributes( rockContext );
-                    chartStyle = ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                    chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
                 }
             }
 

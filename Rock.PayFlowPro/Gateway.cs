@@ -543,7 +543,7 @@ namespace Rock.PayFlowPro
                         payment.TransactionCode = recurringBillingRow["Transaction ID"].ToString();
                         payment.GatewayScheduleId = recurringBillingRow["Profile ID"].ToString();
                         payment.ScheduleActive = recurringBillingRow["Status"].ToString() == "Active";
-                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == tenderType ).FirstOrDefault();
+                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Value == tenderType ).FirstOrDefault();
                         txns.Add( payment );
                     }
                     else

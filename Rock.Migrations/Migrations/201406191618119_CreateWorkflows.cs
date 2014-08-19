@@ -110,7 +110,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             // Attrib Value for Block:Workflow Navigation, Attribute:Categories Page: Workflows, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "2D20CEC4-328E-4C2B-8059-78DFC49D8E35", "FB420F14-3D9D-4304-878F-124902E2CEAB", @"bbae05fd-8192-4616-a71e-903a927e0d90,78e38655-d951-41db-a0ff-d6474775cfa1" );
 
-            RockMigrationHelper.UpdateDefinedValue( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Secondary Button", "", "8CF6E927-4FA5-4241-991C-391038B79631", false );
+            RockMigrationHelper.UpdateDefinedValue_pre20140819( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Secondary Button", "", "8CF6E927-4FA5-4241-991C-391038B79631", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "8CF6E927-4FA5-4241-991C-391038B79631", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"<a href=""{{ ButtonLink }}"" onclick=""{{ ButtonClick }}"" class=""btn btn-link"" data-loading-text=""<i class='fa fa-refresh fa-spin'></i> {{ ButtonText }}"">{{ ButtonText }}</a>" );
 
             Sql( @"

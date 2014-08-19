@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
 
             _rebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-            var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } ).ToList();
+            var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Value, Value = v.Description } ).ToList();
             this.DataSource = stateList;
 
             // make sure it isn't set to a selected value that doesn't exist and default to Org State if nothing is set

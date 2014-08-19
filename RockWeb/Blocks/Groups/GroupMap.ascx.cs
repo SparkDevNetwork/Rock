@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Groups
 						<br>{{ GroupMember.Email }}
 					{% endif %}
 					{% for Phone in GroupMember.Person.PhoneNumbers %}
-						<br>{{ Phone.NumberTypeValue.Name }}: {{ Phone.NumberFormatted }}
+						<br>{{ Phone.NumberTypeValue.Value }}: {{ Phone.NumberFormatted }}
 					{% endfor %}
 				</div>
 				<br>
@@ -141,11 +141,11 @@ namespace RockWeb.Blocks.Groups
             {
                 var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Name )
+                    .ThenBy( v => v.Value )
                     .Select( v => new
                     {
                         v.Id,
-                        Name = v.Name.Pluralize(),
+                        Name = v.Value.Pluralize(),
                         Color = ( v.GetAttributeValue( "Color" ) ?? "" ).Replace( "#", "" )
                     } )
                     .ToList();

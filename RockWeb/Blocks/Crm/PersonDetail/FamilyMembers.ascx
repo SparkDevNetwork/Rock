@@ -45,7 +45,7 @@
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>
                                         <li class="address rollover-container clearfix">
-                                            <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Name")) %></h4>
+                                            <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %></h4>
                                             <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank">
                                                 <i class="fa fa-map-marker"></i>
                                             </a>

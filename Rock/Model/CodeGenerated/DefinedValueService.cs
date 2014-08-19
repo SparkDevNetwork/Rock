@@ -194,7 +194,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.DefinedTypeId = source.DefinedTypeId;
             target.Order = source.Order;
-            target.Name = source.Name;
+            target.Value = source.Value;
             target.Description = source.Description;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

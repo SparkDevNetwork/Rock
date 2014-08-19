@@ -277,7 +277,7 @@ namespace Rock.Web.UI.Controls
                 new DefinedValueService( new RockContext() )
                     .GetByDefinedTypeId( DefinedTypeId.Value )
                     .ToList()
-                    .ForEach( v => definedValues.Add( v.Id.ToString(), v.Name ) );
+                    .ForEach( v => definedValues.Add( v.Id.ToString(), v.Value ) );
             } 
             else if ( CustomValues != null )
             {

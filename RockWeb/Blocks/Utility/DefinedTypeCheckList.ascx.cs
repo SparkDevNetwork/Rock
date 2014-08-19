@@ -174,7 +174,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                         .Select( v => new
                         {
                             Id = v.Id,
-                            Name = "<strong class='checklist-desc-toggle'>" + v.Name + "</strong>",
+                            Value = "<strong class='checklist-desc-toggle'>" + v.Value + "</strong>",
                             Description = v.Description,
                             Selected = selectedValues.Contains( v.Id )
                         } ).ToList();
