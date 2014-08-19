@@ -17,7 +17,7 @@
                             <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
                             <asp:BoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" />
 
-                            <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="Max">
+                            <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="MaxScorePercent">
                                 <ItemTemplate>
                                     <span class='<%# GetMatchLabelClass((double?)Eval("MaxScorePercent"))  %>'><%# ((double?)Eval("MaxScorePercent")/100).Value.ToString("P") %></span>
                                 </ItemTemplate>

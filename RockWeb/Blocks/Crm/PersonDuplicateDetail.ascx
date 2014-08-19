@@ -7,38 +7,71 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;Person Duplicates</h1>
-
-
-
-                <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
-                </div>
             </div>
             <div class="panel-body">
-                <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId" >
+                <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                     <Columns>
                         <Rock:SelectField />
+                        <asp:TemplateField HeaderText="Formatted Score" ItemStyle-HorizontalAlign="Right" SortExpression="Score">
+                            <ItemTemplate>
+                                <%# GetMatchHtml((double?)Eval("Score")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
                         <asp:BoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
                         <asp:BoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
                         <asp:BoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
                         <Rock:EnumField DataField="DuplicatePerson.Gender" HeaderText="Gender" SortExpression="DuplicatePerson.Gender" />
 
                         <asp:BoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
-                        <Rock:DateTimeField DataField="DuplicatePerson.ModifiedDateTime" HeaderText="ModifiedDateTime" SortExpression="DuplicatePerson.ModifiedDateTime" />
-                        <asp:BoundField DataField="Score" HeaderText="Score" DataFormatString="{0:P}" NullDisplayText="-" />
+
                         <asp:TemplateField HeaderText="Campus">
                             <ItemTemplate>
-                                <asp:Literal ID="lCampus" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                                <ul class="list-unstyled">
+                                    <asp:Repeater ID="rptrCampuses" runat="server" DataSource='<%# GetCampuses(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
+                                        <ItemTemplate>
+                                            <li class="campus clearfix">
+                                                <p>
+                                                    <%# Eval("Name") %>
+                                                </p>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:TemplateField HeaderText="Addresses">
                             <ItemTemplate>
-                                <asp:Literal ID="lAddresses" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                                <ul class="list-unstyled">
+                                    <asp:Repeater ID="rptrAddresses" runat="server" DataSource='<%# GetGroupLocations(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
+                                        <ItemTemplate>
+                                            <li class="address clearfix">
+
+                                                <strong><%# Eval("GroupLocationTypeValue.Name") %></strong>
+                                                <p>
+                                                    <%# Eval("Location.FormattedHtmlAddress") %>
+                                                </p>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:TemplateField HeaderText="PhoneNumbers">
                             <ItemTemplate>
-                                <asp:Literal ID="lPhoneNumbers" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                                <ul class="list-unstyled">
+                                    <asp:Repeater ID="rptrPhoneNumbers" runat="server" DataSource='<%# GetPhoneNumbers(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
+                                        <ItemTemplate>
+                                            <li class="phonenumber clearfix">
+
+                                                <strong><%# Eval("NumberTypeValue.Name") %></strong>
+                                                <p>
+                                                    <%# Eval("NumberFormatted") %>
+                                                </p>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:TemplateField>
