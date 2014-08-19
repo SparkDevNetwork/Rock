@@ -237,6 +237,7 @@
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />

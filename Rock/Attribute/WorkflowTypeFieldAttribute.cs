@@ -37,8 +37,11 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public WorkflowTypeFieldAttribute( string name = "Workflow", string description = "", bool required = false, string defaultWorkflowTypeGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultWorkflowTypeGuid, category, order, key, typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName )
+        public WorkflowTypeFieldAttribute( string name = "Workflow", string description = "", bool allowMultiple = false, bool required = false, string defaultWorkflowTypeGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultWorkflowTypeGuid, category, order, key, 
+            allowMultiple ? 
+                typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName : 
+                typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName )
         {
         }
     }
