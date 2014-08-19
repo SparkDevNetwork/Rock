@@ -17,19 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
-using Rock.Web;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -93,14 +91,14 @@ namespace RockWeb.Blocks.Crm
         #region Methods
 
         /// <summary>
-        /// Gets the match label class.
+        /// Gets the match HTML.
         /// </summary>
         /// <param name="percent">The percent.</param>
         /// <returns></returns>
-        public string GetMatchHtml( double? percent )
+        public string GetMatchColumnHtml( double? percent )
         {
             string css;
-            
+
             if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
             {
                 css = "label label-success";
@@ -114,9 +112,9 @@ namespace RockWeb.Blocks.Crm
                 css = "label label-warning";
             }
 
-            if (percent.HasValue)
+            if ( percent.HasValue )
             {
-                return string.Format( "<span class='{0}'>{1}</span>", css, (percent.Value/100).ToString( "P" ) );
+                return string.Format( "<span class='{0}'>{1}</span>", css, ( percent.Value / 100 ).ToString( "P" ) );
             }
             else
             {
@@ -141,7 +139,7 @@ namespace RockWeb.Blocks.Crm
         /// <returns></returns>
         public List<GroupLocation> GetGroupLocations( Person person )
         {
-            return person.GetFamilies().Select( a => a.GroupLocations ).SelectMany( a => a ).OrderByDescending(a => a.IsMappedLocation).ThenBy(a => a.Id).ToList();
+            return person.GetFamilies().Select( a => a.GroupLocations ).SelectMany( a => a ).OrderByDescending( a => a.IsMappedLocation ).ThenBy( a => a.Id ).ToList();
         }
 
         /// <summary>
@@ -163,15 +161,19 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateService = new PersonDuplicateService( rockContext );
             var personService = new PersonService( rockContext );
             int personId = this.PageParameter( "PersonId" ).AsInteger();
+            int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-            // select person duplicate records
-            var qry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate )
+            //// select person duplicate records
+            //// list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            var qry = personDuplicateService.Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate )
+                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId )
                 .Select( s => new
                 {
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = s.Id,
                     DuplicatePerson = s.DuplicatePersonAlias.Person,
-                    Score = s.Capacity > 0 ? s.Score / (s.Capacity * .01) : (double?)null,
+                    Score = s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null,
                     IsComparePerson = true
                 } );
 
@@ -219,16 +221,6 @@ namespace RockWeb.Blocks.Crm
                 LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
                 btnNotDuplicate.Visible = isComparePerson;
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnMerge control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnMerge_Click( object sender, EventArgs e )
-        {
-            // todo
         }
 
         /// <summary>
