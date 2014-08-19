@@ -14,7 +14,8 @@ SET NOCOUNT ON
 	@firstName nvarchar(50),
 	@lastName nvarchar(50),
 	@email nvarchar(75),
-	@phoneNumber decimal,
+	@phoneNumber nvarchar(20),
+    @phoneNumberFormatted nvarchar(50),
 
 	@year int,
 	@month int,
@@ -6054,7 +6055,9 @@ while @personCounter < @maxPerson
 		set @year = CONVERT(nvarchar(100), ROUND(rand() * 80, 0) + 1932);
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
-		set @phoneNumber = ROUND(rand() * 0095551212, 0)+ 6230000000;
+		set @phoneNumber = cast(convert(bigint, ROUND(rand() * 0095551212, 0)+ 6230000000) as nvarchar(20));
+
+        set @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' +substring(@phoneNumber, 7, 4);
         set @personGuid = NEWID();
 		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[EmailPreference],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @email, 1, 0, @personGuid, @personRecordType, @activeRecordStatus)
@@ -6063,8 +6066,8 @@ while @personCounter < @maxPerson
         INSERT INTO [PersonAlias] (PersonId, AliasPersonId, AliasPersonGuid, [Guid])
         values (@personId, @personId, @personGuid, NEWID());
 
-		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
-		VALUES (0, @personId, @phoneNumber, 1, 0, newid(), @homePhone);
+		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, NumberFormatted, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
+		VALUES (0, @personId, @phoneNumber, @phoneNumberFormatted, 1, 0, newid(), @homePhone);
 
         -- add spouse of first member of family
         set @firstName = 'Spouse';
@@ -6087,8 +6090,8 @@ while @personCounter < @maxPerson
         INSERT INTO [PersonAlias] (PersonId, AliasPersonId, AliasPersonGuid, [Guid])
         values (@spousePersonId, @spousePersonId, @personGuid, NEWID());
 
-		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
-		VALUES (0, @spousePersonId, @phoneNumber, 1, 0, newid(), @homePhone);
+		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, NumberFormatted, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
+		VALUES (0, @spousePersonId, @phoneNumber, @phoneNumberFormatted, 1, 0, newid(), @homePhone);
 
         if @createGroups = 1
         begin
