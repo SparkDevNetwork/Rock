@@ -58,10 +58,6 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, context );
-                context.Response.StatusCode = 500;
-                context.Response.StatusDescription = ex.Message;
-                context.Response.Flush();
-                context.ApplicationInstance.CompleteRequest();
             }
         }
 
