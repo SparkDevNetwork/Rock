@@ -859,8 +859,8 @@ namespace RockWeb.Blocks.Groups
                     wpLocations.Visible = false;
                 }
 
-                gLocations.Columns[2].Visible = groupType.EnableLocationSchedules ?? false;
-                spSchedules.Visible = groupType.EnableLocationSchedules ?? false;
+                gLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
+                spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
 
                 phGroupAttributes.Controls.Clear();
                 group.LoadAttributes();
