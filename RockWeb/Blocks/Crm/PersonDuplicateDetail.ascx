@@ -6,15 +6,15 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;Person Duplicates</h1>
+                <h1 class="panel-title"><i class="fa fa-user"></i> Person Duplicates</h1>
             </div>
             <div class="panel-body">
                 <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                     <Columns>
                         <Rock:SelectField />
-                        <asp:TemplateField HeaderText="Formatted Score" ItemStyle-HorizontalAlign="Right" SortExpression="Score">
+                        <asp:TemplateField HeaderText="Score" ItemStyle-HorizontalAlign="Right" SortExpression="Score">
                             <ItemTemplate>
-                                <%# GetMatchHtml((double?)Eval("Score")) %>
+                                <%# GetMatchColumnHtml((double?)Eval("Score")) %>
                             </ItemTemplate>
                         </asp:TemplateField>
 
