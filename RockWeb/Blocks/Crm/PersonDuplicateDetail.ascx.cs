@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Duplicate Detail" )]
     [Category( "CRM" )]
     [Description( "Shows records that are possible duplicates of the selected person" )]
+    [DecimalField( "Match Percent High", "The minimum percent score required to be considered a likely match", true, 80.00 )]
+    [DecimalField( "Match Percent Low", "The max percent score required to be considered an unlikely match", true, 40.00 )]
     public partial class PersonDuplicateDetail : RockBlock
     {
         #region Base Control Methods
@@ -90,19 +92,66 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        public string GetCampus(Person person)
+        /// <summary>
+        /// Gets the match label class.
+        /// </summary>
+        /// <param name="percent">The percent.</param>
+        /// <returns></returns>
+        public string GetMatchHtml( double? percent )
         {
-            return "ToDo";
+            string css;
+            
+            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
+            {
+                css = "label label-success";
+            }
+            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
+            {
+                css = "label label-default";
+            }
+            else
+            {
+                css = "label label-warning";
+            }
+
+            if (percent.HasValue)
+            {
+                return string.Format( "<span class='{0}'>{1}</span>", css, (percent.Value/100).ToString( "P" ) );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
-        public string GetAddresses( Person person )
+        /// <summary>
+        /// Gets the campus.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public List<Campus> GetCampuses( Person person )
         {
-            return "ToDo";
+            return person.GetFamilies().Select( a => a.Campus ).ToList();
         }
 
-        public string GetPhoneNumbers( Person person )
+        /// <summary>
+        /// Gets the addresses.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public List<GroupLocation> GetGroupLocations( Person person )
         {
-            return "ToDo";
+            return person.GetFamilies().Select( a => a.GroupLocations ).SelectMany( a => a ).OrderByDescending(a => a.IsMappedLocation).ThenBy(a => a.Id).ToList();
+        }
+
+        /// <summary>
+        /// Gets the phone numbers.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public List<PhoneNumber> GetPhoneNumbers( Person person )
+        {
+            return person.PhoneNumbers.ToList();
         }
 
         /// <summary>
@@ -122,23 +171,25 @@ namespace RockWeb.Blocks.Crm
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = s.Id,
                     DuplicatePerson = s.DuplicatePersonAlias.Person,
-                    Score = s.Capacity > 0 ? s.Score / (double)s.Capacity : (double?)null,
+                    Score = s.Capacity > 0 ? s.Score / (s.Capacity * .01) : (double?)null,
                     IsComparePerson = true
                 } );
 
-            qry = qry.OrderByDescending(a => a.Score).ThenBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+            qry = qry.OrderByDescending( a => a.Score ).ThenBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
             var gridList = qry.ToList();
 
             // put the person we are comparing the duplicates to at the top of the list
             var person = personService.Get( personId );
-            gridList.Insert( 0, new
-            {
-                PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
-                PersonDuplicateId = 0,
-                DuplicatePerson = person,
-                Score = (double?)null,
-                IsComparePerson = false
-            } );
+            gridList.Insert(
+                0,
+                new
+                {
+                    PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+                    PersonDuplicateId = 0,
+                    DuplicatePerson = person,
+                    Score = (double?)null,
+                    IsComparePerson = false
+                } );
 
             gList.DataSource = gridList;
             gList.DataBind();
@@ -160,7 +211,7 @@ namespace RockWeb.Blocks.Crm
 
                 // If this is the main person for the compare, select them, but then hide the checkbox.  
                 var cell = e.Row.Cells[gList.Columns.OfType<SelectField>().First().ColumnIndex];
-                var selectBox = (cell.Controls[0] as CheckBox);
+                var selectBox = cell.Controls[0] as CheckBox;
                 selectBox.Visible = isComparePerson;
                 selectBox.Checked = !isComparePerson;
 
@@ -196,5 +247,5 @@ namespace RockWeb.Blocks.Crm
 
             BindGrid();
         }
-}
+    }
 }
