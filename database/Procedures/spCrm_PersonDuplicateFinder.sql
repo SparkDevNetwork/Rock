@@ -1,7 +1,3 @@
-SET STATISTICS TIME OFF
-SET NOCOUNT ON
-GO
-
 /*
 <doc>
 	<summary>
@@ -10,16 +6,21 @@ GO
 	
 	<remarks>	
 		Uses the following constants:
-			##TODO##
+			* Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
+            * Location Type - Home: '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+            * Phone Type - Home: '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
+            * Phone Type - Cell: 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
 	</remarks>
 	<code>
 		EXEC [dbo].[spCrm_PersonDuplicateFinder]
 	</code>
 </doc>
 */
-ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+CREATE PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
+    SET NOCOUNT ON
+    
     BEGIN TRANSACTION
 
     -- prevent stored proc from running simultaneously since we are using #temp tables
@@ -28,7 +29,7 @@ BEGIN
         ,'Transaction'
         ,0
 
-    -- TODO don't compare people that are both inactive...
+    -- Flags that enable the various compare functions
     DECLARE @compareByEmail BIT = 1
         ,@compareByPartialName BIT = 1
         ,@compareByFullFirstName BIT = 1
@@ -39,25 +40,27 @@ BEGIN
         ,@compareByGender BIT = 1
         ,@compareByCampus BIT = 1
         ,@compareByMaritalStatus BIT = 1
+    --
     -- Scores
-    -- ones marked ** only added to score if already a potential match
+    -- ones marked /**/ only added to score if already a potential match
     DECLARE @cScoreWeightEmail INT = 4
         ,@cScoreWeightPartialName INT = 1
-        ,@cScoreWeightFullFirstName INT = 3 -- ** 
-        ,@cScoreWeightFullLastName INT = 3 -- **
+        ,@cScoreWeightFullFirstName INT = 3 /**/
+        ,@cScoreWeightFullLastName INT = 3 /**/
         ,@cScoreWeightPhoneNumber INT = 2
         ,@cScoreWeightAddress INT = 2
-        ,@cScoreWeightBirthdate INT = 3 -- **
-        ,@cScoreWeightGender INT = 1 -- **
-        ,@cScoreWeightCampus INT = 1 -- **
-        ,@cScoreWeightMaritalStatus INT = 1 -- **
-        -- Guids that this proc uses
+        ,@cScoreWeightBirthdate INT = 3 /**/
+        ,@cScoreWeightGender INT = 1 /**/
+        ,@cScoreWeightCampus INT = 1 /**/
+        ,@cScoreWeightMaritalStatus INT = 1 /**/
+    --
+    -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
         ,@cHOME_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
         ,@cCELL_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
-        ,@cRECORD_STATUS_INACTIVE_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = '1DAD99D5-41A9-4865-8366-F269902B80A4'
-    -- other
+    --
+    -- Other Declarations
     DECLARE @processDateTime DATETIME = SYSDATETIME()
         ,@cHOME_PHONENUMBER_DEFINEDVALUE_ID INT = (
             SELECT TOP 1 [Id]
@@ -79,14 +82,9 @@ BEGIN
             FROM DefinedValue
             WHERE [Guid] = @cLOCATION_TYPE_HOME_GUID
             )
-        ,@cRECORD_STATUS_INACTIVE_DEFINEDVALUE_ID INT = (
-            SELECT TOP 1 [Id]
-            FROM DefinedValue
-            WHERE [Guid] = @cRECORD_STATUS_INACTIVE_DEFINEDVALUE_GUID
-            )
 
     /*
-    Populate Temporary Tables for each match criteria
+    Populate Temporary Tables for each match criteria (Email, PartialName, PhoneNumber, Address)
     */
     -- Find Duplicates by looking at people with the exact same email address
     CREATE TABLE #PersonDuplicateByEmailTable (
@@ -652,6 +650,7 @@ BEGIN
     -- Increment the score on potential matches that have the same FirstName (or NickName)
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsFirstName TABLE (id INT);
+
     INSERT INTO @updatedIdsFirstName
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -692,6 +691,7 @@ BEGIN
     -- Increment the score on potential matches that have the same LastName
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsLastName TABLE (id INT);
+
     INSERT INTO @updatedIdsLastName
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -714,6 +714,7 @@ BEGIN
     -- Increment the score on potential matches that have the same birthday
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsBirthdate TABLE (id INT);
+
     INSERT INTO @updatedIdsBirthdate
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -735,6 +736,7 @@ BEGIN
     -- Increment the score on potential matches that have the same gender
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsGender TABLE (id INT);
+
     INSERT INTO @updatedIdsGender
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -756,6 +758,7 @@ BEGIN
     -- Increment the score on potential matches that have the same campus
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsCampus TABLE (id INT);
+
     INSERT INTO @updatedIdsCampus
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -785,6 +788,7 @@ BEGIN
     -- Increment the score on potential matches that have the same marital status
     -- put the updated ids into a temp list first to speed things up
     DECLARE @updatedIdsMarital TABLE (id INT);
+
     INSERT INTO @updatedIdsMarital
     SELECT pd.Id
     FROM PersonDuplicate pd
@@ -820,7 +824,7 @@ BEGIN
     END
 
     /*
-    Explicitly clean up temp tables before the proc exists (vs. have SQL Server do it for us after the proc is done)
+    Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
     */
     DROP TABLE #PersonDuplicateByEmailTable;
 
@@ -833,36 +837,3 @@ BEGIN
     COMMIT
 END
 GO
-
-SET STATISTICS TIME ON
-
-EXEC [dbo].[spCrm_PersonDuplicateFinder]
-GO
-
-/*
-SELECT PersonAliasId, DuplicatePersonAliasId, Score
-    ,Capacity
-    ,score / (Capacity * .01) [Percent2]
-FROM PersonDuplicate
-ORDER BY score / (Capacity * .01) DESC
-*/
--- DEBUG
-/*
-SET STATISTICS TIME ON
-SET STATISTICS IO ON
-GO
-
-EXEC [dbo].[spCrm_PersonDuplicateFinder]
-GO
-
-select Len(ScoreDetail) from PersonDuplicate order by Len(ScoreDetail) desc
-
-SELECT p1.FirstName + ' "' + p1.NickName + '" ' + p1.LastName [Person], p2.FirstName + ' "' + p2.NickName  + '" ' +  p2.LastName [DuplicatePerson], Score/(Capacity * .01) "PercentScore", Score, Capacity, ScoreDetail
-FROM PersonDuplicate pd
-JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
-JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
-JOIN Person p1 on p1.Id = pa1.PersonId
-JOIN Person p2 on p2.Id = pa2.PersonId
-and Score/(Capacity * .01) > 50
-order by Score/(Capacity * .01) desc, [Person]
-*/
