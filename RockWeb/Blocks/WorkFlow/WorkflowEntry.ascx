@@ -10,7 +10,7 @@
             </div>
             <div class="panel-body">
 
-                <asp:Panel ID="pnlForm" CssClass="panel panel-block" runat="server">
+                <asp:Panel ID="pnlForm" runat="server">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
