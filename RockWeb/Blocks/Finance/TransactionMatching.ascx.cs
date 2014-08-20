@@ -37,13 +37,32 @@ namespace RockWeb.Blocks.Finance
     /// </summary>
     [DisplayName( "Transaction Matching" )]
     [Category( "Finance" )]
-    [Description( "Used to match transactions to an individual and allocate the check amount to financial account(s)." )]
+    [Description( "Used to match transactions to an individual and allocate the transaction amount to financial account(s)." )]
 
-    [AccountsField( "Accounts", "Select the accounts that check amounts can be allocated to.  Leave blank to show all accounts" )]
+    [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts" )]
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            
+            string script = @"
+    $('.transaction-image-thumbnail').click( function() {
+        var $primaryImg = $('.transaction-image');
+        var primarySrc = $primaryImg.attr('src');
+        $primaryImg.attr('src', $(this).attr('src'));
+        $(this).attr('src', primarySrc);
+    });
+";
+            ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -53,7 +72,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            // initialize DoFadeIn to "0" so it only gets set to "1" when navigating thru checks
+            // initialize DoFadeIn to "0" so it only gets set to "1" when navigating thru transaction images
             hfDoFadeIn.Value = "0";
 
             if ( !Page.IsPostBack )
@@ -239,7 +258,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( transactionToMatch.AuthorizedPersonId.HasValue )
                     {
-                        nbIsInProcess.Text = string.Format( "Warning. This check was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                        nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                         nbIsInProcess.Visible = true;
                     }
                     else
@@ -247,13 +266,13 @@ namespace RockWeb.Blocks.Finance
                         // display a warning if some other user has this marked as InProcess (and it isn't matched)
                         if ( transactionToMatch.ProcessedByPersonAliasId != this.CurrentPersonAlias.Id )
                         {
-                            nbIsInProcess.Text = string.Format( "Warning. This check is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                            nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                             nbIsInProcess.Visible = true;
                         }
                     }
                 }
 
-                // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional check matching sessions will know that it is currently getting looked at
+                // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional transaction matching sessions will know that it is currently getting looked at
                 if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
                 {
                     transactionToMatch.ProcessedByPersonAlias = null;
@@ -263,10 +282,9 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 hfTransactionId.Value = transactionToMatch.Id.ToString();
-                int frontImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT.AsGuid() ).Id;
-                int backImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK.AsGuid() ).Id;
-                var frontImage = transactionToMatch.Images.Where( a => a.TransactionImageTypeValueId == frontImageTypeId ).FirstOrDefault();
-                var backImage = transactionToMatch.Images.Where( a => a.TransactionImageTypeValueId == backImageTypeId ).FirstOrDefault();
+
+                // get the first 2 images (should be no more than 2, but just in case)
+                var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take(2).ToList();
 
                 string checkMicrHashed = null;
 
@@ -315,19 +333,6 @@ namespace RockWeb.Blocks.Finance
 
                 ddlIndividual_SelectedIndexChanged( null, null );
 
-                string frontCheckUrl = string.Empty;
-                string backCheckUrl = string.Empty;
-
-                if ( frontImage != null )
-                {
-                    frontCheckUrl = string.Format( "~/GetImage.ashx?id={0}", frontImage.BinaryFileId.ToString() );
-                }
-
-                if ( backImage != null )
-                {
-                    backCheckUrl = string.Format( "~/GetImage.ashx?id={0}", backImage.BinaryFileId.ToString() );
-                }
-
                 if ( transactionToMatch.AuthorizedPersonId.HasValue )
                 {
                     ddlIndividual.SelectedValue = transactionToMatch.AuthorizedPersonId.ToString();
@@ -358,11 +363,26 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                imgCheck.Visible = !string.IsNullOrEmpty( frontCheckUrl ) || !string.IsNullOrEmpty( backCheckUrl );
-                imgCheckOtherSideThumbnail.Visible = imgCheck.Visible;
-                nbNoCheckImageWarning.Visible = !imgCheck.Visible;
-                imgCheck.ImageUrl = frontCheckUrl;
-                imgCheckOtherSideThumbnail.ImageUrl = backCheckUrl;
+                if ( transactionToMatch.Images.Any() )
+                {
+                    var primaryImage = transactionToMatch.Images
+                        .OrderBy( i => i.Order )
+                        .FirstOrDefault();
+                    imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                    imgPrimary.Visible = true;
+                    nbNoTransactionImageWarning.Visible = false;
+
+                    rptrImages.DataSource = transactionToMatch.Images
+                        .Where( i => !i.Id.Equals( primaryImage.Id ) )
+                        .OrderBy( i => i.Order )
+                        .ToList();
+                    rptrImages.DataBind();
+                }
+                else
+                {
+                    imgPrimary.Visible = false;
+                    nbNoTransactionImageWarning.Visible = true;
+                }
             }
             else
             {
@@ -435,7 +455,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPrevious_Click( object sender, EventArgs e )
         {
-            // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+            // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the transaction and are moving on to process another transaction
             MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
 
             NavigateToTransaction( Direction.Prev );
@@ -454,7 +474,7 @@ namespace RockWeb.Blocks.Finance
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var financialTransaction = financialTransactionService.Get( hfTransactionId.Value.AsInteger() );
 
-            // set the AuthorizedPersonId (the person who wrote the check) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
+            // set the AuthorizedPersonId (the person who wrote the check, for example) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
             int? authorizedPersonId = ppSelectNew.PersonId ?? ddlIndividual.SelectedValue.AsIntegerOrNull();
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
@@ -477,7 +497,7 @@ namespace RockWeb.Blocks.Finance
 
                 rockContext.SaveChanges();
 
-                // if the transaction was unmatched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+                // if the transaction was unmatched, clear out the ProcessedBy fields since we didn't match the transaction and are moving on to process another transaction
                 MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
             }
 
@@ -544,7 +564,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+                // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the transaction and are moving on to process another transaction
                 MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
             }
 
@@ -581,6 +601,20 @@ namespace RockWeb.Blocks.Finance
                 rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).ToList();
                 rptrAddresses.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Images the URL.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        protected string ImageUrl( int binaryFileId, int? maxWidth = null, int? maxHeight = null )
+        {
+            string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
+            string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
+            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
         }
 
         #endregion

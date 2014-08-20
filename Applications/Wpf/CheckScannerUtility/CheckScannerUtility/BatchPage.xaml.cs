@@ -164,7 +164,7 @@ namespace Rock.Apps.CheckScannerUtility
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
 
                 // limit splash screen
-                rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "True" );
+                rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
 
                 // turn on either color, grayscale, or bitonal options depending on selected option
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
@@ -175,6 +175,10 @@ namespace Rock.Apps.CheckScannerUtility
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "False" );
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage4", "False" );
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage4", "False" );
+
+                // ###TODO###
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", "false" );
+
 
                 switch ( RockConfig.Load().ImageColorType )
                 {
@@ -425,8 +429,6 @@ namespace Rock.Apps.CheckScannerUtility
             BinaryFileType binaryFileTypeContribution = client.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
             DefinedValue currencyTypeValueCheck = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK ) );
             DefinedValue transactionTypeValueContribution = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
-            DefinedValue transactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
-            DefinedValue transactionImageTypeValueBack = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK ) );
 
             int totalCount = ScannedCheckList.Where( a => !a.Uploaded ).Count();
             int position = 1;
@@ -502,7 +504,7 @@ namespace Rock.Apps.CheckScannerUtility
                 FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
                 financialTransactionImageFront.BinaryFileId = binaryFileFront.Id;
                 financialTransactionImageFront.TransactionId = financialTransactionScannedCheck.Id;
-                financialTransactionImageFront.TransactionImageTypeValueId = transactionImageTypeValueFront.Id;
+                financialTransactionImageFront.Order = 0;
                 client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
 
                 if ( binaryFileBack != null )
@@ -512,7 +514,7 @@ namespace Rock.Apps.CheckScannerUtility
                     FinancialTransactionImage financialTransactionImageBack = new FinancialTransactionImage();
                     financialTransactionImageBack.BinaryFileId = binaryFileBack.Id;
                     financialTransactionImageBack.TransactionId = financialTransactionScannedCheck.Id;
-                    financialTransactionImageBack.TransactionImageTypeValueId = transactionImageTypeValueBack.Id;
+                    financialTransactionImageBack.Order = 1;
                     client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageBack );
                 }
 
@@ -724,6 +726,7 @@ namespace Rock.Apps.CheckScannerUtility
         public void HandleScanButtonClick( object sender, RoutedEventArgs e, bool navigate )
         {
             Button scanButton = sender as Button;
+            
 
             if ( ScanButtonText.IsStartScan( scanButton.Content as string ) )
             {
@@ -1004,9 +1007,7 @@ namespace Rock.Apps.CheckScannerUtility
                             throw new Exception( "Error getting check image data: " + ex.Message );
                         }
                     }
-
-                    BatchItemDetailPage.TransactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
-                    BatchItemDetailPage.TransactionImageTypeValueBack = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK ) );
+                    
                     BatchItemDetailPage.FinancialTransaction = financialTransaction;
                     this.NavigationService.Navigate( BatchItemDetailPage );
                 }
