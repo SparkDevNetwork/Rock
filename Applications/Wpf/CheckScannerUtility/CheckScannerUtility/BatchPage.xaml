@@ -227,19 +227,25 @@
                                    Style="{StaticResource labelStyleAlert}"
                                    Content="Upload Status" />
                             <StackPanel Grid.Row="4"
+                                        Grid.Column="0"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Left">
+                                
+                            </StackPanel>
+                            <StackPanel Grid.Row="4"
                                         Grid.Column="1"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right">
-                                <Button x:Name="btnScan"
-                                        Style="{StaticResource buttonStylePrimaryMini}"
-                                        Margin="4,4,0,0"
-                                        Content="Scan"
-                                        Click="btnScan_Click" />
                                 <Button Style="{StaticResource buttonStylePrimaryMini}"
                                         x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
                                         Click="btnEdit_Click" />
+                                <Button x:Name="btnScan"
+                                        Style="{StaticResource buttonStylePrimaryMini}"
+                                        Margin="4,4,0,0"
+                                        Content="Scan"
+                                        Click="btnScan_Click" />
                             </StackPanel>
                         </Grid>
                     </Border>

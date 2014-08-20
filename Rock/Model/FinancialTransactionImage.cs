@@ -28,7 +28,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransactionImage" )]
     [DataContract]
-    public partial class FinancialTransactionImage : Model<FinancialTransactionImage>
+    public partial class FinancialTransactionImage : Model<FinancialTransactionImage>, IOrdered
     {
 
         #region Entity Properties
@@ -52,15 +52,13 @@ namespace Rock.Model
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets DefinedValueId of the transaction image type <see cref="Rock.Model.DefinedValue"/> for this image.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the DefinedValueId of the transaction image type <see cref="Rock.Model.DefinedValue"/>
-        /// for this image.
+        /// The order.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE )]
-        public int? TransactionImageTypeValueId { get; set; }
+        public int Order { get; set; }
 
         #endregion
 
@@ -81,14 +79,6 @@ namespace Rock.Model
         /// The image's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         public virtual BinaryFile BinaryFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction image type <see cref="Rock.Model.DefinedValue"/> of this image.
-        /// </summary>
-        /// <value>
-        /// The transaction image type <see cref="Rock.Model.DefinedValue"/> of this image.
-        /// </value>
-        public virtual DefinedValue TransactionImageTypeValue { get; set; }
 
         #endregion
 
@@ -129,7 +119,6 @@ namespace Rock.Model
         {
             this.HasRequired( i => i.Transaction ).WithMany( t => t.Images ).HasForeignKey( i => i.TransactionId ).WillCascadeOnDelete( false );
             this.HasRequired( i => i.BinaryFile ).WithMany().HasForeignKey( i => i.BinaryFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( i => i.TransactionImageTypeValue ).WithMany().HasForeignKey( i => i.TransactionImageTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

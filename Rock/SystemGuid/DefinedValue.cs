@@ -104,30 +104,6 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Financial Transaction Image Type
-
-        /// <summary>
-        /// Front of Check
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_CHECK_FRONT = "A52EDD34-D3A2-420F-AF45-21B323FB21D6";
-
-        /// <summary>
-        /// Back of Check
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_CHECK_BACK = "87D9347D-64E6-4DD4-8F05-2AA17419B5E8";
-
-        /// <summary>
-        /// Front of Envelope
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_FRONT = "654ABEC4-7414-402F-BEA4-0AA833683AD6";
-
-        /// <summary>
-        /// Back of Envelope
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_BACK = "746FBD46-AA4C-4A84-A7DA-080763CED187";
-
-        #endregion
-
         #region Financial Source
 
         /// <summary>

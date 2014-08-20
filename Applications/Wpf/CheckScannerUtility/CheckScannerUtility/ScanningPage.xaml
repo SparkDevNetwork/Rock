@@ -35,7 +35,7 @@
                  Width="14"
                  Fill="Red">
         </Ellipse>
-        <Label Name="lblScanWarning"
+        <Label Name="lblScanCheckWarning"
                Style="{StaticResource labelStyleAlert}"
                Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction."
                Grid.Column="0"
