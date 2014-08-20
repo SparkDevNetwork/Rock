@@ -686,6 +686,7 @@ namespace RockWeb.Blocks.WorkFlow
             nbMessage.Title = title;
             nbMessage.Text = message;
             nbMessage.Visible = true;
+            nbMessage.Dismissable = false;
 
             if ( hideForm )
             {

@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Utility
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            gList.GridRebind += gList_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -96,6 +97,16 @@ namespace RockWeb.Blocks.Utility
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
 
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gList_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
         }
 
         #endregion
