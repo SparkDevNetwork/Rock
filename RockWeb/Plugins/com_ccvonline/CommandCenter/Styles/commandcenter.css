@@ -13,16 +13,18 @@
 }*/
 
 .live-player {
-    display: block;
+    /*display: block;
     width: 520px;
-    height: 330px;
+    height: 330px;*/
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
 }
 
 
 .servicebuttons {
-    width: 50%;
     margin: 0 auto;
     padding: 10px;
+    text-align: center;
 }
 
 .sharebutton {

@@ -9,10 +9,11 @@
     <ItemTemplate>
         <div class="col-md-4">
             <div class="panel panel-default">                
-                <div class="panel-body live-content">   
-                    <h3><%# Eval("[1]") %></h3>                 
-                    <a id='<%# Eval("[0]") %>' data-flashfit="true" class="live-player">
-                    </a>
+                <div class="panel-body">   
+                    <h3><%# Eval("[1]") %></h3>
+                    <div class="videocontent">
+                        <a id='<%# Eval("[0]") %>' data-flashfit="true" class="live-player"></a>
+                    </div>                                                         
                     <br />
                     <div style="text-align: center;">
                         <a id='<%# Eval("[0]") %>' class="btn btn-default audio-toggle muted" >
