@@ -222,6 +222,9 @@ namespace Rock.Communication.Transport
                         else
                         {
                             message.To.Clear();
+                            message.Headers.Clear();
+                            message.AlternateViews.Clear();
+
                             message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
 
                             // Create merge field dictionary
