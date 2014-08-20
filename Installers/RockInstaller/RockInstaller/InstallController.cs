@@ -738,10 +738,19 @@ namespace RockInstaller
                                 }
                             } // while..
                             streamLocal.Close();
+                            streamLocal.Dispose();
                         }
                         streamRemote.Close();
+                        streamRemote.Dispose();
                     }
+                    client.Dispose();
                 }
+            }
+            catch ( OutOfMemoryException mex )
+            {
+                result.Success = false;
+                result.Message = @"The server ran out of memory while downloading Rock. You may want to consider using a server with more available resources or
+                                    try installing again.";
             }
             catch ( Exception ex )
             {

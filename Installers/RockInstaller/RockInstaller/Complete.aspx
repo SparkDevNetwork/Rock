@@ -177,14 +177,11 @@
         File.Delete( serverPath + @"Complete.aspx" );
 
         // delete a web.config if it already exists in the root, this is not the rock one
-        if ( File.Exists( serverPath + @"\web.config" ) )
-        {
-            File.Delete( serverPath + @"\web.config" );
-        }
+        File.Copy( serverPath + @"\webconfig.xml", serverPath + @"\web.config", true );
 
-        // move the web.config into place
-        File.Move( serverPath + @"\webconfig.xml", serverPath + @"\web.config" );
-
+        // delete web config template
+        File.Delete( serverPath + @"\webconfig.xml" );
+        
         // delete rock install directory
         Directory.Delete( serverPath + @"\rock", true );
     }
