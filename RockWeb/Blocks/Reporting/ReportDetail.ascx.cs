@@ -738,7 +738,6 @@ namespace RockWeb.Blocks.Reporting
             }
 
             LoadDropDowns();
-            LoadDropdownsForEntityType( report.EntityTypeId );
 
             SetEditMode( true );
 
@@ -746,6 +745,7 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
             etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
+            LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
 
