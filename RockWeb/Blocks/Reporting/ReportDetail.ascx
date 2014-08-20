@@ -31,7 +31,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
-                            <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
+                            <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Data View" Required="false" />
                         </div>
                     </div>
