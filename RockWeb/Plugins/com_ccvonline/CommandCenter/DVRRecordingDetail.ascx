@@ -163,7 +163,7 @@
         recordingstarttime = $f("player").getTime().toString();
 
         var time = recordingstarttime.split('.', 1);
-        time = (time / 60).toFixed(0) + ":" + (time % 60);
+        time = Math.floor(time / 60).toFixed(0) + ":" + (time % 60);
 
         $('#starttime').val(time.toString());
 
@@ -175,7 +175,7 @@
         recordingduration = $f("player").getTime().toString();
 
         var time = recordingduration.split('.', 1);
-        time = (time / 60).toFixed(0) + ":" + (time % 60);
+        time = Math.floor(time / 60).toFixed(0) + ":" + (time % 60);
 
         $('#endtime').val(time.toString());
 
@@ -191,7 +191,7 @@
             recordingtotaltime = recordingduration - recordingstarttime;
 
             var total = recordingtotaltime.toString().split('.', 1);
-            total = (total / 60).toFixed(0) + ":" + (total % 60);
+            total = Math.floor(total / 60).toFixed(0) + ":" + (total % 60);
 
             $("#totaltime").val(total);
 
