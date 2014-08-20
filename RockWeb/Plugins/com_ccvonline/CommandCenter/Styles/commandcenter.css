@@ -36,7 +36,7 @@
 }
 
 .videocontent:after {
-    padding-top: 75%;
+    padding-top: 56.2%; /* This sets the correct aspect ratio for the video player */
     display: block;
     content: '';
 }
