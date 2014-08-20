@@ -122,27 +122,40 @@
 
         // setup player
         flowplayer("player", "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf",
-			{
-			    plugins: {
-			        f4m: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf' },
-			        httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.11.swf' },
-			    },
-			    clip: {
-			        url: recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=' + clipStartEndUrl,
-			        urlResolvers: ['f4m'],
-			        provider: 'httpstreaming',
-			        baseUrl: 'http://ccvwowza:1935/commandcenter/',
-			        autoplay: true,
-			        scaling: 'fit'
-			    }
-			});
+		{
+			plugins: {
+			    f4m: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf' },
+			    httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.11.swf' },
+			},
+			clip: {
+			    url: recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=' + clipStartEndUrl,
+			    urlResolvers: ['f4m'],
+			    provider: 'httpstreaming',
+			    baseUrl: 'http://ccvwowza:1935/commandcenter/',
+			    autoplay: true,
+			    scaling: 'fit'
+			}
+		});
+
+        // Setup recording buttons
+        $('.servicebutton').first().addClass('active');
     }
 
     // Change recording playback
     function ChangeRecording(recording) {
         recordingurl = recording;
 
+        // Reset button states
+        $('.servicebutton').each(function () {
+            $(this).removeClass('active');
+        });
+
+        // Set button state to active
+        $("[recordingname=" + recordingurl + "]").addClass('active');
+
+        // Play recording
         $f("player").play(recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=0');
+   
     }
 
     // Get start time
@@ -157,7 +170,7 @@
         CalculateTotalAndUrl();
     }
 
-    // Get start time
+    // Get end time
     function GetVideoEndTime() {
         recordingduration = $f("player").getTime().toString();
 
