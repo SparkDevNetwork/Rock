@@ -37,8 +37,8 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 0, "To")]
     [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 1 )]
-    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 2 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
+    [TextField( "Subject", "The subject that should be used when sending email. <span class='liquid-tip'></span>", false, "", "", 2 )]
+    [CodeEditorField( "Body", "The body of the email that should be sent. <span class='liquid-tip'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
