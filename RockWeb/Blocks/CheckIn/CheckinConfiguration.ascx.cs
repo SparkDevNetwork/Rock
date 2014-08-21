@@ -64,15 +64,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
             }
             else
             {
@@ -330,7 +322,10 @@ namespace RockWeb.Blocks.CheckIn
                 CreateGroupEditorControls( childGroup, groupTypeEditor, rockContext, false );
             }
 
-            foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var childGroupType in groupType.ChildGroupTypes
+                .Where( t => t.Id != groupType.Id)
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, rockContext );
             }
@@ -399,6 +394,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -424,6 +420,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -472,6 +469,7 @@ namespace RockWeb.Blocks.CheckIn
                 groupEditor.Expanded = true;
             }
 
+            parentControl.Controls.Add( groupEditor );
             groupEditor.SetGroup( group, rockContext );
             var locationService = new LocationService( rockContext );
             var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
@@ -499,8 +497,6 @@ namespace RockWeb.Blocks.CheckIn
             groupEditor.AddLocationClick += groupEditor_AddLocationClick;
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
             groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
-
-            parentControl.Controls.Add( groupEditor );
         }
 
         /// <summary>
@@ -747,7 +743,7 @@ namespace RockWeb.Blocks.CheckIn
             int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
             int binaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // delete in reverse order to get deepest child items first
                 groupsToDelete.Reverse();
@@ -776,6 +772,7 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB = new GroupType();
                         groupTypeDB.Id = 0;
                         groupTypeDB.Guid = groupTypeUI.Guid;
+                        groupTypeDB.ShowInNavigation = false;
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
@@ -953,7 +950,7 @@ namespace RockWeb.Blocks.CheckIn
             };
 
             // delete non-template childgrouptypes that were deleted in this ui
-            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes )
+            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes.Where( g => g.Id != groupTypeDB.Id ) )
             {
                 if ( !templateGroupTypes.Contains( childGroupTypeDB.GroupTypePurposeValueId ?? 0 ) )
                 {
@@ -1026,22 +1023,16 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void ShowDetail( int groupTypeId )
         {
             // hide the details panel until we verify the page params are good and that the user has edit access
             pnlDetails.Visible = false;
 
-            if ( itemKey != "groupTypeId" )
-            {
-                return;
-            }
-
             var rockContext = new RockContext();
 
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            GroupType parentGroupType = groupTypeService.Get( itemKeyValue );
+            GroupType parentGroupType = groupTypeService.Get( groupTypeId );
 
             if ( parentGroupType == null )
             {

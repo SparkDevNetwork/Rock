@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Core
             {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
-                {
+                {                   
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
@@ -278,12 +278,13 @@ namespace RockWeb.Blocks.Core
                 } );
             }
 
+            var rockContext = new RockContext();
             foreach ( var component in components)
             {
                 Type type = component.Value.Value.GetType();
-                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext ) )
                 {
-                    component.Value.Value.LoadAttributes();
+                    component.Value.Value.LoadAttributes( rockContext );
                 }
 
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );

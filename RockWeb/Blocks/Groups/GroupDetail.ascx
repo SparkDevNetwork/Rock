@@ -13,14 +13,14 @@
             <asp:HiddenField ID="hfGroupId" runat="server" />
 
             <div class="panel panel-block">
-                
+
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lGroupIconHtml" runat="server" /> 
+                        <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
-                    <div class="pull-right">
+                    <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
@@ -49,27 +49,28 @@
                             </div>
                         </div>
 
-                        <Rock:PanelWidget ID="wpGeneral" runat="server" title="General">
+                        <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true"  OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged"/>
+                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" />
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                                    <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes"  />
+                                    <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpLocations" runat="server">
+                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
                                         <asp:BoundField DataField="Location" HeaderText="Location" />
-                                        <asp:BoundField DataField="GroupLocationTypeValue.Name" HeaderText="Type" />
+                                        <asp:BoundField DataField="Type" HeaderText="Type" />
+                                        <asp:BoundField DataField="Schedules" HeaderText="Schedule(s)" />
                                         <Rock:EditField OnClick="gLocations_Edit" />
-                                        <Rock:DeleteField OnClick="gLocations_Delete"  />
+                                        <Rock:DeleteField OnClick="gLocations_Delete" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -80,7 +81,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
-                            <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info" 
+                            <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info"
                                 Text="Member Attributes apply to members in this group.  Each member will have their own value for these attributes" />
                             <Rock:RockControlWrapper ID="rcGroupMemberAttributesInherited" runat="server" Label="Inherited Attribute(s)">
                                 <div class="grid">
@@ -95,7 +96,7 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
-                            
+
                             <div class="grid">
                                 <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute" ShowConfirmDeleteDialog="false">
                                     <Columns>
@@ -120,34 +121,35 @@
 
                     <fieldset id="fieldsetViewDetails" runat="server">
 
-                <p class="description">
-                    <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
+                        <p class="description">
+                            <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
+                        </p>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
-                    </div>
-                    <div class="col-md-6 location-maps">
-                        <asp:PlaceHolder ID="phMaps" runat="server" />
-                    </div>
-                </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <asp:Literal ID="lblMainDetails" runat="server" />
+                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                            </div>
+                            <div class="col-md-6 location-maps">
+                                <asp:PlaceHolder ID="phMaps" runat="server" />
+                            </div>
+                        </div>
 
 
-                <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
-                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
-                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
-                </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                            <span class="pull-right">
+                                <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
+                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
+                            </span>
+                        </div>
 
-            </fieldset>
+                    </fieldset>
                 </div>
             </div>
 
-            
-
-            
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -165,19 +167,19 @@
 
                 <asp:ValidationSummary ID="valLocationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Location" />
 
-                <ul id="ulNav" runat="server" class="nav nav-pills" >
-                    <asp:Repeater ID="rptLocationTypes" runat="server" >
-                        <ItemTemplate >
+                <ul id="ulNav" runat="server" class="nav nav-pills">
+                    <asp:Repeater ID="rptLocationTypes" runat="server">
+                        <ItemTemplate>
                             <li class='<%# GetTabClass(Container.DataItem) %>'>
                                 <asp:LinkButton ID="lbLocationType" runat="server" Text='<%# Container.DataItem %>' OnClick="lbLocationType_Click" CausesValidation="false">
-                                </asp:LinkButton> 
+                                </asp:LinkButton>
                             </li>
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
 
-                <div class="tabContent" >
-                    <asp:Panel ID="pnlMemberSelect" runat="server" Visible="true" >
+                <div class="tabContent">
+                    <asp:Panel ID="pnlMemberSelect" runat="server" Visible="true">
                         <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
                     </asp:Panel>
                     <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
@@ -186,6 +188,8 @@
                 </div>
 
                 <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Name" ValidationGroup="Location" />
+
+                <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
 
             </Content>
         </Rock:ModalDialog>

@@ -1,0 +1,23 @@
+﻿<div class="announcement-list">
+  
+  {% for Ad in Ads -%}
+
+    <div class="announcement">
+      <a href="{{ Ad.DetailPageUrl }}">
+        {% for Attribute in Ad.Attributes -%}
+          {% if Attribute.Key == 'AdImage' -%}
+            {{ Attribute.Value }}
+          {% endif -%}
+        {% endfor -%}
+      </a>
+    </div>
+
+    {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
+    {% if breakNow == 0 -%}
+      </div>
+      <div class="announcement-list">
+    {% endif -%}
+
+  {% endfor -%}
+
+</div>

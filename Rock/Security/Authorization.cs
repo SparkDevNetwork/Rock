@@ -214,13 +214,15 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
+        public static bool Authorized( ISecured entity, string action, Rock.Model.Person person, RockContext rockContext = null )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                Load( rockContext );
             }
 
             var entityTypeId = entity.TypeId;
@@ -290,24 +292,26 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Determines whether the specified entity is private. Entity is considered private if only the current user 
-        /// has access.  In this scenario, the first rule would give current user access, and second rule would deny 
+        /// Determines whether the specified entity is private. Entity is considered private if only the current user
+        /// has access.  In this scenario, the first rule would give current user access, and second rule would deny
         /// all users.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified entity is private; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsPrivate( ISecured entity, string action, Person person )
+        public static bool IsPrivate( ISecured entity, string action, Person person, RockContext rockContext = null )
         {
             if ( person != null )
             {
                 // If there's no Authorizations object, create it
                 if ( Authorizations == null )
                 {
-                    Load( new RockContext() );
+                    rockContext = rockContext ?? new RockContext();
+                    Load( rockContext );
                 }
 
                 // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
@@ -343,19 +347,21 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public static void MakePrivate( ISecured entity, string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public static void MakePrivate( ISecured entity, string action, Person person, RockContext rockContext = null )
         {
             if ( !IsPrivate( entity, action, person ) )
             {
                 if ( person != null )
                 {
+                    rockContext = rockContext ?? new RockContext();
+
                     // If there's no Authorizations object, create it
                     if ( Authorizations == null )
                     {
-                        Load( new RockContext() );
+                        Load( rockContext );
                     }
 
-                    var rockContext = new RockContext();
                     var authService = new AuthService( rockContext );
 
                     // If there are not entries in the Authorizations object for this entity type and entity instance, create
@@ -421,11 +427,12 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public static void MakeUnPrivate( ISecured entity, string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public static void MakeUnPrivate( ISecured entity, string action, Person person, RockContext rockContext = null )
         {
             if ( IsPrivate( entity, action, person ) )
             {
-                var rockContext = new RockContext();
+                rockContext = rockContext ?? new RockContext();
                 var authService = new AuthService( rockContext );
 
                 // if is private, then there are only two rules for this action that should be deleted
@@ -447,11 +454,12 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public static void AllowPerson( ISecured entity, string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public static void AllowPerson( ISecured entity, string action, Person person, RockContext rockContext = null )
         {
             if ( person != null )
             {
-                var rockContext = new RockContext();
+                rockContext = rockContext ?? new RockContext();
 
                 // If there's no Authorizations object, create it
                 if ( Authorizations == null )
@@ -514,15 +522,17 @@ namespace Rock.Security
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static List<AuthRule> AuthRules( int entityTypeId, int entityId, string action )
+        public static List<AuthRule> AuthRules( int entityTypeId, int entityId, string action, RockContext rockContext = null )
         {
             List<AuthRule> rules = new List<AuthRule>();
 
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                Load( rockContext );
             }
 
             // Find the Authrules for the given entity type, entity id, and action

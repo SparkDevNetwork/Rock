@@ -92,7 +92,7 @@ namespace Rock.Workflow.Action
                         var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionType.WorkflowForm.NotificationSystemEmailId.Value );
                         if ( systemEmail != null )
                         {
-                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
+                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
                             Email.Send( systemEmail.Guid, recipients, appRoot );
                         }
                         else

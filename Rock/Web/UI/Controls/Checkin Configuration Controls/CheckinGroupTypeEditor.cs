@@ -429,14 +429,14 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
 
             _lbAddCheckinGroupType = new LinkButton();
             _lbAddCheckinGroupType.ID = this.ID + "_lblbAddCheckinGroupType";
-            _lbAddCheckinGroupType.CssClass = "btn btn-xs btn-primary checkin-grouptype-add-sub-area";
+            _lbAddCheckinGroupType.CssClass = "btn btn-xs btn-action checkin-grouptype-add-sub-area";
             _lbAddCheckinGroupType.Click += lbAddCheckinGroupType_Click;
             _lbAddCheckinGroupType.CausesValidation = false;
             _lbAddCheckinGroupType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Sub-Area" } );
 
             _lbAddCheckinGroup = new LinkButton();
             _lbAddCheckinGroup.ID = this.ID + "_lbAddCheckinGroup";
-            _lbAddCheckinGroup.CssClass = "btn btn-xs btn-primary checkin-grouptype-add-checkin-group";
+            _lbAddCheckinGroup.CssClass = "btn btn-xs btn-action checkin-grouptype-add-checkin-group";
             _lbAddCheckinGroup.Click += lbAddGroup_Click;
             _lbAddCheckinGroup.CausesValidation = false;
             _lbAddCheckinGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Check-in Group" } );
@@ -549,7 +549,7 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
@@ -562,13 +562,8 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
             // Name/Description div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right panel-actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            _lbAddCheckinGroupType.RenderControl( writer );
-            writer.WriteLine();
-            _lbAddCheckinGroup.RenderControl( writer );
-            writer.WriteLine();
 
             writer.WriteLine( "<a class='btn btn-link btn-xs checkin-grouptype-reorder'><i class='fa fa-bars'></i></a>" );
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='checkin-grouptype-state fa {0}'></i></a>",
@@ -585,6 +580,16 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
             }
 
             // Add/ChevronUpDown/Delete div
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right panel-actions btn-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _lbAddCheckinGroupType.RenderControl( writer );
+            writer.WriteLine();
+            _lbAddCheckinGroup.RenderControl( writer );
+            writer.WriteLine();
+
             writer.RenderEndTag();
 
             // header div

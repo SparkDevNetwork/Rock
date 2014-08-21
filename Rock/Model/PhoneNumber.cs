@@ -216,7 +216,7 @@ namespace Rock.Model
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if (definedType != null)
             {
-                string countryCode = definedType.DefinedValues.OrderBy( v => v.Order).Select( v => v.Name).FirstOrDefault();
+                string countryCode = definedType.DefinedValues.OrderBy( v => v.Order).Select( v => v.Value).FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(countryCode))
                 {
                     return countryCode;
@@ -251,10 +251,10 @@ namespace Rock.Model
                 {
                     if (string.IsNullOrWhiteSpace(countryCode))
                     {
-                        countryCode = definedValues.Select( v => v.Name).FirstOrDefault();
+                        countryCode = definedValues.Select( v => v.Value).FirstOrDefault();
                     }
 
-                    foreach ( var phoneFormat in definedValues.Where( v => v.Name.Equals( countryCode ) ).OrderBy( v => v.Order ) )
+                    foreach ( var phoneFormat in definedValues.Where( v => v.Value.Equals( countryCode ) ).OrderBy( v => v.Order ) )
                     {
                         string match = phoneFormat.GetAttributeValue("MatchRegEx");
                         string replace = phoneFormat.GetAttributeValue("FormatRegEx");

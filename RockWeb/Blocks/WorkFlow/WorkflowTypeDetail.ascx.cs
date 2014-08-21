@@ -294,6 +294,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var newAttribute = attribute.Clone( false );
                     newAttribute.Id = 0;
                     newAttribute.Guid = Guid.NewGuid();
+                    newAttribute.IsSystem = false;
                     newAttributesState.Add( newAttribute );
 
                     guidXref.Add( attribute.Guid, newAttribute.Guid );
@@ -319,6 +320,7 @@ namespace RockWeb.Blocks.WorkFlow
                         var newAttribute = attribute.Clone( false );
                         newAttribute.Id = 0;
                         newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
                         newActivityAttributes.Add( newAttribute );
 
                         guidXref.Add( attribute.Guid, newAttribute.Guid );
@@ -481,7 +483,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // Save the entity field changes to workflow type
                 if ( workflowType.Id.Equals( 0 ) )
@@ -617,7 +619,7 @@ namespace RockWeb.Blocks.WorkFlow
                             int attributeOrder = 0;
                             foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                             {
-                                int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid ).Id;
+                                int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid, rockContext ).Id;
 
                                 var formAttribute = workflowActionType.WorkflowForm.FormAttributes
                                     .Where( a => a.AttributeId == attributeId )

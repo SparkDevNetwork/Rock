@@ -293,17 +293,17 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The entity control help text.
         /// </value>
-        public string EntityControlHelpTextFormat 
+        public string EntityControlHelpTextFormat
         {
             get
             {
                 return ViewState["EntityControlHelpTextFormat"] as string;
             }
-            
+
             set
             {
                 ViewState["EntityControlHelpTextFormat"] = value;
-            } 
+            }
         }
 
         /// <summary>
@@ -401,6 +401,11 @@ namespace Rock.Web.UI.Controls
             {
                 if ( _entityTypeEditControl is IRockControl )
                 {
+                    if ( entityType != null )
+                    {
+                        ( _entityTypeEditControl as IRockControl ).Label = entityType.FriendlyName;
+                    }
+
                     ( _entityTypeEditControl as IRockControl ).Help = string.Format( EntityControlHelpTextFormat ?? string.Empty, fieldTypeName, fieldTypeName.Pluralize() );
                 }
 
@@ -437,7 +442,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            _etpEntityType.Visible = EntityTypePickerVisible;
             _etpEntityType.RenderControl( writer );
+
             _phEntityTypeEntityIdValue.RenderControl( writer );
         }
 

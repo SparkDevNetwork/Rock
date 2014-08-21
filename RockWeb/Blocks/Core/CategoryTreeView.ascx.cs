@@ -153,7 +153,6 @@ namespace RockWeb.Blocks.Core
 
                                     if ( entity != null )
                                     {
-                                        lbAddCategoryRoot.Enabled = false;
                                         lbAddCategoryChild.Enabled = false;
                                         if ( entity.CategoryId.HasValue )
                                         {

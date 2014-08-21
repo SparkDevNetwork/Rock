@@ -8,7 +8,7 @@
       d:DesignWidth="800"
       Name="startPage"
       Title="Start"
-      Style="{StaticResource pageBackground}">
+      Style="{StaticResource pageBackgroundGrey}">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -55,7 +55,7 @@
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Start" />
                     <Label Style="{StaticResource labelStyleIconPrimary}"
-                       Content="&#xf0da;" />
+                       Content="&#xf054;" />
                 </StackPanel>
             </Button>
         </Grid>

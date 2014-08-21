@@ -2,22 +2,29 @@
 
 <asp:UpdatePanel ID="upnlCategories" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlList" runat="server">
+        <asp:Panel ID="pnlList" CssClass="panel panel-block" runat="server">
 
-            <div class="grid">
-                <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
-                    <Columns>
-                        <Rock:ReorderField />
-                        <asp:BoundField DataField="Name" HeaderText="Category" />
-                        <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                        <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                        <Rock:EditField OnClick="gCategories_Edit"/>
-                        <Rock:SecurityField />
-                        <Rock:DeleteField OnClick="gCategories_Delete" />
-                    </Columns>
-                </Rock:Grid>
+
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-folder-open"></i> Category List</h1>
             </div>
+            <div class="panel-body">
 
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <asp:BoundField DataField="Name" HeaderText="Category" />
+                            <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
+                            <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:EditField OnClick="gCategories_Edit"/>
+                            <Rock:SecurityField />
+                            <Rock:DeleteField OnClick="gCategories_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
+            </div>
         </asp:Panel>
 
         <Rock:ModalDialog ID="mdDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">

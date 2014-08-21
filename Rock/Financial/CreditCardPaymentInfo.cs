@@ -37,9 +37,14 @@ namespace Rock.Financial
         public string LastNameOnCard { get; set; }
 
         /// <summary>
-        /// The billing street
+        /// The billing street line 1
         /// </summary>
-        public string BillingStreet { get; set; }
+        public string BillingStreet1 { get; set; }
+
+        /// <summary>
+        /// The billing street line 1
+        /// </summary>
+        public string BillingStreet2 { get; set; }
 
         /// <summary>
         /// The billing city
@@ -52,9 +57,14 @@ namespace Rock.Financial
         public string BillingState { get; set; }
 
         /// <summary>
-        /// The billing zip
+        /// The billing zip/postal code
         /// </summary>
-        public string BillingZip { get; set; }
+        public string BillingPostalCode { get; set; }
+
+        /// <summary>
+        /// The billing country
+        /// </summary>
+        public string BillingCountry { get; set; }
 
         /// <summary>
         /// The credit card number

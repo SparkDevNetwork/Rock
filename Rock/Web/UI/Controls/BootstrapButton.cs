@@ -45,7 +45,7 @@ namespace Rock.Web.UI.Controls
         ]
         public string DataLoadingText
         {
-            get { return ViewState["DataLoadingText"] as string ?? "<i class='fa fa-refresh fa-spin fa-2x'></i>"; }
+            get { return ViewState["DataLoadingText"] as string ?? "<i class='fa fa-refresh fa-spin working'></i>"; }
             set { ViewState["DataLoadingText"] = value; }
         }
 

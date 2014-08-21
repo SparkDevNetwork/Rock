@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
             if ( campusContext != null )
             {
                 // limit to ads that are targeted to the current campus context
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.Id.Equals( campusContext.Id ) ) );
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.CampusId.Equals( campusContext.Id ) ) );
             }
 
 

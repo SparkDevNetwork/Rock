@@ -104,7 +104,7 @@ namespace Rock.Model
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    return Queryable( includes )
+                    return base.Queryable( includes )
                         .Where( p =>
                             p.RecordTypeValueId != definedValue.Id &&
                             ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
@@ -152,7 +152,7 @@ namespace Rock.Model
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p => 
                     p.Email == email && 
-                    p.FirstName == firstName && 
+                    (p.FirstName == firstName || p.NickName == firstName) && 
                     p.LastName == lastName )
                 .ToList();
         }
@@ -462,8 +462,8 @@ namespace Rock.Model
                             lastNames.Contains( p.LastName ) &&
                             ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) ) )
                         .Select( p => ( reversed ?
-                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
-                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
+                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) :
+                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) ) )
                         .Distinct()
                         .ToList();
                     }
@@ -537,7 +537,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person" )
                 .Where( m => m.GroupId == family.Id )
                 .Where( m => includeSelf || m.PersonId != personId )
                 .OrderBy( m => m.GroupRole.Order)
@@ -578,17 +578,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the first location.
+        /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="locationTypeValueId">The location type value id.</param>
         /// <returns></returns>
-        public Location GetFirstLocation( int personId, int locationTypeValueId )
+        public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
-            return GetFamilies( personId )
-                .SelectMany( g => g.GroupLocations )
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location" )
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
-                .Select( gl => gl.Location )
                 .FirstOrDefault();
         }
 

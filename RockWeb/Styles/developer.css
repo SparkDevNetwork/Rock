@@ -13,7 +13,10 @@
     NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
         of the DefinedValue editor) when editing something like the AbilityLevel person
         attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-*/
+
+    JME - Not sure we need this with the new theme. Let me know if you see any
+          area that is in need of this still.
+
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -29,7 +32,7 @@
     -moz-transition: border linear .2s, box-shadow linear .2s;
     -o-transition: border linear .2s, box-shadow linear .2s;
     transition: border linear .2s, box-shadow linear .2s;
-}
+}*/
 
 
 
@@ -70,22 +73,12 @@ table.server-variables
     word-wrap:break-word;
 }
 
-    table.server-variables td
-    {
-        min-width:200px;
-        vertical-align:text-top;
-    }
-
-/* CSF - Exception Detail Grid*/
-.exceptionDetail-stackTrace-hide
+table.server-variables td
 {
-    display: none;
+    min-width:200px;
+    vertical-align:text-top;
 }
 
-.exceptionDetail-stackTrace-show
-{
-    display:table-row;
-}
 
 
 
@@ -162,15 +155,9 @@ span.data-view-filter-label {
     cursor:pointer;
 }
 
-/* NA 5/7/2014 Hover effect when you're in the right zone to drop the file upload (confusing without this) */
-.fileupload-group .fileupload-dropzone:hover {
-  border: 1px dotted #66afe9;
-  outline: 0;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+
+
+div.toggle-container {   /* ???? JME */
+    display: inline-block;
 }
 
-/* DT 6/11/2014 set padding on the "Actions" link in person profile page so that it lines up with the badges  */
-.nav > li > a.persondetails-actions {
-    padding: 2px 15px 5px 15px;
-}

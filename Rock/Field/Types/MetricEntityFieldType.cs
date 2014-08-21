@@ -82,7 +82,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Reads new values entered by the user for the field
-        /// returns pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// returns pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -102,7 +102,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Sets the value.
-        /// value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>

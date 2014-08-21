@@ -11,10 +11,10 @@
 // -------------------------
 .panel-note {
 
-    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
 
     .panel-body {
-        background-color: @body-bg;
+        background-color: #fffs;
     }
 
     .panel-heading {
@@ -31,10 +31,10 @@
 
     article {
         border-radius: @border-radius-base;
-        border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+        border: 1px solid darken(@gray-light, @const-border-darken-amt);
         padding: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        background-color: @accent-light-color;
+        background-color: @gray-light;
         position: relative;
 
         .date {
@@ -45,7 +45,7 @@
 
         & > i {
             position: absolute;
-            color: darken(@accent-light-color, 10%);
+            color: darken(@gray-light, 10%);
             width: 28px;
             font-size: 28px;
             margin: 0 12px 0 4px;
@@ -326,11 +326,15 @@
         margin-bottom: 30px;
 
         &:hover {
-            background-color: lighten(@accent-light-color, 1%);
+            background-color: #fff;
         }
 
         .panel-heading {
             padding: 30px;
+
+            .panel-title {
+                width: 100%;
+            }
 
             a {
                 h3 {
@@ -354,8 +358,6 @@
                     }
                 }
             }
-
-            
         }
     }
 }

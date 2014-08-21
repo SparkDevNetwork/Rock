@@ -46,9 +46,11 @@ namespace RockWeb.Blocks.Administraton
     [Category( "Core" )]
     [Description( "Lists all exceptions." )]
 
-    [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
+    [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7, Order=1)]
     [LinkedPage("Detail Page")]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 2 )]
+    [BooleanField( "Show Legend", "", true, Order = 3 )]
+    [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", Order = 4 )]
     public partial class ExceptionList : RockBlock
     {
         #region Control Methods
@@ -107,6 +109,9 @@ namespace RockWeb.Blocks.Administraton
             }
 
             lcExceptions.Options.SetChartStyle( this.ChartStyle );
+            lcExceptions.Options.legend = lcExceptions.Options.legend ?? new Legend();
+            lcExceptions.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
+            lcExceptions.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
 
             // get data for graphs
             ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
@@ -122,6 +127,7 @@ namespace RockWeb.Blocks.Administraton
 
             if ( exceptionList.Count == 1 )
             {
+                // if there is only one datapoint for the Chart, the yaxis labeling gets messed up, plus the graph wouldn't be useful anyways
                 lcExceptions.Visible = false;
             }
 
@@ -157,7 +163,7 @@ namespace RockWeb.Blocks.Administraton
                         try
                         {
                             definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                            return ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
                         }
                         catch
                         {

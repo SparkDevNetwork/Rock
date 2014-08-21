@@ -162,7 +162,6 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
-        private Image _imgThumbnail;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
@@ -352,6 +351,56 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the thumbnail width.
+        /// </summary>
+        /// <value>
+        /// The width of the thumbnail.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional width of the thumbnail" )
+        ]
+        public int ThumbnailWidth
+        {
+            get
+            {
+                return ViewState["ThumbnailWidth"] as int? ?? 100;
+            }
+
+            set
+            {
+                ViewState["ThumbnailWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the thumbnail height.
+        /// </summary>
+        /// <value>
+        /// The height of the thumbnail.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional height of the thumbnail" )
+        ]
+        public int ThumbnailHeight
+        {
+            get
+            {
+                return ViewState["ThumbnailHeight"] as int? ?? 100;
+            }
+
+            set
+            {
+                ViewState["ThumbnailHeight"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the picture URL to use when there is no image selected
         /// </summary>
         /// <value>
@@ -385,10 +434,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            _imgThumbnail = new Image();
-            _imgThumbnail.ID = "img";
-            Controls.Add( _imgThumbnail );
-
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
 
@@ -428,26 +473,31 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "imageupload-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+
+            writer.AddAttribute( "style", String.Format("width: {0}px; height: {1}px;", this.ThumbnailWidth, this.ThumbnailHeight ));
             writer.AddAttribute( "class", "imageupload-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            string thumbnailImage = this.NoPictureUrl;
+
             if ( BinaryFileId != null )
             {
-                _imgThumbnail.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=50";
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=500" );
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
             }
             else
             {
-                _imgThumbnail.ImageUrl = this.NoPictureUrl;
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            _imgThumbnail.RenderControl( writer );
+            writer.AddAttribute( "style", string.Format("background-image: url({0});", thumbnailImage) );
+            writer.AddAttribute( "class", "imageupload-thumbnail-image" );
+            writer.AddAttribute( "id", this.ClientID + "-thumbnail" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
-
-            writer.RenderEndTag();
 
             writer.AddAttribute( "class", "imageupload-remove" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -456,8 +506,10 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
 
+            writer.RenderEndTag();
+
             writer.Write( @"
-                <div class='js-upload-progress pull-left' style='display:none'>
+                <div class='js-upload-progress upload-progress' style='display:none'>
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
             
@@ -465,7 +517,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( "drop / click to upload" );
+            writer.Write( "Upload" );
             writer.RenderEndTag();
 
             _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
@@ -506,14 +558,14 @@ Rock.controls.imageUploader.initialize({{
                 this.BinaryFileId,
                 this.BinaryFileTypeGuid,
                 _hfBinaryFileId.ClientID,
-                _imgThumbnail.ClientID,
+                this.ClientID + "-thumbnail",
                 _aRemove.ClientID,
                 this.IsBinaryFile ? "T" : "F",
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
                 this.NoPictureUrl);
-            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
         /// <summary>

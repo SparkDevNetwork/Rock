@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
     [Description( "Block for administrating a tag." )]
-    public partial class TagDetail : Rock.Web.UI.RockBlock
+    public partial class TagDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
 
@@ -69,24 +69,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "tagId" );
-                string entityTypeId = PageParameter( "entityTypeId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( entityTypeId ) )
-                    {
-                        ShowDetail( "tagId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "tagId", int.Parse( itemId ), int.Parse( entityTypeId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "tagId" ).AsInteger(), PageParameter( "entityTypeId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -278,44 +261,35 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="tagId">The tag identifier.</param>
+        public void ShowDetail( int tagId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( tagId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? entityTypeId )
+        /// <param name="tagId">The tag identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        public void ShowDetail( int tagId, int? entityTypeId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "tagId" ) )
-            {
-                return;
-            }
 
             Tag tag = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !tagId.Equals( 0 ) )
             {
-                tag = new TagService( new RockContext() ).Get( itemKeyValue );
+                tag = new TagService( new RockContext() ).Get( tagId );
             }
-            else
+            
+            if ( tag == null )
             {
                 tag = new Tag { Id = 0, OwnerId = CurrentPersonId };
                 if ( entityTypeId.HasValue )
                 {
                     tag.EntityTypeId = entityTypeId.Value;
                 }
-            }
-
-            if ( tag == null )
-            {
-                return;
             }
 
             pnlDetails.Visible = true;

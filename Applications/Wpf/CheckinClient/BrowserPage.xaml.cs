@@ -56,7 +56,8 @@ namespace CheckinClient
             RockCheckinScriptManager scriptManager = new RockCheckinScriptManager( this );
             wbMain.ObjectForScripting = scriptManager;
             wbMain.AllowDrop = false;
-            wbMain.Source = new Uri( ConfigurationManager.AppSettings["CheckinAddress"]);
+            var rockConfig = RockConfig.Load();
+            wbMain.Source = new Uri( rockConfig.CheckinAddress );
 
             puOverlay.IsOpen = true;
         }

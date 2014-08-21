@@ -55,7 +55,7 @@ union
 SELECT 
     CONCAT('RockMigrationHelper.AddDefinedValue("', 
     [dt].[Guid], '","',
-    [dv].[Name], '","',
+    [dv].[Value], '","',
     [dv].[Description], '","',
     [dv].[Guid], '",',
     case [dv].[IsSystem] when 0 then 'false' else 'true' end, ');'

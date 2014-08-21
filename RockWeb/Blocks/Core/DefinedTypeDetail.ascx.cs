@@ -92,9 +92,9 @@ namespace RockWeb.Blocks.Core
             {
                 int? itemId = InitItemId();
 
-                if ( itemId != null )
+                if ( itemId.HasValue )
                 {
-                    ShowDetail( "definedTypeId", (int)itemId );
+                    ShowDetail( itemId.Value );
                 }
                 else
                 {
@@ -109,11 +109,11 @@ namespace RockWeb.Blocks.Core
         /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/> or null if it was not found.</returns>
         private int? InitItemId()
         {
-            Guid definedTypeGuid;
+            Guid? definedTypeGuid = GetAttributeValue( "DefinedType" ).AsGuidOrNull();
             int? itemId = null;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
-            if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
+            if ( definedTypeGuid.HasValue )
             {
                 _isStandAlone = true;
                 // hide reorder, edit and delete
@@ -123,8 +123,8 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = false;
                 gDefinedTypeAttributes.Actions.ShowAdd = false;
 
-                itemId = DefinedTypeCache.Read( definedTypeGuid ).Id;
-                var definedType = DefinedTypeCache.Read( definedTypeGuid );
+                itemId = DefinedTypeCache.Read( definedTypeGuid.Value ).Id;
+                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
                 if ( definedType != null )
                 {
                     itemId = definedType.Id;
@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Core
 
                 itemId = PageParameter( "definedTypeId" ).AsIntegerOrNull();
             }
+
             return itemId;
         }
 
@@ -155,9 +156,9 @@ namespace RockWeb.Blocks.Core
         {
             int? itemId = InitItemId();
 
-            if ( itemId != null )
+            if ( itemId.HasValue )
             {
-                ShowDetail( "definedTypeId", (int)itemId );
+                ShowDetail( itemId.Value );
             }
             else
             {
@@ -310,11 +311,11 @@ namespace RockWeb.Blocks.Core
         {
             if ( definedType.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -353,29 +354,18 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="definedTypeId">The defined type identifier.</param>
+        public void ShowDetail( int definedTypeId )
         {
-            if ( !itemKey.Equals( "definedTypeId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
             DefinedType definedType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !definedTypeId.Equals( 0 ) )
             {
-                definedType = new DefinedTypeService( new RockContext() ).Get( itemKeyValue );
-                // If bad data was passed in, return and show nothing.
-                if ( definedType == null )
-                {
-                    pnlDetails.Visible = false;
-                    return;
-                }
+                definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
             }
-            else
+
+            if ( definedType == null )
             {
                 definedType = new DefinedType { Id = 0 };
             }

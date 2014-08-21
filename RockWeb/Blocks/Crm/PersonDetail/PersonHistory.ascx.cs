@@ -89,12 +89,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 new PersonService( new RockContext() ).GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
-            }
 
-            if ( !Page.IsPostBack )
-            {
-                BindFilter();
-                BindGrid();
+                if ( !Page.IsPostBack )
+                {
+                    BindFilter();
+                    BindGrid();
+                }
             }
         }
 

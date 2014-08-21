@@ -89,15 +89,39 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Ionic.Zip.dll" />
+    <Content Include="bin\Ionic.Zip.xml" />
+    <Content Include="bin\Microsoft.ApplicationBlocks.Data.dll" />
+    <Content Include="bin\Microsoft.AspNet.SignalR.Core.dll" />
+    <Content Include="bin\Microsoft.AspNet.SignalR.Core.xml" />
+    <Content Include="bin\Microsoft.AspNet.SignalR.SystemWeb.dll" />
+    <Content Include="bin\Microsoft.AspNet.SignalR.SystemWeb.xml" />
+    <Content Include="bin\Microsoft.Owin.dll" />
+    <Content Include="bin\Microsoft.Owin.Host.SystemWeb.dll" />
+    <Content Include="bin\Microsoft.Owin.Host.SystemWeb.xml" />
+    <Content Include="bin\Microsoft.Owin.Security.dll" />
+    <Content Include="bin\Microsoft.Owin.Security.xml" />
+    <Content Include="bin\Microsoft.Owin.xml" />
+    <Content Include="bin\Newtonsoft.Json.dll" />
+    <Content Include="bin\Newtonsoft.Json.xml" />
+    <Content Include="bin\Owin.dll" />
+    <Content Include="bin\RockInstaller.dll" />
+    <Content Include="bin\RockInstaller.pdb" />
+    <Content Include="bin\RockInstallTools.dll" />
+    <Content Include="bin\RockInstallTools.pdb" />
+    <Content Include="bin\Subtext.Scripting.dll" />
     <Content Include="images\done.svg" />
     <Content Include="images\favicon.ico" />
-    <Content Include="images\welcome.jpg" />
+    <Content Include="images\laptop-sm.png" />
+    <Content Include="images\laptop.png" />
+    <Content Include="Complete.aspx" />
     <Content Include="Styles\rock-installer.less" />
-    <None Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
+    <Content Include="bin\RockInstaller.dll.config" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
     </None>
-    <None Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -108,7 +132,7 @@
     <Content Include="Default.aspx" />
     <Content Include="Start.aspx" />
     <Content Include="Styles\rock-installer.css" />
-    <Content Include="Web.config" />
+    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InstallController.cs" />

@@ -6,7 +6,7 @@
 
     <div class="row-fluid checkin-header">
         <div class="span12">
-            <h1><asp:Literal ID="lGroupTypeName" runat="server" /></h1>
+            <h1><asp:Literal ID="lTitle" runat="server" /><div class="checkin-sub-title"><asp:Literal ID="lSubTitle" runat="server"></asp:Literal></div></h1>
         </div>
     </div>
                 
@@ -17,7 +17,7 @@
                 <div class="controls">
                     <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block" />
+                            <Rock:BootstrapButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" DataLoadingText="Loading..." />
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
@@ -27,8 +27,8 @@
 
      <div class="row-fluid checkin-footer">   
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
     </div>
 

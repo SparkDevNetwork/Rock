@@ -83,7 +83,7 @@ namespace Rock.Jobs
                             var workflowService = new Rock.Model.WorkflowService(rockContext);
                             workflowService.Add( workflow );
 
-                            RockTransactionScope.WrapTransaction( () =>
+                            rockContext.WrapTransaction( () =>
                             {
                                 rockContext.SaveChanges();
                                 workflow.SaveAttributeValues( rockContext );
@@ -92,8 +92,6 @@ namespace Rock.Jobs
                                     activity.SaveAttributeValues( rockContext );
                                 }
                             } );
-
-                            rockContext.SaveChanges();
                         }
                     }
                 }

@@ -92,24 +92,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "LocationId" );
-                string parentLocationId = PageParameter( "ParentLocationId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( parentLocationId ) )
-                    {
-                        ShowDetail( "LocationId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "LocationId", int.Parse( itemId ), int.Parse( parentLocationId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "LocationId" ).AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -222,15 +205,7 @@ namespace RockWeb.Blocks.Core
 
             location.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
 
-            var addrLocation = locapAddress.Location;
-            if ( addrLocation != null )
-            {
-                location.Street1 = addrLocation.Street1;
-                location.Street2 = addrLocation.Street2;
-                location.City = addrLocation.City;
-                location.State = addrLocation.State;
-                location.Zip = addrLocation.Zip;
-            }
+            acAddress.GetValues(location);
 
             location.GeoPoint = geopPoint.SelectedValue;
             if ( geopPoint.SelectedValue != null )
@@ -255,7 +230,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( location.Id.Equals( 0 ) )
                 {
@@ -331,12 +306,11 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new LocationService( rockContext );
             var location = service.Get( locationId );
+            acAddress.GetValues( location );
 
             service.Verify( location, true );
 
-            rockContext.SaveChanges();
-
-            locapAddress.SetValue( location );
+            acAddress.SetValues( location );
             geopPoint.SetValue( location.GeoPoint );
 
             lStandardizationUpdate.Text = String.Format( "<div class='alert alert-info'>Standardization Result: {0}<br/>Geocoding Result: {1}</div>",
@@ -369,48 +343,36 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="locationId">The location identifier.</param>
+        public void ShowDetail( int locationId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( locationId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The location id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentLocationId )
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="parentLocationId">The parent location identifier.</param>
+        public void ShowDetail( int locationId, int? parentLocationId )
         {
             pnlDetails.Visible = false;
-
-            if ( !itemKey.Equals( "LocationId" ) )
-            {
-                return;
-            }
 
             bool editAllowed = true;
 
             Location location = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !locationId.Equals( 0 ) )
             {
-                location = new LocationService( new RockContext() ).Get( itemKeyValue );
-                if ( location != null )
-                {
-                    editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
-            }
-            else
-            {
-                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
+                location = new LocationService( new RockContext() ).Get( locationId );
             }
 
             if ( location == null )
             {
-                return;
+                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
             }
+
+            editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = true;
             hfLocationId.Value = location.Id.ToString();
@@ -477,7 +439,7 @@ namespace RockWeb.Blocks.Core
 
             tbName.Text = location.Name;
             cbIsActive.Checked = location.IsActive;
-            locapAddress.SetValue( location );
+            acAddress.SetValues( location );
             ddlPrinter.SetValue( location.PrinterDeviceId );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
@@ -538,7 +500,7 @@ namespace RockWeb.Blocks.Core
             hlInactive.Visible = !location.IsActive;
             if ( location.LocationTypeValue != null )
             {
-                hlType.Text = location.LocationTypeValue.Name;
+                hlType.Text = location.LocationTypeValue.Value;
                 hlType.Visible = true;
             }
             else
@@ -566,7 +528,7 @@ namespace RockWeb.Blocks.Core
 
             if ( location.LocationTypeValue != null )
             {
-                descriptionList.Add( "Location Type", location.LocationTypeValue.Name );
+                descriptionList.Add( "Location Type", location.LocationTypeValue.Value );
             }
 
             if ( location.PrinterDevice != null )
@@ -574,7 +536,7 @@ namespace RockWeb.Blocks.Core
                 descriptionList.Add( "Printer", location.PrinterDevice.Name );
             }
 
-            string fullAddress = location.GetFullStreetAddress();
+            string fullAddress = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
             if ( !string.IsNullOrWhiteSpace( fullAddress ) )
             {
                 descriptionList.Add( "Address", fullAddress );

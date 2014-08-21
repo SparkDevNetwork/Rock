@@ -120,6 +120,7 @@ namespace Rock.Model
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsActive = source.IsActive;
             target.Order = source.Order;
+            target.AllowGuests = source.AllowGuests;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

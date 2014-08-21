@@ -161,9 +161,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+
+            rockContext.WrapTransaction( () =>
             {
-                var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
 
                 var changes = new List<string>();
@@ -414,7 +415,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = String.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
-            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Gender );
+            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Age, Person.Gender );
 
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
@@ -467,7 +468,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
-                        numberType.Name = phoneNumberType.Name;
+                        numberType.Value = phoneNumberType.Value;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;

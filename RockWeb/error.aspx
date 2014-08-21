@@ -34,7 +34,10 @@
     
         
         <div id="content">
-            <img alt="Rock" id="logoImg" runat="server" class="pageheader-logo" src="#" />
+            
+            <div id="logo">
+                <asp:Literal ID="lLogoSvg" runat="server" />
+            </div>
 
             <div id="content-box">
                 <div class="row">

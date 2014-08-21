@@ -314,27 +314,13 @@
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
         </Rule>
+        <Rule Name="FieldNamesMustNotUseHungarianNotation">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
       </Rules>
-      <AnalyzerSettings>
-        <CollectionProperty Name="Hungarian">
-		      <Value>bw</Value>
-          <Value>cb</Value>
-          <Value>lb</Value>
-          <Value>tb</Value>
-          <Value>hf</Value>
-          <Value>i</Value>
-          <Value>ph</Value>
-          <Value>a</Value>
-          <Value>md</Value>
-          <Value>nb</Value>
-          <Value>is</Value>
-          <Value>to</Value>
-          <Value>cc</Value>
-          <Value>hb</Value>
-          <Value>ul</Value>
-          <Value>li</Value>
-        </CollectionProperty>
-      </AnalyzerSettings>
+      <AnalyzerSettings />
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
       <Rules>
@@ -344,6 +330,11 @@
           </RuleSettings>
         </Rule>
         <Rule Name="PrefixCallsCorrectly">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="CommentsMustContainText">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>

@@ -315,15 +315,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
             }
             else
             {
@@ -482,6 +474,7 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
+            groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
@@ -514,7 +507,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // need WrapTransaction due to Attribute saves    
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 
@@ -592,27 +585,19 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void ShowDetail( int groupTypeId )
         {
             pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "groupTypeId" ) )
-            {
-                return;
-            }
-
-            bool editAllowed = true;
-
             GroupType groupType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !groupTypeId.Equals( 0 ) )
             {
-                groupType = new GroupTypeService( new RockContext() ).Get( itemKeyValue );
-                editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
             }
-            else
+
+            if ( groupType == null )
             {
                 groupType = new GroupType { Id = 0, ShowInGroupList = true, GroupTerm = "Group", GroupMemberTerm = "Member" };
                 groupType.ChildGroupTypes = new List<GroupType>();
@@ -626,10 +611,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
             }
 
-            if ( groupType == null )
-            {
-                return;
-            }
+            bool editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             DefaultRoleGuid = groupType.DefaultGroupRole != null ? groupType.DefaultGroupRole.Guid : Guid.Empty;
 
@@ -672,7 +654,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName ).FormatAsHtmlTitle();
                 if ( groupType.GroupTypePurposeValue != null )
                 {
-                    hlType.Text = groupType.GroupTypePurposeValue.Name;
+                    hlType.Text = groupType.GroupTypePurposeValue.Value;
                     hlType.Visible = true;
                 }
             }
@@ -728,8 +710,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             LocationTypesDictionary = new Dictionary<int, string>();
-            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Value ) );
             BindLocationTypesGrid();
+
+            // Support Location Schedules
+            cbEnableLocationSchedules.Enabled = !groupType.IsSystem;
+            cbEnableLocationSchedules.Checked = groupType.EnableLocationSchedules ?? false;
 
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
@@ -798,7 +784,7 @@ namespace RockWeb.Blocks.Groups
             lReadOnlyTitle.Text = groupType.Name.FormatAsHtmlTitle();
             if ( groupType.GroupTypePurposeValue != null )
             {
-                hlType.Text = groupType.GroupTypePurposeValue.Name;
+                hlType.Text = groupType.GroupTypePurposeValue.Value;
                 hlType.Visible = true;
             }
             else
@@ -844,13 +830,13 @@ namespace RockWeb.Blocks.Groups
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
 
-            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Name ).ToList();
+            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Value ).ToList();
 
             ddlGroupTypePurpose.Items.Clear();
             ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
             foreach ( var item in groupTypePurposeList )
             {
-                ddlGroupTypePurpose.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
         }
 

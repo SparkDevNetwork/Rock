@@ -30,13 +30,11 @@ namespace RockInstaller
         private static string sqlConfigureScript = "sql-config.sql";
         private static string baseStorageUrl = "http://storage.rockrms.com/install/";
 
-
-        
         static InstallController()
         {
             serverPath = (System.Web.HttpContext.Current == null)
                     ? System.Web.Hosting.HostingEnvironment.MapPath( "~/" )
-                    : System.Web.HttpContext.Current.Server.MapPath( "~/" ); ;
+                    : System.Web.HttpContext.Current.Server.MapPath( "~/" );
         }
 
 
@@ -82,9 +80,9 @@ namespace RockInstaller
             Clients.Caller.ReportError( errorMessage );
         }
 
-        public void ShowSuccess( )
+        public void RedirectToComplete( )
         {
-            Clients.Caller.ShowSuccess( );
+            Clients.Caller.RedirectToComplete();
         }
 
         #endregion
@@ -274,19 +272,8 @@ namespace RockInstaller
 
             Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
-            // delete the installer
-            result = DeleteInstaller( installData );
-            if ( !result.Success )
-            {
-                this.SendConsoleMessage( new ConsoleMessage( "Error deleting the installer:" + result.Message, ConsoleMessageType.Critical ) );
-                this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred while while deleting the installer. At this point you may need to restart the install if Rock does not start. Message: {0}</div>", result.Message ) );
-                return;
-            }
-
-            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
-
-            // show install success, goodbye
-            this.ShowSuccess();
+            // redirect to the final complete page
+            this.RedirectToComplete();
         }
 
         #region Install Steps
@@ -317,7 +304,10 @@ namespace RockInstaller
 
             result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
 
-            this.SendConsoleMessage( "File Download Complete!" );
+            if ( result.Success )
+            {
+                this.SendConsoleMessage( "File Download Complete!" );
+            }
 
             return result;
         }
@@ -334,7 +324,7 @@ namespace RockInstaller
             {
                 this.SendConsoleMessage( String.Format("Database {0} does not exist creating it.", installData.ConnectionString.Database) );
                 
-                string sql = String.Format("CREATE DATABASE {0}", installData.ConnectionString.Database);
+                string sql = String.Format("CREATE DATABASE [{0}]", installData.ConnectionString.Database);
 
                 string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", installData.ConnectionString.Username, installData.ConnectionString.Password, installData.ConnectionString.Server );
                 SqlConnection conn = new SqlConnection( connectionString );
@@ -400,6 +390,7 @@ namespace RockInstaller
             result.Success = true;
 
             string tempWebConfig = serverPath + @"\webconfig.xml";
+
             string passwordKey = RockInstallUtilities.GeneratePasswordKey(); ;
             string dataEncryptionKey = RockInstallUtilities.GenerateRandomDataEncryptionKey();
 
@@ -431,21 +422,21 @@ namespace RockInstaller
                     this.SendConsoleMessage( "Merging values into SQL config script." );
                     string sqlScript = System.IO.File.ReadAllText( localSqlConfigScript );
                     sqlScript = sqlScript.Replace( "{AdminPassword}", RockInstallUtilities.EncodePassword( installData.AdminUser.Password, "7E10A764-EF6B-431F-87C7-861053C84131", passwordKey ) );
-                    sqlScript = sqlScript.Replace( "{AdminUsername}", installData.AdminUser.Username );
+                    sqlScript = sqlScript.Replace( "{AdminUsername}", SqlClean(installData.AdminUser.Username) );
                     sqlScript = sqlScript.Replace( "{PublicAppRoot}", RockInstallUtilities.CleanBaseAddress( installData.HostingInfo.ExternalUrl ) );
                     sqlScript = sqlScript.Replace( "{PublicAppSite}", RockInstallUtilities.GetDomainFromString( installData.HostingInfo.ExternalUrl ) );
                     sqlScript = sqlScript.Replace( "{InternalAppRoot}", RockInstallUtilities.CleanBaseAddress( installData.HostingInfo.InternalUrl ) );
                     sqlScript = sqlScript.Replace( "{InternalAppSite}", RockInstallUtilities.GetDomainFromString( installData.HostingInfo.InternalUrl ) );
-                    sqlScript = sqlScript.Replace( "{OrgName}", installData.Organization.Name );
-                    sqlScript = sqlScript.Replace( "{OrgPhone}", installData.Organization.Phone );
-                    sqlScript = sqlScript.Replace( "{OrgEmail}", installData.Organization.Email );
-                    sqlScript = sqlScript.Replace( "{OrgWebsite}", installData.Organization.Website );
+                    sqlScript = sqlScript.Replace( "{OrgName}", SqlClean(installData.Organization.Name ));
+                    sqlScript = sqlScript.Replace( "{OrgPhone}", SqlClean(installData.Organization.Phone ));
+                    sqlScript = sqlScript.Replace( "{OrgEmail}", SqlClean(installData.Organization.Email ));
+                    sqlScript = sqlScript.Replace( "{OrgWebsite}", SqlClean(installData.Organization.Website ));
                     sqlScript = sqlScript.Replace( "{SafeSender}", RockInstallUtilities.GetDomainFromEmail( installData.Organization.Email ) );
-                    sqlScript = sqlScript.Replace( "{EmailException}", installData.Organization.Email );
-                    sqlScript = sqlScript.Replace( "{SmtpServer}", installData.EmailSettings.Server );
+                    sqlScript = sqlScript.Replace( "{EmailException}", SqlClean(installData.Organization.Email ));
+                    sqlScript = sqlScript.Replace( "{SmtpServer}", SqlClean(installData.EmailSettings.Server) );
                     sqlScript = sqlScript.Replace( "{SmtpPort}", installData.EmailSettings.Port );
-                    sqlScript = sqlScript.Replace( "{SmtpUser}", installData.EmailSettings.RelayUsername );
-                    sqlScript = sqlScript.Replace( "{SmtpPassword}", installData.EmailSettings.RelayPassword );
+                    sqlScript = sqlScript.Replace( "{SmtpUser}", SqlClean(installData.EmailSettings.RelayUsername ));
+                    sqlScript = sqlScript.Replace( "{SmtpPassword}", SqlClean( installData.EmailSettings.RelayPassword ) );
                     sqlScript = sqlScript.Replace( "{SmtpUseSsl}", installData.EmailSettings.UseSsl.ToString() );
 
                     System.IO.File.WriteAllText( localSqlConfigScript, sqlScript );
@@ -500,40 +491,18 @@ namespace RockInstaller
 
             // update timezone
             var node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "OrgTimeZone" ).FirstOrDefault();
-            node.Value = installData.HostingInfo.Timezone;
+            node.SetAttributeValue( "value", installData.HostingInfo.Timezone );
 
             // update password key
             node = document.Descendants( "appSettings" ).Elements("add").Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
-            node.Value = passwordKey;
+            node.SetAttributeValue( "value", passwordKey );
             
             // update machine key
             node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
-            node.Value = dataEncryptionKey;
+            node.SetAttributeValue( "value", dataEncryptionKey );
 
             document.Save( tempWebConfig );
 
-            this.UpdateProgressBar( 80 );
-
-            // insert web.config back into rock zip
-            if ( result.Success )
-            {
-                this.SendConsoleMessage( "Preparing to insert webconfig.xml back into rock zip file as web.config." );
-                try
-                {
-                    string content = System.IO.File.ReadAllText( tempWebConfig ); ;
-                    using ( ZipFile zip = ZipFile.Read( rockZipFile ) )
-                    {
-                        zip.AddEntry( "web.config", content );
-                        zip.Save();
-                    }
-                    this.SendConsoleMessage( "The file webconfig.xml inserted into rock zip file as web.config." );
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }
             this.UpdateProgressBar( 100 );
             return result;
         }
@@ -566,76 +535,14 @@ namespace RockInstaller
             return result;
         }
 
-        private ActivityResult DeleteInstaller( InstallData installData )
-        {
-            this.SendConsoleMessage( "Deleting installer and moving Rock into place. If successful this will be the last message." );
-            
-            ActivityResult result = new ActivityResult();
-            result.Success = true;
-
-            // let's not delete the installer if we're in development, source control is nice but no use pressing our luck...
-            if ( !installData.InstallerProperties.IsDebug )
-            {
-
-                try
-                {
-                    // move rock in place
-                    Directory.Move( serverPath + @"rock", serverPath );
-                    
-                    File.Delete( serverPath + @"Start.aspx" );
-                    File.Delete( serverPath + @"Install.aspx" );
-                    File.Delete( serverPath + @"InstallController.cs" );
-
-                    /* keep SignalR as Rock needs it
-                    File.Delete( serverPath + @"Startup.cs" );
-
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
-                    File.Delete( serverPath + @"bin\Owin.dll" );
-                     */
-
-                    File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
-                    File.Delete( serverPath + @"bin\RockInstaller.dll" );
-                    File.Delete( serverPath + @"bin\RockInstallTools.dll" );
-                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );  
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }
-            else
-            {
-                // if it is a debug session let's do delete the connection string file
-                File.Delete( serverPath + @"web.ConnectionStrings.config" );
-            }
-
-            // these files should be deleted even in the developer environment
-            try
-            {
-                File.Delete( serverPath + @"\rock-install-latest.zip" );
-                File.Delete( serverPath + @"\sql-config.sql" );
-                File.Delete( serverPath + @"\sql-install.sql" );
-                File.Delete( serverPath + @"\sql-latest.zip" );
-                File.Delete( serverPath + @"\webconfig.xml" );
-            }
-            catch ( Exception ex )
-            {
-                result.Success = false;
-                result.Message = ex.Message;
-            }
-
-            return result;
-        }
-
         #endregion
 
         #region Utility Methods
+
+        private string SqlClean( string item )
+        {
+            return item.Replace( "'", "''" );
+        }
 
         private ActivityResult RunSqlScript( InstallData installData, string sqlScriptFile, int consoleMessageReportFrequency, int progressbarEventFrequency, int percentOfStep, int startPercent )
         {
@@ -766,11 +673,11 @@ namespace RockInstaller
             {
                 Uri url = new Uri( remoteFile );
 
+                // Get the total size of the file
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create( url );
                 System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse();
                 response.Close();
-
-                Int64 iSize = response.ContentLength;
+                double dTotal = (double)response.ContentLength;
 
                 // keeps track of the total bytes downloaded so we can update the progress bar
                 Int64 iRunningByteTotal = 0;
@@ -778,7 +685,6 @@ namespace RockInstaller
                 int nextProgressbarPercentToNotify = progressbarEventFrequency;
                 int nextConsolePercentToNotify = consoleMessageReportFrequency;
 
-            
                 // use the webclient object to download the file
                 using ( System.Net.WebClient client = new System.Net.WebClient() )
                 {
@@ -790,7 +696,8 @@ namespace RockInstaller
                         {
                             // loop the stream and get the file into the byte buffer
                             int iByteSize = 0;
-                            byte[] byteBuffer = new byte[iSize];
+                            int bufferSize = 65536;
+                            byte[] byteBuffer = new byte[bufferSize];
 
                             while ( (iByteSize = streamRemote.Read( byteBuffer, 0, byteBuffer.Length )) > 0 )
                             {
@@ -800,7 +707,6 @@ namespace RockInstaller
 
                                 // calculate the progress out of a base "100"
                                 double dIndex = (double)(iRunningByteTotal);
-                                double dTotal = (double)byteBuffer.Length;
                                 double dProgressPercentage = (dIndex / dTotal);
                                 int iProgressPercentage = (int)(dProgressPercentage * 100);
 
@@ -831,10 +737,19 @@ namespace RockInstaller
                                 }
                             } // while..
                             streamLocal.Close();
+                            streamLocal.Dispose();
                         }
                         streamRemote.Close();
+                        streamRemote.Dispose();
                     }
+                    client.Dispose();
                 }
+            }
+            catch ( OutOfMemoryException mex )
+            {
+                result.Success = false;
+                result.Message = @"The server ran out of memory while downloading Rock. You may want to consider using a server with more available resources or
+                                    try installing again.";
             }
             catch ( Exception ex )
             {
@@ -908,11 +823,11 @@ namespace RockInstaller
                         {
                             if ( zipFileCount == unzippedFiles )
                             {
-                                this.SendConsoleMessage( "100% unziped" );
+                                this.SendConsoleMessage( "100% unzipped" );
                             }
                             else if ( currentPercentile >= unzipNextConsolePercentile )
                             {
-                                this.SendConsoleMessage( currentPercentile + "% unziped" );
+                                this.SendConsoleMessage( currentPercentile + "% unzipped" );
                                 unzipNextConsolePercentile = currentPercentile + consoleMessageReportFrequency;
                             }
                         }

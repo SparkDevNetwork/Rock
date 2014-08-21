@@ -17,6 +17,7 @@
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -24,18 +25,42 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Bar Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "Bar Chart DashboardWidget" )]
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Bar Chart Dashboard Widget" )]
     public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
-        public override Rock.Web.UI.Controls.FlotChart FlotChartControl
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
+        public override FlotChart FlotChartControl
         {
             get { return bcChart; }
         }
 
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
         public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
             get { return nbMetricWarning; }
+        }
+
+        /// <summary>
+        /// Loads the chart.
+        /// </summary>
+        public override void LoadChart()
+        {
+            base.LoadChart();
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

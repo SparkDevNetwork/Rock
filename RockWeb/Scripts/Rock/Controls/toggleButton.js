@@ -12,16 +12,26 @@
 
                 // uses pattern from http://www.bootply.com/92189
 
-                $('#' + options.id).click(function () {
+                $('#' + options.id + ' .btn-toggle').click(function (e) {
+
+                    e.stopImmediatePropagation();
+
                     $(this).find('.btn').toggleClass('active');
 
-                    if ($(this).find('.' + options.activeButtonCssClass).size() > 0) {
+                    if (options.activeButtonCssClass && $(this).find('.' + options.activeButtonCssClass).size() > 0) {
                         $(this).find('.btn').toggleClass(options.activeButtonCssClass);
                     }
-
-                    $(this).find('.btn').toggleClass('btn-default');
                     
-                    $(this).find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
+                    if (options.onButtonCssClass) {
+                        $(this).find('.js-toggle-on').toggleClass(options.onButtonCssClass);
+                    }
+
+                    if (options.offButtonCssClass) {
+                        $(this).find('.js-toggle-off').toggleClass(options.offButtonCssClass);
+                    }
+                    
+                    $(this).parent().find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
+
                 });
 
             }

@@ -41,11 +41,6 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
 
         /// <summary>
-        /// Barcode Search Type
-        /// </summary>
-        public const string CHECKIN_SEARCH_TYPE_BARCODE = "9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE";
-
-        /// <summary>
         /// Name Search Type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
@@ -130,6 +125,15 @@ namespace Rock.SystemGuid
         /// Back of Envelope
         /// </summary>
         public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_BACK = "746FBD46-AA4C-4A84-A7DA-080763CED187";
+
+        #endregion
+
+        #region Financial Source
+
+        /// <summary>
+        /// The financial source of Website
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
 
         #endregion
 
@@ -314,6 +318,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Record Status Reason
+
+        /// <summary>
+        /// Inactive record status reason of Deceased 
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
+
+        #endregion
+
         #region Person Record Type
 
         /// <summary>
@@ -351,6 +364,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
 
+        /// <summary>
+        /// Participant Connection Status
+        /// </summary>
+        public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
+
         #endregion
 
         #region Person Review Reason
@@ -362,7 +380,7 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region map Styles
+        #region Map Styles
 
         /// <summary>
         /// Google map style
@@ -373,6 +391,20 @@ namespace Rock.SystemGuid
         /// The standard Rock map style
         /// </summary>
         public const string MAP_STYLE_ROCK = "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC";
+
+        #endregion
+
+        #region Chart Styles
+
+        /// <summary>
+        /// Flot Chart Style
+        /// </summary>
+        public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
+        
+        /// <summary>
+        /// Rock Chart Style
+        /// </summary>
+        public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
 
         #endregion
     }

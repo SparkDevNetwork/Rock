@@ -257,7 +257,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
 

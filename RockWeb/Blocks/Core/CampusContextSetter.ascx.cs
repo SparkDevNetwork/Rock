@@ -22,8 +22,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -34,10 +36,12 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default campus context for the site." )]
+
+    [CustomRadioListField("Context Scope", "The scope of context to set", "Site,Page", true, "Site")]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -57,31 +61,16 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var campusService =new CampusService( new RockContext() );
+            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            var defaultCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            lCurrentSelection.Text = defaultCampus != null ? defaultCampus.ToString() : "Select Campus";
 
-            // default campus to the whatever the context cookie has for it
-            string defaultCampusPublicKey = string.Empty;
-            var contextCookie = Request.Cookies["Rock:context"];
-            if ( contextCookie != null )
-            {
-                var cookieValue = contextCookie.Values[typeof( Rock.Model.Campus ).FullName];
-
-                string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                string[] contextItemParts = contextItem.Split( '|' );
-                if ( contextItemParts.Length == 2 )
-                {
-                    defaultCampusPublicKey = contextItemParts[1];
-                }
-            }
-
-            var defaultCampus = campusService.GetByPublicKey( defaultCampusPublicKey );
-            var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            foreach ( var campus in campuses )
-            {
-                var listItem = new ListItem( campus.Name, HttpUtility.UrlDecode( campus.ContextKey ) );
-                listItem.Selected = campus.Guid == defaultCampus.Guid;
-                ddlCampus.Items.Add( listItem );
-            }
+            rptCampuses.DataSource  = new CampusService( new RockContext() ).Queryable()
+                .OrderBy( a => a.Name )
+                .ToList()
+                .Select( a => new { a.Name, a.Id } )
+                .ToList();
+            rptCampuses.DataBind();
         }
 
         #endregion
@@ -89,22 +78,18 @@ namespace RockWeb.Blocks.Core
         #region Methods
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCampus control.
+        /// Handles the ItemCommand event of the rptCampuses control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            var contextCookie = Request.Cookies["Rock:context"];
-            if ( contextCookie == null )
+            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            var campus = new CampusService( new RockContext() ).Get( e.CommandArgument.ToString().AsInteger() );
+            if ( campus != null )
             {
-                contextCookie = new HttpCookie( "Rock:context" );
+                RockPage.SetContextCookie( campus, pageScope, true );
             }
-
-            contextCookie.Values[typeof( Rock.Model.Campus ).FullName] = ddlCampus.SelectedValue;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
-
-            Response.Cookies.Add( contextCookie );
         }
 
         #endregion

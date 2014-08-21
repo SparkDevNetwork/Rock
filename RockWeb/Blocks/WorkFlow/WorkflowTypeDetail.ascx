@@ -9,120 +9,123 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+              
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
-            <div class="banner">
-                <h1>
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </h1>
-                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
-                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
-            </div>
-            
-            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
-            <div id="pnlEditDetails" runat="server">
-
-                <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
-                        </div>
-                        <div class="col-md-3">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                        </div>
-                        <div class="col-md-3">
-                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Automatically Persisted" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
-                            <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
-                        </div>
-                            <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)"
-                                Help="The minimum length of time, in seconds, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
-                            <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
-                        </div>
-                    </div>
-                </Rock:PanelWidget>
-
-                <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes" CssClass="attribute-panel">
-                    <div class="grid">
-                        <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
-                            <Columns>
-                                <Rock:ReorderField />
-                                <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                <asp:BoundField DataField="Description" HeaderText="Description" />
-                                <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
-                                <Rock:EditField OnClick="gAttributes_Edit" />
-                                <Rock:DeleteField OnClick="gAttributes_Delete" />
-                            </Columns>
-                        </Rock:Grid>
-                    </div>
-                </Rock:PanelWidget>
-
-                <div class="workflow-section-activities">
-
-                    <fieldset>
-                        <legend>
-                            Activities
-                            <span class="pull-right">
-                                <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
-                            </span>
-                        </legend>
-                        <div class="workflow-activity-list">
-                            <asp:PlaceHolder ID="phActivities" runat="server" />
-                        </div>
-                    </fieldset>
-                </div>
-
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
-
-            </div>
-
-            <fieldset id="fieldsetViewDetails" runat="server">
-
-                <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
-
-                <div class="row">
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
-                            <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
-                            <b class="fa fa-caret-down"></b>
-                        </a>
-                        
-                        <div class="workflow-activities-readonly-list" style="display: none">
-                            <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
-                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-action pull-right" />
-                    <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link pull-right" OnClick="btnCopy_Click" />
-                </div>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-cogs"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 
-            </fieldset>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                    <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                </div>
+            </div>
+            <div class="panel-body container-fluid">
+
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+                <div id="pnlEditDetails" runat="server">
+
+                    <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            
+                                <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Automatically Persisted" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
+                                <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
+                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
+                            </div>
+                                <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)"
+                                    Help="The minimum length of time, in seconds, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
+                                <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes" CssClass="attribute-panel">
+                        <div class="grid">
+                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
+                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:EditField OnClick="gAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <div class="workflow-section-activities">
+
+                        <fieldset>
+                            <legend>
+                                Activities
+                                <span class="pull-right">
+                                    <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
+                                </span>
+                            </legend>
+                            <div class="workflow-activity-list">
+                                <asp:PlaceHolder ID="phActivities" runat="server" />
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    </div>
+
+                </div>
+
+                <fieldset id="fieldsetViewDetails" runat="server">
+
+                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
+
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
+                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                                <b class="fa fa-caret-down"></b>
+                            </a>
+                        
+                            <div class="workflow-activities-readonly-list" style="display: none">
+                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                        <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link pull-right" OnClick="btnCopy_Click" />
+                    </div>
+                
+                </fieldset>
+
+            </div>
 
         </asp:Panel>
 

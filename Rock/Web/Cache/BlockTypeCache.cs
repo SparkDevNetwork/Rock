@@ -16,11 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -36,7 +35,7 @@ namespace Rock.Web.Cache
         private BlockTypeCache()
         {
         }
-        
+
         private BlockTypeCache( BlockType blockType )
         {
             CopyFromModel( blockType );
@@ -151,26 +150,23 @@ namespace Rock.Web.Cache
         /// Returns Block Type object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static BlockTypeCache Read( int id )
+        public static BlockTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = BlockTypeCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             BlockTypeCache blockType = cache[cacheKey] as BlockTypeCache;
 
-            if ( blockType != null )
+            if ( blockType == null )
             {
-                return blockType;
-            }
-            else
-            {
-                var blockTypeService = new BlockTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var blockTypeService = new BlockTypeService( rockContext );
                 var blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
-                    blockTypeModel.LoadAttributes();
+                    blockTypeModel.LoadAttributes( rockContext );
                     blockType = new BlockTypeCache( blockTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
@@ -180,38 +176,38 @@ namespace Rock.Web.Cache
                     var guidCachePolicy = new CacheItemPolicy();
                     AddChangeMonitor( guidCachePolicy, blockType.Path );
                     cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
-
-                    return blockType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return blockType;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static BlockTypeCache Read( Guid guid )
+        public static BlockTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            BlockTypeCache blockType = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                blockType = Read( (int)cacheObj );
             }
-            else
+
+            if ( blockType == null )
             {
-                var blockTypeService = new BlockTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var blockTypeService = new BlockTypeService( rockContext );
                 var blockTypeModel = blockTypeService.Get( guid );
                 if ( blockTypeModel != null )
                 {
-                    blockTypeModel.LoadAttributes();
-                    var blockType = new BlockTypeCache( blockTypeModel );
+                    blockTypeModel.LoadAttributes( rockContext );
+                    blockType = new BlockTypeCache( blockTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     AddChangeMonitor( cachePolicy, blockType.Path );
@@ -220,14 +216,10 @@ namespace Rock.Web.Cache
                     var guidCachePolicy = new CacheItemPolicy();
                     AddChangeMonitor( guidCachePolicy, blockType.Path );
                     cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
-
-                    return blockType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return blockType;
         }
 
         /// <summary>
@@ -238,14 +230,12 @@ namespace Rock.Web.Cache
         public static BlockTypeCache Read( BlockType blockTypeModel )
         {
             string cacheKey = BlockTypeCache.CacheKey( blockTypeModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             BlockTypeCache blockType = cache[cacheKey] as BlockTypeCache;
 
             if ( blockType != null )
             {
                 blockType.CopyFromModel( blockTypeModel );
-                return blockType;
             }
             else
             {
@@ -258,12 +248,12 @@ namespace Rock.Web.Cache
                 var guidCachePolicy = new CacheItemPolicy();
                 AddChangeMonitor( guidCachePolicy, blockType.Path );
                 cache.Set( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
-
-                return blockType;
             }
+
+            return blockType;
         }
 
-        private static void AddChangeMonitor(CacheItemPolicy cacheItemPolicy, string filePath )
+        private static void AddChangeMonitor( CacheItemPolicy cacheItemPolicy, string filePath )
         {
             // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
             // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any

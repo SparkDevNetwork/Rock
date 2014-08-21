@@ -42,16 +42,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
-                int? itemId = PageParameter( "pledgeId" ).AsIntegerOrNull();
-
-                if ( itemId.HasValue )
-                {
-                    ShowDetail( "pledgeId", itemId.Value );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "pledgeId" ).AsInteger() );
             }
         }
 
@@ -110,21 +101,22 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="pledgeId">The pledge identifier.</param>
+        public void ShowDetail( int pledgeId )
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
-            FinancialPledge pledge;
 
-            if ( itemKeyValue > 0 )
+            FinancialPledge pledge = null;
+
+            if ( pledgeId > 0 )
             {
-                pledge = new FinancialPledgeService( new RockContext() ).Get( itemKeyValue );
+                pledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
                 lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( pledge == null )
             {
                 pledge = new FinancialPledge();
                 lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();

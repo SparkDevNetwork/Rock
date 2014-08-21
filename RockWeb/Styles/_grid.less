@@ -17,9 +17,13 @@
 // -------------------------
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
-    cursor: pointer;
-    background-color: rgba(0,0,0,.03) !important;
+    background-color: rgba(0,0,0,.03);
 }
+
+td.grid-select-cell {
+    cursor: pointer;
+}
+
 
 td.wrap-contents { // keep cells from scrolling off screen
     -ms-word-break: break-all;
@@ -83,9 +87,9 @@ td.wrap-contents { // keep cells from scrolling off screen
 
      // adjust the background color of pickers in the filters
     .picker .picker-label {
-        background-color: @accent-light-color;
-        color: @accent-light-text-color;
-        border-color: darken(@accent-light-color, 10%)
+        background-color: @grid-filter-bg;
+        color: @grid-filter-color;
+        border-color: darken(@grid-filter-bg, 10%)
     }
 }
 
@@ -109,11 +113,11 @@ td.wrap-contents { // keep cells from scrolling off screen
 .table thead th  {
     background-color: @grid-column-header-bg;
 	font-size: @grid-column-header-font-size;
-	color: @accent-bold-text-color;
+	color: @grid-column-header-text-color;
     font-weight: @grid-column-header-font-weight;
 
     a {
-        color: @accent-bold-text-color;
+        color: @grid-column-header-text-color;
         display: block;
     }
 
@@ -136,7 +140,8 @@ td.wrap-contents { // keep cells from scrolling off screen
 
 // pagination
 .grid-paging {
-    
+    background-color: @gray-lighter;
+
     .pagination {
         margin-top: 0;
         margin-bottom: 0;
@@ -172,13 +177,13 @@ td.grid-col-actions {
         margin-left: 8px;
         background-color: @grid-footer-button-bg;
         color: @grid-footer-button-text-color;
+        border-color: @grid-footer-button-border;
 
         &:hover {
             background-color: darken(@grid-footer-button-bg, 10%);
         }
     }
 }
-
 
 // 5. Light Style
 // -------------------------
@@ -206,6 +211,7 @@ td.grid-col-actions {
     .grid-columncommand { // get buttons in the light grid to align over the add in the footer
         text-align: right;
         width: 42px;
+        min-width: 42px;
     }
 }
 
@@ -240,6 +246,23 @@ td.grid-col-actions {
     // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
 }
 
+.table > tbody > tr > th, 
+.table > tbody > tr > td { // get buttons and text columns to look good together
+
+    padding: 12px;
+
+    &.grid-columncommand {
+         padding: 6px;
+         padding-top: 12px;
+          min-width: 48px;
+    }
+
+    &.grid-columnreorder {
+         padding-top: 12px;
+         min-width: 48px;
+    }
+}
+
 .table .color-field {
     padding: 0;
     width: 4px;
@@ -257,8 +280,15 @@ td.grid-col-actions {
 
 // 6. Row Types
 // -------------------------
-.table > tbody > tr.grid-section-header > td
-{
-    background-color: @accent-light-color;
-    color: @accent-light-text-color;
-}
+.table > tbody > tr.grid-section-header {
+    
+    > td {
+        background-color: @accent-light-color;
+        color: @accent-light-text-color;
+    }
+
+    &:hover > td {
+        background-color: @accent-light-color !important;
+    }
+    
+ }

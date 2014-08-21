@@ -209,14 +209,14 @@ namespace Rock.Web.UI.Controls
         [
         Bindable( true ),
         Category( "Behavior" ),
-        DefaultValue( "btn-primary" ),
+        DefaultValue( "" ),
         Description( "The CssClass to apply to the active button." )
         ]
         public string ActiveButtonCssClass
         {
             get
             {
-                return ViewState["ActiveButtonCssClass"] as string ?? "btn-primary";
+                return ViewState["ActiveButtonCssClass"] as string ?? "";
             }
 
             set
@@ -279,6 +279,56 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the on CSS class.
+        /// </summary>
+        /// <value>
+        /// The on Css Class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional CSS class to apply to the on state when active." )
+        ]
+        public string OnCssClass
+        {
+            get
+            {
+                return ViewState["OnCssClass"] as string ?? "";
+            }
+
+            set
+            {
+                ViewState["OnCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the off CSS class.
+        /// </summary>
+        /// <value>
+        /// The off Css Class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional CSS class to apply to the off state when active." )
+        ]
+        public string OffCssClass
+        {
+            get
+            {
+                return ViewState["OffCssClass"] as string ?? "";
+            }
+
+            set
+            {
+                ViewState["OffCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Toggle"/> is checked.
         /// </summary>
         /// <value>
@@ -320,7 +370,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format( @"Rock.controls.toggleButton.initialize({{ id: '{0}', activeButtonCssClass: '{1}' }});", this.ClientID, this.ActiveButtonCssClass );
+            var script = string.Format( @"Rock.controls.toggleButton.initialize({{ id: '{0}', activeButtonCssClass: '{1}', onButtonCssClass: '{2}', offButtonCssClass: '{3}' }});", this.ClientID, this.ActiveButtonCssClass, this.OnCssClass, this.OffCssClass );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "toggle-script" + this.ClientID, script, true );
         }
 
@@ -337,12 +387,12 @@ namespace Rock.Web.UI.Controls
             
             _btnOn = new HtmlAnchor();
             _btnOn.ID = this.ID + "_btnOn";
-            _btnOn.Attributes["class"] = "btn js-toggle-on " + this.ButtonSizeCssClass;
+            _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
             _btnOn.InnerText = this.OnText;
 
             _btnOff = new HtmlAnchor();
             _btnOff.ID = this.ID + "_btnOff";
-            _btnOff.Attributes["class"] = "btn js-toggle-off " + this.ButtonSizeCssClass;
+            _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
             _btnOff.InnerText = this.OffText;
 
             Controls.Add( _hfChecked );
@@ -371,24 +421,29 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID.ToString() );
+            writer.AddAttribute( "class", "toggle-container " + this.CssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _hfChecked.RenderControl( writer );
-
             if ( this.Checked )
             {
-                _btnOn.AddCssClass( this.ActiveButtonCssClass + " active" );
-                _btnOff.AddCssClass( "btn-default" );
+                _btnOn.AddCssClass( this.ActiveButtonCssClass + " " + this.OnCssClass + " active" );
+                //_btnOff.RemoveCssClass( this.OffCssClass );
             }
             else
             {
-                _btnOff.AddCssClass( this.ActiveButtonCssClass + " active" );
-                _btnOn.AddCssClass( "btn-default" );
+                _btnOff.AddCssClass( this.ActiveButtonCssClass + " " + this.OffCssClass + " active" );
+                //_btnOn.RemoveCssClass( this.OnCssClass );
             }
 
             _btnOn.RenderControl( writer );
             _btnOff.RenderControl( writer );
+
+            writer.RenderEndTag();
+
+            _hfChecked.RenderControl( writer );
 
             writer.RenderEndTag();
 

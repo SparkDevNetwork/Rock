@@ -322,7 +322,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// For Attendance Reporting, graph into series partitioned by Total, GroupType, Campus, or Schedule
+    /// For Attendance Reporting, graph into series partitioned by Total, Group, Campus, or Schedule
     /// </summary>
     public enum AttendanceGraphBy
     {
@@ -334,7 +334,7 @@ namespace Rock.Model
         /// <summary>
         /// Each selected Check-in Group (which is actually a [Group] under the covers) is a series
         /// </summary>
-        Type = 1,
+        Group = 1,
 
         /// <summary>
         /// Each campus (from Attendance.CampusId) is it's own series

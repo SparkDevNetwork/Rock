@@ -1,8 +1,9 @@
 ﻿/*
     Used to manage styles for specific blocks.
 
-    1. Error Page - styles for the error page.
-
+    1. Error Page 
+    2. Blank Page
+    3. Exception Page
 */
 
 
@@ -38,6 +39,14 @@
     }
 }
 
+.error-details {
+    pre {
+        background-color: transparent;
+        border: 0;
+        color: @alert-danger-text;
+    }
+}
+
 // 2. Blank Page
 // -------------------------
 
@@ -49,4 +58,23 @@
         padding: 12px;
     }
 
+}
+
+// 3. Exception Page
+// -------------------------
+.exceptionDetail-stackTrace-hide
+{
+    display: none;
+}
+
+.exceptionDetail-stackTrace-show
+{
+    display:table-row;
+
+    pre {
+        padding: 0;
+        background-color: transparent;
+        border-color: transparent;
+        color: inherit;
+    }
 }
