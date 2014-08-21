@@ -15,14 +15,9 @@
                 	    <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
                 	    <Rock:PersonPicker ID="ppInitiator" runat="server" Label="Initiator" />
                 	    <Rock:RockTextBox ID="tbStatus" runat="server" Label="Status Text"></Rock:RockTextBox>
-                	    <Rock:RockDropDownList ID="ddlState" runat="server" Label="State">
-                    	    <asp:ListItem Text="All" Value="" />
-                    	    <asp:ListItem Text="Active" Value="0" />
-                   	     <asp:ListItem Text="Completed" Value="1" />
-                 	    </Rock:RockDropDownList>
                 	    <Rock:DateRangePicker ID="drpActivated" runat="server" Label="Activated" />
 	                    <Rock:DateRangePicker ID="drpCompleted" runat="server" Label="Completed" />
-                        <Rock:RockCheckBoxList ID="cblActiveStatus" runat="server" Label="Show Active Status" RepeatDirection="Horizontal">
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
                             <asp:ListItem Selected="True" Text="Active" Value="Active" />
                             <asp:ListItem Selected="True" Text="Inactive" Value="Inactive" />
                         </Rock:RockCheckBoxList>
