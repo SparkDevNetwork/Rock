@@ -81,6 +81,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the initial item parent ids.
+        /// </summary>
+        /// <value>
+        /// The initial item parent ids.
+        /// </value>
         public override string InitialItemParentIds
         {
             get

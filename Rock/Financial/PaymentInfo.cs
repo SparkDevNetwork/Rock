@@ -126,7 +126,7 @@ namespace Rock.Financial
 
                 var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
-                    .Where( v => v.Name.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
+                    .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
                 if ( countryValue != null )
                 {

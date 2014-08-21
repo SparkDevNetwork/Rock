@@ -12,8 +12,8 @@
 	<returns>
 		* Name(s)
 	</returns>
-    <param name="PersonId" datatype="int">The Person to get a full name for. NULL means use the GroupId paramter </param>
-	<param name="@GroupId" datatype="int">The Group (family) to get the list of names for</param>
+    <param name='PersonId' datatype='int'>The Person to get a full name for. NULL means use the GroupId paramter </param>
+	<param name='@GroupId' datatype='int'>The Group (family) to get the list of names for</param>
 	<remarks>
 		[ufnCrm_GetFamilyTitle] is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
 	</remarks>
@@ -44,7 +44,7 @@ BEGIN
     BEGIN
         -- just getting the Person Names portion of the address for an individual person
         SELECT 
-            @PersonNames = ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Name], '')
+            @PersonNames = ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Value], '')
         FROM
             [Person] [p]
         LEFT OUTER JOIN 
@@ -59,7 +59,7 @@ BEGIN
         SELECT 
             [p].[LastName] 
             , [p].[FirstName] 
-            , ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Name], '') as [FullName] 
+            , ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Value], '') as [FullName] 
             , [gr].[Guid]
         FROM 
             [GroupMember] [gm] 

@@ -61,7 +61,7 @@
                                                 <ItemTemplate>
                                                     <li class="address clearfix">
 
-                                                        <strong><%# Eval("GroupLocationTypeValue.Name") %></strong>
+                                                        <strong><%# Eval("GroupLocationTypeValue.Value") %></strong>
                                                         <p>
                                                             <%# Eval("Location.FormattedHtmlAddress") %>
                                                         </p>

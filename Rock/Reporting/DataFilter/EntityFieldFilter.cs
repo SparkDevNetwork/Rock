@@ -125,7 +125,7 @@ namespace Rock.Reporting.DataFilter
                             {
                                 foreach ( var definedValue in definedType.DefinedValues )
                                 {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Name, definedValue.Guid.ToString() ) );
+                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
                                 }
                             }
                         }
@@ -239,7 +239,7 @@ namespace Rock.Reporting.DataFilter
                                     var definedValue = DefinedValueCache.Read( definedValueGuid.Value );
                                     if ( definedValue != null )
                                     {
-                                        selectedTexts.Add( definedValue.Name );
+                                        selectedTexts.Add( definedValue.Value );
                                     }
                                 }
                             }

@@ -193,7 +193,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.CurrencyTypeValue.Name,
+                CurrencyTypeValueName = a.CurrencyTypeValue.Value,
                 a.Summary,
                 Account = a.TransactionDetails.FirstOrDefault().Account,
                 TotalAmount = a.TransactionDetails.Sum( d=> d.Amount)

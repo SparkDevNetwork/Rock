@@ -410,7 +410,7 @@ namespace Rock.Rest.Controllers
                         dynGroup.GroupType = dictGroupType;
 
                         var dictLocation = new Dictionary<string, object>();
-                        dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Name );
+                        dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Value );
                         dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
                         dictLocation.Add( "Street1", grouplocation.Location.Street1 );
                         dictLocation.Add( "Street2", grouplocation.Location.Street2 );
@@ -432,14 +432,14 @@ namespace Rock.Rest.Controllers
                             dictMember.Add( "PhotoUrl", member.Person.PhotoId.HasValue ? member.Person.PhotoUrl : "" );
                             dictMember.Add( "PhotoId", member.Person.PhotoId );
                             dictMember.Add( "ConnectionStatus", member.Person.ConnectionStatusValue != null ?
-                                member.Person.ConnectionStatusValue.Name : "" );
+                                member.Person.ConnectionStatusValue.Value : "" );
                             dictMember.Add( "Email", member.Person.Email );
 
                             var phoneTypes = new List<Dictionary<string, object>>();
                             foreach ( PhoneNumber p in member.Person.PhoneNumbers )
                             {
                                 var dictPhoneNumber = new Dictionary<string, object>();
-                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Name );
+                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Value );
                                 dictPhoneNumber.Add( "Number", p.ToString() );
                                 phoneTypes.Add( dictPhoneNumber );
                             }

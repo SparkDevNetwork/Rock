@@ -31,8 +31,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" Label="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                            <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" Label="Data View" />
+                            <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
+                            <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Data View" Required="false" />
                         </div>
                     </div>
 

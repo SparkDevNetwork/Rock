@@ -403,11 +403,18 @@ namespace Rock.Web.UI.Controls
 
         #region Methods
 
+        /// <summary>
+        /// Clears the custom action controls.
+        /// </summary>
         public void ClearCustomActionControls()
         {
             _customActions.Clear();
         }
 
+        /// <summary>
+        /// Adds the custom action control.
+        /// </summary>
+        /// <param name="control">The control.</param>
         public void AddCustomActionControl( Control control)
         {
             _customActions.Add( control );

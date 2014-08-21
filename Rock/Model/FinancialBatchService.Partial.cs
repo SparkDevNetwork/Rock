@@ -28,6 +28,16 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialBatchService
     {
+        /// <summary>
+        /// Gets the specified name prefix.
+        /// </summary>
+        /// <param name="namePrefix">The name prefix.</param>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <param name="creditCardType">Type of the credit card.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <returns></returns>
         public FinancialBatch Get( string namePrefix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
@@ -39,13 +49,13 @@ namespace Rock.Model
                 ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" );
                 if ( string.IsNullOrWhiteSpace( ccSuffix ) )
                 {
-                    ccSuffix = creditCardType.Name;
+                    ccSuffix = creditCardType.Value;
                 }
             }
 
             if ( string.IsNullOrWhiteSpace( ccSuffix ) && currencyType != null )
             {
-                ccSuffix = currencyType.Name;
+                ccSuffix = currencyType.Value;
             }
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix );

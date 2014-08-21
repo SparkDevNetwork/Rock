@@ -310,7 +310,7 @@ achieve our mission.  We are so grateful for your commitment.
                         // If gateway didn't specifically support one-time, add it anyway for immediate gifts
                         if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
                         {
-                            btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
+                            btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Value, oneTimeFrequency.Id.ToString() ) );
                         }
 
                         btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
@@ -1391,12 +1391,12 @@ achieve our mission.  We are so grateful for your commitment.
                         scheduledTransaction.CreditCardTypeValueId = CreditCardTypeValueId;
 
                         var changeSummary = new StringBuilder();
-                        changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Name, schedule.StartDate.ToShortDateString() );
+                        changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
                         changeSummary.AppendLine();
-                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Name );
+                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
                         if (paymentInfo.CreditCardTypeValue != null)
                         {
-                            changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Name );
+                            changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Value );
                         }
                         changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
                         changeSummary.AppendLine();

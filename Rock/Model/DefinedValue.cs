@@ -65,15 +65,15 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name or the value of the DefinedValue. This property is required.
+        /// Gets or sets the Value of the DefinedValue. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Name or the value of the DefinedValue.
+        /// A <see cref="System.String"/> that represents the Value of the DefinedValue.
         /// </value>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        public string Name { get; set; }
+        public string Value { get; set; }
 
         /// <summary>
         /// Gets or sets the Description of the DefinedValue.
@@ -119,7 +119,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.Value;
         }
 
         #endregion

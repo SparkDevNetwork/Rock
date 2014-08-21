@@ -805,7 +805,7 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure the amount you've entered for each account is a positive amount" );
             }
 
-            string howOften = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value ).Name;
+            string howOften = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value ).Value;
             DateTime when = DateTime.MinValue;
 
             // Make sure a repeating payment starts in the future
@@ -1032,13 +1032,13 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     if ( paymentInfo.CurrencyTypeValue != null )
                     {
-                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Name );
+                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
                         scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
 
                         DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
                         if ( creditCardTypeValue != null )
                         {
-                            changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Name );
+                            changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Value );
                             scheduledTransaction.CreditCardTypeValueId = creditCardTypeValue.Id;
                         }
                         else

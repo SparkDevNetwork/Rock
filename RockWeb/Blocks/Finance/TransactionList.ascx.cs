@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Finance
                         var definedValue = DefinedValueCache.Read( definedValueId );
                         if ( definedValue != null )
                         {
-                            e.Value = definedValue.Name;
+                            e.Value = definedValue.Value;
                         }
                     }
 
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Finance
                         else
                         {
                             var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
-                            currencyType = currencyTypeValue != null ? currencyTypeValue.Name : string.Empty;
+                            currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
                             _currencyTypes.Add( currencyTypeId, currencyType );
                         }
 
@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.Finance
                             else
                             {
                                 var creditCardTypeValue = DefinedValueCache.Read( creditCardTypeId );
-                                creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Name : string.Empty;
+                                creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
                                 _creditCardTypes.Add( creditCardTypeId, creditCardType );
                             }
 

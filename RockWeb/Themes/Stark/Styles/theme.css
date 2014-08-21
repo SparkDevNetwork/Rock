@@ -540,6 +540,10 @@ img.jcrop-preview {
 .picker .picker-menu h4:first-child {
   margin-top: 0;
 }
+.picker.picker-menu-right .picker-menu {
+  right: 0;
+  left: auto;
+}
 .picker .picker-actions {
   background-color: #eeeeee;
   padding: 10px;
@@ -3141,23 +3145,19 @@ span.field-value {
   text-align: right;
   line-height: 1;
 }
-.person-bio div.deceased:after {
+.person-bio div.deceased h1.title.name:after {
   content: 'Deceased';
   font-size: 14px;
-  position: absolute;
-  bottom: 36px;
-  right: 0;
-  margin-right: 12px;
-  color: #ffffff;
-  background-color: #f0ad4e;
-  padding: 4px 12px;
-  border-radius: 4px;
-}
-.groupmembers .member.deceased {
-  background-color: #f0ad4e;
+  margin-left: 12px;
+  color: #d9534f;
 }
 .groupmembers .member.deceased:hover {
-  background-color: #f4c37d;
+  background-color: #808080;
+}
+.groupmembers .member.deceased .person-info:after {
+  content: 'Deceased';
+  font-size: 10px;
+  color: #d9534f;
 }
 tr.inactive td {
   color: #808080;
@@ -3694,6 +3694,16 @@ small {
 }
 .clickable {
   cursor: pointer;
+}
+.liquid-tip {
+  background-color: #71a5bf;
+  color: #fff;
+  padding: 0 6px 2px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.liquid-tip:after {
+  content: '{{ Liquid }}';
 }
 .navigation-tip {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;

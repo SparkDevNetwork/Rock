@@ -50,7 +50,20 @@ namespace Rock.Attribute
         /// </summary>
         public class MetricCategoryPair
         {
+            /// <summary>
+            /// Gets or sets the metric unique identifier.
+            /// </summary>
+            /// <value>
+            /// The metric unique identifier.
+            /// </value>
             public Guid MetricGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the category unique identifier.
+            /// </summary>
+            /// <value>
+            /// The category unique identifier.
+            /// </value>
             public Guid? CategoryGuid { get; set; }
         }
 

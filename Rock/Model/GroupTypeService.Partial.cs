@@ -159,7 +159,6 @@ namespace Rock.Model
     /// <summary>
     /// Represents a GroupTypePath object in Rock.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class GroupTypePath
     {
         /// <summary>

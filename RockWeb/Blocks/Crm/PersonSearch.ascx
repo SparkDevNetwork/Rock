@@ -22,11 +22,11 @@
                     <Rock:DefinedValueField
                         DataField="ConnectionStatusValueId"
                         HeaderText="Connection Status"
-                        SortExpression="ConnectionStatusValue.Name" />
+                        SortExpression="ConnectionStatusValue.Value" />
                     <Rock:DefinedValueField
                         DataField="RecordStatusValueId"
                         HeaderText="Record Status"
-                        SortExpression="RecordStatusValue.Name" />
+                        SortExpression="RecordStatusValue.Value" />
                 </Columns>
             </Rock:Grid>
         </div>

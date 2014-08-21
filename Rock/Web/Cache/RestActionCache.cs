@@ -221,6 +221,7 @@ namespace Rock.Web.Cache
         /// Reads the specified API identifier.
         /// </summary>
         /// <param name="apiId">The API identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static RestActionCache Read( string apiId, RockContext rockContext = null )
         {

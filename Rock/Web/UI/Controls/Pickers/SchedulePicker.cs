@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the value.
         /// </summary>
-        /// <param name="metricCategory">The schedule.</param>
+        /// <param name="schedule">The schedule.</param>
         public void SetValue( Schedule schedule )
         {
             if ( schedule != null )
@@ -72,7 +72,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the values.
         /// </summary>
-        /// <param name="metricCategories">The schedules.</param>
+        /// <param name="schedules">The schedules.</param>
         public void SetValues( IEnumerable<Schedule> schedules )
         {
             var scheduleList = schedules.ToList();

@@ -688,7 +688,7 @@ namespace RockWeb.Blocks.Finance
                         txn.Batch.Name );
                 }
 
-                detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Name : string.Empty );
+                detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
 
                 if ( txn.GatewayEntityType != null )
                 {
@@ -709,10 +709,10 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.CurrencyTypeValue != null )
                 {
-                    string currencyType = txn.CurrencyTypeValue.Name;
+                    string currencyType = txn.CurrencyTypeValue.Value;
                     if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
                     {
-                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Name ) : string.Empty;
+                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Value ) : string.Empty;
                     }
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
@@ -821,7 +821,7 @@ namespace RockWeb.Blocks.Finance
             if ( txn.TransactionTypeValue != null )
             {
                 hlType.Visible = true;
-                hlType.Text = txn.TransactionTypeValue.Name;
+                hlType.Text = txn.TransactionTypeValue.Value;
             }
             else
             {

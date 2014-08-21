@@ -160,7 +160,7 @@ namespace Rock.Communication.Channel
         /// <param name="toPhone">The phone number a message is sent to.</param>
         /// <param name="fromPhone">The phone number a message is sent from.</param>
         /// <param name="message">The message that was sent.</param>
-        /// <returns></returns>
+        /// <param name="errorMessage">The error message.</param>
         public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -181,7 +181,7 @@ namespace Rock.Communication.Channel
             {
                 if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
                 {
-                    var matchValue = definedType.DefinedValues.Where( v => v.Name == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                    var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
                     if ( matchValue != null )
                     {
                         var toPersonGuid = matchValue.GetAttributeValue( "ResponseRecipient" );
