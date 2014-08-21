@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201408192306032_TransactionImageOrder"; }
+            get { return "201408202019558_TransactionImageOrder"; }
         }
         
         string IMigrationMetadata.Source

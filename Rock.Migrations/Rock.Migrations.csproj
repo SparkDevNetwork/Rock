@@ -57,6 +57,10 @@
     <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408202019558_TransactionImageOrder.cs" />
+    <Compile Include="Migrations\201408202019558_TransactionImageOrder.Designer.cs">
+      <DependentUpon>201408202019558_TransactionImageOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -1135,6 +1139,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408202019558_TransactionImageOrder.resx">
+      <DependentUpon>201408202019558_TransactionImageOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

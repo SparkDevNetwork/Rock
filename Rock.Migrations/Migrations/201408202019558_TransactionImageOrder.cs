@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-
+    
     /// <summary>
     ///
     /// </summary>
@@ -46,16 +46,16 @@ namespace Rock.Migrations
             // get rid of the FINANCIAL_TRANSACTION_IMAGE_TYPE defined type and associated defined values
             RockMigrationHelper.DeleteDefinedType( "0745D5DE-2D09-44B3-9017-40C1DA83CB39" );
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            AddColumn( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId", c => c.Int() );
-            DropColumn( "dbo.FinancialTransactionImage", "Order" );
-            CreateIndex( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId" );
-            AddForeignKey( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId", "dbo.DefinedValue", "Id" );
+            AddColumn("dbo.FinancialTransactionImage", "TransactionImageTypeValueId", c => c.Int());
+            DropColumn("dbo.FinancialTransactionImage", "Order");
+            CreateIndex("dbo.FinancialTransactionImage", "TransactionImageTypeValueId");
+            AddForeignKey("dbo.FinancialTransactionImage", "TransactionImageTypeValueId", "dbo.DefinedValue", "Id");
         }
     }
 }
