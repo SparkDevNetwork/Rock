@@ -502,12 +502,37 @@ namespace RockWeb.Blocks.WorkFlow
                 var sortProperty = gWorkflows.SortProperty;
                 if ( sortProperty != null )
                 {
-                    workflows = qry.Sort( sortProperty ).ToList();
+                    if ( sortProperty.Property == "Initiator" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            workflows = qry
+                                .OrderBy( w => w.InitiatorPersonAlias.Person.LastName )
+                                .ThenBy( w => w.InitiatorPersonAlias.Person.NickName )
+                                .ToList();
+                        }
+                        else
+                        {
+                            workflows = qry
+                                .OrderByDescending( w => w.InitiatorPersonAlias.Person.LastName )
+                                .ThenByDescending( w => w.InitiatorPersonAlias.Person.NickName )
+                                .ToList();
+                        }
+                    }
+                    else
+                    {
+                        workflows = qry.Sort( sortProperty ).ToList();
+                    }
                 }
                 else
                 {
                     workflows = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
                 }
+
+                // Since we're not binding to actual workflow list, but are using AttributeField columns,
+                // we need to save the workflows into the grid's object list
+                gWorkflows.ObjectList = new Dictionary<string, object>();
+                workflows.ForEach( w => gWorkflows.ObjectList.Add( w.Id.ToString(), w ) );
 
                 gWorkflows.DataSource = workflows.Select( w => new
                 {

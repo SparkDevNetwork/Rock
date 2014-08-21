@@ -387,6 +387,16 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a dictionary of objects that can be used independently of the actual objects that grid
+        /// is bound to. This is helpful when binding to an anonymous type, but an actual known type is needed
+        /// during row processing (i.e. RowDataBound events, or GetValue methods of custom grid fields)
+        /// </summary>
+        /// <value>
+        /// The object list
+        /// </value>
+        public Dictionary<string, object> ObjectList { get; set; }
+        
         #region Action Row Properties
 
         /// <summary>
