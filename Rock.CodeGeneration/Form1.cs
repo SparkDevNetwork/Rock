@@ -97,7 +97,7 @@ namespace Rock.CodeGeneration
             string serviceFolder = Path.Combine( RootFolder().FullName, "Rock" );
             string restFolder = Path.Combine( RootFolder().FullName, "Rock.Rest" );
             string dataViewFolder = Path.Combine( RootFolder().FullName, "Rock" );
-            string serviceDtoFolder = Path.Combine( RootFolder().FullName, "Rock.Client" );
+            string rockClientFolder = Path.Combine( RootFolder().FullName, "Rock.Client" );
 
             if ( cbService.Checked  )
             {
@@ -140,7 +140,10 @@ namespace Rock.CodeGeneration
                             WriteRESTFile( restFolder, type );
                         }
 
-                        WriteDtoFile( serviceDtoFolder, type );
+                        if ( cbClient.Checked )
+                        {
+                            WriteRockClientFile( rockClientFolder, type );
+                        }
                     }
                 }
             }
@@ -689,7 +692,7 @@ order by [parentTable], [columnName]
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteDtoFile( string rootFolder, Type type )
+        private void WriteRockClientFile( string rootFolder, Type type )
         {
             string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
 
@@ -722,21 +725,14 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </copyright>" );
             sb.AppendLine( "//" );
             sb.AppendLine( "using System;" );
-            //sb.AppendLine( "using System.Collections.Generic;" );
-            //sb.AppendLine( "using System.Dynamic;" );
-            //sb.AppendLine( "using System.Runtime.Serialization;" );
             sb.AppendLine( "" );
-            //sb.AppendLine( "using Rock.Data;" );
             sb.AppendLine( "" );
 
             sb.AppendFormat( "namespace Rock.Client" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    /// Simple Client Model for {0}" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            //sb.AppendLine( "    [Serializable]" );
-            //sb.AppendLine( "    [DataContract]" );
-
             
                 sb.AppendFormat( "    public partial class {0}" + Environment.NewLine, type.Name );
             
@@ -747,10 +743,8 @@ order by [parentTable], [columnName]
             {
                 
                     sb.AppendLine( "        /// <summary />" );
-              //      sb.AppendLine( "        [DataMember]" );
                     sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
                     sb.AppendLine( "" );
-                
             }
 
             sb.AppendLine( "    }" );
