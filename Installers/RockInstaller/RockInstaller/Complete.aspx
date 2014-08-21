@@ -184,6 +184,16 @@
         
         // delete rock install directory
         Directory.Delete( serverPath + @"\rock", true );
+
+        // restart app pool
+        try
+        {
+            // *** This requires full trust so this will fail
+            // *** in many scenarios
+            HttpRuntime.UnloadAppDomain();
+        }
+        catch
+        {}
     }
 
     private void DeleteDirectory( string target_dir )
@@ -231,15 +241,12 @@
         // move child directories
         System.Threading.Tasks.Parallel.ForEach( sourceChildDirectories, d =>
         {
-            //if ( d.Name.ToLower() != "bin" ) // don't delete and move the bin file, we're too smart for that
-            //{
-                string destChildDirectory = Path.Combine( destDirName, d.Name );
-                if ( Directory.Exists( destChildDirectory ) )
-                {
-                    DeleteDirectory( destChildDirectory );
-                }
-                d.MoveTo( destChildDirectory );
-            //}
+            string destChildDirectory = Path.Combine( destDirName, d.Name );
+            if ( Directory.Exists( destChildDirectory ) )
+            {
+                DeleteDirectory( destChildDirectory );
+            }
+            d.MoveTo( destChildDirectory );
         } );
         
         // move child files
