@@ -21,7 +21,7 @@
                                 <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                     <Columns>
                                         <Rock:ReorderField/>
-                                        <asp:BoundField DataField="Name" HeaderText="Value"/>
+                                        <asp:BoundField DataField="Value" HeaderText="Value"/>
                                         <asp:BoundField DataField="Description" HeaderText="Description"/>
                                     </Columns>
                                 </Rock:Grid>
