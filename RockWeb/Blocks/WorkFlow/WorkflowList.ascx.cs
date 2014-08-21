@@ -85,6 +85,17 @@ namespace RockWeb.Blocks.WorkFlow
                 dateField.HeaderText = "Created";
                 dateField.FormatAsElapsedTime = true;
 
+                // move status columns
+                /*int lastColumnIndex = gWorkflows.Columns.Count - 1;
+
+                var statusColumn = gWorkflows.Columns[3];
+                gWorkflows.Columns.RemoveAt( 3 );
+                gWorkflows.Columns.Insert( lastColumnIndex, statusColumn );
+
+                var activeColumn = gWorkflows.Columns[3];
+                gWorkflows.Columns.RemoveAt( 3 );
+                gWorkflows.Columns.Insert( lastColumnIndex, activeColumn );*/
+
                 var formField = new EditField();
                 gWorkflows.Columns.Add( formField );
                 formField.IconCssClass = "fa fa-edit";
@@ -125,7 +136,6 @@ namespace RockWeb.Blocks.WorkFlow
                 BindFilter();
                 BindGrid();
             }
-
             base.OnLoad( e );
         }
 
@@ -207,6 +217,7 @@ namespace RockWeb.Blocks.WorkFlow
             gfWorkflows.SaveUserPreference( "Completed", drpCompleted.DelimitedValues );
             gfWorkflows.SaveUserPreference( "Name", tbName.Text );
             gfWorkflows.SaveUserPreference( "Status", tbStatus.Text );
+            gfWorkflows.SaveUserPreference( "Active", GetCheckBoxListValues( cblActiveStatus ) );
 
             int? personId = ppInitiator.SelectedValue;
             gfWorkflows.SaveUserPreference( "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
@@ -315,6 +326,35 @@ namespace RockWeb.Blocks.WorkFlow
         #region Methods
 
         /// <summary>
+        /// Gets the check box list values by evaluating the posted form values for each input item in the rendered checkbox list.  
+        /// This is required because of a bug in ASP.NET that results in the Selected property for CheckBoxList items to not be
+        /// set correctly on a postback.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <returns></returns>
+        private string GetCheckBoxListValues( System.Web.UI.WebControls.CheckBoxList checkBoxList )
+        {
+            var selectedItems = new List<string>();
+
+            for ( int i = 0; i < checkBoxList.Items.Count; i++ )
+            {
+                string value = Request.Form[checkBoxList.UniqueID + "$" + i.ToString()];
+                if ( value != null )
+                {
+                    checkBoxList.Items[i].Selected = true;
+                    selectedItems.Add( value );
+                }
+                else
+                {
+                    checkBoxList.Items[i].Selected = false;
+                }
+            }
+
+            return selectedItems.AsDelimited( ";" );
+        }
+
+
+        /// <summary>
         /// Binds the defined values grid.
         /// </summary>
         protected void AddAttributeColumns()
@@ -381,6 +421,11 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 ppInitiator.SetValue( null );
             }
+
+            if ( gfWorkflows.GetUserPreference( "Active" ) != string.Empty )
+            {
+                cblActiveStatus.SetValues( gfWorkflows.GetUserPreference( "Active" ).Split( ';' ).ToList() );
+            }
         }
 
         /// <summary>
@@ -416,6 +461,23 @@ namespace RockWeb.Blocks.WorkFlow
                 if ( state.HasValue )
                 {
                     qry = qry.Where( w => w.CompletedDateTime.HasValue == ( state == 1 ) );
+                }
+
+                // active filters
+                if (! string.IsNullOrWhiteSpace(gfWorkflows.GetUserPreference( "Active" ))) {
+                    
+                    // if the filter contains both active and inactive no filter is needed
+                    if ( !(gfWorkflows.GetUserPreference( "Active" ).Contains( "Active" ) && gfWorkflows.GetUserPreference( "Active" ).Contains( "Inactive" )) )
+                    {
+                        if ( gfWorkflows.GetUserPreference( "Active" ).Contains( "Active" ) )
+                        {
+                            qry = qry.Where( w => w.CompletedDateTime.HasValue == false );
+                        }
+                        else
+                        {
+                            qry = qry.Where( w => w.CompletedDateTime != null );
+                        }
+                    }  
                 }
 
                 // Completed Date Range Filter
