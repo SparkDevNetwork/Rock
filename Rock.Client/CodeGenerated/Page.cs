@@ -26,10 +26,13 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Page object
+    /// Simple Client Model for Page
     /// </summary>
     public partial class Page
     {
+        /// <summary />
+        public int LayoutId { get; set; }
+
         /// <summary />
         public string InternalName { get; set; }
 
@@ -44,9 +47,6 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int LayoutId { get; set; }
 
         /// <summary />
         public bool RequiresEncryption { get; set; }

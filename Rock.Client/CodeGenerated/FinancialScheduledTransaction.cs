@@ -26,18 +26,24 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialScheduledTransaction object
+    /// Simple Client Model for FinancialScheduledTransaction
     /// </summary>
     public partial class FinancialScheduledTransaction
     {
+        /// <summary />
+        public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public int TransactionFrequencyValueId { get; set; }
+
         /// <summary />
         public int? GatewayEntityTypeId { get; set; }
 
         /// <summary />
         public int AuthorizedPersonId { get; set; }
-
-        /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }

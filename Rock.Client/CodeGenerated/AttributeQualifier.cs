@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for AttributeQualifier object
+    /// Simple Client Model for AttributeQualifier
     /// </summary>
     public partial class AttributeQualifier
     {

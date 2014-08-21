@@ -26,16 +26,10 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for PersonBadge object
+    /// Simple Client Model for PersonBadge
     /// </summary>
     public partial class PersonBadge
     {
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
         /// <summary />
         public string Name { get; set; }
 
@@ -53,6 +47,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

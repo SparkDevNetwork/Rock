@@ -26,15 +26,15 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for PersonViewed object
+    /// Simple Client Model for PersonViewed
     /// </summary>
     public partial class PersonViewed
     {
         /// <summary />
-        public int? TargetPersonAliasId { get; set; }
+        public int? ViewerPersonAliasId { get; set; }
 
         /// <summary />
-        public int? ViewerPersonAliasId { get; set; }
+        public int? TargetPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ViewDateTime { get; set; }

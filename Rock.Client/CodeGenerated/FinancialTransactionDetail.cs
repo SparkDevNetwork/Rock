@@ -26,18 +26,15 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialTransactionDetail object
+    /// Simple Client Model for FinancialTransactionDetail
     /// </summary>
     public partial class FinancialTransactionDetail
     {
         /// <summary />
-        public int? EntityTypeId { get; set; }
+        public int TransactionId { get; set; }
 
         /// <summary />
         public int AccountId { get; set; }
-
-        /// <summary />
-        public int TransactionId { get; set; }
 
         /// <summary />
         public bool IsNonCash { get; set; }
@@ -47,6 +44,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public int? EntityId { get; set; }

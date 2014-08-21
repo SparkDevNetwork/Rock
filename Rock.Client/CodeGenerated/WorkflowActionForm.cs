@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for WorkflowActionForm object
+    /// Simple Client Model for WorkflowActionForm
     /// </summary>
     public partial class WorkflowActionForm
     {

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for GroupMember object
+    /// Simple Client Model for GroupMember
     /// </summary>
     public partial class GroupMember
     {
@@ -44,6 +44,9 @@ namespace Rock.Client
 
         /// <summary />
         public int /* GroupMemberStatus*/ GroupMemberStatus { get; set; }
+
+        /// <summary />
+        public int? GuestCount { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

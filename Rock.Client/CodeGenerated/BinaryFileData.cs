@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for BinaryFileData object
+    /// Simple Client Model for BinaryFileData
     /// </summary>
     public partial class BinaryFileData
     {

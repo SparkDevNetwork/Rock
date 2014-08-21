@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for PageContext object
+    /// Simple Client Model for PageContext
     /// </summary>
     public partial class PageContext
     {

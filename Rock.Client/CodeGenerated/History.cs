@@ -26,21 +26,18 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for History object
+    /// Simple Client Model for History
     /// </summary>
     public partial class History
     {
-        /// <summary />
-        public int EntityTypeId { get; set; }
-
-        /// <summary />
-        public int? RelatedEntityTypeId { get; set; }
-
         /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
         public int CategoryId { get; set; }
+
+        /// <summary />
+        public int EntityTypeId { get; set; }
 
         /// <summary />
         public int EntityId { get; set; }
@@ -50,6 +47,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
+
+        /// <summary />
+        public int? RelatedEntityTypeId { get; set; }
 
         /// <summary />
         public int? RelatedEntityId { get; set; }

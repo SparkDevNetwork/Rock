@@ -26,13 +26,10 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Metric object
+    /// Simple Client Model for Metric
     /// </summary>
     public partial class Metric
     {
-        /// <summary />
-        public int? EntityTypeId { get; set; }
-
         /// <summary />
         public bool IsSystem { get; set; }
 
@@ -77,6 +74,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Tag object
+    /// Simple Client Model for Tag
     /// </summary>
     public partial class Tag
     {

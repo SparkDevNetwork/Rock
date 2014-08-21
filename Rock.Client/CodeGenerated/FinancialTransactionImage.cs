@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialTransactionImage object
+    /// Simple Client Model for FinancialTransactionImage
     /// </summary>
     public partial class FinancialTransactionImage
     {

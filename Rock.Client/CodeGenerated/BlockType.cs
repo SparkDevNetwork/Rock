@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for BlockType object
+    /// Simple Client Model for BlockType
     /// </summary>
     public partial class BlockType
     {

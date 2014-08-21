@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for GroupLocation object
+    /// Simple Client Model for GroupLocation
     /// </summary>
     public partial class GroupLocation
     {

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Following object
+    /// Simple Client Model for Following
     /// </summary>
     public partial class Following
     {

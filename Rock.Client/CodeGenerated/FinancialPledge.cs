@@ -26,10 +26,13 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialPledge object
+    /// Simple Client Model for FinancialPledge
     /// </summary>
     public partial class FinancialPledge
     {
+        /// <summary />
+        public int? PledgeFrequencyValueId { get; set; }
+
         /// <summary />
         public int? AccountId { get; set; }
 
@@ -38,9 +41,6 @@ namespace Rock.Client
 
         /// <summary />
         public decimal TotalAmount { get; set; }
-
-        /// <summary />
-        public int? PledgeFrequencyValueId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }

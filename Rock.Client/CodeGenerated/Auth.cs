@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Auth object
+    /// Simple Client Model for Auth
     /// </summary>
     public partial class Auth
     {

@@ -26,16 +26,10 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Report object
+    /// Simple Client Model for Report
     /// </summary>
     public partial class Report
     {
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
         /// <summary />
         public bool IsSystem { get; set; }
 
@@ -62,6 +56,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for HtmlContent object
+    /// Simple Client Model for HtmlContent
     /// </summary>
     public partial class HtmlContent
     {

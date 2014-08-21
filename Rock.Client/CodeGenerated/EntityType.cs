@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for EntityType object
+    /// Simple Client Model for EntityType
     /// </summary>
     public partial class EntityType
     {

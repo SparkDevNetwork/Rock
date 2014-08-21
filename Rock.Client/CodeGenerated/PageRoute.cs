@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for PageRoute object
+    /// Simple Client Model for PageRoute
     /// </summary>
     public partial class PageRoute
     {

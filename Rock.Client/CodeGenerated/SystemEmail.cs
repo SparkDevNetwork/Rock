@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for SystemEmail object
+    /// Simple Client Model for SystemEmail
     /// </summary>
     public partial class SystemEmail
     {
