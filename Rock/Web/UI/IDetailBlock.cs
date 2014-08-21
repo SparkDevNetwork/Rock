@@ -24,8 +24,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        void ShowDetail( string itemKey, int itemKeyValue );
+        /// <param name="itemId">The item id value.</param>
+        void ShowDetail( int itemId );
     }
 }

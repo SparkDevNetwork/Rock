@@ -16,8 +16,6 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI.WebControls;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -63,22 +61,15 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Label = "Campus";
+            var campusPicker = new CampusPicker { ID = id };
 
             CampusService campusService = new CampusService( new RockContext() );
             var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
 
-            editControl.Items.Add( Rock.Constants.None.ListItem );
-
             if ( campusList.Any() )
             {
-                foreach ( var campus in campusList )
-                {
-                    editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
-                }
-
-                return editControl;
+                campusPicker.Campuses = campusList;
+                return campusPicker;
             }
 
             return null;
@@ -95,18 +86,11 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            DropDownList dropDownList = control as DropDownList;
+            CampusPicker campusPicker = control as CampusPicker;
 
-            if ( dropDownList != null )
+            if ( campusPicker != null )
             {
-                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
-                {
-                    return null;
-                }
-                else
-                {
-                    return dropDownList.SelectedValue;
-                }
+                return campusPicker.SelectedCampusId.ToString();
             }
 
             return null;
@@ -123,8 +107,8 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                DropDownList dropDownList = control as DropDownList;
-                dropDownList.SetValue( value );
+                CampusPicker campusPicker = control as CampusPicker;
+                campusPicker.SelectedCampusId = value.AsIntegerOrNull();
             }
         }
 

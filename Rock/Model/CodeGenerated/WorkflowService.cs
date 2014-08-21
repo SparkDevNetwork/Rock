@@ -95,6 +95,7 @@ namespace Rock.Model
             target.ActivatedDateTime = source.ActivatedDateTime;
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.InitiatorPersonAliasId = source.InitiatorPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

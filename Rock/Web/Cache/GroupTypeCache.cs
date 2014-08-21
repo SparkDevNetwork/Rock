@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-using Rock;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -213,6 +213,15 @@ namespace Rock.Web.Cache
         public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
+        /// Gets or sets the enable location schedules.
+        /// </summary>
+        /// <value>
+        /// The enable location schedules.
+        /// </value>
+        [DataMember]
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the group type purpose value identifier.
         /// </summary>
         /// <value>
@@ -231,7 +240,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if (GroupTypePurposeValueId.HasValue && GroupTypePurposeValueId.Value != 0)
+                if ( GroupTypePurposeValueId.HasValue && GroupTypePurposeValueId.Value != 0 )
                 {
                     return DefinedValueCache.Read( GroupTypePurposeValueId.Value );
                 }
@@ -248,7 +257,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The roles.
         /// </value>
-        public List<GroupTypeRoleCache> Roles { get; set; } 
+        public List<GroupTypeRoleCache> Roles { get; set; }
 
         /// <summary>
         /// Gets the child group types.
@@ -382,6 +391,7 @@ namespace Rock.Web.Cache
                 this.Order = groupType.Order;
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
+                this.EnableLocationSchedules = groupType.EnableLocationSchedules;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
@@ -414,39 +424,33 @@ namespace Rock.Web.Cache
         /// Returns GroupType object from cache.  If groupType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static GroupTypeCache Read( int id )
+        public static GroupTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = GroupTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
             GroupTypeCache groupType = cache[cacheKey] as GroupTypeCache;
 
-            if ( groupType != null )
+            if ( groupType == null )
             {
-                return groupType;
-            }
-            else
-            {
-                var groupTypeService = new GroupTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var groupTypeService = new GroupTypeService( rockContext );
                 var groupTypeModel = groupTypeService.Get( id );
                 if ( groupTypeModel != null )
                 {
-                    groupTypeModel.LoadAttributes();
+                    groupTypeModel.LoadAttributes( rockContext );
                     groupType = new GroupTypeCache( groupTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
-                    
-                    return groupType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return groupType;
         }
 
         /// <summary>
@@ -463,37 +467,38 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static GroupTypeCache Read( Guid guid )
+        public static GroupTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            GroupTypeCache groupType = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                groupType = Read( (int)cacheObj );
             }
-            else
+
+            if ( groupType == null )
             {
-                var groupTypeService = new GroupTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var groupTypeService = new GroupTypeService( rockContext );
                 var groupTypeModel = groupTypeService.Get( guid );
                 if ( groupTypeModel != null )
                 {
-                    groupTypeModel.LoadAttributes();
-                    var groupType = new GroupTypeCache( groupTypeModel );
+                    groupTypeModel.LoadAttributes( rockContext );
+                    groupType = new GroupTypeCache( groupTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( GroupTypeCache.CacheKey( groupType.Id ), groupType, cachePolicy );
                     cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
-
-                    return groupType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return groupType;
         }
+
         /// <summary>
         /// Reads the specified field type model.
         /// </summary>
@@ -509,18 +514,16 @@ namespace Rock.Web.Cache
             if ( groupType != null )
             {
                 groupType.CopyFromModel( groupTypeModel );
-                return groupType;
             }
             else
             {
                 groupType = new GroupTypeCache( groupTypeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, groupType, cachePolicy );
                 cache.Set( groupType.Guid.ToString(), groupType.Id, cachePolicy );
-                
-                return groupType;
             }
+
+            return groupType;
         }
 
         /// <summary>
@@ -539,7 +542,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache GetFamilyGroupType()
         {
-            return GroupTypeCache.Read(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid());
+            return GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
         }
 
         /// <summary>
@@ -548,7 +551,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache GetSecurityRoleGroupType()
         {
-            return GroupTypeCache.Read(Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid());
+            return GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
         }
 
         #endregion
@@ -565,7 +568,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The identifier.
         /// </value>
-        public int Id { get;set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -580,17 +583,26 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
-        public string Name { get; set;}
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
         /// </summary>
         /// <param name="role">The role.</param>
-        public GroupTypeRoleCache( GroupTypeRole role)
+        public GroupTypeRoleCache( GroupTypeRole role )
         {
             Id = role.Id;
             Guid = role.Guid;
             Name = role.Name;
+            Order = role.Order;
         }
     }
 }

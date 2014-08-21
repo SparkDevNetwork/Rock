@@ -74,11 +74,19 @@ a.aspNetDisabled {
     }
 }
 
+.controls {
+
+    .checkbox:first-child {
+        margin-top: 0;
+    }
+
+}
+
 
 // 2. Data Lists
 // -------------------------
 
-dl { // todo this is needed? 9/27/13
+dl:not(.dl-horizontal) { // todo this is needed? 9/27/13
     margin-bottom: 0;
 
     dt {

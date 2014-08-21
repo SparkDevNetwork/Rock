@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
                 var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
                 foreach( var definedValue in definedType.DefinedValues )
                 {
-                    var li = new ListItem( definedValue.Name, definedValue.Guid.ToString() );
+                    var li = new ListItem( definedValue.Value, definedValue.Guid.ToString() );
                     li.Selected = nameValueResponse.Length > 1 && li.Value.Equals( nameValueResponse[1], StringComparison.OrdinalIgnoreCase );
                     ddlButtonHtml.Items.Add( li );
                 }
@@ -173,7 +173,7 @@ namespace Rock.Web.UI.Controls
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
             foreach ( var definedValue in definedType.DefinedValues )
             {
-                valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Guid.ToString(), definedValue.Name );
+                valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Guid.ToString(), definedValue.Value );
             }
             valueHtml.Append( @"</select></div>" );
             valueHtml.Append( @"<div class=""col-sm-3""><select class=""form-action-value form-control js-form-action-input""><option value=""""></option>" );

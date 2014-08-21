@@ -70,6 +70,7 @@ namespace Rock.Rest.Controllers
 
         /// <summary>
         /// Gets the by metric identifier.
+        /// NOTE: The Chart blocks use ODATA to further filter this
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
         /// <param name="metricValueType">Type of the metric value.</param>
@@ -96,9 +97,11 @@ namespace Rock.Rest.Controllers
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="metricValueType">Type of the metric value.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null )
+        public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
             List<int> metricIds = metricIdList.SplitDelimitedValues().Select(a=> a.AsInteger()).ToList();
             var qry = Get().Where( a => metricIds.Contains( a.MetricId ) );
@@ -115,6 +118,16 @@ namespace Rock.Rest.Controllers
             if ( endDate.HasValue )
             {
                 qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
+            }
+
+            //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+            //// Note: If a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
+            if ( entityTypeId.HasValue )
+            {
+                if ( entityId.HasValue )
+                {
+                    qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
+                }
             }
 
             var groupBySum = qry

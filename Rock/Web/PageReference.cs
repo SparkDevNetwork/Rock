@@ -213,14 +213,17 @@ namespace Rock.Web
         {
             string url = string.Empty;
 
-            var parms = new Dictionary<string, string>();
+            var parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
             // Add any route parameters
             if (Parameters != null)
             {
                 foreach(var route in Parameters)
                 {
-                    parms.Add(route.Key, route.Value);
+                    if ( !parms.ContainsKey( route.Key ) )
+                    {
+                        parms.Add( route.Key, route.Value );
+                    }
                 }
             }
 

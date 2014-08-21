@@ -83,7 +83,7 @@ namespace Rock.Address
 
                     string key = GetAttributeValue( "BingMapsKey" );
                     string query = HttpUtility.UrlEncode( string.Format( "{0} {1} {2} {3} {4}",
-                        location.Street1, location.Street2, location.City, location.State, location.Zip ) );
+                        location.Street1, location.Street2, location.City, location.State, location.PostalCode ) );
 
                     Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?q={0}&key={1}", query, key ) );
 
@@ -117,9 +117,9 @@ namespace Rock.Address
                                         location.Street1 = address.AddressLine;
                                         location.City = address.Locality;
                                         location.State = address.AdminDistrict;
-                                        if ( !location.Zip.StartsWith( address.PostalCode ) )
+                                        if ( !location.PostalCode.StartsWith( address.PostalCode ) )
                                         {
-                                            location.Zip = address.PostalCode;
+                                            location.PostalCode = address.PostalCode;
                                         }
                                         location.StandardizeAttemptedServiceType = "Bing";
                                         location.StandardizeAttemptedResult = "High";

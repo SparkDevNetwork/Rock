@@ -175,23 +175,25 @@ namespace Rock.Model
         {
             var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
 
-            var serviceTimes = new Dictionary<string, object>();
-
-            string[] KeyValues = ServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
-            foreach ( string keyValue in KeyValues )
+            if ( !string.IsNullOrWhiteSpace( ServiceTimes ) )
             {
-                var dayTime = keyValue.Split( new char[] { '^' } );
-                if ( dayTime.Length == 2 )
+                var serviceTimes = new Dictionary<string, object>();
+
+                string[] KeyValues = ServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
+                foreach ( string keyValue in KeyValues )
                 {
-                    var serviceTime = new Dictionary<string, string>();
-                    serviceTime.Add( "Day", dayTime[0] );
-                    serviceTime.Add( "Time", dayTime[1] );
-                    serviceTimes.Add( "ServiceTime", serviceTime );
+                    var dayTime = keyValue.Split( new char[] { '^' } );
+                    if ( dayTime.Length == 2 )
+                    {
+                        var serviceTime = new Dictionary<string, string>();
+                        serviceTime.Add( "Day", dayTime[0] );
+                        serviceTime.Add( "Time", dayTime[1] );
+                        serviceTimes.Add( "ServiceTime", serviceTime );
+                    }
                 }
 
+                mergeFields["ServiceTimes"] = serviceTimes;
             }
-
-            mergeFields.Add( "ServiceTimes", serviceTimes );
 
             return mergeFields;
         }

@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
+            RockPage.AddScriptLink( "~/scripts/jquery.plugin.min.js" );
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
@@ -59,12 +60,13 @@ namespace RockWeb.Blocks.CheckIn
     <script>
         $(document).ready(function (e) {{
             if (localStorage) {{
-                localStorage.checkInKiosk = '{0}';
-                localStorage.checkInGroupTypes = '{1}';
+                localStorage.theme = '{0}'
+                localStorage.checkInKiosk = '{1}';
+                localStorage.checkInGroupTypes = '{2}';
             }}
         }});
     </script>
-", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
+", RockPage.Site.Theme, CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
@@ -115,7 +117,6 @@ if ($ActiveWhen.text() != '')
     $CountdownTimer.countdown({{
         until: timeActive, 
         compact:true, 
-        layout:'{{dn}}{{dl}} {{hnn}}{{sep}}{{mnn}}{{sep}}{{snn}}',
         onExpiry: clearCountdown
     }});
 }}

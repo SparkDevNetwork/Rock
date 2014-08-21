@@ -2,13 +2,17 @@
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlContent" runat="server">
+        <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
             <asp:HiddenField runat="server" ID="hfLayoutId" />
-            <div id="pnlBlocks" runat="server">
-                <h4>Blocks</h4>
+
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-square"></i> Layout Block List</h1>
+            </div>
+            <div class="panel-body">
+                <div id="pnlBlocks" runat="server">
                 <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 
-                <div class="grid">
+                <div class="grid grid-panel">
                     <Rock:Grid ID="gLayoutBlocks" runat="server" DisplayType="Full">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
@@ -31,6 +35,8 @@
                     </Rock:Grid>
                 </div>
             </div>
+            </div>
+            
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

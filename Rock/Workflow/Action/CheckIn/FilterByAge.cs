@@ -20,16 +20,19 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the grouptypes from each family member that are not specific to their age
+    /// Removes (or excludes) the grouptypes from each family member that are not specific to their age
     /// </summary>
-    [Description( "Removes the grouptypes from each family member that are not specific to their age" )]
+    [Description( "Removes (or excludes) the grouptypes from each family member that are not specific to their age" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Age" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if group types should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterByAge : CheckInActionComponent
     {
         /// <summary>
@@ -49,6 +52,8 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
+                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                     foreach ( var person in family.People )
                     {
                         double? age = person.Person.AgePrecise;
@@ -72,7 +77,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     if ( !age.HasValue || age < minAge )
                                     {
-                                        person.GroupTypes.Remove( groupType );
+                                        if ( remove )
+                                        {
+                                            person.GroupTypes.Remove( groupType );
+                                        }
+                                        else
+                                        {
+                                            groupType.ExcludedByFilter = true;
+                                        }
                                         continue;
                                     }
                                 }
@@ -85,7 +97,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     if ( !age.HasValue || age > maxAge )
                                     {
-                                        person.GroupTypes.Remove( groupType );
+                                        if ( remove )
+                                        {
+                                            person.GroupTypes.Remove( groupType );
+                                        }
+                                        else
+                                        {
+                                            groupType.ExcludedByFilter = true;
+                                        }
                                         continue;
                                     }
                                 }

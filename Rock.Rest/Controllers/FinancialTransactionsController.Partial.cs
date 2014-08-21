@@ -131,7 +131,7 @@ namespace Rock.Rest.Controllers
                 parameters.Add( "personId", DBNull.Value );
             }
 
-            parameters.Add( "orderByZipCode", options.OrderByZipCode );
+            parameters.Add( "orderByPostalCode", options.OrderByPostalCode );
             var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
@@ -193,7 +193,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.CurrencyTypeValue.Name,
+                CurrencyTypeValueName = a.CurrencyTypeValue.Value,
                 a.Summary,
                 Account = a.TransactionDetails.FirstOrDefault().Account,
                 TotalAmount = a.TransactionDetails.Sum( d=> d.Amount)

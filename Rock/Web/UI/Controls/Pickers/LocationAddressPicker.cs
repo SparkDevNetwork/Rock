@@ -180,17 +180,11 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfLocationId;
         private HtmlAnchor _btnPickerLabel;
+        private HiddenFieldWithClass _hfPanelIsVisible;
+
         private Panel _pnlPickerMenu;
         private Panel _pnlAddressEntry;
-        private RockTextBox _tbAddress1;
-        private RockTextBox _tbAddress2;
-        private HtmlGenericContainer _divCityStateZipRow;
-        private HtmlGenericContainer _divCityColumn;
-        private RockTextBox _tbCity;
-        private HtmlGenericContainer _divStateColumn;
-        private StateDropDownList _ddlState;
-        private HtmlGenericContainer _divZipColumn;
-        private RockTextBox _tbZip;
+        private AddressControl _acAddress;
 
         private Panel _pnlPickerActions;
         private LinkButton _btnSelect;
@@ -213,7 +207,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.Location != null )
                 {
-                    return this.Location.ToString();
+                    return this.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
                 }
                 else
                 {
@@ -239,28 +233,21 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 EnsureChildControls();
+
                 if ( value != null )
                 {
                     _btnSelectNone.Attributes["class"] = "picker-select-none rollover-item";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = string.Empty;
                     _hfLocationId.Value = value.Id.ToString();
-                    _tbAddress1.Text = value.Street1;
-                    _tbAddress2.Text = value.Street2;
-                    _tbCity.Text = value.City;
-                    _ddlState.SelectedValue = value.State;
-                    _tbZip.Text = value.Zip;
                 }
                 else
                 {
                     _btnSelectNone.Attributes["class"] = "picker-select-none";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
                     _hfLocationId.Value = string.Empty;
-                    _tbAddress1.Text = string.Empty;
-                    _tbAddress2.Text = string.Empty;
-                    _tbCity.Text = string.Empty;
-                    _ddlState.SelectedValue = _ddlState.DefaultSelectedValue;
-                    _tbZip.Text = string.Empty;
                 }
+
+                _acAddress.SetValues( value );
             }
         }
 
@@ -287,7 +274,19 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowDropDown { get; set; }
+        public bool ShowDropDown 
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfPanelIsVisible.Value.AsBooleanOrNull() ?? false;
+            }
+            set
+            {
+                EnsureChildControls();
+                _hfPanelIsVisible.Value = value.ToString();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the Web server control is enabled.
@@ -317,12 +316,6 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
 
             EnsureChildControls();
-            if ( ShowDropDown )
-            {
-                _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "block";
-            }
-
-            
 
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelectNone );
@@ -370,10 +363,14 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ServerClick += _btnSelectNone_ServerClick;
             this.Controls.Add( _btnSelectNone );
 
+            _hfPanelIsVisible = new HiddenFieldWithClass();
+            _hfPanelIsVisible.CssClass = "js-picker-menu-is-visible";
+            _hfPanelIsVisible.ID = string.Format( "hfPanelIsVisible_{0}", this.ID );
+            this.Controls.Add( _hfPanelIsVisible );
+
             // PickerMenu (DropDown menu)
             _pnlPickerMenu = new Panel { ID = "pnlPickerMenu" };
             _pnlPickerMenu.CssClass = "picker-menu dropdown-menu";
-            _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "none";
             this.Controls.Add( _pnlPickerMenu );
             SetPickerOnClick();
 
@@ -382,38 +379,8 @@ namespace Rock.Web.UI.Controls
             _pnlAddressEntry.CssClass = "locationpicker-address-entry";
             _pnlPickerMenu.Controls.Add( _pnlAddressEntry );
 
-            _tbAddress1 = new RockTextBox { ID = "tbAddress1" };
-            _tbAddress1.Label = "Address Line 1";
-            _pnlAddressEntry.Controls.Add( _tbAddress1 );
-
-            _tbAddress2 = new RockTextBox { ID = "tbAddress2" };
-            _tbAddress2.Label = "Address Line 2";
-            _pnlAddressEntry.Controls.Add( _tbAddress2 );
-
-            // Address Entry - City State Zip
-            _divCityStateZipRow = new HtmlGenericContainer( "div", "row" );
-            _pnlAddressEntry.Controls.Add( _divCityStateZipRow );
-
-            _divCityColumn = new HtmlGenericContainer( "div", "col-sm-5" );
-            _divCityStateZipRow.Controls.Add( _divCityColumn );
-            _tbCity = new RockTextBox { ID = "tbCity" };
-            _tbCity.Label = "City";
-            _divCityColumn.Controls.Add( _tbCity );
-
-            _divStateColumn = new HtmlGenericContainer( "div", "col-sm-3" );
-            _divCityStateZipRow.Controls.Add( _divStateColumn );
-            _ddlState = new StateDropDownList { ID = "ddlState" };
-            _ddlState.UseAbbreviation = true;
-            _ddlState.CssClass = "input-mini";
-            _ddlState.Label = "State";
-            _divStateColumn.Controls.Add( _ddlState );
-
-            _divZipColumn = new HtmlGenericContainer( "div", "col-sm-4" );
-            _divCityStateZipRow.Controls.Add( _divZipColumn );
-            _tbZip = new RockTextBox { ID = "tbZip" };
-            _tbZip.CssClass = "input-small";
-            _tbZip.Label = "Zip";
-            _divZipColumn.Controls.Add( _tbZip );
+            _acAddress = new AddressControl { ID = "acAddress" };
+            _pnlAddressEntry.Controls.Add( _acAddress );
 
             // picker actions
             _pnlPickerActions = new Panel { ID = "pnlPickerActions", CssClass = "picker-actions" };
@@ -422,7 +389,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect.Click += _btnSelect_Click;
             _pnlPickerActions.Controls.Add( _btnSelect );
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
-            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide();", _pnlPickerMenu.ClientID );
+            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
         }
 
@@ -433,7 +400,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Enabled )
             {
-                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); return false;", _pnlPickerMenu.ClientID );
+                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
                 _btnPickerLabel.HRef = "#";
             }
             else
@@ -444,19 +411,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the _btnPickerLabel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void _btnPickerLabel_Click( object sender, EventArgs e )
-        {
-            string currentVal = _pnlPickerMenu.Style[HtmlTextWriterStyle.Display];
-
-            // toggle Display of PickerMenu
-            _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = currentVal != "none" ? "none" : "block";
-        }
-
-        /// <summary>
         /// Handles the Click event of the _btnSelect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -464,9 +418,10 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
             LocationService locationService = new LocationService( new RockContext() );
-            var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
+            var location = locationService.Get( _acAddress.Street1, _acAddress.Street2, _acAddress.City, _acAddress.State, _acAddress.PostalCode, _acAddress.Country );
             Location = location;
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            ShowDropDown = false;
         }
 
         /// <summary>
@@ -498,6 +453,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = ShowDropDown ? "block" : "none";
             this.Render( writer );
         }
     }

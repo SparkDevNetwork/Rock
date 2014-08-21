@@ -17,7 +17,7 @@
         <Setter Property="Label.FontSize"
                 Value="14"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#6a6a6a"></Setter>
     </Style>
 
     <!-- Label style: Bold -->
@@ -69,18 +69,18 @@
         <Setter Property="Label.FontSize"
                 Value="21"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#6a6a6a"></Setter>
     </Style>
 
-    
+
     <!-- *** Banner ***  -->
-    
+
     <!-- Panel Style: panelBanner -->
     <Style x:Key="panelBanner"
            TargetType="{x:Type StackPanel}" >
         <Setter 
             Property="Background"
-            Value="#8498ab"
+            Value="#dbd5cb"
             />
         <Setter 
             Property="Margin"
@@ -91,7 +91,7 @@
             Value="Horizontal"
             />
     </Style>
-    
+
     <!-- Label style: Banner Title -->
     <Style x:Key="labelStyleBannerTitle"
            TargetType="{x:Type Label}">
@@ -100,7 +100,7 @@
         <Setter Property="Label.FontSize"
                 Value="28"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#ecf0f3"></Setter>
+                Value="#6a6a6a"></Setter>
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
         <Setter Property="Margin"
@@ -118,19 +118,19 @@
         <Setter Property="Label.FontSize"
                 Value="28"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#ecf0f3"></Setter>
+                Value="#6a6a6a"></Setter>
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
     </Style>
-    
-    
+
+
 
     <!-- Grid style: PanelGrid -->
     <Style x:Key="gridPanel"
            TargetType="{x:Type Grid}">
         <Setter 
             Property="Background"
-            Value="#e7ecf0" 
+            Value="#ffffff" 
             />
     </Style>
 
@@ -169,9 +169,9 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    
-    
+
+
+
 
     <!-- Label style: Alert-->
     <Style x:Key="labelStyleAlert"
@@ -322,17 +322,17 @@
            TargetType="{x:Type TextBlock}">
         <Setter Property="Label.Margin"
                 Value="0,0,0,0">
-            </Setter>
-            <Setter Property="Label.VerticalAlignment"
+        </Setter>
+        <Setter Property="Label.VerticalAlignment"
                 Value="Center"></Setter>
-            <Setter Property="Label.HorizontalAlignment"
+        <Setter Property="Label.HorizontalAlignment"
                 Value="Left"></Setter>
-            <Setter Property="Label.FontWeight"
+        <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
-            <Setter Property="Label.FontSize"
+        <Setter Property="Label.FontSize"
                 Value="14"></Setter>
-            <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#6a6a6a"></Setter>
     </Style>
 
     <!-- Textblock Style: Grid Data  -->
@@ -472,9 +472,9 @@
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="1"
-                            BorderBrush="#859bb0"
+                            BorderBrush="#354d56"
                             Padding="8,2,8,2"
-                            Background="#a4b4c4"
+                            Background="#466673"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
@@ -491,6 +491,17 @@
                             <Setter TargetName="buttonBorder"
                                     Property="Background"
                                     Value="Transparent">
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="buttonBorder"
+                                    Property="Background"
+                                    Value="#f5f5f5" >
+                            </Setter>
+                            <Setter TargetName="buttonBorder"
+                                    Property="BorderBrush"
+                                    Value="#c4c4c4" >
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -524,9 +535,9 @@
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="0"
-                            BorderBrush="#758ba1"
+                            BorderBrush="#e76812"
                             Padding="8,2,8,2"
-                            Background ="#8498ab"
+                            Background ="#ee7624"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
@@ -538,12 +549,20 @@
                                  Value="True">
                             <Setter Property="Cursor"
                                     Value="Hand" />
+                            <Setter TargetName="buttonBorder"
+                                    Property="Background"
+                                    Value="#d86211">
+                            </Setter>
+                            <Setter TargetName="buttonBorder"
+                                    Property="BorderBrush"
+                                    Value="#ae4f0d">
+                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed"
                                  Value="True">
                             <Setter TargetName="buttonBorder"
                                     Property="Background"
-                                    Value="#a498ab">
+                                    Value="#ae4f0d">
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -577,9 +596,9 @@
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="0"
-                            BorderBrush="#758ba1"
+                            BorderBrush="#354d56"
                             Padding="8,2,8,2"
-                            Background ="#8498ab"
+                            Background ="#466673"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
@@ -596,7 +615,7 @@
                                  Value="True">
                             <Setter TargetName="buttonBorder"
                                     Property="Background"
-                                    Value="#000000">
+                                    Value="#ee7624">
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -672,7 +691,14 @@
            TargetType="{x:Type Page}" >
         <Setter 
                Property="Background"
-               Value="#f4f4f4"
+               Value="#dbd5cb"
+               />
+    </Style>
+    <Style x:Key="pageBackgroundGrey"
+           TargetType="{x:Type Page}" >
+        <Setter 
+               Property="Background"
+               Value="#f3f3f4"
                />
     </Style>
     <Style x:Key="pageBackgroundLogin"
@@ -681,6 +707,15 @@
                Property="Background"
                Value="#FF373737"
                />
+    </Style>
+
+    <!-- Menu Style -->
+    <Style x:Key="menuStyle" 
+           TargetType="Menu">
+        <Setter
+            Property="Background"
+            Value="#dbd5cb"
+            />
     </Style>
 
 </ResourceDictionary>

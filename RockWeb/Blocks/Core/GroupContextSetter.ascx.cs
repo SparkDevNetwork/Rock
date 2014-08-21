@@ -20,11 +20,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -32,11 +32,12 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Block that can be used to set the default group context for the site
     /// </summary>
-    [DisplayName( "Groups Context Setter" )]
+    [DisplayName( "Group Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default groups context for the site." )]
+    [Description( "Block that can be used to set the default group context for the site." )]
 
     [GroupTypeGroupField( "Group Filter", "Select group type and root group filter groups by root group. Leave root group blank to filter by group type." )]
+    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site" )]
     public partial class GroupContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -81,24 +82,10 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            var groupEntityType = EntityTypeCache.Read( "Rock.Model.Group" );
+            var defaultGroup = RockPage.GetCurrentContext( groupEntityType ) as Group;
+
             var groupService = new GroupService( new RockContext() );
-
-            string defaultGroupPublicKey = string.Empty;
-            var contextCookie = Request.Cookies["Rock:context"];
-            if ( contextCookie != null )
-            {
-                var cookieValue = contextCookie.Values[typeof( Rock.Model.Group ).FullName];
-
-                string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                string[] contextItemParts = contextItem.Split( '|' );
-                if ( contextItemParts.Length == 2 )
-                {
-                    defaultGroupPublicKey = contextItemParts[1];
-                }
-            }
-
-            var defaultGroup = groupService.GetByPublicKey( defaultGroupPublicKey );
-
             IQueryable<Group> qryGroups = null;
 
             // if rootGroup is set, use that as the filter.  Otherwise, use GroupType as the filter
@@ -118,24 +105,19 @@ namespace RockWeb.Blocks.Core
             if ( qryGroups == null )
             {
                 nbSelectGroupTypeWarning.Visible = true;
-                ddlGroup.Visible = false;
+                lCurrentSelection.Text = string.Empty;
+                rptGroups.Visible = false;
             }
             else
             {
                 nbSelectGroupTypeWarning.Visible = false;
-                ddlGroup.Visible = true;
-                ddlGroup.Items.Clear();
-                var groups = qryGroups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-                foreach ( var group in groups )
-                {
-                    var listItem = new ListItem( group.Name, HttpUtility.UrlDecode( group.ContextKey ) );
-                    if ( defaultGroup != null )
-                    {
-                        listItem.Selected = group.Guid == defaultGroup.Guid;
-                    }
+                rptGroups.Visible = true;
 
-                    ddlGroup.Items.Add( listItem );
-                }
+                lCurrentSelection.Text = defaultGroup != null ? defaultGroup.ToString() : "Select Group";
+                var groups = qryGroups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().Select( a => new { a.Name, ContextKey = HttpUtility.UrlDecode( a.ContextKey ) } ).ToList();
+
+                rptGroups.DataSource = groups;
+                rptGroups.DataBind();
             }
         }
 
@@ -154,22 +136,18 @@ namespace RockWeb.Blocks.Core
         #region Methods
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlGroup control.
+        /// Handles the ItemCommand event of the rptGroups control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlGroup_SelectedIndexChanged( object sender, EventArgs e )
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptGroups_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            var contextCookie = Request.Cookies["Rock:context"];
-            if ( contextCookie == null )
+            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            var group = new GroupService( new RockContext() ).Get( e.CommandArgument.ToString().AsInteger() );
+            if ( group != null )
             {
-                contextCookie = new HttpCookie( "Rock:context" );
+                RockPage.SetContextCookie( group, pageScope, true );
             }
-
-            contextCookie.Values[typeof( Rock.Model.Group ).FullName] = ddlGroup.SelectedValue;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
-
-            Response.Cookies.Add( contextCookie );
         }
 
         #endregion

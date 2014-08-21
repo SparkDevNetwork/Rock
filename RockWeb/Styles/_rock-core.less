@@ -16,9 +16,9 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
-@import "_components.less";
 @import "_page-admin.less";
 @import "_modal.less";
+@import "_components.less";
 @import "_forms.less";
 @import "_dashboard.less";
 @import "_grid.less";
@@ -31,6 +31,7 @@
 @import "_blocks-finance.less";
 @import "_blocks-persondetails.less";
 @import "_blocks-communication.less";
+@import "_blocks-checkinadmin.less";
 
 @import "_page-specific.less";
 
@@ -87,7 +88,22 @@ small
 a.help {
     margin-left: 6px;
     outline: 0;
-    color: @header-text-color;
+    color: @help-color;
+}
+
+.photo {
+    img {
+        width: 100%;
+    }
+}
+
+.well {
+    & > h1, 
+    & > h2, 
+    & > h3, 
+    & > h4 {
+        margin-top: 0;
+    }
 }
 
 // 4. Bootstrap Overrides
@@ -157,25 +173,32 @@ a.help {
         border-color: @accent-color;
     }
 
-    .panel-title {
-        small {
-            color: #e0e0e0;
+    .panel-heading {
+        .panel-title {
+            small {
+                opacity: .5;
+            }
         }
-    }
 
-    // adjust the background color of pickers on a panel
-    .picker .picker-label {
-        background-color: @accent-color;
-        color: @accent-text-color;
-        border-color: darken(@accent-color, 10%)
+        .panel-labels {
+            float: right;
+        }
+
+        .panel-actions {
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
     }
 
     .panel-body {
         border-radius: 0 0 4px 4px;
 
-        .well {
+        /*.well {
             background-color: @accent-color;
-        }
+        }*/
     }
 }
 
@@ -213,7 +236,7 @@ a.help {
 }
 
 .panel-persondetails {
-    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
 
     .panel-heading {
         .actions {
@@ -224,7 +247,7 @@ a.help {
     }
 
     .panel-body {
-        background-color: @body-bg;
+        background-color: #fff;
 
         .form-group.static-control {
             .clearfix();
@@ -248,6 +271,50 @@ a.help {
     }
 }
 
+.panel-block {
+    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+
+    border-top-color: @panel-top-border-color;
+
+    .panel-heading {
+        background-color: @gray-lighter;
+        .clearfix();
+
+        .panel-title {
+            float: left;
+
+            i {
+                color: #6a6a6a;
+            }
+        }
+
+        /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
+            float: right;
+            margin-top: 2px;
+        }*/
+    }
+
+    .panel-body {
+        
+        .grid.grid-panel {
+            margin: -15px;
+
+            .grid-filter {
+                border-radius: 0;
+            }
+
+            .table-bordered {
+                border-width: 1px 0 0 0;
+                
+                & > tfoot > tr > td {
+                    border: 0px;
+                }
+            }
+        }
+    }
+}
+
 // .panel-note {}  see _block-specific.less
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
@@ -260,15 +327,15 @@ a.help {
 }
 
 .btn-action {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
+    .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
 }
 
 .btn-security {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
+    .button-variant(@btn-security-color; @btn-security-bg; @btn-security-border);
 }
 
 .btn-authenication {
-    .button-variant(@accent-text-color; @accent-color; darken(@accent-color, 10%));
+    .button-variant(@btn-authenication-color; @btn-authenication-bg; @btn-authenication-border);
     width: 100%;
 
     &:hover {
@@ -289,7 +356,15 @@ a.help {
 }
 
 // alert extentions
+.alert { // styling for exceptions
 
+    pre {
+        border: 0;
+        padding: 0;
+        color: inherit;
+        background-color: transparent;
+    }
+}
 // new alert types
 .alert-action { 
     .alert-variant(@accent-color; @accent-color; @accent-text-color);
@@ -299,7 +374,7 @@ a.help {
 .alert-success {
     a {
         color: @alert-success-text;
-        border-bottom: 1px dotted @alert-success-text;
+        border-bottom: @alert-success-link-border-bottom;
     }
 
     a.help {
@@ -310,7 +385,7 @@ a.help {
 .alert-info {
     a {
         color: @alert-info-text;
-        border-bottom: 1px dotted @alert-info-text;
+        border-bottom: @alert-info-link-border-bottom;
     }
 
     a.help {
@@ -321,7 +396,7 @@ a.help {
 .alert-warning { 
     a {
         color: @alert-warning-text;
-        border-bottom: 1px dotted @alert-warning-text;
+        border-bottom: @alert-warning-link-border-bottom;
     }
     a.help {
         border-bottom: 0;
@@ -331,13 +406,35 @@ a.help {
 .alert-danger { 
     a {
         color: @alert-danger-text;
-        border-bottom: 1px dotted @alert-danger-text;
+        border-bottom: @alert-danger-link-border-bottom;
     }
     a.help {
         border-bottom: 0;
     }
 }
 
+.alert { // hide the styling of pre's inside of alerts
+    pre {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+    }
+}
+
+// system errors
+
+.system-error {
+    pre {
+        background-color: transparent;
+        border: 0;
+        color: inherit;
+    }
+
+    .close {
+        color: inherit;
+    }
+}
 
 // modify BS3 to use fontawesome for carousel icons 
 .carousel-control .fa-chevron-left,
@@ -373,6 +470,18 @@ ul.list-padded {
             margin-top: 0;
         }
     }
+}
+
+// typography
+
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 // add 10 column row

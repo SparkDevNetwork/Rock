@@ -149,12 +149,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person )
+        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return this.Metric.IsAuthorized( action, person );
+            return this.Metric.IsAuthorized( action, person, rockContext );
         }
 
         /// <summary>
@@ -173,12 +174,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return this.Metric.IsPrivate( action, person );
+            return this.Metric.IsPrivate( action, person, rockContext );
         }
 
         /// <summary>
@@ -186,9 +188,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.Metric.MakePrivate( action, person );
+            this.Metric.MakePrivate( action, person, rockContext );
         }
 
         /// <summary>
@@ -196,9 +199,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.Metric.MakeUnPrivate( action, person );
+            this.Metric.MakeUnPrivate( action, person, rockContext );
         }
 
         #endregion

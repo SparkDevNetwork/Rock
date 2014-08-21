@@ -2,14 +2,16 @@
 
 <asp:UpdatePanel ID="upAttendanceHistory" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlContent" runat="server">
+        <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-            <div id="pnlAttendanceHistory" runat="server">
-                <h4>Attendance History</h4>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-check-square"></i> Attendance History</h1>
+            </div>
+            <div class="panel-body">
 
-                <div class="grid">
+                <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                         <Rock:RockDropDownList ID="ddlPeople" runat="server" Label="Person" />
@@ -27,7 +29,8 @@
                         </Columns>
                     </Rock:Grid>
                 </div>
-            </div>
+
+            </div>              
 
         </asp:Panel>
     </ContentTemplate>

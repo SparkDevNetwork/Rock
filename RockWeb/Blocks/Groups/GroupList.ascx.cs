@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Groups
     [ContextAware]
     public partial class GroupList : RockBlock
     {
+        public int _groupTypesCount = 0;
+
         #region Control Methods
 
         /// <summary>
@@ -289,53 +291,57 @@ namespace RockWeb.Blocks.Groups
             boolFields["IsSystem"].Visible = showSystemColumn;
 
             // Person context will exist if used on a person detail page
-            var personContext = ContextEntity<Person>();
-            if ( personContext != null )
+            int personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
             {
-                boundFields["GroupRole"].Visible = true;
-                boundFields["DateAdded"].Visible = true;
-                boundFields["MemberCount"].Visible = false;
-
-                gGroups.Actions.ShowAdd = false;
-                gGroups.IsDeleteEnabled = false;
-                gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
-
-                var qry = new GroupMemberService( rockContext ).Queryable()
-                    .Where( m =>
-                        m.PersonId == personContext.Id &&
-                        groupTypeIds.Contains( m.Group.GroupTypeId ) &&
-                        ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
-
-                // Filter by active/inactive
-                if ( ddlActiveFilter.SelectedIndex > -1 )
+                var personContext = ContextEntity<Person>();
+                if ( personContext != null )
                 {
-                    if ( ddlActiveFilter.SelectedValue == "inactive" )
-                    {
-                        qry = qry.Where( a => a.Group.IsActive == false );
-                    }
-                    else if ( ddlActiveFilter.SelectedValue == "active" )
-                    {
-                        qry = qry.Where( a => a.Group.IsActive == true );
-                    }
-                }
+                    boundFields["GroupRole"].Visible = true;
+                    boundFields["DateAdded"].Visible = true;
+                    boundFields["MemberCount"].Visible = false;
 
-                gGroups.DataSource = qry
-                    .Select( m => new
+                    gGroups.Actions.ShowAdd = false;
+                    gGroups.IsDeleteEnabled = false;
+                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
+
+                    var qry = new GroupMemberService( rockContext ).Queryable( true )
+                        .Where( m =>
+                            m.PersonId == personContext.Id &&
+                            groupTypeIds.Contains( m.Group.GroupTypeId ) &&
+                            ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
+
+                    // Filter by active/inactive
+                    if ( ddlActiveFilter.SelectedIndex > -1 )
+                    {
+                        if ( ddlActiveFilter.SelectedValue == "inactive" )
                         {
-                            Id = m.Group.Id,
-                            Name = m.Group.Name,
-                            GroupTypeName = m.Group.GroupType.Name,
-                            GroupOrder = m.Group.Order,
-                            GroupTypeOrder = m.Group.GroupType.Order,
-                            Description = m.Group.Description,
-                            IsSystem = m.Group.IsSystem,
-                            GroupRole = m.GroupRole.Name,
-                            DateAdded = m.CreatedDateTime,
-                            IsActive = m.Group.IsActive,
-                            MemberCount = 0
-                        } )
-                    .Sort( sortProperty )
-                    .ToList();
+                            qry = qry.Where( a => a.Group.IsActive == false );
+                        }
+                        else if ( ddlActiveFilter.SelectedValue == "active" )
+                        {
+                            qry = qry.Where( a => a.Group.IsActive == true );
+                        }
+                    }
+
+                    gGroups.DataSource = qry
+                        .Select( m => new
+                            {
+                                Id = m.Group.Id,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupOrder = m.Group.Order,
+                                GroupTypeOrder = m.Group.GroupType.Order,
+                                Description = m.Group.Description,
+                                IsSystem = m.Group.IsSystem,
+                                GroupRole = m.GroupRole.Name,
+                                DateAdded = m.CreatedDateTime,
+                                IsActive = m.Group.IsActive,
+                                MemberCount = 0
+                            } )
+                        .Sort( sortProperty )
+                        .ToList();
+                }
             }
             else
             {
@@ -384,6 +390,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             gGroups.DataBind();
+
+            // hide the group type column if there's only one type; must come after DataBind()
+            if ( _groupTypesCount == 1 )
+            {
+                this.gGroups.Columns[1].Visible = false;
+            }
         }
 
         /// <summary>
@@ -400,6 +412,7 @@ namespace RockWeb.Blocks.Groups
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )
             {
+                _groupTypesCount = includeGroupTypeGuids.Count;
                 qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
             }
 
@@ -416,6 +429,18 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupTypeIds.Add( groupTypeId );
                 }
+            }
+
+            // If there's only one group type, use it's 'group term' in the panel title.
+            if ( groupTypeIds.Count == 1 )
+            {
+                var singleGroupType = GroupTypeCache.Read( groupTypeIds.FirstOrDefault() );
+                lTitle.Text = string.Format( "{0}", singleGroupType.GroupTerm.Pluralize() );
+                iIcon.AddCssClass( singleGroupType.IconCssClass );
+            }
+            else
+            {
+                iIcon.AddCssClass( "fa fa-users" );
             }
 
             groupTypeIds = qry.Select( t => t.Id ).ToList();

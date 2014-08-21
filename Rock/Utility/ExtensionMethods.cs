@@ -527,7 +527,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             decimal value;
@@ -561,7 +561,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             double value;
@@ -618,16 +618,14 @@ namespace Rock
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
-        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
         {
             try
             {
-                if ( content == null )
-                    return string.Empty;
-
-                // If there's no merge codes, just return the content
-                if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
-                    return content;
+                if (!content.HasMergeFields())
+                {
+                    return content ?? string.Empty;
+                }
 
                 //// NOTE: This means that template filters will also use CSharpNamingConvention
                 //// For example the dotliquid documentation says to do this for formatting dates: 
@@ -643,6 +641,23 @@ namespace Rock
             {
                 return "Error resolving Liquid merge fields: " + ex.Message;
             }
+        }
+
+        /// <summary>
+        /// Determines whether [has merge fields] [the specified content].
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool HasMergeFields( this string content)
+        {
+            if ( content == null )
+                return false;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                return false;
+
+            return true;
         }
 
         /// <summary>
@@ -893,7 +908,7 @@ namespace Rock
 
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
-                return definedValue.Name;
+                return definedValue.Value;
             else
                 return string.Empty;
         }
@@ -1507,7 +1522,7 @@ namespace Rock
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Description,
                     v.Id
                 } );
@@ -1664,23 +1679,16 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T ConvertToEnum<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            if ( defaultValue.HasValue )
+            T? result = ConvertToEnumOrNull<T>(enumValue, defaultValue);
+            if (result.HasValue)
             {
-                T result;
-                if ( Enum.TryParse<T>( enumValue, out result ) )
-                {
-                    return result;
-                }
-                else
-                {
-                    return defaultValue.Value;
-                }
+                return result.Value;
             }
             else
             {
-                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+                throw new Exception( string.Format( "'{0}' is not a member of the {1} enumeration.", enumValue, typeof( T ).Name ) );
             }
         }
 
@@ -1689,17 +1697,25 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value.</param>
         /// <returns></returns>
-        public static T? ConvertToEnumOrNull<T>( this String enumValue ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T result;
-            if ( Enum.TryParse<T>( enumValue, out result ) )
+            if ( Enum.TryParse<T>( (enumValue ?? "").Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
             {
                 return result;
             }
             else
             {
-                return null;
+                if ( defaultValue.HasValue )
+                {
+                    return defaultValue.Value;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -2095,5 +2111,44 @@ namespace Rock
         }
 
         #endregion
+
+        #region Geography extension methods
+
+        /// <summary>
+        /// Coordinateses the specified geography.
+        /// </summary>
+        /// <param name="geography">The geography.</param>
+        /// <returns></returns>
+        public static List<MapCoordinate> Coordinates (this System.Data.Entity.Spatial.DbGeography geography)
+        {
+            var coordinates = new List<MapCoordinate>();
+
+            var match = Regex.Match( geography.AsText(), @"(?<=POLYGON \(\()[^\)]*(?=\)\))" );
+            if (match.Success)
+            {
+                string[] longSpaceLat = match.ToString().Split( ',' );
+
+                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                {
+                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
+                    if ( longLat.Length == 2 )
+                    {
+                        double? lat = longLat[1].AsDoubleOrNull();
+                        double? lon = longLat[0].AsDoubleOrNull();
+                        if ( lat.HasValue && lon.HasValue )
+                        {
+                            coordinates.Add( new MapCoordinate( lat, lon ) );
+                        }
+                    }
+                }
+
+            }
+
+            return coordinates;
+
+        }
+
+        #endregion
+
     }
 }

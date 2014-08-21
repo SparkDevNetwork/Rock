@@ -81,6 +81,11 @@ namespace RockWeb.Blocks.WorkFlow
                             }
                         }
 
+                        foreach( string key in Request.QueryString.AllKeys )
+                        {
+                            workflow.SetAttributeValue( key, Request.QueryString[key] );
+                        }
+
                         var qryParams = new Dictionary<string, string>();
                         qryParams.Add( "WorkflowTypeId", workflowTypeId.ToString() );
 
@@ -92,7 +97,7 @@ namespace RockWeb.Blocks.WorkFlow
                                 var workflowService = new Rock.Model.WorkflowService( rockContext );
                                 workflowService.Add( workflow );
 
-                                RockTransactionScope.WrapTransaction( () =>
+                                rockContext.WrapTransaction( () =>
                                 {
                                     rockContext.SaveChanges();
                                     workflow.SaveAttributeValues( rockContext );

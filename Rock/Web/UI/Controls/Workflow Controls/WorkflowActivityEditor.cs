@@ -355,7 +355,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblStatus );
             _lblStatus.ClientIDMode = ClientIDMode.Static;
             _lblStatus.ID = this.ID + "_lblInactive";
-            _lblStatus.CssClass = "label label-important pull-right";
+            _lblStatus.CssClass = "pull-right";
 
             _lbDeleteActivityType = new LinkButton();
             Controls.Add( _lbDeleteActivityType );
@@ -440,7 +440,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute("class", "panel-title");

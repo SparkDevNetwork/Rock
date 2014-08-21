@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -91,7 +92,7 @@ namespace Rock.Model
         /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the geolocation of the Location.
         /// </value>
         [DataMember]
-        [Newtonsoft.Json.JsonConverter(typeof(DbGeographyConverter))]
+        [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string Street1 { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the second line of the Location's Street/Mailing Address. 
         /// </summary>
@@ -130,7 +131,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string Street2 { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the city component of the Location's Street/Mailing Address.
         /// </summary>
@@ -141,7 +142,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string City { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the State component of the Location's Street/Mailing Address.
         /// </summary>
@@ -152,7 +153,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string State { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the country component of the Location's Street/Mailing Address. 
         /// </summary>
@@ -163,7 +164,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string Country { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Zip/Postal Code component of the Location's Street/Mailing Address.
         /// </summary>
@@ -171,9 +172,9 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the Zip/Postal Code component of the Location's Street/Mailing Address. If this Location does not have 
         /// Street/Mailing Address, this value will be null.
         /// </value>
-        [MaxLength( 10 )]
+        [MaxLength( 50 )]
         [DataMember]
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary>
         /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.
@@ -195,7 +196,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? StandardizeAttemptedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or set the component name of the service that attempted the most recent address standardization attempt.
         /// </summary>
@@ -206,7 +207,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string StandardizeAttemptedServiceType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the result code returned from the address standardization service.
         /// </summary>
@@ -217,7 +218,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string StandardizeAttemptedResult { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the date and time that the Location's address was successfully standardized.
         /// </summary>
@@ -225,9 +226,9 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that the Location's address was successfully standardized. If address standardization has not been attempted for this location,
         /// This value will be null.
         /// </value>
-		[DataMember]
+        [DataMember]
         public DateTime? StandardizedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets and sets the date and time that an attempt was made to geocode the Location's address.
         /// </summary>
@@ -237,7 +238,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? GeocodeAttemptedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the component name of the Geocoding service that attempted the most recent address Geocode attempt.
         /// </summary>
@@ -248,7 +249,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string GeocodeAttemptedServiceType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the result code returned by geocoding service during the last geocode attempt.
         /// </summary>
@@ -259,7 +260,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string GeocodeAttemptedResult { get; set; }
-        
+
         /// <summary>
         /// Gets or sets date and time that this Location's  address has been successfully geocoded. 
         /// </summary>
@@ -317,8 +318,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
-        public virtual bool IsNamedLocation 
-        { 
+        public virtual bool IsNamedLocation
+        {
             get
             {
                 return !string.IsNullOrWhiteSpace( Name );
@@ -380,6 +381,28 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile Image { get; set; }
 
+        /// <summary>
+        /// Gets the formatted address.
+        /// </summary>
+        /// <value>
+        /// The formatted address.
+        /// </value>
+        public virtual string FormattedAddress
+        {
+            get { return GetFullStreetAddress(); }
+        }
+
+        /// <summary>
+        /// Gets the formatted HTML address.
+        /// </summary>
+        /// <value>
+        /// The formatted HTML address.
+        /// </value>
+        public virtual string FormattedHtmlAddress
+        {
+            get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -399,16 +422,16 @@ namespace Rock.Model
         /// </summary>
         /// <param name="title">A <see cref="System.String"/> containing the parameters needed by Google Maps to display this location.</param>
         /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
-        public virtual string GoogleMapLink(string title)
+        public virtual string GoogleMapLink( string title )
         {
             string qParm = this.ToString();
-            if (!string.IsNullOrWhiteSpace(title))
+            if ( !string.IsNullOrWhiteSpace( title ) )
             {
                 qParm += " (" + title + ")";
             }
 
             return "http://maps.google.com/maps?q=" +
-                System.Web.HttpUtility.UrlEncode(qParm);
+                System.Web.HttpUtility.UrlEncode( qParm );
         }
 
         /// <summary>
@@ -451,10 +474,10 @@ namespace Rock.Model
                     return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
                 }
 
-                if (this.GeoFence != null)
+                if ( this.GeoFence != null )
                 {
                     int pointCount = this.GeoFence.PointCount ?? 0;
-                    return string.Format( "An area with {0} points", (pointCount > 0 ? pointCount - 1 : 0) );
+                    return string.Format( "An area with {0} points", ( pointCount > 0 ? pointCount - 1 : 0 ) );
                 }
             }
 
@@ -467,15 +490,47 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
-            var address = string.Format( "{0} {1} {2}, {3} {4}",
-                this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
-
-            if ( string.IsNullOrWhiteSpace( address.Replace( ",", string.Empty ) ) )
+            if (string.IsNullOrWhiteSpace(this.Street1) &&
+                string.IsNullOrWhiteSpace(this.Street2) &&
+                string.IsNullOrWhiteSpace(this.City))
             {
                 return string.Empty;
             }
 
-            return address;
+            string result = string.Format( "{0} {1} {2}, {3} {4}",
+                this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
+
+            var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                .DefinedValues
+                .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
+                .FirstOrDefault();
+            if ( countryValue != null )
+            {
+                string format = countryValue.GetAttributeValue( "AddressFormat" );
+                if ( !string.IsNullOrWhiteSpace( format ) )
+                {
+                    var dict = this.ToDictionary();
+                    dict["Country"] = countryValue.Description;
+                    result = format.ResolveMergeFields( dict );
+                }
+            }
+
+            // Remove blank lines
+            while (result.Contains( Environment.NewLine + Environment.NewLine))
+            {
+                result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
+            }
+            while ( result.Contains( "\x0A\x0A" ) )
+            {
+                result = result.Replace( "\x0A\x0A", "\x0A" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
+            {
+                return string.Empty;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -549,4 +604,133 @@ namespace Rock.Model
 
     #endregion
 
+    #region Map Helper Classes
+
+    /// <summary>
+    /// Helper class to store map coordinates
+    /// </summary>
+    public class MapCoordinate
+    {
+        /// <summary>
+        /// Gets or sets the latitude.
+        /// </summary>
+        /// <value>
+        /// The latitude.
+        /// </value>
+        public double? Latitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the longitude.
+        /// </summary>
+        /// <value>
+        /// The longitude.
+        /// </value>
+        public double? Longitude { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
+        /// </summary>
+        public MapCoordinate()
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
+        /// </summary>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        public MapCoordinate( double? latitude, double? longitude )
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MapItem
+    {
+        /// <summary>
+        /// Gets or sets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        public int EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
+        public int EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        public int LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the point.
+        /// </summary>
+        /// <value>
+        /// The point.
+        /// </value>
+        public MapCoordinate Point { get; set; }
+
+        /// <summary>
+        /// Gets or sets the polygon points.
+        /// </summary>
+        /// <value>
+        /// The polygon points.
+        /// </value>
+        public List<MapCoordinate> PolygonPoints { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapItem"/> class.
+        /// </summary>
+        public MapItem()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapItem"/> class.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        public MapItem( Location location )
+        {
+            PolygonPoints = new List<MapCoordinate>();
+
+            if ( location != null )
+            {
+                LocationId = location.Id;
+                if ( location.GeoPoint != null )
+                {
+                    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                }
+
+                if ( location.GeoFence != null )
+                {
+                    PolygonPoints = location.GeoFence.Coordinates();
+                }
+            }
+        }
+    }
+
+
+    #endregion
 }

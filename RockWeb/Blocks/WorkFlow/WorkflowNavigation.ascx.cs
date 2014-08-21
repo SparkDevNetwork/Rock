@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             var rockContext = new RockContext();
             var categories = new CategoryService( rockContext ).GetNavigationItems( entityTypeId, selectedCategories, includeChildCategories, CurrentPerson );
-            var workflowTypes = new WorkflowTypeService( rockContext ).Queryable().ToList();
+            var workflowTypes = new WorkflowTypeService( rockContext ).Queryable( "ActivityTypes.ActionTypes" ).ToList();
             return GetWorkflowNavigationCategories( categories, workflowTypes );
         }
 
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.WorkFlow
         private void BuildCategoryControl( Control parentControl, WorkflowNavigationCategory category )
         {
             var divPanel = new HtmlGenericContainer( "div" );
-            divPanel.AddCssClass( "panel panel-default panel-workflowitem" );
+            divPanel.AddCssClass( "panel panel-workflowitem" );
             parentControl.Controls.Add( divPanel );
 
             var divPanelHeading = new HtmlGenericControl( "div" );
@@ -194,14 +194,17 @@ namespace RockWeb.Blocks.WorkFlow
                 foreach ( var workflowType in category.WorkflowTypes )
                 {
                     var li = new HtmlGenericControl( "li" );
-                    li.AddCssClass( "xlist-group-item" );
+                    li.AddCssClass( "margin-b-sm" );
                     ulGroup.Controls.Add( li );
 
                     var qryParms = new Dictionary<string, string>();
                     qryParms.Add( "WorkflowTypeId", workflowType.Id.ToString() );
 
-                    var aNew = new HtmlGenericControl( "a" );
-                    aNew.Attributes.Add( "href", LinkedPageUrl( "EntryPage", qryParms ) );
+                    var aNew = new HtmlGenericControl( workflowType.HasForms ? "a" : "span" );
+                    if (workflowType.HasForms)
+                    {
+                        aNew.Attributes.Add( "href", LinkedPageUrl( "EntryPage", qryParms ) );
+                    }
                     li.Controls.Add( aNew );
 
                     if ( !string.IsNullOrWhiteSpace( workflowType.IconCssClass ) )
@@ -353,6 +356,14 @@ namespace RockWeb.Blocks.WorkFlow
         public string WorkTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has forms.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has forms; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasForms { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType"/> class.
         /// </summary>
         public WorkflowNavigationWorkflowType()
@@ -370,6 +381,7 @@ namespace RockWeb.Blocks.WorkFlow
             Description = workflowType.Description;
             IconCssClass = workflowType.IconCssClass;
             WorkTerm = workflowType.WorkTerm;
+            HasForms = workflowType.HasActiveForms;
             HighlightColor = string.Empty;
         }
     }

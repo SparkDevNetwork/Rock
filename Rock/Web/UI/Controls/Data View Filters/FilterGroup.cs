@@ -129,6 +129,7 @@ namespace Rock.Web.UI.Controls
             toggleAllAny.ButtonSizeCssClass = "btn-xs";
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
+            toggleAllAny.ActiveButtonCssClass = "btn-info";
 
             btnAddGroup = new LinkButton();
             Controls.Add( btnAddGroup );
@@ -178,7 +179,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
             writer.RenderBeginTag( "header" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "Show if" );

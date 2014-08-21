@@ -3,25 +3,34 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlForm" runat="server">
+        <div class="panel panel-block">
 
-            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
-            <asp:Literal ID="lheadingText" runat="server" />
-
-            <asp:PlaceHolder ID="phAttributes" runat="server" />
-            
-            <asp:Literal ID="lFootingText" runat="server" />
-
-            <div class="actions">
-                <asp:PlaceHolder ID="phActions" runat="server" />
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-gear"></i> Workflow Entry</h1>
             </div>
-        
-        </asp:Panel>
+            <div class="panel-body">
 
-        <br />
+                <asp:Panel ID="pnlForm" runat="server">
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" />
+                    <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+                    <asp:Literal ID="lheadingText" runat="server" />
+
+                    <asp:PlaceHolder ID="phAttributes" runat="server" />
+            
+                    <asp:Literal ID="lFootingText" runat="server" />
+
+                    <div class="actions">
+                        <asp:PlaceHolder ID="phActions" runat="server" />
+                    </div>
+
+                </asp:Panel>
+
+                <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" />
+
+            </div>
+
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

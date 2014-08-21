@@ -60,7 +60,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 if ( labelFileTypeId != 0 )
                 {
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
                     var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
                     foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )

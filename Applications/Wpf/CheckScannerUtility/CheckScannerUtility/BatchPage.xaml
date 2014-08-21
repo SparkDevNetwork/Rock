@@ -46,7 +46,8 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Menu x:Name="mainMenu"
-                  Grid.Column="0">
+                  Grid.Column="0"
+                  Style ="{StaticResource menuStyle}">
                 <MenuItem Header="_File">
                     <MenuItem x:Name="mnuConnect"
                               Header="_Connect"
@@ -81,7 +82,7 @@
                         <TextBlock Style="{StaticResource textBlockStyleGridDataTitle}"
                                    Text="{Binding Name}" />
                         <TextBlock Style="{StaticResource textBlockStyleGridData}"
-                                   Text="{Binding BatchDate, StringFormat=d}" />
+                                   Text="{Binding BatchStartDateTime, StringFormat=d}" />
                     </StackPanel>
                 </DataTemplate>
             </Grid.Resources>
@@ -234,7 +235,7 @@
                                         Margin="4,4,0,0"
                                         Content="Scan"
                                         Click="btnScan_Click" />
-                                <Button Style="{StaticResource buttonStyleMini}"
+                                <Button Style="{StaticResource buttonStylePrimaryMini}"
                                         x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
@@ -354,7 +355,7 @@
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            Binding="{Binding TransactionDateTime}"
+                                            Binding="{Binding CreatedDateTime}"
                                             HeaderStyle="{StaticResource gridHeaderStyleDateTime}"
                                             CellStyle="{StaticResource gridCellStyleNumber}"
                                             CanUserResize="False"

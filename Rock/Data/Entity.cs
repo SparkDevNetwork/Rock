@@ -314,7 +314,8 @@ namespace Rock.Data
             {
                 if ( propInfo.Name != "Attributes" &&
                     propInfo.Name != "AttributeValues" &&
-                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 

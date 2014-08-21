@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
-using System.Web;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -113,7 +111,7 @@ namespace Rock.Web.Cache
                 return this.Site;
             }
         }
-        
+
         #endregion
 
         #region Public Methods
@@ -161,75 +159,68 @@ namespace Rock.Web.Cache
         /// Returns Layout object from cache.  If Layout does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static LayoutCache Read( int id )
+        public static LayoutCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = LayoutCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             LayoutCache Layout = cache[cacheKey] as LayoutCache;
 
-            if ( Layout != null )
+            if ( Layout == null )
             {
-                return Layout;
-            }
-            else
-            {
-                var LayoutService = new LayoutService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var LayoutService = new LayoutService( rockContext );
                 var LayoutModel = LayoutService.Get( id );
                 if ( LayoutModel != null )
                 {
-                    LayoutModel.LoadAttributes();
+                    LayoutModel.LoadAttributes( rockContext );
                     Layout = new LayoutCache( LayoutModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, Layout, cachePolicy );
                     cache.Set( Layout.Guid.ToString(), Layout.Id, cachePolicy );
-
-                    return Layout;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return Layout;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static LayoutCache Read( Guid guid )
+        public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            LayoutCache layout = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                layout = Read( (int)cacheObj );
             }
-            else
+
+            if ( layout == null )
             {
-                var LayoutService = new LayoutService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var LayoutService = new LayoutService( rockContext );
                 var LayoutModel = LayoutService.Get( guid );
                 if ( LayoutModel != null )
                 {
-                    LayoutModel.LoadAttributes();
-                    var Layout = new LayoutCache( LayoutModel );
+                    LayoutModel.LoadAttributes( rockContext );
+                    layout = new LayoutCache( LayoutModel );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( LayoutCache.CacheKey( Layout.Id ), Layout, cachePolicy );
-                    cache.Set( Layout.Guid.ToString(), Layout.Id, cachePolicy );
-
-                    return Layout;
-                }
-                else
-                {
-                    return null;
+                    cache.Set( LayoutCache.CacheKey( layout.Id ), layout, cachePolicy );
+                    cache.Set( layout.Guid.ToString(), layout.Id, cachePolicy );
                 }
             }
+
+            return layout;
         }
 
         /// <summary>
@@ -247,18 +238,16 @@ namespace Rock.Web.Cache
             if ( Layout != null )
             {
                 Layout.CopyFromModel( LayoutModel );
-                return Layout;
             }
             else
             {
                 Layout = new LayoutCache( LayoutModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, Layout, cachePolicy );
                 cache.Set( Layout.Guid.ToString(), Layout.Id, cachePolicy );
-
-                return Layout;
             }
+
+            return Layout;
         }
 
         /// <summary>

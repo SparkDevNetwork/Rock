@@ -90,36 +90,38 @@
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '11001' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '11000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
                 });
 
                 // Bind the block instance delete anchor
-                $('a.block-delete').click(function () {
+                $('a.block-delete').click(function (a, b, c) {
+                    var blockId = $(this).attr('href');
 
-                    if (confirm('Are you sure you want to delete this block?')) {
+                    Rock.dialogs.confirm('Are you sure you want to delete this block?', function(result) {
 
-                        var blockId = $(this).attr('href');
+                        if (result)   {
 
-                        // delete the block instance
-                        $.ajax({
-                            type: 'DELETE',
-                            contentType: 'application/json',
-                            dataType: 'json',
-                            url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
-                            success: function (data, status, xhr) {
+                            // delete the block instance
+                            $.ajax({
+                                type: 'DELETE',
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
+                                success: function (data, status, xhr) {
 
-                                // Remove the block instance's container div
-                                $('#bid_' + blockId).remove();
+                                    // Remove the block instance's container div
+                                    $('#bid_' + blockId).remove();
 
-                            },
-                            error: function (xhr, status, error) {
-                                alert(status + ' [' + error + ']: ' + xhr.responseText);
-                            }
-                        });
+                                },
+                                error: function (xhr, status, error) {
+                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                                }
+                            });
+                        }
 
-                    }
+                    });
 
                     // Cancel the default action of the delete anchor tag
                     return false;
@@ -156,9 +158,9 @@
                 // Bind the zone configure icon so that edit icons are displayed on hover
                 $(".zone-configuration").hover(function () {
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '11001' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '11000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
                 });
             },
             exports = {

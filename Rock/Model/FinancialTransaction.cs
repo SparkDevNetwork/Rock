@@ -165,6 +165,24 @@ namespace Rock.Model
         [DataMember]
         public int? ScheduledTransactionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is 
+        /// from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
+        /// </summary>
+        /// <value>
+        /// The processed by person alias identifier.
+        /// </value>
+        public int? ProcessedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when is when the transaction 
+        /// was matched (or started to match) to the person who wrote the check.
+        /// </summary>
+        /// <value>
+        /// The processed date time.
+        /// </value>
+        public DateTime? ProcessedDateTime { get; set; }
+
         #endregion Entity Properties
 
         #region Virtual Properties
@@ -249,6 +267,15 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAlias of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is 
+        /// from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
+        /// </summary>
+        /// <value>
+        /// The processed by person alias.
+        /// </value>
+        public virtual PersonAlias ProcessedByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialTransactionDetail">Transaction Detail</see> line items for this transaction.
@@ -350,6 +377,7 @@ namespace Rock.Model
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -395,8 +395,6 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
         private void ShowDetail()
         {
             Rock.Model.Communication communication = null;

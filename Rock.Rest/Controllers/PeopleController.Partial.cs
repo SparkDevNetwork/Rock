@@ -162,16 +162,16 @@ namespace Rock.Rest.Controllers
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
-                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 50, 50 );
+                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 50, 50 );
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Name : string.Empty;
+                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
                 personSearchResult.Email = person.Email;
 
                 if ( person.RecordStatusValueId.HasValue )
                 {
                     var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
-                    personSearchResult.RecordStatus = recordStatus.Name;
+                    personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
                 else
@@ -184,7 +184,7 @@ namespace Rock.Rest.Controllers
 
                 string imageHtml = string.Format(
                     "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                    Person.GetPhotoUrl( person.PhotoId, person.Gender ) );
+                    Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender ) );
 
                 string personInfo = string.Empty;
 
@@ -232,18 +232,8 @@ namespace Rock.Rest.Controllers
 
                     if ( location != null )
                     {
-                        string streetInfo;
-                        if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                        {
-                            streetInfo = location.Street1 + " " + location.Street2;
-                        }
-                        else
-                        {
-                            streetInfo = location.Street2;
-                        }
-
-                        string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
-                        personSearchResult.Address = location.ToString();
+                        string addressHtml = "<h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                        personSearchResult.Address = location.GetFullStreetAddress();
                         personInfo += addressHtml;
                     }
 
@@ -354,9 +344,9 @@ namespace Rock.Rest.Controllers
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
+                    Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 65, 65 ),
                     person.FullName,
-                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
+                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                 var spouse = person.GetSpouse( rockContext );
                 if ( spouse != null )
@@ -378,7 +368,7 @@ namespace Rock.Rest.Controllers
 
                 foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
-                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.ToString() );
+                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
                 }
 
                 // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
@@ -387,6 +377,16 @@ namespace Rock.Rest.Controllers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Deletes the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public override void Delete( int id )
+        {
+            // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
+            throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
     }
 

@@ -31,6 +31,8 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        private bool _transactionInProgress = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
@@ -49,6 +51,39 @@ namespace Rock.Data
         /// The save error messages.
         /// </value>
         public virtual List<string> SaveErrorMessages { get; private set; }
+
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public void WrapTransaction( Action action )
+        {
+            if ( !_transactionInProgress )
+            {
+                _transactionInProgress = true;
+                using ( var dbContextTransaction = this.Database.BeginTransaction() )
+                {
+                    try
+                    {
+                        action.Invoke();
+                        dbContextTransaction.Commit();
+                    }
+                    catch ( Exception ex )
+                    {
+                        dbContextTransaction.Rollback();
+                        throw ( ex );
+                    }
+                    finally
+                    {
+                        _transactionInProgress = false;
+                    }
+                }
+            }
+            else
+            {
+                action.Invoke();
+            }
+        }
 
         /// <summary>
         /// Saves all changes made in this context to the underlying database.

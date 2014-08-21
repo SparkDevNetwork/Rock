@@ -43,7 +43,7 @@ namespace Rock.Model
 
             workflow.Process( rockContext, out errorMessages );
 
-            RockTransactionScope.WrapTransaction( () =>
+            this.Context.WrapTransaction( () =>
             {
                 this.Context.SaveChanges();
                 workflow.SaveAttributeValues( rockContext );

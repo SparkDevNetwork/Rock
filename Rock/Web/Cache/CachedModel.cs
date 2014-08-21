@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -127,12 +128,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person )
+        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -151,12 +153,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -164,9 +167,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -174,9 +178,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person );
+            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         #endregion
@@ -277,8 +282,8 @@ namespace Rock.Web.Cache
                 return this.AttributeValues[key][0].Value;
             }
 
-            if (this.Attributes != null &&
-                this.Attributes.ContainsKey(key))
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
             {
                 return this.Attributes[key].DefaultValue;
             }
@@ -294,7 +299,7 @@ namespace Rock.Web.Cache
         public List<string> GetAttributeValues( string key )
         {
             string value = GetAttributeValue( key );
-            if (!string.IsNullOrWhiteSpace(value))
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 return value.SplitDelimitedValues().ToList();
             }

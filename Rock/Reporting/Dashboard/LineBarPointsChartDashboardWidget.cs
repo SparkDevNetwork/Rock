@@ -35,7 +35,9 @@ namespace Rock.Reporting.Dashboard
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
     [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 6 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
+    [BooleanField( "Show Legend", "", true, Order = 7 )]
+    [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", Order = 8)]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 9 )]
     public abstract class LineBarPointsChartDashboardWidget : DashboardWidget
     {
         /// <summary>
@@ -53,7 +55,7 @@ namespace Rock.Reporting.Dashboard
         /// The metric warning control.
         /// </value>
         public abstract NotificationBox MetricWarningControl { get; }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -280,15 +282,13 @@ namespace Rock.Reporting.Dashboard
         /// <summary>
         /// Loads the chart.
         /// </summary>
-        public void LoadChart()
+        public virtual void LoadChart()
         {
             FlotChartControl.StartDate = this.DateRange.Start;
             FlotChartControl.EndDate = this.DateRange.End;
             FlotChartControl.MetricValueType = this.MetricValueType;
             FlotChartControl.MetricId = this.MetricId;
             FlotChartControl.EntityId = this.EntityId;
-            FlotChartControl.Title = this.Title;
-            FlotChartControl.Subtitle = this.Subtitle;
             FlotChartControl.CombineValues = this.CombineValues;
             FlotChartControl.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
@@ -298,6 +298,10 @@ namespace Rock.Reporting.Dashboard
 
             FlotChartControl.Options.SetChartStyle( this.ChartStyleDefinedValueGuid );
 
+            FlotChartControl.Options.legend = FlotChartControl.Options.legend ?? new Legend();
+            FlotChartControl.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
+            FlotChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+
             MetricWarningControl.Visible = !this.MetricId.HasValue;
         }
 
@@ -306,11 +310,12 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        public void lcExample_ChartClick( object sender, Rock.Web.UI.Controls.FlotChart.ChartClickArgs e )
+        public void lcExample_ChartClick( object sender, ChartClickArgs e )
         {
             if ( this.DetailPageGuid.HasValue )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString.Add( "MetricValueId", e.MetricValueId.ToString() );
                 qryString.Add( "MetricId", this.MetricId.ToString() );
                 qryString.Add( "SeriesId", e.SeriesId );
                 qryString.Add( "YValue", e.YValue.ToString() );

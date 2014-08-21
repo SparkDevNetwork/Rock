@@ -47,15 +47,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "campusId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "campusId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "campusId" ).AsInteger() );
             }
             else
             {
@@ -144,10 +136,7 @@ namespace RockWeb.Blocks.Core
             campus.Location.LocationTypeValueId = locationCampusValue.Id;
 
             string preValue = campus.Location.GetFullStreetAddress();
-            campus.Location.Street1 = tbStreet.Text;
-            campus.Location.City = tbCity.Text;
-            campus.Location.State = !string.IsNullOrWhiteSpace( tbCity.Text ) ? ddlState.SelectedValue : string.Empty;
-            campus.Location.Zip = tbZip.Text;
+            acAddress.GetValues( campus.Location );
             string postValue = campus.Location.GetFullStreetAddress();
 
             campus.ShortCode = tbCampusCode.Text;
@@ -167,7 +156,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
                 campus.SaveAttributeValues( rockContext );
@@ -187,29 +176,24 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="campusId">The campus identifier.</param>
+        public void ShowDetail( int campusId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "campusId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             // Load depending on Add(0) or Edit
             Campus campus = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+
+            if ( !campusId.Equals( 0 ) )
             {
-                campus = new CampusService( new RockContext() ).Get( itemKeyValue );
+                campus = new CampusService( new RockContext() ).Get( campusId );
                 lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
-            else
+
+            if ( campus == null )
             {
                 campus = new Campus { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add(Campus.FriendlyTypeName).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             hfCampusId.Value = campus.Id.ToString();
@@ -218,19 +202,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = campus.Description;
             tbUrl.Text = campus.Url;
             tbPhoneNumber.Text = campus.PhoneNumber;
-            if (campus.Location != null)
-            {
-                tbStreet.Text = campus.Location.Street1;
-                tbCity.Text = campus.Location.City;
-                ddlState.SelectedValue = campus.Location.State;
-                tbZip.Text = campus.Location.Zip;
-            }
-            else
-            {
-                tbStreet.Text = string.Empty;
-                tbCity.Text = string.Empty;
-                tbZip.Text = string.Empty;
-            }
+            acAddress.SetValues( campus.Location );
 
             tbCampusCode.Text = campus.ShortCode;
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );

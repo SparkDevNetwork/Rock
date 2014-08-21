@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
-                        var members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person" )
+                        var members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person", true )
                             .Where( m => 
                                 m.GroupId == group.Id &&
                                 m.PersonId != Person.Id )
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
                     if ( divPersonImage != null )
                     {
-                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( fm.PhotoId, fm.Gender ) + "&width=65" ) );
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( fm.PhotoId, fm.Age, fm.Gender ) + "&width=65" ) );
                         divPersonImage.Style.Add("background-size",  "cover");
                         divPersonImage.Style.Add("background-position", "50%");
                     }
@@ -191,15 +191,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             lbVerify.Visible = false;
                         }
                     }
-
-                    if ( !string.IsNullOrWhiteSpace( loc.Street2 ) )
-                    {
-                        PlaceHolder phStreet2 = e.Item.FindControl( "phStreet2" ) as PlaceHolder;
-                        if ( phStreet2 != null )
-                        {
-                            phStreet2.Controls.Add( new LiteralControl( string.Format( "{0}</br>", loc.Street2 ) ) );
-                        }
-                    }
                 }
             }
         }
@@ -239,7 +230,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var rockContext = new RockContext();
 
                 var memberService = new GroupMemberService( rockContext );
-                var families = memberService.Queryable()
+                var families = memberService.Queryable( true )
                     .Where( m =>
                         m.PersonId == Person.Id &&
                         m.Group.GroupType.Guid == familyGroupGuid
@@ -285,7 +276,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
         }
 
-        protected string FormatAsHtmlTitle(string str)
+        protected string FormatPersonCssClass( bool? isDeceased )
+        {
+            return ( isDeceased ?? false ) ? "member deceased" : "member";
+        }
+
+        protected string FormatAsHtmlTitle( string str )
         {
             return str.FormatAsHtmlTitle();
         }

@@ -82,6 +82,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the initial item parent ids.
+        /// </summary>
+        /// <value>
+        /// The initial item parent ids.
+        /// </value>
+        public override string InitialItemParentIds
+        {
+            get
+            {
+                return base.InitialItemParentIds.Split( ',' ).ToList().Select( i => i.Quoted() ).ToList().AsDelimited( "," );
+            }
+            set
+            {
+                base.InitialItemParentIds = value;
+            }
+        }
+
+        /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="nodePath">The node path.</param>
@@ -89,7 +107,26 @@ namespace Rock.Web.UI.Controls
         {
             if ( ! string.IsNullOrWhiteSpace(nodePath))
             {
-                var nodes = nodePath.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                // Get any prefixes that were defined with the mergefield
+                var prefixedMergeFieldIds = GetPrefixedMergeFieldIds();
+
+                var nodes = new List<string>();
+                string workingPath = nodePath;
+
+                // Check to see if the nodepath starts with one of the prefixedMergeFields.  If so
+                // the node path should not split it's items on the first pipe character
+                foreach ( string fieldId in prefixedMergeFieldIds )
+                {
+                    if ( nodePath.StartsWith( fieldId ) )
+                    {
+                        nodes.Add( fieldId );
+                        workingPath = nodePath.Substring( fieldId.Length );
+                        break;
+                    }
+                }
+
+                workingPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList()
+                    .ForEach( n => nodes.Add( n ) );
                 
                 if ( nodes.Count > 0 )
                 {
@@ -98,7 +135,7 @@ namespace Rock.Web.UI.Controls
                     
                     if ( nodes.Count > 1 )
                     {
-                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
+                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
                     }
                 }
             }
@@ -123,9 +160,28 @@ namespace Rock.Web.UI.Controls
                 var names = new List<string>();
                 InitialItemParentIds = string.Empty;
 
+                // Get any prefixes that were defined with the mergefield
+                var prefixedMergeFieldIds = GetPrefixedMergeFieldIds();
+
                 foreach ( string nodePath in nodePathsList )
                 {
-                    var nodes = nodePath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    var nodes = new List<string>();
+                    string workingPath = nodePath;
+
+                    // Check to see if the nodepath starts with one of the prefixedMergeFields.  If so
+                    // the node path should not split it's items on the first pipe character
+                    foreach ( string fieldId in prefixedMergeFieldIds )
+                    {
+                        if ( nodePath.StartsWith( fieldId ) )
+                        {
+                            nodes.Add( fieldId );
+                            workingPath = nodePath.Substring( fieldId.Length );
+                            break;
+                        }
+                    }
+
+                    workingPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList()
+                        .ForEach( n => nodes.Add( n ) );
 
                     if ( nodes.Count > 0 )
                     {
@@ -134,7 +190,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
                         {
-                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
+                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
                         }
                     }
                 }
@@ -148,6 +204,26 @@ namespace Rock.Web.UI.Controls
                 ItemId = "0";
                 ItemName = "Add Merge Field";
             }
+        }
+
+        /// <summary>
+        /// Gets the prefixed merge field ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetPrefixedMergeFieldIds()
+        {
+            var prefixedMergeFieldIds = new List<string>();
+
+            foreach ( string mergefield in MergeFields )
+            {
+                string[] parts = mergefield.Split( '|' );
+                if ( parts.Length > 2 )
+                {
+                    prefixedMergeFieldIds.Add( parts[2] + "|" + parts[0] );
+                }
+            }
+
+            return prefixedMergeFieldIds;
         }
 
         /// <summary>
@@ -200,21 +276,27 @@ namespace Rock.Web.UI.Controls
             var idParts = selectedValue.SplitDelimitedValues().ToList();
             if ( idParts.Count > 0 )
             {
+                var workingParts = new List<string>();
+
                 // Get the root type
-                var entityType = EntityTypeCache.Read( idParts[0], false );
+                int pathPointer = 0;
+                EntityTypeCache entityType = null;
+                while ( entityType == null && pathPointer < idParts.Count() )
+                {
+                    entityType = EntityTypeCache.Read( idParts[pathPointer], false );
+                    workingParts.Add( entityType != null ? entityType.FriendlyName.Replace( " ", string.Empty) : idParts[pathPointer] );
+                    pathPointer++;
+                }
+                
                 if ( entityType != null )
                 {
-                    idParts[0] = entityType.FriendlyName.Replace( " ", string.Empty );
-
                     Type type = entityType.GetEntityType();
 
-                    var workingParts = idParts.Take( 1 ).ToList();
                     var formatString = "{0}";
 
                     // Traverse the Property path
                     bool itemIsCollection = false;
 
-                    int pathPointer = 1;
                     while ( idParts.Count > pathPointer )
                     {
                         string propertyName = idParts[pathPointer];

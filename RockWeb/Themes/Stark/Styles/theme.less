@@ -134,6 +134,23 @@ footer {
     }
 }
 
+/* hide block panels */
+.panel-block {
+    border: 0;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
+    }
+}
+
 // 4. Responsive Overrides 
 // -------------------------
 

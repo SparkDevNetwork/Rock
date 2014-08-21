@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -31,7 +31,7 @@ namespace Rock.Web.Cache
     {
         #region Constructors
 
-        private CampusCache() 
+        private CampusCache()
         {
         }
 
@@ -61,12 +61,68 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is active.
+        /// </summary>
+        /// <value>
+        /// The is active.
+        /// </value>
+        public bool? IsActive { get; set; }
+
+        /// <summary>
         /// Gets or sets the short code.
         /// </summary>
         /// <value>
         /// The short code.
         /// </value>
         public string ShortCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone number.
+        /// </summary>
+        /// <value>
+        /// The phone number.
+        /// </value>
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The leader person alias identifier.
+        /// </value>
+        public int? LeaderPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service times.
+        /// </summary>
+        /// <value>
+        /// The service times.
+        /// </value>
+        public string ServiceTimes { get; set; }
 
         #endregion
 
@@ -85,7 +141,14 @@ namespace Rock.Web.Cache
                 var campus = (Campus)model;
                 this.IsSystem = campus.IsSystem;
                 this.Name = campus.Name;
+                this.Description = campus.Description;
+                this.IsActive = campus.IsActive;
                 this.ShortCode = campus.ShortCode;
+                this.Url = campus.Url;
+                this.LocationId = campus.LocationId;
+                this.PhoneNumber = campus.PhoneNumber;
+                this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
+                this.ServiceTimes = campus.ServiceTimes;
             }
         }
 
@@ -118,76 +181,70 @@ namespace Rock.Web.Cache
         /// Returns Campus object from cache.  If campus does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CampusCache Read( int id )
+        public static CampusCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CampusCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
-            if ( campus != null )
+            if ( campus == null )
             {
-                return campus;
-            }
-            else
-            {
-                CampusService campusService = new CampusService( new RockContext() );
-                Campus campusModel = campusService.Get( id );
+                rockContext = rockContext ?? new RockContext();
+                var campusService = new CampusService( rockContext );
+                var campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
-                    campusModel.LoadAttributes();
+                    campusModel.LoadAttributes( rockContext );
                     campus = new CampusCache( campusModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, campus, cachePolicy );
                     cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-                    
-                    return campus;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return campus;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CampusCache Read( Guid guid )
+        public static CampusCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            CampusCache campus = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                campus = Read( (int)cacheObj );
             }
-            else
+
+            if ( campus == null )
             {
-                var campusService = new CampusService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var campusService = new CampusService( rockContext );
                 var campusModel = campusService.Get( guid );
                 if ( campusModel != null )
                 {
-                    campusModel.LoadAttributes();
-                    var campus = new CampusCache( campusModel );
+                    campusModel.LoadAttributes( rockContext );
+                    campus = new CampusCache( campusModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( CampusCache.CacheKey( campus.Id ), campus, cachePolicy );
                     cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-
-                    return campus;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return campus;
         }
+
         /// <summary>
         /// Adds Campus model to cache, and returns cached object
         /// </summary>
@@ -196,25 +253,22 @@ namespace Rock.Web.Cache
         public static CampusCache Read( Campus campusModel )
         {
             string cacheKey = CampusCache.CacheKey( campusModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
             if ( campus != null )
             {
                 campus.CopyFromModel( campusModel );
-                return campus;
             }
             else
             {
                 campus = new CampusCache( campusModel );
-                
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, campus, cachePolicy );
                 cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-                
-                return campus;
             }
+
+            return campus;
         }
 
         /// <summary>

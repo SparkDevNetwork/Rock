@@ -3,15 +3,17 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <main class="container">
-
+                
         <!-- Start Content Area -->
-
+        
+        <!-- Page Title -->
+        <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                     
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>
-            <span class="ajax-error-message" / ></span>
+            <span class="ajax-error-message"></span>
         </div>
 
         <div class="row">
@@ -21,13 +23,13 @@
         </div>
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <Rock:Zone Name="Sidebar 1" runat="server" />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <Rock:Zone Name="Main" runat="server" />
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <Rock:Zone Name="Sidebar 2" runat="server" />
             </div>
         </div>
@@ -55,6 +57,3 @@
     </main>
 
 </asp:Content>
-
-
-

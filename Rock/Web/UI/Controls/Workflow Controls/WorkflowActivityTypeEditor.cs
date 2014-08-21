@@ -335,7 +335,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblInactive );
             _lblInactive.ClientIDMode = ClientIDMode.Static;
             _lblInactive.ID = this.ID + "_lblInactive";
-            _lblInactive.CssClass = "label label-important pull-right";
+            _lblInactive.CssClass = "pull-right";
             _lblInactive.Text = "<span class='label label-danger'>Inactive</span>";
 
             _lbDeleteActivityType = new LinkButton();
@@ -484,7 +484,7 @@ javascript:
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute("class", "panel-title");

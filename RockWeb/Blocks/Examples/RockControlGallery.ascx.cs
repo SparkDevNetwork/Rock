@@ -237,46 +237,6 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the tglLabels control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglLabels_CheckedChanged( object sender, EventArgs e )
-        {
-            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
-            {
-                if ( control is IRockControl )
-                {
-                    IRockControl rockControl = control as IRockControl;
-                    if ( tglLabels.Checked )
-                    {
-                        rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
-                    }
-                    else
-                    {
-                        rockControl.Label = string.Empty;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the tglEnabled control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglEnabled_CheckedChanged( object sender, EventArgs e )
-        {
-            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
-            {
-                if ( control is IRockControl )
-                {
-                    control.Enabled = tglEnabled.Checked;
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the GridRebind event of the gExample control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

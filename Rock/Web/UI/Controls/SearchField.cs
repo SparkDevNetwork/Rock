@@ -68,9 +68,13 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "smartsearch " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.RenderControl( writer );
+            writer.AddAttribute( "class", "fa fa-search" );
+            writer.RenderBeginTag( HtmlTextWriterTag.I );
+            writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "nav pull-right" );
+            
+
+            writer.AddAttribute( "class", "nav pull-right smartsearch-type" );
             writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
             writer.AddAttribute( "class", "dropdown" );
@@ -111,6 +115,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag(); //ul
             writer.RenderEndTag(); //li
             writer.RenderEndTag(); //ul
+
+            base.RenderControl( writer );
 
             hfFilter.RenderControl(writer);
 

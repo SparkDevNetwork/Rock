@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Core
             catch ( Exception ex )
             {
                 pnlError.Visible = true;
-                pnlUpdateSuccess.Visible = false;
+                pnlUpdateSuccess.Visible = false; 
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
@@ -482,8 +482,10 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Sends statistics to the SDN server but only if the sample data has not been 
-        /// loaded. The statistics are:
+        /// Sends statistics to the SDN server but only if there are more than 100 person records
+        /// or the sample data has not been loaded. 
+        /// 
+        /// The statistics are:
         ///     * Rock Instance Id
         ///     * Update Version
         ///     * IP Address - The IP address of your Rock server.
@@ -500,14 +502,15 @@ namespace RockWeb.Blocks.Core
         {
             try
             {
-                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
-                string organizationName = string.Empty;
-                ImpactLocation organizationLocation = null;
-                int numberOfActiveRecords = 0;
-                string publicUrl = string.Empty;
+                var rockContext = new RockContext();
+                int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( sampleDataLoadDate == null )
-                {
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                { 
+                    string organizationName = string.Empty;
+                    ImpactLocation organizationLocation = null;
+                    string publicUrl = string.Empty;
+
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
@@ -516,8 +519,6 @@ namespace RockWeb.Blocks.Core
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
-
-                        var rockContext = new RockContext();
 
                         // Fetch the organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
@@ -529,11 +530,13 @@ namespace RockWeb.Blocks.Core
                                 organizationLocation = new ImpactLocation( location );
                             }
                         }
-
-                        numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                    }
+                    else
+                    {
+                        numberOfActiveRecords = 0;
                     }
 
-                    // TODO now send them to SDN/Rock server
+                    // now send them to SDN/Rock server
                     SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
                 }
             }
@@ -601,7 +604,8 @@ namespace RockWeb.Blocks.Core
         public string Street2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
+        public string Country { get; set; }
 
         public ImpactLocation( Rock.Model.Location location )
         {
@@ -609,7 +613,8 @@ namespace RockWeb.Blocks.Core
             Street2 = location.Street2;
             City = location.City;
             State = location.State;
-            Zip = location.Zip;
+            PostalCode = location.PostalCode;
+            Country = location.Country;
         }
     }
 
