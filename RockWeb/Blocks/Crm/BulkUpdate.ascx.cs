@@ -45,7 +45,9 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
 
-    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 3  )]
+    [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
+    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1  )]
+    [TextField( "Note Type", "The note type name (If it doesn't exist it will be created).", false, "Timeline", "", 2 )]
     public partial class BulkUpdate : RockBlock
     {
         #region Fields
@@ -103,7 +105,7 @@ namespace RockWeb.Blocks.Crm
             ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ), true );
             ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ), true );
-            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
             DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
@@ -132,10 +134,11 @@ namespace RockWeb.Blocks.Crm
 
             string script = string.Format( @"
     $('#{0}').change(function(){{
-        if ($(this).val() != '') {{
+        if ($(this).val() == '') {{
+            $('#{1}').val('');
+        }} else {{
             $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-    
-        }}
+        }} 
     }});
 
     $('#{1}').change(function(){{
@@ -165,6 +168,8 @@ namespace RockWeb.Blocks.Crm
     });
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllIndividuals, lbRemoveAllIndividuals.GetType(), "confirm-remove-all-" + BlockId.ToString(), script, true );
+
+            bddlGroupAction.SelectedValue = "Add";
         }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -185,6 +190,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
+                BuildAttributes( false );
                 BuildGroupControls( false );
             }
         }
@@ -276,7 +282,345 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
-                string message = string.Empty;
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+                var ids = Individuals.Select( i => i.PersonId ).ToList();
+
+                var personEntityType = EntityTypeCache.Read( "Rock.Model.Person" );
+                if ( personEntityType != null )
+                {
+                    int personEntityTypeId = personEntityType.Id;
+
+                    var people = personService.Queryable().Where( p => ids.Contains( p.Id ) ).ToList();
+
+                    #region Individual Details Updates
+
+                    int? newTitleId = ddlTitle.SelectedValueAsInt();
+                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
+                    int? newConnectionStatusId = ddlStatus.SelectedValueAsInt();
+                    int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                    int? newInactiveReasonId = ddlInactiveReason.SelectedValueAsInt();
+                    string newInactiveReasonNote = tbInactiveReasonNote.Text;
+                    Gender? newGender = ddlGender.SelectedValue.ConvertToEnumOrNull<Gender>();
+
+                    int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
+                    DateTime? newGraduationDate = null;
+                    if ( ypGraduation.SelectedYear.HasValue )
+                    {
+                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                    }
+
+                    int? newCampusId = cpCampus.SelectedCampusId;
+                    bool? newEmailActive = null;
+                    if ( !string.IsNullOrWhiteSpace( ddlIsEmailActive.SelectedValue ) )
+                    {
+                        newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
+                    }
+                    EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
+                    string newEmailNote = tbEmailNote.Text;
+                    bool? newFollow = null;
+                    if ( !string.IsNullOrWhiteSpace( ddlFollow.SelectedValue ) )
+                    {
+                        newFollow = ddlFollow.SelectedValue == "Add";
+                    }
+                    int? newReviewReason = ddlReviewReason.SelectedValueAsInt();
+                    string newSystemNote = tbSystemNote.Text;
+                    string newReviewReasonNote = tbReviewReasonNote.Text;
+
+                    var allChanges = new Dictionary<int, List<string>>();
+
+                    foreach ( var person in people )
+                    {
+                        var changes = new List<string>();
+                        allChanges.Add( person.Id, changes );
+
+                        if ( newTitleId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
+                            person.TitleValueId = newTitleId;
+                        }
+
+                        if ( newSuffixId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
+                            person.SuffixValueId = newSuffixId;
+                        }
+
+                        if ( newConnectionStatusId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                            person.ConnectionStatusValueId = newConnectionStatusId;
+                        }
+
+                        if ( newRecordStatusId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
+                            person.RecordStatusValueId = newRecordStatusId;
+                        }
+
+                        if ( newInactiveReasonId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newInactiveReasonId ) );
+                            person.RecordStatusReasonValueId = newInactiveReasonId;
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
+                        {
+                            History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, newInactiveReasonNote );
+                            person.InactiveReasonNote = newInactiveReasonNote;
+                        }
+
+                        if ( newGender.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Gender", person.Gender, newGender.Value );
+                            person.Gender = newGender.Value;
+                        }
+
+                        if ( newMaritalStatusId.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                            person.MaritalStatusValueId = newMaritalStatusId;
+                        }
+
+                        if ( newGraduationDate.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, newGraduationDate );
+                            person.GraduationDate = newGraduationDate;
+                        }
+
+                        if ( newEmailActive.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive ?? true, newEmailActive.Value );
+                            person.IsEmailActive = newEmailActive;
+                        }
+
+                        if ( newEmailPreference.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
+                            person.EmailPreference = newEmailPreference.Value;
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( newEmailNote ) )
+                        {
+                            History.EvaluateChange( changes, "Email Note", person.EmailNote, newEmailNote );
+                            person.EmailNote = newEmailNote;
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( newSystemNote ) )
+                        {
+                            History.EvaluateChange( changes, "System Note", person.SystemNote, newSystemNote );
+                            person.SystemNote = newSystemNote;
+                        }
+
+                        if ( newReviewReason.HasValue )
+                        {
+                            History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), DefinedValueCache.GetName( newReviewReason ) );
+                            person.ReviewReasonValueId = newReviewReason;
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( newReviewReasonNote ) )
+                        {
+                            History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, newReviewReasonNote );
+                            person.ReviewReasonNote = newReviewReasonNote;
+                        }
+                    }
+
+                    // Update following
+                    if ( newFollow.HasValue && CurrentPersonAlias != null )
+                    {
+                        var followingService = new FollowingService( rockContext );
+                        if ( newFollow.Value )
+                        {
+                            var alreadyFollingIds = followingService.Queryable()
+                                .Where( f =>
+                                    f.EntityTypeId == personEntityTypeId &&
+                                    f.PersonAlias.Id == CurrentPersonAlias.Id )
+                                .Select( f => f.EntityId )
+                                .Distinct()
+                                .ToList();
+                            foreach ( int id in ids.Where( id => !alreadyFollingIds.Contains( id ) ) )
+                            {
+                                var following = new Following
+                                {
+                                    EntityTypeId = personEntityTypeId,
+                                    EntityId = id,
+                                    PersonAliasId = CurrentPersonAlias.Id
+                                };
+                                followingService.Add( following );
+                            }
+                        }
+                        else
+                        {
+                            foreach ( var following in followingService.Queryable()
+                                .Where( f =>
+                                    f.EntityTypeId == personEntityTypeId &&
+                                    ids.Contains( f.EntityId ) &&
+                                    f.PersonAlias.Id == CurrentPersonAlias.Id ) )
+                            {
+                                followingService.Delete( following );
+                            }
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+
+                    #endregion
+
+                    #region Attributes
+
+                    var selectedCategories = new List<CategoryCache>();
+                    foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+                    {
+                        var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                        if ( category != null )
+                        {
+                            selectedCategories.Add( category );
+                        }
+                    }
+
+                    var attributes = new List<AttributeCache>();
+                    var attributeValues = new Dictionary<int, string>();
+
+                    int categoryIndex = 0;
+                    foreach ( var category in selectedCategories.OrderBy( c => c.Name ) )
+                    {
+                        PanelWidget pw = null;
+                        string controlId = "pwAttributes_" + category.Id.ToString();
+                        if ( categoryIndex % 2 == 0 )
+                        {
+                            pw = phAttributesCol1.FindControl( controlId ) as PanelWidget;
+                        }
+                        else
+                        {
+                            pw = phAttributesCol2.FindControl( controlId) as PanelWidget;
+                        }
+                        categoryIndex++;
+
+                        if ( pw != null )
+                        {
+                            var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                                .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                            foreach ( var attribute in orderedAttributeList )
+                            {
+                                if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                                {
+                                    var attributeCache = AttributeCache.Read( attribute.Id );
+
+                                    Control attributeControl = pw.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                                    if ( attributeControl != null )
+                                    {
+                                        string newValue = attributeCache.FieldType.Field.GetEditValue( attributeControl, attributeCache.QualifierValues );
+                                        if (!string.IsNullOrWhiteSpace(newValue))
+                                        {
+                                            attributes.Add( attributeCache);
+                                            attributeValues.Add( attributeCache.Id, newValue );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (attributes.Any())
+                    {
+                        foreach ( var person in people )
+                        {
+                            person.LoadAttributes();
+                            foreach ( var attribute in attributes )
+                            {
+                                string originalValue = person.GetAttributeValue( attribute.Key );
+                                string newValue = attributeValues[attribute.Id];
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                {
+                                    Rock.Attribute.Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    {
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                    }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    History.EvaluateChange( allChanges[person.Id], attribute.Name, formattedOriginalValue, formattedNewValue );
+                                }
+                            }
+                        }
+                    }
+
+                    // Create the history records
+                    foreach ( var changes in allChanges )
+                    {
+                        if ( changes.Value.Any() )
+                        {
+                            HistoryService.AddChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                changes.Key, changes.Value );
+                        }
+                    }
+                    rockContext.SaveChanges();
+
+                    #endregion
+
+                    #region Add Note
+
+                    if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null )
+                    {
+                        string text = tbNote.Text;
+                        bool isAlert = cbIsAlert.Checked;
+                        bool isPrivate = cbIsPrivate.Checked;
+
+                        var noteTypeService = new NoteTypeService( rockContext );
+                        var noteService = new NoteService( rockContext );
+
+                        string noteTypeName = GetAttributeValue( "NoteType" );
+                        var noteType = noteTypeService.Get( personEntityTypeId, noteTypeName );
+
+                        if ( noteType != null )
+                        {
+                            var notes = new List<Note>();
+
+                            foreach ( int id in ids )
+                            {
+                                var note = new Note();
+                                note.IsSystem = false;
+                                note.EntityId = id;
+                                note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
+                                note.Text = tbNote.Text;
+                                note.IsAlert = cbIsAlert.Checked;
+                                note.NoteType = noteType;
+
+                                notes.Add( note );
+                                noteService.Add( note );
+                            }
+
+                            rockContext.WrapTransaction( () =>
+                            {
+                                rockContext.SaveChanges();
+                                foreach( var note in notes)
+                                {
+                                    note.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
+                                    if ( isPrivate)
+                                    {
+                                        note.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
+                                    }
+                                }
+                            } );
+
+                        }
+                    }
+
+                    #endregion
+
+
+                }
+
+                string message = string.Format("{0} {1} succesfully updated!",
+                    ids.Count().ToString("N0"), (ids.Count() > 1 ? "people were" : "person was") );
                 ShowResult( message );
             }
         }
@@ -288,8 +632,18 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
-            tbInactiveReason.Visible = ddlReason.Visible;
+            ddlInactiveReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+            tbInactiveReasonNote.Visible = ddlInactiveReason.Visible;
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlGroupAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlGroupAction_SelectionChanged( object sender, EventArgs e )
+        {
+            BuildGroupControls( true );
         }
 
         /// <summary>
@@ -313,6 +667,7 @@ namespace RockWeb.Blocks.Crm
         private void ShowDetail ()
         {
             Individuals.Clear();
+            BuildAttributes( true );
         }
 
         /// <summary>
@@ -348,40 +703,100 @@ namespace RockWeb.Blocks.Crm
             rptIndividuals.DataBind();
         }
 
+        private void BuildAttributes( bool setValues )
+        {
+            var rockContext = new RockContext();
+            var selectedCategories = new List<CategoryCache>();
+            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
+            {
+                var category = CategoryCache.Read( categoryGuid.AsGuid(), rockContext );
+                if ( category != null )
+                {
+                    selectedCategories.Add( category );
+                }
+            }
+
+            int categoryIndex = 0;
+            foreach( var category in selectedCategories.OrderBy( c => c.Name ) )
+            {
+                var pw = new PanelWidget();
+                pw.ID = "pwAttributes_" + category.Id.ToString();
+                if ( categoryIndex % 2 == 0)
+                {
+                    phAttributesCol1.Controls.Add( pw );
+                }
+                else
+                {
+                    phAttributesCol2.Controls.Add( pw );
+                }
+                categoryIndex++;
+
+
+                if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
+                {
+                    pw.TitleIconCssClass = category.IconCssClass;
+                }
+                pw.Title = category.Name;
+
+                var orderedAttributeList = new AttributeService( rockContext ).GetByCategoryId( category.Id )
+                    .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                foreach ( var attribute in orderedAttributeList )
+                {
+                    if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        var attributeCache = AttributeCache.Read( attribute.Id );
+                        attributeCache.AddControl( pw.Controls, string.Empty, string.Empty, setValues, true, false );
+                    }
+                }
+            }
+        }
+
         private void BuildGroupControls( bool setValues )
         {
             ddlGroupRole.Items.Clear();
             ddlGroupMemberStatus.Items.Clear();
             phAttributes.Controls.Clear();
 
-            var rockContext = new RockContext();
-            Group group = null;
-
-            int? groupId = gpGroup.SelectedValueAsId();
-            if (groupId.HasValue)
+            if ( bddlGroupAction.SelectedValue == "Remove" )
             {
-                group = new GroupService( rockContext ).Get( groupId.Value );
-            }
-
-            if (group != null)
-            {
-                var groupType = GroupTypeCache.Read( group.GroupTypeId );
-                ddlGroupRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
-                ddlGroupRole.DataBind();
-
-                ddlGroupMemberStatus.Items.Add( new ListItem( "Active", "1") );
-                ddlGroupMemberStatus.Items.Add( new ListItem( "Pending", "2" ) );
-                ddlGroupMemberStatus.Items.Add( new ListItem( "Inactive", "0") );
-
-                var groupMember = new GroupMember();
-                groupMember.Group = group;
-                groupMember.GroupId = group.Id;
-                Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, setValues, "", true );
+                ddlGroupMemberStatus.Visible = false;
+                ddlGroupRole.Visible = false;
             }
             else
             {
-                ddlGroupRole.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                ddlGroupMemberStatus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                ddlGroupRole.Visible = true;
+                ddlGroupMemberStatus.Visible = true;
+
+                var rockContext = new RockContext();
+                Group group = null;
+
+                int? groupId = gpGroup.SelectedValueAsId();
+                if ( groupId.HasValue )
+                {
+                    group = new GroupService( rockContext ).Get( groupId.Value );
+                }
+
+                if ( group != null )
+                {
+                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    ddlGroupRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
+                    ddlGroupRole.DataBind();
+
+                    ddlGroupMemberStatus.Items.Add( new ListItem( "Active", "1" ) );
+                    ddlGroupMemberStatus.Items.Add( new ListItem( "Pending", "2" ) );
+                    ddlGroupMemberStatus.Items.Add( new ListItem( "Inactive", "0" ) );
+
+                    var groupMember = new GroupMember();
+                    groupMember.Group = group;
+                    groupMember.GroupId = group.Id;
+                    groupMember.LoadAttributes( rockContext );
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, setValues, "", true );
+                }
+                else
+                {
+                    ddlGroupRole.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                    ddlGroupMemberStatus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                }
             }
         }
 
@@ -440,5 +855,5 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-}
+    }
 }

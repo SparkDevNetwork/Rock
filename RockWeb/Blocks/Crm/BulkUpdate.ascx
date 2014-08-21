@@ -75,8 +75,8 @@
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlSuffix" runat="server" Label="Suffix" />
                                 <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Inactive Reason" Visible="false"></Rock:RockDropDownList>
-                                <Rock:RockTextBox ID="tbInactiveReason" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false"></Rock:RockTextBox>
+                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Label="Inactive Reason" Visible="false"></Rock:RockDropDownList>
+                                <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false"></Rock:RockTextBox>
                             </div>
                         </div>
 
@@ -121,6 +121,15 @@
 
                     </Rock:PanelWidget>
 
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <asp:PlaceHolder ID="phAttributesCol1" runat="server" />
+                        </div>
+                        <div class="col-sm-6">
+                            <asp:PlaceHolder ID="phAttributesCol2" runat="server" />
+                        </div>
+                    </div>
+
                     <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
                         <div class="panel-noteentry">
                             <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" />
@@ -136,18 +145,21 @@
                     <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
+                                <Rock:ButtonDropDownList ID="bddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectionChanged="bddlGroupAction_SelectionChanged">
+                                    <asp:ListItem Value="Add" Text="Add To Group" />
+                                    <asp:ListItem Value="Remove" Text="Remove From Group" />
+                                    <asp:ListItem Value="Update" Text="Update In Group" />
+                                </Rock:ButtonDropDownList>
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
                             </div>
                             <div class="col-sm-6">
+                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" />
+                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" />
+                            <div class="col-sm-12">
                                 <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                            </div>
-                            <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
                             </div>
                         </div>
                     </Rock:PanelWidget>
