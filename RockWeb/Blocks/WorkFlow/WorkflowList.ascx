@@ -28,7 +28,7 @@
 	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
 	                    <Columns>
 	                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-	                        <asp:BoundField DataField="Initiator" HeaderText="Initiated By" SortExpression="InitiatorPersonAlias.Person.FullName" />
+	                        <asp:BoundField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
                             <asp:BoundField DataField="Activities" HeaderText="Activities" />
 	                    </Columns>
     	            </Rock:Grid>
