@@ -69,7 +69,6 @@ namespace RockWeb.Blocks.WorkFlow
                 gWorkflows.Actions.ShowAdd = true;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
                 gWorkflows.GridRebind += gWorkflows_GridRebind;
-                gWorkflows.RowDataBound += gWorkflows_RowDataBound;
 
                 // Block Security and special attributes (RockPage takes care of View)
                 bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
@@ -85,16 +84,19 @@ namespace RockWeb.Blocks.WorkFlow
                 dateField.HeaderText = "Created";
                 dateField.FormatAsElapsedTime = true;
 
-                // move status columns
-                /*int lastColumnIndex = gWorkflows.Columns.Count - 1;
+                var statusField = new BoundField();
+                gWorkflows.Columns.Add( statusField );
+                statusField.DataField = "Status";
+                statusField.SortExpression = "Status";
+                statusField.HeaderText = "Status";
+                statusField.HtmlEncode = false;
 
-                var statusColumn = gWorkflows.Columns[3];
-                gWorkflows.Columns.RemoveAt( 3 );
-                gWorkflows.Columns.Insert( lastColumnIndex, statusColumn );
-
-                var activeColumn = gWorkflows.Columns[3];
-                gWorkflows.Columns.RemoveAt( 3 );
-                gWorkflows.Columns.Insert( lastColumnIndex, activeColumn );*/
+                var activeField = new BoundField();
+                gWorkflows.Columns.Add( activeField );
+                activeField.DataField = "Active";
+                activeField.SortExpression = "CompletedDateTime";
+                activeField.HeaderText = "Active";
+                activeField.HtmlEncode = false;
 
                 var formField = new EditField();
                 gWorkflows.Columns.Add( formField );
@@ -282,29 +284,6 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gWorkflows control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gWorkflows_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                Literal lActivities = e.Row.FindControl( "lActivities" ) as Literal;
-                if ( lActivities != null )
-                {
-                    var workflow = e.Row.DataItem as Workflow;
-                    if ( workflow != null )
-                    {
-                        string activities = string.Empty;
-                        workflow.ActiveActivities.ToList().ForEach( a => activities += a.ActivityType.Name + "<br/>" );
-                        lActivities.Text = activities;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the formField control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -440,7 +419,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var rockContext = new RockContext();
                 var workflowService = new WorkflowService( rockContext );
 
-                var qry = workflowService.Queryable( "Activities" )
+                var qry = workflowService.Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" )
                     .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
 
                 // Activated Date Range Filter
@@ -464,20 +443,13 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 // active filters
-                if (! string.IsNullOrWhiteSpace(gfWorkflows.GetUserPreference( "Active" ))) {
-                    
-                    // if the filter contains both active and inactive no filter is needed
-                    if ( !(gfWorkflows.GetUserPreference( "Active" ).Contains( "Active" ) && gfWorkflows.GetUserPreference( "Active" ).Contains( "Inactive" )) )
-                    {
-                        if ( gfWorkflows.GetUserPreference( "Active" ).Contains( "Active" ) )
-                        {
-                            qry = qry.Where( w => w.CompletedDateTime.HasValue == false );
-                        }
-                        else
-                        {
-                            qry = qry.Where( w => w.CompletedDateTime != null );
-                        }
-                    }  
+                if ( !gfWorkflows.GetUserPreference( "Active" ).Contains( "Active" ) )
+                {
+                    qry = qry.Where( w => w.CompletedDateTime.HasValue );
+                }
+                if ( !gfWorkflows.GetUserPreference( "Active" ).Contains( "Inactive" ) )
+                {
+                    qry = qry.Where( w => !w.CompletedDateTime.HasValue );
                 }
 
                 // Completed Date Range Filter
@@ -511,16 +483,28 @@ namespace RockWeb.Blocks.WorkFlow
                     qry = qry.Where( w => w.Status.StartsWith( status ) );
                 }
 
+                List<Workflow> workflows = null;
+
                 var sortProperty = gWorkflows.SortProperty;
                 if ( sortProperty != null )
                 {
-                    gWorkflows.DataSource = qry.Sort( sortProperty ).ToList();
+                    workflows = qry.Sort( sortProperty ).ToList();
                 }
                 else
                 {
-                    gWorkflows.DataSource = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
+                    workflows = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
                 }
 
+                gWorkflows.DataSource = workflows.Select( w => new
+                {
+                    w.Id,
+                    w.Name,
+                    Initiator = ( w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person.FullName : "" ),
+                    Activities = w.ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" ),
+                    w.CreatedDateTime,
+                    Status = string.Format( "<span class='label label-info'>{0}</span>", w.Status ),
+                    Active = ( w.CompletedDateTime.HasValue ? "<span class='label label-danger'>Inactive</span>" : "<span class='label label-success'>Active</span>" )
+                } ).ToList();
                 gWorkflows.DataBind();
             }
             else
