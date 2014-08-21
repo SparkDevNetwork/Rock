@@ -15,46 +15,65 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// List of person records that have possible duplicates
     /// </summary>
     [DisplayName( "Person Duplicate List" )]
     [Category( "CRM" )]
     [Description( "List of person records that have possible duplicates" )]
+
+    [DecimalField( "Match Percent High", "The minimum percent score required to be considered a likely match", true, 80.00 )]
+    [DecimalField( "Match Percent Low", "The max percent score required to be considered an unlikely match", true, 40.00 )]
+    [LinkedPage( "Detail Page" )]
     public partial class PersonDuplicateList : RockBlock
     {
-        #region Fields
+        /// <summary>
+        /// Gets the match HTML.
+        /// </summary>
+        /// <param name="percent">The percent.</param>
+        /// <returns></returns>
+        public string GetMatchColumnHtml( double? percent )
+        {
+            string css;
 
-        // used for private variables
+            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
+            {
+                css = "label label-success";
+            }
+            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
+            {
+                css = "label label-default";
+            }
+            else
+            {
+                css = "label label-warning";
+            }
 
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
+            if ( percent.HasValue )
+            {
+                return string.Format( "<span class='{0}'>{1}</span>", css, ( percent.Value / 100 ).ToString( "P" ) );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -64,9 +83,9 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            gList.Actions.ShowAdd = false;
+            gList.DataKeyNames = new string[] { "PersonId" };
+            gList.GridRebind += gList_GridRebind;
         }
 
         /// <summary>
@@ -87,16 +106,24 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
+        /// Handles the GridRebind event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
+        protected void gList_GridRebind( object sender, EventArgs e )
         {
+            BindGrid();
+        }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "PersonId", e.RowKeyId );
         }
 
         #endregion
@@ -109,12 +136,43 @@ namespace RockWeb.Blocks.Crm
         private void BindGrid()
         {
             RockContext rockContext = new RockContext();
-            PersonService personService = new PersonService( rockContext );
-            
-            // sample query to display a few people
-            var qry = personService.Queryable()
-                        .Where( p => p.Gender == Gender.Male)
-                        .Take(10);
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+            int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+
+            // list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            var personDuplicateQry = personDuplicateService.Queryable()
+                .Where( a => !a.IsConfirmedAsNotDuplicate )
+                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
+
+            var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
+
+            var qry = groupByQry.Select( a => new
+            {
+                PersonId = a.Key.Id,
+                LastName = a.Key.LastName,
+                FirstName = a.Key.FirstName,
+                MatchCount = a.Count(),
+                MaxScorePercent = a.Max( s => s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null ),
+                PersonModifiedDateTime = a.Key.ModifiedDateTime,
+                CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
+            } );
+
+            double? matchPercentLow = GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull();
+            if ( matchPercentLow.HasValue )
+            {
+                qry = qry.Where( a => a.MaxScorePercent >= matchPercentLow );
+            }
+
+
+            SortProperty sortProperty = gList.SortProperty;
+            if ( sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderByDescending( a => a.MaxScorePercent ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
+            }
 
             gList.DataSource = qry.ToList();
             gList.DataBind();

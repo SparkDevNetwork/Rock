@@ -114,10 +114,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected EntityType ids.
+        /// Gets or sets the selected entity type identifier.
         /// </summary>
         /// <value>
-        /// The selected EntityType ids.
+        /// The selected entity type identifier.
         /// </value>
         public int? SelectedEntityTypeId
         {

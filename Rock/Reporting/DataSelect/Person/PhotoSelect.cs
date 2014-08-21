@@ -148,15 +148,22 @@ namespace Rock.Reporting.DataSelect.Person
             // have SQL server do similar to what Person.GetPhotoUrl does
             string widthHeightUrlParams = string.Format("&width={0}&height={1}", width, height);
             string widthHeightHtmlParams = string.Format( " width='{0}' height='{1}' ", width, height );
-            string nophotoFemaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";
-            string nophotoMaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-male.svg'" + widthHeightHtmlParams + " />";
+            string nophotoAdultFemaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoAdultMaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-male.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildFemaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-child-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildMaleHtml = "<image src='" + baseUrl + "Assets/Images/person-no-photo-child-male.svg'" + widthHeightHtmlParams + " />";
+            
+            // identify child as people less than 18 years old
+            DateTime childBirthdateCutoff = RockDateTime.Now.Date.AddYears( -18 );
             
             //// Logic is
             //// if the Person has a photoId, show the photo, otherwise show a default Female or Male picture based on Person.Gender
             var personPhotoQuery = new PersonService( context ).Queryable()
                 .Select( p => p.PhotoId != null 
                     ? "<image src='" + baseUrl + "GetImage.ashx?id=" + SqlFunctions.StringConvert( (double?)p.PhotoId ) + widthHeightUrlParams + "' " + widthHeightHtmlParams + " />" 
-                    : p.Gender == Gender.Female ? nophotoFemaleHtml : nophotoMaleHtml );
+                    : p.BirthDate.HasValue && p.BirthDate > childBirthdateCutoff ? 
+                        p.Gender == Gender.Female ? nophotoChildFemaleHtml : nophotoChildMaleHtml 
+                        : p.Gender == Gender.Female ? nophotoAdultFemaleHtml : nophotoAdultMaleHtml );
 
             var selectPhotoExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personPhotoQuery, entityIdProperty, "p" );
 

@@ -150,7 +150,6 @@
                         downloadSuccessful = DownloadFile( "Install.aspx", serverUrl, serverPath );
                     }
 
-                    // download files
                     if ( downloadSuccessful )
                     {
                         downloadSuccessful = DownloadFile( "Complete.aspx", serverUrl, serverPath );
@@ -216,6 +215,12 @@
                     if ( downloadSuccessful )
                     {
                         downloadSuccessful = DownloadFile( @"bin\Subtext.Scripting.dll", serverUrl, serverPath );
+                    }
+
+                    // download web.config
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "web.config", serverUrl, serverPath );
                     }
                 }
                 

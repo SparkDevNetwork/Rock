@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Administration
                 Literal lAppName = e.Row.FindControl( "lAppName" ) as Literal;
                 if ( lAppName != null )
                 {
-                    lAppName.Text = definedValue.Name;
+                    lAppName.Text = definedValue.Value;
                 }
 
                 Literal lVendorName = e.Row.FindControl( "lVendorName" ) as Literal;
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                list = queryable.OrderBy( d => d.Order).ThenBy( d => d.Name ).ToList();
+                list = queryable.OrderBy( d => d.Order).ThenBy( d => d.Value ).ToList();
             }
 
             foreach ( var item in list )

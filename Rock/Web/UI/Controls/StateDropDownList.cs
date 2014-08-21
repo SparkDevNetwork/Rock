@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
 
             _rebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-            var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } ).ToList();
+            var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Value, Value = v.Description } ).ToList();
             this.DataSource = stateList;
 
             // make sure it isn't set to a selected value that doesn't exist and default to Org State if nothing is set
@@ -83,31 +83,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string orgState = string.Empty;
-
-                // Check to see if there is an global attribute for organization address
-                Guid locGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" ).AsGuid();
-                if ( !locGuid.Equals( Guid.Empty ) )
-                {
-                    // If the organization location is still same as last check, use saved value
-                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
-                    {
-                        orgState = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
-                    }
-                    else
-                    {
-                        // otherwise read the new location and save the state
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
-                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
-                        if ( location != null )
-                        {
-                            orgState = location.State;
-                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, orgState );
-                        }
-                    }
-                }
-
-                return orgState;
+                return GlobalAttributesCache.Read().OrganizationState;
             }
         }
 

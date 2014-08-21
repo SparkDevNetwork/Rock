@@ -614,30 +614,10 @@ namespace Rock.Web.UI
                     ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
+
                         // first search cookies, but pageContext can replace it
-                        if ( Request.Cookies["Rock:context"] != null )
-                        {
-                            for ( int valueIndex = 0; valueIndex < Request.Cookies["Rock:context"].Values.Count; valueIndex++ )
-                            {
-                                string cookieValue = Request.Cookies["Rock:context"].Values[valueIndex];
-                                if ( !string.IsNullOrWhiteSpace(cookieValue) )
-                                {
-                                    try
-                                    {
-                                        string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                                        string[] parts = contextItem.Split( '|' );
-                                        if ( parts.Length == 2 )
-                                        {
-                                            ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        // intentionally ignore exception in case cookie is corrupt
-                                    }
-                                }
-                            }
-                        }
+                        GetCookieContext( GetContextCookieName( false ) );      // Site
+                        GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
 
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
@@ -1435,6 +1415,71 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Sets the context cookie.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        public void SetContextCookie( IEntity entity, bool pageSpecific = false, bool refreshPage = true)
+        {
+            string cookieName = GetContextCookieName( pageSpecific );
+
+            var contextCookie = Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new HttpCookie( cookieName );
+            }
+
+            contextCookie.Values[entity.GetType().FullName] = HttpUtility.UrlDecode( entity.ContextKey );
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+            Response.Cookies.Add( contextCookie );
+
+            if ( refreshPage )
+            {
+                Response.Redirect( Request.RawUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        private void GetCookieContext( string cookieName )
+        {
+            if ( Request.Cookies[cookieName] != null )
+            {
+                for ( int valueIndex = 0; valueIndex < Request.Cookies[cookieName].Values.Count; valueIndex++ )
+                {
+                    string cookieValue = Request.Cookies[cookieName].Values[valueIndex];
+                    if ( !string.IsNullOrWhiteSpace( cookieValue ) )
+                    {
+                        try
+                        {
+                            string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                            string[] parts = contextItem.Split( '|' );
+                            if ( parts.Length == 2 )
+                            {
+                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                            }
+                        }
+                        catch
+                        {
+                            // intentionally ignore exception in case cookie is corrupt
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the context cookie.
+        /// </summary>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <returns></returns>
+        public string GetContextCookieName( bool pageSpecific )
+        {
+            return "Rock:context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+        }
+
+        /// <summary>
         /// Adds an update trigger for when the block instance properties are updated.
         /// </summary>
         /// <param name="updatePanel">The <see cref="System.Web.UI.UpdatePanel"/> to add the <see cref="System.Web.UI.AsyncPostBackTrigger"/> to.</param>
@@ -2157,7 +2202,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Updates the blocks.
         /// </summary>
-        /// <param name="rockBlockType">Type of the rock block.</param>
+        /// <param name="blockTypePath">The block type path.</param>
         public void UpdateBlocks( string blockTypePath )
         {
             foreach ( var rockBlock in RockBlocks )

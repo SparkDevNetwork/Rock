@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Shows the details of a particular binary file item." )]
 
     [BooleanField( "Show Binary File Type" )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, "", "Advanced" )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, false, "", "Advanced" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
         #region Properties

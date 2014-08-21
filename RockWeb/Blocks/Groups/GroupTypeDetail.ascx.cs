@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName ).FormatAsHtmlTitle();
                 if ( groupType.GroupTypePurposeValue != null )
                 {
-                    hlType.Text = groupType.GroupTypePurposeValue.Name;
+                    hlType.Text = groupType.GroupTypePurposeValue.Value;
                     hlType.Visible = true;
                 }
             }
@@ -710,7 +710,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             LocationTypesDictionary = new Dictionary<int, string>();
-            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Value ) );
             BindLocationTypesGrid();
 
             // Support Location Schedules
@@ -784,7 +784,7 @@ namespace RockWeb.Blocks.Groups
             lReadOnlyTitle.Text = groupType.Name.FormatAsHtmlTitle();
             if ( groupType.GroupTypePurposeValue != null )
             {
-                hlType.Text = groupType.GroupTypePurposeValue.Name;
+                hlType.Text = groupType.GroupTypePurposeValue.Value;
                 hlType.Visible = true;
             }
             else
@@ -830,13 +830,13 @@ namespace RockWeb.Blocks.Groups
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
 
-            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Name ).ToList();
+            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Value ).ToList();
 
             ddlGroupTypePurpose.Items.Clear();
             ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
             foreach ( var item in groupTypePurposeList )
             {
-                ddlGroupTypePurpose.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                ddlGroupTypePurpose.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
         }
 

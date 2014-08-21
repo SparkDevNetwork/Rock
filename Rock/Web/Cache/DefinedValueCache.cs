@@ -81,7 +81,7 @@ namespace Rock.Web.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Value { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -135,7 +135,7 @@ namespace Rock.Web.Cache
                 this.IsSystem = definedValue.IsSystem;
                 this.DefinedTypeId = definedValue.DefinedTypeId;
                 this.Order = definedValue.Order;
-                this.Name = definedValue.Name;
+                this.Value = definedValue.Value;
                 this.Description = definedValue.Description;
             }
         }
@@ -148,7 +148,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.Value;
         }
 
         #endregion
@@ -294,7 +294,7 @@ namespace Rock.Web.Cache
                 var definedValue = Read( id.Value );
                 if ( definedValue != null )
                 {
-                    return definedValue.Name;
+                    return definedValue.Value;
                 }
             }
 

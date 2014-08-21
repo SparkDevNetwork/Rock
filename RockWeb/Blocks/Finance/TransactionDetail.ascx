@@ -86,7 +86,7 @@
                                     <Rock:ImageUploader ID="imgupImage" runat="server" />
                                 </ItemTemplate>
                             </asp:DataList>
-                            <asp:LinkButton ID="lbAddImage" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbAddImage_Click"><i class="fa fa-plus"></i> Add New Image</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddImage" runat="server" CssClass="btn btn-default btn-sm margin-t-sm" OnClick="lbAddImage_Click"><i class="fa fa-plus"></i> Add New Image</asp:LinkButton>
 
                             <Rock:RockLiteral ID="lScheduledTransaction" runat="server" Label="Scheduled Transaction" Visible="false" />
                             <Rock:RockLiteral ID="lProcessedBy" runat="server" Label="Matched By" Visible="false" />

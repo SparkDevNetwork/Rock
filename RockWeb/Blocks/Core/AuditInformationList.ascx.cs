@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Core
                     Properties = a.Details.Count(),
                     PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : nullInt,
                     PersonName = (a.PersonAlias != null && a.PersonAlias.Person != null) ? 
-                        a.PersonAlias.Person.NickName + " " + a.PersonAlias.Person.LastName + ( a.PersonAlias.Person.SuffixValueId.HasValue ? " " + a.PersonAlias.Person.SuffixValue.Name : "" ) :
+                        a.PersonAlias.Person.NickName + " " + a.PersonAlias.Person.LastName + ( a.PersonAlias.Person.SuffixValueId.HasValue ? " " + a.PersonAlias.Person.SuffixValue.Value : "" ) :
                         ""
                 } );
 

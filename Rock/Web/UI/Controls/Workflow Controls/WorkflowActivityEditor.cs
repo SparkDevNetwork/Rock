@@ -355,7 +355,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             Controls.Add( _lblStatus );
             _lblStatus.ClientIDMode = ClientIDMode.Static;
             _lblStatus.ID = this.ID + "_lblInactive";
-            _lblStatus.CssClass = "label label-important pull-right";
+            _lblStatus.CssClass = "pull-right";
 
             _lbDeleteActivityType = new LinkButton();
             Controls.Add( _lbDeleteActivityType );

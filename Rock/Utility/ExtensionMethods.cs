@@ -908,7 +908,7 @@ namespace Rock
 
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
-                return definedValue.Name;
+                return definedValue.Value;
             else
                 return string.Empty;
         }
@@ -1522,7 +1522,7 @@ namespace Rock
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Description,
                     v.Id
                 } );
@@ -1697,6 +1697,7 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value.</param>
         /// <returns></returns>
         public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {

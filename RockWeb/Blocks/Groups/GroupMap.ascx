@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMap.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMap" %>
+﻿<%@ Control AutoEventWireup="true" CodeFile="GroupMap.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMap" Language="C#" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -11,18 +11,18 @@
 
                 <asp:Literal ID="lMapStyling" runat="server" />
         
-                <div class="form-inline js-show-hide-options clearfix">
+                <div class="form-inline clearfix">
 
                     <div class="pull-left">
-                        <div class="form-group margin-r-sm">
+                        <div class="form-group margin-r-sm js-show-group">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" id="cbShowGroup" checked="checked" /> <i class="fa fa-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
+                                    <input type="checkbox" id="cbShowGroup" /> <i class="fa fa-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div class="form-group margin-r-sm">
+                        <div class="form-group margin-r-sm js-show-child-groups">
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" id="cbShowChildGroups" /> <i class="fa fa-circle" style="color:#<%=_childGroupColor %>"></i> Groups
@@ -30,7 +30,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group margin-r-sm">
+                        <div class="form-group margin-r-sm js-show-group-members">
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" id="cbShowGroupMembers" /> <i class="fa fa-circle" style="color:#<%=_memberColor %>"></i> Group Members
@@ -42,7 +42,7 @@
                     <div class="pull-right">
                         <asp:Repeater ID="rptStatus" runat="server">
                             <ItemTemplate>
-                                <div class="form-group margin-l-sm" style="display:none">
+                                <div class="form-group margin-l-sm js-connection-status" style="display:none">
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' data-color='<%# Eval("Color") %>' /> <i class="fa fa-circle" style='color:#<%# Eval("Color") %>'></i> <%# Eval("Name") %>

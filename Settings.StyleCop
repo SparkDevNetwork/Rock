@@ -314,12 +314,13 @@
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
         </Rule>
+        <Rule Name="FieldNamesMustNotUseHungarianNotation">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
       </Rules>
-      <Rule Name="FieldNamesMustNotUseHungarianNotation">
-        <RuleSettings>
-          <BooleanProperty Name="Enabled">False</BooleanProperty>
-        </RuleSettings>
-      </Rule>
+      <AnalyzerSettings />
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
       <Rules>

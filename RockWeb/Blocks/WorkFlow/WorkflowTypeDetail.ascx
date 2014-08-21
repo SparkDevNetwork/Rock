@@ -32,10 +32,9 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                            </div>
-                            <div class="col-md-3">
+                            
                                 <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Automatically Persisted" />
                             </div>
                         </div>

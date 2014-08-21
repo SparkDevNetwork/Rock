@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Core
                 definedValue = definedValueService.Get( definedValueId );
             }
 
-            definedValue.Name = tbValueName.Text;
+            definedValue.Value = tbValueName.Text;
             definedValue.Description = tbValueDescription.Text;
             definedValue.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( phDefinedValueAttributes, definedValue );
@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
-            var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Name);
+            var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Value);
             var changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
@@ -426,7 +426,7 @@ namespace RockWeb.Blocks.Core
             if ( setValues )
             {
                 hfDefinedValueId.SetValue( definedValue.Id );
-                tbValueName.Text = definedValue.Name;
+                tbValueName.Text = definedValue.Value;
                 tbValueDescription.Text = definedValue.Description;
             }
 

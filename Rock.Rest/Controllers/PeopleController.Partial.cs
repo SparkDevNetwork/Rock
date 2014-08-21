@@ -164,14 +164,14 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
                 personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 50, 50 );
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Name : string.Empty;
+                personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
                 personSearchResult.Email = person.Email;
 
                 if ( person.RecordStatusValueId.HasValue )
                 {
                     var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
-                    personSearchResult.RecordStatus = recordStatus.Name;
+                    personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
                 else
@@ -346,7 +346,7 @@ namespace Rock.Rest.Controllers
                 html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                     Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 65, 65 ),
                     person.FullName,
-                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
+                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                 var spouse = person.GetSpouse( rockContext );
                 if ( spouse != null )
@@ -368,7 +368,7 @@ namespace Rock.Rest.Controllers
 
                 foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
-                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.ToString() );
+                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
                 }
 
                 // TODO: Should also show area: <br /><strong>Area</strong> WestwingS

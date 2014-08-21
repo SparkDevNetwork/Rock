@@ -22,6 +22,9 @@ using System.Threading.Tasks;
 
 namespace Rock.SystemGuid
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class FinancialAccount
     {
         /// <summary>

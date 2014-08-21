@@ -200,7 +200,7 @@ namespace CheckinClient
     /// </summary>
     public class LabelItem
     {
-        public int PrinterDeviceId { get; set; }
+        public int? PrinterDeviceId { get; set; }
         public string PrinterAddress { get; set; }
         public string LabelFile { get; set; }
         public Dictionary<string, string> MergeFields { get; set; }

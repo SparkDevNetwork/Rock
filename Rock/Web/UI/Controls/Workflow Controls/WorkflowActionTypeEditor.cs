@@ -251,7 +251,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 if ( result.WorkflowForm == null )
                 {
                     result.WorkflowForm = new WorkflowActionForm();
-                    result.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    result.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
                     var systemEmail = new SystemEmailService(new RockContext()).Get(SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid());
                     if ( systemEmail != null )
                     {
@@ -312,7 +312,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 if (value.WorkflowForm == null)
                 {
                     value.WorkflowForm = new WorkflowActionForm();
-                    value.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    value.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
                     var systemEmail = new SystemEmailService( new RockContext() ).Get( SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
                     if ( systemEmail != null )
                     {

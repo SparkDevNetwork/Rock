@@ -1,7 +1,3 @@
-SET STATISTICS TIME OFF
-SET NOCOUNT ON
-GO
-
 /*
 <doc>
 	<summary>
@@ -10,16 +6,21 @@ GO
 	
 	<remarks>	
 		Uses the following constants:
-			##TODO##
+			* Group Type - Family: '790E3215-3B10-442B-AF69-616C0DCB998E'
+            * Location Type - Home: '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+            * Phone Type - Home: '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
+            * Phone Type - Cell: 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
 	</remarks>
 	<code>
 		EXEC [dbo].[spCrm_PersonDuplicateFinder]
 	</code>
 </doc>
 */
-ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+CREATE PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
+    SET NOCOUNT ON
+    
     BEGIN TRANSACTION
 
     -- prevent stored proc from running simultaneously since we are using #temp tables
@@ -28,30 +29,38 @@ BEGIN
         ,'Transaction'
         ,0
 
+    -- Flags that enable the various compare functions
     DECLARE @compareByEmail BIT = 1
-        ,@compareByName BIT = 1
+        ,@compareByPartialName BIT = 1
+        ,@compareByFullFirstName BIT = 1
+        ,@compareByFullLastName BIT = 1
         ,@compareByPhone BIT = 1
         ,@compareByAddress BIT = 1
         ,@compareByBirthDate BIT = 1
         ,@compareByGender BIT = 1
         ,@compareByCampus BIT = 1
         ,@compareByMaritalStatus BIT = 1
+    --
     -- Scores
-    -- ones marked ** only added to score if already a potential match
+    -- ones marked /**/ only added to score if already a potential match
     DECLARE @cScoreWeightEmail INT = 4
-        ,@cScoreWeightName INT = 3
+        ,@cScoreWeightPartialName INT = 1
+        ,@cScoreWeightFullFirstName INT = 3 /**/
+        ,@cScoreWeightFullLastName INT = 3 /**/
         ,@cScoreWeightPhoneNumber INT = 2
         ,@cScoreWeightAddress INT = 2
-        ,@cScoreWeightBirthdate INT = 3 -- **
-        ,@cScoreWeightGender INT = 3 -- **
-        ,@cScoreWeightCampus INT = 1 -- **
-        ,@cScoreWeightMaritalStatus INT = 1 -- **
-        -- Guids that this proc uses
+        ,@cScoreWeightBirthdate INT = 3 /**/
+        ,@cScoreWeightGender INT = 1 /**/
+        ,@cScoreWeightCampus INT = 1 /**/
+        ,@cScoreWeightMaritalStatus INT = 1 /**/
+    --
+    -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
         ,@cHOME_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = '407E7E45-7B2E-4FCD-9605-ECB1339F2453'
         ,@cCELL_PHONENUMBER_DEFINEDVALUE_GUID UNIQUEIDENTIFIER = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'
-    -- other
+    --
+    -- Other Declarations
     DECLARE @processDateTime DATETIME = SYSDATETIME()
         ,@cHOME_PHONENUMBER_DEFINEDVALUE_ID INT = (
             SELECT TOP 1 [Id]
@@ -75,7 +84,7 @@ BEGIN
             )
 
     /*
-    Populate Temporary Tables for each match criteria
+    Populate Temporary Tables for each match criteria (Email, PartialName, PhoneNumber, Address)
     */
     -- Find Duplicates by looking at people with the exact same email address
     CREATE TABLE #PersonDuplicateByEmailTable (
@@ -144,7 +153,7 @@ BEGIN
         AND [p].[FirstName] LIKE (e.First2 + '%')
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
-        AND @compareByName = 1
+        AND @compareByPartialName = 1
 
     -- Find Duplicates by looking at people with the exact same phone number
     CREATE TABLE #PersonDuplicateByPhoneTable (
@@ -347,7 +356,7 @@ BEGIN
                 ,NEWID()
                 );
 
-    -- Update PersonDuplicate table with results of name match
+    -- Update PersonDuplicate table with results of partial name match
     MERGE [PersonDuplicate] AS TARGET
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
@@ -365,8 +374,8 @@ BEGIN
     WHEN MATCHED
         THEN
             UPDATE
-            SET [Score] = [Score] + @cScoreWeightName
-                ,[ScoreDetail] += '|Name'
+            SET [Score] = [Score] + @cScoreWeightPartialName
+                ,[ScoreDetail] += '|PartialName'
                 ,[ModifiedDateTime] = @processDateTime
     WHEN NOT MATCHED
         THEN
@@ -383,8 +392,8 @@ BEGIN
             VALUES (
                 source.PersonAliasId
                 ,source.DuplicatePersonAliasId
-                ,@cScoreWeightName
-                ,'|Name'
+                ,@cScoreWeightPartialName
+                ,'|PartialName'
                 ,0
                 ,@processDateTime
                 ,@processDateTime
@@ -533,25 +542,40 @@ BEGIN
             ELSE 0
             END;
 
-    -- increment capacity values for Email, Name, Birthdate (do in one Update statement since these are all person fields)
+    -- increment capacity values for Email, PartialName, Birthdate (do in one Update statement since these are all person fields)
     UPDATE [PersonDuplicate]
     SET [Capacity] += CASE 
+            -- add the Email capacity
             WHEN @compareByEmail = 1
                 AND isnull(p.Email, '') != ''
                 THEN @cScoreWeightEmail
             ELSE 0
             END + CASE 
-            WHEN @compareByName = 1
+            -- add partial name capacity
+            WHEN @compareByPartialName = 1
                 AND (
                     isnull(p.LastName, '') != ''
-                    AND (
-                        isnull(p.FirstName, '') != ''
-                        OR isnull(p.NickName, '') != ''
-                        )
+                    OR isnull(p.FirstName, '') != ''
                     )
-                THEN @cScoreWeightName
+                THEN @cScoreWeightPartialName
             ELSE 0
             END + CASE 
+            -- full first name capacity
+            WHEN @compareByFullFirstName = 1
+                AND (
+                    isnull(p.FirstName, '') != ''
+                    OR isnull(p.NickName, '') != ''
+                    )
+                THEN @cScoreWeightFullFirstName
+            ELSE 0
+            END + CASE 
+            -- full last name capacity
+            WHEN @compareByFullLastName = 1
+                AND isnull(p.LastName, '') != ''
+                THEN @cScoreWeightFullFirstName
+            ELSE 0
+            END + CASE 
+            -- add the Birthday Capacity
             WHEN @compareByBirthDate = 1
                 AND p.BirthDate IS NOT NULL
                 THEN @cScoreWeightBirthdate
@@ -561,7 +585,8 @@ BEGIN
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
 
-    -- increment capacity values for Phone
+    ---- NOTE Phone Capacity is higher if BOTH Home and Cell Phone are available
+    -- increment capacity values for Home Phone
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightPhoneNumber
     FROM PersonDuplicate pd
@@ -570,14 +595,24 @@ BEGIN
     WHERE p.Id IN (
             SELECT PersonId
             FROM PhoneNumber
-            WHERE NumberTypeValueId IN (
-                    @cHOME_PHONENUMBER_DEFINEDVALUE_ID
-                    ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
-                    )
+            WHERE NumberTypeValueId = @cHOME_PHONENUMBER_DEFINEDVALUE_ID
             )
         AND @compareByPhone = 1
 
-    -- increment capacity values for Address, Campus
+    -- increment capacity values for Cell Phone
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += @cScoreWeightPhoneNumber
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+    WHERE p.Id IN (
+            SELECT PersonId
+            FROM PhoneNumber
+            WHERE NumberTypeValueId = @cCELL_PHONENUMBER_DEFINEDVALUE_ID
+            )
+        AND @compareByPhone = 1
+
+    -- increment capacity values for Address
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightAddress
     FROM PersonDuplicate pd
@@ -612,10 +647,76 @@ BEGIN
     /*
     Add additional scores to people that are already potential matches 
     */
-    -- Increment the score on potential matches that have the same birthday
+    -- Increment the score on potential matches that have the same FirstName (or NickName)
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsFirstName TABLE (id INT);
+
+    INSERT INTO @updatedIdsFirstName
+    SELECT pd.Id
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE (
+            (
+                p1.FirstName = p2.FirstName
+                AND isnull(p1.FirstName, '') != ''
+                )
+            OR (
+                p1.NickName = p2.NickName
+                AND isnull(p1.NickName, '') != ''
+                )
+            OR (
+                p1.FirstName = p2.NickName
+                AND isnull(p1.NickName, '') != ''
+                AND isnull(p1.FirstName, '') != ''
+                )
+            OR (
+                p1.NickName = p2.FirstName
+                AND isnull(p1.NickName, '') != ''
+                AND isnull(p1.FirstName, '') != ''
+                )
+            )
+        AND @compareByFullFirstName = 1
+
     UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightBirthdate
-        ,[ScoreDetail] += '|Birthdate'
+    SET [Score] = [Score] + @cScoreWeightFullFirstName
+        ,[ScoreDetail] += '|FirstName'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsFirstName
+            )
+
+    -- Increment the score on potential matches that have the same LastName
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsLastName TABLE (id INT);
+
+    INSERT INTO @updatedIdsLastName
+    SELECT pd.Id
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE p1.LastName = p2.LastName
+        AND isnull(p1.LastName, '') != ''
+        AND @compareByFullLastName = 1
+
+    UPDATE [PersonDuplicate]
+    SET [Score] = [Score] + @cScoreWeightFullFirstName
+        ,[ScoreDetail] += '|LastName'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsLastName
+            )
+
+    -- Increment the score on potential matches that have the same birthday
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsBirthdate TABLE (id INT);
+
+    INSERT INTO @updatedIdsBirthdate
+    SELECT pd.Id
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -624,10 +725,20 @@ BEGIN
     WHERE p1.BirthDate = p2.BirthDate
         AND @compareByBirthDate = 1
 
-    -- Increment the score on potential matches that have the same gender
     UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightGender
-        ,[ScoreDetail] += '|Gender'
+    SET [Score] = [Score] + @cScoreWeightBirthdate
+        ,[ScoreDetail] += '|Birthdate'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsBirthdate
+            )
+
+    -- Increment the score on potential matches that have the same gender
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsGender TABLE (id INT);
+
+    INSERT INTO @updatedIdsGender
+    SELECT pd.Id
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -636,10 +747,20 @@ BEGIN
     WHERE p1.Gender = p2.Gender
         AND @compareByGender = 1
 
+    UPDATE [PersonDuplicate]
+    SET [Score] = [Score] + @cScoreWeightGender
+        ,[ScoreDetail] += '|Gender'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsGender
+            )
+
     -- Increment the score on potential matches that have the same campus
-    UPDATE PersonDuplicate
-    SET [Score] = [Score] + @cScoreWeightCampus
-        ,[ScoreDetail] += '|Campus'
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsCampus TABLE (id INT);
+
+    INSERT INTO @updatedIdsCampus
+    SELECT pd.Id
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -656,10 +777,20 @@ BEGIN
         AND [g2].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND @compareByCampus = 1
 
+    UPDATE PersonDuplicate
+    SET [Score] = [Score] + @cScoreWeightCampus
+        ,[ScoreDetail] += '|Campus'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsCampus
+            )
+
     -- Increment the score on potential matches that have the same marital status
-    UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightMaritalStatus
-        ,[ScoreDetail] += '|Marital'
+    -- put the updated ids into a temp list first to speed things up
+    DECLARE @updatedIdsMarital TABLE (id INT);
+
+    INSERT INTO @updatedIdsMarital
+    SELECT pd.Id
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -667,6 +798,14 @@ BEGIN
     JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
         AND @compareByMaritalStatus = 1
+
+    UPDATE PersonDuplicate
+    SET [Score] = [Score] + @cScoreWeightMaritalStatus
+        ,[ScoreDetail] += '|Marital'
+    WHERE Id IN (
+            SELECT Id
+            FROM @updatedIdsMarital
+            )
 
     /* 
     Clean up records that no longer are duplicates 
@@ -685,7 +824,7 @@ BEGIN
     END
 
     /*
-    Explicitly clean up temp tables before the proc exists (vs. have SQL Server do it for us after the proc is done)
+    Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
     */
     DROP TABLE #PersonDuplicateByEmailTable;
 
@@ -698,38 +837,3 @@ BEGIN
     COMMIT
 END
 GO
-
-SET STATISTICS TIME ON
-
-EXEC [dbo].[spCrm_PersonDuplicateFinder]
-GO
-
-SELECT count(*)
-FROM PersonDuplicate
-    /*
-SELECT PersonAliasId, DuplicatePersonAliasId, Score
-    ,Capacity
-    ,score / (Capacity * .01) [Percent2]
-FROM PersonDuplicate
-ORDER BY score / (Capacity * .01) DESC
-*/
-    -- DEBUG
-    /*
-SET STATISTICS TIME ON
-SET STATISTICS IO ON
-GO
-
-EXEC [dbo].[spCrm_PersonDuplicateFinder]
-GO
-
-select Len(ScoreDetail) from PersonDuplicate order by Len(ScoreDetail) desc
-
-SELECT p1.FirstName + '|' + p1.NickName + ',' + p1.LastName [Person], p2.FirstName + '|' + p2.NickName  + ', ' +  p2.LastName [DuplicatePerson], Score, ScoreDetail
-FROM PersonDuplicate pd
-JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
-JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
-JOIN Person p1 on p1.Id = pa1.PersonId
-JOIN Person p2 on p2.Id = pa2.PersonId
-where p1.FirstName != p2.FirstName
-order by Score desc, [Person]
-*/

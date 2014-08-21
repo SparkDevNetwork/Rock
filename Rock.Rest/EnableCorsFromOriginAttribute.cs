@@ -51,7 +51,7 @@ namespace Rock.Rest
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
             if (definedType != null)
             {
-                result = definedType.DefinedValues.Select( v => v.Name ).Contains( origin, StringComparer.OrdinalIgnoreCase );
+                result = definedType.DefinedValues.Select( v => v.Value ).Contains( origin, StringComparer.OrdinalIgnoreCase );
             }
 
             return await Task.FromResult<bool>( result );
