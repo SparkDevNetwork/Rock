@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for GroupTypeRole object
+    /// Simple Client Model for GroupTypeRole
     /// </summary>
     public partial class GroupTypeRole
     {

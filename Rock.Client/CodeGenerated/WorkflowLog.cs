@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for WorkflowLog object
+    /// Simple Client Model for WorkflowLog
     /// </summary>
     public partial class WorkflowLog
     {

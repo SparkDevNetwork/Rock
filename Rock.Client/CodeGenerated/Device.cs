@@ -26,18 +26,18 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Device object
+    /// Simple Client Model for Device
     /// </summary>
     public partial class Device
     {
+        /// <summary />
+        public int DeviceTypeValueId { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
         /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public int DeviceTypeValueId { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }

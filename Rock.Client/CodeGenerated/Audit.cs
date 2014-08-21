@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Audit object
+    /// Simple Client Model for Audit
     /// </summary>
     public partial class Audit
     {

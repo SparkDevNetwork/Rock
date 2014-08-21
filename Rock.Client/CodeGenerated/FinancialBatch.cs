@@ -26,10 +26,13 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialBatch object
+    /// Simple Client Model for FinancialBatch
     /// </summary>
     public partial class FinancialBatch
     {
+        /// <summary />
+        public int? CampusId { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -41,9 +44,6 @@ namespace Rock.Client
 
         /// <summary />
         public int /* BatchStatus*/ Status { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
 
         /// <summary />
         public string AccountingSystemCode { get; set; }

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for MetricValue object
+    /// Simple Client Model for MetricValue
     /// </summary>
     public partial class MetricValue
     {

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for WorkflowTrigger object
+    /// Simple Client Model for WorkflowTrigger
     /// </summary>
     public partial class WorkflowTrigger
     {

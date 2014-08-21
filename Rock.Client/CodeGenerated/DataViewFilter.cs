@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for DataViewFilter object
+    /// Simple Client Model for DataViewFilter
     /// </summary>
     public partial class DataViewFilter
     {

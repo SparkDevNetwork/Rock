@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for PersonAlias object
+    /// Simple Client Model for PersonAlias
     /// </summary>
     public partial class PersonAlias
     {

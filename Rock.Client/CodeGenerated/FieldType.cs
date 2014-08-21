@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FieldType object
+    /// Simple Client Model for FieldType
     /// </summary>
     public partial class FieldType
     {

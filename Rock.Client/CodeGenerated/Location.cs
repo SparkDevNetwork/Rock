@@ -26,13 +26,10 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Location object
+    /// Simple Client Model for Location
     /// </summary>
     public partial class Location
     {
-        /// <summary />
-        public int? PrinterDeviceId { get; set; }
-
         /// <summary />
         public int? ParentLocationId { get; set; }
 
@@ -67,7 +64,7 @@ namespace Rock.Client
         public string Country { get; set; }
 
         /// <summary />
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary />
         public string AssessorParcelId { get; set; }
@@ -98,6 +95,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool? IsGeoPointLocked { get; set; }
+
+        /// <summary />
+        public int? PrinterDeviceId { get; set; }
 
         /// <summary />
         public int? ImageId { get; set; }

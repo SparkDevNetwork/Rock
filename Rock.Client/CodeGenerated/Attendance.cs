@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Attendance object
+    /// Simple Client Model for Attendance
     /// </summary>
     public partial class Attendance
     {

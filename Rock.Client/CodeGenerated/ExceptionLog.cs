@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for ExceptionLog object
+    /// Simple Client Model for ExceptionLog
     /// </summary>
     public partial class ExceptionLog
     {

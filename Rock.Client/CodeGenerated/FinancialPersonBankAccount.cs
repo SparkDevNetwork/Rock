@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialPersonBankAccount object
+    /// Simple Client Model for FinancialPersonBankAccount
     /// </summary>
     public partial class FinancialPersonBankAccount
     {
@@ -35,6 +35,9 @@ namespace Rock.Client
 
         /// <summary />
         public string AccountNumberSecured { get; set; }
+
+        /// <summary />
+        public string AccountNumberMasked { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

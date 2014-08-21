@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for NoteType object
+    /// Simple Client Model for NoteType
     /// </summary>
     public partial class NoteType
     {

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Layout object
+    /// Simple Client Model for Layout
     /// </summary>
     public partial class Layout
     {

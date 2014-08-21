@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for CommunicationRecipient object
+    /// Simple Client Model for CommunicationRecipient
     /// </summary>
     public partial class CommunicationRecipient
     {

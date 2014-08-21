@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Category object
+    /// Simple Client Model for Category
     /// </summary>
     public partial class Category
     {

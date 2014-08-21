@@ -26,10 +26,16 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialPersonSavedAccount object
+    /// Simple Client Model for FinancialPersonSavedAccount
     /// </summary>
     public partial class FinancialPersonSavedAccount
     {
+        /// <summary />
+        public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
         /// <summary />
         public int? GatewayEntityTypeId { get; set; }
 
@@ -47,12 +53,6 @@ namespace Rock.Client
 
         /// <summary />
         public string TransactionCode { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

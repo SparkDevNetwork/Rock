@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for DataView object
+    /// Simple Client Model for DataView
     /// </summary>
     public partial class DataView
     {

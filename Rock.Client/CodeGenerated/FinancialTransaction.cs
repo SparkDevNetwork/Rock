@@ -26,21 +26,18 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for FinancialTransaction object
+    /// Simple Client Model for FinancialTransaction
     /// </summary>
     public partial class FinancialTransaction
     {
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
+        public int? AuthorizedPersonId { get; set; }
 
         /// <summary />
         public int? BatchId { get; set; }
 
         /// <summary />
-        public int? ScheduledTransactionId { get; set; }
-
-        /// <summary />
-        public int? AuthorizedPersonId { get; set; }
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? TransactionDateTime { get; set; }
@@ -65,6 +62,15 @@ namespace Rock.Client
 
         /// <summary />
         public string CheckMicrEncrypted { get; set; }
+
+        /// <summary />
+        public int? ScheduledTransactionId { get; set; }
+
+        /// <summary />
+        public int? ProcessedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ProcessedDateTime { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

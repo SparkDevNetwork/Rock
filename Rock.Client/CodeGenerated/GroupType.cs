@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for GroupType object
+    /// Simple Client Model for GroupType
     /// </summary>
     public partial class GroupType
     {
@@ -77,6 +77,9 @@ namespace Rock.Client
 
         /// <summary />
         public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
+
+        /// <summary />
+        public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
         public int? GroupTypePurposeValueId { get; set; }

@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for DefinedValue object
+    /// Simple Client Model for DefinedValue
     /// </summary>
     public partial class DefinedValue
     {
@@ -40,7 +40,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public string Value { get; set; }
 
         /// <summary />
         public string Description { get; set; }

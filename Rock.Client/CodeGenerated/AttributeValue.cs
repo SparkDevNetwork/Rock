@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for AttributeValue object
+    /// Simple Client Model for AttributeValue
     /// </summary>
     public partial class AttributeValue
     {

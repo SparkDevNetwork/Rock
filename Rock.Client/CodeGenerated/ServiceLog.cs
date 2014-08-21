@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for ServiceLog object
+    /// Simple Client Model for ServiceLog
     /// </summary>
     public partial class ServiceLog
     {

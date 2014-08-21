@@ -26,7 +26,7 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for Site object
+    /// Simple Client Model for Site
     /// </summary>
     public partial class Site
     {
