@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         qry = qry.Where( w => w.CompletedDateTime.HasValue );
                     }
-                    if ( !state.Equals( "Inactive" ) )
+                    if ( !state.Equals( "Completed" ) )
                     {
                         qry = qry.Where( w => !w.CompletedDateTime.HasValue );
                     }
@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.WorkFlow
                     Activities = w.ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" ),
                     w.CreatedDateTime,
                     Status = string.Format( "<span class='label label-info'>{0}</span>", w.Status ),
-                    State = ( w.CompletedDateTime.HasValue ? "<span class='label label-danger'>Inactive</span>" : "<span class='label label-success'>Active</span>" )
+                    State = ( w.CompletedDateTime.HasValue ? "<span class='label label-default'>Completed</span>" : "<span class='label label-success'>Active</span>" )
                 } ).ToList();
                 gWorkflows.DataBind();
             }

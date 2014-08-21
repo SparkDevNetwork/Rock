@@ -19,7 +19,7 @@
 	                    <Rock:DateRangePicker ID="drpCompleted" runat="server" Label="Completed" />
                         <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
                             <asp:ListItem Selected="True" Text="Active" Value="Active" />
-                            <asp:ListItem Selected="True" Text="Inactive" Value="Inactive" />
+                            <asp:ListItem Selected="True" Text="Completed" Value="Completed" />
                         </Rock:RockCheckBoxList>
 	                </Rock:GridFilter>
 
