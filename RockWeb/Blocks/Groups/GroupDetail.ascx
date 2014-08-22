@@ -187,7 +187,7 @@
                     </asp:Panel>
                 </div>
 
-                <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Name" ValidationGroup="Location" />
+                <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Value" ValidationGroup="Location" />
 
                 <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
 

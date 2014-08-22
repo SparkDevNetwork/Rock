@@ -295,6 +295,14 @@ namespace Rock.Model
             {
                 mergeFields.Add( "Workflow", Workflow );
                 mergeFields.Add( "ActivityType", this.ActivityType );
+                if ( this.AssignedPersonAlias != null && this.AssignedPersonAlias.Person != null)
+                {
+                    mergeFields.Add( "AssignedPerson", this.AssignedPersonAlias.Person );
+                }
+                if ( this.AssignedGroup != null )
+                {
+                    mergeFields.Add( "AssignedGroup", this.AssignedGroup );
+                }
             }
 
             return mergeFields;
