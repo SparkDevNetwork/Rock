@@ -239,6 +239,67 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Gets or sets the tender type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The tender type unique identifier.
+        /// </value>
+        [UserScopedSetting]
+        public Guid TenderTypeValueGuid
+        {
+            get
+            {
+                return ( this["TenderTypeValueGuid"] as string ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+
+            }
+
+            set
+            {
+                this["TenderTypeValueGuid"] = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the scanner should scan both the front and rear sides
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable rear image]; otherwise, <c>false</c>.
+        /// </value>
+        [UserScopedSetting]
+        public bool EnableRearImage
+        {
+            get
+            {
+                return this["EnableRearImage"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableRearImage"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
+        /// </value>
+        [UserScopedSetting]
+        public bool EnableDoubleDocDetection
+        {
+            get
+            {
+                return this["EnableDoubleDocDetection"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableDoubleDocDetection"] = value;
+            }
+        }
+
+        /// <summary>
         /// Loads this instance.
         /// </summary>
         /// <returns></returns>

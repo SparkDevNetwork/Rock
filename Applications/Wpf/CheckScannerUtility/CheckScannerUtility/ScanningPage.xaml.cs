@@ -139,7 +139,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            lblScanWarning.Visibility = Visibility.Collapsed;
+            lblScanCheckWarning.Visibility = Visibility.Collapsed;
             ShowCheckInformation( new ScannedCheckInfo() );
         }
     }

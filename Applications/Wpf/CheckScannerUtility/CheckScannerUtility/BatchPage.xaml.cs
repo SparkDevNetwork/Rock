@@ -176,25 +176,24 @@ namespace Rock.Apps.CheckScannerUtility
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage4", "False" );
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage4", "False" );
 
-                // ###TODO###
-                rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", "false" );
-
-
-                switch ( RockConfig.Load().ImageColorType )
+                var rockConfig = RockConfig.Load();
+                switch ( rockConfig.ImageColorType )
                 {
                     case ImageColorType.ImageColorTypeColor:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
-                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
                     case ImageColorType.ImageColorTypeGrayscale:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
-                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
                     default:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "True" );
-                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
                 }
+
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
 
                 rangerScanner.EnableOptions();
             }
@@ -229,12 +228,12 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
             {
-                ScanningPage.lblScanWarning.Visibility = Visibility.Visible;
+                ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
                 rangerScanner.StopFeeding();
             }
             else
             {
-                ScanningPage.lblScanWarning.Visibility = Visibility.Collapsed;
+                ScanningPage.lblScanCheckWarning.Visibility = Visibility.Collapsed;
                 ScannedCheckList.Enqueue( scannedCheck );
             }
         }
@@ -301,11 +300,11 @@ namespace Rock.Apps.CheckScannerUtility
 
                     if ( scannedCheck.RoutingNumber.Length != 9 )
                     {
-                        ScanningPage.lblScanWarning.Visibility = Visibility.Visible;
+                        ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
                     }
                     else
                     {
-                        ScanningPage.lblScanWarning.Visibility = Visibility.Collapsed;
+                        ScanningPage.lblScanCheckWarning.Visibility = Visibility.Collapsed;
                         ScannedCheckList.Enqueue( scannedCheck );
                     }
 
