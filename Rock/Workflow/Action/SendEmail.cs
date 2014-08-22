@@ -131,8 +131,8 @@ namespace Rock.Workflow.Action
             recipients.Add( recipient );
              
             var channelData = new Dictionary<string, string>();
-            channelData.Add( "From", from.ResolveMergeFields( mergeFields ) );
-            channelData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
+            channelData.Add( "From", from );
+            channelData.Add( "Subject", subject );
             channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
             var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid(), rockContext );
