@@ -368,6 +368,10 @@ namespace Rock.Model
             else
             {
                 mergeFields.Add( "WorkflowType", this.WorkflowType );
+                if ( this.InitiatorPersonAlias != null && this.InitiatorPersonAlias.Person != null )
+                {
+                    mergeFields.Add( "Initiator", this.InitiatorPersonAlias.Person );
+                }
             }
 
             return mergeFields;
