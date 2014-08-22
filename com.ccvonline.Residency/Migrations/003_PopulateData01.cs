@@ -180,20 +180,15 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
              RockMigrationHelper.AddBlock( "56F3E462-28EF-4EC5-A58C-C5FDE48356E0", "", "BF27EBA9-EA1D-4B15-8B43-D97F0C1B0B20", "Resident Project Assessment List", "Main", "", "", 3, "CA0F81CA-17B1-44EA-B8DF-C834DF8ED43F" );
              RockMigrationHelper.AddBlock( "0DF59029-C17B-474D-8DD1-ED312B734202", "", "D2835421-1D69-4D2E-80BC-836FF606ADDD", "Resident Project Assessment Detail", "Main", "", "", 0, "0A1F651B-621F-4577-B35B-DD9E2FE22302" );
 
-            // RockMigrationHelper.AddBlock( "ADE663B9-386B-479C-ABD9-3349E1B4B827", "", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "Main", "", "", 1, "5116ABF3-4AE3-467E-B5DA-4E3920DF1CF9" );
 
              RockMigrationHelper.AddBlock( "ADE663B9-386B-479C-ABD9-3349E1B4B827", "", "20CC5FAC-8EF5-4A9E-90E0-ECC8F746F7F9", "Resident Competency Project List", "Main", "", "", 2, "1843F88B-B17F-4F81-AED8-91B87C0A2816" );
              RockMigrationHelper.AddBlock( "83DBB422-38C5-44F3-9FDE-3737AC8CF2A7", "", "536A0B29-B427-434D-82B6-C5CE6A8E07FE", "Resident Competency Detail", "Main", "", "", 0, "A3237301-8DAD-4E96-8871-1DE4FF5395A1" );
-            // RockMigrationHelper.AddBlock( "83DBB422-38C5-44F3-9FDE-3737AC8CF2A7", "", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "Main", "", "", 1, "4132D452-7672-4275-9D4E-B7D6A7DFE745" );
              RockMigrationHelper.AddBlock( "83DBB422-38C5-44F3-9FDE-3737AC8CF2A7", "", "4BD8E3F7-30D3-49C2-B3D6-B897174A9AB8", "Resident Competency Goals Detail", "Main", "", "", 2, "B48D7551-B398-431F-87EE-2786465C5A13" );
              RockMigrationHelper.AddBlock( "130FA92D-9D5F-45D1-84AA-B399F2E868E6", "", "536A0B29-B427-434D-82B6-C5CE6A8E07FE", "Resident Competency Detail", "Main", "", "", 0, "D4800BCD-B7F1-4D22-ACDF-5F04FB49E148" );
-            // RockMigrationHelper.AddBlock( "130FA92D-9D5F-45D1-84AA-B399F2E868E6", "", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "Main", "", "", 1, "55629043-F1BB-4B07-8AC7-A32D8B1F632C" );
              RockMigrationHelper.AddBlock( "130FA92D-9D5F-45D1-84AA-B399F2E868E6", "", "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3", "Notes", "Main", "", "", 2, "FDB0021C-485F-4B75-82D0-514CDBD59B7C" );
              RockMigrationHelper.AddBlock( "07770489-9C8D-43FA-85B3-E99BB54D3353", "", "7B83D513-1178-429E-93FF-E76430E038E4", "Login", "Main", "", "", 0, "C88645F1-BDB6-4A08-A581-587DCCB40A3B" );
-             RockMigrationHelper.AddBlock( "826C0BFF-C831-4427-98F9-57FF462D82F5", "", "F7193487-1234-49D7-9CEC-7F5F452B7E3F", "Current Person", "Main", "", "", 0, "E517DDD7-73DB-4475-87A4-83CBCD7657F1" );
-            // RockMigrationHelper.AddBlock( "826C0BFF-C831-4427-98F9-57FF462D82F5", "", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "Main", "", "", 1, "D07780FC-0ED5-4881-8B76-24F6FAE8A897" );
-             RockMigrationHelper.AddBlock( "162927F6-E503-43C4-B075-55F1E592E96E", "", "F7193487-1234-49D7-9CEC-7F5F452B7E3F", "Current Person", "Main", "", "", 0, "4EFF1322-6A9A-44A0-B3B8-CB547CB09C0B" );
-            // RockMigrationHelper.AddBlock( "162927F6-E503-43C4-B075-55F1E592E96E", "", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "Main", "", "", 1, "3938E111-C9FF-49E9-B1B8-A2AA89080F51" );
+             //RockMigrationHelper.AddBlock( "826C0BFF-C831-4427-98F9-57FF462D82F5", "", "F7193487-1234-49D7-9CEC-7F5F452B7E3F", "Current Person", "Main", "", "", 0, "E517DDD7-73DB-4475-87A4-83CBCD7657F1" );
+             //RockMigrationHelper.AddBlock( "162927F6-E503-43C4-B075-55F1E592E96E", "", "F7193487-1234-49D7-9CEC-7F5F452B7E3F", "Current Person", "Main", "", "", 0, "4EFF1322-6A9A-44A0-B3B8-CB547CB09C0B" );
 
             // Move the Resident Competency List down under the new Page Nav pills 
             Sql( "Update [Block] set [Order] = 2 where [Guid] = 'EE97ABE8-A124-4437-B962-805C1D0C18D4'" );
