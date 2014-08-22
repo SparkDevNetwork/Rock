@@ -3,6 +3,7 @@
 <asp:UpdatePanel ID="upRecordings" runat="server">
     <ContentTemplate>
 
+        <asp:HiddenField ID="hfBaseUrl" runat="server" />
         <asp:HiddenField ID="hfRecording" runat="server" />
         <asp:HiddenField ID="hfClipStart" runat="server" />
         <asp:HiddenField ID="hfClipDuration" runat="server" />
@@ -100,6 +101,7 @@
 <script type="text/javascript">
 
     var recordingurl = '<%=hfRecording.Value%>';
+    var baseUrl = '<%=hfBaseUrl.Value%>';
     var recordingstarttime;
     var recordingduration;
     var recordingtotaltime;
@@ -196,7 +198,7 @@
             $("#totaltime").val(total);
 
             // generate url
-            var url = 'http://localhost:50345/page/361?ClipUrl=' + recordingurl + '&ClipStart=' + (recordingstarttime*1000) + '&ClipDuration=' + (recordingduration*1000);
+            var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + (recordingstarttime*1000) + '&ClipDuration=' + (recordingduration*1000);
             $(".js-urltextbox").val(url);
         }
     }

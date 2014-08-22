@@ -77,13 +77,15 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             if ( !Page.IsPostBack )
             {
-
+                // Get page parameters
                 DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
                 Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
                 string venue = PageParameter( "Venue" );
                 string clipUrl = PageParameter( "ClipURL" );
                 string clipStart = PageParameter( "ClipStart" );
                 string clipDuration = PageParameter( "ClipDuration" );
+
+                hfBaseUrl.Value = Request.Url.OriginalString.Split('?')[0];
 
                 RecordingService service = new RecordingService( new CommandCenterContext() );
                 var rockContext = new RockContext();
