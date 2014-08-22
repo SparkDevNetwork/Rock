@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Send Email Template")]
 
-    [EmailTemplateField( "EmailTemplate", "The email template to send" )]
+    [EmailTemplateField( "EmailTemplate", "The email template to send. The email templates must be assigned to the 'Workflow' category in order to be displayed on the list." )]
     [TextField( "Recipient", "The email address to send to" )]
     public class SendEmailTemplate : ActionComponent
     {
