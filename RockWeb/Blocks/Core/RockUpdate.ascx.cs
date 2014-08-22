@@ -88,18 +88,26 @@ namespace RockWeb.Blocks.Core
             DisplayRockVersion();
             if ( !IsPostBack )
             {
-                _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
-                if ( IsUpdateAvailable() )
+                try
                 {
-                    pnlUpdatesAvailable.Visible = true;
-                    pnlNoUpdates.Visible = false;
-                    cbIncludeStats.Visible = true;
-                    BindGrid();
-                }
+                    _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
+                    if ( IsUpdateAvailable() )
+                    {
+                        pnlUpdatesAvailable.Visible = true;
+                        pnlNoUpdates.Visible = false;
+                        cbIncludeStats.Visible = true;
+                        BindGrid();
+                    }
 
-                RemoveOldRDeleteFiles();
+                    RemoveOldRDeleteFiles();
+                }
+                catch ( System.InvalidOperationException ex )
+                {
+                    HandleNuGetException( ex );
+                }
             }
         }
+
         #endregion
 
         #region Events
@@ -582,6 +590,33 @@ namespace RockWeb.Blocks.Core
             var response = client.Execute( request );
         }
 
+        /// <summary>
+        /// Sets up the page to report the error in a nicer manner.
+        /// </summary>
+        /// <param name="ex"></param>
+        private void HandleNuGetException( Exception ex )
+        {
+            pnlError.Visible = true;
+            pnlUpdateSuccess.Visible = false;
+            pnlNoUpdates.Visible = false;
+
+            if ( ex.Message.Contains( "404" ) )
+            {
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "could not be resolved" ) )
+            {
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "Unable to connect" ) )
+            {
+                nbErrors.Text = "The update server is down. Try again later.";
+            }
+            else
+            {
+                nbErrors.Text = string.Format( "...actually, I'm not sure what happened here: {0}", ex.Message );
+            }
+        }
         #endregion
     }
 
