@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Set Person Attribute Value" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
-    [PersonField("Person", "The person to set attribute value to", true, "", "", 1)]
+    [PersonField("Person", "The person to set attribute value to.", true, "", "", 1)]
     public class SetPersonAttributeValue : ActionComponent
     {
         /// <summary>

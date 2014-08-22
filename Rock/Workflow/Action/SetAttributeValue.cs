@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Set Attribute Value" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of." )]
-    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from", false, "", "", 1, "Value" )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-liquid'></span>", false, "", "", 1, "Value" )]
     public class SetAttributeValue : ActionComponent
     {
         /// <summary>
