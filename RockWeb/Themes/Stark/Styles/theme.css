@@ -3695,15 +3695,18 @@ small {
 .clickable {
   cursor: pointer;
 }
-.liquid-tip {
+.tip {
   background-color: #71a5bf;
   color: #fff;
   padding: 0 6px 2px;
   border-radius: 4px;
   font-size: 11px;
 }
-.liquid-tip:after {
+.tip.tip-liquid:after {
   content: '{{ Liquid }}';
+}
+.tip.tip-html:after {
+  content: '< HTML />';
 }
 .navigation-tip {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
