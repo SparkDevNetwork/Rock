@@ -1,0 +1,46 @@
+﻿<Page x:Class="Rock.Apps.CheckScannerUtility.ScanningPromptPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="300"
+	Title="ScanningPromptPage"
+      Style="{StaticResource pageBackground}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"  />
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListBox Grid.Column="0" BorderThickness="0" Background="Transparent">
+            <ListBoxItem>
+                <ToggleButton 
+                    Style="{StaticResource toggleButtonStyle}"
+                    Content="Check"
+                    />
+            </ListBoxItem>
+            <ListBoxItem>
+                <ToggleButton 
+                    Style="{StaticResource toggleButtonStyle}"
+                    Content="Cash"
+                    />
+            </ListBoxItem>
+            <ListBoxItem>
+                <ToggleButton 
+                    Style="{StaticResource toggleButtonStyle}"
+                    Content="Credit Card"
+                    />
+            </ListBoxItem>
+            <ListBoxItem>
+                <ToggleButton 
+                    Style="{StaticResource toggleButtonStyle}"
+                    Content="ACH"
+                    />
+            </ListBoxItem>
+        </ListBox>
+    </Grid>
+</Page>
