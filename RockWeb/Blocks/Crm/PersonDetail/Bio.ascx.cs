@@ -213,7 +213,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 var workflowType = workflowTypeService.Get( guid.Value );
                                 if (workflowType != null)
                                 {
-                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, CurrentPersonId );
+                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                     sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
                                         ResolveRockUrl(url), workflowType.IconCssClass, workflowType.Name );
                                     sbActions.AppendLine();
