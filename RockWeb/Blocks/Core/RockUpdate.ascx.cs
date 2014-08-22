@@ -594,7 +594,7 @@ namespace RockWeb.Blocks.Core
         /// Sets up the page to report the error in a nicer manner.
         /// </summary>
         /// <param name="ex"></param>
-        private static void HandleNuGetException( Exception ex )
+        private void HandleNuGetException( Exception ex )
         {
             pnlError.Visible = true;
             pnlUpdateSuccess.Visible = false;
