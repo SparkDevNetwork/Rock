@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
 
                 var countryValue = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
-                    .Where( v => v.Name.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
+                    .Where( v => v.Value.Equals( _ddlCountry.SelectedValue, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
                 if (countryValue != null)
                 {
@@ -683,30 +683,9 @@ namespace Rock.Web.UI.Controls
 
         private void SetOrganizationAddressDefaults()
         {
-            // Check to see if there is an global attribute for organization address
-            Guid locGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" ).AsGuid();
-            if ( !locGuid.Equals( Guid.Empty ) )
-            {
-                // If the organization location is still same as last check, use saved values
-                if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
-                {
-                    _orgState = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
-                    _orgCountry = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_COUNTRY );
-                }
-                else
-                {
-                    // otherwise read the new location and save the state/country
-                    Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
-                    var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
-                    if ( location != null )
-                    {
-                        _orgState = location.State;
-                        _orgCountry = location.Country;
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, _orgState );
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_COUNTRY, _orgCountry );
-                    }
-                }
-            }
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            _orgState = globalAttributesCache.OrganizationState;
+            _orgCountry = globalAttributesCache.OrganizationCountry;
         }
 
         private void BindCountries()
@@ -717,7 +696,7 @@ namespace Rock.Web.UI.Controls
             var countryValues = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .DefinedValues
                 .OrderBy( v => v.Order )
-                .ThenBy( v => v.Name )
+                .ThenBy( v => v.Value )
                 .ToList();
             
             // Move default country to the top of the list
@@ -725,17 +704,17 @@ namespace Rock.Web.UI.Controls
             if (!string.IsNullOrWhiteSpace(defaultCountryCode))
             {
                 var defaultCountry = countryValues
-                    .Where( v => v.Name.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
+                    .Where( v => v.Value.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
                 if (defaultCountry != null)
                 {
-                    _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Name : defaultCountry.Description, defaultCountry.Name ) );
+                    _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
                     _ddlCountry.Items.Add( new ListItem( "------------------------", "" ) );
                 }
             }
             foreach ( var country in countryValues )
             {
-                _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Name : country.Description, country.Name ) );
+                _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Value : country.Description, country.Value ) );
             }
 
             bool? showCountry = GlobalAttributesCache.Read().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
@@ -746,7 +725,7 @@ namespace Rock.Web.UI.Controls
         {
             string countryGuid = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
-                .Where( v => v.Name.Equals( country, StringComparison.OrdinalIgnoreCase ) )
+                .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
                 .Select( v => v.Guid )
                 .FirstOrDefault()
                 .ToString();
@@ -767,8 +746,8 @@ namespace Rock.Web.UI.Controls
                         v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase)
                     ) )
                 .OrderBy( v => v.Order )
-                .ThenBy( v => v.Name )
-                .Select( v => new { Id = v.Name, Value = v.Description } )
+                .ThenBy( v => v.Value )
+                .Select( v => new { Id = v.Value, Value = v.Description } )
                 .ToList();
 
             if ( stateList.Any() )

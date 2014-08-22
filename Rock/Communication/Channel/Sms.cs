@@ -181,7 +181,7 @@ namespace Rock.Communication.Channel
             {
                 if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
                 {
-                    var matchValue = definedType.DefinedValues.Where( v => v.Name == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                    var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
                     if ( matchValue != null )
                     {
                         var toPersonGuid = matchValue.GetAttributeValue( "ResponseRecipient" );

@@ -757,26 +757,25 @@ span.field-value {
 // -------------------------
 
 .person-bio {
-    div.deceased:after {
+    div.deceased h1.title.name:after {
         content: 'Deceased';
         font-size: 14px;
-        position: absolute;
-        bottom: 36px;
-        right: 0;
-        margin-right: 12px;
-        color: @label-color;
-        background-color: @label-warning-bg;
-        padding: 4px 12px;
-        border-radius: @border-radius-base;
+        margin-left: 12px;
+        color: @brand-danger;
     }
 }
 
 .groupmembers {
     .member.deceased {
-        background-color: @label-warning-bg;
         
         &:hover {
-            background-color: lighten(@label-warning-bg, 10%);
+            background-color: darken(@gray-light, 10%);
+        }
+
+        .person-info:after {
+            content: 'Deceased';
+            font-size: 10px;
+            color: @brand-danger;
         }
     }
 }

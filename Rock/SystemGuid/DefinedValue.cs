@@ -41,11 +41,6 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
 
         /// <summary>
-        /// Barcode Search Type
-        /// </summary>
-        public const string CHECKIN_SEARCH_TYPE_BARCODE = "9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE";
-
-        /// <summary>
         /// Name Search Type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";

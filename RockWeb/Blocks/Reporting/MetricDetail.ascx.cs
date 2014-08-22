@@ -658,7 +658,7 @@ namespace RockWeb.Blocks.Reporting
             ddlSourceType.Items.Clear();
             foreach ( var item in new DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.METRIC_SOURCE_TYPE.AsGuid() ) )
             {
-                ddlSourceType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                ddlSourceType.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
 
             rblScheduleSelect.Items.Clear();

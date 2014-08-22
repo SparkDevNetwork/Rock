@@ -159,7 +159,7 @@ namespace Rock.Model
                 entityType.Name = type.Key;
                 entityType.FriendlyName = type.Value.Name.SplitCase();
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
-                entityType.IsEntity = true;
+                entityType.IsEntity = !type.Value.GetCustomAttributes( typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute), false ).Any();
                 entityType.IsSecured = false;
                 entityTypes.Add( type.Key, entityType );
             }

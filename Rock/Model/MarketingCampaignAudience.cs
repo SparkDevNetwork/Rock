@@ -77,7 +77,7 @@ namespace Rock.Model
         {
             get
             {
-                return ( AudienceTypeValueId > 0 ? DefinedValueCache.Read(AudienceTypeValueId).Name : string.Empty );
+                return ( AudienceTypeValueId > 0 ? DefinedValueCache.Read(AudienceTypeValueId).Value : string.Empty );
             }
             private set { }
         }

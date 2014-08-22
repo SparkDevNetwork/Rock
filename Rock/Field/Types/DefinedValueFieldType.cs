@@ -59,7 +59,7 @@ namespace Rock.Field.Types
                         var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
                         if ( definedValue != null )
                         {
-                            names.Add( definedValue.Name );
+                            names.Add( definedValue.Value );
                         }
                     }
                 }
@@ -200,7 +200,7 @@ namespace Rock.Field.Types
                     {
                         foreach ( var definedValue in definedValues )
                         {
-                            editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                            editControl.Items.Add( new ListItem( definedValue.Value, definedValue.Id.ToString() ) );
                         }
                     }
                     return editControl;

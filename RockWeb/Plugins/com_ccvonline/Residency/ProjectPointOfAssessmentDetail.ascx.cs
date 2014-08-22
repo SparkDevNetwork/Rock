@@ -151,10 +151,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var definedTypeCache = DefinedTypeCache.Read( com.ccvonline.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
 
-            var list = definedTypeCache.DefinedValues.OrderBy( a => a.Name ).ToList();
+            var list = definedTypeCache.DefinedValues.OrderBy( a => a.Value ).ToList();
             foreach ( var item in list )
             {
-                ddlPointOfAssessmentTypeValue.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                ddlPointOfAssessmentTypeValue.Items.Add( new ListItem( item.Value, item.Id.ToString() ) );
             }
 
             ddlPointOfAssessmentTypeValue.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );

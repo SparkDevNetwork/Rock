@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Examples
                     nbMessage.Text = string.Format(
 @"<p>Happy tire-kicking! The data is in your database. Hint: try <a href='{0}'>searching for the Decker family</a>.</p>
 <p>Here are some of the things you'll find in the sample data:</p>{1}",
-                        ResolveRockUrl( "~/Person/Search/name/Decker" ),
+                        ResolveRockUrl( "~/Person/Search/name/?SearchTerm=Decker" ),
                         GetStories( saveFile ) );
                     pnlInputForm.Visible = false;
                     RecordSuccess();
@@ -896,7 +896,37 @@ namespace RockWeb.Blocks.Examples
                 // Now we have to save changes in order for the attributes to be saved correctly.
                 rockContext.SaveChanges();
                 group.SaveAttributeValues( rockContext );
-            }
+
+                // Now add any group location schedules
+                LocationService locationService = new LocationService( rockContext );
+                ScheduleService scheduleService = new ScheduleService( rockContext );
+                Guid locationTypeMeetingLocationGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION );
+                var locationTypeMeetingLocationId = Rock.Web.Cache.DefinedValueCache.Read( locationTypeMeetingLocationGuid ).Id;
+
+                foreach ( var elemLocation in elemGroup.Elements( "location" ) )
+                {
+                    Guid locationGuid = elemLocation.Attribute( "guid" ).Value.Trim().AsGuid();
+                    Location location = locationService.Get( locationGuid );
+                    GroupLocation groupLocation = new GroupLocation();
+                    groupLocation.Location = location;
+                    groupLocation.GroupLocationTypeValueId = locationTypeMeetingLocationId;
+                    group.GroupLocations.Add( groupLocation );
+
+                    foreach ( var elemSchedule in elemLocation.Elements( "schedule" ) )
+                    {
+                        try
+                        {
+                            Guid scheduleGuid = elemSchedule.Attribute( "guid" ).Value.Trim().AsGuid();
+                            Schedule schedule = scheduleService.Get( scheduleGuid );
+                            groupLocation.Schedules.Add( schedule );
+                        }
+                        catch
+                        { }
+                    }
+                    TimeSpan ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} group location schedules added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                }
+             }
         }
 
         /// <summary>
@@ -963,6 +993,8 @@ namespace RockWeb.Blocks.Examples
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             NoteService noteService = new NoteService( rockContext );
             AuthService authService = new AuthService( rockContext );
+            CommunicationService communicationService = new CommunicationService( rockContext );
+            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
 
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
@@ -992,6 +1024,18 @@ namespace RockWeb.Blocks.Examples
                             {
                                 phoneNumberService.Delete( phone );
                             }
+                        }
+
+                        // delete communication recipient
+                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonId == person.Id ) )
+                        {
+                            communicationRecipientService.Delete( recipient );
+                        }
+
+                        // delete communication
+                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonId == person.Id ) )
+                        {
+                            communicationService.Delete( communication );
                         }
 
                         // delete person viewed records

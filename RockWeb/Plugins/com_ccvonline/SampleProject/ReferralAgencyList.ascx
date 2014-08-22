@@ -13,7 +13,7 @@
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Agency Name" SortExpression="Name" />
                 <asp:BoundField DataField="Campus.Name" HeaderText="Campus" SortExpression="Campus.Name" />
-                <asp:BoundField DataField="AgencyTypeValue.Name" HeaderText="Type" SortExpression="AgencyTypeValue.Name" />
+                <asp:BoundField DataField="AgencyTypeValue.Value" HeaderText="Type" SortExpression="AgencyTypeValue.Value" />
                 <asp:BoundField DataField="ContactName" HeaderText="Contact Name" SortExpression="ContactName" />
                 <asp:BoundField DataField="PhoneNumber" HeaderText="Phone Number" SortExpression="PhoneNumber" />
                 <asp:BoundField DataField="Website" HeaderText="Website" SortExpression="Website" />

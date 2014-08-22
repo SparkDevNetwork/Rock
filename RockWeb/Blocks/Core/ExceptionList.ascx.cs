@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Administraton
                         try
                         {
                             definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                            return ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
                         }
                         catch
                         {

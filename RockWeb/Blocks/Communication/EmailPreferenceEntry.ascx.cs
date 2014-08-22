@@ -232,10 +232,10 @@ namespace RockWeb.Blocks.Communication
 
             var excludeReasons = GetAttributeValue( "ReasonstoExclude" ).SplitDelimitedValues( false ).ToList();
             var ds = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
-                .Where( v => !excludeReasons.Contains(v.Name, StringComparer.OrdinalIgnoreCase))
+                .Where( v => !excludeReasons.Contains(v.Value, StringComparer.OrdinalIgnoreCase))
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Id
                 } );
 

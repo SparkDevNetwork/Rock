@@ -908,7 +908,7 @@ namespace Rock
 
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
-                return definedValue.Name;
+                return definedValue.Value;
             else
                 return string.Empty;
         }
@@ -1522,7 +1522,7 @@ namespace Rock
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Description,
                     v.Id
                 } );

@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -24,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -38,27 +38,38 @@ namespace RockWeb.Blocks.Crm
 
     [DecimalField( "Match Percent High", "The minimum percent score required to be considered a likely match", true, 80.00 )]
     [DecimalField( "Match Percent Low", "The max percent score required to be considered an unlikely match", true, 40.00 )]
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class PersonDuplicateList : RockBlock
     {
         /// <summary>
-        /// Gets the match label class.
+        /// Gets the match HTML.
         /// </summary>
-        /// <param name="score">The score.</param>
+        /// <param name="percent">The percent.</param>
         /// <returns></returns>
-        public string GetMatchLabelClass( decimal percent )
+        public string GetMatchColumnHtml( double? percent )
         {
-            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDecimal() )
+            string css;
+
+            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
             {
-                return "label label-success";
+                css = "label label-success";
             }
-            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDecimal() )
+            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
             {
-                return "label label-default";
+                css = "label label-default";
             }
             else
             {
-                return "label label-warning";
+                css = "label label-warning";
+            }
+
+            if ( percent.HasValue )
+            {
+                return string.Format( "<span class='{0}'>{1}</span>", css, ( percent.Value / 100 ).ToString( "P" ) );
+            }
+            else
+            {
+                return string.Empty;
             }
         }
 
@@ -126,8 +137,12 @@ namespace RockWeb.Blocks.Crm
         {
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
+            int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-            var personDuplicateQry = personDuplicateService.Queryable().Where( a => a.Capacity.HasValue && a.Capacity > 0 );
+            // list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            var personDuplicateQry = personDuplicateService.Queryable()
+                .Where( a => !a.IsConfirmedAsNotDuplicate )
+                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
 
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
 
@@ -137,10 +152,17 @@ namespace RockWeb.Blocks.Crm
                 LastName = a.Key.LastName,
                 FirstName = a.Key.FirstName,
                 MatchCount = a.Count(),
-                MaxScorePercent = a.Max( s => s.Score * 100 / (decimal)s.Capacity ),
+                MaxScorePercent = a.Max( s => s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null ),
                 PersonModifiedDateTime = a.Key.ModifiedDateTime,
                 CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
             } );
+
+            double? matchPercentLow = GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull();
+            if ( matchPercentLow.HasValue )
+            {
+                qry = qry.Where( a => a.MaxScorePercent >= matchPercentLow );
+            }
+
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )

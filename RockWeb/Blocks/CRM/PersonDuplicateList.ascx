@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-files-o"></i> Person Duplicate List</h1>
+                <h1 class="panel-title"><i class="fa fa-files-o"></i>Person Duplicate List</h1>
             </div>
             <div class="panel-body">
 
@@ -17,9 +17,9 @@
                             <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
                             <asp:BoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" />
 
-                            <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="Max">
+                            <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="MaxScorePercent">
                                 <ItemTemplate>
-                                    <span class='<%# GetMatchLabelClass((decimal)Eval("MaxScorePercent"))  %>'><%# ((decimal)Eval("MaxScorePercent")/100).ToString("P") %></span>
+                                    <%# GetMatchColumnHtml((double?)Eval("MaxScorePercent")) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
 

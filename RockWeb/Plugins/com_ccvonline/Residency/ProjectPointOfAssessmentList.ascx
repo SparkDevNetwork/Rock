@@ -12,7 +12,7 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gList" runat="server" OnRowSelected="gList_Edit" DataKeyNames="Id" AllowSorting="false">
                         <Columns>
-                            <Rock:ColorField DataField="ProjectPointOfAssessmentColor" ToolTipDataField="PointOfAssessmentTypeValue.Name" />
+                            <Rock:ColorField DataField="ProjectPointOfAssessmentColor" ToolTipDataField="PointOfAssessmentTypeValue.Value" />
                             <Rock:ReorderField />
                             <asp:BoundField DataField="AssessmentOrder" HeaderText="#" />
                             <asp:BoundField DataField="AssessmentText" HeaderText="Text" />
