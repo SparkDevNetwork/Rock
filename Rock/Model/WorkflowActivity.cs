@@ -213,7 +213,7 @@ namespace Rock.Model
         /// </returns>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddLogEntry( "Processing..." );
 
             errorMessages = new List<string>();
 
@@ -244,7 +244,7 @@ namespace Rock.Model
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
-            AddSystemLogEntry( "Processing Complete" );
+            AddLogEntry( "Processing Complete" );
 
             if (!this.ActiveActions.Any())
             {
@@ -255,15 +255,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the body of the log entry.</param>
-        public virtual void AddLogEntry( string logEntry )
+        /// <param name="logEntry">A <see cref="System.String" /> representing the body of the log entry.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logEntry, bool force = false )
         {
-            if ( this.Workflow != null )
+            if ( this.Workflow != null &&
+                ( force || (
+                this.Workflow.WorkflowType != null && (
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) ) )
             {
                 string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
-                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ) );
+                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
             }
         }
 
@@ -273,7 +278,7 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
-            AddSystemLogEntry( "Completed" );
+            AddLogEntry( "Completed" );
         }
 
         /// <summary>
@@ -295,14 +300,6 @@ namespace Rock.Model
             {
                 mergeFields.Add( "Workflow", Workflow );
                 mergeFields.Add( "ActivityType", this.ActivityType );
-                if ( this.AssignedPersonAlias != null && this.AssignedPersonAlias.Person != null)
-                {
-                    mergeFields.Add( "AssignedPerson", this.AssignedPersonAlias.Person );
-                }
-                if ( this.AssignedGroup != null )
-                {
-                    mergeFields.Add( "AssignedGroup", this.AssignedGroup );
-                }
             }
 
             return mergeFields;
@@ -317,25 +314,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.ActivityType.ToStringSafe();
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Logs a system event to the <see cref="Rock.Model.WorkflowLog"/>
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the log entry.</param>
-        private void AddSystemLogEntry( string logEntry )
-        {
-            if ( this.Workflow != null &&
-                this.Workflow.WorkflowType != null &&
-                ( this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
-            {
-                AddLogEntry( logEntry );
-            }
         }
 
         #endregion
@@ -356,7 +334,7 @@ namespace Rock.Model
             activity.ActivatedDateTime = RockDateTime.Now;
             activity.LoadAttributes();
 
-            activity.AddSystemLogEntry( "Activated" );
+            activity.AddLogEntry( "Activated" );
 
             foreach ( var actionType in activityType.ActionTypes )
             {

@@ -35,8 +35,8 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
-    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 0, "To")]
-    [TextField( "From", "The From address that email should be sent from  (will default to organization email). <span class='tip tip-liquid'></span>", false, "", "", 1 )]
+    [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-liquid'></span>", false, "", "", 0, "From" )]
+    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "To")]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-liquid'></span>", false, "", "", 2 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
     public class SendEmail : ActionComponent
@@ -56,9 +56,46 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
 
             string to = GetAttributeValue( action, "To" );
-            string from = GetAttributeValue( action, "From" ).ResolveMergeFields( mergeFields );
-            string subject = GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields );
+            string fromValue = GetAttributeValue( action, "From" );
+            string subject = GetAttributeValue( action, "Subject" );
             string body = GetAttributeValue( action, "Body" );
+
+            string from = string.Empty;
+            Guid? fromGuid = fromValue.AsGuidOrNull();
+            if ( fromGuid.HasValue )
+            {
+                var attribute = AttributeCache.Read( fromGuid.Value, rockContext );
+                if ( attribute != null )
+                {
+                    string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( fromAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.PersonFieldType")
+                        {
+                            Guid personAliasGuid = fromAttributeValue.AsGuid();
+                            if ( !personAliasGuid.IsEmpty() )
+                            {
+                                var person = new PersonAliasService( rockContext ).Queryable()
+                                    .Where( a => a.Guid.Equals( personAliasGuid ) )
+                                    .Select( a => a.Person )
+                                    .FirstOrDefault();
+                                if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
+                                {
+                                    from = person.Email;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            from = fromAttributeValue;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                from = fromValue;
+            }
 
             Guid? guid = to.AsGuidOrNull();
             if ( guid.HasValue )
@@ -85,7 +122,23 @@ namespace Rock.Workflow.Action
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
                                             .Select( a => a.Person )
                                             .FirstOrDefault();
-                                        if ( person != null && !string.IsNullOrWhiteSpace(person.Email) )
+                                        if ( person == null )
+                                        {
+                                            action.AddLogEntry("Invalid Recipient: Person not found", true );
+                                        }
+                                        else if ( string.IsNullOrWhiteSpace( person.Email ) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
+                                        }
+                                        else if ( !(person.IsEmailActive ?? true) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
+                                        }
+                                        else if ( person.EmailPreference == EmailPreference.DoNotEmail )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient has requested 'Do Not Email'", true );
+                                        }
+                                        else
                                         {
                                             var personDict = new Dictionary<string, object>(mergeFields);
                                             personDict.Add("Person", person);
@@ -101,9 +154,12 @@ namespace Rock.Workflow.Action
                                     {
                                         foreach ( var person in new GroupMemberService( rockContext )
                                             .GetByGroupId( groupId.Value )
+                                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
+                                            if ( (person.IsEmailActive ?? true) &&
+                                                person.EmailPreference != EmailPreference.DoNotEmail && 
+                                                !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
@@ -131,8 +187,8 @@ namespace Rock.Workflow.Action
             recipients.Add( recipient );
              
             var channelData = new Dictionary<string, string>();
-            channelData.Add( "From", from );
-            channelData.Add( "Subject", subject );
+            channelData.Add( "From", from.ResolveMergeFields( mergeFields ) );
+            channelData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
             channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
             var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid(), rockContext );

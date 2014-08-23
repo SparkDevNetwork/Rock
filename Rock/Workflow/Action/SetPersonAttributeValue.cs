@@ -83,13 +83,15 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
-                    errorMessages.Add( string.Format( "Attribute coulnd not be found for selected attribute value ('{0}')!", guid.ToString() ) );
+                    errorMessages.Add( string.Format( "Attribute could not be found for selected attribute value ('{0}')!", guid.ToString() ) );
                 }
             }
             else
             {
                 errorMessages.Add( string.Format( "Selected attribute value ('{0}') was not a valid Guid!", attributeValue ) );
             }
+
+            errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
 
             return true;
         }
