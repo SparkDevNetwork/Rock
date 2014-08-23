@@ -4,43 +4,68 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
+      d:DesignHeight="600" d:DesignWidth="960"
 	Title="ScanningPromptPage"
-      Style="{StaticResource pageBackground}">
-
+      Style="{StaticResource pageBackground}"
+      >
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"  />
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
-        <ListBox Grid.Column="0" BorderThickness="0" Background="Transparent">
-            <ListBoxItem>
+        <StackPanel Margin="8" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Orientation="Vertical" Name="spTenderButtons" Width="300" HorizontalAlignment="Left">
+                <ToggleButton 
+                    Name="btnExample"
+                    Style="{StaticResource toggleButtonStyle}"
+                    Content="Currency 1"
+                    Margin="0,12,0,0"
+                    Padding="0,12,0,8"
+                    />
                 <ToggleButton 
                     Style="{StaticResource toggleButtonStyle}"
-                    Content="Check"
+                    Content="Currency 2"
+                    Margin="0,12,0,0"
+                    Padding="0,12,0,8"
+                    IsChecked="True"
                     />
-            </ListBoxItem>
-            <ListBoxItem>
                 <ToggleButton 
                     Style="{StaticResource toggleButtonStyle}"
-                    Content="Cash"
+                    Content="Currency 3"
+                    Margin="0,12,0,0"
+                    Padding="0,12,0,8"
                     />
-            </ListBoxItem>
-            <ListBoxItem>
-                <ToggleButton 
-                    Style="{StaticResource toggleButtonStyle}"
-                    Content="Credit Card"
-                    />
-            </ListBoxItem>
-            <ListBoxItem>
-                <ToggleButton 
-                    Style="{StaticResource toggleButtonStyle}"
-                    Content="ACH"
-                    />
-            </ListBoxItem>
-        </ListBox>
+
+            </StackPanel>
+            
+            <StackPanel Margin="20">
+                <Label Style="{StaticResource labelStyleLegend}"
+                           Content="Scan Settings" 
+                           HorizontalAlignment="Left" />
+
+                <RadioButton Name="radDoubleSided" GroupName="grpSided" Content="Double-sided" IsChecked="True" Margin="8,0,0,0"/>
+                <RadioButton Name="radSingleSided" GroupName="grpSided" Content="Single-sided" Margin="8,0,0,0"/>
+
+                <CheckBox Name="chkDoubleDocDetection" Content="Enable Double-Doc Detection" Margin="8" IsChecked="True"/>
+            </StackPanel>
+            
+        </StackPanel>
+
+        <Grid VerticalAlignment="Bottom" Grid.Row="1" Grid.ColumnSpan="2" >
+            <Button 
+                    Margin="8"
+                    x:Name="btnBack"
+                    Style="{StaticResource buttonStyle}"
+                    Content="Back"
+                    HorizontalAlignment="Left"
+                    Click="btnBack_Click" />
+            <Button 
+                    Margin="8"
+                    x:Name="btnNext"
+                    Style="{StaticResource buttonStylePrimary}"
+                    Content="Scan"
+                    HorizontalAlignment="Right"
+                    Click="btnNext_Click" />
+        </Grid>
     </Grid>
 </Page>

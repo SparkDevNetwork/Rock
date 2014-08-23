@@ -22,16 +22,16 @@ namespace Rock.Apps.CheckScannerUtility
     /// <summary>
     /// 
     /// </summary>
-    public class ScannedCheckInfo
+    public class ScannedDocInfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScannedCheckInfo"/> class.
+        /// Initializes a new instance of the <see cref="ScannedDocInfo"/> class.
         /// </summary>
-        public ScannedCheckInfo()
+        public ScannedDocInfo()
         {
             Uploaded = false;
         }
-        
+
         /// <summary>
         /// Gets or sets the front image.
         /// </summary>
@@ -40,7 +40,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         public byte[] FrontImageData { get; set; }
 
-        public byte[] FrontImagePngBytes {
+        public byte[] FrontImagePngBytes
+        {
             get
             {
                 Bitmap bmp = new Bitmap( new MemoryStream( this.FrontImageData ) );
@@ -75,6 +76,16 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        #region Applies only to Scanned Checks
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is check.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is check; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheck { get; set; }
+
         /// <summary>
         /// Gets or sets the routing number.
         /// </summary>
@@ -82,7 +93,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// The routing number.
         /// </value>
         public string RoutingNumber { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the account number.
         /// </summary>
@@ -114,6 +125,8 @@ namespace Rock.Apps.CheckScannerUtility
                 return result;
             }
         }
+
+        #endregion
 
         public bool Uploaded { get; set; }
     }
