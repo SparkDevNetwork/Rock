@@ -73,8 +73,9 @@ namespace RockWeb.Blocks.Finance
             pledge.AccountId = int.Parse( fpFund.SelectedValue );
             pledge.TotalAmount = decimal.Parse( tbAmount.Text );
 
-            pledge.StartDate = dpDateRange.LowerValue.Value;
-            pledge.EndDate = dpDateRange.UpperValue.Value;
+            pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
+            pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
+
             pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
 
             if ( !pledge.IsValid )
