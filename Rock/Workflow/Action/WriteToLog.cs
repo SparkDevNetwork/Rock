@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action
 
             var message = GetAttributeValue( action, "Message" ).ResolveMergeFields( GetMergeFields( action ) );
 
-            action.Activity.Workflow.AddLogEntry( message );
+            action.Activity.Workflow.AddLogEntry( message, true );
 
             return true;
         }

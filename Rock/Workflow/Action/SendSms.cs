@@ -92,7 +92,11 @@ namespace Rock.Workflow.Action
                                             .Where( p => p.IsMessagingEnabled)
                                             .FirstOrDefault();
 
-                                        if (phoneNumber != null)
+                                        if ( phoneNumber == null )
+                                        {
+                                            action.AddLogEntry("Invalid Recipient: Person or valid SMS phone number not found", true );
+                                        }
+                                        else
                                         {
                                             string smsNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -100,6 +104,33 @@ namespace Rock.Workflow.Action
                                                 smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
                                             recipients.Add( smsNumber );
+                                        }
+                                    }
+                                    break;
+                                }
+
+                            case "Rock.Field.Types.GroupFieldType":
+                                {
+                                    int? groupId = toValue.AsIntegerOrNull();
+                                    if ( !groupId.HasValue )
+                                    {
+                                        foreach ( var person in new GroupMemberService( rockContext )
+                                            .GetByGroupId( groupId.Value )
+                                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Select( m => m.Person ) )
+                                        {
+                                            var phoneNumber = person.PhoneNumbers
+                                                .Where( p => p.IsMessagingEnabled )
+                                                .FirstOrDefault();
+                                            if ( phoneNumber != null )
+                                            {
+                                                string smsNumber = phoneNumber.Number;
+                                                if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                                {
+                                                    smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                                }
+                                                recipients.Add( smsNumber );
+                                            }
                                         }
                                     }
                                     break;
