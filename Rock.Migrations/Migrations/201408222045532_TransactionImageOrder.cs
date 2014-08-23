@@ -52,10 +52,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            AddColumn("dbo.FinancialTransactionImage", "TransactionImageTypeValueId", c => c.Int());
-            DropColumn("dbo.FinancialTransactionImage", "Order");
-            CreateIndex("dbo.FinancialTransactionImage", "TransactionImageTypeValueId");
-            AddForeignKey("dbo.FinancialTransactionImage", "TransactionImageTypeValueId", "dbo.DefinedValue", "Id");
+            AddColumn( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId", c => c.Int() );
+            DropColumn( "dbo.FinancialTransactionImage", "Order" );
+            CreateIndex( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId" );
+            AddForeignKey( "dbo.FinancialTransactionImage", "TransactionImageTypeValueId", "dbo.DefinedValue", "Id" );
         }
     }
 }

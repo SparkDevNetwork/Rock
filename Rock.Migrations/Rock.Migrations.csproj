@@ -57,9 +57,15 @@
     <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.cs" />
+    <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408222045532_TransactionImageOrder.cs" />
+    <Compile Include="Migrations\201408222045532_TransactionImageOrder.Designer.cs">
+      <DependentUpon>201408222045532_TransactionImageOrder.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
@@ -1142,6 +1148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.resx">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408222045532_TransactionImageOrder.resx">
+      <DependentUpon>201408222045532_TransactionImageOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
