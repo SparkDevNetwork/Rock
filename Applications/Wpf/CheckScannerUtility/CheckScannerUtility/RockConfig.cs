@@ -169,7 +169,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The type of the image color.
         /// </value>
-        [DefaultSettingValueAttribute( "1" ) ]
+        [DefaultSettingValueAttribute( "1" )]
         [UserScopedSetting]
         public ImageColorType ImageColorType
         {
@@ -239,23 +239,28 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the tender type unique identifier.
+        /// Gets or sets the tender type value unique identifier.
         /// </summary>
         /// <value>
-        /// The tender type unique identifier.
+        /// The tender type value unique identifier.
         /// </value>
         [UserScopedSetting]
-        public Guid TenderTypeValueGuid
+        public string TenderTypeValueGuid
         {
             get
             {
-                return ( this["TenderTypeValueGuid"] as string ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                string result = this["TenderTypeValueGuid"] as string;
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    result = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
+                }
 
+                return result ;
             }
 
             set
             {
-                this["TenderTypeValueGuid"] = value.ToString();
+                this["TenderTypeValueGuid"] = value;
             }
         }
 
