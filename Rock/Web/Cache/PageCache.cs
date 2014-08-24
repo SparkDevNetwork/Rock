@@ -820,7 +820,7 @@ namespace Rock.Web.Cache
             PageCache page = null;
             if ( cacheObj != null )
             {
-                page = Read( (int)cacheObj );
+                page = Read( (int)cacheObj, rockContext );
             }
 
             if ( page == null )
