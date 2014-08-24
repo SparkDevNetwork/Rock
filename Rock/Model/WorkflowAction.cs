@@ -121,6 +121,42 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is criteria valid.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is criteria valid; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public virtual bool IsCriteriaValid
+        {
+            get
+            {
+                bool result = true;
+
+                if ( ActionType != null &&
+                    ActionType.CriteriaAttributeGuid.HasValue )
+                {
+                    result = false;
+
+                    string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                    Guid guid = ActionType.CriteriaValue.AsGuid();
+                    if ( guid.IsEmpty() )
+                    {
+                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                    }
+                    else
+                    {
+                        string value = GetWorklowAttributeValue( guid );
+                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent security authority for this WorkflowAction.
         /// </summary>
         /// <value>
@@ -160,7 +196,7 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            if ( TestCriteria() )
+            if ( IsCriteriaValid )
             {
                 bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
 
@@ -191,36 +227,6 @@ namespace Rock.Model
 
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Tests the criteria.
-        /// </summary>
-        /// <returns></returns>
-        private bool TestCriteria()
-        {
-            bool result = true;
-
-            if ( ActionType != null &&
-                ActionType.CriteriaAttributeGuid.HasValue )
-            {
-                result = false;
-
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
-
-                Guid guid = ActionType.CriteriaValue.AsGuid();
-                if ( guid.IsEmpty() )
-                {
-                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                }
-                else
-                {
-                    string value = GetWorklowAttributeValue( guid );
-                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                }
-            }
-
-            return result;
         }
 
         /// <summary>
