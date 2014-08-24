@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         foreach ( var action in activity.ActiveActions )
                         {
-                            if ( action.ActionType.WorkflowForm != null )
+                            if ( action.ActionType.WorkflowForm != null && action.IsCriteriaValid )
                             {
                                 _activity = activity;
                                 _activity.LoadAttributes();
@@ -515,11 +515,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( string.IsNullOrWhiteSpace( buttonHtml ) )
                     {
-                        buttonHtml = "<a href='{{ ButtonLink }}' onclick='{{ ButtonClick }}' class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                        buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                     }
 
                     var buttonMergeFields = new Dictionary<string, object>();
-                    buttonMergeFields.Add( "ButtonText", details[0] );
+                    buttonMergeFields.Add( "ButtonText", details[0].EscapeQuotes() );
                     buttonMergeFields.Add( "ButtonClick",
                             string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
                             BlockValidationGroup ) );
@@ -665,10 +665,10 @@ namespace RockWeb.Blocks.WorkFlow
                         WorkflowId = _workflow.Id;
                     }
 
-                    int? previousActivityId = null;
-                    if ( _activity != null )
+                    int? previousActionId = null;
+                    if ( _action != null )
                     {
-                        previousActivityId = _activity.Id;
+                        previousActionId = _action.Id;
                     }
 
                     ActionTypeId = null;
@@ -676,13 +676,13 @@ namespace RockWeb.Blocks.WorkFlow
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() && _activity.Id != previousActivityId )
+                    if ( HydrateObjects() && _activity.Id != previousActionId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActivityId ) );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActionId ) );
                     }
                 }
                 else
