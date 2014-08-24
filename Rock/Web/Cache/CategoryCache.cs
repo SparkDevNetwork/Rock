@@ -288,7 +288,7 @@ namespace Rock.Web.Cache
             CategoryCache category = null;
             if ( cacheObj != null )
             {
-                category = Read( (int)cacheObj );
+                category = Read( (int)cacheObj, rockContext );
             }
 
             if ( category == null )

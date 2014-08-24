@@ -244,7 +244,7 @@ namespace Rock.Web.Cache
             DefinedTypeCache definedType = null;
             if ( cacheObj != null )
             {
-                definedType = Read( (int)cacheObj );
+                definedType = Read( (int)cacheObj, rockContext );
             }
 
             if ( definedType == null )

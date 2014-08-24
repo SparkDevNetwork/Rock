@@ -223,7 +223,7 @@ namespace Rock.Web.Cache
             DefinedValueCache definedValue = null;
             if ( cacheObj != null )
             {
-                definedValue = Read( (int)cacheObj );
+                definedValue = Read( (int)cacheObj, rockContext );
             }
 
             if ( definedValue == null )
