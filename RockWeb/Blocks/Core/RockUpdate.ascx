@@ -84,7 +84,7 @@
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
                     <div class="well well-message">
                         <h1>Eureka, Pay Dirt!</h1>
-                        <i class="fa fa-exclamation-triangle" style="color: #40b957"></i>
+                        <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
                     </div>
 
@@ -92,7 +92,7 @@
 
                     <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
 
-                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Warning" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
+                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
