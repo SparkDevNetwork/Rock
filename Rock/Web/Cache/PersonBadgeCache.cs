@@ -200,7 +200,7 @@ namespace Rock.Web.Cache
             PersonBadgeCache personBadge = null;
             if ( cacheObj != null )
             {
-                personBadge = Read( (int)cacheObj );
+                personBadge = Read( (int)cacheObj, rockContext );
             }
 
             if ( personBadge == null )

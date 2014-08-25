@@ -95,6 +95,7 @@ namespace Rock.Workflow.Action
                 errorMessages.Add( "Invalid attribute!" );
             }
 
+            errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
 
             return false;
         }

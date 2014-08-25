@@ -303,7 +303,7 @@ namespace Rock.Web.Cache
             BlockCache block = null;
             if ( cacheObj != null )
             {
-                block = Read( (int)cacheObj );
+                block = Read( (int)cacheObj, rockContext );
             }
 
             if ( block == null )

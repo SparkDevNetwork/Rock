@@ -227,7 +227,7 @@ namespace Rock.Web.Cache
             FieldTypeCache fieldType = null;
             if ( cacheObj != null )
             {
-                fieldType = Read( (int)cacheObj );
+                fieldType = Read( (int)cacheObj, rockContext );
             }
 
             if ( fieldType == null )

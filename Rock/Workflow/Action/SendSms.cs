@@ -31,9 +31,9 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Sends an email.  The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
+    [Description( "Sends an SMS message.  The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Send Email" )]
+    [ExportMetadata( "ComponentName", "Send SMS" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to", true, "", "", 1, "To" )]
@@ -92,7 +92,11 @@ namespace Rock.Workflow.Action
                                             .Where( p => p.IsMessagingEnabled)
                                             .FirstOrDefault();
 
-                                        if (phoneNumber != null)
+                                        if ( phoneNumber == null )
+                                        {
+                                            action.AddLogEntry("Invalid Recipient: Person or valid SMS phone number not found", true );
+                                        }
+                                        else
                                         {
                                             string smsNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -100,6 +104,33 @@ namespace Rock.Workflow.Action
                                                 smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
                                             recipients.Add( smsNumber );
+                                        }
+                                    }
+                                    break;
+                                }
+
+                            case "Rock.Field.Types.GroupFieldType":
+                                {
+                                    int? groupId = toValue.AsIntegerOrNull();
+                                    if ( !groupId.HasValue )
+                                    {
+                                        foreach ( var person in new GroupMemberService( rockContext )
+                                            .GetByGroupId( groupId.Value )
+                                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Select( m => m.Person ) )
+                                        {
+                                            var phoneNumber = person.PhoneNumbers
+                                                .Where( p => p.IsMessagingEnabled )
+                                                .FirstOrDefault();
+                                            if ( phoneNumber != null )
+                                            {
+                                                string smsNumber = phoneNumber.Number;
+                                                if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                                {
+                                                    smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                                }
+                                                recipients.Add( smsNumber );
+                                            }
                                         }
                                     }
                                     break;

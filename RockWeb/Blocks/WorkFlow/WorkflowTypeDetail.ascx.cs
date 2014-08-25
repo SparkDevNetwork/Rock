@@ -1343,6 +1343,7 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.ActivityTypes = ActivityTypesState;
                 System.Web.HttpContext.Current.Items["WorkflowType"] = workflowType;
 
+                // Save the current workflow type attributes to state for any action settings that may need them
                 var workflowAttributes = new Dictionary<Guid, Attribute>();
                 AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a ) );
                 System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] = workflowAttributes;
@@ -1373,6 +1374,11 @@ namespace RockWeb.Blocks.WorkFlow
         private WorkflowActivityTypeEditor BuildActivityControl( Control parentControl, bool setValues, WorkflowActivityType activityType,
             Dictionary<Guid, Attribute> workflowAttributes, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
         {
+            // Save the current activity type attributes to state for any action settings that may need them
+            var activityAttributes = new Dictionary<Guid, Attribute>();
+            ActivityAttributesState[activityType.Guid].OrderBy( a => a.Order ).ToList().ForEach( a => activityAttributes.Add( a.Guid, a ) );
+            System.Web.HttpContext.Current.Items["ActivityTypeAttributes"] = activityAttributes;
+
             var control = new WorkflowActivityTypeEditor();
             control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
