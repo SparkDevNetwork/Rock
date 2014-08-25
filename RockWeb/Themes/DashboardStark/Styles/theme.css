@@ -4155,6 +4155,9 @@ fieldset[disabled] .btn-authenication.active {
 .form-no-margin {
   margin: 0;
 }
+ul.list-padded {
+  margin-top: 12px;
+}
 ul.list-padded li {
   margin-top: 12px;
 }
