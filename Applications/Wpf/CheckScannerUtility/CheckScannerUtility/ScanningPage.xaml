@@ -96,25 +96,23 @@
                VerticalAlignment="Bottom"
                Style="{StaticResource labelStyleCaption}">Back</Label>
                 <Image Grid.Column="0"
-               Grid.Row="1"
-               Name="imgFront"
-               Height="140"
-               Width="420"
-               Stretch="Fill"
-               HorizontalAlignment="Left"
-               Margin="8,0"
-               VerticalAlignment="Top"
-               Source="images/check-image.png" />
+                   Grid.Row="1"
+                   Name="imgFront"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Left"
+                   Margin="8,0"
+                   VerticalAlignment="Top"
+                   Source="images/check-image.png" 
+                />
                 <Image Grid.Column="1"
-               Grid.Row="1"
-               Name="imgBack"
-               Height="140"
-               Width="420"
-               Stretch="Fill"
-               HorizontalAlignment="Left"
-               Margin="8,0"
-               VerticalAlignment="Top"
-               Source="images/check-image.png" />
+                   Grid.Row="1"
+                   Name="imgBack"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Left"
+                   Margin="8,0"
+                   VerticalAlignment="Top"
+                   Source="images/check-image.png" 
+                />
             </Grid>
         </StackPanel>
 

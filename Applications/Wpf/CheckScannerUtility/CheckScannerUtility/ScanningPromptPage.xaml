@@ -7,6 +7,7 @@
       d:DesignHeight="600" d:DesignWidth="960"
 	Title="ScanningPromptPage"
       Style="{StaticResource pageBackground}"
+      Loaded="Page_Loaded"
       >
     <Grid>
         <Grid.RowDefinitions>
@@ -14,30 +15,32 @@
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
         <StackPanel Margin="8" Orientation="Horizontal" VerticalAlignment="Center">
-            <StackPanel Orientation="Vertical" Name="spTenderButtons" Width="300" HorizontalAlignment="Left">
-                <ToggleButton 
+            <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical" Name="spTenderButtons" Width="300" HorizontalAlignment="Left">
+                    <ToggleButton 
                     Name="btnExample"
                     Style="{StaticResource toggleButtonStyle}"
                     Content="Currency 1"
                     Margin="0,12,0,0"
                     Padding="0,12,0,8"
                     />
-                <ToggleButton 
+                    <ToggleButton 
                     Style="{StaticResource toggleButtonStyle}"
                     Content="Currency 2"
                     Margin="0,12,0,0"
                     Padding="0,12,0,8"
                     IsChecked="True"
                     />
-                <ToggleButton 
+                    <ToggleButton 
                     Style="{StaticResource toggleButtonStyle}"
                     Content="Currency 3"
                     Margin="0,12,0,0"
                     Padding="0,12,0,8"
                     />
 
-            </StackPanel>
-            
+                </StackPanel>
+            </ScrollViewer>
+
             <StackPanel Margin="20">
                 <Label Style="{StaticResource labelStyleLegend}"
                            Content="Scan Settings" 
@@ -48,7 +51,7 @@
 
                 <CheckBox Name="chkDoubleDocDetection" Content="Enable Double-Doc Detection" Margin="8" IsChecked="True"/>
             </StackPanel>
-            
+
         </StackPanel>
 
         <Grid VerticalAlignment="Bottom" Grid.Row="1" Grid.ColumnSpan="2" >

@@ -76,15 +76,37 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        /// <summary>
+        /// Gets or sets the currency type value.
+        /// </summary>
+        /// <value>
+        /// The currency type value.
+        /// </value>
+        public Rock.Model.DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source type value.
+        /// </summary>
+        /// <value>
+        /// The source type value.
+        /// </value>
+        public Rock.Model.DefinedValue SourceTypeValue { get; set; }
+
         #region Applies only to Scanned Checks
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is check.
+        /// Gets a value indicating whether this instance is check.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is check; otherwise, <c>false</c>.
         /// </value>
-        public bool IsCheck { get; set; }
+        public bool IsCheck
+        {
+            get
+            {
+                return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the routing number.
