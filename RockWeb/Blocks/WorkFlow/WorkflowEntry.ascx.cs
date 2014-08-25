@@ -450,6 +450,10 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                }
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
@@ -632,6 +636,10 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                }
 
                 if ( !activityTypeGuid.IsEmpty() )
                 {
