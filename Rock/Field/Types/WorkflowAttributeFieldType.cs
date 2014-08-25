@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     public class WorkflowAttributeFieldType : FieldType
     {
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
+        private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -49,11 +50,11 @@ namespace Rock.Field.Types
 
             Guid guid = value.AsGuid();
             if (!guid.IsEmpty())
-            { 
-                var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
-                if ( workflowTypeAttributes != null && workflowTypeAttributes.ContainsKey(guid) )
+            {
+                var attributes = GetContextAttributes();
+                if ( attributes != null && attributes.ContainsKey(guid) )
                 {
-                    formattedValue = workflowTypeAttributes[guid].Name;
+                    formattedValue = attributes[guid].Name;
                 }
 
                 if (string.IsNullOrWhiteSpace(formattedValue))
@@ -84,10 +85,10 @@ namespace Rock.Field.Types
 
             editControl.Items.Add( new ListItem() );
 
-            var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
-            if ( workflowTypeAttributes != null )
+            var attributes = GetContextAttributes();
+            if ( attributes != null )
             {
-                foreach ( var attribute in workflowTypeAttributes )
+                foreach ( var attribute in attributes )
                 {
                     editControl.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
                 }
@@ -129,12 +130,18 @@ namespace Rock.Field.Types
             }
         }
 
-        private Dictionary<Guid, Rock.Model.Attribute> GetContextWorkflowTypeAttributes()
+        private Dictionary<Guid, Rock.Model.Attribute> GetContextAttributes()
         {
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
-                return httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
+                var workflowAttributes = httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
+                var activityAttributes = httpContext.Items[ACTIVITY_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
+
+                if ( workflowAttributes != null && activityAttributes != null )
+                {
+                    return workflowAttributes.Concat( activityAttributes ).ToDictionary( x => x.Key, x => x.Value );
+                }
             }
 
             return null;
