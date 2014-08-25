@@ -42,7 +42,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// The financial transaction.
         /// </value>
         public FinancialTransaction FinancialTransaction { get; set; }
-        
 
         /// <summary>
         /// Handles the Click event of the btnClose control.
