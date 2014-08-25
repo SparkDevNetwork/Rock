@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -61,18 +63,26 @@ namespace Rock.Apps.CheckScannerUtility
         {
             if ( ScanButtonText.IsStartScan( btnStartStop.Content as string ) )
             {
-                if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
-                {
-                    batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
-                }
-                else
-                {
-                    batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
-                }
+                StartScanning();
             }
             else
             {
                 batchPage.rangerScanner.StopFeeding();
+            }
+        }
+
+        /// <summary>
+        /// Starts the scanning.
+        /// </summary>
+        public void StartScanning()
+        {
+            if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
+            {
+                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
+            }
+            else
+            {
+                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
             }
         }
 
@@ -112,8 +122,16 @@ namespace Rock.Apps.CheckScannerUtility
             ExpectingMagTekBackScan = false;
             if ( ( imgFront.Source == null ) && ( imgBack.Source == null ) )
             {
-                lblScanInstructions.Content = "INFO: Insert the check into the scanner to begin.";
-                lblScanInstructions.Visibility = Visibility.Visible;
+                if ( scannedDocInfo.IsCheck )
+                {
+                    lblScanInstructions.Content = "INFO: Insert the check into the scanner to begin.";
+                    lblScanInstructions.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lblScanInstructions.Content = "INFO: Insert the item into the scanner to begin.";
+                    lblScanInstructions.Visibility = Visibility.Visible;
+                }
             }
 
             // If we have the front image and valid routing number, but not the back (and it's a MagTek).  Inform them to scan the back;
@@ -161,6 +179,8 @@ namespace Rock.Apps.CheckScannerUtility
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             lblScanCheckWarning.Visibility = Visibility.Collapsed;
+            ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
+            sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
             ShowDocInformation( new ScannedDocInfo() );
         }
     }

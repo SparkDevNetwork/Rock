@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,9 +34,10 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Initializes a new instance of the <see cref="OptionsPage"/> class.
         /// </summary>
-        public OptionsPage()
+        public OptionsPage(BatchPage batchPage)
         {
             InitializeComponent();
+            this.BatchPage = batchPage;
         }
 
         /// <summary>
@@ -44,7 +46,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The batch page.
         /// </value>
-        public BatchPage BatchPage { get; set; }
+        private BatchPage BatchPage { get; set; }
 
         /// <summary>
         /// Shows the detail.
@@ -111,6 +113,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
             }
+
+            cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
 
         /// <summary>
@@ -128,6 +132,9 @@ namespace Rock.Apps.CheckScannerUtility
             cboScannerInterfaceType.Items.Add( "MagTek" );
 
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
+
+            cboTransactionSourceType.Items.Clear();
+            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy(a => a.Order).ThenBy(a => a.Value).ToList();
         }
 
         /// <summary>
@@ -206,6 +213,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
             }
+
+            rockConfig.SourceTypeValueGuid = ( cboTransactionSourceType.SelectedItem as DefinedValue ).Guid.ToString();
 
             rockConfig.Save();
 

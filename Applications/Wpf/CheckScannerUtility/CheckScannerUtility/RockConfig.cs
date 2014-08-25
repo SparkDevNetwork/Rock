@@ -29,7 +29,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// The default instance
         /// </summary>
-        private static RockConfig defaultInstance = ( (RockConfig)( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
+        private static RockConfig defaultInstance = (RockConfig)ApplicationSettingsBase.Synchronized( new RockConfig() );
 
         /// <summary>
         /// Gets the default.
@@ -100,7 +100,6 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return this["PasswordEncryptedBase64"] as string;
-
             }
 
             set
@@ -176,7 +175,6 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return (ImageColorType)this["ImageColorType"];
-
             }
 
             set
@@ -198,7 +196,6 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return (short)this["MICRImageComPort"];
-
             }
 
             set
@@ -229,7 +226,6 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return (InterfaceType)this["ScannerInterfaceType"];
-
             }
 
             set
@@ -244,18 +240,19 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The tender type value unique identifier.
         /// </value>
+        [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
         public string TenderTypeValueGuid
         {
             get
             {
                 string result = this["TenderTypeValueGuid"] as string;
-                if (string.IsNullOrWhiteSpace(result))
+                if ( string.IsNullOrWhiteSpace( result ) )
                 {
                     result = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
                 }
 
-                return result ;
+                return result;
             }
 
             set
@@ -265,11 +262,39 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Gets or sets the source type value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The source type value unique identifier.
+        /// </value>
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string SourceTypeValueGuid
+        {
+            get
+            {
+                string result = this["SourceTypeValueGuid"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
+                }
+
+                return result;
+            }
+
+            set
+            {
+                this["SourceTypeValueGuid"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the scanner should scan both the front and rear sides
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable rear image]; otherwise, <c>false</c>.
         /// </value>
+        [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
         public bool EnableRearImage
         {
@@ -290,6 +315,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
         /// </value>
+        [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
         public bool EnableDoubleDocDetection
         {

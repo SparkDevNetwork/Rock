@@ -26,11 +26,6 @@ namespace Rock.Apps.CheckScannerUtility
         private BatchPage BatchPage;
 
         /// <summary>
-        /// The currency list
-        /// </summary>
-        private List<DefinedValue> CurrencyList;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ScanningPromptPage"/> class.
         /// </summary>
         /// <param name="scanningPage">The scanning page.</param>
@@ -38,28 +33,6 @@ namespace Rock.Apps.CheckScannerUtility
         {
             InitializeComponent();
             this.BatchPage = batchPage;
-
-            RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
-            client.Login( rockConfig.Username, rockConfig.Password );
-
-            var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
-            this.CurrencyList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + currencyTypeDefinedType.Id.ToString() );
-
-            spTenderButtons.Children.Clear();
-            foreach (var currency in this.CurrencyList.OrderBy(a => a.Order).ThenBy(a => a.Value))
-            {
-                ToggleButton btnToggle = new ToggleButton();
-                btnToggle.Margin = new Thickness( 0, 12, 0, 0 );
-                btnToggle.Padding = new Thickness( 0, 12, 0, 8 );
-                btnToggle.Style = this.FindResource( "toggleButtonStyle" ) as Style;
-                btnToggle.Content = currency.Value;
-                btnToggle.Tag = currency.Guid;
-                btnToggle.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == currency.Guid;
-                btnToggle.Click += btnToggle_Click;
-                
-                spTenderButtons.Children.Add( btnToggle );
-            }
         }
 
         /// <summary>
@@ -70,12 +43,11 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnToggle_Click( object sender, RoutedEventArgs e )
         {
             ToggleButton btnToggleSelected = sender as ToggleButton;
-            
+
             // ensure only one toggle button is selected at a time
             foreach ( ToggleButton btnToggle in spTenderButtons.Children.OfType<ToggleButton>() )
             {
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
-                
             }
 
             chkDoubleDocDetection.IsChecked = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
@@ -91,7 +63,7 @@ namespace Rock.Apps.CheckScannerUtility
             var rockConfig = RockConfig.Load();
 
             var selectedTenderButton = spTenderButtons.Children.OfType<ToggleButton>().Where( a => a.IsChecked == true ).FirstOrDefault();
-            if (selectedTenderButton != null)
+            if ( selectedTenderButton != null )
             {
                 rockConfig.TenderTypeValueGuid = selectedTenderButton.Tag.ToString();
             }
@@ -99,11 +71,28 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.EnableRearImage = radDoubleSided.IsChecked == true;
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
 
+            rockConfig.Save();
+
             // restart the scanner so that options will be reloaded
             this.BatchPage.rangerScanner.ShutDown();
             this.BatchPage.rangerScanner.StartUp();
 
+            this.BatchPage.rangerScanner.TransportReadyToFeedState += rangerScanner_TransportReadyToFeedState;
+
             this.NavigationService.Navigate( this.BatchPage.ScanningPage );
+        }
+
+        /// <summary>
+        /// Rangers the state of the scanner_ transport ready to feed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        public void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
+        {
+            // remove so we just fire this event once
+            this.BatchPage.rangerScanner.TransportReadyToFeedState -= rangerScanner_TransportReadyToFeedState;
+
+            this.BatchPage.ScanningPage.StartScanning();
         }
 
         /// <summary>
@@ -114,6 +103,33 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnBack_Click( object sender, RoutedEventArgs e )
         {
             this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the Loaded event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void Page_Loaded( object sender, RoutedEventArgs e )
+        {
+            RockConfig rockConfig = RockConfig.Load();
+
+            spTenderButtons.Children.Clear();
+            foreach ( var currency in this.BatchPage.CurrencyValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            {
+                ToggleButton btnToggle = new ToggleButton();
+                btnToggle.Margin = new Thickness( 0, 12, 0, 0 );
+                btnToggle.Padding = new Thickness( 0, 12, 0, 8 );
+                btnToggle.Style = this.FindResource( "toggleButtonStyle" ) as Style;
+                btnToggle.Content = currency.Value;
+                btnToggle.Tag = currency.Guid;
+                btnToggle.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == currency.Guid;
+                btnToggle.Click += btnToggle_Click;
+
+                spTenderButtons.Children.Add( btnToggle );
+            }
+
+            chkDoubleDocDetection.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
         }
     }
 }
