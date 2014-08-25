@@ -332,24 +332,32 @@
         .panel-heading {
             padding: 30px;
 
-            .panel-title {
-                width: 100%;
-            }
-
             a {
-                h3 {
-                    margin: 0;
+                display: block;
 
-                    i {
-                        font-size: 35px;
-                        margin-right: 12px;
+                .panel-title {
+                    width: 100%;
+
+                     h3 {
+                        margin: 0;
+
+                        i {
+                            font-size: 35px;
+                            margin-right: 12px;
+                        }
                     }
                 }
+               
 
-                i.panel-navigation:before {
-                    font-family: FontAwesome;
-                    content: @fa-var-chevron-up;
-                    font-size: 20px;
+                i.panel-navigation {
+                    margin-top: 8px;
+
+                    &:before {
+                        margin-top: 6px;
+                        font-family: FontAwesome;
+                        content: @fa-var-chevron-up;
+                        font-size: 20px;
+                    }
                 }
 
                 &.collapsed {
