@@ -29,7 +29,7 @@
 	                    <Columns>
 	                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
 	                        <asp:BoundField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
-                            <asp:BoundField DataField="Activities" HeaderText="Activities" />
+                            <asp:BoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
 	                    </Columns>
     	            </Rock:Grid>
                 </div>
