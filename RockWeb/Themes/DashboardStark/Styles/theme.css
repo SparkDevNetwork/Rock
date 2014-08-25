@@ -2462,17 +2462,24 @@ td.grid-col-actions {
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
 }
-.panel-group .panel-workflowitem .panel-heading .panel-title {
+.panel-group .panel-workflowitem .panel-heading a {
+  display: block;
+}
+.panel-group .panel-workflowitem .panel-heading a .panel-title {
   width: 100%;
 }
-.panel-group .panel-workflowitem .panel-heading a h3 {
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 {
   margin: 0;
 }
-.panel-group .panel-workflowitem .panel-heading a h3 i {
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 i {
   font-size: 35px;
   margin-right: 12px;
 }
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation {
+  margin-top: 8px;
+}
 .panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
+  margin-top: 6px;
   font-family: FontAwesome;
   content: "\f077";
   font-size: 20px;
