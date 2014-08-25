@@ -797,6 +797,8 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <exception cref="System.Exception">Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!</exception>
         public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid, bool isRequired = false )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )

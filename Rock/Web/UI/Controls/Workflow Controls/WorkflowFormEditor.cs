@@ -264,8 +264,8 @@ namespace Rock.Web.UI.Controls
 
             _ddlActionAttribute = new RockDropDownList();
             _ddlActionAttribute.ID = this.ID + "_ddlActionAttribute";
-            _ddlActionAttribute.Label = "Action Selected Attribute";
-            _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected action.";
+            _ddlActionAttribute.Label = "Command Selected Attribute";
+            _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected command label.";
             Controls.Add( _ddlActionAttribute );
 
         }

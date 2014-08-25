@@ -30,7 +30,7 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Sets the name of the workflow" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Name" )]
+    [ExportMetadata( "ComponentName", "Set Workflow Name" )]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-liquid'></span>", false, "", "", 1, "NameValue" )]
     public class SetName : ActionComponent
