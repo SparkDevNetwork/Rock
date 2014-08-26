@@ -61,6 +61,10 @@
     <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408252322078_ActivatedByActivity.cs" />
+    <Compile Include="Migrations\201408252322078_ActivatedByActivity.Designer.cs">
+      <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -1142,6 +1146,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.resx">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408252322078_ActivatedByActivity.resx">
+      <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
