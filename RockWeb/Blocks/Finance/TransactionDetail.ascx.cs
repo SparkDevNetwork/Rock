@@ -158,10 +158,9 @@ namespace RockWeb.Blocks.Finance
                     foreach ( DataListItem item in dlImages.Items )
                     {
                         var hfImageGuid = item.FindControl( "hfImageGuid" ) as HiddenField;
-                        var ddlImageType = item.FindControl( "ddlImageType" ) as RockDropDownList;
                         var imgupImage = item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
 
-                        if ( hfImageGuid != null && ddlImageType != null && imgupImage != null )
+                        if ( hfImageGuid != null && imgupImage != null )
                         {
                             var txnImage = TransactionImagesState
                                 .Where( i => i.Guid.Equals( hfImageGuid.Value.AsGuid() ) )
