@@ -74,10 +74,13 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.Save();
 
             // restart the scanner so that options will be reloaded
-            this.BatchPage.rangerScanner.ShutDown();
-            this.BatchPage.rangerScanner.StartUp();
+            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
+            {
+                this.BatchPage.rangerScanner.ShutDown();
+                this.BatchPage.rangerScanner.StartUp();
 
-            this.BatchPage.rangerScanner.TransportReadyToFeedState += rangerScanner_TransportReadyToFeedState;
+                this.BatchPage.rangerScanner.TransportReadyToFeedState += rangerScanner_TransportReadyToFeedState;
+            }
 
             this.NavigationService.Navigate( this.BatchPage.ScanningPage );
         }
@@ -130,6 +133,14 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             chkDoubleDocDetection.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi)
+            {
+                spRangerScanSettings.Visibility = System.Windows.Visibility.Visible;
+            }
+            else
+            {
+                spRangerScanSettings.Visibility = System.Windows.Visibility.Hidden;
+            }
         }
     }
 }
