@@ -235,7 +235,7 @@ namespace Rock.Apps.CheckScannerUtility
             RockConfig rockConfig = RockConfig.Load();
 
             ScannedDocInfo scannedDoc = new ScannedDocInfo();
-            var currencyTypeValue = this.CurrencyValueList.FirstOrDefault(a => a.Guid == rockConfig.TenderTypeValueGuid.AsGuid());
+            var currencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Guid == rockConfig.TenderTypeValueGuid.AsGuid() );
             scannedDoc.CurrencyTypeValue = currencyTypeValue;
 
             var sourceTypeValue = this.SourceTypeValueList.FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
@@ -292,33 +292,51 @@ namespace Rock.Apps.CheckScannerUtility
             string imageIndex = string.Empty;
             string statusMsg = string.Empty;
 
-            ScannedDocInfo scannedCheck = null;
+            ScannedDocInfo scannedDoc = null;
+            var rockConfig = RockConfig.Load();
             if ( ScanningPage.ExpectingMagTekBackScan )
             {
-                scannedCheck = ScannedDocList.Last();
+                scannedDoc = ScannedDocList.Last();
             }
             else
             {
-                scannedCheck = new ScannedDocInfo();
+                scannedDoc = new ScannedDocInfo();
 
-                // from MagTek Sample Code
-                scannedCheck.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-                scannedCheck.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-                scannedCheck.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+                var currencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Guid == rockConfig.TenderTypeValueGuid.AsGuid() );
+                scannedDoc.CurrencyTypeValue = currencyTypeValue;
+
+                var sourceTypeValue = this.SourceTypeValueList.FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
+                scannedDoc.SourceTypeValue = sourceTypeValue;
+
+                if ( scannedDoc.IsCheck )
+                {
+                    // from MagTek Sample Code
+                    scannedDoc.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+                    scannedDoc.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+                    scannedDoc.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+                }
             }
 
             imagePath = Path.GetTempPath();
-            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ).Replace( '?', 'X' ) );
-
-            if ( File.Exists( checkImageFileName ) )
+            string docImageFileName;
+            if ( scannedDoc.IsCheck )
             {
-                File.Delete( checkImageFileName );
+                docImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedDoc.RoutingNumber, scannedDoc.AccountNumber, scannedDoc.CheckNumber ).Replace( '?', 'X' ) );
+            }
+            else
+            {
+                docImageFileName = Path.Combine( imagePath, string.Format( "scanned_item_{0}.tif", Guid.NewGuid() ) );
+            }
+
+            if ( File.Exists( docImageFileName ) )
+            {
+                File.Delete( docImageFileName );
             }
 
             try
             {
-                micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg );
-                if ( !File.Exists( checkImageFileName ) )
+                micrImage.TransmitCurrentImage( docImageFileName, ref statusMsg );
+                if ( !File.Exists( docImageFileName ) )
                 {
                     throw new Exception( "Unable to retrieve image" );
                 }
@@ -326,26 +344,26 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     if ( ScanningPage.ExpectingMagTekBackScan )
                     {
-                        scannedCheck.BackImageData = File.ReadAllBytes( checkImageFileName );
+                        scannedDoc.BackImageData = File.ReadAllBytes( docImageFileName );
                     }
                     else
                     {
-                        scannedCheck.FrontImageData = File.ReadAllBytes( checkImageFileName );
+                        scannedDoc.FrontImageData = File.ReadAllBytes( docImageFileName );
                     }
 
-                    ScanningPage.ShowDocInformation( scannedCheck );
+                    ScanningPage.ShowDocInformation( scannedDoc );
 
-                    if ( scannedCheck.RoutingNumber.Length != 9 )
+                    if ( scannedDoc.IsCheck && scannedDoc.RoutingNumber.Length != 9 )
                     {
                         ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
                     }
                     else
                     {
                         ScanningPage.lblScanCheckWarning.Visibility = Visibility.Collapsed;
-                        ScannedDocList.Enqueue( scannedCheck );
+                        ScannedDocList.Enqueue( scannedDoc );
                     }
 
-                    File.Delete( checkImageFileName );
+                    File.Delete( docImageFileName );
                 }
             }
             finally
@@ -460,7 +478,7 @@ namespace Rock.Apps.CheckScannerUtility
             client.Login( rockConfig.Username, rockConfig.Password );
 
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
-            string appInfo = string.Format( "{0}, version: {1}", assemblyName.FullName, assemblyName.Version );
+            string appInfo = string.Format( "{0}, version: {1}", assemblyName.Name, assemblyName.Version );
 
             BinaryFileType binaryFileTypeContribution = client.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
             DefinedValue transactionTypeValueContribution = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
@@ -528,7 +546,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 financialTransactionScanned.Guid = transactionGuid;
                 financialTransactionScanned.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
-                
+
                 financialTransactionScanned.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
                 financialTransactionScanned.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
 
@@ -671,11 +689,13 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 shapeStatus.Fill = new SolidColorBrush( Colors.LimeGreen );
                 shapeStatus.ToolTip = "Connected";
+                btnScan.Visibility = Visibility.Visible;
             }
             else
             {
                 shapeStatus.Fill = new SolidColorBrush( Colors.Red );
                 shapeStatus.ToolTip = "Disconnected";
+                btnScan.Visibility = Visibility.Hidden;
             }
 
             ScanningPage.shapeStatus.ToolTip = this.shapeStatus.ToolTip;
@@ -795,7 +815,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnOptions_Click( object sender, RoutedEventArgs e )
         {
-            var optionsPage = new OptionsPage(this);
+            var optionsPage = new OptionsPage( this );
             this.NavigationService.Navigate( optionsPage );
         }
 

@@ -139,7 +139,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( ( imgFront.Source != null ) && ( imgBack.Source == null ) )
                 {
-                    if ( scannedDocInfo.RoutingNumber.Length.Equals( 9 ) )
+                    if ( scannedDocInfo.IsCheck && scannedDocInfo.RoutingNumber.Length.Equals( 9 ) )
                     {
                         ExpectingMagTekBackScan = true;
                         lblScanInstructions.Content = "INFO: Insert the check again facing the other direction to get an image of the back of the check.";

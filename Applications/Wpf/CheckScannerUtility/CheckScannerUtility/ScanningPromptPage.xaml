@@ -41,7 +41,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Margin="20">
+            <StackPanel Margin="20" Name="spRangerScanSettings">
                 <Label Style="{StaticResource labelStyleLegend}"
                            Content="Scan Settings" 
                            HorizontalAlignment="Left" />
