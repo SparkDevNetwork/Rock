@@ -169,6 +169,45 @@ namespace RockWeb.Blocks.Crm
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllIndividuals, lbRemoveAllIndividuals.GetType(), "confirm-remove-all-" + BlockId.ToString(), script, true );
 
+            script = string.Format( @"
+    $( 'label.control-label' ).has( 'span.js-select-item').click( function() {{
+
+        var formControl = $(this).closest('.form-group');
+        var selectIcon = formControl.find('span.js-select-item').children('i');
+        
+        formControl.toggleClass('bulk-item-selected');
+        if (formControl.hasClass('bulk-item-selected')) {{
+            selectIcon.addClass('fa-circle');
+            selectIcon.removeClass('fa-circle-o');
+            formControl.addClass('bulk-item-selected');
+            formControl.addClass('has-success');
+            formControl.find('.form-control').each( function() {{
+                $(this).removeClass('aspNetDisabled');
+                $(this).prop('disabled', false);
+            }});
+        }} else {{
+            selectIcon.addClass('fa-circle-o');
+            selectIcon.removeClass('fa-circle');
+            formControl.removeClass('bulk-item-selected');
+            formControl.removeClass('has-success');
+            formControl.find('.form-control').each( function() {{
+                $(this).addClass('aspNetDisabled');
+                $(this).prop('disabled', true);
+            }});
+        }}
+        
+        var newValue = '';
+        $('div.bulk-item-selected').each(function( index ) {{
+            $(this).children('.form-control').each(function() {{
+                newValue += $(this).prop('id') + '|';
+            }});
+        }});
+
+        $('#{0}').val(newValue);            
+    }});
+", hfSelectedItems.ClientID );
+            ScriptManager.RegisterStartupScript( hfSelectedItems, hfSelectedItems.GetType(), "select-items-" + BlockId.ToString(), script, true );
+
             bddlGroupAction.SelectedValue = "Add";
         }
         /// <summary>
