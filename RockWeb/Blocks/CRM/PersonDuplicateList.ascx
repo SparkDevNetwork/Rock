@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-files-o"></i>Person Duplicate List</h1>
+                <h1 class="panel-title"><i class="fa fa-users"></i> Person Duplicate List</h1>
             </div>
             <div class="panel-body">
 

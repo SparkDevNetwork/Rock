@@ -150,7 +150,7 @@ namespace Rock.Model
         /// <exception cref="System.SystemException"></exception>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddLogEntry( "Processing..." );
 
             ActionComponent workflowAction = this.ActionType.WorkflowAction;
             if ( workflowAction == null )
@@ -166,7 +166,7 @@ namespace Rock.Model
 
                 this.LastProcessedDateTime = RockDateTime.Now;
 
-                AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
+                AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
                 if ( success )
                 {
@@ -187,7 +187,7 @@ namespace Rock.Model
             {
                 errorMessages = new List<string>();
 
-                AddSystemLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+                AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
 
                 return true;
             }
@@ -259,21 +259,25 @@ namespace Rock.Model
 
             return null;
         }
-        
+
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the  log entry.</param>
-        public virtual void AddLogEntry( string logEntry )
+        /// <param name="logEntry">A <see cref="System.String" /> representing the  log entry.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logEntry, bool force = false )
         {
             if ( this.Activity != null &&
-                this.Activity.Workflow != null )
+                this.Activity.Workflow != null &&
+                ( force || (
+                this.Activity.Workflow.WorkflowType != null &&
+                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
             {
                 string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
                 string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
 
                 this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
-                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ) );
+                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
             }
         }
 
@@ -283,7 +287,7 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
-            AddSystemLogEntry( "Completed" );
+            AddLogEntry( "Completed" );
         }
 
         /// <summary>
@@ -374,25 +378,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
-
-        /// <summary>
-        /// Logs a system event.
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/>representing the log entry.</param>
-        private void AddSystemLogEntry( string logEntry )
-        {
-            if ( this.Activity != null &&
-                this.Activity.Workflow != null &&
-                this.Activity.Workflow.WorkflowType != null &&
-                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action )
-            {
-                AddLogEntry( logEntry );
-            }
-        }
-
-        #endregion
-
         #region Static Methods
 
         /// <summary>
@@ -408,7 +393,7 @@ namespace Rock.Model
             action.ActionType = actionType;
             action.LoadAttributes();
 
-            action.AddSystemLogEntry( "Activated" );
+            action.AddLogEntry( "Activated" );
 
             return action;
         }

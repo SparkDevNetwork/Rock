@@ -33,11 +33,11 @@ namespace Rock.Web.UI.Controls
             if ( rockPage != null )
             {
                 var pageCache = Rock.Web.Cache.PageCache.Read( rockPage.PageId );
-                if ( pageCache != null && pageCache.PageDisplayIcon && !string.IsNullOrWhiteSpace( pageCache.IconCssClass ) )
+                if ( pageCache != null && pageCache.PageDisplayIcon && !string.IsNullOrWhiteSpace( rockPage.PageIcon ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "page-icon" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, pageCache.IconCssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, rockPage.PageIcon );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();

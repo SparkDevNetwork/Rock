@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Set Person Attribute Value" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
-    [PersonField("Person", "The person to set attribute value to", true, "", "", 1)]
+    [PersonField("Person", "The person to set attribute value to.", true, "", "", 1)]
     public class SetPersonAttributeValue : ActionComponent
     {
         /// <summary>
@@ -83,13 +83,15 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
-                    errorMessages.Add( string.Format( "Attribute coulnd not be found for selected attribute value ('{0}')!", guid.ToString() ) );
+                    errorMessages.Add( string.Format( "Attribute could not be found for selected attribute value ('{0}')!", guid.ToString() ) );
                 }
             }
             else
             {
                 errorMessages.Add( string.Format( "Selected attribute value ('{0}') was not a valid Guid!", attributeValue ) );
             }
+
+            errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
 
             return true;
         }

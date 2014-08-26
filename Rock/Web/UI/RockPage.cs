@@ -91,12 +91,20 @@ namespace Rock.Web.UI
         public string BrowserTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the template title.
+        /// Gets or sets the page title.
         /// </summary>
         /// <value>
-        /// The template title.
+        /// The page title.
         /// </value>
         public string PageTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page title.
+        /// </summary>
+        /// <value>
+        /// The page icon.
+        /// </value>
+        public string PageIcon { get; set; }
 
         /// <summary>
         /// Gets the title for the page and sets both the browser and template title
@@ -562,6 +570,7 @@ namespace Rock.Web.UI
             {
                 BrowserTitle = _pageCache.BrowserTitle;
                 PageTitle = _pageCache.PageTitle;
+                PageIcon = _pageCache.IconCssClass;
 
                 // If there's a master page, update it's reference to Current Page
                 if ( this.Master is RockMasterPage )

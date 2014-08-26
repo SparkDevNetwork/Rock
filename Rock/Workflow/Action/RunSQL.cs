@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [Description( "Runs the specified SQL query to perform an action against the database." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Run SQL" )]
-    [CodeEditorField( "SQLQuery", "The SQL query to run.", Web.UI.Controls.CodeEditorMode.Sql, Web.UI.Controls.CodeEditorTheme.Rock, 400, true, "", "", 0 )]
+    [CodeEditorField( "SQLQuery", "The SQL query to run. <span class='tip tip-liquid'></span>", Web.UI.Controls.CodeEditorMode.Sql, Web.UI.Controls.CodeEditorTheme.Rock, 400, true, "", "", 0 )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the scaler result of SQL query.", false, "", "", 1 )]
     public class RunSQL : ActionComponent
     {
@@ -55,34 +55,43 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
             query = query.ResolveMergeFields( mergeFields );
 
-            object sqlResult = DbService.ExecuteScaler( query );
-            action.AddLogEntry( "SQL query has been run" );
-
-            if ( sqlResult != null )
+            try
             {
-                Guid? attributeGuid = GetAttributeValue( action, "ResultAttribute" ).AsGuidOrNull();
-                if ( attributeGuid.HasValue )
-                {
-                    var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
-                    if ( attribute != null )
-                    {
-                        string resultValue = sqlResult.ToString();
+                object sqlResult = DbService.ExecuteScaler( query );
+                action.AddLogEntry( "SQL query has been run" );
 
-                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                if ( sqlResult != null )
+                {
+                    Guid? attributeGuid = GetAttributeValue( action, "ResultAttribute" ).AsGuidOrNull();
+                    if ( attributeGuid.HasValue )
+                    {
+                        var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
+                        if ( attribute != null )
                         {
-                            action.Activity.Workflow.SetAttributeValue( attribute.Key, resultValue );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
-                        }
-                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                        {
-                            action.Activity.SetAttributeValue( attribute.Key, resultValue );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
+                            string resultValue = sqlResult.ToString();
+
+                            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                            {
+                                action.Activity.Workflow.SetAttributeValue( attribute.Key, resultValue );
+                                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
+                            }
+                            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                            {
+                                action.Activity.SetAttributeValue( attribute.Key, resultValue );
+                                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
+                            }
                         }
                     }
                 }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                action.AddLogEntry( ex.Message, true );
+                errorMessages.Add( ex.Message );
+                return false;
             }
 
-            return true;
         }
     }
 }
