@@ -124,6 +124,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the group member attributes combined with the inherited group type's group member attibutes.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetGroupMemberAttributesCombined( int groupId, int groupTypeId )
+        {
+            var queryInherited = Get(new GroupMember().TypeId, "GroupTypeId", groupTypeId.ToString() );
+            queryInherited.OrderBy( a => a.Order )
+                .ThenBy( a => a.Name );
+
+            var query = Get( new GroupMember().TypeId, "GroupId", groupId.ToString() );
+            query.OrderBy( a => a.Order )
+                .ThenBy( a => a.Name );
+
+            return queryInherited.Concat( query );
+        }
+
+        /// <summary>
         /// Returns a global <see cref="Rock.Model.Attribute"/> by it's Key.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the Attribute key.</param>
