@@ -82,6 +82,15 @@ namespace Rock.Model
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the activated by activity identifier.
+        /// </summary>
+        /// <value>
+        /// The activated by activity identifier.
+        /// </value>
+        [DataMember]
+        public int? ActivatedByActivityId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was last processed.
         /// </summary>
         /// <value>
@@ -151,6 +160,14 @@ namespace Rock.Model
             }
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the activated by activity.
+        /// </summary>
+        /// <value>
+        /// The activated by activity.
+        /// </value>
+        public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> that are run by this WorkflowActivity.
@@ -366,6 +383,7 @@ namespace Rock.Model
             this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );
         }
     }
 
