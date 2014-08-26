@@ -161,3 +161,16 @@ div.toggle-container {   /* ???? JME */
     display: inline-block;
 }
 
+
+/* MP - Transaction Image display.  Used in TransactionDetail and TransactionMatching */
+.transaction-image {
+    max-width: 400px;
+    max-height: 200px;
+    margin: 5px;
+}
+
+.transaction-image-thumbnail {
+    max-width: 200px;
+    max-height: 100px;
+    margin: 5px;
+}

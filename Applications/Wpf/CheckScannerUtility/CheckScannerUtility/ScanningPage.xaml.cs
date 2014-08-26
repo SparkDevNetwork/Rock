@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -59,20 +61,42 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnStartStop_Click( object sender, RoutedEventArgs e )
         {
-            batchPage.HandleScanButtonClick( sender, e, false );
+            if ( ScanButtonText.IsStartScan( btnStartStop.Content as string ) )
+            {
+                StartScanning();
+            }
+            else
+            {
+                batchPage.rangerScanner.StopFeeding();
+            }
+        }
+
+        /// <summary>
+        /// Starts the scanning.
+        /// </summary>
+        public void StartScanning()
+        {
+            if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
+            {
+                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
+            }
+            else
+            {
+                batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
+            }
         }
 
         /// <summary>
         /// Shows the check information.
         /// </summary>
-        /// <param name="scannedCheckInfo">The scanned check info.</param>
-        public void ShowCheckInformation( ScannedCheckInfo scannedCheckInfo )
+        /// <param name="scannedDocInfo">The scanned check info.</param>
+        public void ShowDocInformation( ScannedDocInfo scannedDocInfo )
         {
-            if ( scannedCheckInfo.FrontImageData != null )
+            if ( scannedDocInfo.FrontImageData != null )
             {
                 BitmapImage bitmapImageFront = new BitmapImage();
                 bitmapImageFront.BeginInit();
-                bitmapImageFront.StreamSource = new MemoryStream( scannedCheckInfo.FrontImageData );
+                bitmapImageFront.StreamSource = new MemoryStream( scannedDocInfo.FrontImageData );
                 bitmapImageFront.EndInit();
                 imgFront.Source = bitmapImageFront;
             }
@@ -81,11 +105,11 @@ namespace Rock.Apps.CheckScannerUtility
                 imgFront.Source = null;
             }
 
-            if ( scannedCheckInfo.BackImageData != null )
+            if ( scannedDocInfo.BackImageData != null )
             {
                 BitmapImage bitmapImageBack = new BitmapImage();
                 bitmapImageBack.BeginInit();
-                bitmapImageBack.StreamSource = new MemoryStream( scannedCheckInfo.BackImageData );
+                bitmapImageBack.StreamSource = new MemoryStream( scannedDocInfo.BackImageData );
                 bitmapImageBack.EndInit();
                 imgBack.Source = bitmapImageBack;
             }
@@ -94,13 +118,20 @@ namespace Rock.Apps.CheckScannerUtility
                 imgBack.Source = null;
             }
 
-
             lblScanInstructions.Visibility = Visibility.Collapsed;
             ExpectingMagTekBackScan = false;
-            if ((imgFront.Source == null) && (imgBack.Source == null))
+            if ( ( imgFront.Source == null ) && ( imgBack.Source == null ) )
             {
-                lblScanInstructions.Content = "INFO: Insert the check into the scanner to begin.";
-                lblScanInstructions.Visibility = Visibility.Visible;
+                if ( scannedDocInfo.IsCheck )
+                {
+                    lblScanInstructions.Content = "INFO: Insert the check into the scanner to begin.";
+                    lblScanInstructions.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lblScanInstructions.Content = "INFO: Insert the item into the scanner to begin.";
+                    lblScanInstructions.Visibility = Visibility.Visible;
+                }
             }
 
             // If we have the front image and valid routing number, but not the back (and it's a MagTek).  Inform them to scan the back;
@@ -108,7 +139,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( ( imgFront.Source != null ) && ( imgBack.Source == null ) )
                 {
-                    if ( scannedCheckInfo.RoutingNumber.Length.Equals(9) )
+                    if ( scannedDocInfo.IsCheck && scannedDocInfo.RoutingNumber.Length.Equals( 9 ) )
                     {
                         ExpectingMagTekBackScan = true;
                         lblScanInstructions.Content = "INFO: Insert the check again facing the other direction to get an image of the back of the check.";
@@ -117,9 +148,17 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            lblRoutingNumber.Content = scannedCheckInfo.RoutingNumber ?? "--";
-            lblAccountNumber.Content = scannedCheckInfo.AccountNumber ?? "--";
-            lblCheckNumber.Content = scannedCheckInfo.CheckNumber ?? "--";
+            if ( scannedDocInfo.IsCheck )
+            {
+                pnlChecks.Visibility = System.Windows.Visibility.Visible;
+                lblRoutingNumber.Content = scannedDocInfo.RoutingNumber ?? "--";
+                lblAccountNumber.Content = scannedDocInfo.AccountNumber ?? "--";
+                lblCheckNumber.Content = scannedDocInfo.CheckNumber ?? "--";
+            }
+            else
+            {
+                pnlChecks.Visibility = System.Windows.Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -139,8 +178,10 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            lblScanWarning.Visibility = Visibility.Collapsed;
-            ShowCheckInformation( new ScannedCheckInfo() );
+            lblScanCheckWarning.Visibility = Visibility.Collapsed;
+            ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
+            sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
+            ShowDocInformation( new ScannedDocInfo() );
         }
     }
 }
