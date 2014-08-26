@@ -15,6 +15,8 @@
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
+                    <asp:HiddenField ID="hfSelectedItems" runat="server" />
+
                     <div class="panel panel-widget individuals">
                         <div class="panel-heading clearfix">
                             <div class="control-label pull-left">
@@ -53,24 +55,24 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlTitle" runat="server" Label="Title" />
-                                <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Connection Status" />
-                                <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender">
+                                <Rock:RockDropDownList ID="ddlTitle" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Title " />
+                                <Rock:RockDropDownList ID="ddlStatus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Connection Status" />
+                                <Rock:RockDropDownList ID="ddlGender" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Gender">
                                     <asp:ListItem Text="" Value="" />
                                     <asp:ListItem Text="Male" Value="Male" />
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Label="Marital Status" />
+                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Marital Status" />
                                 <div class="row">
                                     <div class="col-xs-5">
-                                        <Rock:RockDropDownList ID="ddlGrade" runat="server" Label="Grade" />
+                                        <Rock:RockDropDownList ID="ddlGrade" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Grade" />
                                     </div>
                                     <div class="col-xs-7">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
                                     </div>
                                 </div>
-                                <Rock:CampusPicker ID="cpCampus" runat="server" />
+                                <Rock:CampusPicker ID="cpCampus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Label" />
                             </div>
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlSuffix" runat="server" Label="Suffix" />
