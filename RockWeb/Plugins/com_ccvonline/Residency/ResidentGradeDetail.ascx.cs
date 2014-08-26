@@ -242,7 +242,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
             else
             {
-                throw new Exception( "PersonProjectDetailPage not configured correctly" );
+                nbSaveMessage.Visible = true;   
             }
         }
 

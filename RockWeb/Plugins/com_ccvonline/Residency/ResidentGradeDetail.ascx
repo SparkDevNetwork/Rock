@@ -54,8 +54,9 @@
             </asp:Repeater>
 
             <Rock:RockTextBox ID="tbRatingNotesOverall" runat="server" TextMode="MultiLine" Rows="4" Label="Evaluation Notes" />
+            
 
-            </fieldset>
+            <Rock:NotificationBox ID="nbSaveMessage" runat="server" NotificationBoxType="Success" Text="Graded Successfully" Visible="false" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
