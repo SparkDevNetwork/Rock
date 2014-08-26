@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             string script = @"
     $('.transaction-image-thumbnail').click( function() {
         var $primaryImg = $('.transaction-image');
@@ -284,8 +284,12 @@ namespace RockWeb.Blocks.Finance
                 hfTransactionId.Value = transactionToMatch.Id.ToString();
 
                 // get the first 2 images (should be no more than 2, but just in case)
-                var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take(2).ToList();
+                var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
 
+                ddlIndividual.Items.Clear();
+                ddlIndividual.Items.Add( new ListItem( null, null ) );
+
+                // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
                 string checkMicrHashed = null;
 
                 if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
@@ -310,15 +314,14 @@ namespace RockWeb.Blocks.Finance
                 if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
                 {
                     var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.Person );
-                    ddlIndividual.Items.Clear();
-                    ddlIndividual.Items.Add( new ListItem( null, null ) );
                     foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                     {
                         ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
                     }
                 }
 
-                nbNoMicrWarning.Visible = string.IsNullOrWhiteSpace( checkMicrHashed );
+                bool requiresMicr = transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
 
                 if ( ddlIndividual.Items.Count == 2 )
                 {
@@ -331,12 +334,19 @@ namespace RockWeb.Blocks.Finance
                     ddlIndividual.SelectedIndex = 0;
                 }
 
-                ddlIndividual_SelectedIndexChanged( null, null );
-
                 if ( transactionToMatch.AuthorizedPersonId.HasValue )
                 {
+                    // if the drop down does not contains the AuthorizedPerson of this transaction, add them to the drop down
+                    // note, this can easily happen for non-check transactions
+                    if (!ddlIndividual.Items.OfType<ListItem>().Any( a => a.Value == transactionToMatch.AuthorizedPersonId.ToString() ))
+                    {
+                        ddlIndividual.Items.Add( new ListItem( transactionToMatch.AuthorizedPerson.FullNameReversed, transactionToMatch.AuthorizedPerson.Id.ToString() ) );
+                    }
+
                     ddlIndividual.SelectedValue = transactionToMatch.AuthorizedPersonId.ToString();
                 }
+
+                ddlIndividual_SelectedIndexChanged( null, null );
 
                 ppSelectNew.SetValue( null );
                 if ( transactionToMatch.TransactionDetails.Any() )
@@ -381,6 +391,8 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     imgPrimary.Visible = false;
+                    rptrImages.DataSource = null;
+                    rptrImages.DataBind();
                     nbNoTransactionImageWarning.Visible = true;
                 }
             }
@@ -504,7 +516,9 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                if ( string.IsNullOrWhiteSpace( accountNumberSecured ) )
+
+                bool requiresMicr = financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                if ( requiresMicr && string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
                     // should be showing already, but just in case
                     nbNoMicrWarning.Visible = true;
@@ -518,21 +532,25 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonId == authorizedPersonId ).FirstOrDefault();
-                if ( financialPersonBankAccount == null )
+                // if this transaction has an accountnumber associated with it (in other words, it's a scanned check), ensure there is a financialPersonBankAccount record
+                if ( !string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
-                    financialPersonBankAccount = new FinancialPersonBankAccount();
-                    financialPersonBankAccount.PersonId = authorizedPersonId.Value;
-                    financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
-
-                    var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
-                    var parts = checkMicrClearText.Split( '_' );
-                    if ( parts.Length >= 2 )
+                    var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonId == authorizedPersonId ).FirstOrDefault();
+                    if ( financialPersonBankAccount == null )
                     {
-                        financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
+                        financialPersonBankAccount = new FinancialPersonBankAccount();
+                        financialPersonBankAccount.PersonId = authorizedPersonId.Value;
+                        financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
+
+                        var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
+                        var parts = checkMicrClearText.Split( '_' );
+                        if ( parts.Length >= 2 )
+                        {
+                            financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
+                        }
+
+                        financialPersonBankAccountService.Add( financialPersonBankAccount );
                     }
-                    
-                    financialPersonBankAccountService.Add( financialPersonBankAccount );
                 }
 
                 financialTransaction.AuthorizedPersonId = authorizedPersonId;
