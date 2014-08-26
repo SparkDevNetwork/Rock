@@ -53,12 +53,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.cs" />
-    <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.cs" />
-    <Compile Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201408252322078_ActivatedByActivity.cs" />
@@ -1113,12 +1113,12 @@
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.11\201408140543489_AdditionalCheckinAdminPages.Designer.cs">
       <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408152138171_AddIdleTimeoutsBack.cs" />
-    <Compile Include="Migrations\201408152138171_AddIdleTimeoutsBack.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.Designer.cs">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408191153260_DefinedValueValue.cs" />
-    <Compile Include="Migrations\201408191153260_DefinedValueValue.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.Designer.cs">
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
@@ -1141,10 +1141,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201408201603057_DataIntegrityFeatures.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408221117347_AddPersonDuplicateFinderProc.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.resx">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408252322078_ActivatedByActivity.resx">
@@ -1939,10 +1939,10 @@
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.11\201408140543489_AdditionalCheckinAdminPages.resx">
       <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408152138171_AddIdleTimeoutsBack.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.resx">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408191153260_DefinedValueValue.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.resx">
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
