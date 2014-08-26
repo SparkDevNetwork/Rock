@@ -40,7 +40,7 @@ namespace Rock.Model
     /// An abstracted base class for FinancialTransaction so that we can have child classes like <see cref="FinancialTransactionRefund"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class FinancialTransactionBase<T> : Model<T> where T : Model<T>, Rock.Security.ISecured, new()
+    public abstract class FinancialTransactionBase<T> : Model<T>, Rock.Data.IFinancialTransactionScanned where T : Model<T>, Rock.Security.ISecured, new()
     {
         #region Entity Properties
 

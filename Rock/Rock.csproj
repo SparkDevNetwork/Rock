@@ -243,6 +243,7 @@
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
+    <Compile Include="Data\IFinancialTransactionScanned.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
