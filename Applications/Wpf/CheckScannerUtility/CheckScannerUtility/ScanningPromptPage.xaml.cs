@@ -69,6 +69,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             rockConfig.EnableRearImage = radDoubleSided.IsChecked == true;
+            rockConfig.PromptToScanRearImage = chkPromptToScanRearImage.IsChecked == true;
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
 
             rockConfig.Save();
@@ -133,13 +134,17 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             chkDoubleDocDetection.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            radDoubleSided.IsChecked = rockConfig.EnableRearImage;
+            chkPromptToScanRearImage.IsChecked = rockConfig.PromptToScanRearImage;
             if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi)
             {
                 spRangerScanSettings.Visibility = System.Windows.Visibility.Visible;
+                spMagTekScanSettings.Visibility = System.Windows.Visibility.Collapsed;
             }
             else
             {
-                spRangerScanSettings.Visibility = System.Windows.Visibility.Hidden;
+                spRangerScanSettings.Visibility = System.Windows.Visibility.Collapsed;
+                spMagTekScanSettings.Visibility = System.Windows.Visibility.Visible;
             }
         }
     }

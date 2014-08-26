@@ -674,6 +674,13 @@
            BasedOn="{StaticResource ResourceKey=inputStyleBase}">
     </Style>
 
+    <Style x:Key="textboxStyleError"
+           BasedOn="{StaticResource ResourceKey=textboxStyle}"
+           TargetType="{x:Type Control}">
+        <Setter Property="BorderBrush"
+                Value="Red" />
+    </Style>
+
     <!-- Textbox Style: url -->
     <Style x:Key="textboxStyleUrl"
            BasedOn="{StaticResource ResourceKey=textboxStyle}"

@@ -51,6 +51,13 @@
 
                 <CheckBox Name="chkDoubleDocDetection" Content="Enable Double-Doc Detection" Margin="8" IsChecked="True"/>
             </StackPanel>
+            <StackPanel Margin="20" Name="spMagTekScanSettings">
+                <Label Style="{StaticResource labelStyleLegend}"
+                           Content="Scan Settings" 
+                           HorizontalAlignment="Left" />
+
+                <CheckBox Name="chkPromptToScanRearImage" Content="Prompt to scan the back side." Margin="8" IsChecked="False" />
+            </StackPanel>
 
         </StackPanel>
 
