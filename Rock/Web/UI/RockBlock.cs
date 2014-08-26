@@ -645,8 +645,14 @@ namespace Rock.Web.UI
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            Response.Redirect( LinkedPageUrl( attributeKey, queryParams ), false );
-            Context.ApplicationInstance.CompleteRequest();
+            string url = LinkedPageUrl( attributeKey, queryParams );
+
+            // Verify valid url before redirecting (otherwise may get an 'Object moved to here' error in browser)
+            if ( !string.IsNullOrWhiteSpace( url ) )
+            {
+                Response.Redirect( url, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
