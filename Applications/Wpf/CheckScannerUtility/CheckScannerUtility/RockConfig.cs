@@ -289,7 +289,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the scanner should scan both the front and rear sides
+        /// Gets or sets a value indicating whether the scanner should scan both the front and rear sides (applies only to Ranger)
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable rear image]; otherwise, <c>false</c>.
@@ -306,6 +306,27 @@ namespace Rock.Apps.CheckScannerUtility
             set
             {
                 this["EnableRearImage"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the UI should prompt to have the user scan the rear side (applies only to MagTek)
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [prompt to scan rear image]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public bool PromptToScanRearImage
+        {
+            get
+            {
+                return this["PromptToScanRearImage"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["PromptToScanRearImage"] = value;
             }
         }
 

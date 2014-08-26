@@ -43,16 +43,27 @@ namespace Rock.Apps.CheckScannerUtility
     public partial class BatchPage : System.Windows.Controls.Page
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BatchPage"/> class.
+        /// Initializes a new instance of the <see cref="BatchPage" /> class.
         /// </summary>
-        public BatchPage()
+        /// <param name="loggedInPerson">The logged in person.</param>
+        public BatchPage( Person loggedInPerson )
         {
+            LoggedInPerson = loggedInPerson;
             InitializeComponent();
             ScanningPage = new ScanningPage( this );
             ScanningPromptPage = new ScanningPromptPage( this );
             ScannedDocList = new ConcurrentQueue<ScannedDocInfo>();
             BatchItemDetailPage = new BatchItemDetailPage();
+            FirstPageLoad = true;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [first page load].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [first page load]; otherwise, <c>false</c>.
+        /// </value>
+        private bool FirstPageLoad { get; set; }
 
         /// <summary>
         /// Gets or sets the selected financial batch
@@ -286,14 +297,36 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
         {
+            var currentPage = Application.Current.MainWindow.Content;
+
+            if ( currentPage != this.ScanningPage )
+            {
+                // only accept scans when the scanning page is showing
+                micrImage.ClearBuffer();
+                return;
+            }
+
             object dummy = null;
 
             string imagePath = string.Empty;
             string imageIndex = string.Empty;
             string statusMsg = string.Empty;
 
+            // from MagTek Sample Code
+            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+
             ScannedDocInfo scannedDoc = null;
             var rockConfig = RockConfig.Load();
+
+            //// if we didn't get a routingnumber, and we are expecting a back scan, use the scan as teh back image
+            //// However, if we got a routing number, assuming we are scanning a new check regardless
+            if ( !string.IsNullOrWhiteSpace( routingNumber ) && ScanningPage.ExpectingMagTekBackScan )
+            {
+                ScanningPage.ExpectingMagTekBackScan = false;
+            }
+
             if ( ScanningPage.ExpectingMagTekBackScan )
             {
                 scannedDoc = ScannedDocList.Last();
@@ -311,9 +344,9 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( scannedDoc.IsCheck )
                 {
                     // from MagTek Sample Code
-                    scannedDoc.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-                    scannedDoc.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-                    scannedDoc.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+                    scannedDoc.RoutingNumber = routingNumber;
+                    scannedDoc.AccountNumber = accountNumber;
+                    scannedDoc.CheckNumber = checkNumber;
                 }
             }
 
@@ -353,7 +386,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                     ScanningPage.ShowDocInformation( scannedDoc );
 
-                    if ( scannedDoc.IsCheck && scannedDoc.RoutingNumber.Length != 9 )
+                    if ( scannedDoc.IsCheck && (scannedDoc.RoutingNumber.Length != 9 || string.IsNullOrWhiteSpace(scannedDoc.AccountNumber)))
                     {
                         ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
                     }
@@ -612,17 +645,13 @@ namespace Rock.Apps.CheckScannerUtility
             WpfHelper.FadeOut( lblUploadProgress, 0 );
             ConnectToScanner();
             UploadScannedDocsAsync();
-        }
 
-        /// <summary>
-        /// Handles the Initialized event of the batchPage control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void batchPage_Initialized( object sender, EventArgs e )
-        {
-            LoadComboBoxes();
-            LoadFinancialBatchesGrid();
+            if ( this.FirstPageLoad )
+            {
+                LoadComboBoxes();
+                LoadFinancialBatchesGrid();
+                this.FirstPageLoad = false;
+            }
         }
 
         /// <summary>
@@ -676,7 +705,18 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+            bool startWithNewBatch = !pendingBatches.Any();
+            if ( startWithNewBatch )
+            {
+                // don't let them start without having at least one batch
+                btnCancel.IsEnabled = false;
+                btnAddBatch_Click( null, null );
+            }
+            else
+            {
+                btnCancel.IsEnabled = true;
+                UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+            }
         }
 
         /// <summary>
@@ -882,6 +922,15 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 txtBatchName.Text = txtBatchName.Text.Trim();
+                if ( string.IsNullOrWhiteSpace( txtBatchName.Text ) )
+                {
+                    txtBatchName.Style = this.FindResource( "textboxStyleError" ) as Style;
+                    return;
+                }
+                else
+                {
+                    txtBatchName.Style = this.FindResource( "textboxStyle" ) as Style;
+                }
 
                 financialBatch.Name = txtBatchName.Text;
                 Campus selectedCampus = cbCampus.SelectedItem as Campus;
