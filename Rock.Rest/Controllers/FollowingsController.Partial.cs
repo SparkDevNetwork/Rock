@@ -56,6 +56,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public virtual void Delete( int entityTypeId, int entityId, int personId )
         {
+            SetProxyCreation( true );
+
             foreach ( var following in Service.Queryable()
                 .Where( f =>
                     f.EntityTypeId == entityTypeId &&
