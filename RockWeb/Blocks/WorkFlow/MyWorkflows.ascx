@@ -14,7 +14,7 @@
                     <Rock:Toggle ID="tglDisplay" CssClass="pull-right" runat="server" OnText="Active Types" ActiveButtonCssClass="btn-success" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
-                <div class="list-as-blocks">
+                <div class="list-as-blocks clearfix">
                     <ul class="list-unstyled">
                         <asp:Repeater ID="rptWorkflowTypes" runat="server">
                             <ItemTemplate>
