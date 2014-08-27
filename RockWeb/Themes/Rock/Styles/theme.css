@@ -1745,6 +1745,7 @@ ul.rocklist .rocklist-item.selected {
     4. Control Specific Styles
     5. Validation
     6. Custom Controls
+    7. Static Control
 */
 .form-actions {
   padding: 12px 16px;
@@ -1875,6 +1876,12 @@ dl:not(.dl-horizontal) dd {
 }
 .btn-controlaligned {
   margin-top: 24px;
+}
+.form-group.static-control label {
+  margin-bottom: 0;
+}
+.form-group.static-control .form-control-static {
+  padding-top: 0;
 }
 /*
     Used to manage styles related to Rock's dashboard
