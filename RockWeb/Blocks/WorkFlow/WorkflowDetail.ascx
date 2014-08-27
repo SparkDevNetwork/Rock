@@ -38,6 +38,12 @@
                         </div>
                     </div>
 
+                    <div class="actions margin-b-md">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnViewCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnViewCancel_Click" />
+                    </div>
+
+                    <h4>Activities</h4>
                     <asp:Repeater ID="rptrActivities" runat="server">
                         <ItemTemplate>
                             <div class="panel panel-block workflow-activity">
@@ -81,11 +87,6 @@
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
-
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                        <asp:LinkButton ID="btnViewCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnViewCancel_Click" />
-                    </div>
 
                 </asp:Panel>
 
