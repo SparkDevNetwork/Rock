@@ -64,7 +64,7 @@ namespace Rock.Rest.Controllers
                     if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
                         valid = true;
-                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
+                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, loginParameters.Persisted, false );
                     }
                 }
             }
