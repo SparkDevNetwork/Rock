@@ -331,7 +331,8 @@ namespace Rock.Web.Cache
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
-        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null )
+        /// <returns></returns>
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null )
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( attributeControl != null )
@@ -399,6 +400,8 @@ namespace Rock.Web.Cache
                     this.FieldType.Field.SetEditValue( attributeControl, QualifierValues, value );
                 }
             }
+
+            return attributeControl;
         }
 
         /// <summary>

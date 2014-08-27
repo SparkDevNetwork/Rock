@@ -144,7 +144,17 @@ namespace Rock.Web.UI.Controls
                 attribute.Name = string.Empty;
                 attribute.Description = string.Empty;
 
-                attribute.AddControl(Controls, string.Empty, string.Empty, false, true);
+                var attributeControl = attribute.AddControl( Controls, string.Empty, string.Empty, false, true );
+
+                // If required, need to set the error message since the name was cleared 
+                if ( attribute.IsRequired && attributeControl != null )
+                {
+                    var rockControl = attributeControl as IRockControl;
+                    if ( rockControl != null )
+                    {
+                        rockControl.RequiredErrorMessage = name + " Is Required";
+                    }
+                }
 
                 // Set name and description back
                 attribute.Name = name;
@@ -170,7 +180,12 @@ namespace Rock.Web.UI.Controls
                 foreach ( Control control in Controls )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
+
+                    writer.AddAttribute( "class", "form-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     control.RenderControl( writer );
+                    writer.RenderEndTag();
+
                     writer.RenderEndTag();
                 }
 
