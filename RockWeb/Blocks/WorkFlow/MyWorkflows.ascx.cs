@@ -301,6 +301,8 @@ namespace RockWeb.Blocks.WorkFlow
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
 
+                lWorkflow.Text = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).Select( w => w.WorkflowType.Name ).FirstOrDefault() + " Workflows";
+
             }
             else
             {
