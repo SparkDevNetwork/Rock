@@ -1946,7 +1946,7 @@ INSERT INTO [dbo].[Auth]
         /// <param name="description">The description.</param>
         /// <param name="groupTerm">The group term.</param>
         /// <param name="groupMemberTerm">The group member term.</param>
-        /// <param name="defaultGroupRoleGuid">The default group role unique identifier.</param>
+        /// <param name="defaultGroupRoleGuid">The guid for default group role. If you don't have a role yet, use 'null' and then use the <see cref="MigrationHelper.UpdateGroupTypeRole"/> method later when creating the new role.</param>
         /// <param name="allowMultipleLocations">if set to <c>true</c> [allow multiple locations].</param>
         /// <param name="showInGroupList">if set to <c>true</c> [show in group list].</param>
         /// <param name="showInNavigation">if set to <c>true</c> [show in navigation].</param>
