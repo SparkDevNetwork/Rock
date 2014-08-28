@@ -769,6 +769,7 @@
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetName.cs" />
+    <Compile Include="Workflow\Action\LogError.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />

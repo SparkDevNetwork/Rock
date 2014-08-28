@@ -575,7 +575,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         private void CompleteFormAction( string formAction )
-        {
+        { 
             if ( !string.IsNullOrWhiteSpace( formAction ) &&
                 _workflow != null &&
                 _actionType != null &&
@@ -584,6 +584,15 @@ namespace RockWeb.Blocks.WorkFlow
                 _action != null )
             {
 
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                } 
+                
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted succesfully.";
 
@@ -599,7 +608,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                         if ( actionDetails.Length > 3 && !string.IsNullOrWhiteSpace( actionDetails[3] ) )
                         {
-                            responseText = actionDetails[3];
+                            responseText = actionDetails[3].ResolveMergeFields( mergeFields );
                         }
                         break;
                     }
@@ -629,16 +638,6 @@ namespace RockWeb.Blocks.WorkFlow
                             item.SetAttributeValue( attribute.Key, formAction );
                         }
                     }
-                }
-
-                // save current activity form's actions (to formulate response if needed).
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
 
                 if ( !activityTypeGuid.IsEmpty() )
