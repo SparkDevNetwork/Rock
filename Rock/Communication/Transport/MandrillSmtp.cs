@@ -78,7 +78,7 @@ namespace Rock.Communication.Transport
 
             // add mandrill headers
             message.Headers.Add( "X-MC-Track", "opens, clicks" );
-            message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
+            message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString().ToLower() );
             message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
 
         }
