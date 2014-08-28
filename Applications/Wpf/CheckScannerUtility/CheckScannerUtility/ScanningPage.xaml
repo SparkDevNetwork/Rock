@@ -28,9 +28,13 @@
 
             <!-- Feedback for Checks-->
             <StackPanel Name="pnlChecks" Visibility="Visible">
-                <Label Name="lblScanCheckWarning"
+                <Label Name="lblScanCheckWarningBadMicr"
                Style="{StaticResource labelStyleAlert}"
                Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
+                </Label>
+                <Label Name="lblScanCheckWarningDuplicate"
+                    Style="{StaticResource labelStyleAlert}"
+                    Content="WARNING: A check with the same account information and check number has already been scanned.">
                 </Label>
                 <Grid >
                     <Grid.ColumnDefinitions>
@@ -126,16 +130,45 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Grid.ColumnSpan="2" Name="gScannedChecksNavigation">
+                <Button Name="btnPrev"
+                
+                HorizontalAlignment="Left"
+                Style="{StaticResource buttonStyle}"
+                Margin="8,8,8,8"
+                Click="btnPrev_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                       Content="&#xf053;" />
+                        <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                       Content="Prev" />
+                    </StackPanel>
+                </Button>
+                <Button Name="btnNext"
+                HorizontalAlignment="Right"
+                Style="{StaticResource buttonStyle}"
+                Margin="8,8,8,8"
+                Click="btnNext_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                       Content="Next" />
+                        <Label Style="{StaticResource labelStyleIcon}"
+                       Content="&#xf054;" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
             <Label Name="lblScanInstructions"
                    Style="{StaticResource labelStyleAlertInfo}"
                    Content="INFO:  ---"
-                   Grid.Row="0"
+                   Grid.Row="1"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             </Label>
 
-            <Button Grid.Row="1"
+            <Button Grid.Row="2"
                     Grid.Column="0"
                     Margin="8"
                     x:Name="btnStartStop"
@@ -143,7 +176,7 @@
                     Content="Start/Stop/Scan Check"
                     HorizontalAlignment="Left"
                     Click="btnStartStop_Click" />
-            <Button Grid.Row="1"
+            <Button Grid.Row="2"
                     Grid.Column="1"
                     Margin="8"
                     x:Name="btnDone"

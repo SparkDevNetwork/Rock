@@ -144,45 +144,36 @@ namespace Rock.Apps.CheckScannerUtility
             btnScan.Visibility = Visibility.Hidden;
             ScanningPage.btnDone.Visibility = Visibility.Visible;
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
-            shapeStatus.ToolTip = status;
+            Color statusColor = Colors.Transparent;
 
             switch ( (XportStates)e.currentState )
             {
                 case XportStates.TransportReadyToFeed:
-                    shapeStatus.Fill = new SolidColorBrush( Colors.LimeGreen );
+                    statusColor = Colors.LimeGreen;
                     btnScan.Content = "Scan";
-                    if ( ScannerFeederType.Equals( FeederType.MultipleItems ) )
-                    {
-                        ScanningPage.btnStartStop.Content = ScanButtonText.Scan;
-                    }
-                    else
-                    {
-                        ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
-                    }
-
                     btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportShutDown:
-                    shapeStatus.Fill = new SolidColorBrush( Colors.Red );
+                    statusColor = Colors.Red;
                     mnuConnect.IsEnabled = true;
                     break;
                 case XportStates.TransportFeeding:
-                    shapeStatus.Fill = new SolidColorBrush( Colors.Blue );
+                    statusColor = Colors.Blue;
                     btnScan.Content = "Stop";
-                    ScanningPage.btnStartStop.Content = ScanButtonText.Stop;
-                    ScanningPage.btnDone.Visibility = Visibility.Hidden;
                     btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportStartingUp:
-                    shapeStatus.Fill = new SolidColorBrush( Colors.Yellow );
+                    statusColor = Colors.Yellow;
                     break;
                 default:
-                    shapeStatus.Fill = new SolidColorBrush( Colors.White );
+                    statusColor = Colors.White;
                     break;
             }
 
-            ScanningPage.shapeStatus.ToolTip = this.shapeStatus.ToolTip;
-            ScanningPage.shapeStatus.Fill = this.shapeStatus.Fill;
+            this.shapeStatus.Fill = new SolidColorBrush( statusColor );
+            this.shapeStatus.ToolTip = status;
+
+            ScanningPage.ShowScannerStatus( (XportStates)e.currentState, statusColor, status );
         }
 
         /// <summary>
@@ -233,12 +224,15 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        
+        private RockRestClient persistedClient  {get; set;} 
+
         /// <summary>
         /// Rangers the scanner_ transport item in pocket.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void rangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
+        private void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
             BitmapImage bitImageFront = GetDocImage( Sides.TransportFront );
             BitmapImage bitImageBack = GetDocImage( Sides.TransportRear );
@@ -253,6 +247,8 @@ namespace Rock.Apps.CheckScannerUtility
             scannedDoc.SourceTypeValue = sourceTypeValue;
             scannedDoc.FrontImageData = ( bitImageFront.StreamSource as MemoryStream ).ToArray();
             scannedDoc.BackImageData = ( bitImageBack.StreamSource as MemoryStream ).ToArray();
+
+            var item = rangerScanner.GetItemState();
 
             if ( scannedDoc.IsCheck )
             {
@@ -269,13 +265,39 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
                 {
-                    ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
+                    ScanningPage.lblScanCheckWarningBadMicr.Visibility = Visibility.Visible;
+                    scannedDoc.BadMicr = true;
                     rangerScanner.StopFeeding();
                 }
                 else
                 {
-                    ScanningPage.lblScanCheckWarning.Visibility = Visibility.Collapsed;
-                    ScannedDocList.Enqueue( scannedDoc );
+                    ScanningPage.lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
+                    if ( persistedClient == null )
+                    {
+                        persistedClient = new RockRestClient( rockConfig.RockBaseUrl );
+                        persistedClient.Login( rockConfig.Username, rockConfig.Password );
+                    }
+
+                    // first check if we have already scanned this doc during this session (we might not have uploaded it yet)
+                    var alreadyScanned = ScannedDocList.Any( a => a.ScannedCheckMicr == scannedDoc.ScannedCheckMicr );
+
+                    // if we didn't already scan it in this session, check the server
+                    if ( !alreadyScanned )
+                    {
+                        alreadyScanned = persistedClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
+                    }
+
+                    if ( alreadyScanned )
+                    {
+                        scannedDoc.Duplicate = true;
+                        
+                        rangerScanner.StopFeeding();
+                        rangerScanner.ClearTrack();
+                    }
+                    else
+                    {
+                        ScannedDocList.Enqueue( scannedDoc );
+                    }
                 }
             }
             else
@@ -283,7 +305,7 @@ namespace Rock.Apps.CheckScannerUtility
                 ScannedDocList.Enqueue( scannedDoc );
             }
 
-            ScanningPage.ShowDocInformation( scannedDoc );
+            ScanningPage.ShowScannedDocStatus( scannedDoc );
         }
 
         #endregion
@@ -384,17 +406,20 @@ namespace Rock.Apps.CheckScannerUtility
                         scannedDoc.FrontImageData = File.ReadAllBytes( docImageFileName );
                     }
 
-                    ScanningPage.ShowDocInformation( scannedDoc );
+                    
 
+                    // TODO Check for Duplicate
+                    
                     if ( scannedDoc.IsCheck && (scannedDoc.RoutingNumber.Length != 9 || string.IsNullOrWhiteSpace(scannedDoc.AccountNumber)))
                     {
-                        ScanningPage.lblScanCheckWarning.Visibility = Visibility.Visible;
+                        scannedDoc.BadMicr = true;
                     }
                     else
                     {
-                        ScanningPage.lblScanCheckWarning.Visibility = Visibility.Collapsed;
                         ScannedDocList.Enqueue( scannedDoc );
                     }
+
+                    ScanningPage.ShowScannedDocStatus( scannedDoc );
 
                     File.Delete( docImageFileName );
                 }
@@ -592,7 +617,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                     // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
                     financialTransactionScannedCheck.CheckMicrEncrypted = null;
-                    financialTransactionScannedCheck.ScannedCheckMicr = string.Format( "{0}_{1}_{2}", scannedDocInfo.RoutingNumber, scannedDocInfo.AccountNumber, scannedDocInfo.CheckNumber );
+                    financialTransactionScannedCheck.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
 
                     client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck );
                 }
@@ -627,6 +652,8 @@ namespace Rock.Apps.CheckScannerUtility
 
                 scannedDocInfo.Uploaded = true;
             }
+
+            ScanningPage.ClearScannedDocHistory();
         }
 
         #endregion

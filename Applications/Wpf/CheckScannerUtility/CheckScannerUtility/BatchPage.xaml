@@ -28,7 +28,7 @@
             <ax:AxRanger x:Name="rangerScanner"
                          TransportNewState="rangerScanner_TransportNewState"
                          TransportChangeOptionsState="rangerScanner_TransportChangeOptionsState"
-                         TransportItemInPocket="rangerScanner_TransportItemInPocket" />
+                         TransportSetItemOutput="rangerScanner_TransportSetItemOutput"/>
         </WindowsFormsHost>
         <WindowsFormsHost x:Name="micrImageHost"
                           Visibility="Collapsed"

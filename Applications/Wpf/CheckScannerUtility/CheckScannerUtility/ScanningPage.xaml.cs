@@ -51,6 +51,7 @@ namespace Rock.Apps.CheckScannerUtility
         public ScanningPage( BatchPage value )
         {
             InitializeComponent();
+            this.ScannedDocInfoHistory = new List<ScannedDocInfo>();
             this.batchPage = value;
         }
 
@@ -87,44 +88,43 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Shows the check information.
+        /// Gets or sets the current scanned document information.
+        /// </summary>
+        /// <value>
+        /// The current scanned document information.
+        /// </value>
+        private ScannedDocInfo CurrentScannedDocInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scanned document information history.
+        /// </summary>
+        /// <value>
+        /// The scanned document information history.
+        /// </value>
+        private List<ScannedDocInfo> ScannedDocInfoHistory { get; set; }
+
+        /// <summary>
+        /// Adds the scanned doc to a history of scanned docs, and shows info and status.
         /// </summary>
         /// <param name="scannedDocInfo">The scanned check info.</param>
-        public void ShowDocInformation( ScannedDocInfo scannedDocInfo )
+        public void ShowScannedDocStatus( ScannedDocInfo scannedDocInfo )
         {
-            if ( scannedDocInfo.FrontImageData != null )
+            CurrentScannedDocInfo = scannedDocInfo;
+            ScannedDocInfoHistory.Add( scannedDocInfo );
+            bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            if (scanningChecks && ScannedDocInfoHistory.Count > 1)
             {
-                BitmapImage bitmapImageFront = new BitmapImage();
-                bitmapImageFront.BeginInit();
-                bitmapImageFront.StreamSource = new MemoryStream( scannedDocInfo.FrontImageData );
-                bitmapImageFront.EndInit();
-                imgFront.Source = bitmapImageFront;
+                gScannedChecksNavigation.Visibility = System.Windows.Visibility.Visible;
             }
             else
             {
-                imgFront.Source = null;
+                gScannedChecksNavigation.Visibility = System.Windows.Visibility.Collapsed;
             }
 
-            if ( scannedDocInfo.BackImageData != null )
-            {
-                BitmapImage bitmapImageBack = new BitmapImage();
-                bitmapImageBack.BeginInit();
-                bitmapImageBack.StreamSource = new MemoryStream( scannedDocInfo.BackImageData );
-                bitmapImageBack.EndInit();
-                imgBack.Source = bitmapImageBack;
-            }
-            else
-            {
-                imgBack.Source = null;
-            }
+            NavigateTo( ScannedDocInfoHistory.Count - 1 );
 
             lblScanInstructions.Visibility = Visibility.Collapsed;
             ExpectingMagTekBackScan = false;
-            if ( ( imgFront.Source == null ) && ( imgBack.Source == null ) )
-            {
-                lblScanInstructions.Content = string.Format( "INFO: Insert the {0} into the scanner to begin.", scannedDocInfo.IsCheck ? "check" : "item" );
-                lblScanInstructions.Visibility = Visibility.Visible;
-            }
 
             var rockConfig = RockConfig.Load();
 
@@ -155,6 +155,39 @@ namespace Rock.Apps.CheckScannerUtility
                     lblScanInstructions.Visibility = Visibility.Visible;
                 }
             }
+        }
+
+        /// <summary>
+        /// Displays the scanned document information.
+        /// </summary>
+        /// <param name="scannedDocInfo">The scanned document information.</param>
+        private void DisplayScannedDocInfo( ScannedDocInfo scannedDocInfo )
+        {
+            if ( scannedDocInfo.FrontImageData != null )
+            {
+                BitmapImage bitmapImageFront = new BitmapImage();
+                bitmapImageFront.BeginInit();
+                bitmapImageFront.StreamSource = new MemoryStream( scannedDocInfo.FrontImageData );
+                bitmapImageFront.EndInit();
+                imgFront.Source = bitmapImageFront;
+            }
+            else
+            {
+                imgFront.Source = null;
+            }
+
+            if ( scannedDocInfo.BackImageData != null )
+            {
+                BitmapImage bitmapImageBack = new BitmapImage();
+                bitmapImageBack.BeginInit();
+                bitmapImageBack.StreamSource = new MemoryStream( scannedDocInfo.BackImageData );
+                bitmapImageBack.EndInit();
+                imgBack.Source = bitmapImageBack;
+            }
+            else
+            {
+                imgBack.Source = null;
+            }
 
             if ( scannedDocInfo.IsCheck )
             {
@@ -167,6 +200,32 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 pnlChecks.Visibility = System.Windows.Visibility.Collapsed;
             }
+
+            if ( scannedDocInfo.BadMicr )
+            {
+                lblScanCheckWarningBadMicr.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
+            }
+
+            if ( scannedDocInfo.Duplicate )
+            {
+                lblScanCheckWarningDuplicate.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                lblScanCheckWarningDuplicate.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Clears the scanned document history.
+        /// </summary>
+        public void ClearScannedDocHistory()
+        {
+            ScannedDocInfoHistory.Clear();
         }
 
         /// <summary>
@@ -187,12 +246,13 @@ namespace Rock.Apps.CheckScannerUtility
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             var rockConfig = RockConfig.Load();
-            lblScanCheckWarning.Visibility = Visibility.Collapsed;
-            if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi && rockConfig.EnableRearImage)
+            lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
+            lblScanCheckWarningDuplicate.Visibility = Visibility.Collapsed;
+            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi && rockConfig.EnableRearImage )
             {
                 lblBack.Visibility = System.Windows.Visibility.Visible;
             }
-            else if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 && rockConfig.PromptToScanRearImage)
+            else if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 && rockConfig.PromptToScanRearImage )
             {
                 lblBack.Visibility = System.Windows.Visibility.Visible;
             }
@@ -200,10 +260,100 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 lblBack.Visibility = System.Windows.Visibility.Hidden;
             }
-            
+
             ScannedDocInfo sampleDocInfo = new ScannedDocInfo();
             sampleDocInfo.CurrencyTypeValue = batchPage.CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
-            ShowDocInformation( new ScannedDocInfo() );
+            DisplayScannedDocInfo( sampleDocInfo );
+
+            gScannedChecksNavigation.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnPrev_Click( object sender, RoutedEventArgs e )
+        {
+            if ( CurrentScannedDocInfo != null )
+            {
+                int navIndex = ScannedDocInfoHistory.IndexOf( CurrentScannedDocInfo ) - 1;
+                NavigateTo( navIndex );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnNext_Click( object sender, RoutedEventArgs e )
+        {
+            if ( CurrentScannedDocInfo != null )
+            {
+                int navIndex = ScannedDocInfoHistory.IndexOf( CurrentScannedDocInfo ) + 1;
+                NavigateTo( navIndex );
+            }
+        }
+
+        /// <summary>
+        /// Navigates to.
+        /// </summary>
+        /// <param name="navIndex">Index of the nav.</param>
+        private void NavigateTo( int navIndex )
+        {
+            if ( navIndex >= 0 && navIndex < ScannedDocInfoHistory.Count )
+            {
+                CurrentScannedDocInfo = ScannedDocInfoHistory[navIndex];
+                DisplayScannedDocInfo( CurrentScannedDocInfo );
+            }
+
+            btnPrev.IsEnabled = CurrentScannedDocInfo != ScannedDocInfoHistory.First();
+            btnNext.IsEnabled = CurrentScannedDocInfo != ScannedDocInfoHistory.Last();
+        }
+
+        /// <summary>
+        /// Shows the scanner status.
+        /// </summary>
+        /// <param name="xportStates">The xport states.</param>
+        public void ShowScannerStatus( XportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
+        {
+            switch ( xportStates )
+            {
+                case XportStates.TransportReadyToFeed:
+                    bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                    if ( scanningChecks && ScannedDocInfoHistory.Any( a => a.BadMicr || a.Duplicate ) )
+                    {
+                        lblScanInstructions.Content = "WARNING: One or more check scans have issues. Review the scanned checks before continuing. You might need to rescan some checks.";
+                    }
+                    else
+                    {
+                        lblScanInstructions.Content = string.Format( "INFO: Insert {0} into the scanner to begin.", scanningChecks ? "a check" : "an item" );
+                    }
+
+                    lblScanInstructions.Visibility = Visibility.Visible;
+
+                    if ( batchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) )
+                    {
+                        btnStartStop.Content = ScanButtonText.Scan;
+                    }
+                    else
+                    {
+                        btnStartStop.Content = ScanButtonText.ScanCheck;
+                    }
+
+                    break;
+
+                case XportStates.TransportFeeding:
+                    lblScanInstructions.Content = "INFO: Waiting for scan output...";
+                    lblScanInstructions.Visibility = Visibility.Visible;
+                    btnStartStop.Content = ScanButtonText.Stop;
+                    btnDone.Visibility = Visibility.Hidden;
+                    break;
+            }
+
+            this.shapeStatus.ToolTip = statusText;
+            this.shapeStatus.Fill = new System.Windows.Media.SolidColorBrush( statusColor );
         }
     }
 }

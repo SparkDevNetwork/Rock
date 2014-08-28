@@ -92,6 +92,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         public Rock.Model.DefinedValue SourceTypeValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is uploaded.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if uploaded; otherwise, <c>false</c>.
+        /// </value>
+        public bool Uploaded { get; set; }
+
         #region Applies only to Scanned Checks
 
         /// <summary>
@@ -105,6 +113,20 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            }
+        }
+
+        /// <summary>
+        /// Gets the scanned check micr in the format "{RoutingNumber}_{AccountNumber}_{CheckNumber}";
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        public string ScannedCheckMicr
+        {
+            get
+            {
+                return string.Format( "{0}_{1}_{2}", this.RoutingNumber, this.AccountNumber, this.CheckNumber );
             }
         }
 
@@ -148,8 +170,22 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Gets or sets a value indicating whether [bad micr].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [bad micr]; otherwise, <c>false</c>.
+        /// </value>
+        public bool BadMicr { get; set; }
 
-        public bool Uploaded { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is duplicate.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if duplicate; otherwise, <c>false</c>.
+        /// </value>
+        public bool Duplicate { get; set; }
+
+        #endregion
     }
 }
