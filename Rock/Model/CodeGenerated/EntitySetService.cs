@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialTransaction Service class
+    /// EntitySet Service class
     /// </summary>
-    public partial class FinancialTransactionService : Service<FinancialTransaction>
+    public partial class EntitySetService : Service<EntitySet>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class
+        /// Initializes a new instance of the <see cref="EntitySetService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public FinancialTransactionService(RockContext context) : base(context)
+        public EntitySetService(RockContext context) : base(context)
         {
         }
 
@@ -48,13 +48,13 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( FinancialTransaction item, out string errorMessage )
+        public bool CanDelete( EntitySet item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.TransactionId == item.Id ) )
+            if ( new Service<EntitySet>( Context ).Queryable().Any( a => a.ParentEntitySetId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntitySet.FriendlyTypeName, EntitySet.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -64,50 +64,40 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class FinancialTransactionExtensionMethods
+    public static partial class EntitySetExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialTransaction object to a new FinancialTransaction object
+        /// Clones this EntitySet object to a new EntitySet object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialTransaction Clone( this FinancialTransaction source, bool deepCopy )
+        public static EntitySet Clone( this EntitySet source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialTransaction;
+                return source.Clone() as EntitySet;
             }
             else
             {
-                var target = new FinancialTransaction();
+                var target = new EntitySet();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another FinancialTransaction object to this FinancialTransaction object
+        /// Copies the properties from another EntitySet object to this EntitySet object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this FinancialTransaction target, FinancialTransaction source )
+        public static void CopyPropertiesFrom( this EntitySet target, EntitySet source )
         {
-            target.AuthorizedPersonId = source.AuthorizedPersonId;
-            target.BatchId = source.BatchId;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-            target.TransactionDateTime = source.TransactionDateTime;
-            target.TransactionCode = source.TransactionCode;
-            target.Summary = source.Summary;
-            target.TransactionTypeValueId = source.TransactionTypeValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.SourceTypeValueId = source.SourceTypeValueId;
-            target.CheckMicrEncrypted = source.CheckMicrEncrypted;
-            target.CheckMicrHash = source.CheckMicrHash;
-            target.ScheduledTransactionId = source.ScheduledTransactionId;
-            target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
-            target.ProcessedDateTime = source.ProcessedDateTime;
+            target.ParentEntitySetId = source.ParentEntitySetId;
+            target.Name = source.Name;
+            target.EntityTypeId = source.EntityTypeId;
+            target.ExpireDateTime = source.ExpireDateTime;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

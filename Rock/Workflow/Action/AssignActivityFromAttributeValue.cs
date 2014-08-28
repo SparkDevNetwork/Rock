@@ -28,14 +28,14 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Assign Activity to Person or Group attribute value.
+    /// Assign Activity to a Person or Group attribute value.
     /// </summary>
-    [Description( "Assign Activity to Person or Group attribute value." )]
+    [Description( "Assign Activity to a Person or Group attribute value." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Assign Activity to Attribute Value." )]
+    [ExportMetadata( "ComponentName", "Assign Activity from Attribute Value." )]
 
     [WorkflowAttribute("Attribute", "The person or group attribute value to assign this activity to.")]
-    public class AssignActivityToAttributeValue : ActionComponent
+    public class AssignActivityFromAttributeValue : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow action.
