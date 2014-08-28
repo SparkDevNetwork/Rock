@@ -253,7 +253,7 @@ namespace Rock.Model
                 }
 
                 // If action completed this workflow, exit
-                if ( !this.Workflow.IsActive )
+                if ( this.Workflow == null || !this.Workflow.IsActive )
                 {
                     break;
                 }
