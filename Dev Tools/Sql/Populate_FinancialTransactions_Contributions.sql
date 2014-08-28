@@ -13,7 +13,9 @@ declare
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
   @sourceTypeWeb int = (select Id from DefinedValue where Guid = '7D705CE7-7B11-4342-A58E-53617C5B4E69'),
   @accountId int,
-  @transactionId int
+  @transactionId int,
+  @checkMicrEncrypted nvarchar(max),
+  @checkMicrHash nvarchar(128)
 
 begin
 
@@ -37,6 +39,9 @@ while @transactionCounter < @maxTransactionCount
           set @authorizedPersonId =  (select top 1 Id from Person where Id <= rand() * @maxPersonIdForTransactions order by Id desc);
         end
 
+        set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+        set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonId]
                    ,[BatchId]
@@ -48,6 +53,7 @@ while @transactionCounter < @maxTransactionCount
                    ,[CreditCardTypeValueId]
                    ,[SourceTypeValueId]
                    ,[CheckMicrEncrypted]
+                   ,[CheckMicrHash]
                    ,[Guid])
              VALUES
                    (@authorizedPersonId
@@ -59,11 +65,12 @@ while @transactionCounter < @maxTransactionCount
                    ,@currencyTypeCash
                    ,@creditCardTypeVisa
                    ,@sourceTypeWeb
-                   ,null
+                   ,@checkMicrEncrypted
+                   ,@checkMicrHash
                    ,NEWID()
         )
         set @transactionId = SCOPE_IDENTITY()
-        set @accountId = (select id from FinancialAccount where Id = round(RAND() * 2, 0) + 1)
+        set @accountId = (select top 1 id from FinancialAccount where Id = round(RAND() * 2, 0) + 1)
  
         -- For contributions, we just need to put in the AccountId (entitytype/entityid would be null)
         INSERT INTO [dbo].[FinancialTransactionDetail]

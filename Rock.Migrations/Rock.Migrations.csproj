@@ -57,6 +57,10 @@
     <Compile Include="Migrations\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.cs" />
+    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.Designer.cs">
+      <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
@@ -1147,6 +1151,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408270020397_DuplicateCheckScan.resx">
+      <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
