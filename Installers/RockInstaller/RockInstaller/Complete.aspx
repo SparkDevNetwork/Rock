@@ -184,16 +184,6 @@
         
         // delete rock install directory
         Directory.Delete( serverPath + @"\rock", true );
-
-        // restart app pool
-        try
-        {
-            // *** This requires full trust so this will fail
-            // *** in many scenarios
-            HttpRuntime.UnloadAppDomain();
-        }
-        catch
-        {}
     }
 
     private void DeleteDirectory( string target_dir )
@@ -263,7 +253,7 @@
                 File.Delete( temppath );
             }
 
-            // Copy the file.
+            // move the file.
             f.MoveTo( temppath );
         } );
     }
