@@ -717,7 +717,10 @@ namespace Rock.Attribute
 
             rockContext.SaveChanges();
 
-            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
+            if ( model.AttributeValues != null )
+            {
+                model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
+            }
 
         }
 
