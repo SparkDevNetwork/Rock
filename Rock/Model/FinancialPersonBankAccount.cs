@@ -103,27 +103,8 @@ namespace Rock.Model
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
         public static string EncodeAccountNumber( string routingNumber, string accountNumber )
         {
-            var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
-            if ( String.IsNullOrWhiteSpace( passwordKey ) )
-            {
-                throw new ConfigurationErrorsException( "Account encoding requires a 'PasswordKey' app setting" );
-            }
-
-            byte[] encryptionKey = HexToByte( passwordKey );
-
-            HMACSHA1 hash = new HMACSHA1();
-            hash.Key = encryptionKey;
-
             string toHash = string.Format( "{0}|{1}", routingNumber, accountNumber );
-            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( toHash ) ) );
-        }
-
-        private static byte[] HexToByte( string hexString )
-        {
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            for ( int i = 0; i < returnBytes.Length; i++ )
-                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
-            return returnBytes;
+            return Rock.Security.Encryption.GetSHA1Hash( toHash );
         }
 
         #endregion

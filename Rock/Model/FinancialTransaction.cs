@@ -156,6 +156,18 @@ namespace Rock.Model
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
+        /// Gets or sets hash of the Check Routing, AccountNumber, and CheckNumber.  Stored as a SHA1 hash so that it can be matched without being known
+        /// Enables detection of duplicate scanned checks
+        /// </summary>
+        /// <value>
+        /// The check micr hash.
+        /// </value>
+        [DataMember]
+        [MaxLength( 128 )]
+        [Index]
+        public string CheckMicrHash { get; set; }
+
+        /// <summary>
         /// Gets or sets the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction" /> that triggered
         /// this transaction. If this was an ad-hoc/on demand transaction, this property will be null.
         /// </summary>
