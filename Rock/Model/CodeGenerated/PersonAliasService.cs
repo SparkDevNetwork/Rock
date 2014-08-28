@@ -136,6 +136,14 @@ namespace Rock.Model
             
             // ignoring Device,ModifiedByPersonAliasId 
             
+            // ignoring EntitySet,CreatedByPersonAliasId 
+            
+            // ignoring EntitySet,ModifiedByPersonAliasId 
+            
+            // ignoring EntitySetItem,CreatedByPersonAliasId 
+            
+            // ignoring EntitySetItem,ModifiedByPersonAliasId 
+            
             // ignoring ExceptionLog,CreatedByPersonAliasId 
             
             // ignoring ExceptionLog,ModifiedByPersonAliasId 

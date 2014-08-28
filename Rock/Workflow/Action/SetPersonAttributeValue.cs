@@ -29,15 +29,15 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute's value to the selected value
+    /// Sets an attribute's value to the selected person 
     /// </summary>
     [Description( "Sets a person attribute's value to the selected person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Person Attribute Value" )]
+    [ExportMetadata( "ComponentName", "Set Attribute from Person" )]
 
-    [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
+    [WorkflowAttribute( "Attribute", "The person attribute to set the value of.")]
     [PersonField("Person", "The person to set attribute value to.", true, "", "", 1)]
-    public class SetPersonAttributeValue : ActionComponent
+    public class SetAttributeFromPerson : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
