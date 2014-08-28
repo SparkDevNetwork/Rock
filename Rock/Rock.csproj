@@ -769,7 +769,7 @@
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeFromEntity.cs" />
-    <Compile Include="Workflow\Action\SetPersonAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SetAttributeFromPerson.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
