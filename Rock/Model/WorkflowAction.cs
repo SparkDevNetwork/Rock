@@ -204,7 +204,7 @@ namespace Rock.Model
 
                 AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
-                if ( success )
+                if ( success && this.ActionType != null )
                 {
                     if ( this.ActionType.IsActionCompletedOnSuccess )
                     {
