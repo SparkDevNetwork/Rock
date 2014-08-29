@@ -178,7 +178,15 @@ namespace RockWeb.Blocks.Groups
 
             lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
 
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "GroupType" ) ) && !string.IsNullOrEmpty( GetAttributeValue( "LocationType" ) ) )
+            string settingGroupTypeId = GetAttributeValue( "GroupType" );
+            string queryStringGroupTypeId = PageParameter( "GroupTypeId" );
+
+            if ( ( string.IsNullOrWhiteSpace(settingGroupTypeId) && string.IsNullOrWhiteSpace(queryStringGroupTypeId) )  )
+            {
+                pnlMap.Visible = false;
+                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.</div>";
+            } 
+            else 
             {
                 var rockContext = new RockContext();
 
@@ -193,15 +201,15 @@ namespace RockWeb.Blocks.Groups
                 Guid? groupType = null;
                 int groupTypeId = -1;
 
-                if ( Request["GroupTypeId"] != null && Int32.TryParse( Request["GroupTypeId"], out groupTypeId ) )
+                if ( !string.IsNullOrWhiteSpace( settingGroupTypeId ) )
                 {
-                    groupType = new GroupService( rockContext ).Get( groupTypeId ).Guid;
+                    groupType = new Guid( settingGroupTypeId );
                 }
                 else
                 {
-                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupType" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( queryStringGroupTypeId ) && Int32.TryParse( queryStringGroupTypeId, out groupTypeId ) )
                     {
-                        groupType = new Guid( GetAttributeValue( "GroupType" ) );
+                        groupType = new GroupTypeService( rockContext ).Get( groupTypeId ).Guid;
                     }
                 }
 
@@ -541,11 +549,6 @@ namespace RockWeb.Blocks.Groups
                     pnlMap.Visible = false;
                     lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display and a location type to use.</div>";
                 }
-            }
-            else
-            {
-                pnlMap.Visible = false;
-                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.</div>";
             }
         }
 
