@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -211,11 +212,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             if ( guid.HasValue )
                             {
                                 var workflowType = workflowTypeService.Get( guid.Value );
-                                if (workflowType != null)
+                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
                                 {
-                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, CurrentPersonId );
+                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                     sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
-                                        ResolveRockUrl(url), workflowType.IconCssClass, workflowType.Name );
+                                        ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
                                     sbActions.AppendLine();
                                 }
                             }

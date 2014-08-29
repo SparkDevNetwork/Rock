@@ -53,9 +53,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.cs" />
-    <Compile Include="Migrations\201408201603057_DataIntegrityFeatures.Designer.cs">
+    <Compile Include="Migrations\201408261602488_TransactionImageOrder.cs" />
+    <Compile Include="Migrations\201408261602488_TransactionImageOrder.Designer.cs">
+      <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.cs" />
+    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.Designer.cs">
+      <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408281632312_EntitySet.cs" />
+    <Compile Include="Migrations\201408281632312_EntitySet.Designer.cs">
+      <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
+      <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408252322078_ActivatedByActivity.cs" />
+    <Compile Include="Migrations\201408252322078_ActivatedByActivity.Designer.cs">
+      <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
@@ -1105,12 +1125,12 @@
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.11\201408140543489_AdditionalCheckinAdminPages.Designer.cs">
       <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408152138171_AddIdleTimeoutsBack.cs" />
-    <Compile Include="Migrations\201408152138171_AddIdleTimeoutsBack.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.Designer.cs">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408191153260_DefinedValueValue.cs" />
-    <Compile Include="Migrations\201408191153260_DefinedValueValue.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.Designer.cs">
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
@@ -1133,8 +1153,23 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201408201603057_DataIntegrityFeatures.resx">
+    <EmbeddedResource Include="Migrations\201408261602488_TransactionImageOrder.resx">
+      <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408270020397_DuplicateCheckScan.resx">
+      <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408281632312_EntitySet.resx">
+      <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.resx">
+      <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408252322078_ActivatedByActivity.resx">
+      <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -1925,10 +1960,10 @@
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.11\201408140543489_AdditionalCheckinAdminPages.resx">
       <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408152138171_AddIdleTimeoutsBack.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408152138171_AddIdleTimeoutsBack.resx">
       <DependentUpon>201408152138171_AddIdleTimeoutsBack.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408191153260_DefinedValueValue.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408191153260_DefinedValueValue.resx">
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

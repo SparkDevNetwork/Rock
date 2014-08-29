@@ -3,15 +3,16 @@
 <asp:UpdatePanel ID="upAddFamily" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlFamilyData" runat="server">
-        
-            <div class="panel panel-block">
-                <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-plus-square-o"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
-                </div>
-                <div class="panel-body">
+        <div class="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-plus-square-o"></i>
+                    <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+            </div>
+            <div class="panel-body">
 
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+                <asp:Panel ID="pnlFamilyData" runat="server">
 
                     <div class="row">
                         <div class="col-md-4">
@@ -33,7 +34,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:NewFamilyMembers id="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
+                            <Rock:NewFamilyMembers ID="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
                         </div>
                     </div>
 
@@ -45,21 +46,19 @@
                         <div class="col-md-8">
                             <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                         </div>
-
                     </div>
 
-                    <asp:Panel ID="pnlAttributes" runat="server" Visible="true">
-                    </asp:Panel>
+                </asp:Panel>
 
-                    <div class="actions">
-                        <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
-                        <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
-                    </div>
+                <asp:Panel ID="pnlAttributes" runat="server" Visible="true">
+                </asp:Panel>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+                    <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
                 </div>
-            </div>    
-        </asp:Panel>
-
-        
+            </div>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

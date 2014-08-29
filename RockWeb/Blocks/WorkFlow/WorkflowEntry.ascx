@@ -6,7 +6,9 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gear"></i> Workflow Entry</h1>
+                <h1 class="panel-title">
+                    <asp:Literal ID="lIconHtml" runat="server" ><i class="fa fa-gear"></i></asp:Literal>
+                    <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
             </div>
             <div class="panel-body">
 

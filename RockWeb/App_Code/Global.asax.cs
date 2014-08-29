@@ -614,6 +614,7 @@ namespace RockWeb
                                         {
                                             using ( var sqlTxn = con.BeginTransaction() )
                                             {
+                                                bool transactionActive = true;
                                                 try
                                                 {
                                                     // Create an instance of the migration and run the up migration
@@ -621,6 +622,8 @@ namespace RockWeb
                                                     migration.SqlConnection = con;
                                                     migration.SqlTransaction = sqlTxn;
                                                     migration.Up();
+                                                    sqlTxn.Commit();
+                                                    transactionActive = false;
 
                                                     // Save the plugin migration version so that it is not run again
                                                     var pluginMigration = new PluginMigration();
@@ -631,12 +634,13 @@ namespace RockWeb
                                                     rockContext.SaveChanges();
 
                                                     result = true;
-
-                                                    sqlTxn.Commit();
                                                 }
                                                 catch ( Exception ex )
                                                 {
-                                                    sqlTxn.Rollback();
+                                                    if ( transactionActive )
+                                                    {
+                                                        sqlTxn.Rollback();
+                                                    }
                                                     throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
                                                         assemblyMigrations.Key, migrationType.Value.Name ), ex );
                                                 }

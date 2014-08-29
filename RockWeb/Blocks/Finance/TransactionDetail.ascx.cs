@@ -158,17 +158,15 @@ namespace RockWeb.Blocks.Finance
                     foreach ( DataListItem item in dlImages.Items )
                     {
                         var hfImageGuid = item.FindControl( "hfImageGuid" ) as HiddenField;
-                        var ddlImageType = item.FindControl( "ddlImageType" ) as RockDropDownList;
                         var imgupImage = item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
 
-                        if ( hfImageGuid != null && ddlImageType != null && imgupImage != null )
+                        if ( hfImageGuid != null && imgupImage != null )
                         {
                             var txnImage = TransactionImagesState
                                 .Where( i => i.Guid.Equals( hfImageGuid.Value.AsGuid() ) )
                                 .FirstOrDefault();
                             if ( txnImage != null )
                             {
-                                txnImage.TransactionImageTypeValueId = ddlImageType.SelectedValueAsInt();
                                 txnImage.BinaryFileId = imgupImage.BinaryFileId ?? 0;
                             }
                         }
@@ -344,6 +342,7 @@ namespace RockWeb.Blocks.Finance
                     rockContext.SaveChanges();
 
                     // Save Transaction Images
+                    int imageOrder = 0;
                     foreach ( var editorTxnImage in TransactionImagesState )
                     {
                         // Add or Update the activity type
@@ -355,7 +354,8 @@ namespace RockWeb.Blocks.Finance
                             txn.Images.Add( txnImage );
                         }
                         txnImage.BinaryFileId = editorTxnImage.BinaryFileId;
-                        txnImage.TransactionImageTypeValueId = editorTxnImage.TransactionImageTypeValueId;
+                        txnImage.Order = imageOrder;
+                        imageOrder++;
                     }
                     rockContext.SaveChanges();
 
@@ -523,12 +523,9 @@ namespace RockWeb.Blocks.Finance
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var txnImage = e.Item.DataItem as FinancialTransactionImage;
-                var ddlImageType = e.Item.FindControl( "ddlImageType" ) as RockDropDownList;
                 var imgupImage = e.Item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
-                if ( txnImage != null && ddlImageType != null )
+                if ( txnImage != null )
                 {
-                    ddlImageType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE.AsGuid() ) );
-                    ddlImageType.SetValue( txnImage.TransactionImageTypeValueId );
                     if ( txnImage.BinaryFileId != 0 )
                     {
                         imgupImage.BinaryFileId = txnImage.BinaryFileId;
@@ -582,7 +579,7 @@ namespace RockWeb.Blocks.Finance
         {
             rockContext = rockContext ?? new RockContext();
             var txn = new FinancialTransactionService( rockContext )
-                .Queryable( "AuthorizedPerson,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,Images.TransactionImageTypeValue,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Queryable( "AuthorizedPerson,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
@@ -745,14 +742,14 @@ namespace RockWeb.Blocks.Finance
                 if ( txn.Images.Any() )
                 {
                     var primaryImage = txn.Images
-                        .OrderBy( i => i.TransactionImageTypeValue.Order )
+                        .OrderBy( i => i.Order )
                         .FirstOrDefault();
                     imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
                     imgPrimary.Visible = true;
 
                     rptrImages.DataSource = txn.Images
                         .Where( i => !i.Id.Equals( primaryImage.Id ) )
-                        .OrderBy( i => i.TransactionImageTypeValue.Order )
+                        .OrderBy( i => i.Order )
                         .ToList();
                     rptrImages.DataBind();
                 }

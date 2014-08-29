@@ -143,8 +143,20 @@ namespace RockWeb.Blocks.WorkFlow
             if ( _workflowType != null && !ConfiguredType )
             {
                 RockPage.PageTitle = _workflowType.Name;
-            }
 
+                // we can only override if the page does not have a icon
+                if ( string.IsNullOrWhiteSpace( RockPage.PageIcon ) && !string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
+                {
+                    RockPage.PageIcon = _workflowType.IconCssClass;
+                }
+
+                lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
+
+                if ( ! string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
+                {
+                    lIconHtml.Text = string.Format( "<i class='{0}' ></i>", _workflowType.IconCssClass );
+                }
+            }
         }
 
 
@@ -352,7 +364,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         foreach ( var action in activity.ActiveActions )
                         {
-                            if ( action.ActionType.WorkflowForm != null )
+                            if ( action.ActionType.WorkflowForm != null && action.IsCriteriaValid )
                             {
                                 _activity = activity;
                                 _activity.LoadAttributes();
@@ -438,6 +450,10 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                }
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
@@ -503,11 +519,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( string.IsNullOrWhiteSpace( buttonHtml ) )
                     {
-                        buttonHtml = "<a href='{{ ButtonLink }}' onclick='{{ ButtonClick }}' class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                        buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                     }
 
                     var buttonMergeFields = new Dictionary<string, object>();
-                    buttonMergeFields.Add( "ButtonText", details[0] );
+                    buttonMergeFields.Add( "ButtonText", details[0].EscapeQuotes() );
                     buttonMergeFields.Add( "ButtonClick",
                             string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
                             BlockValidationGroup ) );
@@ -559,7 +575,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         private void CompleteFormAction( string formAction )
-        {
+        { 
             if ( !string.IsNullOrWhiteSpace( formAction ) &&
                 _workflow != null &&
                 _actionType != null &&
@@ -568,6 +584,15 @@ namespace RockWeb.Blocks.WorkFlow
                 _action != null )
             {
 
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                } 
+                
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted succesfully.";
 
@@ -583,7 +608,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                         if ( actionDetails.Length > 3 && !string.IsNullOrWhiteSpace( actionDetails[3] ) )
                         {
-                            responseText = actionDetails[3];
+                            responseText = actionDetails[3].ResolveMergeFields( mergeFields );
                         }
                         break;
                     }
@@ -614,12 +639,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
-
-                // save current activity form's actions (to formulate response if needed).
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
 
                 if ( !activityTypeGuid.IsEmpty() )
                 {
@@ -653,10 +672,10 @@ namespace RockWeb.Blocks.WorkFlow
                         WorkflowId = _workflow.Id;
                     }
 
-                    int? previousActivityId = null;
-                    if ( _activity != null )
+                    int? previousActionId = null;
+                    if ( _action != null )
                     {
-                        previousActivityId = _activity.Id;
+                        previousActionId = _action.Id;
                     }
 
                     ActionTypeId = null;
@@ -664,13 +683,13 @@ namespace RockWeb.Blocks.WorkFlow
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() && _activity.Id != previousActivityId )
+                    if ( HydrateObjects() && _activity.Id != previousActionId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActivityId ) );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActionId ) );
                     }
                 }
                 else

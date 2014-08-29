@@ -44,22 +44,6 @@ namespace Rock.Apps.CheckScannerUtility
         public FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction image type value front.
-        /// </summary>
-        /// <value>
-        /// The transaction image type value front.
-        /// </value>
-        public DefinedValue TransactionImageTypeValueFront { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction image type value back.
-        /// </summary>
-        /// <value>
-        /// The transaction image type value back.
-        /// </value>
-        public DefinedValue TransactionImageTypeValueBack { get; set; }
-
-        /// <summary>
         /// Handles the Click event of the btnClose control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -76,14 +60,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            FinancialTransactionImage frontTranImage = FinancialTransaction.Images.FirstOrDefault( a => a.TransactionImageTypeValueId.Equals(TransactionImageTypeValueFront.Id));
-            FinancialTransactionImage backTranImage = FinancialTransaction.Images.FirstOrDefault( a => a.TransactionImageTypeValueId.Equals(TransactionImageTypeValueBack.Id));
+            var images = FinancialTransaction.Images.OrderBy(a => a.Order).ToList();
 
-            if ( frontTranImage != null )
+            if ( images.Count > 0 )
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( frontTranImage.BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( images[0].BinaryFile.Data.Content );
                 bitmapImage.EndInit();
                 imgFront.Source = bitmapImage;
             }
@@ -92,11 +75,11 @@ namespace Rock.Apps.CheckScannerUtility
                 imgFront.Source = null;
             }
 
-            if ( backTranImage != null )
+            if ( images.Count > 1 )
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( backTranImage.BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( images[1].BinaryFile.Data.Content );
                 bitmapImage.EndInit();
                 imgBack.Source = bitmapImage;
             }

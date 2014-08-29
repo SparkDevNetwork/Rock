@@ -104,36 +104,27 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Financial Transaction Image Type
-
-        /// <summary>
-        /// Front of Check
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_CHECK_FRONT = "A52EDD34-D3A2-420F-AF45-21B323FB21D6";
-
-        /// <summary>
-        /// Back of Check
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_CHECK_BACK = "87D9347D-64E6-4DD4-8F05-2AA17419B5E8";
-
-        /// <summary>
-        /// Front of Envelope
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_FRONT = "654ABEC4-7414-402F-BEA4-0AA833683AD6";
-
-        /// <summary>
-        /// Back of Envelope
-        /// </summary>
-        public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_BACK = "746FBD46-AA4C-4A84-A7DA-080763CED187";
-
-        #endregion
-
         #region Financial Source
 
         /// <summary>
         /// The financial source of Website
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
+
+        /// <summary>
+        /// The financial source of Kiosk
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_KIOSK	= "260EEA80-821A-4F79-973F-49DF79C955F7";
+        
+        /// <summary>
+        /// The financial source of Mobile Application
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION	= "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
+        
+        /// <summary>
+        /// The financial source of On-site Collection
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION = "BE7ECF50-52BC-4774-808D-574BA842DB98";
 
         #endregion
 

@@ -199,7 +199,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "Action" );
+            writer.Write( "Command Label" );
             writer.RenderEndTag();
             writer.RenderEndTag();
 

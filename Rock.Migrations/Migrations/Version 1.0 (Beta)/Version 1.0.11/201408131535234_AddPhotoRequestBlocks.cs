@@ -138,6 +138,12 @@ namespace Rock.Migrations
 
             #region Financial Source Defined Values
 
+            // Update the values for transaction source
+            Sql( @"
+    DECLARE @MailerId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '0149EB64-00C4-4C69-B1A6-2FD0EDFC6ACB' )
+    DECLARE @WebsiteId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '7D705CE7-7B11-4342-A58E-53617C5B4E69' )
+    UPDATE [FinancialTransaction] SET [SourceTypeValueId] = @WebsiteId WHERE [SourceTypeValueId] = @MailerId
+" );
             RockMigrationHelper.DeleteDefinedValue( "0149EB64-00C4-4C69-B1A6-2FD0EDFC6ACB" );  // Delete 'Mailer'
             RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Website", "Transactions that originated from the website", "7D705CE7-7B11-4342-A58E-53617C5B4E69", true );
             RockMigrationHelper.UpdateDefinedValue_pre20140819( "4F02B41E-AB7D-4345-8A97-3904DDD89B01", "Kiosk", "Transactions that originated from a kiosk", "260EEA80-821A-4F79-973F-49DF79C955F7", false );

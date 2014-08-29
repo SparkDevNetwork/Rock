@@ -121,6 +121,42 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is criteria valid.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is criteria valid; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public virtual bool IsCriteriaValid
+        {
+            get
+            {
+                bool result = true;
+
+                if ( ActionType != null &&
+                    ActionType.CriteriaAttributeGuid.HasValue )
+                {
+                    result = false;
+
+                    string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                    Guid guid = ActionType.CriteriaValue.AsGuid();
+                    if ( guid.IsEmpty() )
+                    {
+                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                    }
+                    else
+                    {
+                        string value = GetWorklowAttributeValue( guid );
+                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent security authority for this WorkflowAction.
         /// </summary>
         /// <value>
@@ -150,7 +186,7 @@ namespace Rock.Model
         /// <exception cref="System.SystemException"></exception>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddLogEntry( "Processing..." );
 
             ActionComponent workflowAction = this.ActionType.WorkflowAction;
             if ( workflowAction == null )
@@ -160,15 +196,15 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            if ( TestCriteria() )
+            if ( IsCriteriaValid )
             {
                 bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
 
                 this.LastProcessedDateTime = RockDateTime.Now;
 
-                AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
+                AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
-                if ( success )
+                if ( success && this.ActionType != null )
                 {
                     if ( this.ActionType.IsActionCompletedOnSuccess )
                     {
@@ -187,40 +223,10 @@ namespace Rock.Model
             {
                 errorMessages = new List<string>();
 
-                AddSystemLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+                AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
 
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Tests the criteria.
-        /// </summary>
-        /// <returns></returns>
-        private bool TestCriteria()
-        {
-            bool result = true;
-
-            if ( ActionType != null &&
-                ActionType.CriteriaAttributeGuid.HasValue )
-            {
-                result = false;
-
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
-
-                Guid guid = ActionType.CriteriaValue.AsGuid();
-                if ( guid.IsEmpty() )
-                {
-                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                }
-                else
-                {
-                    string value = GetWorklowAttributeValue( guid );
-                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                }
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -259,21 +265,25 @@ namespace Rock.Model
 
             return null;
         }
-        
+
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the  log entry.</param>
-        public virtual void AddLogEntry( string logEntry )
+        /// <param name="logEntry">A <see cref="System.String" /> representing the  log entry.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logEntry, bool force = false )
         {
             if ( this.Activity != null &&
-                this.Activity.Workflow != null )
+                this.Activity.Workflow != null &&
+                ( force || (
+                this.Activity.Workflow.WorkflowType != null &&
+                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
             {
                 string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
                 string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
 
                 this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
-                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ) );
+                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
             }
         }
 
@@ -283,7 +293,7 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
-            AddSystemLogEntry( "Completed" );
+            AddLogEntry( "Completed" );
         }
 
         /// <summary>
@@ -374,25 +384,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
-
-        /// <summary>
-        /// Logs a system event.
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/>representing the log entry.</param>
-        private void AddSystemLogEntry( string logEntry )
-        {
-            if ( this.Activity != null &&
-                this.Activity.Workflow != null &&
-                this.Activity.Workflow.WorkflowType != null &&
-                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action )
-            {
-                AddLogEntry( logEntry );
-            }
-        }
-
-        #endregion
-
         #region Static Methods
 
         /// <summary>
@@ -408,7 +399,7 @@ namespace Rock.Model
             action.ActionType = actionType;
             action.LoadAttributes();
 
-            action.AddSystemLogEntry( "Activated" );
+            action.AddLogEntry( "Activated" );
 
             return action;
         }

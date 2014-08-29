@@ -550,11 +550,12 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfItemRestUrlExtraParams );
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
-
-            RequiredFieldValidator.InitialValue = "0";
+            
             RockControlHelper.CreateChildControls( this, Controls );
 
-            RequiredFieldValidator.Display = ValidatorDisplay.None;
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfItemId.ID;
+            RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
         }
 
         /// <summary>

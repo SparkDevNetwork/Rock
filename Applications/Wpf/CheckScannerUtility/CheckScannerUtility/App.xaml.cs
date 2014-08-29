@@ -37,7 +37,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Windows.Threading.DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
-        void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
+        public void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
         {
             ErrorMessageWindow errorMessageWindow = new ErrorMessageWindow(e.Exception);
             errorMessageWindow.ShowDialog();

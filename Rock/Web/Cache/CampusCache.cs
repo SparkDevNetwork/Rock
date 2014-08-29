@@ -223,7 +223,7 @@ namespace Rock.Web.Cache
             CampusCache campus = null;
             if ( cacheObj != null )
             {
-                campus = Read( (int)cacheObj );
+                campus = Read( (int)cacheObj, rockContext );
             }
 
             if ( campus == null )
