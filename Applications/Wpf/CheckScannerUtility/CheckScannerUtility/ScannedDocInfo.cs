@@ -100,6 +100,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         public bool Uploaded { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction identifier.
+        /// </value>
+        public int? TransactionId { get; set; }
+
         #region Applies only to Scanned Checks
 
         /// <summary>

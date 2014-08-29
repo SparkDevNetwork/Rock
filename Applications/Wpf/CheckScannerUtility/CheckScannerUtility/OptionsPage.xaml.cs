@@ -123,7 +123,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadDropDowns()
         {
             cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Bitonal" );
+            cboImageOption.Items.Add( "Black and Whilte" );
             cboImageOption.Items.Add( "Grayscale" );
             cboImageOption.Items.Add( "Color" );
 

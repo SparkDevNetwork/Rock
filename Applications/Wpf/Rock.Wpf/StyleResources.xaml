@@ -24,14 +24,19 @@
     <Style x:Key="labelStyleBold"
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
-        <Setter Property="Label.FontWeight"
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Bold"></Setter>
+        <Setter Property="FontWeight" 
                 Value="Bold"></Setter>
     </Style>
+    
 
     <!-- Label style: Caption -->
     <Style x:Key="labelStyleCaption"
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Bold"></Setter>
         <Setter Property="Label.FontWeight"
                 Value="Bold"></Setter>
         <Setter Property="Label.FontSize"
@@ -41,6 +46,8 @@
     <!-- Label style: Title -->
     <Style x:Key="labelStyleTitle"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Bold"></Setter>
         <Setter Property="Label.Margin"
                 Value="20,0,0,10"></Setter>
         <Setter Property="Label.VerticalAlignment"
@@ -58,6 +65,8 @@
     <!-- Label style: Legend -->
     <Style x:Key="labelStyleLegend"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans SemiBold"></Setter>
         <Setter Property="Label.Margin"
                 Value="0,0,0,0"></Setter>
         <Setter Property="Label.VerticalAlignment"
@@ -95,6 +104,8 @@
     <!-- Label style: Banner Title -->
     <Style x:Key="labelStyleBannerTitle"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Bold"></Setter>
         <Setter Property="Label.FontWeight"
                 Value="Bold"></Setter>
         <Setter Property="Label.FontSize"
@@ -252,8 +263,10 @@
     <Style x:Key="labelStyleDt"
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans SemiBold"></Setter>
         <Setter Property="Label.FontWeight"
-                Value="Bold" />
+                Value="SemiBold" />
     </Style>
 
     <!-- Label style: dd (Bootstrap Definition definition)-->
@@ -278,18 +291,39 @@
         <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
         <Setter Property="Label.Foreground"
-                Value="White"></Setter>
+                Value="#000"></Setter>
     </Style>
 
     <Style x:Key="labelStyleIconPrimary"
+           BasedOn="{StaticResource labelStyleIcon}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="#fff"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleIconRight"
            BasedOn="{StaticResource labelStyleIcon}"
            TargetType="{x:Type Label}">
         <Setter Property="Label.Margin"
                 Value="4,6,0,4"></Setter>
     </Style>
 
-    <Style x:Key="labelStyleIconPrimaryLeft"
+    <Style x:Key="labelStyleIconLeft"
            BasedOn="{StaticResource labelStyleIcon}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Margin"
+                Value="0,6,0,4"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleIconPrimaryRight"
+           BasedOn="{StaticResource labelStyleIconPrimary}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Margin"
+                Value="4,6,0,4"></Setter>
+    </Style>
+
+    <Style x:Key="labelStyleIconPrimaryLeft"
+           BasedOn="{StaticResource labelStyleIconPrimary}"
            TargetType="{x:Type Label}">
         <Setter Property="Label.Margin"
                 Value="0,6,0,4"></Setter>
@@ -307,7 +341,7 @@
         <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#fff"></Setter>
+                Value="#000"></Setter>
     </Style>
 
     <Style x:Key="labelStyleButtonTextPrimary"
@@ -338,6 +372,8 @@
     <!-- Textblock Style: Grid Data  -->
     <Style x:Key="textBlockStyleGridDataTitle"
            TargetType="{x:Type TextBlock}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans SemiBold"></Setter>
         <Setter Property="Padding"
                 Value="6,0,0,0" />
         <Setter Property="HorizontalAlignment"
@@ -345,7 +381,7 @@
         <Setter Property="FontWeight"
                 Value="SemiBold"></Setter>
         <Setter Property="FontSize"
-                Value="15"></Setter>
+                Value="14"></Setter>
     </Style>
     <Style x:Key="textBlockStyleGridData"
            TargetType="{x:Type TextBlock}">
@@ -379,6 +415,8 @@
     <!-- Grid Column Header style -->
     <Style x:Key="gridHeaderStyle"
            TargetType="{x:Type DataGridColumnHeader}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Bold"></Setter>
         <Setter Property="Padding"
                 Value="8" />
         <Setter Property="HorizontalAlignment"
@@ -467,22 +505,26 @@
 
     <!-- Button Style -->
     <Style x:Key="buttonStyle"
-           TargetType="{x:Type Button}">
+           TargetType="{x:Type ButtonBase}">
         <Setter Property="Width"
                 Value="Auto" />
         <Setter Property="Height"
                 Value="28" />
-        <Setter Property="Foreground"
-                Value="#fff" />
+        <Setter Property="Foreground" 
+                Value="#000" />
+        <Setter Property="Background"
+                Value="#efefef" />
+        <Setter Property="BorderBrush" 
+                Value="#c4c4c4"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Button}">
+                <ControlTemplate TargetType="{x:Type ButtonBase}">
                     <Border Name="buttonBorder"
                             CornerRadius="4,4,4,4"
                             BorderThickness="1"
-                            BorderBrush="#354d56"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             Padding="8,2,8,2"
-                            Background="#466673"
+                            Background="{TemplateBinding Background}"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center"
@@ -497,86 +539,76 @@
                         <Trigger Property="IsPressed"
                                  Value="True">
                             <Setter TargetName="buttonBorder"
-                                    Property="Background"
-                                    Value="Transparent">
+                                    Property="Opacity"
+                                    Value=".7">
                             </Setter>
                         </Trigger>
                         <Trigger Property="IsEnabled"
                                  Value="False">
                             <Setter TargetName="buttonBorder"
-                                    Property="Background"
-                                    Value="#f5f5f5" >
+                                    Property="Opacity"
+                                    Value=".35" >
                             </Setter>
-                            <Setter TargetName="buttonBorder"
-                                    Property="BorderBrush"
-                                    Value="#c4c4c4" >
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked"
+                                 Value="True">
+                            <Setter 
+                                    Property="Background"
+                                    Value="#ee7624">
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Button Style: Action -->
+    <Style x:Key="buttonStyleAction"
+           BasedOn="{StaticResource buttonStyle}"
+           TargetType="{x:Type Button}">
+        <Setter Property="Foreground" 
+                Value="#fff" />
+        <Setter Property="Background"
+                Value="#466673" />
+        <Setter Property="BorderBrush" 
+                Value="#c4c4c4"/>
+    </Style>
+
+    <!-- Button Style: Primary -->
+    <Style x:Key="buttonStylePrimary"
+           BasedOn="{StaticResource buttonStyle}"
+           TargetType="{x:Type Button}">
+        <Setter Property="Foreground" 
+                Value="#fff" />
+        <Setter Property="Background"
+                Value="#ee7624" />
+        <Setter Property="BorderBrush" 
+                Value="#c4c4c4"/>
+
+    </Style>
+
+    <!-- ToggleButton Style -->
+    <Style x:Key="toggleButtonStyle"
+           BasedOn="{StaticResource buttonStyle}"
+           TargetType="{x:Type ToggleButton}">
+        <Setter Property="Foreground" 
+                Value="#fff" />
+        <Setter Property="Background"
+                Value="#466673" />
+        <Setter Property="BorderBrush" 
+                Value="#c4c4c4"/>
+        <Setter Property="Width"
+                Value="Auto" />
+        <Setter Property="Height"
+                Value="50" />
     </Style>
 
     <!-- Button Style: Mini -->
     <Style x:Key="buttonStyleMini"
            BasedOn="{StaticResource buttonStyle}"
            TargetType="{x:Type Button}">
-        <Setter Property="Height"
-                Value="24" />
-        <Setter Property="FontSize"
-                Value="12" />
-    </Style>
-
-    <!-- Button Style: Primary -->
-    <Style x:Key="buttonStylePrimary"
-           TargetType="{x:Type Button}">
-        <Setter Property="Width"
-                Value="Auto" />
-        <Setter Property="Height"
-                Value="28" />
-        <Setter Property="Foreground"
-                Value="#fff" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border Name="buttonBorder"
-                            CornerRadius="4,4,4,4"
-                            BorderThickness="0"
-                            BorderBrush="#e76812"
-                            Padding="8,2,8,2"
-                            Background ="#ee7624"
-                            >
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center">
-                        </ContentPresenter>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver"
-                                 Value="True">
-                            <Setter Property="Cursor"
-                                    Value="Hand" />
-                            <Setter TargetName="buttonBorder"
-                                    Property="Background"
-                                    Value="#d86211">
-                            </Setter>
-                            <Setter TargetName="buttonBorder"
-                                    Property="BorderBrush"
-                                    Value="#ae4f0d">
-                            </Setter>
-                        </Trigger>
-                        <Trigger Property="IsPressed"
-                                 Value="True">
-                            <Setter TargetName="buttonBorder"
-                                    Property="Background"
-                                    Value="#ae4f0d">
-                            </Setter>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
+        
     </Style>
 
     <!-- Button Style: Primary Mini -->
@@ -587,49 +619,6 @@
                 Value="24" />
         <Setter Property="FontSize"
                 Value="12" />
-    </Style>
-
-    <!-- Button Style -->
-    <Style x:Key="toggleButtonStyle"
-           TargetType="{x:Type ToggleButton}">
-        <Setter Property="Width"
-                Value="Auto" />
-        <Setter Property="Height"
-                Value="50" />
-        <Setter Property="Foreground"
-                Value="#fff" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border Name="buttonBorder"
-                            CornerRadius="4,4,4,4"
-                            BorderThickness="0"
-                            BorderBrush="#354d56"
-                            Padding="8,2,8,2"
-                            Background ="#466673"
-                            >
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center">
-                        </ContentPresenter>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver"
-                                 Value="True">
-                            <Setter Property="Cursor"
-                                    Value="Hand" />
-                        </Trigger>
-                        <Trigger Property="IsChecked"
-                                 Value="True">
-                            <Setter TargetName="buttonBorder"
-                                    Property="Background"
-                                    Value="#ee7624">
-                            </Setter>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- 

@@ -140,9 +140,9 @@
                 Margin="8,8,8,8"
                 Click="btnPrev_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                        <Label Style="{StaticResource labelStyleIconLeft}"
                        Content="&#xf053;" />
-                        <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                        <Label Style="{StaticResource labelStyleButtonText}"
                        Content="Prev" />
                     </StackPanel>
                 </Button>
@@ -152,9 +152,9 @@
                 Margin="8,8,8,8"
                 Click="btnNext_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                        <Label Style="{StaticResource labelStyleButtonText}"
                        Content="Next" />
-                        <Label Style="{StaticResource labelStyleIcon}"
+                        <Label Style="{StaticResource labelStyleIconRight}"
                        Content="&#xf054;" />
                     </StackPanel>
                 </Button>
@@ -172,7 +172,7 @@
                     Grid.Column="0"
                     Margin="8"
                     x:Name="btnStartStop"
-                    Style="{StaticResource buttonStyle}"
+                    Style="{StaticResource buttonStyleAction}"
                     Content="Start/Stop/Scan Check"
                     HorizontalAlignment="Left"
                     Click="btnStartStop_Click" />
