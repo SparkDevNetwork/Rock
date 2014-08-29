@@ -37,7 +37,7 @@ namespace Rock.Client
         public int BinaryFileId { get; set; }
 
         /// <summary />
-        public int? TransactionImageTypeValueId { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
