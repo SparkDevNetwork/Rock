@@ -31,10 +31,10 @@ namespace Rock.Client
     public partial class FinancialTransactionDetail
     {
         /// <summary />
-        public int TransactionId { get; set; }
+        public int AccountId { get; set; }
 
         /// <summary />
-        public int AccountId { get; set; }
+        public int TransactionId { get; set; }
 
         /// <summary />
         public bool IsNonCash { get; set; }

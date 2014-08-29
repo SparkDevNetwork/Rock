@@ -46,6 +46,9 @@ namespace Rock.Client
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary />
+        public int? ActivatedByActivityId { get; set; }
+
+        /// <summary />
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary />

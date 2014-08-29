@@ -26,69 +26,30 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Site
+    /// Simple Client Model for EntitySetItem
     /// </summary>
-    public partial class Site
+    public partial class EntitySetItem
     {
         /// <summary />
-        public int? DefaultPageRouteId { get; set; }
+        public int EntitySetId { get; set; }
 
         /// <summary />
-        public int? LoginPageRouteId { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
-        public int? PageNotFoundPageRouteId { get; set; }
-
-        /// <summary />
-        public int? RegistrationPageRouteId { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public string Theme { get; set; }
-
-        /// <summary />
-        public int? DefaultPageId { get; set; }
-
-        /// <summary />
-        public int? LoginPageId { get; set; }
-
-        /// <summary />
-        public int? RegistrationPageId { get; set; }
-
-        /// <summary />
-        public int? PageNotFoundPageId { get; set; }
-
-        /// <summary />
-        public string ErrorPage { get; set; }
-
-        /// <summary />
-        public string GoogleAnalyticsCode { get; set; }
-
-        /// <summary />
-        public string FacebookAppId { get; set; }
-
-        /// <summary />
-        public string FacebookAppSecret { get; set; }
+        public int EntityId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }
