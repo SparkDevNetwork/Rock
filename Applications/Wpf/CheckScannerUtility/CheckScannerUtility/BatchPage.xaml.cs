@@ -124,12 +124,40 @@ namespace Rock.Apps.CheckScannerUtility
         public List<DefinedValue> CurrencyValueList { get; set; }
 
         /// <summary>
+        /// Gets the selected currency value.
+        /// </summary>
+        /// <value>
+        /// The selected currency value.
+        /// </value>
+        public DefinedValue SelectedCurrencyValue
+        {
+            get
+            {
+                return CurrencyValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().TenderTypeValueGuid.AsGuid() );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the source type value list.
         /// </summary>
         /// <value>
         /// The source type value list.
         /// </value>
         public List<DefinedValue> SourceTypeValueList { get; set; }
+
+        /// <summary>
+        /// Gets the selected source type value.
+        /// </summary>
+        /// <value>
+        /// The selected source type value.
+        /// </value>
+        public DefinedValue SelectedSourceTypeValue
+        {
+            get
+            {
+                return this.SourceTypeValueList.FirstOrDefault( a => a.Guid == RockConfig.Load().SourceTypeValueGuid.AsGuid() );
+            }
+        }
 
         #region Ranger (Canon CR50/80) Scanner Events
 
@@ -224,8 +252,38 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
-        
-        private RockRestClient persistedClient  {get; set;} 
+        /// <summary>
+        /// Gets or sets the persisted client.
+        /// </summary>
+        /// <value>
+        /// The persisted client.
+        /// </value>
+        private RockRestClient persistedClient { get; set; }
+
+        /// <summary>
+        /// Determines whether [is duplicate scan] [the specified scanned document].
+        /// </summary>
+        /// <param name="scannedDoc">The scanned document.</param>
+        /// <returns></returns>
+        private bool IsDuplicateScan( ScannedDocInfo scannedDoc )
+        {
+            if ( persistedClient == null )
+            {
+                var rockConfig = RockConfig.Load();
+                persistedClient = new RockRestClient( rockConfig.RockBaseUrl );
+                persistedClient.Login( rockConfig.Username, rockConfig.Password );
+            }
+
+            // first check if we have already scanned this doc during this session (we might not have uploaded it yet)
+            var alreadyScanned = ScannedDocList.Any( a => a.ScannedCheckMicr == scannedDoc.ScannedCheckMicr );
+
+            // if we didn't already scan it in this session, check the server
+            if ( !alreadyScanned )
+            {
+                alreadyScanned = persistedClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
+            }
+            return alreadyScanned;
+        }
 
         /// <summary>
         /// Rangers the scanner_ transport item in pocket.
@@ -234,21 +292,18 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
-            BitmapImage bitImageFront = GetDocImage( Sides.TransportFront );
-            BitmapImage bitImageBack = GetDocImage( Sides.TransportRear );
-
             RockConfig rockConfig = RockConfig.Load();
 
             ScannedDocInfo scannedDoc = new ScannedDocInfo();
-            var currencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Guid == rockConfig.TenderTypeValueGuid.AsGuid() );
-            scannedDoc.CurrencyTypeValue = currencyTypeValue;
+            scannedDoc.CurrencyTypeValue = this.SelectedCurrencyValue;
+            scannedDoc.SourceTypeValue = this.SelectedSourceTypeValue;
 
-            var sourceTypeValue = this.SourceTypeValueList.FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
-            scannedDoc.SourceTypeValue = sourceTypeValue;
-            scannedDoc.FrontImageData = ( bitImageFront.StreamSource as MemoryStream ).ToArray();
-            scannedDoc.BackImageData = ( bitImageBack.StreamSource as MemoryStream ).ToArray();
+            scannedDoc.FrontImageData = GetImageBytesFromRanger( Sides.TransportFront );
 
-            var item = rangerScanner.GetItemState();
+            if ( rockConfig.EnableRearImage )
+            {
+                scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
+            }
 
             if ( scannedDoc.IsCheck )
             {
@@ -265,32 +320,15 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
                 {
-                    ScanningPage.lblScanCheckWarningBadMicr.Visibility = Visibility.Visible;
                     scannedDoc.BadMicr = true;
                     rangerScanner.StopFeeding();
                 }
                 else
                 {
-                    ScanningPage.lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
-                    if ( persistedClient == null )
-                    {
-                        persistedClient = new RockRestClient( rockConfig.RockBaseUrl );
-                        persistedClient.Login( rockConfig.Username, rockConfig.Password );
-                    }
-
-                    // first check if we have already scanned this doc during this session (we might not have uploaded it yet)
-                    var alreadyScanned = ScannedDocList.Any( a => a.ScannedCheckMicr == scannedDoc.ScannedCheckMicr );
-
-                    // if we didn't already scan it in this session, check the server
-                    if ( !alreadyScanned )
-                    {
-                        alreadyScanned = persistedClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
-                    }
-
-                    if ( alreadyScanned )
+                    if ( IsDuplicateScan( scannedDoc ) )
                     {
                         scannedDoc.Duplicate = true;
-                        
+
                         rangerScanner.StopFeeding();
                         rangerScanner.ClearTrack();
                     }
@@ -328,13 +366,8 @@ namespace Rock.Apps.CheckScannerUtility
                 return;
             }
 
-            object dummy = null;
-
-            string imagePath = string.Empty;
-            string imageIndex = string.Empty;
-            string statusMsg = string.Empty;
-
             // from MagTek Sample Code
+            object dummy = null;
             string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
             string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
             string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
@@ -356,33 +389,19 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 scannedDoc = new ScannedDocInfo();
-
-                var currencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Guid == rockConfig.TenderTypeValueGuid.AsGuid() );
-                scannedDoc.CurrencyTypeValue = currencyTypeValue;
-
-                var sourceTypeValue = this.SourceTypeValueList.FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
-                scannedDoc.SourceTypeValue = sourceTypeValue;
+                scannedDoc.CurrencyTypeValue = this.SelectedCurrencyValue;
+                scannedDoc.SourceTypeValue = this.SelectedSourceTypeValue;
 
                 if ( scannedDoc.IsCheck )
                 {
-                    // from MagTek Sample Code
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
                 }
             }
 
-            imagePath = Path.GetTempPath();
-            string docImageFileName;
-            if ( scannedDoc.IsCheck )
-            {
-                docImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedDoc.RoutingNumber, scannedDoc.AccountNumber, scannedDoc.CheckNumber ).Replace( '?', 'X' ) );
-            }
-            else
-            {
-                docImageFileName = Path.Combine( imagePath, string.Format( "scanned_item_{0}.tif", Guid.NewGuid() ) );
-            }
-
+            string imagePath = Path.GetTempPath();
+            string docImageFileName = Path.Combine( imagePath, string.Format( "scanned_item_{0}.tif", Guid.NewGuid() ) );
             if ( File.Exists( docImageFileName ) )
             {
                 File.Delete( docImageFileName );
@@ -390,6 +409,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             try
             {
+                string statusMsg = string.Empty;
                 micrImage.TransmitCurrentImage( docImageFileName, ref statusMsg );
                 if ( !File.Exists( docImageFileName ) )
                 {
@@ -406,17 +426,20 @@ namespace Rock.Apps.CheckScannerUtility
                         scannedDoc.FrontImageData = File.ReadAllBytes( docImageFileName );
                     }
 
-                    
-
-                    // TODO Check for Duplicate
-                    
-                    if ( scannedDoc.IsCheck && (scannedDoc.RoutingNumber.Length != 9 || string.IsNullOrWhiteSpace(scannedDoc.AccountNumber)))
+                    if ( scannedDoc.IsCheck && ( scannedDoc.RoutingNumber.Length != 9 || string.IsNullOrWhiteSpace( scannedDoc.AccountNumber ) ) )
                     {
                         scannedDoc.BadMicr = true;
                     }
                     else
                     {
-                        ScannedDocList.Enqueue( scannedDoc );
+                        if ( IsDuplicateScan( scannedDoc ) )
+                        {
+                            scannedDoc.Duplicate = true;
+                        }
+                        else
+                        {
+                            ScannedDocList.Enqueue( scannedDoc );
+                        }
                     }
 
                     ScanningPage.ShowScannedDocStatus( scannedDoc );
@@ -439,27 +462,28 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="side">The side.</param>
         /// <returns></returns>
-        private BitmapImage GetDocImage( Sides side )
+        private byte[] GetImageBytesFromRanger( Sides side )
         {
             ImageColorType colorType = RockConfig.Load().ImageColorType;
 
             int imageByteCount;
             imageByteCount = rangerScanner.GetImageByteCount( (int)side, (int)colorType );
-            byte[] imageBytes = new byte[imageByteCount];
+            if ( imageByteCount > 0 )
+            {
+                byte[] imageBytes = new byte[imageByteCount];
 
-            // create the pointer and assign the Ranger image address to it
-            IntPtr imgAddress = new IntPtr( rangerScanner.GetImageAddress( (int)side, (int)colorType ) );
+                // create the pointer and assign the Ranger image address to it
+                IntPtr imgAddress = new IntPtr( rangerScanner.GetImageAddress( (int)side, (int)colorType ) );
 
-            // Copy the bytes from unmanaged memory to managed memory
-            Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
+                // Copy the bytes from unmanaged memory to managed memory
+                Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
 
-            BitmapImage bitImage = new BitmapImage();
-
-            bitImage.BeginInit();
-            bitImage.StreamSource = new MemoryStream( imageBytes );
-            bitImage.EndInit();
-
-            return bitImage;
+                return imageBytes;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -753,21 +777,26 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="connected">if set to <c>true</c> [connected].</param>
         private void UpdateScannerStatusForMagtek( bool connected )
         {
+            string status;   
+            Color statusColor;
+            
             if ( connected )
             {
-                shapeStatus.Fill = new SolidColorBrush( Colors.LimeGreen );
-                shapeStatus.ToolTip = "Connected";
+                statusColor = Colors.LimeGreen;
+                status = "Connected";
                 btnScan.Visibility = Visibility.Visible;
             }
             else
             {
-                shapeStatus.Fill = new SolidColorBrush( Colors.Red );
-                shapeStatus.ToolTip = "Disconnected";
+                statusColor = Colors.Red;
+                status = "Disconnected";
                 btnScan.Visibility = Visibility.Hidden;
             }
 
-            ScanningPage.shapeStatus.ToolTip = this.shapeStatus.ToolTip;
-            ScanningPage.shapeStatus.Fill = this.shapeStatus.Fill;
+            this.shapeStatus.ToolTip = status;
+            this.shapeStatus.Fill = new SolidColorBrush( statusColor );
+
+            ScanningPage.ShowScannerStatus( connected ? XportStates.TransportReadyToFeed : XportStates.TransportShutDown, statusColor, status );
         }
 
         /// <summary>
@@ -1081,14 +1110,14 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             // include CheckNumber for checks that we scanned in this session
-            var scannedCheckList = ScannedDocList.Where(a => a.IsCheck).ToList();
+            var scannedCheckList = ScannedDocList.Where( a => a.IsCheck ).ToList();
             var gridList = transactions.OrderByDescending( a => a.CreatedDateTime ).Select( a => new
             {
                 FinancialTransaction = a,
-                CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() 
+                CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()
                     ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ) != null ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ).CheckNumber : "****"
                     : "-"
-            }  );
+            } );
 
             grdBatchItems.DataContext = gridList;
         }
@@ -1124,7 +1153,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             try
             {
-                FinancialTransaction financialTransaction = grdBatchItems.SelectedValue.GetPropertyValue("FinancialTransaction") as FinancialTransaction;
+                FinancialTransaction financialTransaction = grdBatchItems.SelectedValue.GetPropertyValue( "FinancialTransaction" ) as FinancialTransaction;
 
                 if ( financialTransaction != null )
                 {

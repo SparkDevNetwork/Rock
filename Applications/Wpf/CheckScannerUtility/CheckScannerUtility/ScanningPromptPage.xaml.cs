@@ -135,6 +135,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             chkDoubleDocDetection.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             radDoubleSided.IsChecked = rockConfig.EnableRearImage;
+            radSingleSided.IsChecked = !rockConfig.EnableRearImage;
             chkPromptToScanRearImage.IsChecked = rockConfig.PromptToScanRearImage;
             if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi)
             {

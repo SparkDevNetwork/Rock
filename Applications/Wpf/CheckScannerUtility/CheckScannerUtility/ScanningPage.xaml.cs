@@ -155,6 +155,11 @@ namespace Rock.Apps.CheckScannerUtility
                     lblScanInstructions.Visibility = Visibility.Visible;
                 }
             }
+
+            if ( scanningChecks && ScannedDocInfoHistory.Any( a => a.BadMicr || a.Duplicate ) )
+            {
+                lblScanInstructions.Content = "WARNING: One or more check scans have issues. Review the scanned checks before continuing. You might need to rescan some checks.";
+            }
         }
 
         /// <summary>
@@ -324,7 +329,7 @@ namespace Rock.Apps.CheckScannerUtility
                     bool scanningChecks = RockConfig.Load().TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                     if ( scanningChecks && ScannedDocInfoHistory.Any( a => a.BadMicr || a.Duplicate ) )
                     {
-                        lblScanInstructions.Content = "WARNING: One or more check scans have issues. Review the scanned checks before continuing. You might need to rescan some checks.";
+                        // leave the scan instructions as they are
                     }
                     else
                     {
