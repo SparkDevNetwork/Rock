@@ -166,7 +166,7 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnComplete" runat="server" Text="Complete" CssClass="btn btn-primary" OnClick="btnComplete_Click" />
+                        <asp:LinkButton ID="btnComplete" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnComplete_Click" />
                     </div>
 
                 </asp:Panel>
