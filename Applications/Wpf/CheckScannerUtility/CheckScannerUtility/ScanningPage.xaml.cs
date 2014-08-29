@@ -238,8 +238,26 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnDone_Click( object sender, RoutedEventArgs e )
+        private void btnSave_Click( object sender, RoutedEventArgs e )
         {
+            this.NavigationService.Navigate( batchPage );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnCancel_Click( object sender, RoutedEventArgs e )
+        {
+            // cancelled the scanned checks, so rebuild the batchPage.ScannedDocList to only include the ones that have already been uploaded
+            var uploadedScans = batchPage.ScannedDocList.Where( a => a.Uploaded ).ToList();
+            batchPage.ScannedDocList = new System.Collections.Concurrent.ConcurrentQueue<ScannedDocInfo>();
+            foreach ( var scannedDoc in uploadedScans )
+            {
+                batchPage.ScannedDocList.Enqueue( scannedDoc );
+            }
+
             this.NavigationService.Navigate( batchPage );
         }
 
@@ -353,7 +371,8 @@ namespace Rock.Apps.CheckScannerUtility
                     lblScanInstructions.Content = "INFO: Waiting for scan output...";
                     lblScanInstructions.Visibility = Visibility.Visible;
                     btnStartStop.Content = ScanButtonText.Stop;
-                    btnDone.Visibility = Visibility.Hidden;
+                    btnSave.Visibility = Visibility.Hidden;
+                    btnCancel.Visibility = Visibility.Hidden;
                     break;
             }
 

@@ -170,7 +170,9 @@ namespace Rock.Apps.CheckScannerUtility
         {
             mnuConnect.IsEnabled = false;
             btnScan.Visibility = Visibility.Hidden;
-            ScanningPage.btnDone.Visibility = Visibility.Visible;
+            ScanningPage.btnSave.Visibility = Visibility.Visible;
+            ScanningPage.btnCancel.Visibility = Visibility.Visible;
+
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
 
