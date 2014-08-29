@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:PanelWidget runat=server></{0}:PanelWidget>" )]
-    public class PanelWidget : PlaceHolder
+    public class PanelWidget : PlaceHolder, INamingContainer
     {
         #region Properties
 
@@ -214,22 +214,21 @@ $('.js-stop-immediate-propagation').click(function (event) {
             base.CreateChildControls();
 
             _hfExpanded = new HiddenField();
+            _hfExpanded.ID = "_hfExpanded";
             Controls.Add( _hfExpanded );
-            _hfExpanded.ID = this.ID + "_hfExpanded";
             _hfExpanded.Value = "False";
 
             _hfTitle = new HiddenField();
-            _hfTitle.ID = this.ID + "_hfTitle";
+            _hfTitle.ID = "_hfTitle";
             Controls.Add( _hfTitle );
 
             _lbDelete = new LinkButton();
+            _lbDelete.ID = "_lbDelete";
+            Controls.Add( _lbDelete );
             _lbDelete.CausesValidation = false;
-            _lbDelete.ID = this.ID + "_lbDelete";
             _lbDelete.CssClass = "btn btn-xs btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa fa-times'></i>" } );
-
-            Controls.Add( _lbDelete );
         }
 
         /// <summary>

@@ -15,7 +15,7 @@
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <asp:HiddenField ID="hfSelectedItems" runat="server" />
+                    <asp:HiddenField ID="hfSelectedItems" runat="server"  />
 
                     <div class="panel panel-widget individuals">
                         <div class="panel-heading clearfix">
@@ -55,44 +55,42 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlTitle" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Title " />
-                                <Rock:RockDropDownList ID="ddlStatus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Connection Status" />
-                                <Rock:RockDropDownList ID="ddlGender" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Gender">
-                                    <asp:ListItem Text="" Value="" />
+                                <Rock:RockDropDownList ID="ddlTitle" runat="server" />
+                                <Rock:RockDropDownList ID="ddlStatus" runat="server" />
+                                <Rock:RockDropDownList ID="ddlGender" runat="server" >
                                     <asp:ListItem Text="Male" Value="Male" />
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Marital Status" />
+                                <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
                                 <div class="row">
                                     <div class="col-xs-5">
-                                        <Rock:RockDropDownList ID="ddlGrade" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Grade" />
+                                        <Rock:RockDropDownList ID="ddlGrade" runat="server" />
                                     </div>
                                     <div class="col-xs-7">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
                                     </div>
                                 </div>
-                                <Rock:CampusPicker ID="cpCampus" runat="server" Enabled="false" Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Label" />
+                                <Rock:CampusPicker ID="cpCampus" runat="server" />
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlSuffix" runat="server" Label="Suffix" />
-                                <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
-                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Label="Inactive Reason" Visible="false"></Rock:RockDropDownList>
-                                <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false"></Rock:RockTextBox>
+                                <Rock:RockDropDownList ID="ddlSuffix" runat="server" />
+                                <Rock:RockDropDownList ID="ddlRecordStatus" runat="server"  
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Visible="false" Label="Inactive Reason"></Rock:RockDropDownList>
+                                <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" TextMode="MultiLine" Rows="2" Visible="false" Label="Inactive Reason Note"></Rock:RockTextBox>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlIsEmailActive" runat="server" Label="Email Status">
-                                    <asp:ListItem Text="" Value="" />
+                                <Rock:RockDropDownList ID="ddlIsEmailActive" runat="server" >
                                     <asp:ListItem Text="Active" Value="Active" />
                                     <asp:ListItem Text="Inactive" Value="Inactive" />
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlEmailPreference" runat="server" Label="Email Preference">
-                                    <asp:ListItem Text="" Value="" />
+                                <Rock:RockDropDownList ID="ddlEmailPreference" runat="server" >
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
                                     <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
@@ -102,22 +100,23 @@
 
                         <div class="row">
                             <div class="col-sm-12">
-                                <Rock:RockTextBox ID="tbEmailNote" runat="server" Label="Email Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="tbEmailNote" runat="server" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlFollow" runat="server" Label="Follow">
-                                    <asp:ListItem Text="" Value="" />
+                                <Rock:RockDropDownList ID="ddlFollow" runat="server" >
                                     <asp:ListItem Text="Add to Following" Value="Add" />
                                     <asp:ListItem Text="Remove Following" Value="Remove" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockTextBox ID="tbSystemNote" runat="server" Label="System Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="tbSystemNote" runat="server" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlReviewReason" runat="server" Label="Review Reason" />
-                                <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Label="Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
+                                <Rock:RockDropDownList ID="ddlReviewReason" runat="server" Enabled="false" 
+                                    Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason" />
+                                <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false" 
+                                    Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                         </div>
 
@@ -147,11 +146,11 @@
                     <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:ButtonDropDownList ID="bddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectionChanged="bddlGroupAction_SelectionChanged">
+                                <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectionChanged="ddlGroupAction_SelectionChanged">
                                     <asp:ListItem Value="Add" Text="Add To Group" />
                                     <asp:ListItem Value="Remove" Text="Remove From Group" />
                                     <asp:ListItem Value="Update" Text="Update In Group" />
-                                </Rock:ButtonDropDownList>
+                                </Rock:RockDropDownList>
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
                             </div>
                             <div class="col-sm-6">
@@ -172,6 +171,16 @@
 
                 </asp:Panel>
 
+                <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
+
+                    <asp:PlaceHolder id="phConfirmation" runat="server" />
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-link" OnClick="btnBack_Click" />
+                        <asp:LinkButton ID="btnConfirm" runat="server" Text="Confirm" CssClass="btn btn-primary" OnClick="btnConfirm_Click" />
+                    </div>
+
+                </asp:Panel>
                 <asp:Panel ID="pnlResult" runat="server" Visible="false">
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                 </asp:Panel>

@@ -331,9 +331,12 @@ namespace Rock.Web.Cache
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
+        /// <param name="label">The label (defaults to attribute name).</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = "" )
         {
+            labelText = string.IsNullOrWhiteSpace( labelText ) ? this.Name : labelText;
+
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( attributeControl != null )
             {
@@ -348,14 +351,14 @@ namespace Rock.Web.Cache
                 {
                     controls.Add( attributeControl );
 
-                    rockControl.Label = this.Name;
+                    rockControl.Label = labelText;
                     rockControl.Help = this.Description;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
                 }
                 else
                 {
-                    bool renderLabel = ( !string.IsNullOrEmpty( Name ) );
+                    bool renderLabel = ( !string.IsNullOrEmpty( labelText ) );
                     bool renderHelp = ( !string.IsNullOrWhiteSpace( Description ) );
 
                     if ( renderLabel || renderHelp )
@@ -376,7 +379,7 @@ namespace Rock.Web.Cache
                             Label label = new Label();
                             div.Controls.Add( label );
                             label.ClientIDMode = ClientIDMode.AutoID;
-                            label.Text = this.Name;
+                            label.Text = labelText;
                             label.CssClass = "control-label";
                             label.AssociatedControlID = attributeControl.ID;
                         }
