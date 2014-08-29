@@ -176,14 +176,22 @@
                     Content="Start/Stop/Scan Check"
                     HorizontalAlignment="Left"
                     Click="btnStartStop_Click" />
-            <Button Grid.Row="2"
-                    Grid.Column="1"
-                    Margin="8"
-                    x:Name="btnDone"
-                    Style="{StaticResource buttonStyle}"
-                    Content="Done"
-                    HorizontalAlignment="Right"
-                    Click="btnDone_Click" />
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" FlowDirection="RightToLeft">
+                <Button Style="{StaticResource buttonStyle}"
+                                    x:Name="btnCancel"
+                                    Margin="4,4,0,0"
+                                    Content="Cancel"
+                                    HorizontalAlignment="Left"
+                                    Click="btnCancel_Click" />
+                <Button Style="{StaticResource buttonStylePrimary}"
+                                    x:Name="btnSave"
+                                    Margin="4,4,0,0"
+                                    Content="Save"
+                                    HorizontalAlignment="Left"
+                                    Click="btnSave_Click" />
+                
+            </StackPanel>
+            
         </Grid>
     </Grid>
 </Page>
