@@ -452,6 +452,14 @@
         <Setter Property="HorizontalAlignment"
                 Value="Right" />
     </Style>
+    <Style x:Key="gridCellStyleDateTime"
+           TargetType="{x:Type DataGridCell}"
+           BasedOn="{StaticResource gridCellStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+        <Setter Property="ContentStringFormat"
+                Value="g" />
+    </Style>
 
     <!-- 
         Button styles 
@@ -664,6 +672,13 @@
     <Style x:Key="textboxStyle"
            TargetType="{x:Type Control}"
            BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+    </Style>
+
+    <Style x:Key="textboxStyleError"
+           BasedOn="{StaticResource ResourceKey=textboxStyle}"
+           TargetType="{x:Type Control}">
+        <Setter Property="BorderBrush"
+                Value="Red" />
     </Style>
 
     <!-- Textbox Style: url -->

@@ -92,12 +92,6 @@ namespace Rock.Model
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
  
-            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );

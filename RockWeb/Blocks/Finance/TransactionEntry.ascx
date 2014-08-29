@@ -23,7 +23,7 @@
 
                                     <asp:Repeater ID="rptAccountList" runat="server">
                                         <ItemTemplate>
-                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
+                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
                                         </ItemTemplate>
                                     </asp:Repeater>
                                     <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
@@ -36,7 +36,7 @@
 
                                     <div id="divRepeatingPayments" runat="server" visible="false">
                                         <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency"
-                                            DataTextField="Name" DataValueField="Id" />
+                                            DataTextField="Value" DataValueField="Id" />
                                         <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Payment" />
                                     </div>
 

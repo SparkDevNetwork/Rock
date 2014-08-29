@@ -75,7 +75,7 @@
                                             <%# Eval("LocationTypeName") %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Name" DataValueField="Id" />
+                                            <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Value" DataValueField="Id" />
                                         </EditItemTemplate>
                                     </asp:TemplateField>
                                     <asp:TemplateField HeaderText="Address">

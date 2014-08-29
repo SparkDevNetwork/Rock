@@ -97,17 +97,17 @@ namespace Rock.Workflow.Action
                         }
                         else
                         {
-                            action.AddLogEntry( "Could not find the selected notifiction system email!" );
+                            action.AddLogEntry( "Could not find the selected notifiction system email!", true );
                         }
                     }
                     else
                     {
-                        action.AddLogEntry( "Could not send form notifiction due to no assigned person or group member not having email address!" );
+                        action.AddLogEntry( "Could not send form notifiction due to no assigned person or group member not having email address!", true );
                     }
                 }
                 else
                 {
-                    action.AddLogEntry( "Could not send form notifiction due to no assigned person or group!" );
+                    action.AddLogEntry( "Could not send form notifiction due to no assigned person or group!", true );
                 }
             }
 

@@ -82,6 +82,15 @@ namespace Rock.Model
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the activated by activity identifier.
+        /// </summary>
+        /// <value>
+        /// The activated by activity identifier.
+        /// </value>
+        [DataMember]
+        public int? ActivatedByActivityId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was last processed.
         /// </summary>
         /// <value>
@@ -153,6 +162,14 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the activated by activity.
+        /// </summary>
+        /// <value>
+        /// The activated by activity.
+        /// </value>
+        public virtual WorkflowActivity ActivatedByActivity { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> that are run by this WorkflowActivity.
         /// </summary>
         /// <value>
@@ -213,7 +230,7 @@ namespace Rock.Model
         /// </returns>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddLogEntry( "Processing..." );
 
             errorMessages = new List<string>();
 
@@ -236,7 +253,7 @@ namespace Rock.Model
                 }
 
                 // If action completed this workflow, exit
-                if ( !this.Workflow.IsActive )
+                if ( this.Workflow == null || !this.Workflow.IsActive )
                 {
                     break;
                 }
@@ -244,7 +261,7 @@ namespace Rock.Model
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
-            AddSystemLogEntry( "Processing Complete" );
+            AddLogEntry( "Processing Complete" );
 
             if (!this.ActiveActions.Any())
             {
@@ -255,15 +272,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the body of the log entry.</param>
-        public virtual void AddLogEntry( string logEntry )
+        /// <param name="logEntry">A <see cref="System.String" /> representing the body of the log entry.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logEntry, bool force = false )
         {
-            if ( this.Workflow != null )
+            if ( this.Workflow != null &&
+                ( force || (
+                this.Workflow.WorkflowType != null && (
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) ) )
             {
                 string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
-                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ) );
+                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
             }
         }
 
@@ -273,7 +295,7 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
-            AddSystemLogEntry( "Completed" );
+            AddLogEntry( "Completed" );
         }
 
         /// <summary>
@@ -313,25 +335,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
-
-        /// <summary>
-        /// Logs a system event to the <see cref="Rock.Model.WorkflowLog"/>
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the log entry.</param>
-        private void AddSystemLogEntry( string logEntry )
-        {
-            if ( this.Workflow != null &&
-                this.Workflow.WorkflowType != null &&
-                ( this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
-            {
-                AddLogEntry( logEntry );
-            }
-        }
-
-        #endregion
-
         #region Static Methods
 
         /// <summary>
@@ -348,7 +351,7 @@ namespace Rock.Model
             activity.ActivatedDateTime = RockDateTime.Now;
             activity.LoadAttributes();
 
-            activity.AddSystemLogEntry( "Activated" );
+            activity.AddLogEntry( "Activated" );
 
             foreach ( var actionType in activityType.ActionTypes )
             {
@@ -380,6 +383,7 @@ namespace Rock.Model
             this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );
         }
     }
 

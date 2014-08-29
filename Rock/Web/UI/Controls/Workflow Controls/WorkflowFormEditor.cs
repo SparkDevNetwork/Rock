@@ -155,7 +155,7 @@ namespace Rock.Web.UI.Controls
                 _cbIncludeActions.Checked = true;
                 _ceHeaderText.Text = string.Empty;
                 _ceFooterText.Text = string.Empty;
-                _falActions.Value = "Submit^^^Your information has been submitted succesfully.";
+                _falActions.Value = "Submit^^^Your information has been submitted successfully.";
                 _ddlNotificationSystemEmail.SelectedIndex = 0;
             }
         }
@@ -242,7 +242,7 @@ namespace Rock.Web.UI.Controls
 
             _ceHeaderText = new CodeEditor();
             _ceHeaderText.Label = "Form Header";
-            _ceHeaderText.Help = "Text to display to user above the form fields.";
+            _ceHeaderText.Help = "Text to display to user above the form fields. <span class='tip tip-liquid'></span> <span class='tip tip-html'>";
             _ceHeaderText.ID = this.ID + "_tbHeaderText";
             _ceHeaderText.EditorMode = CodeEditorMode.Html;
             _ceHeaderText.EditorTheme = CodeEditorTheme.Rock;
@@ -251,7 +251,7 @@ namespace Rock.Web.UI.Controls
 
             _ceFooterText = new CodeEditor();
             _ceFooterText.Label = "Form Footer";
-            _ceFooterText.Help = "Text to display to user below the form fields.";
+            _ceFooterText.Help = "Text to display to user below the form fields. <span class='tip tip-liquid'></span> <span class='tip tip-html'>";
             _ceFooterText.ID = this.ID + "_tbFooterText";
             _ceFooterText.EditorMode = CodeEditorMode.Html;
             _ceFooterText.EditorTheme = CodeEditorTheme.Rock;
@@ -264,8 +264,8 @@ namespace Rock.Web.UI.Controls
 
             _ddlActionAttribute = new RockDropDownList();
             _ddlActionAttribute.ID = this.ID + "_ddlActionAttribute";
-            _ddlActionAttribute.Label = "Action Selected Attribute";
-            _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected action.";
+            _ddlActionAttribute.Label = "Command Selected Attribute";
+            _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected command label.";
             Controls.Add( _ddlActionAttribute );
 
         }

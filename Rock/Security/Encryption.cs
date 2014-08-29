@@ -231,5 +231,43 @@ namespace Rock.Security
 
             return buffer;
         }
+
+        /// <summary>
+        /// Gets the SHA1 hash.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
+        public static string GetSHA1Hash(string plainText)
+        {
+            string passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
+            if ( String.IsNullOrWhiteSpace( passwordKey ) )
+            {
+                throw new ConfigurationErrorsException( "Account encoding requires a 'PasswordKey' app setting" );
+            }
+
+            byte[] encryptionKey = HexToByte( passwordKey );
+
+            HMACSHA1 hash = new HMACSHA1();
+            hash.Key = encryptionKey;
+
+            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( plainText ) ) );
+        }
+
+        /// <summary>
+        /// converts a hexadecimal string to byte.
+        /// </summary>
+        /// <param name="hexString">The hexadecimal string.</param>
+        /// <returns></returns>
+        private static byte[] HexToByte( string hexString )
+        {
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for ( int i = 0; i < returnBytes.Length; i++ )
+            {
+                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
+            }
+
+            return returnBytes;
+        }
     }
 }

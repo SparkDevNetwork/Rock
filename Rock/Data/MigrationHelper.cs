@@ -797,6 +797,8 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <exception cref="System.Exception">Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!</exception>
         public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid, bool isRequired = false )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -1944,7 +1946,7 @@ INSERT INTO [dbo].[Auth]
         /// <param name="description">The description.</param>
         /// <param name="groupTerm">The group term.</param>
         /// <param name="groupMemberTerm">The group member term.</param>
-        /// <param name="defaultGroupRoleGuid">The default group role unique identifier.</param>
+        /// <param name="defaultGroupRoleGuid">The guid for default group role. If you don't have a role yet, use 'null' and then use the <see cref="MigrationHelper.UpdateGroupTypeRole"/> method later when creating the new role.</param>
         /// <param name="allowMultipleLocations">if set to <c>true</c> [allow multiple locations].</param>
         /// <param name="showInGroupList">if set to <c>true</c> [show in group list].</param>
         /// <param name="showInNavigation">if set to <c>true</c> [show in navigation].</param>

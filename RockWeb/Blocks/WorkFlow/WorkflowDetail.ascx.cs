@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
@@ -46,6 +47,7 @@ namespace RockWeb.Blocks.WorkFlow
         private bool _canEdit = false;
 
         #endregion
+
         #region Properties
 
         private Rock.Model.Workflow Workflow { get; set; }
@@ -102,8 +104,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 ExpandedActivities = new List<Guid>();
             }
-
-            BuildControls( false );
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.WorkFlow
             gLog.IsDeleteEnabled = false;
             gLog.GridRebind += gLog_GridRebind;
 
-            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            rptrActivities.ItemDataBound += rptrActivities_ItemDataBound;
         }
 
         /// <summary>
@@ -132,9 +132,22 @@ namespace RockWeb.Blocks.WorkFlow
 
             nbNotAuthorized.Visible = false;
 
+            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT ) ;
+            if ( !_canEdit && Workflow != null )
+            {
+                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            }
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail();
+                ShowDetail( PageParameter( "workflowId" ).AsInteger() );
+            }
+            else
+            {
+                if (pnlEditDetails.Visible)
+                {
+                    BuildControls( false );
+                }
             }
         }
 
@@ -184,6 +197,18 @@ namespace RockWeb.Blocks.WorkFlow
         #region Events
 
         #region Edit / Save / Cancel events
+
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            ShowEditDetails();
+        }
+
+        protected void btnViewCancel_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams["WorkflowTypeId"] = Workflow.WorkflowTypeId.ToString();
+            NavigateToParentPage( qryParams );
+        }
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -379,11 +404,12 @@ namespace RockWeb.Blocks.WorkFlow
                     var errorMessages = new List<string>();
                     service.Process( dbWorkflow, out errorMessages );
 
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["workflowTypeId"] = dbWorkflow.WorkflowTypeId.ToString();
-                    NavigateToParentPage( qryParams );
                 }
+
+                Workflow = service.Get( Workflow.Id );
             }
+
+            ShowReadonlyDetails();
         }
 
         /// <summary>
@@ -393,12 +419,113 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams["WorkflowTypeId"] = Workflow.WorkflowTypeId.ToString();
-            NavigateToParentPage( qryParams );
+            ShowReadonlyDetails();
         }
 
         #endregion
+
+        void rptrActivities_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            var activity = e.Item.DataItem as WorkflowActivity;
+            if (activity != null)
+            {
+                var lblComplete = e.Item.FindControl( "lblComplete" ) as Label;
+                if ( lblComplete != null )
+                {
+                    lblComplete.Visible = activity.CompletedDateTime.HasValue;
+                }
+
+                var lblActive = e.Item.FindControl( "lblActive" ) as Label;
+                if ( lblActive != null )
+                {
+                    lblActive.Visible = !activity.CompletedDateTime.HasValue;
+                }
+
+                var tdAssignedToPerson = e.Item.FindControl( "tdAssignedToPerson" ) as TermDescription;
+                if ( tdAssignedToPerson != null && activity.AssignedPersonAlias != null && activity.AssignedPersonAlias.Person != null )
+                {
+                    var person = activity.AssignedPersonAlias.Person;
+                    tdAssignedToPerson.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                }
+
+                var tdAssignedToGroup = e.Item.FindControl( "tdAssignedToGroup" ) as TermDescription;
+                if ( tdAssignedToGroup != null && activity.AssignedGroup != null )
+                {
+                    tdAssignedToGroup.Description = activity.AssignedGroup.Name;
+                }
+
+                var tdActivated = e.Item.FindControl( "tdActivated" ) as TermDescription;
+                if (tdActivated != null && activity.ActivatedDateTime.HasValue )
+                {
+                    tdActivated.Description = string.Format( "{0} {1} ({2})",
+                        activity.ActivatedDateTime.Value.ToShortDateString(),
+                        activity.ActivatedDateTime.Value.ToShortTimeString(),
+                        activity.ActivatedDateTime.Value.ToRelativeDateString() );
+                }
+
+                var tdCompleted = e.Item.FindControl("tdCompleted") as TermDescription;
+                if (tdCompleted != null && activity.CompletedDateTime.HasValue )
+                {
+                    tdCompleted.Description = string.Format( "{0} {1} ({2})",
+                        activity.CompletedDateTime.Value.ToShortDateString(),
+                        activity.CompletedDateTime.Value.ToShortTimeString(),
+                        activity.CompletedDateTime.Value.ToRelativeDateString() );
+                }
+
+                var phActivityAttributes = e.Item.FindControl("phActivityAttributes") as PlaceHolder;
+                if (phActivityAttributes != null )
+                {
+                    foreach ( var attribute in activity.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
+                    {
+                        var td = new TermDescription();
+                        phActivityAttributes.Controls.Add( td );
+                        td.Term = attribute.Name;
+
+                        string value = activity.GetAttributeValue( attribute.Key );
+
+                        var field = attribute.FieldType.Field;
+                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+
+                        if ( field is Rock.Field.ILinkableFieldType )
+                        {
+                            var linkableField = field as Rock.Field.ILinkableFieldType;
+                            td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                                ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
+                        }
+                        else
+                        {
+                            td.Description = formattedValue;
+                        }
+                        phActivityAttributes.Controls.Add( td );
+                    }
+                }
+
+                var gridActions = e.Item.FindControl("gridActions") as Grid;
+                if ( gridActions != null )
+                {
+                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionType.Order )
+                        .Select( a => new
+                        {
+                            Name = a.ActionType.Name,
+                            LastProcessed = a.LastProcessedDateTime.HasValue ?
+                                string.Format( "{0} {1} ({2})",
+                                    a.LastProcessedDateTime.Value.ToShortDateString(),
+                                    a.LastProcessedDateTime.Value.ToShortTimeString(),
+                                    a.LastProcessedDateTime.Value.ToRelativeDateString() ) :
+                                "",
+                            Completed = a.CompletedDateTime.HasValue,
+                            CompletedWhen = a.CompletedDateTime.HasValue ?
+                                string.Format( "{0} {1} ({2})",
+                                    a.CompletedDateTime.Value.ToShortDateString(),
+                                    a.CompletedDateTime.Value.ToShortTimeString(),
+                                    a.CompletedDateTime.Value.ToRelativeDateString() ) :
+                                ""
+                        } )
+                        .ToList();
+                    gridActions.DataBind();
+                }
+            }
+        }
 
         #region Activity/Action Events
 
@@ -481,18 +608,14 @@ namespace RockWeb.Blocks.WorkFlow
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        private void ShowDetail()
+        private void ShowDetail( int workflowId )
         {
             var rockContext = new RockContext();
 
-            int? workflowId = PageParameter( "workflowId" ).AsIntegerOrNull();
-            if ( workflowId.HasValue )
-            { 
-                Workflow = new WorkflowService( rockContext )
+            Workflow = new WorkflowService( rockContext )
                     .Queryable( "WorkflowType, Activities")
-                    .Where( w => w.Id == workflowId.Value )
+                    .Where( w => w.Id == workflowId )
                     .FirstOrDefault();
-            }
 
             if ( Workflow == null )
             {
@@ -500,53 +623,152 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
+            Workflow.LoadAttributes( rockContext );
+            foreach ( var activity in Workflow.Activities )
+            {
+                activity.LoadAttributes();
+            }
+
+            lReadOnlyTitle.Text = Workflow.Name.FormatAsHtmlTitle();
+            if ( Workflow.CompletedDateTime.HasValue )
+            {
+                hlState.LabelType = LabelType.Default;
+                hlState.Text = "Complete";
+            }
+            else
+            {
+                hlState.LabelType = LabelType.Success;
+                hlState.Text = "Active";
+            }
+            hlType.Text = Workflow.WorkflowType.Name;
+
+            ShowReadonlyDetails();
+        }
+
+        private void ShowReadonlyDetails()
+        {
+            pnlViewDetails.Visible = true;
+            pnlEditDetails.Visible = false;
+
             if ( IsUserAuthorized( Authorization.VIEW ) && Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                pnlDetails.Visible = true;
+                tdName.Description = Workflow.Name;
+                tdStatus.Description = Workflow.Status;
 
-                tbName.Visible = _canEdit;
-                ppInitiator.Visible = _canEdit;
-                tbStatus.Visible = _canEdit;
-
-                lName.Visible = !_canEdit;
-                lInitiator.Visible = !_canEdit;
-                lStatus.Visible = !_canEdit;
-
-                cbIsCompleted.Enabled = _canEdit;
-
-                ddlActivateNewActivity.Visible = _canEdit;
-
-                btnSave.Visible = _canEdit;
-                btnCancel.Visible = _canEdit;
-
-                if ( _canEdit )
+                if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                 {
-                    ddlActivateNewActivity.Items.Clear();
-                    ddlActivateNewActivity.Items.Add( new ListItem( "Activate New Activity", "0" ) );
-                    foreach ( var activityType in Workflow.WorkflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                    var person = Workflow.InitiatorPersonAlias.Person;
+                    tdInitiator.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName);
+                }
+                else
+                {
+                    tdInitiator.Description = string.Empty;
+                }
+
+                if ( Workflow.ActivatedDateTime.HasValue )
+                {
+                    tdActivatedWhen.Description = string.Format( "{0} {1} ({2})",
+                        Workflow.ActivatedDateTime.Value.ToShortDateString(),
+                        Workflow.ActivatedDateTime.Value.ToShortTimeString(),
+                        Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
+                }
+                if ( Workflow.CompletedDateTime.HasValue )
+                {
+                    tdCompletedWhen.Description = string.Format( "{0} {1} ({2})",
+                        Workflow.CompletedDateTime.Value.ToShortDateString(),
+                        Workflow.CompletedDateTime.Value.ToShortTimeString(),
+                        Workflow.CompletedDateTime.Value.ToRelativeDateString() );
+                }
+
+                phViewAttributes.Controls.Clear();
+                foreach( var attribute in Workflow.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
+                {
+                    var td = new TermDescription();
+                    td.ID = "tdViewAttribute_" + attribute.Key;
+                    td.Term = attribute.Name;
+
+                    string value = Workflow.GetAttributeValue( attribute.Key );
+
+                    var field = attribute.FieldType.Field;
+                    string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+
+                    if ( field is Rock.Field.ILinkableFieldType )
                     {
-                        ddlActivateNewActivity.Items.Add( new ListItem( activityType.Name, activityType.Id.ToString() ) );
+                        var linkableField = field as Rock.Field.ILinkableFieldType;
+                        td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                            ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
                     }
+                    else
+                    {
+                        td.Description = formattedValue;
+                    }
+                    phViewAttributes.Controls.Add( td );
                 }
 
+                rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
+                rptrActivities.DataBind();
 
-                ExpandedActivities = new List<Guid>();
+                btnEdit.Visible = _canEdit;
 
-                Workflow.LoadAttributes( rockContext );
-                foreach ( var activity in Workflow.Activities )
-                {
-                    activity.LoadAttributes();
-                }
-
-                BuildControls( true );
-
-                BindLog();
             }
             else
             {
                 nbNotAuthorized.Visible = true;
                 pnlDetails.Visible = false;
             }
+        }
+
+        private void ShowEditDetails()
+        {
+            pnlViewDetails.Visible = false;
+            pnlEditDetails.Visible = true;
+
+            if ( _canEdit )
+            {
+                ddlActivateNewActivity.Items.Clear();
+                ddlActivateNewActivity.Items.Add( new ListItem( "Activate New Activity", "0" ) );
+                foreach ( var activityType in Workflow.WorkflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                {
+                    ddlActivateNewActivity.Items.Add( new ListItem( activityType.Name, activityType.Id.ToString() ) );
+                }
+            }
+
+            ExpandedActivities = new List<Guid>();
+
+            tbName.Text = Workflow.Name;
+            tbStatus.Text = Workflow.Status;
+
+            if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null)
+            {
+                ppInitiator.SetValue( Workflow.InitiatorPersonAlias.Person );
+            }
+            else
+            {
+                ppInitiator.SetValue( null );
+            }
+
+            cbIsCompleted.Checked = Workflow.CompletedDateTime.HasValue;
+
+            var sbState = new StringBuilder();
+            if ( Workflow.ActivatedDateTime.HasValue )
+            {
+                sbState.AppendFormat( "<strong>Activated:</strong> {0} {1} ({2})<br/>",
+                    Workflow.ActivatedDateTime.Value.ToShortDateString(),
+                    Workflow.ActivatedDateTime.Value.ToShortTimeString(),
+                    Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
+            }
+            if ( Workflow.CompletedDateTime.HasValue )
+            {
+                sbState.AppendFormat( "<strong>Completed:</strong> {0} {1} ({2})",
+                    Workflow.CompletedDateTime.Value.ToShortDateString(),
+                    Workflow.CompletedDateTime.Value.ToShortTimeString(),
+                    Workflow.CompletedDateTime.Value.ToRelativeDateString() );
+            }
+            lState.Text = sbState.ToString();
+
+            BuildControls( true );
+
+            BindLog();
         }
 
         private void BindLog()
@@ -571,47 +793,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="activeActivityGuid">The active activity unique identifier.</param>
         private void BuildControls( bool setValues = false, Guid? activeActivityGuid = null, bool showInvalid = false )
         {
-            lReadOnlyTitle.Text = Workflow.Name.FormatAsHtmlTitle();
-            hlInactive.Visible = Workflow.CompletedDateTime.HasValue;
-            hlType.Text = Workflow.WorkflowType.Name;
-
-            tbName.Text = Workflow.Name;
-            lName.Text = Workflow.Name;
-
-            tbStatus.Text = Workflow.Status;
-            lStatus.Text = Workflow.Status;
-
-            if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null)
-            {
-                ppInitiator.SetValue( Workflow.InitiatorPersonAlias.Person );
-                lInitiator.Text = Workflow.InitiatorPersonAlias.Person.FullName;
-            }
-            else
-            {
-                ppInitiator.SetValue( null );
-                lInitiator.Text = string.Empty;
-            }
-
-            cbIsCompleted.Checked = Workflow.CompletedDateTime.HasValue;
-            lIsCompleted.Text = Workflow.CompletedDateTime.HasValue ? "Yes" : "No";
-
-            var sbState = new StringBuilder();
-            if ( Workflow.ActivatedDateTime.HasValue )
-            {
-                sbState.AppendFormat( "<strong>Activated:</strong> {0} {1} ({2})<br/>",
-                    Workflow.ActivatedDateTime.Value.ToShortDateString(),
-                    Workflow.ActivatedDateTime.Value.ToShortTimeString(),
-                    Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
-            }
-            if ( Workflow.CompletedDateTime.HasValue )
-            {
-                sbState.AppendFormat( "<strong>Completed:</strong> {0} {1} ({2})",
-                    Workflow.CompletedDateTime.Value.ToShortDateString(),
-                    Workflow.CompletedDateTime.Value.ToShortTimeString(),
-                    Workflow.CompletedDateTime.Value.ToRelativeDateString() );
-            }
-            lState.Text = sbState.ToString();
-
             phAttributes.Controls.Clear();
             if ( _canEdit )
             {
@@ -657,8 +838,8 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         activityEditor.Expanded = activeActivityGuid.HasValue && activeActivityGuid.Equals( activity.Guid );
                     }
-
                 }
+
             }
         }
 

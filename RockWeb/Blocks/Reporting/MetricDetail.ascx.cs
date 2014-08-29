@@ -149,6 +149,8 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             MetricService metricService = new MetricService( rockContext );
             MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
+            MetricValueService metricValueService = new MetricValueService( rockContext );
+            bool deleteValuesOnSave = sender == btnDeleteValuesAndSave;
 
             int metricId = hfMetricId.Value.AsInteger();
 
@@ -169,6 +171,29 @@ namespace RockWeb.Blocks.Reporting
             metric.XAxisLabel = tbXAxisLabel.Text;
             metric.YAxisLabel = tbYAxisLabel.Text;
             metric.IsCumulative = cbIsCumulative.Checked;
+
+            var origEntityType = metric.EntityTypeId.HasValue ? EntityTypeCache.Read( metric.EntityTypeId.Value ) : null;
+            var newEntityType = etpEntityType.SelectedEntityTypeId.HasValue ? EntityTypeCache.Read( etpEntityType.SelectedEntityTypeId.Value ) : null;
+            if ( origEntityType != null && !deleteValuesOnSave )
+            {
+                if ( newEntityType == null || newEntityType.Id != origEntityType.Id )
+                {
+                    // if the EntityTypeId of this metric has changed to NULL or to another EntityType, warn about the EntityId values being wrong
+                    bool hasEntityValues = metricValueService.Queryable().Any( a => a.MetricId == metric.Id && a.EntityId.HasValue );
+
+                    if ( hasEntityValues )
+                    {
+                        nbEntityTypeChanged.Text = string.Format(
+                            "Warning: You can't change the series partition to {0} when there are values associated with {1}. Do you want to delete existing values?",
+                            newEntityType != null ? newEntityType.FriendlyName : "<none>",
+                            origEntityType.FriendlyName );
+                        mdEntityTypeChanged.Show();
+                        nbEntityTypeChanged.Visible = true;
+                        return;
+                    }
+                }
+            }
+
             metric.EntityTypeId = etpEntityType.SelectedEntityTypeId;
 
             var personService = new PersonService( rockContext );
@@ -262,6 +287,15 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 rockContext.SaveChanges();
+
+                // delete MetricValues associated with the old entityType if they confirmed the EntityType change
+                if ( deleteValuesOnSave )
+                {
+                    metricValueService.DeleteRange( metricValueService.Queryable().Where( a => a.MetricId == metric.Id && a.EntityId.HasValue ) );
+
+                    // since there could be 1000s of values that got deleted, do a SaveChanges that skips PrePostProcessing
+                    rockContext.SaveChanges( true );
+                }
 
                 // delete any orphaned Unnamed metric schedules
                 var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
@@ -376,6 +410,16 @@ namespace RockWeb.Blocks.Reporting
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelForEntityTypeChange control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelForEntityTypeChange_Click( object sender, EventArgs e )
+        {
+            mdEntityTypeChanged.Visible = false;
         }
 
         /// <summary>
@@ -588,7 +632,7 @@ namespace RockWeb.Blocks.Reporting
             hfMetricId.SetValue( metric.Id );
 
             lcMetricsChart.Visible = GetAttributeValue( "ShowChart" ).AsBooleanOrNull() ?? true;
-            
+
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "-1||" );
             lcMetricsChart.StartDate = chartDateRange.Start;
             lcMetricsChart.EndDate = chartDateRange.End;

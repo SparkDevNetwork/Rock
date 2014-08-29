@@ -29,6 +29,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
 
         /// <summary>
+        /// The domains that are safe to send from
+        /// </summary>
+        public const string COMMUNICATION_SAFE_SENDER_DOMAINS = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED";
+
+        /// <summary>
         /// The list of values that SMS messages can be sent from.  Depending on provider, these may
         /// be phone numbers or short codes
         /// </summary>
@@ -83,11 +88,6 @@ namespace Rock.SystemGuid
         /// Guid for Financial Transaction Type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
-
-        /// <summary>
-        /// Guid for Financial transaction image type
-        /// </summary>
-        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39"; 
 
         /// <summary>
         /// Guid for Financial Transaction Type
