@@ -116,10 +116,14 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                string peopleIds = PageParameter( "People" );
-                if ( !string.IsNullOrWhiteSpace( peopleIds ) )
+                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                if (setId.HasValue)
                 {
-                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger() ).ToList();
+                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                        .GetByEntitySetId( setId.Value )
+                        .Select( i => i.EntityId )
+                        .Distinct()
+                        .ToList();
 
                     // Get the people selected
                     var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )

@@ -336,6 +336,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the bulk update page route.
+        /// </summary>
+        /// <value>
+        /// The bulk update page route.
+        /// </value>
+        public virtual string BulkUpdatePageRoute
+        {
+            get { return ViewState["BulkUpdatePageRoute"] as string ?? "~/BulkUpdate/{0}"; }
+            set { ViewState["BulkUpdatePageRoute"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -494,6 +506,7 @@ namespace Rock.Web.UI.Controls
             this.Sorting += Grid_Sorting;
 
             this.Actions.MergeClick += Actions_MergeClick;
+            this.Actions.BulkUpdateClick += Actions_BulkUpdateClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
@@ -1001,24 +1014,29 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void Actions_MergeClick( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            int? entitySetId = GetPersonEntitySet();
+            if (entitySetId.HasValue)
             {
-                var peopleSelected = SelectedKeys.ToList();
-
-                if ( !peopleSelected.Any() )
-                {
-                    OnGridRebind( e );
-                    peopleSelected = GetAllPersonIds();
-                }
-
-                if ( peopleSelected.Any() )
-                {
-                    Page.Response.Redirect( string.Format( MergePageRoute, peopleSelected.AsDelimited( "," ) ), false );
-                    Context.ApplicationInstance.CompleteRequest();
-                }
+                Page.Response.Redirect( string.Format( MergePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
             }
         }
 
+        /// <summary>
+        /// Handles the MergeClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void Actions_BulkUpdateClick( object sender, EventArgs e )
+        {
+            int? entitySetId = GetPersonEntitySet();
+            if ( entitySetId.HasValue )
+            {
+                Page.Response.Redirect( string.Format( BulkUpdatePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+        
         /// <summary>
         /// Handles the CommunicateClick event of the Actions control.
         /// </summary>
@@ -1513,6 +1531,48 @@ namespace Rock.Web.UI.Controls
             }
 
             return personIds;
+        }
+
+        private int? GetPersonEntitySet()
+        {
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            {
+                var keys = SelectedKeys.ToList();
+
+                if ( !keys.Any() )
+                {
+                    OnGridRebind( new EventArgs() );
+                    keys = GetAllPersonIds();
+                }
+
+                if ( keys.Any() )
+                {
+                    var entitySet = new Rock.Model.EntitySet();
+                    entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+                    foreach( var key in keys)
+                    {
+                        try {
+                            var item = new Rock.Model.EntitySetItem();
+                            item.EntityId = (int)key;
+                            entitySet.Items.Add( item );
+                        }
+                        catch{}
+                    }
+
+                    if ( entitySet.Items.Any())
+                    {
+                        var rockContext = new RockContext();
+                        var service = new Rock.Model.EntitySetService( rockContext );
+                        service.Add( entitySet );
+                        rockContext.SaveChanges();
+                        return entitySet.Id;
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion

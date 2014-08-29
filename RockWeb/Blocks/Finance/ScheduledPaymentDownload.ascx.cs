@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         else
                         {
-                            nbSuccess.Text = string.Format( "<ul>There were not any transactions downloaded.</ul>", resultSummary );
+                            nbSuccess.Text = string.Format( "There were not any transactions downloaded.", resultSummary );
                         
                         }
                         nbSuccess.Visible = true;

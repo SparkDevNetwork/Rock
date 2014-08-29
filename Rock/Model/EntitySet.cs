@@ -16,11 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -30,6 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EntitySet" )]
     [DataContract]
+    [NotAudited]
     public partial class EntitySet : Model<EntitySet>, IOrdered
     {
         #region Entity Properties
@@ -118,6 +119,19 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntitySet"/> class.
+        /// </summary>
+        public EntitySet()
+        {
+            Items = new Collection<EntitySetItem>();
+            ChildEntitySets = new Collection<EntitySet>();
+        }
 
         #endregion
 

@@ -28,6 +28,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EntitySetItem" )]
     [DataContract]
+    [NotAudited]
     public partial class EntitySetItem : Model<EntitySetItem>, IOrdered
     {
         #region Entity Properties
