@@ -32,7 +32,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
-        /// <param name="enumSource">The source type of the enum to display in a list.</param>
+        /// <param name="enumSourceType">Type of the enum source.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.  If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
         /// <param name="category">The category.</param>

@@ -33,6 +33,7 @@ namespace Rock.Model
         /// Gets the by entity set identifier.
         /// </summary>
         /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="overrideExpiration">if set to <c>true</c> [override expiration].</param>
         /// <returns></returns>
         public IQueryable<EntitySetItem> GetByEntitySetId( int entitySetId, bool overrideExpiration = false )
         {
