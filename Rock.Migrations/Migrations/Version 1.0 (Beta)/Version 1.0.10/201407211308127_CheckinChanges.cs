@@ -29,6 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Add ContextAware attribute for HTML Content Block
+            RockMigrationHelper.AddBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "ContextEntityType", "", "The type of entity that will provide context for this block", 0, "", "6783D47D-92F9-4F48-93C0-16111D675A0F" );
+            
             // Add route for Ability Select page
             RockMigrationHelper.AddPageRoute( "A1CBDAA4-94DD-4156-8260-5A3781E39FD0", "checkin/ability" );
 
