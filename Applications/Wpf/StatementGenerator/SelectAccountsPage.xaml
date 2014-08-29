@@ -78,7 +78,7 @@
                 Margin="8,8,8,8"
                 Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
+                    <Label Style="{StaticResource labelStyleIconLeft}"
                        Content="&#xf053;" />
                     <Label Style="{StaticResource labelStyleButtonText}"
                        Content="Prev" />
@@ -93,7 +93,7 @@
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Next" />
-                    <Label Style="{StaticResource labelStyleIconPrimary}"
+                    <Label Style="{StaticResource labelStyleIconPrimaryRight}"
                        Content="&#xf054;" />
                 </StackPanel>
             </Button>

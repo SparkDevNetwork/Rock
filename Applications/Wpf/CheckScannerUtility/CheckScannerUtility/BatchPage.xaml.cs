@@ -191,7 +191,7 @@ namespace Rock.Apps.CheckScannerUtility
                 // limit splash screen
                 rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
 
-                // turn on either color, grayscale, or bitonal options depending on selected option
+                // turn on either color, grayscale, or bitonal(black and white) options depending on selected option
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "False" );
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "False" );
@@ -651,6 +651,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 scannedDocInfo.Uploaded = true;
+                scannedDocInfo.TransactionId = transactionId;
             }
 
             ScanningPage.ClearScannedDocHistory();
@@ -1079,7 +1080,17 @@ namespace Rock.Apps.CheckScannerUtility
                 transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
             }
 
-            grdBatchItems.DataContext = transactions.OrderByDescending( a => a.CreatedDateTime );
+            // include CheckNumber for checks that we scanned in this session
+            var scannedCheckList = ScannedDocList.Where(a => a.IsCheck).ToList();
+            var gridList = transactions.OrderByDescending( a => a.CreatedDateTime ).Select( a => new
+            {
+                FinancialTransaction = a,
+                CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() 
+                    ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ) != null ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ).CheckNumber : "****"
+                    : "-"
+            }  );
+
+            grdBatchItems.DataContext = gridList;
         }
 
         /// <summary>
@@ -1113,7 +1124,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             try
             {
-                FinancialTransaction financialTransaction = grdBatchItems.SelectedValue as FinancialTransaction;
+                FinancialTransaction financialTransaction = grdBatchItems.SelectedValue.GetPropertyValue("FinancialTransaction") as FinancialTransaction;
 
                 if ( financialTransaction != null )
                 {

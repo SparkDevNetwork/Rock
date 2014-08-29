@@ -125,7 +125,6 @@
                     Margin="4,4,4,4"
                     Style="{StaticResource buttonStyleMini}"
                     HorizontalAlignment="Left"
-
                     x:Name="btnAddBatch"
                     Click="btnAddBatch_Click">
                 <StackPanel Orientation="Horizontal">
@@ -361,21 +360,22 @@
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            Binding="{Binding CreatedDateTime}"
+                                            Binding="{Binding FinancialTransaction.CreatedDateTime}"
                                             HeaderStyle="{StaticResource gridHeaderStyleDateTime}"
                                             CellStyle="{StaticResource gridCellStyleDateTime}"
                                             CanUserResize="False"
                                             CanUserSort="False" />
 
-                        <DataGridTextColumn Header="AMOUNT"
-                                            HeaderStyle="{StaticResource gridHeaderStyleCurrency}"
-                                            CellStyle="{StaticResource gridCellStyleNumber}"
-                                            Binding="{Binding TotalAmount, Converter={StaticResource zeroCurrencyConverter}}"
+                        <DataGridTextColumn Header="TYPE"
+                                            Binding="{Binding FinancialTransaction.CurrencyTypeValue}"
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Width="*"
                                             CanUserResize="False"
                                             CanUserSort="False" />
 
-                        <DataGridTextColumn Header="TYPE"
-                                            Binding="{Binding CurrencyTypeValue}"
+                        <DataGridTextColumn Header="CHECK NUMBER"
+                                            Binding="{Binding CheckNumber}"
                                             HeaderStyle="{StaticResource gridHeaderStyle}"
                                             CellStyle="{StaticResource gridCellStyle}"
                                             Width="*"

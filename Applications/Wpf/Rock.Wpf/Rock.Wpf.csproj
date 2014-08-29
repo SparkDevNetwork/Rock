@@ -84,6 +84,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="resources\OpenSans-Semibold-webfont.ttf" />
+    <Resource Include="resources\OpenSans-Bold-webfont.ttf" />
     <Resource Include="resources\OpenSans-Light-webfont.ttf" />
     <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
     <Resource Include="resources\fontawesome-webfont.ttf" />

@@ -54,7 +54,7 @@
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Start" />
-                    <Label Style="{StaticResource labelStyleIconPrimary}"
+                    <Label Style="{StaticResource labelStyleIconPrimaryRight}"
                        Content="&#xf054;" />
                 </StackPanel>
             </Button>

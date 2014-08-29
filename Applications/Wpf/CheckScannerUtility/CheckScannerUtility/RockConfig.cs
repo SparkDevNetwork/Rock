@@ -16,7 +16,6 @@
 //
 using System;
 using System.Configuration;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -26,6 +25,11 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     internal sealed partial class RockConfig : ApplicationSettingsBase
     {
+        /// <summary>
+        /// The password, stored for the session, but not in the config file
+        /// </summary>
+        private static string sessionPassword = null;
+        
         /// <summary>
         /// The default instance
         /// </summary>
@@ -88,47 +92,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        /// <value>
-        /// The password.
-        /// </value>
-        [DefaultSettingValueAttribute( "" )]
-        [UserScopedSetting]
-        public string PasswordEncryptedBase64
-        {
-            get
-            {
-                return this["PasswordEncryptedBase64"] as string;
-            }
-
-            set
-            {
-                this["PasswordEncryptedBase64"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the password encrypted.
-        /// </summary>
-        /// <value>
-        /// The password encrypted.
-        /// </value>
-        private byte[] PasswordEncrypted
-        {
-            get
-            {
-                return Convert.FromBase64String( PasswordEncryptedBase64 );
-            }
-
-            set
-            {
-                PasswordEncryptedBase64 = Convert.ToBase64String( value );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the password.
+        /// Gets or sets the password (not stored in config, just session)
         /// </summary>
         /// <value>
         /// The password.
@@ -137,28 +101,12 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                try
-                {
-                    byte[] clearTextPasswordBytes = ProtectedData.Unprotect( PasswordEncrypted ?? new byte[] { 0 }, null, DataProtectionScope.CurrentUser );
-                    return Encoding.Unicode.GetString( clearTextPasswordBytes );
-                }
-                catch ( CryptographicException )
-                {
-                    return string.Empty;
-                }
+                return sessionPassword;
             }
 
             set
             {
-                try
-                {
-                    byte[] clearTextPasswordBytes = Encoding.Unicode.GetBytes( value );
-                    PasswordEncrypted = ProtectedData.Protect( clearTextPasswordBytes, null, DataProtectionScope.CurrentUser );
-                }
-                catch ( CryptographicException )
-                {
-                    PasswordEncrypted = new byte[] { 0 };
-                }
+                sessionPassword = value;
             }
         }
 
@@ -168,7 +116,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The type of the image color.
         /// </value>
-        [DefaultSettingValueAttribute( "1" )]
+        [DefaultSettingValueAttribute( "0" )]
         [UserScopedSetting]
         public ImageColorType ImageColorType
         {
@@ -294,7 +242,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         ///   <c>true</c> if [enable rear image]; otherwise, <c>false</c>.
         /// </value>
-        [DefaultSettingValueAttribute( "" )]
+        [DefaultSettingValueAttribute( "true" )]
         [UserScopedSetting]
         public bool EnableRearImage
         {
@@ -315,7 +263,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// <c>true</c> if [prompt to scan rear image]; otherwise, <c>false</c>.
         /// </value>
-        [DefaultSettingValueAttribute( "" )]
+        [DefaultSettingValueAttribute( "true" )]
         [UserScopedSetting]
         public bool PromptToScanRearImage
         {
@@ -336,7 +284,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
         /// </value>
-        [DefaultSettingValueAttribute( "" )]
+        [DefaultSettingValueAttribute( "true" )]
         [UserScopedSetting]
         public bool EnableDoubleDocDetection
         {
