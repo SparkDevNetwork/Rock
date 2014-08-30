@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupRole.DataBind();
             }
 
-            rblStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            rblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         #endregion

@@ -217,10 +217,10 @@ namespace RockWeb.Blocks.Core
             ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintTo.BindToEnum( typeof( PrintTo ) );
+            ddlPrintTo.BindToEnum<PrintTo>();
             ddlPrintTo.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
+            ddlPrintFrom.BindToEnum<PrintFrom>();
             ddlPrintFrom.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             ddlPrinter.Items.Clear();

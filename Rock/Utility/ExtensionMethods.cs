@@ -1488,11 +1488,12 @@ namespace Rock
         /// <summary>
         /// Binds to enum.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="listControl">The list control.</param>
-        /// <param name="enumType">Type of the enum.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false )
         {
+            var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {

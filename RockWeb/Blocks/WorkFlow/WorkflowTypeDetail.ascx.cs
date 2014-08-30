@@ -1318,7 +1318,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlLoggingLevel.BindToEnum( typeof( WorkflowLoggingLevel ) );
+            ddlLoggingLevel.BindToEnum<WorkflowLoggingLevel>();
         }
 
         #endregion

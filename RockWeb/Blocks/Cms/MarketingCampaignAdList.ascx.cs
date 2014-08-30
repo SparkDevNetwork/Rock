@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            ddlApprovalStatus.BindToEnum( typeof( MarketingCampaignAdStatus ) );
+            ddlApprovalStatus.BindToEnum<MarketingCampaignAdStatus>();
             ddlApprovalStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
 
             ddlApprovalStatus.SetValue( rFilter.GetUserPreference( "Approval Status" ) );
