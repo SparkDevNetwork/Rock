@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
+        <asp:HiddenField ID="hfSelectedItems" runat="server"  />
+
         <div class="panel panel-block">
 
             <div class="panel-heading">
@@ -14,8 +16,6 @@
                 <asp:Panel ID="pnlEntry" runat="server">
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
-                    <asp:HiddenField ID="hfSelectedItems" runat="server"  />
 
                     <div class="panel panel-widget individuals">
                         <div class="panel-heading clearfix">
@@ -146,7 +146,7 @@
                     <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectionChanged="ddlGroupAction_SelectionChanged">
+                                <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAction_SelectedIndexChanged" >
                                     <asp:ListItem Value="Add" Text="Add To Group" />
                                     <asp:ListItem Value="Remove" Text="Remove From Group" />
                                     <asp:ListItem Value="Update" Text="Update In Group" />
@@ -154,13 +154,13 @@
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" />
-                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
+                                <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" Visible="false" />
+                                <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" Visible="false" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-sm-12">
-                                <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                             </div>
                         </div>
                     </Rock:PanelWidget>

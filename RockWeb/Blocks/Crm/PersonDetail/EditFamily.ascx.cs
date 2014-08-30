@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gLocations.IsDeleteEnabled = _canEdit;
             gLocations.GridRebind += gLocations_GridRebind;
 
-            ddlNewPersonGender.BindToEnum( typeof( Gender ) );
+            ddlNewPersonGender.BindToEnum<Gender>();
 
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
