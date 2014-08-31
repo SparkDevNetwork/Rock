@@ -34,29 +34,45 @@ namespace RockWeb.Blocks.Cms
     public partial class SiteMap : RockBlock
     {
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
-
-            PageService pageService = new PageService( new RockContext() );
+            base.OnLoad( e );
 
             List<int> expandedPageIds = new List<int>();
+            PageService pageService = new PageService( new RockContext() );
 
-            string pageSearch = this.PageParameter( "pageSearch" );
-            if ( !string.IsNullOrWhiteSpace( pageSearch ) )
+            if ( Page.IsPostBack )
             {
-                foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
+                foreach ( string expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
-                    Page selectedPage = page;
-                    while ( selectedPage != null )
+                    int id = 0;
+                    if ( expandedId.StartsWith( "p" ) && expandedId.Length > 1 )
                     {
-                        selectedPage = selectedPage.ParentPage;
-                        if (selectedPage != null)
+                        if ( int.TryParse( expandedId.Substring( 1 ), out id ) )
                         {
-                            expandedPageIds.Add( selectedPage.Id );
+                            expandedPageIds.Add( id );
+                        }
+                    }
+                }
+            }
+            else
+            {
+                string pageSearch = this.PageParameter( "pageSearch" );
+                if ( !string.IsNullOrWhiteSpace( pageSearch ) )
+                {
+                    foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
+                    {
+                        Page selectedPage = page;
+                        while ( selectedPage != null )
+                        {
+                            selectedPage = selectedPage.ParentPage;
+                            if ( selectedPage != null )
+                            {
+                                expandedPageIds.Add( selectedPage.Id );
+                            }
                         }
                     }
                 }

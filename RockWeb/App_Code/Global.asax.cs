@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -27,11 +29,9 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -48,7 +48,6 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
-
         #region Fields
 
         /// <summary>
@@ -92,30 +91,62 @@ namespace RockWeb
         {
             try
             {
+                DateTime startDateTime = RockDateTime.Now;
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-                // Run any needed Rock and/or plugin migrations
-                MigrateDatabase();
+                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
+                // This should be removed after 1.0.9
+                try
+                {
+                    string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                }
+                catch
+                {
+                    // Intentionally Blank
+                }
 
                 // Get a db context
                 var rockContext = new RockContext();
 
-                RegisterRoutes( rockContext, RouteTable.Routes );
+                //// Run any needed Rock and/or plugin migrations
+                //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                MigrateDatabase( rockContext );
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    try
+                    {
+                        new AttributeService( rockContext ).Get( 0 );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                        startDateTime = RockDateTime.Now;
+                    }
+                    catch
+                    {
+                        // Intentionally Blank
+                    }
                 }
+
+                RegisterRoutes( rockContext, RouteTable.Routes );
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
@@ -160,6 +191,8 @@ namespace RockWeb
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
+                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );
@@ -173,7 +206,6 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
-
             }
             catch ( Exception ex )
             {
@@ -363,14 +395,45 @@ namespace RockWeb
                                     if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                     {
                                         string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
                                         foreach ( string emailAddress in emailAddresses )
                                         {
                                             recipients.Add( emailAddress, mergeObjects );
                                         }
 
-                                        Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                        if ( recipients.Any() )
+                                        {
+                                            bool sendNotification = true;
+
+                                            string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                                            var serverVarList = context.Request.ServerVariables;
+
+                                            if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                                            {
+                                                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                                foreach ( string nameValue in nameValues )
+                                                {
+                                                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                                    {
+                                                        if ( nameAndValue.Length == 2 )
+                                                        {
+                                                            var serverValue = serverVarList[nameAndValue[0]];
+                                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                                            {
+                                                                sendNotification = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if ( sendNotification )
+                                            {
+                                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                            }
+                                        }
                                     }
                                 }
                                 catch
@@ -451,128 +514,152 @@ namespace RockWeb
         /// <summary>
         /// Migrates the database.
         /// </summary>
-        public void MigrateDatabase()
+        /// <returns>True if at least one migration was run</returns>
+        public bool MigrateDatabase( RockContext rockContext )
         {
-            // Check if database should be auto-migrated for the core and plugins
-            if ( ConfigurationManager.AppSettings["AutoMigrateDatabase"].AsBoolean( true ) )
+            bool result = false;
+
+            var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+            if ( fileInfo.Exists )
             {
-                try
+                Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+
+                // explictly check if the database exists, and force create it if doesn't exist
+                if ( !rockContext.Database.Exists() )
                 {
-                    Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
-
-                    var rockContext = new RockContext();
-
-                    // explictly check if the database exists, and force create it if doesn't exist
-                    if ( !rockContext.Database.Exists() )
+                    // If database did not exist, initialize a database (which runs existing Rock migrations)
+                    rockContext.Database.Initialize( true );
+                    result = true;
+                }
+                else
+                {
+                    // If database does exist, run any pending Rock migrations
+                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                    if ( migrator.GetPendingMigrations().Any() )
                     {
-                        // If database did not exist, initialize a database (which runs existing Rock migrations)
-                        rockContext.Database.Initialize( true );
-                    }
-                    else
-                    {
-                        // If database does exist, run any pending Rock migrations
-                        var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                         migrator.Update();
-                    }
-
-                    // Migrate any plugins that have pending migrations
-                    List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Migration ) ).Select( a => a.Value ).ToList();
-
-                    // If any plugin migrations types were found
-                    if ( migrationList.Any() )
-                    {
-                        // Create EF service for plugin migrations
-                        var pluginMigrationService = new PluginMigrationService( rockContext );
-
-                        // Get the current rock version
-                        var rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-
-                        // Create dictionary for holding migrations specific to an assembly
-                        var assemblies = new Dictionary<string, Dictionary<int, Type>>();
-
-                        // Iterate plugin migrations
-                        foreach ( var migrationType in migrationList )
-                        {
-                            // Get the MigrationNumberAttribute for the migration
-                            var migrationNumberAttr = System.Attribute.GetCustomAttribute( migrationType, typeof( MigrationNumberAttribute ) ) as MigrationNumberAttribute;
-                            if ( migrationNumberAttr != null )
-                            {
-                                // If the migration's minimum Rock version is less than or equal to the current rock version, add it to the list
-                                var minRockVersion = new Version( migrationNumberAttr.MinimumRockVersion );
-                                if ( minRockVersion.CompareTo( rockVersion ) <= 0 )
-                                {
-                                    string assemblyName = migrationType.Assembly.GetName().Name;
-                                    if ( !assemblies.ContainsKey( assemblyName ) )
-                                    {
-                                        assemblies.Add( assemblyName, new Dictionary<int, Type>() );
-                                    }
-                                    assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
-                                }
-                            }
-                        }
-
-                        // Iterate each assembly that contains plugin migrations
-                        foreach ( var assemblyMigrations in assemblies )
-                        {
-                            try
-                            {
-                                // Get the versions that have already been installed
-                                var installedVersions = pluginMigrationService.Queryable()
-                                    .Where( m => m.PluginAssemblyName == assemblyMigrations.Key )
-                                    .ToList();
-
-                                // Wrap the migrations for each assembly in a transaction so that if an error with one migration, none of the migrations are persisted
-                                RockTransactionScope.WrapTransaction( () =>
-                                {
-                                    // Iterate each migration in the assembly in MigrationNumber order 
-                                    foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )
-                                    {
-                                        // Check to make sure migration has not already been run
-                                        if ( !installedVersions.Any( v => v.MigrationNumber == migrationType.Key ) )
-                                        {
-                                            try
-                                            {
-                                                // Create an instance of the migration and run the up migration
-                                                var migration = Activator.CreateInstance( migrationType.Value ) as Rock.Plugin.Migration;
-                                                migration.Up();
-
-                                                // Save the plugin migration version so that it is not run again
-                                                var pluginMigration = new PluginMigration();
-                                                pluginMigration.PluginAssemblyName = assemblyMigrations.Key;
-                                                pluginMigration.MigrationNumber = migrationType.Key;
-                                                pluginMigration.MigrationName = migrationType.Value.Name;
-                                                pluginMigrationService.Add( pluginMigration );
-                                                rockContext.SaveChanges();
-                                            }
-                                            catch ( Exception ex )
-                                            {
-                                                throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
-                                                    assemblyMigrations.Key, migrationType.Value.Name ), ex );
-                                            }
-                                        }
-                                    }
-                                } );
-                            }
-                            catch ( Exception ex )
-                            {
-                                // If an exception occurs in an an assembly, log the error, and continue with next assembly
-                                LogError( ex, null );
-                            }
-                        }
+                        result = true;
                     }
                 }
-                catch ( Exception ex )
-                {
-                    // if migrations fail, log error and attempt to continue
-                    LogError( ex, null );
-                }
 
+                fileInfo.Delete();
             }
             else
             {
                 // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
+
+            // Migrate any plugins that have pending migrations
+            List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Migration ) ).Select( a => a.Value ).ToList();
+
+            // If any plugin migrations types were found
+            if ( migrationList.Any() )
+            {
+                // Create EF service for plugin migrations
+                var pluginMigrationService = new PluginMigrationService( rockContext );
+
+                // Get the current rock version
+                var rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+                // Create dictionary for holding migrations specific to an assembly
+                var assemblies = new Dictionary<string, Dictionary<int, Type>>();
+
+                // Iterate plugin migrations
+                foreach ( var migrationType in migrationList )
+                {
+                    // Get the MigrationNumberAttribute for the migration
+                    var migrationNumberAttr = System.Attribute.GetCustomAttribute( migrationType, typeof( MigrationNumberAttribute ) ) as MigrationNumberAttribute;
+                    if ( migrationNumberAttr != null )
+                    {
+                        // If the migration's minimum Rock version is less than or equal to the current rock version, add it to the list
+                        var minRockVersion = new Version( migrationNumberAttr.MinimumRockVersion );
+                        if ( minRockVersion.CompareTo( rockVersion ) <= 0 )
+                        {
+                            string assemblyName = migrationType.Assembly.GetName().Name;
+                            if ( !assemblies.ContainsKey( assemblyName ) )
+                            {
+                                assemblies.Add( assemblyName, new Dictionary<int, Type>() );
+                            }
+                            assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
+                        }
+                    }
+                }
+
+                var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
+                if ( configConnectionString != null )
+                {
+                    string connectionString = configConnectionString.ConnectionString;
+                    if ( !string.IsNullOrWhiteSpace( connectionString ) )
+                    {
+                        using ( SqlConnection con = new SqlConnection( connectionString ) )
+                        {
+                            con.Open();
+
+                            // Iterate each assembly that contains plugin migrations
+                            foreach ( var assemblyMigrations in assemblies )
+                            {
+                                try
+                                {
+                                    // Get the versions that have already been installed
+                                    var installedVersions = pluginMigrationService.Queryable()
+                                        .Where( m => m.PluginAssemblyName == assemblyMigrations.Key )
+                                        .ToList();
+
+                                    // Iterate each migration in the assembly in MigrationNumber order 
+                                    foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )
+                                    {
+                                        // Check to make sure migration has not already been run
+                                        if ( !installedVersions.Any( v => v.MigrationNumber == migrationType.Key ) )
+                                        {
+                                            using ( var sqlTxn = con.BeginTransaction() )
+                                            {
+                                                bool transactionActive = true;
+                                                try
+                                                {
+                                                    // Create an instance of the migration and run the up migration
+                                                    var migration = Activator.CreateInstance( migrationType.Value ) as Rock.Plugin.Migration;
+                                                    migration.SqlConnection = con;
+                                                    migration.SqlTransaction = sqlTxn;
+                                                    migration.Up();
+                                                    sqlTxn.Commit();
+                                                    transactionActive = false;
+
+                                                    // Save the plugin migration version so that it is not run again
+                                                    var pluginMigration = new PluginMigration();
+                                                    pluginMigration.PluginAssemblyName = assemblyMigrations.Key;
+                                                    pluginMigration.MigrationNumber = migrationType.Key;
+                                                    pluginMigration.MigrationName = migrationType.Value.Name;
+                                                    pluginMigrationService.Add( pluginMigration );
+                                                    rockContext.SaveChanges();
+
+                                                    result = true;
+                                                }
+                                                catch ( Exception ex )
+                                                {
+                                                    if ( transactionActive )
+                                                    {
+                                                        sqlTxn.Rollback();
+                                                    }
+                                                    throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
+                                                        assemblyMigrations.Key, migrationType.Value.Name ), ex );
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch ( Exception ex )
+                                {
+                                    // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                    LogError( ex, null );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// Formats the exception.
@@ -630,6 +717,8 @@ namespace RockWeb
         /// <param name="routes">The routes.</param>
         private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
         {
+            routes.Clear();
+
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
             // find each page that has defined a custom routes.
@@ -733,9 +822,19 @@ namespace RockWeb
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
             foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
             {
-                if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                try
+                {
+                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                    {
+                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                    }
+
+                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                }
+                catch ( Exception ex )
+                {
+                    LogError( ex, null );
+                }
             }
 
             // Cache all the attributes.
@@ -749,26 +848,12 @@ namespace RockWeb
 
             // Cache all the Field Types
             var all = Rock.Web.Cache.FieldTypeCache.All();
-
-            // DT: When running with production CCV Data, this is taking a considerable amount of time 
-
-            // Cache all tha Defined Types
-            var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
-            foreach ( var definedType in definedTypeService.Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-            }
-
-            // Cache all the Defined Values
-            var definedValueService = new Rock.Model.DefinedValueService( rockContext );
-            foreach ( var definedValue in definedValueService.Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-            }
         }
 
         private void Error66( Exception ex )
         {
+            LogError( ex, HttpContext.Current );
+
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
                 try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
@@ -858,10 +943,17 @@ namespace RockWeb
                 pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
-                var user = UserLoginService.GetCurrentUser();
-                if ( user != null && user.Person != null )
+                try
                 {
-                    personAlias = user.Person.PrimaryAlias;
+                    var user = UserLoginService.GetCurrentUser();
+                    if ( user != null && user.Person != null )
+                    {
+                        personAlias = user.Person.PrimaryAlias;
+                    }
+                }
+                catch
+                {
+                    // Intentionally left blank
                 }
             }
 

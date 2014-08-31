@@ -41,7 +41,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupLocation> GetActiveByLocation( int locationId )
         {
-            return Queryable()
+            return Queryable( "Schedules,Group.GroupType" )
                 .Where( g =>
                     g.LocationId == locationId &&
                     g.Group.IsActive );

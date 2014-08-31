@@ -14,21 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Reporting.Dashboard;
-using System.Drawing;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -36,30 +25,42 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Bar Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
-    public partial class BarChartDashboardWidget : DashboardWidget
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Bar Chart Dashboard Widget" )]
+    public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
+        public override FlotChart FlotChartControl
+        {
+            get { return bcChart; }
+        }
+
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
+        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
+        {
+            get { return nbMetricWarning; }
+        }
+
         /// <summary>
         /// Loads the chart.
         /// </summary>
         public override void LoadChart()
         {
-            bcExample.StartDate = new DateTime( 2013, 1, 1 );
-            bcExample.EndDate = new DateTime( 2014, 1, 1 );
-            bcExample.MetricValueType = this.MetricValueType;
-            bcExample.MetricId = this.MetricId;
-            bcExample.EntityId = this.EntityId;
-
-            bcExample.Title = this.Title;
-            bcExample.Subtitle = this.Subtitle;
-            bcExample.CombineValues = this.CombineValues;
-
-            bcExample.ShowTooltip = false;
-
-            bcExample.Options.SetChartStyle( this.ChartStyle );
-
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
+            base.LoadChart();
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

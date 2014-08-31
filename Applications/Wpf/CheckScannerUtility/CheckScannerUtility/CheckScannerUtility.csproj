@@ -29,6 +29,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -85,8 +86,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
@@ -118,9 +117,12 @@
     </Compile>
     <Compile Include="RangerTypes.cs" />
     <Compile Include="RockConfig.cs" />
-    <Compile Include="ScannedCheckInfo.cs" />
+    <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
       <DependentUpon>ScanningPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScanningPromptPage.xaml.cs">
+      <DependentUpon>ScanningPromptPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ZeroCurrencyConverter.cs" />
     <Page Include="BatchItemDetailPage.xaml">
@@ -166,6 +168,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ScanningPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScanningPromptPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

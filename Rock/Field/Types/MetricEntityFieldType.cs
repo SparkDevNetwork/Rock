@@ -57,7 +57,7 @@ namespace Rock.Field.Types
                         {
                             if ( valueParts.Length > 1 )
                             {
-                                formattedValue = string.Format( "{0} - EntityId:{1}", metric.Title, valueParts[1].AsInteger() );
+                                formattedValue = string.Format( "{0} - EntityId:{1}", metric.Title, valueParts[1].AsIntegerOrNull() );
                             }
                         }
                     }
@@ -82,7 +82,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Reads new values entered by the user for the field
-        /// returns pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// returns pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -94,15 +94,7 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
-                var metric = new MetricService( new RockContext() ).Get( picker.MetricId ?? 0 );
-
-                if ( metric != null )
-                {
-                    guid = metric.Guid;
-                }
-
-                result = string.Format( "{0}|{1}|{2}|{3}", guid.ToString(), picker.EntityId, picker.GetEntityFromContext, picker.CombineValues );
+                result = picker.DelimitedValues;
             }
 
             return result;
@@ -110,7 +102,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Sets the value.
-        /// value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -123,21 +115,7 @@ namespace Rock.Field.Types
 
                 if ( picker != null )
                 {
-                    var valueParts = value.Split( '|' );
-                    if ( valueParts.Length > 0 )
-                    {
-                        var metric = new MetricService( new RockContext() ).Get( valueParts[0].AsGuid() );
-                        if ( metric != null )
-                        {
-                            picker.MetricId = metric.Id;
-                            if ( valueParts.Length > 3 )
-                            {
-                                picker.EntityId = valueParts[1].AsInteger( false );
-                                picker.GetEntityFromContext = valueParts[2].AsBoolean(false);
-                                picker.CombineValues = valueParts[3].AsBoolean( false );
-                            }
-                        }
-                    }
+                    picker.DelimitedValues = value;
                 }
             }
         }

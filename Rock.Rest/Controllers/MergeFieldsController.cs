@@ -67,15 +67,20 @@ namespace Rock.Rest.Controllers
                     
                     if (!string.IsNullOrWhiteSpace(additionalFields))
                     {
-                        foreach ( string fieldName in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        foreach ( string fieldInfo in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
-                            var entityType = EntityTypeCache.Read( fieldName, false );
+                            string[] parts = fieldInfo.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+                            string fieldType = parts.Length > 0 ? parts[0] : string.Empty;
+                            string fieldId = parts.Length > 2 ? parts[2] + "|" + fieldType : fieldType;
+
+                            var entityType = EntityTypeCache.Read( fieldType, false );
                             if ( entityType != null )
                             {
                                 items.Add( new TreeViewItem
                                 {
-                                    Id = fieldName,
-                                    Name = entityType.FriendlyName,
+                                    Id = fieldId,
+                                    Name =  parts.Length > 1 ? parts[1] : entityType.FriendlyName,
                                     HasChildren = true
                                 } );
                             }
@@ -83,9 +88,9 @@ namespace Rock.Rest.Controllers
                             {
                                 items.Add( new TreeViewItem
                                 {
-                                    Id = fieldName,
-                                    Name = fieldName.SplitCase(),
-                                    HasChildren = fieldName == "GlobalAttribute"
+                                    Id = fieldId,
+                                    Name = parts.Length > 1 ? parts[1] : fieldType.SplitCase(),
+                                    HasChildren = fieldType == "GlobalAttribute"
                                 } );
                             }
                         }
@@ -120,13 +125,19 @@ namespace Rock.Rest.Controllers
                     if ( idParts.Count > 0 )
                     {
                         // Get the root type
-                        var entityType = EntityTypeCache.Read( idParts[0], false );
+                        int pathPointer = 0;
+                        EntityTypeCache entityType = null;
+                        while (entityType == null && pathPointer < idParts.Count())
+                        {
+                            entityType = EntityTypeCache.Read( idParts[pathPointer], false );
+                            pathPointer++;
+                        }
+
                         if ( entityType != null )
                         {
                             Type type = entityType.GetEntityType();
 
                             // Traverse the Property path
-                            int pathPointer = 1;
                             while ( idParts.Count > pathPointer )
                             {
                                 var childProperty = type.GetProperty( idParts[pathPointer] );

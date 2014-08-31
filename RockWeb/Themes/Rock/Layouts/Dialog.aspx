@@ -57,7 +57,6 @@
             min-height: 100%;
             width: 100%;
             min-width: 100%;
-            background-color: #ffffff;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             vertical-align: top;
@@ -71,34 +70,36 @@
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
         <asp:UpdatePanel ID="updatePanelDialog" runat="server">
             <ContentTemplate>
-                <div id="headerPanel" class="modal-header">
-                    <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
-                    <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
-                    <% if (!String.IsNullOrWhiteSpace(SubTitle)) { %>
-                    <small><%= SubTitle %></small>
-                    <% } %>
-                </div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
+                        <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+                        <% if (!String.IsNullOrWhiteSpace(SubTitle)) { %>
+                        <small><%= SubTitle %></small>
+                        <% } %>
+                    </div>
 
-                <div class="modal-body">
-                    <div id="modal-scroll-container" class="scroll-container scroll-container-vertical">
-                        <div class="scrollbar">
-                            <div class="track">
-                                <div class="thumb">
-                                    <div class="end"></div>
+                    <div class="modal-body">
+                        <div id="modal-scroll-container" class="scroll-container scroll-container-vertical">
+                            <div class="scrollbar">
+                                <div class="track">
+                                    <div class="thumb">
+                                        <div class="end"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="viewport">
+                                <div class="overview">
+                                    <Rock:Zone Name="Main" runat="server" />
                                 </div>
                             </div>
                         </div>
-                        <div class="viewport">
-                            <div class="overview">
-                                <Rock:Zone name="Main" runat="server" />
-                            </div>
-                        </div>
                     </div>
-                </div>
 
-                <div id="footerPanel" class="modal-footer">
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
+                    <div class="modal-footer">
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
+                    </div>
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>
@@ -115,10 +116,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-

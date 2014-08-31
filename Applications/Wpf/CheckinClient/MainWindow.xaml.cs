@@ -48,7 +48,7 @@ namespace CheckinClient
         {
             this.ResizeMode = System.Windows.ResizeMode.NoResize;
 
-            //this.Topmost = true; // remove before flight
+            this.Topmost = true;
         }
     }
 }

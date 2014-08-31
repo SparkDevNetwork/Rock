@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( SystemEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

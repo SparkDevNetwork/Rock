@@ -48,6 +48,7 @@ namespace Rock.Apps.CheckScannerUtility
                     return amount.ToString( "F" );
                 }
             }
+
             return value.ToString();
         }
 

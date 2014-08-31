@@ -45,15 +45,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "accountId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "accountId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "accountId" ).AsInteger() );
             }
         }
 
@@ -73,7 +65,7 @@ namespace RockWeb.Blocks.Finance
 
             var accountService = new Rock.Model.FinancialAccountService( rockContext );
 
-            int accountId = hfAccountId.Value.AsInteger() ?? 0;
+            int accountId = hfAccountId.Value.AsInteger();
 
             if ( accountId == 0 )
             {
@@ -121,37 +113,23 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="accountId">The account identifier.</param>
+        public void ShowDetail( int accountId )
         {
-            pnlDetails.Visible = false;
-
-            if ( !itemKey.Equals( "accountId" ) )
-            {
-                return;
-            }
-
-            bool editAllowed = true;
-
             FinancialAccount account = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !accountId.Equals( 0 ) )
             {
-                account = new FinancialAccountService( new RockContext() ).Get( itemKeyValue );
-                editAllowed = account.IsAuthorized( Authorization.EDIT, CurrentPerson );
-            }
-            else
-            {
-                account = new FinancialAccount { Id = 0, IsActive = true };
+                account = new FinancialAccountService( new RockContext() ).Get( accountId );
             }
 
             if ( account == null )
             {
-                return;
+                account = new FinancialAccount { Id = 0, IsActive = true };
             }
 
-            pnlDetails.Visible = true;
+            bool editAllowed = account.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
             hfAccountId.Value = account.Id.ToString();
 
             bool readOnly = false;

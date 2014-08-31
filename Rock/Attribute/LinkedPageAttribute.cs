@@ -19,7 +19,7 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting a "linked" page.
+    /// Field Attribute for selecting a "linked" page. Stored as Page.Guid, or Page.Guid,PageRoute.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class LinkedPageAttribute : FieldAttribute

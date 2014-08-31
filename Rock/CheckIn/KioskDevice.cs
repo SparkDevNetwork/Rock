@@ -148,14 +148,17 @@ namespace Rock.CheckIn
             {
                 var rockContext = new RockContext();
 
-                var deviceModel = new DeviceService( rockContext ).Get( id );
+                var deviceModel = new DeviceService( rockContext )
+                    .Queryable( "Locations" )
+                    .Where( d => d.Id == id )
+                    .FirstOrDefault();
 
                 if ( deviceModel != null )
                 {
                     device = new KioskDevice( deviceModel );
                     foreach ( Location location in deviceModel.Locations )
                     {
-                        LoadKioskLocations( device, location );
+                        LoadKioskLocations( device, location, rockContext );
                     }
 
                     var cachePolicy = new CacheItemPolicy();
@@ -184,14 +187,15 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskDevice">The kiosk device.</param>
         /// <param name="location">The location.</param>
-        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location )
+        /// <param name="rockContext">The rock context.</param>
+        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, RockContext rockContext )
         {
-            var groupLocationService = new GroupLocationService( new RockContext() );
+            var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var groupLocation in groupLocationService.GetActiveByLocation( location.Id ) )
             {
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
-                var kioskLocation = new KioskLocation( groupLocation.Location );
+                var kioskLocation = new KioskLocation( location );
 
                 // Populate each kioskLocation with it's schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
@@ -212,7 +216,6 @@ namespace Rock.CheckIn
                 // list of group types
                 if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
-
                     KioskGroupType kioskGroupType = kioskDevice.KioskGroupTypes.Where( g => g.GroupType.Id == groupLocation.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
@@ -246,7 +249,7 @@ namespace Rock.CheckIn
 
             foreach ( var childLocation in location.ChildLocations )
             {
-                LoadKioskLocations( kioskDevice, childLocation );
+                LoadKioskLocations( kioskDevice, childLocation, rockContext );
             }
         }
 

@@ -125,7 +125,7 @@ namespace Rock.Reporting.DataFilter
                             {
                                 foreach ( var definedValue in definedType.DefinedValues )
                                 {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Name, definedValue.Guid.ToString() ) );
+                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
                                 }
                             }
                         }
@@ -239,7 +239,7 @@ namespace Rock.Reporting.DataFilter
                                     var definedValue = DefinedValueCache.Read( definedValueGuid.Value );
                                     if ( definedValue != null )
                                     {
-                                        selectedTexts.Add( definedValue.Name );
+                                        selectedTexts.Add( definedValue.Value );
                                     }
                                 }
                             }
@@ -253,7 +253,7 @@ namespace Rock.Reporting.DataFilter
                     }
                     else if ( entityField.FilterFieldType == SystemGuid.FieldType.DAY_OF_WEEK )
                     {
-                        DayOfWeek dayOfWeek = (DayOfWeek)( values[1].AsInteger() ?? 0 );
+                        DayOfWeek dayOfWeek = (DayOfWeek)( values[1].AsInteger() );
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, dayOfWeek.ConvertToString() );
                     }
@@ -683,7 +683,7 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            double numericValue = values[1].AsDouble( false ) ?? int.MinValue;
+                            double numericValue = values[1].AsDoubleOrNull() ?? int.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:

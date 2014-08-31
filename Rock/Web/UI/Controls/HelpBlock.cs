@@ -60,6 +60,7 @@ $(document).ready(function() {
             {
                 writer.AddAttribute( "class", "help" );
                 writer.AddAttribute( "href", "#" );
+                writer.AddAttribute( "tabindex", "-1" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.AddAttribute("class", "fa fa-question-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );

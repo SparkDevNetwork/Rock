@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -99,6 +100,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? WorkflowFormId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria attribute unique identifier.
+        /// </summary>
+        /// <value>
+        /// The criteria attribute unique identifier.
+        /// </value>
+        [DataMember]
+        public Guid? CriteriaAttributeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the criteria comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the criteria comparison.
+        /// </value>
+        [DataMember]
+        public ComparisonType CriteriaComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria value.
+        /// </summary>
+        /// <value>
+        /// The criteria value.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string CriteriaValue { get; set; }
 
         #endregion
 

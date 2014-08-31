@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Text.AsInteger( false );
+                return this.Text.AsIntegerOrNull();
             }
 
             set

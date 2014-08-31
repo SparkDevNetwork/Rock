@@ -33,11 +33,11 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Sets an attribute's value to the selected value." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Activate Activity" )]
+    [ExportMetadata( "ComponentName", "Set Attribute Value" )]
 
-    [WorkflowAttribute( "Attribute", "The attribute to set.", false, "", "", 0 )]
-    [TextField( "Value", "The value.", false, "", "", 1 )]
-    public class SetAttributeValue : CompareAction
+    [WorkflowAttribute( "Attribute", "The attribute to set the value of." )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-liquid'></span>", false, "", "", 1, "Value" )]
+    public class SetAttributeValue : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -54,23 +54,29 @@ namespace Rock.Workflow.Action
             Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
             if (!guid.IsEmpty())
             {
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
-                    if ( TestCompare( action ) )
+                    string value = GetAttributeValue( action, "Value" );
+                    guid = value.AsGuid();
+                    if ( guid.IsEmpty() )
                     {
-                        string value = GetAttributeValue( action, "Value" );
+                        value = value.ResolveMergeFields( GetMergeFields( action ) );
+                    }
+                    else
+                    {
+                        value = action.GetWorklowAttributeValue( guid );
+                    }
 
-                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                        {
-                            action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                        }
-                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                        {
-                            action.Activity.SetAttributeValue( attribute.Key, value );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                        }
+                    if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                    {
+                        action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                    }
+                    else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                    {
+                        action.Activity.SetAttributeValue( attribute.Key, value );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
                     }
                 }
             }

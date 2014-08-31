@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.Cache;
+using Rock.Data;
 
 namespace Rock.Extension
 {
@@ -287,12 +288,13 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsAuthorized( string action, Model.Person person )
+        public bool IsAuthorized( string action, Model.Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -311,12 +313,13 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsPrivate( string action, Model.Person person )
+        public bool IsPrivate( string action, Model.Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -324,9 +327,10 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public void MakePrivate( string action, Model.Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public void MakePrivate( string action, Model.Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -334,9 +338,10 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public void MakeUnPrivate( string action, Model.Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public void MakeUnPrivate( string action, Model.Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person );
+            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
     }
 }

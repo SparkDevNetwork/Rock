@@ -305,6 +305,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the merge field help.
+        /// </summary>
+        /// <value>
+        /// The merge field help.
+        /// </value>
         public string MergeFieldHelp
         {
             get { return ViewState["MergeFieldHelp"] as string ?? string.Empty; }
@@ -374,16 +380,21 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            int editorHeight = EditorHeight.AsIntegerOrNull() ?? 200;
+            
             // Add merge field help
             if ( MergeFields.Any() )
             {
+                writer.Write( "<div class='codeeditor-header margin-b-md clearfix'>" );
                 _mfpMergeFields.RenderControl( writer );
+                writer.Write( "</div>" );
+
+                editorHeight = editorHeight - 40;
             }
 
             // add editor div
-            string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
+            writer.Write( string.Format( customDiv, editorHeight, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
 
             // write custom css for the code editor
             string customStyle = @"
@@ -422,7 +433,7 @@ namespace Rock.Web.UI.Controls
 ";
 
             string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
 

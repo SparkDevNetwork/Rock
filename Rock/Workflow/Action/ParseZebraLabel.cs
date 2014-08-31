@@ -55,6 +55,7 @@ namespace Rock.Workflow.Action
                 if ( binaryFile.BinaryFileType.Guid != new Guid( SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
                 {
                     errorMessages.Add( "Binary file is not a check-in label" );
+                    action.AddLogEntry( "Binary file is not a check-in label", true );
                     return false;
                 }
 
@@ -76,7 +77,7 @@ namespace Rock.Workflow.Action
                 newValues.Add( attributeValue );
 
                 binaryFile.AttributeValues["MergeCodes"] = newValues;
-                binaryFile.SaveAttributeValues(new RockContext());
+                binaryFile.SaveAttributeValues( rockContext );
             }
             
             return true;

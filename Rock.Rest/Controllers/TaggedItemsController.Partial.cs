@@ -90,6 +90,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
+            SetProxyCreation( true );
+
             var personAlias = GetPersonAlias();
 
             var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
@@ -162,6 +164,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
+            SetProxyCreation( true );
+
             var personAlias = GetPersonAlias();
 
             if ( name.Contains( '^' ) )

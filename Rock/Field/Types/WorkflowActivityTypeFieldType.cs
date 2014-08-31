@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
+    /// Field Type used to display a dropdown list of activity types for a specific workflow type
     /// </summary>
     [Serializable]
     public class WorkflowActivityFieldType : FieldType
@@ -109,7 +109,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
                 {
-                    editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
                 }
             }
 
@@ -144,7 +144,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is RockDropDownList )
                 {
-                    ( (RockDropDownList)control ).SetValue( value );
+                    ( (RockDropDownList)control ).SetValue( value.ToUpper() );
                 }
             }
         }

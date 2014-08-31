@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Administration
                 var rockContext = new RockContext();
                 var pageService = new PageService( rockContext );
 
-                int pageId = hfPageId.Value.AsInteger() ?? 0;
+                int pageId = hfPageId.Value.AsInteger();
                 if ( pageId == 0 )
                 {
                     page = new Rock.Model.Page();

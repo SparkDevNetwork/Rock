@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
-        /// <param name="workflowContext">The workflow context.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The workflow action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>

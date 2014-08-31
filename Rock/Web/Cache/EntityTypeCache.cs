@@ -250,10 +250,16 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( Type type, bool createIfNotFound = true )
+        public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
             int? entityTypeId = null;
+
+            if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+            {
+                type = type.BaseType;
+            }
 
             lock ( obj )
             {
@@ -268,7 +274,7 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService( new RockContext() );
+            var entityTypeService = new EntityTypeService( rockContext ?? new RockContext() );
             var entityTypeModel = entityTypeService.Get( type, createIfNotFound, null );
             return Read( entityTypeModel );
         }
@@ -289,8 +295,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="createNew">if set to <c>true</c> [create new].</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( string name, bool createNew )
+        public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
             int? entityTypeId = null;
 
@@ -307,7 +314,7 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService( new RockContext() );
+            var entityTypeService = new EntityTypeService( rockContext ?? new RockContext() );
             var entityTypeModel = entityTypeService.Get( name, createNew );
             if ( entityTypeModel != null )
             {
@@ -323,22 +330,19 @@ namespace Rock.Web.Cache
         /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( int id )
+        public static EntityTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = EntityTypeCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
-            if ( entityType != null )
+            if ( entityType == null )
             {
-                return entityType;
-            }
-            else
-            {
-                var entityTypeService = new EntityTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var entityTypeService = new EntityTypeService( rockContext );
                 var entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
@@ -347,49 +351,45 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, entityType, cachePolicy );
                     cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                    return entityType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return entityType;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( Guid guid )
+        public static EntityTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            EntityTypeCache entityType = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                entityType = Read( (int)cacheObj, rockContext );
             }
-            else
+
+            if ( entityType == null )
             {
-                var entityTypeService = new EntityTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var entityTypeService = new EntityTypeService( rockContext );
                 var entityTypeModel = entityTypeService.Get( guid );
                 if ( entityTypeModel != null )
                 {
-                    var entityType = new EntityTypeCache( entityTypeModel );
+                    entityType = new EntityTypeCache( entityTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( EntityTypeCache.CacheKey( entityType.Id ), entityType, cachePolicy );
                     cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                    return entityType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return entityType;
         }
 
         /// <summary>
@@ -400,25 +400,22 @@ namespace Rock.Web.Cache
         public static EntityTypeCache Read( EntityType entityTypeModel )
         {
             string cacheKey = EntityTypeCache.CacheKey( entityTypeModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType != null )
             {
                 entityType.CopyFromModel( entityTypeModel );
-                return entityType;
             }
             else
             {
                 entityType = new EntityTypeCache( entityTypeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, entityType, cachePolicy );
                 cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                return entityType;
             }
+
+            return entityType;
         }
 
         /// <summary>

@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
             {
-                int? pageViewCount = GetAttributeValue( "PageViewCount" ).AsInteger();
+                int? pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull();
                 if ( !pageViewCount.HasValue || pageViewCount.Value == 0 )
                 {
                     pageViewCount = 1;
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Cms
 
                 StringBuilder sbUsers = new StringBuilder();
 
-                var site = SiteCache.Read( (int)GetAttributeValue( "Site" ).AsInteger() );
+                var site = SiteCache.Read( GetAttributeValue( "Site" ).AsInteger() );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     // determine whether to show last page views
-                    if ( (int)GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
+                    if ( GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
                     {
                         sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
                                                                 <i class='fa-li fa fa-circle'></i> {1}

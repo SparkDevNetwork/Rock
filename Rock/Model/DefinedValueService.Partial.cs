@@ -39,7 +39,7 @@ namespace Rock.Model
             return Queryable()
                 .Where( t => t.DefinedTypeId == definedTypeId )
                 .OrderBy( t => t.Order )
-                .ThenBy( a => a.Name );
+                .ThenBy( a => a.Value );
         }
 
         /// <summary>

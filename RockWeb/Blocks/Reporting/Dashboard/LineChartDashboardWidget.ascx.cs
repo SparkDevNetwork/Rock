@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.Web.UI;
-
-using Rock;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -28,31 +25,42 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Line Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
-    public partial class LineChartDashboardWidget : DashboardWidget
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Line Chart Dashboard Widget" )]
+    public partial class LineChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
+        public override FlotChart FlotChartControl
+        {
+            get { return lcChart; }
+        }
+
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
+        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
+        {
+            get { return nbMetricWarning; }
+        }
+
         /// <summary>
         /// Loads the chart.
         /// </summary>
         public override void LoadChart()
         {
-            lcExample.StartDate = new DateTime( 2013, 1, 1 );
-            lcExample.EndDate = new DateTime( 2014, 1, 1 );
-            lcExample.MetricValueType = this.MetricValueType;
-            lcExample.MetricId = this.MetricId;
-            lcExample.EntityId = this.EntityId;
-            lcExample.Title = this.Title;
-            lcExample.Subtitle = this.Subtitle;
-            lcExample.CombineValues = this.CombineValues;
-
-            lcExample.ShowTooltip = true;
-            
-            lcExample.Options.SetChartStyle( this.ChartStyle );
-
-            string debug = this.ChartStyle.ToJson( false );
-            
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
+            base.LoadChart();
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

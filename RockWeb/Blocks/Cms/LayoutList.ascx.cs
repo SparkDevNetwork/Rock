@@ -154,10 +154,17 @@ namespace RockWeb.Blocks.Cms
         {
             pnlLayouts.Visible = false;
 
-            int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            int siteId = PageParameter( "siteId" ).AsInteger();
             if ( siteId == 0 )
             {
                 // quit if the siteId can't be determined
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var site = SiteCache.Read( siteId, rockContext );
+            if ( site == null )
+            {
                 return;
             }
 
@@ -165,9 +172,8 @@ namespace RockWeb.Blocks.Cms
 
             pnlLayouts.Visible = true;
 
-
             // Add any missing layouts
-            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), site );
 
             LayoutService layoutService = new LayoutService( new RockContext() );
             var qry = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) );

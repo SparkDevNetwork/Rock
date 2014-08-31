@@ -313,6 +313,7 @@ namespace RockWeb.Blocks.Core
             category.EntityTypeQualifierValue = QualifierValue;
 
             category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
 
@@ -409,6 +410,7 @@ namespace RockWeb.Blocks.Core
                 tbName.Text = category.Name;
                 tbDescription.Text = category.Description;
                 tbIconCssClass.Text = category.IconCssClass;
+                tbHighlightColor.Text = category.HighlightColor;
             }
             else
             {

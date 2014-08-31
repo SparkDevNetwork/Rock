@@ -30,8 +30,9 @@ namespace Rock.Field.Types
     /// Field used to save and display a person
     /// </summary>
     [Serializable]
-    public class PersonFieldType : FieldType, IEntityFieldType
+    public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -54,6 +55,27 @@ namespace Rock.Field.Types
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        /// <summary>
+        /// Formats the value extended.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Guid guid = value.AsGuid();
+                int personId = new PersonAliasService( new RockContext() ).Queryable()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.PersonId )
+                    .FirstOrDefault();
+                return string.Format( "person/{0}", personId );
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -87,33 +109,10 @@ namespace Rock.Field.Types
 
                 if ( personId.HasValue )
                 {
-                    var rockContext = new RockContext();
-
-                    var personAliasService = new PersonAliasService( rockContext );
-                    var personAlias = personAliasService.Queryable()
-                        .Where( a => a.AliasPersonId == personId )
-                        .FirstOrDefault();
+                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasId( personId.Value );
                     if ( personAlias != null )
                     {
                         result = personAlias.Guid.ToString();
-                    }
-                    else
-                    {
-                        // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
-                        // to that personId.  If there isn't for some reason, create it now...
-                        var person = new PersonService( rockContext ).Get( personId.Value );
-                        if ( person != null )
-                        {
-                            personAlias = new PersonAlias();
-                            personAlias.Guid = Guid.NewGuid();
-                            personAlias.AliasPersonId = person.Id;
-                            personAlias.AliasPersonGuid = person.Guid;
-                            personAlias.PersonId = person.Id;
-                            result = personAlias.Guid.ToString();
-
-                            personAliasService.Add( personAlias );
-                            rockContext.SaveChanges();
-                        }
                     }
                 }
             }

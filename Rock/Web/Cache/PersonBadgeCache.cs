@@ -15,14 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.PersonProfile;
-using Rock.Security;
-using Rock.Web.UI;
 
 namespace Rock.Web.Cache
 {
@@ -79,7 +78,7 @@ namespace Rock.Web.Cache
         /// The order.
         /// </value>
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets the Entity Type.
         /// </summary>
@@ -159,74 +158,68 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PersonBadgeCache Read( int id )
+        public static PersonBadgeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = PersonBadgeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
             PersonBadgeCache personBadge = cache[cacheKey] as PersonBadgeCache;
 
-            if ( personBadge != null )
+            if ( personBadge == null )
             {
-                return personBadge;
-            }
-            else
-            {
-                var personBadgeService = new PersonBadgeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var personBadgeService = new PersonBadgeService( rockContext );
                 var personBadgeModel = personBadgeService.Get( id );
                 if ( personBadgeModel != null )
                 {
-                    personBadgeModel.LoadAttributes();
+                    personBadgeModel.LoadAttributes( rockContext );
                     personBadge = new PersonBadgeCache( personBadgeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, personBadge, cachePolicy );
                     cache.Set( personBadge.Guid.ToString(), personBadge.Id, cachePolicy );
-
-                    return personBadge;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return personBadge;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PersonBadgeCache Read( Guid guid )
+        public static PersonBadgeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            PersonBadgeCache personBadge = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                personBadge = Read( (int)cacheObj, rockContext );
             }
-            else
+
+            if ( personBadge == null )
             {
-                var personBadgeService = new PersonBadgeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var personBadgeService = new PersonBadgeService( rockContext );
                 var personBadgeModel = personBadgeService.Get( guid );
                 if ( personBadgeModel != null )
                 {
-                    personBadgeModel.LoadAttributes();
-                    var personBadge = new PersonBadgeCache( personBadgeModel );
+                    personBadgeModel.LoadAttributes( rockContext );
+                    personBadge = new PersonBadgeCache( personBadgeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( PersonBadgeCache.CacheKey( personBadge.Id ), personBadge, cachePolicy );
                     cache.Set( personBadge.Guid.ToString(), personBadge.Id, cachePolicy );
-
-                    return personBadge;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return personBadge;
         }
 
         /// <summary>
@@ -237,25 +230,22 @@ namespace Rock.Web.Cache
         public static PersonBadgeCache Read( PersonBadge personBadgeModel )
         {
             string cacheKey = PersonBadgeCache.CacheKey( personBadgeModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             PersonBadgeCache personBadge = cache[cacheKey] as PersonBadgeCache;
 
             if ( personBadge != null )
             {
                 personBadge.CopyFromModel( personBadgeModel );
-                return personBadge;
             }
             else
             {
                 personBadge = new PersonBadgeCache( personBadgeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, personBadge, cachePolicy );
                 cache.Set( personBadge.Guid.ToString(), personBadge.Id, cachePolicy );
-
-                return personBadge;
             }
+
+            return personBadge;
         }
 
         /// <summary>
@@ -277,7 +267,7 @@ namespace Rock.Web.Cache
         {
             return JsonConvert.DeserializeObject( json, typeof( PersonBadgeCache ) ) as PersonBadgeCache;
         }
-        
+
         #endregion
 
     }

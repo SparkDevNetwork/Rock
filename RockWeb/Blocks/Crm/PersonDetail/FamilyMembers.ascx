@@ -22,10 +22,10 @@
 
                                 <asp:Repeater ID="rptrMembers" runat="server">
                                     <ItemTemplate>
-                                        <li class="member">
+                                        <li class='<%# FormatPersonCssClass( (bool?)Eval("Person.IsDeceased") ) %>'>
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <div class="person-image" id="divPersonImage" runat="server"></div>
-                                                <div>
+                                                <div class="person-info">
                                                     <h4><%# Eval("Person.NickName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
                                                 </div>
@@ -45,14 +45,12 @@
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>
                                         <li class="address rollover-container clearfix">
-                                            <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Name")) %></h4>
+                                            <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %></h4>
                                             <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank">
                                                 <i class="fa fa-map-marker"></i>
                                             </a>
                                             <div class="address">
-                                                <%# Eval("Location.Street1") %><br />
-                                                <asp:PlaceHolder ID="phStreet2" runat="server" />
-                                                <span><%# Eval("Location.City") %>, <%# Eval("Location.State") %> <%# Eval("Location.Zip") %></span>
+                                                <%# Eval("Location.FormattedHtmlAddress") %>
                                             </div>
                                             <div class="pull-left rollover-item">
                                                 <asp:LinkButton ID="lbVerify" runat="server">

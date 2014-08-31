@@ -112,7 +112,7 @@ function() {
             {
                 Guid locationGuid = selectionValues[0].AsGuid();
                 var location = new LocationService( new RockContext() ).Get( locationGuid );
-                double miles = selectionValues[1].AsDouble() ?? 0;
+                double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
 
                 result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
             }
@@ -216,7 +216,7 @@ function() {
                 }
 
                 var selectedLocationGeoPoint = location.GeoPoint;
-                double miles = selectionValues[1].AsDouble() ?? 0;
+                double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
 
                 double meters = miles * 1609.344;
 

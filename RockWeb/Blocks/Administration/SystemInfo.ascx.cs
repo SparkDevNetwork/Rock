@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
-using System.Linq;
 using System.IO;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Runtime.Caching;
+using System.Linq;
 using System.Reflection;
-
+using System.Runtime.Caching;
+using System.Text;
 using System.Web;
+using System.Web.UI;
 
-using Rock.Web.UI.Controls;
-using Rock.VersionInfo;
+using Rock;
 using Rock.Data;
+using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -61,7 +59,7 @@ namespace RockWeb.Blocks.Administration
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
         }
-        
+
         #endregion
 
         #region Events
@@ -75,54 +73,64 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
 
-            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.AttributeService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                Rock.Web.Cache.AttributeCache.Flush( id );
             }
 
-            foreach ( var blockType in new Rock.Model.BlockTypeService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.BlockTypeService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+                Rock.Web.Cache.BlockTypeCache.Flush( id );
             }
 
-            foreach ( var block in new Rock.Model.BlockService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.BlockService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
+                Rock.Web.Cache.BlockCache.Flush( id );
             }
 
-            foreach ( var page in new Rock.Model.PageService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.PageService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.PageCache.Flush( page.Id );
+                Rock.Web.Cache.PageCache.Flush( id );
             }
 
-            foreach ( var definedType in new Rock.Model.DefinedTypeService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.DefinedTypeService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.DefinedTypeCache.Flush( definedType.Id );
+                Rock.Web.Cache.DefinedTypeCache.Flush( id );
             }
 
-            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.DefinedValueService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
+                Rock.Web.Cache.DefinedValueCache.Flush( id );
             }
 
-            foreach ( var group in new Rock.Model.GroupTypeService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.GroupTypeService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.GroupTypeCache.Flush( group.Id );
+                Rock.Web.Cache.GroupTypeCache.Flush( id );
             }
 
-            foreach ( var campus in new Rock.Model.CampusService( rockContext ).Queryable().ToList() )
+            Guid securityRoleGuid = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            foreach ( int id in new Rock.Model.GroupService( rockContext ).Queryable()
+                .Where( g =>
+                    g.IsSecurityRole ||
+                    g.GroupType.Guid.Equals( securityRoleGuid ) )
+                .Select( a => a.Id ) )
             {
-                Rock.Web.Cache.CampusCache.Flush( campus.Id );
+                Rock.Security.Role.Flush( id );
             }
 
-            foreach ( var category in new Rock.Model.CategoryService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.CampusService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.CategoryCache.Flush( category.Id );
+                Rock.Web.Cache.CampusCache.Flush( id );
             }
 
-            foreach ( var layout in new Rock.Model.LayoutService( rockContext ).Queryable().ToList() )
+            foreach ( int id in new Rock.Model.CategoryService( rockContext ).Queryable().Select( a => a.Id ) )
             {
-                Rock.Web.Cache.LayoutCache.Flush( layout.Id );
+                Rock.Web.Cache.CategoryCache.Flush( id );
+            }
+
+            foreach ( int id in new Rock.Model.LayoutService( rockContext ).Queryable().Select( a => a.Id ) )
+            {
+                Rock.Web.Cache.LayoutCache.Flush( id );
             }
 
             nbMessage.Visible = true;
@@ -150,7 +158,7 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Execution Location:", lExecLocation.Text, response );
             ResponseWrite( "Cache:", lCacheOverview.Text, response ); ;
             ResponseWrite( "Routes:", lRoutes.Text, response );
-            
+
             foreach ( string key in Request.ServerVariables )
             {
                 ResponseWrite( key, Request.ServerVariables[key], response );

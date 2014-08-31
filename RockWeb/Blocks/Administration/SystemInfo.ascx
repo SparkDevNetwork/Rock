@@ -53,8 +53,8 @@
         <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
 
         <div class="actions margin-t-xl">
-            <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary btn-sm" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
-            <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link btn-sm restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
+            <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
+            <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link js-restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
         </div>
     </div>
 
@@ -83,14 +83,14 @@
         <h4>Routes</h4>
         <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
 
-        <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action btn-sm" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
+        <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
             <i class="fa fa-download"></i> Download Diagnostics File
         </asp:LinkButton>
 
     </div>
 
     <script>
-        $(".restart").on("click", function () {
+        $(".js-restart").on("click", function () {
             bootbox.alert("The Rock application will be restarted. You will need to reload this page to continue.")
         });
     </script>

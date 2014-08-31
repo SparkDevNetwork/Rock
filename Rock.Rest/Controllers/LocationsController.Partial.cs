@@ -47,15 +47,6 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
-                name: "LocationStandardize",
-                routeTemplate: "api/locations/standardize",
-                defaults: new
-                {
-                    controller = "locations",
-                    action = "standardize"
-                } );
-
-            routes.MapHttpRoute(
                 name: "LocationsGetChildren",
                 routeTemplate: "api/locations/getchildren/{id}/{rootLocationId}",
                 defaults: new

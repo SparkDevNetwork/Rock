@@ -13,7 +13,10 @@
     NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
         of the DefinedValue editor) when editing something like the AbilityLevel person
         attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-*/
+
+    JME - Not sure we need this with the new theme. Let me know if you see any
+          area that is in need of this still.
+
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -29,7 +32,7 @@
     -moz-transition: border linear .2s, box-shadow linear .2s;
     -o-transition: border linear .2s, box-shadow linear .2s;
     transition: border linear .2s, box-shadow linear .2s;
-}
+}*/
 
 
 
@@ -70,22 +73,12 @@ table.server-variables
     word-wrap:break-word;
 }
 
-    table.server-variables td
-    {
-        min-width:200px;
-        vertical-align:text-top;
-    }
-
-/* CSF - Exception Detail Grid*/
-.exceptionDetail-stackTrace-hide
+table.server-variables td
 {
-    display: none;
+    min-width:200px;
+    vertical-align:text-top;
 }
 
-.exceptionDetail-stackTrace-show
-{
-    display:table-row;
-}
 
 
 
@@ -162,3 +155,22 @@ span.data-view-filter-label {
     cursor:pointer;
 }
 
+
+
+div.toggle-container {   /* ???? JME */
+    display: inline-block;
+}
+
+
+/* MP - Transaction Image display.  Used in TransactionDetail and TransactionMatching */
+.transaction-image {
+    max-width: 400px;
+    max-height: 200px;
+    margin: 5px;
+}
+
+.transaction-image-thumbnail {
+    max-width: 200px;
+    max-height: 100px;
+    margin: 5px;
+}

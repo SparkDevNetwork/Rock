@@ -103,7 +103,7 @@ namespace RockWeb
         /// <exception cref="System.Exception">file id key must be a guid or an int</exception>
         private static IAsyncResult BeginProcessBinaryFileRequest( HttpContext context, AsyncCallback cb )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger() ?? 0;
+            int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
 
             if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )

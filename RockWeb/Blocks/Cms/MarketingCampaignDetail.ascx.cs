@@ -102,15 +102,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "marketingCampaignId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "marketingCampaignId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "marketingCampaignId" ).AsInteger() );
             }
         }
 
@@ -246,7 +238,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 /* Save MarketingCampaignAudiences to db */
                 if ( marketingCampaign.MarketingCampaignAudiences == null )
@@ -357,23 +349,18 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="marketingCampaignId">The marketing campaign identifier.</param>
+        public void ShowDetail( int marketingCampaignId )
         {
-            if ( !itemKey.Equals( "marketingCampaignId" ) )
-            {
-                return;
-            }
-
             MarketingCampaign marketingCampaign = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !marketingCampaignId.Equals( 0 ) )
             {
                 MarketingCampaignService marketingCampaignService = new MarketingCampaignService( new RockContext() );
-                marketingCampaign = marketingCampaignService.Get( itemKeyValue );
+                marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
             }
-            else
+
+            if (marketingCampaign == null)
             {
                 marketingCampaign = new MarketingCampaign { Id = 0 };
                 marketingCampaign.MarketingCampaignAds = new List<MarketingCampaignAd>();
@@ -576,7 +563,7 @@ namespace RockWeb.Blocks.Cms
             List<DefinedValue> list = qry.ToList();
             if ( list.Count == 0 )
             {
-                list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
+                list.Add( new DefinedValue { Id = None.Id, Value = None.Text } );
                 btnAddMarketingCampaignAudience.Enabled = false;
                 btnAddMarketingCampaignAudience.CssClass = "btn btn-primary disabled";
             }
@@ -620,10 +607,10 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindMarketingCampaignAudiencesGrid()
         {
-            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => DefinedValueCache.Read(a.AudienceTypeValueId).Name ).ToList();
+            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => DefinedValueCache.Read(a.AudienceTypeValueId).Value ).ToList();
             gMarketingCampaignAudiencesPrimary.DataBind();
 
-            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => DefinedValueCache.Read( a.AudienceTypeValueId ).Name ).ToList();
+            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => DefinedValueCache.Read( a.AudienceTypeValueId ).Value ).ToList();
             gMarketingCampaignAudiencesSecondary.DataBind();
         }
 

@@ -17,11 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -32,7 +31,7 @@ namespace Rock.CheckIn
     [LinkedPage( "Home Page" )]
     [LinkedPage( "Next Page" )]
     [LinkedPage( "Previous Page" )]
-    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for Check-in", false, 0 )]
+    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in" )]
     [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
     public abstract class CheckInBlock : RockBlock
     {
@@ -136,12 +135,15 @@ namespace Rock.CheckIn
         {
             errorMessages = new List<string>();
 
-            int workflowTypeId = 0;
-            if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
+            Guid? guid = GetAttributeValue( "WorkflowType" ).AsGuidOrNull();
+            if ( guid.HasValue )
             {
                 var rockContext = new RockContext();
                 var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( workflowTypeId );
+                var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
+                    .Where( w => w.Guid.Equals( guid.Value ) )
+                    .FirstOrDefault();
+
                 if ( workflowType != null )
                 {
                     if ( CurrentWorkflow == null )
@@ -155,6 +157,9 @@ namespace Rock.CheckIn
                         WorkflowActivity.Activate( activityType, CurrentWorkflow );
                         if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
                         {
+                            // Keep workflow active for continued processing
+                            CurrentWorkflow.CompletedDateTime = null;
+
                             return true;
                         }
                     }
@@ -165,9 +170,8 @@ namespace Rock.CheckIn
                 }
                 else
                 {
-                    errorMessages.Add( string.Format( "Invalid Workflow type Id", activityName ) );
+                    errorMessages.Add( "Invalid Workflow Type" );
                 }
-
             }
 
             return false;
@@ -234,7 +238,7 @@ namespace Rock.CheckIn
             else
             {
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                modalAlert.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                modalAlert.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
 
             return errors;
@@ -249,7 +253,7 @@ namespace Rock.CheckIn
         /// the activity in order to save state and continue to the next page.</param>
         /// <param name="conditionMessage">The message to display in the modal if the condition fails.</param>
         /// <returns></returns>
-        protected virtual List<string> ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, Func<bool> doNotProceedCondition, string conditionMessage )
+        protected virtual bool ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, Func<bool> doNotProceedCondition, string conditionMessage )
         {
             var errors = new List<string>();
 
@@ -259,20 +263,21 @@ namespace Rock.CheckIn
                 if ( doNotProceedCondition() )
                 {
                     modalAlert.Show( conditionMessage, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    return false;
                 }
                 else
                 {
                     SaveState();
                     NavigateToNextPage();
+                    return true;
                 }
             }
             else
             {
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                modalAlert.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                modalAlert.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                return false;
             }
-
-            return errors;
         }
 
         /// <summary>

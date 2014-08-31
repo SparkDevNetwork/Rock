@@ -49,18 +49,10 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "scheduleId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string scheduleIdParam = PageParameter( "scheduleId" );
+                if (!string.IsNullOrWhiteSpace(scheduleIdParam))
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "ScheduleId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "ScheduleId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( scheduleIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -156,7 +148,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfScheduleId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -294,42 +286,32 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="scheduleId">The schedule identifier.</param>
+        public void ShowDetail( int scheduleId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( scheduleId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int scheduleId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( itemKey != "ScheduleId" )
-            {
-                return;
-            }
 
             var scheduleService = new ScheduleService( new RockContext() );
             Schedule schedule = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !scheduleId.Equals( 0 ) )
             {
-                schedule = scheduleService.Get( itemKeyValue );
-            }
-            else
-            {
-                schedule = new Schedule { Id = 0, CategoryId = parentCategoryId };
+                schedule = scheduleService.Get( scheduleId );
             }
 
             if ( schedule == null )
             {
-                return;
+                schedule = new Schedule { Id = 0, CategoryId = parentCategoryId };
             }
 
             pnlDetails.Visible = true;

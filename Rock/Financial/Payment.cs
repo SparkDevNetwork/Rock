@@ -15,6 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+
+using DotLiquid;
+
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -39,6 +44,16 @@ namespace Rock.Financial
         public DateTime TransactionDateTime { get; set; }
 
         /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public virtual DefinedValueCache CurrencyTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets the credit card type value id.
+        /// </summary>
+        public virtual DefinedValueCache CreditCardTypeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the gateway schedule id.
         /// </summary>
         public string GatewayScheduleId { get; set; }
@@ -47,5 +62,6 @@ namespace Rock.Financial
         /// Gets or sets a value indicating whether schedule is still active.
         /// </summary>
         public bool ScheduleActive { get; set; }
+
     }
 }

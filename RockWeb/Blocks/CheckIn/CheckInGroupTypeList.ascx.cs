@@ -34,9 +34,9 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Group Type List")]
-    [Category("Check-in")]
-    [Description("Lists groups types that are available for checkin.")]
+    [DisplayName( "Group Type List" )]
+    [Category( "Check-in" )]
+    [Description( "Lists groups types that are available for checkin." )]
     [LinkedPage( "Schedule Builder Page" )]
     [LinkedPage( "Configure Groups Page", "Page for configuration of Check-in Groups/Locations" )]
     public partial class CheckinGroupTypeList : RockBlock
@@ -130,9 +130,28 @@ namespace RockWeb.Blocks.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupType_Add( object sender, EventArgs e )
         {
-            mdAddCheckinGroupType.Show();
+            hfGroupTypeId.Value = "0";
+            tbGroupTypeName.Text = string.Empty;
+            tbGroupTypeDescription.Text = string.Empty;
+            mdAddEditCheckinGroupType.Show();
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupType_RowSelected( object sender, RowEventArgs e )
+        {
+            var groupType = new GroupTypeService( new RockContext() ).Get( e.RowKeyId );
+            if ( groupType != null )
+            {
+                hfGroupTypeId.Value = groupType.Id.ToString();
+                tbGroupTypeName.Text = groupType.Name;
+                tbGroupTypeDescription.Text = groupType.Description;
+                mdAddEditCheckinGroupType.Show();
+            }
+        }
 
         /// <summary>
         /// Handles the RowCommand event of the gGroupType control.
@@ -141,7 +160,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewCommandEventArgs"/> instance containing the event data.</param>
         protected void gGroupType_RowCommand( object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e )
         {
-            int? rowIndex = ( e.CommandArgument as string ).AsInteger( false );
+            int? rowIndex = ( e.CommandArgument as string ).AsIntegerOrNull();
             if ( rowIndex != null )
             {
                 GridViewRow row = ( sender as Grid ).Rows[rowIndex.Value];
@@ -171,18 +190,27 @@ namespace RockWeb.Blocks.CheckIn
         {
             var rockContext = new RockContext();
             var groupTypeService = new GroupTypeService( rockContext );
-            
-            GroupType groupType = new GroupType();
-            groupType.Name = tbGroupTypeName.Text;
-            groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
-            groupType.ShowInNavigation = false;
-            groupType.ShowInGroupList = false;
+            GroupType groupType;
 
-            groupTypeService.Add( groupType );
+            if ( hfGroupTypeId.Value.AsInteger() == 0 )
+            {
+                groupType = new GroupType();
+                groupTypeService.Add( groupType );
+                groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
+                groupType.ShowInNavigation = false;
+                groupType.ShowInGroupList = false;
+            }
+            else
+            {
+                groupType = groupTypeService.Get( hfGroupTypeId.Value.AsInteger() );
+            }
+
+            groupType.Name = tbGroupTypeName.Text;
+            groupType.Description = tbGroupTypeDescription.Text;
 
             rockContext.SaveChanges();
 
-            mdAddCheckinGroupType.Hide();
+            mdAddEditCheckinGroupType.Hide();
 
             BindGrid();
         }

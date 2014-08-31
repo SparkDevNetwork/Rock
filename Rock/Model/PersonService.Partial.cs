@@ -104,7 +104,7 @@ namespace Rock.Model
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    return Queryable( includes )
+                    return base.Queryable( includes )
                         .Where( p =>
                             p.RecordTypeValueId != definedValue.Id &&
                             ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
@@ -152,7 +152,7 @@ namespace Rock.Model
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p => 
                     p.Email == email && 
-                    p.FirstName == firstName && 
+                    (p.FirstName == firstName || p.NickName == firstName) && 
                     p.LastName == lastName )
                 .ToList();
         }
@@ -310,8 +310,6 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
-            var names = fullName.SplitDelimitedValues();
-
             string firstName = string.Empty;
             string lastName = string.Empty;
             string singleName = string.Empty;
@@ -319,12 +317,16 @@ namespace Rock.Model
             if ( fullName.Contains( ',' ) )
             {
                 reversed = true;
-                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
-                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+                // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
+                var nameParts = fullName.Split( ',' );
+                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
+                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
             }
             else if ( fullName.Trim().Contains( ' ' ) )
             {
                 reversed = false;
+                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
+                var names = fullName.Split( ' ' );
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
@@ -460,8 +462,8 @@ namespace Rock.Model
                             lastNames.Contains( p.LastName ) &&
                             ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) ) )
                         .Select( p => ( reversed ?
-                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
-                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) ) )
+                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) :
+                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) ) )
                         .Distinct()
                         .ToList();
                     }
@@ -515,10 +517,10 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
-            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
-                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == groupTypeFamilyId )
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != personId )
                 .Distinct();
@@ -535,7 +537,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person" )
                 .Where( m => m.GroupId == family.Id )
                 .Where( m => includeSelf || m.PersonId != personId )
                 .OrderBy( m => m.GroupRole.Order)
@@ -576,17 +578,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the first location.
+        /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="locationTypeValueId">The location type value id.</param>
         /// <returns></returns>
-        public Location GetFirstLocation( int personId, int locationTypeValueId )
+        public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
-            return GetFamilies( personId )
-                .SelectMany( g => g.GroupLocations )
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location" )
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
-                .Select( gl => gl.Location )
                 .FirstOrDefault();
         }
 
@@ -710,9 +713,10 @@ namespace Rock.Model
             // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
             // 2) Opposite Gender as Person
             // 3) Both Persons are Married
-            
+
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            int marriedDefinedValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()).Id;
+            int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
@@ -720,7 +724,7 @@ namespace Rock.Model
             }
 
             return GetFamilyMembers(person.Id)
-                .Where( m => m.GroupRole.Guid == adultGuid)
+                .Where( m => m.GroupRoleId == adultRoleId )
                 .Where( m => m.Person.Gender != person.Gender )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
                 .Select( m => m.Person )

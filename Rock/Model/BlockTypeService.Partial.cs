@@ -82,7 +82,7 @@ namespace Rock.Model
             // Get a list of the BlockTypes already registered (via the path)
             var rockContext = new RockContext();
             var blockTypeService = new BlockTypeService( rockContext );
-            var registered =  blockTypeService.Queryable();
+            var registered = blockTypeService.Queryable().ToList();
 
             // for each BlockType
             foreach ( string path in list.Keys)

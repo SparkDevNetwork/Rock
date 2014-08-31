@@ -235,7 +235,7 @@ namespace Rock.Reporting
             {
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
                 {
-                    var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() ?? 0 );
+                    var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                     if ( groupType != null )
                     {
                         entityProperty.Title = string.Format( "{0} ({1})", attribute.Name.SplitCase(), groupType.Name );

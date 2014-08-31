@@ -41,15 +41,16 @@ namespace Rock.Transactions
         {
             if ( Audits != null && Audits.Count > 0 )
             {
-                var rockContext = new RockContext();
-                var auditService = new AuditService( rockContext );
-
-                foreach ( var audit in Audits.Where( a => a.Details.Any() ) )
+                var auditsToAdd = Audits.Where( a => a.Details.Any() );
+                if ( auditsToAdd.Any() )
                 {
-                    auditService.Add( audit );
-                }
+                    var rockContext = new RockContext();
+                    var auditService = new AuditService( rockContext );
 
-                rockContext.SaveChanges();
+                    auditService.AddRange( auditsToAdd );
+
+                    rockContext.SaveChanges();
+                }
             }
         }
     }

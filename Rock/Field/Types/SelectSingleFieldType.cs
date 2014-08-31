@@ -57,7 +57,7 @@ namespace Rock.Field.Types
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
             tb.Label = "Values";
-            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1:text1,value2:text2,value3:text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.";
+            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.";
 
             var ddl = new RockDropDownList();
             controls.Add( ddl );
@@ -79,7 +79,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1:text1,value2:text2,value3:text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
             configurationValues.Add( "fieldtype", new ConfigurationValue( "Field Type", "Field type to use for selection", "ddl" ) );
 
             if ( controls != null && controls.Count == 2 )
@@ -157,12 +157,12 @@ namespace Rock.Field.Types
                     {
                         foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
-                            var keyValueArray = keyvalue.Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
+                            var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                             if ( keyValueArray.Length > 0 )
                             {
                                 ListItem li = new ListItem();
-                                li.Value = keyValueArray[0];
-                                li.Text = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
+                                li.Value = keyValueArray[0].Trim();
+                                li.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
                                 editControl.Items.Add( li );
                             }
                         }

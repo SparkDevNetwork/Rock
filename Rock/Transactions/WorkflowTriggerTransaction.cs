@@ -76,7 +76,16 @@ namespace Rock.Transactions
                         {
                             var workflowService = new Rock.Model.WorkflowService( rockContext );
                             workflowService.Add( workflow );
-                            rockContext.SaveChanges();
+
+                            rockContext.WrapTransaction( () =>
+                            {
+                                rockContext.SaveChanges();
+                                workflow.SaveAttributeValues( rockContext );
+                                foreach ( var activity in workflow.Activities )
+                                {
+                                    activity.SaveAttributeValues( rockContext );
+                                }
+                            } ); 
                         }
                     }
                 }

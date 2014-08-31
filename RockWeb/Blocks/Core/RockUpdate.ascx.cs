@@ -88,16 +88,26 @@ namespace RockWeb.Blocks.Core
             DisplayRockVersion();
             if ( !IsPostBack )
             {
-                _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
-                if ( IsUpdateAvailable() )
+                try
                 {
-                    pnlUpdatesAvailable.Visible = true;
-                    pnlNoUpdates.Visible = false;
-                    cbIncludeStats.Visible = true;
-                    BindGrid();
+                    _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
+                    if ( IsUpdateAvailable() )
+                    {
+                        pnlUpdatesAvailable.Visible = true;
+                        pnlNoUpdates.Visible = false;
+                        cbIncludeStats.Visible = true;
+                        BindGrid();
+                    }
+
+                    RemoveOldRDeleteFiles();
+                }
+                catch ( System.InvalidOperationException ex )
+                {
+                    HandleNuGetException( ex );
                 }
             }
         }
+
         #endregion
 
         #region Events
@@ -135,7 +145,7 @@ namespace RockWeb.Blocks.Core
             catch ( Exception ex )
             {
                 pnlError.Visible = true;
-                pnlUpdateSuccess.Visible = false;
+                pnlUpdateSuccess.Visible = false; 
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
@@ -257,7 +267,6 @@ namespace RockWeb.Blocks.Core
         private bool IsUpdateAvailable()
         {
             List<IPackage> verifiedPackages = new List<IPackage>();
-
             try
             {
                 // Get the installed package so we can check its version...
@@ -286,6 +295,7 @@ namespace RockWeb.Blocks.Core
                         // so we clear it out and keep processing.
                         if ( requiredVersion > _installedVersion )
                         {
+                            nbMoreUpdatesAvailable.Visible = true;
                             verifiedPackages.Clear();
                         }
                     }
@@ -387,6 +397,23 @@ namespace RockWeb.Blocks.Core
 " );
         }
 
+        private void RemoveOldRDeleteFiles()
+        {
+            var rockDirectory = new DirectoryInfo( Server.MapPath( "~" ) );
+
+            foreach ( var file in rockDirectory.EnumerateFiles( "*.rdelete", SearchOption.AllDirectories ) )
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch
+                {
+                    //we'll try again later
+                }
+            }
+        }
+
         private void CheckForManualFileMoves( string version )
         {
             var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
@@ -399,7 +426,6 @@ namespace RockWeb.Blocks.Core
 
                 versionDirectory.Delete( true );
             }
-
         }
 
         private void ManuallyMoveFile( FileInfo file, string newPath )
@@ -464,8 +490,10 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Sends statistics to the SDN server but only if the sample data has not been 
-        /// loaded. The statistics are:
+        /// Sends statistics to the SDN server but only if there are more than 100 person records
+        /// or the sample data has not been loaded. 
+        /// 
+        /// The statistics are:
         ///     * Rock Instance Id
         ///     * Update Version
         ///     * IP Address - The IP address of your Rock server.
@@ -482,14 +510,15 @@ namespace RockWeb.Blocks.Core
         {
             try
             {
-                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
-                string organizationName = string.Empty;
-                ImpactLocation organizationLocation = null;
-                int numberOfActiveRecords = 0;
-                string publicUrl = string.Empty;
+                var rockContext = new RockContext();
+                int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( sampleDataLoadDate == null )
-                {
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                { 
+                    string organizationName = string.Empty;
+                    ImpactLocation organizationLocation = null;
+                    string publicUrl = string.Empty;
+
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
@@ -498,8 +527,6 @@ namespace RockWeb.Blocks.Core
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
-
-                        var rockContext = new RockContext();
 
                         // Fetch the organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
@@ -511,11 +538,13 @@ namespace RockWeb.Blocks.Core
                                 organizationLocation = new ImpactLocation( location );
                             }
                         }
-
-                        numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                    }
+                    else
+                    {
+                        numberOfActiveRecords = 0;
                     }
 
-                    // TODO now send them to SDN/Rock server
+                    // now send them to SDN/Rock server
                     SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
                 }
             }
@@ -561,6 +590,33 @@ namespace RockWeb.Blocks.Core
             var response = client.Execute( request );
         }
 
+        /// <summary>
+        /// Sets up the page to report the error in a nicer manner.
+        /// </summary>
+        /// <param name="ex"></param>
+        private void HandleNuGetException( Exception ex )
+        {
+            pnlError.Visible = true;
+            pnlUpdateSuccess.Visible = false;
+            pnlNoUpdates.Visible = false;
+
+            if ( ex.Message.Contains( "404" ) )
+            {
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "could not be resolved" ) )
+            {
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "Unable to connect" ) )
+            {
+                nbErrors.Text = "The update server is down. Try again later.";
+            }
+            else
+            {
+                nbErrors.Text = string.Format( "...actually, I'm not sure what happened here: {0}", ex.Message );
+            }
+        }
         #endregion
     }
 
@@ -583,7 +639,8 @@ namespace RockWeb.Blocks.Core
         public string Street2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
+        public string Country { get; set; }
 
         public ImpactLocation( Rock.Model.Location location )
         {
@@ -591,7 +648,8 @@ namespace RockWeb.Blocks.Core
             Street2 = location.Street2;
             City = location.City;
             State = location.State;
-            Zip = location.Zip;
+            PostalCode = location.PostalCode;
+            Country = location.Country;
         }
     }
 

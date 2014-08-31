@@ -54,7 +54,7 @@ namespace Rock.Field.Types
 
             var ddlMode = new RockDropDownList();
             controls.Add( ddlMode );
-            ddlMode.BindToEnum( typeof( CodeEditorMode ) );
+            ddlMode.BindToEnum<CodeEditorMode>();
             ddlMode.AutoPostBack = true;
             ddlMode.SelectedIndexChanged += OnQualifierUpdated;
             ddlMode.Label = "Editor Mode";
@@ -62,7 +62,7 @@ namespace Rock.Field.Types
 
             var ddlTheme = new RockDropDownList();
             controls.Add( ddlTheme );
-            ddlTheme.BindToEnum( typeof( CodeEditorTheme ) );
+            ddlTheme.BindToEnum<CodeEditorTheme>();
             ddlTheme.AutoPostBack = true;
             ddlTheme.SelectedIndexChanged += OnQualifierUpdated;
             ddlTheme.Label = "Editor Theme";

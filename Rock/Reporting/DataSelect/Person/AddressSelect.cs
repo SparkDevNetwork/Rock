@@ -145,7 +145,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
                     .SelectMany( m => m.Group.GroupLocations )
                     .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
-                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
+                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.PostalCode ).Replace( "  ", " " ) )
                     .FirstOrDefault() );
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
@@ -162,9 +162,9 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList locationTypeList = new RockDropDownList();
             locationTypeList.Items.Clear();
-            foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
-                locationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
+                locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
             locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );

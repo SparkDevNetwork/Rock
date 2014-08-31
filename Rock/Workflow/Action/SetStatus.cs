@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     [Description( "Set the workflow status" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Status" )]
-    [TextField( "Status", "The status to set workflow to" )]
+    [TextField( "Status", "The status to set workflow to. <span class='tip tip-liquid'></span>" )]
     public class SetStatus : ActionComponent
     {
         /// <summary>
@@ -45,7 +45,9 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            string status = GetAttributeValue( action, "Status" );
+
+            string status = GetAttributeValue( action, "Status" ).ResolveMergeFields( GetMergeFields( action ) );
+
             action.Activity.Workflow.Status = status;
             action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
 

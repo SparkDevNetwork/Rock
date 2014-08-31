@@ -121,7 +121,7 @@ namespace Rock.Model
             }
 
             return device;
-
         }
+
     }
 }

@@ -174,22 +174,20 @@ namespace Rock.Web.Cache
         /// Returns FieldType object from cache.  If fieldType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( int id )
+        public static FieldTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = FieldTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
             FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
-            if ( fieldType != null )
+            if ( fieldType == null )
             {
-                return fieldType;
-            }
-            else
-            {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var fieldTypeService = new FieldTypeService( rockContext );
                 var fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
@@ -198,60 +196,58 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, fieldType, cachePolicy );
                     cache.Set( fieldType.Guid.ToString(), fieldType.Id, cachePolicy );
-                    
-                    return fieldType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return fieldType;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( string guid )
+        public static FieldTypeCache Read( string guid, RockContext rockContext = null )
         {
-            return Read( new Guid( guid ) );
+            return Read( new Guid( guid ), rockContext );
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( Guid guid )
+        public static FieldTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            FieldTypeCache fieldType = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                fieldType = Read( (int)cacheObj, rockContext );
             }
-            else
+
+            if ( fieldType == null )
             {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var fieldTypeService = new FieldTypeService( rockContext );
                 var fieldTypeModel = fieldTypeService.Get( guid );
                 if ( fieldTypeModel != null )
                 {
-                    var fieldType = new FieldTypeCache( fieldTypeModel );
+                    fieldType = new FieldTypeCache( fieldTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( FieldTypeCache.CacheKey( fieldType.Id ), fieldType, cachePolicy );
                     cache.Set( fieldType.Guid.ToString(), fieldType.Id, cachePolicy );
-
-                    return fieldType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return fieldType;
         }
+
         /// <summary>
         /// Reads the specified field type model.
         /// </summary>
@@ -260,25 +256,22 @@ namespace Rock.Web.Cache
         public static FieldTypeCache Read( FieldType fieldTypeModel )
         {
             string cacheKey = FieldTypeCache.CacheKey( fieldTypeModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
             if ( fieldType != null )
             {
                 fieldType.CopyFromModel( fieldTypeModel );
-                return fieldType;
             }
             else
             {
                 fieldType = new FieldTypeCache( fieldTypeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, fieldType, cachePolicy );
                 cache.Set( fieldType.Guid.ToString(), fieldType.Id, cachePolicy );
-                
-                return fieldType;
             }
+
+            return fieldType;
         }
 
         /// <summary>

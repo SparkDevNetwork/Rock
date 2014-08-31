@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.PluginAssemblyName = source.PluginAssemblyName;
             target.MigrationNumber = source.MigrationNumber;
+            target.MigrationName = source.MigrationName;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

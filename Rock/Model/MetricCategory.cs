@@ -83,7 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The icon CSS class.
         /// </value>
-        public string IconCssClass 
+        public virtual string IconCssClass 
         { 
             get
             {
@@ -99,7 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
-        public string Name
+        public virtual string Name
         {
             get 
             { 
@@ -121,12 +121,11 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        public Security.ISecured ParentAuthority
+        public virtual Security.ISecured ParentAuthority
         {
             get 
             { 
@@ -137,7 +136,7 @@ namespace Rock.Model
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public System.Collections.Generic.Dictionary<string, string> SupportedActions
+        public virtual System.Collections.Generic.Dictionary<string, string> SupportedActions
         {
             get 
             { 
@@ -150,12 +149,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsAuthorized( string action, Person person )
+        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return this.Metric.IsAuthorized( action, person );
+            return this.Metric.IsAuthorized( action, person, rockContext );
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool IsAllowedByDefault( string action )
+        public virtual bool IsAllowedByDefault( string action )
         {
             return this.Metric.IsAllowedByDefault( action );
         }
@@ -174,12 +174,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return this.Metric.IsPrivate( action, person );
+            return this.Metric.IsPrivate( action, person, rockContext );
         }
 
         /// <summary>
@@ -187,9 +188,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.Metric.MakePrivate( action, person );
+            this.Metric.MakePrivate( action, person, rockContext );
         }
 
         /// <summary>
@@ -197,9 +199,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            this.Metric.MakeUnPrivate( action, person );
+            this.Metric.MakeUnPrivate( action, person, rockContext );
         }
 
         #endregion

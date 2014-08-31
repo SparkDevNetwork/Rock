@@ -107,8 +107,14 @@ namespace Rock.Model
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
+            target.Description = source.Description;
+            target.IsActive = source.IsActive;
             target.ShortCode = source.ShortCode;
+            target.Url = source.Url;
             target.LocationId = source.LocationId;
+            target.PhoneNumber = source.PhoneNumber;
+            target.LeaderPersonAliasId = source.LeaderPersonAliasId;
+            target.ServiceTimes = source.ServiceTimes;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,8 +122,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
-            target.PhoneNumber = source.PhoneNumber;
-            target.LeaderPersonAliasId = source.LeaderPersonAliasId;
+
         }
     }
 }

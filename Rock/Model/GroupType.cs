@@ -232,6 +232,15 @@ namespace Rock.Model
         public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
+        /// Gets or sets the enable location schedules.
+        /// </summary>
+        /// <value>
+        /// The enable location schedules.
+        /// </value>
+        [DataMember]
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets Id of the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
@@ -251,7 +260,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [DataMember]
+        [DataMember, IgnoreLiquid]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -265,7 +274,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
         /// </value>
-        [DataMember]
+        [DataMember, IgnoreLiquid]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }

@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromValue", ddlFrom.SelectedValue );
-                data.Add( "Subject", "From: " + ddlFrom.SelectedItem.Text );
+                data.Add( "Subject", ddlFrom.SelectedItem != null ? ( "From: " + ddlFrom.SelectedItem.Text ) : string.Empty );
                 data.Add( "Message", tbMessage.Text );
                 return data;
             }

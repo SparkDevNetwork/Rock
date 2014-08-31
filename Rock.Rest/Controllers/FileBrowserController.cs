@@ -89,7 +89,7 @@ namespace Rock.Rest.Controllers
                 string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 if (!File.Exists(thumbnailFilePath))
                 {
-                    virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/other.png", fileExtension );
+                    virtualThumbnailFilePath = "~/Assets/Icons/FileTypes/other.png";
                     thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 }
 

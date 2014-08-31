@@ -9,101 +9,111 @@
 </style>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-    <div class="container">
 
-        <asp:Panel ID="pnlNoUpdates" runat="server">
-            <div class="well well-message">
-                <h1>Everything Is Shipshape</h1>
-                <i class="fa fa-anchor" style="color: #49ace5"></i>
-                <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing.</p>
+
+        <div class="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-cloud-download"></i> Rock Update</h1>
             </div>
-        </asp:Panel>
+            <div class="panel-body">
 
-        <asp:Panel ID="pnlUpdatesAvailable" Visible="false" runat="server">
-            <div class="well well-message">
-                <h1>You're Missing Some Pieces</h1>
-                <i class="fa fa-puzzle-piece" style="color: #49ace5"></i>
-                <p>We've expanded the puzzle, let's get you up-to-date.</p>
-            </div>
-
-            <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Warning">
-                We recommend that you always take a backup of your database and website before updating Rock.
-                The changes that are made during the update process can't be undone.
-                Also, be patient when updating. An update can take anywhere from a few seconds
-                to 10 minutes depending on the size and your download speed.</Rock:NotificationBox>
-
-            <div class="row margin-b-md">
-                <div class="col-md-6 margin-v-sm">
-                    <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
-                </div>
-                <div class="col-md-6">
-                    <div class="pull-right">
-                        <Rock:RockCheckBox ID="cbIncludeStats" runat="server" Checked="true" Visible="false" Text="Include impact statistics" Help="Having high level usage stats are very valuable to us.  Sharing them with us allows us to celebrate the impact Rock is making.  You can read about our <a href='http://www.rockrms.com/page/318'>impact statistics here</a>." />
+                 <asp:Panel ID="pnlNoUpdates" runat="server">
+                    <div class="well well-message">
+                        <h1>Everything Is Shipshape</h1>
+                        <i class="fa fa-anchor" style="color: #49ace5"></i>
+                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing.</p>
                     </div>
-                </div>
-            </div>
+                </asp:Panel>
 
-             
+                <asp:Panel ID="pnlUpdatesAvailable" Visible="false" runat="server">
+                    <div class="well well-message">
+                        <h1>You're Missing Some Pieces</h1>
+                        <i class="fa fa-puzzle-piece" style="color: #49ace5"></i>
+                        <p>We've expanded the puzzle, let's get you up-to-date.</p>
+                    </div>
 
-            <asp:Repeater ID="rptPackageVersions" runat="server" Visible="True"  OnItemDataBound="rptPackageVersions_ItemDataBound" OnItemCommand="rptPackageVersions_ItemCommand">
-                    <ItemTemplate>
-                        <div id="divPanel" runat="server" class="panel">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><asp:Literal runat="server" Text='<%# Eval( "Title" ) %>' /></h3>
-                            </div>
-                            <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-md-2">
-                                        <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "Version" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
-                                    </div>
-                                    <div class="col-md-10">
-                                        <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
-                                        <div class="releasenotes">
-                                            <div class="releasenotes-heading margin-v-md">
-                                                <strong>
-                                                    <asp:Label ID="lblReleaseNotes" runat="server" Text="Release Notes" />
-                                                    <i class="fa fa-caret-right"></i>
-                                                </strong>
-                                            </div>
-                                            <div class="releasenotes-body" style="display: none">
-                                                <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
-                                            </div>
-                                     </div>
-                                    </div>
-                                </div>
+                    <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Warning">
+                        We recommend that you always take a backup of your database and website before updating Rock.
+                        The changes that are made during the update process can't be undone.
+                        Also, be patient when updating. An update can take anywhere from a few seconds
+                        to 10 minutes depending on the size and your download speed.</Rock:NotificationBox>
+
+                    <div class="row margin-b-md">
+                        <div class="col-md-6 margin-v-sm">
+                            <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pull-right">
+                                <Rock:RockCheckBox ID="cbIncludeStats" runat="server" Checked="true" Visible="false" Text="Include impact statistics" Help="Having high level usage stats are very valuable to us.  Sharing them with us allows us to celebrate the impact Rock is making.  You can read about our <a href='http://www.rockrms.com/page/318'>impact statistics here</a>." />
                             </div>
                         </div>
-                    </ItemTemplate>
-            </asp:Repeater>
-        </asp:Panel>
+                    </div>
 
-        <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
-            <div class="well well-message">
-                <h1>Eureka, Pay Dirt!</h1>
-                <i class="fa fa-exclamation-triangle" style="color: #40b957"></i>
-                <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
-            </div>
+                    <asp:Repeater ID="rptPackageVersions" runat="server" Visible="True"  OnItemDataBound="rptPackageVersions_ItemDataBound" OnItemCommand="rptPackageVersions_ItemCommand">
+                            <ItemTemplate>
+                                <div id="divPanel" runat="server" class="panel">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title"><asp:Literal runat="server" Text='<%# Eval( "Title" ) %>' /></h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "Version" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
+                                                <div class="releasenotes">
+                                                    <div class="releasenotes-heading margin-v-md">
+                                                        <strong>
+                                                            <asp:Label ID="lblReleaseNotes" runat="server" Text="Release Notes" />
+                                                            <i class="fa fa-caret-right"></i>
+                                                        </strong>
+                                                    </div>
+                                                    <div class="releasenotes-body" style="display: none">
+                                                        <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
+                                                    </div>
+                                             </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                    </asp:Repeater>
+                </asp:Panel>
 
-            <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
+                <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
+                    <div class="well well-message">
+                        <h1>Eureka, Pay Dirt!</h1>
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
+                    </div>
 
-            <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Warning" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
-        </asp:Panel>
+                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
 
-        <asp:Panel ID="pnlError" runat="server" Visible="false">
-            <div class="well well-message">
-                <h1>Whoa... That Wasn't Suppose To Happen</h1>
-                <i class="fa fa-exclamation-circle" style="color: #d9534f"></i>
-                <p>An error ocurred during the update process.</p>
-            </div>
+                    <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
+
+                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
+                </asp:Panel>
+
+                <asp:Panel ID="pnlError" runat="server" Visible="false">
+                    <div class="well well-message">
+                        <h1>Whoa... That Wasn't Suppose To Happen</h1>
+                        <i class="fa fa-exclamation-circle" style="color: #d9534f"></i>
+                        <p>An error ocurred during the update process.</p>
+                    </div>
             
-            <asp:Literal ID="lMessage" runat="server"></asp:Literal>
+                    <asp:Literal ID="lMessage" runat="server"></asp:Literal>
                 
-            <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Heading="Here's what happened..." />
-        </asp:Panel>       
+                    <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Heading="Here's what happened..." />
+                </asp:Panel>       
 
-    </div>
 
-    
+            </div>
+        </div>
+
+
+       
+
 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -51,8 +51,6 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "~/scripts/jquery.switch.js" );
-
             // Switch does not automatically initialize again after a partial-postback.  This script 
             // looks for any switch elements that have not been initialized and re-intializes them.
             string script = @"
@@ -81,17 +79,9 @@ $(document).ready(function() {
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "DataViewId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "DataViewId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "DataViewId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( itemId.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -233,7 +223,7 @@ $(document).ready(function() {
         {
             if ( hfDataViewId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -336,40 +326,35 @@ $(document).ready(function() {
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="dataViewId">The data view identifier.</param>
+        public void ShowDetail( int dataViewId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( dataViewId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int dataViewId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "DataViewId" ) )
-            {
-                return;
-            }
 
             var dataViewService = new DataViewService(new RockContext());
             DataView dataView = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !dataViewId.Equals( 0 ) )
             {
-                dataView = dataViewService.Get( itemKeyValue );
+                dataView = dataViewService.Get( dataViewId );
             }
-            else
+
+            if ( dataView == null )
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
-            if ( dataView == null || !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -644,6 +629,7 @@ $(document).ready(function() {
 
             if ( grid.DataSource != null )
             {
+                grid.ExportFilename = dataView.Name;
                 if ( errorMessages.Any() )
                 {
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );

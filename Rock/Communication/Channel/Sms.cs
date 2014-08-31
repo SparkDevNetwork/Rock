@@ -117,14 +117,54 @@ namespace Rock.Communication.Channel
         }
 
         /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public override void Send( Model.Communication communication )
+        {
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+
+            communication = communicationService.Get( communication.Id );
+
+            if ( communication != null &&
+                communication.Status == Model.CommunicationStatus.Approved &&
+                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+            {
+                // Update any recipients that should not get sent the communication
+                var recipientService = new CommunicationRecipientService( rockContext );
+                foreach ( var recipient in recipientService.Queryable( "Person" )
+                    .Where( r =>
+                        r.CommunicationId == communication.Id &&
+                        r.Status == CommunicationRecipientStatus.Pending )
+                    .ToList() )
+                {
+                    var person = recipient.Person;
+                    if ( person.IsDeceased ?? false )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is deceased!";
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            base.Send( communication );
+        }
+
+        /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>
         /// <param name="toPhone">The phone number a message is sent to.</param>
         /// <param name="fromPhone">The phone number a message is sent from.</param>
         /// <param name="message">The message that was sent.</param>
-        /// <returns></returns>
-        public void ProcessResponse( string toPhone, string fromPhone, string message )
+        /// <param name="errorMessage">The error message.</param>
+        public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
+            errorMessage = string.Empty;
+            
             int toPersonId = -1;
             string transportPhone = string.Empty;
 
@@ -141,7 +181,7 @@ namespace Rock.Communication.Channel
             {
                 if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
                 {
-                    var matchValue = definedType.DefinedValues.Where( v => v.Name == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                    var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
                     if ( matchValue != null )
                     {
                         var toPersonGuid = matchValue.GetAttributeValue( "ResponseRecipient" );
@@ -186,7 +226,14 @@ namespace Rock.Communication.Channel
                     string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
                     CreateCommunication( fromPerson.Id, fromPerson.FullName, toPersonId, message, transportPhone, messageId, rockContext );
-                } 
+                }
+            }
+            else
+            {
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                string organizationName = globalAttributes.GetValue( "OrganizationName" );
+
+                errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName);
             }
         }
 

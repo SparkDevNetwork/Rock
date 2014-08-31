@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using System.Web;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -148,12 +148,12 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Gets a worklow attribute value.  Will check both the workflow and the activity for the selected attribute guid
+        /// Sets the workflow attribute value.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="guid">The attribute guid.</param>
-        /// <returns></returns>
-        protected string GetWorklowAttributeValue( WorkflowAction action, Guid guid )
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="value">The value.</param>
+        protected void SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
         {
             var testAttribute = AttributeCache.Read( guid );
             if ( testAttribute != null )
@@ -161,17 +161,38 @@ namespace Rock.Workflow
                 string testAttributeValue = string.Empty;
                 if ( testAttribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
                 {
-                    return action.Activity.Workflow.GetAttributeValue( testAttribute.Key );
+                    action.Activity.Workflow.SetAttributeValue( testAttribute.Key, value );
                 }
                 else if ( testAttribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                 {
-                    return action.Activity.GetAttributeValue( testAttribute.Key );
+                    action.Activity.SetAttributeValue( testAttribute.Key, value );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resolves the merge fields.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        protected Dictionary<string, object> GetMergeFields( WorkflowAction action )
+        {
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", action.Activity );
+            mergeFields.Add( "Workflow", action.Activity.Workflow );
+
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if (currentPerson != null)
+                {
+                    mergeFields.Add( "CurrentPerson", currentPerson );
                 }
             }
 
-            return null;
+            return mergeFields;
         }
-
 
     }
 }

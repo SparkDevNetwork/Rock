@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -27,6 +29,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
     {
+
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GridActions" /> class.
         /// </summary>
@@ -34,19 +39,31 @@ namespace Rock.Web.UI.Controls
         public GridActions( Grid parentGrid )
         {
             _parentGrid = parentGrid;
+            _customActions = new List<Control>();
         }
+
+        #endregion
+
+        #region Fields
 
         private Grid _parentGrid;
 
+        #endregion
+
+        #region Controls
+
+        private List<Control> _customActions;
         private LinkButton _lbMerge;
-
+        private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
-
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
-
         private HtmlGenericControl _aExcelExport;
         private LinkButton _lbExcelExport;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets a value indicating whether [show communicate].
@@ -137,6 +154,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> value that corresponds to this Web server control. This property is used primarily by control developers.
+        /// </summary>
+        /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
+        protected override HtmlTextWriterTag TagKey
+        {
+            get { return HtmlTextWriterTag.Unknown; }
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -156,25 +186,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            _lbMerge.Visible = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
-
-            _lbCommunicate.Visible = ShowCommunicate;
-
-            _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
-            _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
-
-            _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
-
-            base.RenderControl( writer );
-        }
-
-        /// <summary>
         /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
         /// </summary>
         protected override void RecreateChildControls()
@@ -183,12 +194,102 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> value that corresponds to this Web server control. This property is used primarily by control developers.
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
-        /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
-        protected override HtmlTextWriterTag TagKey
+        protected override void CreateChildControls()
         {
-            get { return HtmlTextWriterTag.Unknown; }
+            Controls.Clear();
+
+            if ( _customActions != null )
+            {
+                foreach ( Control control in _customActions )
+                {
+                    Controls.Add( control );
+                }
+            }
+
+            // controls for add
+            _aAdd = new HtmlGenericControl( "a" );
+            Controls.Add( _aAdd );
+            _aAdd.ID = "aAdd";
+            _aAdd.Attributes.Add( "href", "#" );
+            _aAdd.Attributes.Add( "class", "btn-add btn btn-default btn-sm" );
+            _aAdd.InnerText = "Add";
+
+            _lbAdd = new LinkButton();
+            Controls.Add( _lbAdd );
+            _lbAdd.ID = "lbAdd";
+            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
+            _lbAdd.ToolTip = "Add";
+            _lbAdd.Click += lbAdd_Click;
+            _lbAdd.CausesValidation = false;
+            _lbAdd.PreRender += lb_PreRender;
+            Controls.Add( _lbAdd );
+            HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
+            iAdd.Attributes.Add( "class", "fa fa-plus-circle" );
+            _lbAdd.Controls.Add( iAdd );
+
+            // control for communicate
+            _lbCommunicate = new LinkButton();
+            Controls.Add( _lbCommunicate );
+            _lbCommunicate.ID = "lbCommunicate";
+            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
+            _lbCommunicate.ToolTip = "Communicate";
+            _lbCommunicate.Click += lbCommunicate_Click;
+            _lbCommunicate.CausesValidation = false;
+            _lbCommunicate.PreRender += lb_PreRender;
+            Controls.Add( _lbCommunicate );
+            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
+            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
+            _lbCommunicate.Controls.Add( iCommunicate );
+
+            // control for merge
+            _lbMerge = new LinkButton();
+            Controls.Add( _lbMerge );
+            _lbMerge.ID = "lbMerge";
+            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbMerge.ToolTip = "Merge Person Records";
+            _lbMerge.Click += lbMerge_Click;
+            _lbMerge.CausesValidation = false;
+            _lbMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbMerge );
+            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
+            iMerge.Attributes.Add( "class", "fa fa-users" );
+            _lbMerge.Controls.Add( iMerge );
+
+            // control for bulk update
+            _lbBulkUpdate = new LinkButton();
+            Controls.Add( _lbBulkUpdate );
+            _lbBulkUpdate.ID = "lbBulkUpdate";
+            _lbBulkUpdate.CssClass = "btn-bulk-update btn btn-default btn-sm";
+            _lbBulkUpdate.ToolTip = "Bulk Update";
+            _lbBulkUpdate.Click += lbBulkUpdate_Click;
+            _lbBulkUpdate.CausesValidation = false;
+            _lbBulkUpdate.PreRender += lb_PreRender;
+            Controls.Add( _lbBulkUpdate );
+            HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
+            iBulkUpdate.Attributes.Add( "class", "fa fa-reply-all" );
+            _lbBulkUpdate.Controls.Add( iBulkUpdate );
+            
+            // controls for excel export
+            _aExcelExport = new HtmlGenericControl( "a" );
+            Controls.Add( _aExcelExport );
+            _aExcelExport.ID = "aExcelExport";
+            _aExcelExport.Attributes.Add( "href", "#" );
+            _aExcelExport.Attributes.Add( "class", "btn-excelexport" );
+            _aExcelExport.InnerText = "Export To Excel";
+
+            _lbExcelExport = new LinkButton();
+            Controls.Add( _lbExcelExport );
+            _lbExcelExport.ID = "lbExcelExport";
+            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
+            _lbExcelExport.ToolTip = "Export to Excel";
+            _lbExcelExport.Click += lbExcelExport_Click;
+            _lbExcelExport.CausesValidation = false;
+            Controls.Add( _lbExcelExport );
+            HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
+            iExcelExport.Attributes.Add( "class", "fa fa-table" );
+            _lbExcelExport.Controls.Add( iExcelExport );
         }
 
         /// <summary>
@@ -218,81 +319,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        protected override void CreateChildControls()
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
-            Controls.Clear();
+            bool personGrid = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+            _lbMerge.Visible = personGrid;
+            _lbBulkUpdate.Visible = personGrid;
+            _lbCommunicate.Visible = ShowCommunicate;
 
-            // controls for add
-            _aAdd = new HtmlGenericControl( "a" );
-            Controls.Add( _aAdd );
-            _aAdd.ID = "aAdd";
-            _aAdd.Attributes.Add( "href", "#" );
-            _aAdd.Attributes.Add("class", "btn-add btn btn-default btn-sm");
-            _aAdd.InnerText = "Add";
+            _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
+            _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
 
-            _lbAdd = new LinkButton();
-            Controls.Add( _lbAdd );
-            _lbAdd.ID = "lbAdd";
-            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
-            _lbAdd.ToolTip = "Add";
-            _lbAdd.Click += lbAdd_Click;
-            _lbAdd.CausesValidation = false;
-            _lbAdd.PreRender += lb_PreRender;
-            Controls.Add( _lbAdd );
-            HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add("class", "fa fa-plus-circle");
-            _lbAdd.Controls.Add( iAdd );
-            
-            // control for communicate
-            _lbCommunicate = new LinkButton();
-            Controls.Add( _lbCommunicate );
-            _lbCommunicate.ID = "lbCommunicate";
-            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
-            _lbCommunicate.ToolTip = "Communicate";
-            _lbCommunicate.Click += lbCommunicate_Click;
-            _lbCommunicate.CausesValidation = false;
-            _lbCommunicate.PreRender += lb_PreRender;
-            Controls.Add( _lbCommunicate );
-            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
-            _lbCommunicate.Controls.Add( iCommunicate );
+            _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
-            // control for merge
-            _lbMerge = new LinkButton();
-            Controls.Add( _lbMerge );
-            _lbMerge.ID = "lbMerge";
-            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
-            _lbMerge.ToolTip = "Merge Person Records";
-            _lbMerge.Click += lbMerge_Click;
-            _lbMerge.CausesValidation = false;
-            _lbMerge.PreRender += lb_PreRender;
-            Controls.Add( _lbMerge );
-            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
-            iMerge.Attributes.Add( "class", "fa fa-users" );
-            _lbMerge.Controls.Add( iMerge );
-
-            // controls for excel export
-            _aExcelExport = new HtmlGenericControl( "a" );
-            Controls.Add( _aExcelExport );
-            _aExcelExport.ID = "aExcelExport";
-            _aExcelExport.Attributes.Add( "href", "#" );
-            _aExcelExport.Attributes.Add( "class", "btn-excelexport" );
-            _aExcelExport.InnerText = "Export To Excel";
-
-            _lbExcelExport = new LinkButton();
-            Controls.Add( _lbExcelExport );
-            _lbExcelExport.ID = "lbExcelExport";
-            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
-            _lbExcelExport.ToolTip = "Export to Excel";
-            _lbExcelExport.Click += lbExcelExport_Click;
-            _lbExcelExport.CausesValidation = false;
-            Controls.Add( _lbExcelExport );
-            HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
-            iExcelExport.Attributes.Add( "class", "fa fa-table" );
-            _lbExcelExport.Controls.Add( iExcelExport );
+            base.RenderControl( writer );
         }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handles the PreRender event of the linkbutton controls.
@@ -328,6 +376,20 @@ namespace Rock.Web.UI.Controls
                 MergeClick( sender, e );
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbBulkUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbBulkUpdate_Click( object sender, EventArgs e )
+        {
+            if ( BulkUpdateClick != null )
+            {
+                BulkUpdateClick( sender, e );
+            }
+        }
+
         /// <summary>
         /// Handles the Click event of the lbAdd control.
         /// </summary>
@@ -367,10 +429,41 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Clears the custom action controls.
+        /// </summary>
+        public void ClearCustomActionControls()
+        {
+            _customActions.Clear();
+        }
+
+        /// <summary>
+        /// Adds the custom action control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        public void AddCustomActionControl( Control control)
+        {
+            _customActions.Add( control );
+            RecreateChildControls();
+        }
+
+        #endregion
+
+        #region Event Handlers
+
         /// <summary>
         /// Occurs when merge action is clicked.
         /// </summary>
         public event EventHandler MergeClick;
+
+        /// <summary>
+        /// Occurs when bulk update action is clicked.
+        /// </summary>
+        public event EventHandler BulkUpdateClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.
@@ -386,5 +479,7 @@ namespace Rock.Web.UI.Controls
         /// Occurs when add action is clicked.
         /// </summary>
         public event EventHandler ExcelExportClick;
+
+        #endregion
     }
 }
