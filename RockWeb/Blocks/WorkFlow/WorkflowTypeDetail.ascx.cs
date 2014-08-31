@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowType != null )
             {
-                if ( !workflowType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                if ( !workflowType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this workflow type.", ModalAlertType.Information );
                     return;
@@ -1095,7 +1095,8 @@ namespace RockWeb.Blocks.WorkFlow
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            // User must have 'Edit' rights to block, or 'Administrate' rights to workflow type
+            if ( !IsUserAuthorized( Authorization.EDIT ) && !workflowType.IsAuthorized( Authorization.ADMINISTRATE ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
