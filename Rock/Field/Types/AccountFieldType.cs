@@ -82,7 +82,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var guid = Guid.Empty;
-                var id = picker.ItemId.AsInteger();
+                var id = picker.ItemId.AsIntegerOrNull();
                 var account = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
 
                 if ( account != null )

@@ -70,8 +70,10 @@ namespace Rock.Web.UI
                 Formatting.None,
                 new JsonSerializerSettings()
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                } );
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                }
+                );
 
             _cachedList = list;
         }

@@ -241,7 +241,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute( "class", "controls " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );

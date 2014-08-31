@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                     {
-                        ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+                        ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
 
                         var blockContexts = new Dictionary<string, string>();
                         foreach ( var block in pageCache.Blocks )

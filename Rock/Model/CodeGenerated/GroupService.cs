@@ -69,6 +69,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -114,6 +120,7 @@ namespace Rock.Model
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsActive = source.IsActive;
             target.Order = source.Order;
+            target.AllowGuests = source.AllowGuests;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

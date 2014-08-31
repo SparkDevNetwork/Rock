@@ -195,12 +195,13 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -219,12 +220,13 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext  );
         }
 
         /// <summary>
@@ -232,9 +234,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -242,9 +245,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person );
+            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -252,18 +256,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void AllowPerson( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.AllowPerson( this, action, person );
-        }
-
-        /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public override object ToLiquid()
-        {
-            return this.ToLiquid( false );
+            Security.Authorization.AllowPerson( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -275,20 +271,11 @@ namespace Rock.Data
         /// </returns>
         public override object ToLiquid( bool debug )
         {
-            return ToLiquid(debug, true);
-        }
-
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <param name="debug">if set to <c>true</c> [debug].</param>
-        /// <param name="reloadAttributes">if set to <c>true</c> [reload attributes].</param>
-        /// <returns></returns>
-        public object ToLiquid( bool debug, bool reloadAttributes )
-        {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
-            if (reloadAttributes)
+            // Should only load attributes if they've never been loaded since some entities may have attribute 
+            // values needed in liquid merge that have not yet been saved.
+            if (this.Attributes == null)
             {
                 this.LoadAttributes();
             }
@@ -299,9 +286,21 @@ namespace Rock.Data
                 {
                     if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                     {
+                        int keySuffix = 0;
+                        string key = attribute.Key;
+                        while ( dictionary.ContainsKey( key ) )
+                        {
+                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
+                        }
+
+                        var field = attribute.Value.FieldType.Field;
                         string value = GetAttributeValue( attribute.Key );
-                        dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                        dictionary.Add( attribute.Key + "_unformatted", value );
+                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( key + "_unformatted", value );
+                        if (field is Rock.Field.ILinkableFieldType)
+                        {
+                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                        }
                     }
                 }
             }

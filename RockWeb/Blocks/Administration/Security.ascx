@@ -51,25 +51,28 @@
             <div id="security-details" class="security-action-description alert alert-info collapse"><asp:Literal ID="lActionDescription" runat="server" /></div>
             <div class="security-rights">
                 <h4>Item Permissions</h4>
-                <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">
-                    <Columns>
-                        <Rock:ReorderField />
-                        <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                        <asp:TemplateField>
-                            <HeaderTemplate>Allow or Deny</HeaderTemplate>
-                            <HeaderStyle HorizontalAlign="Left" />
-                            <ItemStyle Wrap="false" HorizontalAlign="Left" />
-                            <ItemTemplate>
-                                <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list"
-                                    OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
-                                    <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
-                                    <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
-                                </asp:RadioButtonList>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <Rock:DeleteField OnClick="rGrid_Delete" />
-                    </Columns>
-                </Rock:Grid>
+                
+                <div class="grid">
+                    <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                            <asp:TemplateField>
+                                <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                                <HeaderStyle HorizontalAlign="Left" />
+                                <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                                <ItemTemplate>
+                                    <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list"
+                                        OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
+                                        <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
+                                    </asp:RadioButtonList>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <Rock:DeleteField OnClick="rGrid_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
             </div>
 
             <asp:panel id="pnlActions" runat="server" CssClass="actions">
@@ -79,20 +82,23 @@
 
             <div class="security-inherited">
                 <h4>Inherited Permissions</h4>
-                <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
-                    <Columns>
-                        <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                        <asp:TemplateField>
-                            <HeaderTemplate>Allow or Deny</HeaderTemplate>
-                            <HeaderStyle HorizontalAlign="Left" />
-                            <ItemStyle Wrap="false" HorizontalAlign="Left" />
-                            <ItemTemplate>
-                                <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:BoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                    </Columns>
-                </Rock:Grid>
+                
+                <div class="grid">
+                    <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
+                        <Columns>
+                            <asp:BoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                            <asp:TemplateField>
+                                <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                                <HeaderStyle HorizontalAlign="Left" />
+                                <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                                <ItemTemplate>
+                                    <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:BoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
             </div>
 
         </asp:PlaceHolder>

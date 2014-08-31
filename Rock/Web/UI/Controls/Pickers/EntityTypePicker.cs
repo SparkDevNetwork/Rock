@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !Required )
                 {
-                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                    this.Items.Add( new ListItem( string.Empty, "0" ) );
                 }
 
                 if ( IncludeGlobalOption )
@@ -85,9 +85,9 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool IncludeGlobalOption
         {
-            get 
+            get
             {
-                return ViewState["IncludeGlobalOption"] as bool? ?? false; 
+                return ViewState["IncludeGlobalOption"] as bool? ?? false;
             }
             set
             {
@@ -106,7 +106,7 @@ namespace Rock.Web.UI.Controls
                     }
                     this.Items.Insert( i, new ListItem( "None (Global Attributes)", "0" ) );
                 }
-                if ( !value && item != null)
+                if ( !value && item != null )
                 {
                     this.Items.Remove( item );
                 }
@@ -114,16 +114,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected EntityType ids.
+        /// Gets or sets the selected entity type identifier.
         /// </summary>
         /// <value>
-        /// The selected EntityType ids.
+        /// The selected entity type identifier.
         /// </value>
         public int? SelectedEntityTypeId
         {
             get
             {
-                return this.SelectedValueAsInt(false);
+                return this.SelectedValueAsInt( true );
             }
             set
             {

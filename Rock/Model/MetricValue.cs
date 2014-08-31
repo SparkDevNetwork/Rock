@@ -44,12 +44,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the X axis value.
+        /// Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.
+        /// Therefore, in most cases, Metric.XAxisLabel and MetricValue.XAxis are NOT used
         /// </summary>
         /// <value>
         /// The x value.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember( IsRequired = false )]
         public string XValue { get; set; }
 
         /// <summary>

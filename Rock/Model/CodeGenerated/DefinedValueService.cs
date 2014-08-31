@@ -77,12 +77,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring FinancialScheduledTransaction,CreditCardTypeValueId 
+            
+            // ignoring FinancialScheduledTransaction,CurrencyTypeValueId 
+            
+            // ignoring FinancialScheduledTransaction,TransactionFrequencyValueId 
             
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
@@ -91,12 +91,6 @@ namespace Rock.Model
             // ignoring FinancialTransaction,SourceTypeValueId 
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
- 
-            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
-                return false;
-            }  
  
             if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
             {
@@ -194,7 +188,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.DefinedTypeId = source.DefinedTypeId;
             target.Order = source.Order;
-            target.Name = source.Name;
+            target.Value = source.Value;
             target.Description = source.Description;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

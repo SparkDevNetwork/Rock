@@ -311,7 +311,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int groupTypeId = _ddlGroupType.SelectedValue.AsInteger() ?? 0;
+            int groupTypeId = _ddlGroupType.SelectedValue.AsInteger();
             LoadGroupRoles( groupTypeId );
         }
 

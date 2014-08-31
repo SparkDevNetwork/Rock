@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -29,8 +30,11 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class KeyValueList : HiddenField
+    public class KeyValueList : ValueList
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets the key prompt.
         /// </summary>
@@ -43,51 +47,13 @@ namespace Rock.Web.UI.Controls
             set { ViewState["KeyPrompt"] = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the value prompt.
-        /// </summary>
-        /// <value>
-        /// The value prompt.
-        /// </value>
-        public string ValuePrompt
-        {
-            get { return ViewState["ValuePrompt"] as string ?? "Value"; }
-            set { ViewState["ValuePrompt"] = value; }
-        }
-
+        #endregion
 
         /// <summary>
-        /// Gets or sets custom values.  If custom values are used, the value portion of this control will
-        /// render as a DropDownList with the selected values.
+        /// Renders the base control.
         /// </summary>
-        /// <value>
-        /// The custom values.
-        /// </value>
-        public Dictionary<string, string> CustomValues
-        {
-            get { return ViewState["CustomValues"] as Dictionary<string, string>; }
-            set { ViewState["CustomValues"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the defined type id.  If a defined type id is used, the value portion of this control
-        /// will render as a DropDownList of values from that defined type.  If a DefinedTypeId is not specified
-        /// the values will be rendered as free-form text fields.
-        /// </summary>
-        /// <value>
-        /// The defined type id.
-        /// </value>
-        public int? DefinedTypeId
-        {
-            get { return ViewState["DefinedTypeId"] as int?; }
-            set { ViewState["DefinedTypeId"] = value; }
-        }
-
-        /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
         {
             Dictionary<string, string> values = null;
             if ( DefinedTypeId.HasValue )
@@ -96,7 +62,7 @@ namespace Rock.Web.UI.Controls
                 new DefinedValueService( new RockContext() )
                     .GetByDefinedTypeId( DefinedTypeId.Value )
                     .ToList()
-                    .ForEach( v => values.Add( v.Id.ToString(), v.Name ) );
+                    .ForEach( v => values.Add( v.Id.ToString(), v.Value ) );
             } 
             else if ( CustomValues != null )
             {
@@ -107,7 +73,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
-            base.RenderControl( writer );
+            _hfValue.RenderControl( writer );
             writer.WriteLine();
 
             StringBuilder valueHtml = new StringBuilder();
@@ -224,9 +190,6 @@ namespace Rock.Web.UI.Controls
             RegisterClientScript();
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
         private void RegisterClientScript()
         {
             string script = @"

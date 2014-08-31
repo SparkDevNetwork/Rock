@@ -65,23 +65,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                string siteId = PageParameter( "siteId" );
-                string layoutId = PageParameter( "layoutId" );
-                if ( !string.IsNullOrWhiteSpace( layoutId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( siteId ) )
-                    {
-                        ShowDetail( "layoutId", int.Parse( layoutId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "layoutId", int.Parse( layoutId ), int.Parse( siteId ) );
-                    }
-                }
-                else
-                {
-                    upDetail.Visible = false;
-                }
+                ShowDetail( PageParameter( "layoutId" ).AsInteger(), PageParameter( "siteId" ).AsIntegerOrNull() );
             }
         }
 
@@ -96,7 +80,7 @@ namespace RockWeb.Blocks.Crm
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? layoutId = PageParameter(pageReference, "layoutId" ).AsInteger();
+            int? layoutId = PageParameter(pageReference, "layoutId" ).AsIntegerOrNull();
             if ( layoutId != null )
             {
                 Layout layout = new LayoutService( new RockContext() ).Get( layoutId.Value );
@@ -212,44 +196,39 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="layoutId">The layout identifier.</param>
+        public void ShowDetail( int layoutId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( layoutId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="layoutId">The layout identifier.</param>
         /// <param name="siteId">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? siteId )
+        public void ShowDetail( int layoutId, int? siteId )
         {
-            if ( !itemKey.Equals( "layoutId" ) )
-            {
-                return;
-            }
-
             Layout layout = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !layoutId.Equals( 0 ) )
             {
-                layout = new LayoutService( new RockContext() ).Get( itemKeyValue );
+                layout = new LayoutService( new RockContext() ).Get( layoutId );
             }
-            else
+
+            if (layout == null && siteId.HasValue)
             {
-                // only create a new one if parent was specified
-                if ( siteId.HasValue )
+                var site = SiteCache.Read( siteId.Value );
+                if ( site != null )
                 {
                     layout = new Layout { Id = 0 };
                     layout.SiteId = siteId.Value;
                 }
             }
 
-            if ( layout == null )
+            if (layout == null)
             {
+                pnlDetails.Visible = false;
                 return;
             }
 
@@ -354,17 +333,20 @@ namespace RockWeb.Blocks.Crm
             ddlLayout.Items.Add( new ListItem( string.Empty, None.IdValue ) );
 
             var site = SiteCache.Read( hfSiteId.ValueAsInt() );
-            string virtualFolder = string.Format( "~/Themes/{0}/Layouts", site.Theme );
-            string physicalFolder = Request.MapPath( virtualFolder );
-
-            // search for all layouts (aspx files) under the physical path 
-            var layoutFiles = new List<string>();
-            DirectoryInfo di = new DirectoryInfo( physicalFolder );
-            if ( di.Exists )
+            if ( site != null )
             {
-                foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
+                string virtualFolder = string.Format( "~/Themes/{0}/Layouts", site.Theme );
+                string physicalFolder = Request.MapPath( virtualFolder );
+
+                // search for all layouts (aspx files) under the physical path 
+                var layoutFiles = new List<string>();
+                DirectoryInfo di = new DirectoryInfo( physicalFolder );
+                if ( di.Exists )
                 {
-                    ddlLayout.Items.Add( new ListItem( file.FullName.Replace( physicalFolder, virtualFolder ).Replace( @"\", "/" ), Path.GetFileNameWithoutExtension( file.Name ) ) );
+                    foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
+                    {
+                        ddlLayout.Items.Add( new ListItem( file.FullName.Replace( physicalFolder, virtualFolder ).Replace( @"\", "/" ), Path.GetFileNameWithoutExtension( file.Name ) ) );
+                    }
                 }
             }
 

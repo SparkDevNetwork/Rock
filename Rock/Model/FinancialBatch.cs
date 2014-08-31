@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -110,6 +111,18 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public decimal ControlAmount { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialBatch"/> class.
+        /// </summary>
+        public FinancialBatch() : base()
+        {
+            Transactions = new Collection<FinancialTransaction>();
+        }
 
         #endregion
 

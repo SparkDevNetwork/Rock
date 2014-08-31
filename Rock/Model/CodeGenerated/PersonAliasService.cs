@@ -90,6 +90,8 @@ namespace Rock.Model
             
             // ignoring Campus,CreatedByPersonAliasId 
             
+            // ignoring Campus,LeaderPersonAliasId 
+            
             // ignoring Campus,ModifiedByPersonAliasId 
             
             // ignoring Category,CreatedByPersonAliasId 
@@ -134,6 +136,14 @@ namespace Rock.Model
             
             // ignoring Device,ModifiedByPersonAliasId 
             
+            // ignoring EntitySet,CreatedByPersonAliasId 
+            
+            // ignoring EntitySet,ModifiedByPersonAliasId 
+            
+            // ignoring EntitySetItem,CreatedByPersonAliasId 
+            
+            // ignoring EntitySetItem,ModifiedByPersonAliasId 
+            
             // ignoring ExceptionLog,CreatedByPersonAliasId 
             
             // ignoring ExceptionLog,ModifiedByPersonAliasId 
@@ -173,6 +183,8 @@ namespace Rock.Model
             // ignoring FinancialTransaction,CreatedByPersonAliasId 
             
             // ignoring FinancialTransaction,ModifiedByPersonAliasId 
+            
+            // ignoring FinancialTransaction,ProcessedByPersonAliasId 
             
             // ignoring FinancialTransactionDetail,CreatedByPersonAliasId 
             
@@ -292,6 +304,14 @@ namespace Rock.Model
             
             // ignoring PersonBadge,ModifiedByPersonAliasId 
             
+            // ignoring PersonDuplicate,CreatedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,DuplicatePersonAliasId 
+            
+            // ignoring PersonDuplicate,ModifiedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,PersonAliasId 
+            
             // ignoring PersonViewed,TargetPersonAliasId 
             
             // ignoring PersonViewed,ViewerPersonAliasId 
@@ -362,6 +382,8 @@ namespace Rock.Model
             
             // ignoring Workflow,CreatedByPersonAliasId 
             
+            // ignoring Workflow,InitiatorPersonAliasId 
+            
             // ignoring Workflow,ModifiedByPersonAliasId 
             
             // ignoring WorkflowAction,CreatedByPersonAliasId 
@@ -380,6 +402,8 @@ namespace Rock.Model
             
             // ignoring WorkflowActionType,ModifiedByPersonAliasId 
             
+            // ignoring WorkflowActivity,AssignedPersonAliasId 
+            
             // ignoring WorkflowActivity,CreatedByPersonAliasId 
             
             // ignoring WorkflowActivity,ModifiedByPersonAliasId 
@@ -387,6 +411,10 @@ namespace Rock.Model
             // ignoring WorkflowActivityType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActivityType,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowLog,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowLog,ModifiedByPersonAliasId 
             
             // ignoring WorkflowType,CreatedByPersonAliasId 
             

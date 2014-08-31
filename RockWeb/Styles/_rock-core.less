@@ -3,9 +3,10 @@
     
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
-    3. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    4. ASP.Net Overrides - Yep they get it wrong too sometimes
-    5. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+    
 
 */
 
@@ -15,12 +16,12 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
-@import "_components.less";
 @import "_page-admin.less";
-@import "_grid.less";
 @import "_modal.less";
+@import "_components.less";
 @import "_forms.less";
 @import "_dashboard.less";
+@import "_grid.less";
 
 @import "_blocks-cms.less";
 @import "_blocks-security.less";
@@ -30,6 +31,7 @@
 @import "_blocks-finance.less";
 @import "_blocks-persondetails.less";
 @import "_blocks-communication.less";
+@import "_blocks-checkinadmin.less";
 
 @import "_page-specific.less";
 
@@ -64,7 +66,68 @@ small
 }
 
 
-// 3. Bootstrap Overrides
+// 3. Utility Classes
+//--------------------------------
+
+.clickable {
+    cursor: pointer;
+}
+
+.tip {
+    background-color: #71a5bf;
+    color: #fff;
+    padding: 0 6px 2px;
+    border-radius: 4px;
+    font-size: 11px;
+
+    &.tip-liquid {
+        &:after {
+            content: '{{ Liquid }}';
+        }
+    }
+
+    &.tip-html {
+        &:after {
+            content: '< HTML />';
+        }
+    }
+}
+
+
+
+.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
+    font-family: @font-family-monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: @accent-text-color;
+    background-color: @accent-color;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
+} 
+
+// context help  
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @help-color;
+}
+
+.photo {
+    img {
+        width: 100%;
+    }
+}
+
+.well {
+    & > h1, 
+    & > h2, 
+    & > h3, 
+    & > h4 {
+        margin-top: 0;
+    }
+}
+
+// 4. Bootstrap Overrides
 //--------------------------------
 
 .nav-pills {
@@ -131,25 +194,32 @@ small
         border-color: @accent-color;
     }
 
-    .panel-title {
-        small {
-            color: #e0e0e0;
+    .panel-heading {
+        .panel-title {
+            small {
+                opacity: .5;
+            }
         }
-    }
 
-    // adjust the background color of pickers on a panel
-    .picker .picker-label {
-        background-color: @accent-color;
-        color: @accent-text-color;
-        border-color: darken(@accent-color, 10%)
+        .panel-labels {
+            float: right;
+        }
+
+        .panel-actions {
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
     }
 
     .panel-body {
         border-radius: 0 0 4px 4px;
 
-        .well {
+        /*.well {
             background-color: @accent-color;
-        }
+        }*/
     }
 }
 
@@ -187,7 +257,7 @@ small
 }
 
 .panel-persondetails {
-    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
 
     .panel-heading {
         .actions {
@@ -198,7 +268,7 @@ small
     }
 
     .panel-body {
-        background-color: @body-bg;
+        background-color: #fff;
 
         .form-group.static-control {
             .clearfix();
@@ -222,6 +292,50 @@ small
     }
 }
 
+.panel-block {
+    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+
+    border-top-color: @panel-top-border-color;
+
+    .panel-heading {
+        background-color: @gray-lighter;
+        .clearfix();
+
+        .panel-title {
+            float: left;
+
+            i {
+                color: #6a6a6a;
+            }
+        }
+
+        /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
+            float: right;
+            margin-top: 2px;
+        }*/
+    }
+
+    .panel-body {
+        
+        .grid.grid-panel {
+            margin: -15px;
+
+            .grid-filter {
+                border-radius: 0;
+            }
+
+            .table-bordered {
+                border-width: 1px 0 0 0;
+                
+                & > tfoot > tr > td {
+                    border: 0px;
+                }
+            }
+        }
+    }
+}
+
 // .panel-note {}  see _block-specific.less
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
@@ -234,15 +348,15 @@ small
 }
 
 .btn-action {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
+    .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
 }
 
 .btn-security {
-    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
+    .button-variant(@btn-security-color; @btn-security-bg; @btn-security-border);
 }
 
 .btn-authenication {
-    .button-variant(@accent-text-color; @accent-color; darken(@accent-color, 10%));
+    .button-variant(@btn-authenication-color; @btn-authenication-bg; @btn-authenication-border);
     width: 100%;
 
     &:hover {
@@ -263,33 +377,85 @@ small
 }
 
 // alert extentions
+.alert { // styling for exceptions
 
+    pre {
+        border: 0;
+        padding: 0;
+        color: inherit;
+        background-color: transparent;
+    }
+}
 // new alert types
 .alert-action { 
     .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
-.alert-success a {
-    color: @alert-success-text;
-    border-bottom: 1px dotted @alert-success-text;
+.alert-success {
+    a {
+        color: @alert-success-text;
+        border-bottom: @alert-success-link-border-bottom;
+    }
+
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-info a {
-    color: @alert-info-text;
-    border-bottom: 1px dotted @alert-info-text;
+.alert-info {
+    a {
+        color: @alert-info-text;
+        border-bottom: @alert-info-link-border-bottom;
+    }
+
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-warning a {
-    color: @alert-warning-text;
-    border-bottom: 1px dotted @alert-warning-text;
+.alert-warning { 
+    a {
+        color: @alert-warning-text;
+        border-bottom: @alert-warning-link-border-bottom;
+    }
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-danger a {
-    color: @alert-danger-text;
-    border-bottom: 1px dotted @alert-danger-text;
+.alert-danger { 
+    a {
+        color: @alert-danger-text;
+        border-bottom: @alert-danger-link-border-bottom;
+    }
+    a.help {
+        border-bottom: 0;
+    }
 }
 
+.alert { // hide the styling of pre's inside of alerts
+    pre {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+    }
+}
+
+// system errors
+
+.system-error {
+    pre {
+        background-color: transparent;
+        border: 0;
+        color: inherit;
+    }
+
+    .close {
+        color: inherit;
+    }
+}
 
 // modify BS3 to use fontawesome for carousel icons 
 .carousel-control .fa-chevron-left,
@@ -318,6 +484,8 @@ small
 // list extensions
 
 ul.list-padded {
+    margin-top: 12px;
+
     li {
         margin-top: 12px;
 
@@ -325,6 +493,18 @@ ul.list-padded {
             margin-top: 0;
         }
     }
+}
+
+// typography
+
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 // add 10 column row
@@ -339,7 +519,7 @@ ul.list-padded {
     }
 }
 
-// 4. ASP.Net Overrides
+// 5. ASP.Net Overrides
 //--------------------------------
 
 // to make asp.net panels look disabled when enabled is false
@@ -347,27 +527,4 @@ div.aspNetDisabled {
     opacity: 0.5;
 }
 
-// 5. Utility Classes
-//--------------------------------
 
-.clickable {
-    cursor: pointer;
-}
-
-
-.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
-    font-family: @font-family-monospace;
-    padding: 2px 4px;
-    font-size: 90%;
-    color: @accent-text-color;
-    background-color: @accent-color;
-    white-space: nowrap;
-    border-radius: @border-radius-base;
-} 
-
-// context help  
-a.help {
-    margin-left: 6px;
-    outline: 0;
-    color: @header-text-color;
-}

@@ -95,7 +95,7 @@ namespace Rock.Web.UI.Controls.Communication
                 var attachments = new Dictionary<int, string>();
 
                 var fileIds = new List<int>();
-                hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger() ?? 0));
+                hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger()));
 
                 new BinaryFileService( new RockContext() ).Queryable()
                     .Where( f => fileIds.Contains( f.Id ) )
@@ -152,6 +152,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
+            htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
 
             tbTextMessage = new RockTextBox();

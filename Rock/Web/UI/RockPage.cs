@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -27,6 +26,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -66,7 +66,7 @@ namespace Rock.Web.UI
             set { _modelContext = value; }
         }
         private Dictionary<string, Data.KeyEntity> _modelContext;
-        
+
         #endregion
 
         #region Public Properties
@@ -91,12 +91,20 @@ namespace Rock.Web.UI
         public string BrowserTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the template title.
+        /// Gets or sets the page title.
         /// </summary>
         /// <value>
-        /// The template title.
+        /// The page title.
         /// </value>
         public string PageTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page title.
+        /// </summary>
+        /// <value>
+        /// The page icon.
+        /// </value>
+        public string PageIcon { get; set; }
 
         /// <summary>
         /// Gets the title for the page and sets both the browser and template title
@@ -215,7 +223,7 @@ namespace Rock.Web.UI
                     return _CurrentUser;
                 }
 
-                if (Context.Items.Contains( "CurrentUser" ) )
+                if ( Context.Items.Contains( "CurrentUser" ) )
                 {
                     _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
                 }
@@ -277,7 +285,7 @@ namespace Rock.Web.UI
                     _CurrentPerson = Context.Items["CurrentPerson"] as Person;
                     return _CurrentPerson;
                 }
-                
+
                 return null;
             }
 
@@ -366,7 +374,7 @@ namespace Rock.Web.UI
                     {
                         Zone zone = control as Zone;
                         if ( zone != null )
-                            Zones.Add( zone.Name.Replace(" ", ""), new KeyValuePair<string, Zone>( zone.Name, zone ) );
+                            Zones.Add( zone.Name.Replace( " ", "" ), new KeyValuePair<string, Zone>( zone.Name, zone ) );
                     }
 
                     FindRockControls( control.Controls );
@@ -415,7 +423,7 @@ namespace Rock.Web.UI
         {
             // Add the ScriptManager to each page
             _scriptManager = ScriptManager.GetCurrent( this.Page );
-            
+
             if ( _scriptManager == null )
             {
                 _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
@@ -430,10 +438,10 @@ namespace Rock.Web.UI
             _scriptManager.AsyncPostBackTimeout = 180;
 
             // wire up navigation event
-            _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
+            _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
 
             // add ckeditor (doesn't like to be added during an async postback)
-            _scriptManager.Scripts.Add( new ScriptReference( ResolveRockUrl("~/Scripts/ckeditor/ckeditor.js", true) ) );
+            _scriptManager.Scripts.Add( new ScriptReference( ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true ) ) );
 
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
@@ -444,7 +452,8 @@ namespace Rock.Web.UI
 
             // add Google Maps API (doesn't like to be added during an async postback )
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
+            string keyParameter = string.IsNullOrWhiteSpace(googleAPIKey) ? "" : string.Format("key={0}&", googleAPIKey);
+            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter ) ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -483,9 +492,9 @@ namespace Rock.Web.UI
                     {
                         // Remove the 'logout' queryparam before redirecting
                         var pageReference = new PageReference( PageReference.PageId, PageReference.RouteId, PageReference.Parameters );
-                        foreach(string key in PageReference.QueryString)
+                        foreach ( string key in PageReference.QueryString )
                         {
-                            if (!key.Equals("logout", StringComparison.OrdinalIgnoreCase))
+                            if ( !key.Equals( "logout", StringComparison.OrdinalIgnoreCase ) )
                             {
                                 pageReference.Parameters.Add( key, PageReference.QueryString[key] );
                             }
@@ -518,7 +527,7 @@ namespace Rock.Web.UI
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
-                    CurrentUser = impersonatedPerson.ImpersonatedUser;
+                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
                 }
             }
 
@@ -561,6 +570,7 @@ namespace Rock.Web.UI
             {
                 BrowserTitle = _pageCache.BrowserTitle;
                 PageTitle = _pageCache.PageTitle;
+                PageIcon = _pageCache.IconCssClass;
 
                 // If there's a master page, update it's reference to Current Page
                 if ( this.Master is RockMasterPage )
@@ -602,7 +612,7 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/error.aspx?type=security", false );  
+                        Response.Redirect( "~/error.aspx?type=security", false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
                 }
@@ -611,26 +621,38 @@ namespace Rock.Web.UI
                     // Set current models (context)
                     Page.Trace.Warn( "Checking for Context" );
                     ModelContext = new Dictionary<string, Data.KeyEntity>();
-                    try 
+                    try
                     {
+
+                        // first search cookies, but pageContext can replace it
+                        GetCookieContext( GetContextCookieName( false ) );      // Site
+                        GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
+
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
-                            int contextId = 0;
-                            if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
-                                ModelContext.Add( pageContext.Key, new Data.KeyEntity( contextId ) );
+                            int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
+                            if ( contextId.HasValue )
+                            {
+                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
+                            }
                         }
 
                         char[] delim = new char[1] { ',' };
-                        foreach ( string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+                        foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
-                            string[] parts = contextItem.Split('|');
-                            if (parts.Length == 2)
-                                ModelContext.Add( parts[0], new Data.KeyEntity( parts[1] ) );
+                            string[] parts = contextItem.Split( '|' );
+                            if ( parts.Length == 2 )
+                            {
+                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                            }
                         }
 
                     }
-                    catch { }
+                    catch 
+                    {
+                        // intentionally ignore exception
+                    }
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
@@ -662,11 +684,9 @@ namespace Rock.Web.UI
                     {
                         Page.Trace.Warn( "Adding popup controls (footer elements)" );
                         AddPopupControls();
-                        if ( canAdministratePage )
-                        {
-                            Page.Trace.Warn( "Adding zone config elements" );
-                            AddZoneConfigElements();
-                        }
+
+                        Page.Trace.Warn( "Adding zone elements" );
+                        AddZoneElements( canAdministratePage );
                     }
 
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
@@ -675,13 +695,13 @@ namespace Rock.Web.UI
 
                     // If the page is configured to display in the breadcrumbs...
                     string bcName = _pageCache.BreadCrumbText;
-                    if (bcName != string.Empty)
+                    if ( bcName != string.Empty )
                     {
                         PageReference.BreadCrumbs.Add( new BreadCrumb( bcName, PageReference.BuildUrl() ) );
                     }
 
                     // Add the Google Analytics Code script if a code was specified for the site
-                    if (!string.IsNullOrWhiteSpace(_pageCache.Layout.Site.GoogleAnalyticsCode))
+                    if ( !string.IsNullOrWhiteSpace( _pageCache.Layout.Site.GoogleAnalyticsCode ) )
                     {
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
@@ -719,16 +739,16 @@ namespace Rock.Web.UI
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
 
-                            string blockTypeCss = block.BlockType.Name;
+                            string blockTypeCss = block.BlockType != null ? block.BlockType.Name : "";
                             var parts = blockTypeCss.Split( new char[] { '>' } );
                             if ( parts.Length > 1 )
                             {
                                 blockTypeCss = parts[parts.Length - 1].Trim();
                             }
                             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-                            
+
                             blockWrapper.Attributes.Add( "class", "block-instance " + blockTypeCss +
-                                ( string.IsNullOrWhiteSpace( block.CssClass ) ? "" :  " " + block.CssClass.Trim() ) +
+                                ( string.IsNullOrWhiteSpace( block.CssClass ) ? "" : " " + block.CssClass.Trim() ) +
                                 ( canAdministrate || canEdit ? " can-configure " : "" ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
@@ -751,10 +771,14 @@ namespace Rock.Web.UI
                                 }
                                 catch ( Exception ex )
                                 {
-                                    HtmlGenericControl div = new HtmlGenericControl( "div" );
-                                    div.Attributes.Add( "class", "alert alert-danger" );
-                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1} <code>{2}</code>", block.Name, ex.Message, ex.StackTrace );
-                                    control = div;
+                                    NotificationBox nbBlockLoad = new NotificationBox();
+                                    nbBlockLoad.ID = string.Format( "nbBlockLoad_{0}", block.Id );
+                                    nbBlockLoad.CssClass = "system-error";
+                                    nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
+                                    nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
+                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );
+                                    nbBlockLoad.Dismissable = true;
+                                    control = nbBlockLoad;
 
                                     if ( this.IsPostBack )
                                     {
@@ -776,7 +800,7 @@ namespace Rock.Web.UI
                                         blockControl = (RockBlock)( (PartialCachingControl)control ).CachedControl;
                                     }
                                 }
-                                
+
                                 // If the current control is a block, set it's properties
                                 if ( blockControl != null )
                                 {
@@ -817,7 +841,7 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
                                         Page.Trace.Warn( "\tCreating block attributes" );
-                                        blockControl.CreateAttributes();
+                                        blockControl.CreateAttributes( rockContext );
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
@@ -858,10 +882,10 @@ namespace Rock.Web.UI
                     foreach ( var pageReference in pageReferences )
                     {
                         pageReference.BreadCrumbs.ForEach( c => BreadCrumbs.Add( c ) );
-                    } 
+                    }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canAdministrateBlock ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlock ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -874,7 +898,7 @@ namespace Rock.Web.UI
 
                         phLoadTime = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadTime );
-                        
+
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
@@ -1022,7 +1046,11 @@ namespace Rock.Web.UI
                 transaction.UserAgent = Request.UserAgent;
                 transaction.Url = Request.Url.ToString();
                 transaction.PageTitle = _pageCache.PageTitle;
-                transaction.SessionId = Session["RockSessionId"].ToString();
+                var sessionId = Session["RockSessionID"];
+                if ( sessionId != null )
+                {
+                    transaction.SessionId = sessionId.ToString();
+                }
 
                 RockQueue.TransactionQueue.Enqueue( transaction );
             }
@@ -1144,7 +1172,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="path">A <see cref="System.String" /> representing the path to the script link.</param>
         /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
-        public void AddScriptLink(string path, bool fingerprint = true)
+        public void AddScriptLink( string path, bool fingerprint = true )
         {
             RockPage.AddScriptLink( this, path, fingerprint );
         }
@@ -1155,21 +1183,28 @@ namespace Rock.Web.UI
         /// <param name="code">The GoogleAnalyticsCode.</param>
         private void AddGoogleAnalytics( string code )
         {
-            string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
-            if (scriptTemplate == null)
+            try
             {
-                string scriptFile = MapPath("~/App_Data/GoogleAnalytics.txt");
-                if ( File.Exists( scriptFile ) )
+                string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
+                if ( scriptTemplate == null )
                 {
-                    scriptTemplate = File.ReadAllText( scriptFile );
-                    Application["GoogleAnalyticsScript"] = scriptTemplate;
+                    string scriptFile = MapPath( "~/App_Data/GoogleAnalytics.txt" );
+                    if ( File.Exists( scriptFile ) )
+                    {
+                        scriptTemplate = File.ReadAllText( scriptFile );
+                        Application["GoogleAnalyticsScript"] = scriptTemplate;
+                    }
+                }
+
+                if ( scriptTemplate != null )
+                {
+                    string script = scriptTemplate.Contains( "{0}" ) ? string.Format( scriptTemplate, code ) : scriptTemplate;
+                    AddScriptToHead( this.Page, script, true );
                 }
             }
-
-            if ( scriptTemplate != null )
+            catch ( Exception ex )
             {
-                string script = string.Format( scriptTemplate, code );
-                AddScriptToHead( this.Page, script, true );
+                LogException( ex );
             }
         }
 
@@ -1207,11 +1242,11 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key to use for the history point.</param>
         /// <param name="state">A <see cref="System.String"/> representing any state information to store for the history point.</param>
         /// <param name="title">A <see cref="System.String"/> representing the title to be used by the browser, will use an empty string by default.</param>
-        public void AddHistory(string key, string state, string title = "")
+        public void AddHistory( string key, string state, string title = "" )
         {
-            if (ScriptManager.GetCurrent(Page) != null)
+            if ( ScriptManager.GetCurrent( Page ) != null )
             {
-                ScriptManager sManager = ScriptManager.GetCurrent(Page);
+                ScriptManager sManager = ScriptManager.GetCurrent( Page );
                 if ( string.IsNullOrWhiteSpace( title ) )
                 {
                     sManager.AddHistoryPoint( key, state );
@@ -1271,6 +1306,26 @@ namespace Rock.Web.UI
             }
 
             return resolvedUrl;
+        }
+
+        /// <summary>
+        /// Gets the context entity types.
+        /// </summary>
+        /// <returns></returns>
+        public List<EntityTypeCache> GetContextEntityTypes()
+        {
+            var result = new List<EntityTypeCache>();
+
+            foreach (var item in this.ModelContext.Keys)
+            {
+                var entityType = EntityTypeCache.Read( item );
+                if ( entityType != null )
+                {
+                    result.Add( entityType );
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1368,6 +1423,70 @@ namespace Rock.Web.UI
             return null;
         }
 
+        /// <summary>
+        /// Sets the context cookie.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        public void SetContextCookie( IEntity entity, bool pageSpecific = false, bool refreshPage = true)
+        {
+            string cookieName = GetContextCookieName( pageSpecific );
+
+            var contextCookie = Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new HttpCookie( cookieName );
+            }
+
+            contextCookie.Values[entity.GetType().FullName] = HttpUtility.UrlDecode( entity.ContextKey );
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+            Response.Cookies.Add( contextCookie );
+
+            if ( refreshPage )
+            {
+                Response.Redirect( Request.RawUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        private void GetCookieContext( string cookieName )
+        {
+            if ( Request.Cookies[cookieName] != null )
+            {
+                for ( int valueIndex = 0; valueIndex < Request.Cookies[cookieName].Values.Count; valueIndex++ )
+                {
+                    string cookieValue = Request.Cookies[cookieName].Values[valueIndex];
+                    if ( !string.IsNullOrWhiteSpace( cookieValue ) )
+                    {
+                        try
+                        {
+                            string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                            string[] parts = contextItem.Split( '|' );
+                            if ( parts.Length == 2 )
+                            {
+                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                            }
+                        }
+                        catch
+                        {
+                            // intentionally ignore exception in case cookie is corrupt
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the context cookie.
+        /// </summary>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <returns></returns>
+        public string GetContextCookieName( bool pageSpecific )
+        {
+            return "Rock:context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+        }
 
         /// <summary>
         /// Adds an update trigger for when the block instance properties are updated.
@@ -1380,7 +1499,7 @@ namespace Rock.Web.UI
             trigger.EventName = "Click";
             updatePanel.Triggers.Add( trigger );
         }
-        
+
         #endregion
 
         #region Cms Admin Content
@@ -1428,9 +1547,12 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the config elements.
         /// </summary>
-        private void AddZoneConfigElements()
+        private void AddZoneElements( bool canConfigPage)
         {
-            AddBlockMove();
+            if ( canConfigPage )
+            {
+                AddBlockMove();
+            }
 
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
@@ -1442,43 +1564,46 @@ namespace Rock.Web.UI
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
+                zoneWrapper.Attributes.Add( "class", "zone-instance" + ( canConfigPage ? " can-configure" : "" ) );
 
-                // Zone content configuration widget
-                HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
-                zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
+                if ( canConfigPage )
+                {
+                    // Zone content configuration widget
+                    HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
+                    zoneWrapper.Controls.Add( zoneConfig );
+                    zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
 
-                HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
-                zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
-                zoneConfigLink.Attributes.Add( "href", "#" );
-                zoneConfig.Controls.Add( zoneConfigLink );
-                HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                iZoneConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
-                zoneConfigLink.Controls.Add( iZoneConfig );
+                    HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
+                    zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
+                    zoneConfigLink.Attributes.Add( "href", "#" );
+                    zoneConfig.Controls.Add( zoneConfigLink );
+                    HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
+                    iZoneConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
+                    zoneConfigLink.Controls.Add( iZoneConfig );
 
-                HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
-                zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
-                zoneConfig.Controls.Add( zoneConfigBar );
+                    HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
+                    zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
+                    zoneConfig.Controls.Add( zoneConfigBar );
 
-                HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
-                zoneConfigTitle.InnerText = zoneControl.Value.Key;
-                zoneConfigBar.Controls.Add( zoneConfigTitle );
+                    HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
+                    zoneConfigTitle.InnerText = zoneControl.Value.Key;
+                    zoneConfigBar.Controls.Add( zoneConfigTitle );
 
-                // Configure Blocks icon
-                HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
-                aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aBlockConfig.Attributes.Add( "class", "zone-blocks" );
-                aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", _pageCache.Id, zoneControl.Key ) ) + "')" );
-                aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
-                aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
-                //aBlockConfig.InnerText = "Blocks";
-                HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
-                aBlockConfig.Controls.Add( iZoneBlocks );
+                    // Configure Blocks icon
+                    HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                    zoneConfigBar.Controls.Add( aBlockConfig );
+                    aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
+                    aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                    aBlockConfig.Attributes.Add( "class", "zone-blocks" );
+                    aBlockConfig.Attributes.Add( "height", "500px" );
+                    aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", _pageCache.Id, zoneControl.Key ) ) + "')" );
+                    aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
+                    aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
+                    //aBlockConfig.InnerText = "Blocks";
+                    HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
+                    iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
+                    aBlockConfig.Controls.Add( iZoneBlocks );
+                }
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
                 zoneContent.Attributes.Add( "class", "zone-content" );
@@ -1514,7 +1639,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
                 blockConfigLink.Attributes.Add( "href", "#" );
                 HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
-                iBlockConfig.Attributes.Add("class", "fa fa-arrow-circle-right");
+                iBlockConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
                 blockConfigLink.Controls.Add( iBlockConfig );
                 blockConfig.Controls.Add( blockConfigLink );
 
@@ -1594,7 +1719,7 @@ namespace Rock.Web.UI
             SaveContextItem( itemKey, item );
         }
 
-        private void SaveContextItem(string key, object item)
+        private void SaveContextItem( string key, object item )
         {
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( key ) )
@@ -1630,8 +1755,11 @@ namespace Rock.Web.UI
         /// value
         /// </summary>
         /// <param name="name">A <see cref="System.String" /> representing the name of the page parameter.</param>
-        /// <returns>A <see cref="System.String"/> containing the parameter value; otherwise an empty string.</returns>
-        public string PageParameter( string name )
+        /// <param name="searchFormParams">if set to <c>true</c> [search form parameters].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> containing the parameter value; otherwise an empty string.
+        /// </returns>
+        public string PageParameter( string name, bool searchFormParams = false )
         {
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
@@ -1640,7 +1768,7 @@ namespace Rock.Web.UI
                     return (string)Page.RouteData.Values[name];
                 }
 
-                if ( !String.IsNullOrEmpty( Request.QueryString[name] ) )
+                if ( !string.IsNullOrEmpty( Request.QueryString[name] ) )
                 {
                     return Request.QueryString[name];
                 }
@@ -1648,6 +1776,14 @@ namespace Rock.Web.UI
                 if ( PageReference.Parameters.ContainsKey( name ) )
                 {
                     return PageReference.Parameters[name];
+                }
+
+                if ( searchFormParams )
+                {
+                    if ( !string.IsNullOrEmpty( this.Page.Request.Params[name] ) )
+                    {
+                        return this.Page.Request.Params[name];
+                    }
                 }
             }
 
@@ -1688,9 +1824,9 @@ namespace Rock.Web.UI
                 parameters.Add( key, Page.RouteData.Values[key] );
             }
 
-            foreach( string param in Request.QueryString.Keys)
+            foreach ( string param in Request.QueryString.Keys )
             {
-                parameters.Add( param, Request.QueryString[param]);
+                parameters.Add( param, Request.QueryString[param] );
             }
 
             return parameters;
@@ -1903,9 +2039,9 @@ namespace Rock.Web.UI
         {
             var scriptManager = ScriptManager.GetCurrent( page );
 
-            if (fingerprint)
+            if ( fingerprint )
             {
-                path = Fingerprint.Tag( page.ResolveUrl(path) );
+                path = Fingerprint.Tag( page.ResolveUrl( path ) );
             }
 
             if ( scriptManager != null && !scriptManager.Scripts.Any( s => s.Path == path ) )
@@ -1920,14 +2056,14 @@ namespace Rock.Web.UI
         /// <param name="page">The page.</param>
         /// <param name="script">The script.</param>
         /// <param name="AddScriptTags">if set to <c>true</c> [add script tags].</param>
-        public static void AddScriptToHead(Page page, string script, bool AddScriptTags)
-        {
+        public static void AddScriptToHead( Page page, string script, bool AddScriptTags )
+        {
             if ( page != null && page.Header != null )
             {
                 var header = page.Header;
-                
+
                 Literal l = new Literal();
-                
+
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
@@ -1944,7 +2080,7 @@ namespace Rock.Web.UI
 
                 header.Controls.Add( l );
             }
-        } 
+        }
 
         #region User Preferences
 
@@ -1972,19 +2108,19 @@ namespace Rock.Web.UI
         /// </returns>
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
-            var selectedValues = new Dictionary<string,string>();
+            var selectedValues = new Dictionary<string, string>();
 
             var values = SessionUserPreferences();
-            foreach(var key in values.Where ( v => v.Key.StartsWith(keyPrefix) ) )
+            foreach ( var key in values.Where( v => v.Key.StartsWith( keyPrefix ) ) )
             {
                 string firstValue = string.Empty;
-                foreach( string value in key.Value)
+                foreach ( string value in key.Value )
                 {
                     firstValue = value;
                     break;
                 }
 
-                selectedValues.Add(key.Key, firstValue);
+                selectedValues.Add( key.Key, firstValue );
             }
 
             return selectedValues;
@@ -2071,7 +2207,22 @@ namespace Rock.Web.UI
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Updates the blocks.
+        /// </summary>
+        /// <param name="blockTypePath">The block type path.</param>
+        public void UpdateBlocks( string blockTypePath )
+        {
+            foreach ( var rockBlock in RockBlocks )
+            {
+                if ( rockBlock._blockCache.BlockType.Path.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    OnBlockUpdated( rockBlock.BlockId );
+                }
+            }
+        }
+
         /// <summary>
         /// Occurs when a block's properties are updated.
         /// </summary>
@@ -2081,7 +2232,7 @@ namespace Rock.Web.UI
         /// Called when a block's properties are updated.
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
-        private void OnBlockUpdated (int blockId)
+        private void OnBlockUpdated( int blockId )
         {
             if ( BlockUpdated != null )
             {
@@ -2093,11 +2244,11 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
-        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
+        protected void scriptManager_Navigate( object sender, HistoryEventArgs e )
         {
-            if (PageNavigate != null)
+            if ( PageNavigate != null )
             {
-                PageNavigate(this, e);
+                PageNavigate( this, e );
             }
         }
 
@@ -2118,7 +2269,7 @@ namespace Rock.Web.UI
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
-    public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
+    public delegate void PageNavigateEventHandler( object sender, HistoryEventArgs e );
 
     /// <summary>
     /// Event Argument used when block properties are updated

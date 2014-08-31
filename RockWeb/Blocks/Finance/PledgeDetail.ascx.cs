@@ -42,16 +42,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
-                int? itemId = PageParameter( "pledgeId" ).AsInteger( false );
-
-                if ( itemId.HasValue )
-                {
-                    ShowDetail( "pledgeId", itemId.Value );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "pledgeId" ).AsInteger() );
             }
         }
 
@@ -66,7 +57,7 @@ namespace RockWeb.Blocks.Finance
             FinancialPledge pledge;
             var rockContext = new RockContext();
             var pledgeService = new FinancialPledgeService( rockContext );
-            var pledgeId = int.Parse( hfPledgeId.Value );
+            var pledgeId = hfPledgeId.Value.AsInteger();
 
             if ( pledgeId == 0 )
             {
@@ -79,12 +70,13 @@ namespace RockWeb.Blocks.Finance
             }
 
             pledge.PersonId = ppPerson.PersonId;
-            pledge.AccountId = int.Parse( fpFund.SelectedValue );
-            pledge.TotalAmount = decimal.Parse( tbAmount.Text );
+            pledge.AccountId = fpFund.SelectedValue.AsIntegerOrNull();
+            pledge.TotalAmount = tbAmount.Text.AsDecimal();
 
-            pledge.StartDate = dpDateRange.LowerValue.Value;
-            pledge.EndDate = dpDateRange.UpperValue.Value;
-            pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
+            pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
+
+            pledge.PledgeFrequencyValueId = ddlFrequencyType.SelectedValue.AsIntegerOrNull();
 
             if ( !pledge.IsValid )
             {
@@ -110,21 +102,22 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="pledgeId">The pledge identifier.</param>
+        public void ShowDetail( int pledgeId )
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
-            FinancialPledge pledge;
 
-            if ( itemKeyValue > 0 )
+            FinancialPledge pledge = null;
+
+            if ( pledgeId > 0 )
             {
-                pledge = new FinancialPledgeService( new RockContext() ).Get( itemKeyValue );
+                pledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
                 lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( pledge == null )
             {
                 pledge = new FinancialPledge();
                 lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();

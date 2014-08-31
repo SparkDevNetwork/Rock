@@ -39,19 +39,9 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
-        public WorkflowActivityTypeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string workflowTypeGuid = "" )
+        public WorkflowActivityTypeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowActivityFieldType ).FullName )
         {
-            if ( !string.IsNullOrWhiteSpace( workflowTypeGuid ) )
-            {
-                var workflowType = Rock.Web.Cache.DefinedTypeCache.Read( workflowTypeGuid.AsGuid() );
-                if ( workflowType != null )
-                {
-                    var workflowTypeConfigValue = new Field.ConfigurationValue( workflowType.Id.ToString() );
-                    FieldConfigurationValues.Add( WORKFLOW_TYPE_KEY, workflowTypeConfigValue );
-                }
-            }
         }
     }
 }

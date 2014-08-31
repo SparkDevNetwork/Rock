@@ -55,6 +55,24 @@ namespace Rock.Model
         public int ActivityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the assigned person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned group identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was activated.
         /// </summary>
         /// <value>
@@ -62,6 +80,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ActivatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the activated by activity identifier.
+        /// </summary>
+        /// <value>
+        /// The activated by activity identifier.
+        /// </value>
+        [DataMember]
+        public int? ActivatedByActivityId { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was last processed.
@@ -99,8 +126,23 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned person alias.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias.
+        /// </value>
+        public virtual PersonAlias AssignedPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group.
+        /// </summary>
+        /// <value>
+        /// The assigned group.
+        /// </value>
+        public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this WorkflowActivity instance is active.
@@ -118,6 +160,14 @@ namespace Rock.Model
             }
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the activated by activity.
+        /// </summary>
+        /// <value>
+        /// The activated by activity.
+        /// </value>
+        public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> that are run by this WorkflowActivity.
@@ -144,7 +194,7 @@ namespace Rock.Model
             get
             {
                 return this.Actions
-                    .Where( a => a.IsActive )
+                    .Where( a => a.IsActive && !a.CompletedDateTime.HasValue )
                     .OrderBy( a => a.ActionType.Order );
             }
         }
@@ -167,7 +217,6 @@ namespace Rock.Model
 
         #region Public Methods
 
-
         /// <summary>
         /// Processes this WorkflowAction
         /// </summary>
@@ -181,9 +230,7 @@ namespace Rock.Model
         /// </returns>
         internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
-
-            this.LastProcessedDateTime = RockDateTime.Now;
+            AddLogEntry( "Processing..." );
 
             errorMessages = new List<string>();
 
@@ -206,13 +253,15 @@ namespace Rock.Model
                 }
 
                 // If action completed this workflow, exit
-                if ( !this.Workflow.IsActive )
+                if ( this.Workflow == null || !this.Workflow.IsActive )
                 {
                     break;
                 }
             }
 
-            AddSystemLogEntry( "Processing Complete" );
+            this.LastProcessedDateTime = RockDateTime.Now;
+
+            AddLogEntry( "Processing Complete" );
 
             if (!this.ActiveActions.Any())
             {
@@ -223,14 +272,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
+        /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the body of the log entry.</param>
-        public virtual void AddLogEntry( string logEntry )
+        /// <param name="logEntry">A <see cref="System.String" /> representing the body of the log entry.</param>
+        /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
+        public virtual void AddLogEntry( string logEntry, bool force = false )
         {
-            if ( this.Workflow != null )
+            if ( this.Workflow != null &&
+                ( force || (
+                this.Workflow.WorkflowType != null && (
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) ) )
             {
-                this.Workflow.AddLogEntry( string.Format( "'{0}' Activity: {1}", this.ToString(), logEntry ) );
+                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
             }
         }
 
@@ -240,9 +295,33 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
-            AddSystemLogEntry( "Completed" );
+            AddLogEntry( "Completed" );
         }
 
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "Workflow", Workflow.ToLiquid( true ) );
+                mergeFields.Add( "ActivityType", this.ActivityType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Workflow", Workflow );
+                mergeFields.Add( "ActivityType", this.ActivityType );
+            }
+
+            return mergeFields;
+        }       
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.
         /// </summary>
@@ -251,26 +330,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActivityType.ToStringSafe(), this.Id );
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Logs a system event to the <see cref="Rock.Model.WorkflowLog"/>
-        /// </summary>
-        /// <param name="logEntry">A <see cref="System.String"/> representing the log entry.</param>
-        private void AddSystemLogEntry( string logEntry )
-        {
-            if ( this.Workflow != null &&
-                this.Workflow.WorkflowType != null &&
-                ( this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                this.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
-            {
-                AddLogEntry( logEntry );
-            }
+            return this.ActivityType.ToStringSafe();
         }
 
         #endregion
@@ -291,7 +351,7 @@ namespace Rock.Model
             activity.ActivatedDateTime = RockDateTime.Now;
             activity.LoadAttributes();
 
-            activity.AddSystemLogEntry( "Activated" );
+            activity.AddLogEntry( "Activated" );
 
             foreach ( var actionType in activityType.ActionTypes )
             {
@@ -319,8 +379,11 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( m => m.Workflow ).WithMany( m => m.Activities).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( m => m.ActivityType ).WithMany().HasForeignKey( m => m.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );
         }
     }
 

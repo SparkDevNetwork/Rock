@@ -132,7 +132,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? phoneNumberTypeValidId = selection.AsInteger( false );
+            int? phoneNumberTypeValidId = selection.AsIntegerOrNull();
             if (!phoneNumberTypeValidId.HasValue)
             {
                 phoneNumberTypeValidId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
@@ -156,9 +156,9 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList phoneNumberTypeList = new RockDropDownList();
             phoneNumberTypeList.Items.Clear();
-            foreach (var value in DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Name))
+            foreach (var value in DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
             {
-                phoneNumberTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
+                phoneNumberTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
             phoneNumberTypeList.ID = parentControl.ID + "_phoneTypeList";

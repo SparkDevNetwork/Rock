@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Scheduled Job Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given scheduled job." )]
-    public partial class ScheduledJobDetail : RockBlock
+    public partial class ScheduledJobDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
 
@@ -48,26 +48,16 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "serviceJobId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "serviceJobId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "serviceJobId" ).AsInteger() );
             }
 
             if ( pnlDetails.Visible )
             {
                 var job = new ServiceJob { Id = int.Parse( hfId.Value ), Class = ddlJobTypes.SelectedValue ?? "Rock.Jobs.JobPulse" };
-                if ( job.Id > 0 )
-                {
-                    job.LoadAttributes();
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
-                }
+
+                job.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
             }
         }
 
@@ -122,7 +112,7 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 
@@ -138,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         protected void ddlJobTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
             ServiceJob job;
-            var itemId = int.Parse( PageParameter( "serviceJobId" ) );
+            var itemId = PageParameter( "serviceJobId" ).AsInteger();
             if ( itemId == 0 )
             {
                 job = new ServiceJob { Id = 0, IsActive = true };
@@ -158,27 +148,21 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="serviceJobId">The service job identifier.</param>
+        public void ShowDetail( int serviceJobId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "serviceJobId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
             LoadDropDowns();
 
             // Load depending on Add(0) or Edit
-            ServiceJob job;
-            if ( !itemKeyValue.Equals( 0 ) )
+            ServiceJob job = null;
+            if ( !serviceJobId.Equals( 0 ) )
             {
-                job = new ServiceJobService( new RockContext() ).Get( itemKeyValue );
+                job = new ServiceJobService( new RockContext() ).Get( serviceJobId );
                 lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( job == null )
             {
                 job = new ServiceJob { Id = 0, IsActive = true };
                 lActionTitle.Text = ActionTitle.Add( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -251,7 +235,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
+            ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
             int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
 

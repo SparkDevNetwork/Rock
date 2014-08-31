@@ -52,8 +52,8 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            int minBarHeight = GetAttributeValue(badge, "MinimumBarHeight").AsInteger(false) ?? 2;
-            int monthsToDisplay = GetAttributeValue(badge, "MonthsToDisplay").AsInteger(false) ?? 24;
+            int minBarHeight = GetAttributeValue(badge, "MinimumBarHeight").AsIntegerOrNull() ?? 2;
+            int monthsToDisplay = GetAttributeValue(badge, "MonthsToDisplay").AsIntegerOrNull() ?? 24;
             
             string annimateClass = string.Empty;
 

@@ -55,7 +55,7 @@ namespace Rock.Field.Types
                     var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
                     if ( definedValue != null )
                     {
-                        formattedValue = definedValue.Name;
+                        formattedValue = definedValue.Value;
                     }
                 }
             }
@@ -168,7 +168,7 @@ namespace Rock.Field.Types
                             {
                                 foreach ( var locationTypeValue in locationTypeValues )
                                 {
-                                    editControl.Items.Add( new ListItem( locationTypeValue.Name, locationTypeValue.Id.ToString() ) );
+                                    editControl.Items.Add( new ListItem( locationTypeValue.Value, locationTypeValue.Id.ToString() ) );
                                 }
 
                                 return editControl;

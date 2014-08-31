@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "tagId", "0" );
-            parms.Add( "entityTypeId", rFilter.GetUserPreference( "EntityType" ).AsInteger().ToString() );
+            parms.Add( "entityTypeId", rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull().ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Core
                     e.Value = EntityTypeCache.Read( int.Parse( e.Value ) ).FriendlyName;
                     break;
                 case "Owner":
-                    int? personId = e.Value.AsInteger( false );
+                    int? personId = e.Value.AsIntegerOrNull();
                     if ( personId.HasValue )
                     {
                         var person = new PersonService( new RockContext() ).Get( personId.Value );
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Core
                 Person owner = CurrentPerson;
                 if ( _canConfigure && !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Owner" ) ) )
                 {
-                    int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsInteger( false );
+                    int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
                     if ( savedOwnerId.HasValue )
                     {
                         var person = new PersonService( new RockContext() ).Queryable()
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private IQueryable<Tag> GetTags()
         {
-            int? entityTypeId = rFilter.GetUserPreference( "EntityType" ).AsInteger( false );
+            int? entityTypeId = rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull();
             if ( entityTypeId.HasValue )
             {
                 var queryable = new Rock.Model.TagService( new RockContext() ).Queryable().
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    int? personId = rFilter.GetUserPreference( "Owner" ).AsInteger( false );
+                    int? personId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
                     if ( _canConfigure && personId.HasValue )
                     {
                         queryable = queryable.Where( t => t.OwnerId == personId.Value );

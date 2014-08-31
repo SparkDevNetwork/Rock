@@ -138,6 +138,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;
+            target.HighlightColor = source.HighlightColor;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

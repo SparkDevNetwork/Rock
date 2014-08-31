@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
     public partial class EntityType : Entity<EntityType>

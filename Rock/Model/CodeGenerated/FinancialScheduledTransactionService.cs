@@ -95,6 +95,8 @@ namespace Rock.Model
         {
             target.AuthorizedPersonId = source.AuthorizedPersonId;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
             target.StartDate = source.StartDate;
             target.EndDate = source.EndDate;
             target.NumberOfPayments = source.NumberOfPayments;

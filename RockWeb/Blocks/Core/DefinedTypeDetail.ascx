@@ -4,13 +4,14 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
-            <div id="pnlEditDetails" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-file-text"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
+            </div>
+            <div class="panel-body">
 
-                <div class="banner">
-                    <h1><asp:Literal ID="lActionTitle" runat="server" /></h1>
-                </div>
+                    <div id="pnlEditDetails" runat="server">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -22,15 +23,15 @@
                     </div> 
                     
                     <div class="row">
-                         <div class="col-md-12">
-                             <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                         </div>
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                            </div>
                     </div>
 
                     <div class="row">
-                         <div class="col-md-12">
-                             <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3" />
-                         </div>
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3" />
+                            </div>
                     </div>
 
                     <div class="row">
@@ -53,14 +54,6 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-
-                <div class="banner">
-                    <h1>
-                        <asp:Literal ID="lTitle" runat="server" />
-                    </h1>
-                </div>
-
-
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="row margin-b-md">
@@ -72,7 +65,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:RockControlWrapper ID="rcHelpText" runat="server" Label="Help Text">
-                           <p class="form-control-static"><asp:Literal ID="lHelpText" runat="server" /></p>
+                            <p class="form-control-static"><asp:Literal ID="lHelpText" runat="server" /></p>
                         </Rock:RockControlWrapper>
                     </div>
                 </div>
@@ -85,14 +78,18 @@
                     <div class="col-md-6">
                         <asp:Panel ID="pnlAttributeTypes" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
-                            <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
-                                <Columns>
-                                    <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
-                                    <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
-                                </Columns>
-                            </Rock:Grid>
+                            
+                            <div class="grid">
+                                <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
+                                    <Columns>
+                                        <Rock:ReorderField />
+                                        <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
+                                        <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
+                                        <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+
                         </asp:Panel>
                     </div>
                 </div>
@@ -103,11 +100,20 @@
                 </div>
 
             </fieldset>
-                        
+
+            </div>
+                 
         </asp:Panel>
 
-        <asp:Panel ID="pnlDefinedTypeAttributes" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />
+        <asp:Panel ID="pnlDefinedTypeAttributes" CssClass="panel panel-block" runat="server" Visible="false">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute Editor</h1>
+            </div>
+            <div class="panel-body">
+                <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />
+            </div>
+    
         </asp:Panel>
         
     </ContentTemplate>

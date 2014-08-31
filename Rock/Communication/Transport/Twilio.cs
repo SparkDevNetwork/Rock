@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
                 int fromValueId = int.MinValue;
                 if ( int.TryParse( fromValue, out fromValueId ) )
                 {
-                    fromPhone = DefinedValueCache.Read( fromValueId ).Name;
+                    fromPhone = DefinedValueCache.Read( fromValueId ).Value;
                 }
 
                 if ( !string.IsNullOrWhiteSpace( fromPhone ) )
@@ -97,13 +97,13 @@ namespace Rock.Communication.Transport
                                     string message = communication.GetChannelDataValue( "Message" );
                                     message = message.ResolveMergeFields( mergeObjects );
  
-                                    string twillioNumber = phoneNumber.Number;
+                                    string twilioNumber = phoneNumber.Number;
                                     if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
                                     {
-                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                        twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = twilio.SendMessage( fromPhone, twillioNumber, message );
+                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
@@ -155,7 +155,49 @@ namespace Rock.Communication.Transport
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                string fromPhone = string.Empty;
+                string fromValue = string.Empty;
+                channelData.TryGetValue( "FromValue", out fromValue );
+                if (!string.IsNullOrWhiteSpace(fromValue))
+                {
+                    fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Value;
+                    if ( !string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+                        string accountSid = GetAttributeValue( "SID" );
+                        string authToken = GetAttributeValue( "Token" );
+                        var twilio = new TwilioRestClient( accountSid, authToken );
+
+                        string message = string.Empty;
+                        channelData.TryGetValue( "Message", out message );
+
+                        if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                        {
+                            message = message.Replace( "~~/", themeRoot );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                        {
+                            message = message.Replace( "~/", appRoot );
+                            message = message.Replace( @" src=""/", @" src=""" + appRoot );
+                            message = message.Replace( @" href=""/", @" href=""" + appRoot );
+                        }
+
+                        foreach (var recipient in recipients)
+                        {
+                            var response = twilio.SendMessage( fromPhone, recipient, message );
+                        }
+                    }
+                }
+            }
+
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
     }

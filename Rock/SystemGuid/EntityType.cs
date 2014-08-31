@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
 
         /// <summary>
+        /// The guid for the email communication channel
+        /// </summary>
+        public const string COMMUNICATION_CHANNEL_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
+
+        /// <summary>
         /// The guid for the database storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
@@ -45,5 +50,25 @@ namespace Rock.SystemGuid
         /// The guid for the filesystem storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.MetricCategory entity
+        /// </summary>
+        public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Schedule entity
+        /// </summary>
+        public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.WorkflowType entity
+        /// </summary>
+        public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.GroupMember entity.
+        /// </summary>
+        public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
     }
 }

@@ -47,6 +47,15 @@ namespace Rock.CheckIn
         public bool FamilyMember { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [excluded by filter].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [excluded by filter]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ExcludedByFilter { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
         /// </summary>
         /// <value>
@@ -98,6 +107,18 @@ namespace Rock.CheckIn
             : base()
         {
             GroupTypes = new List<CheckInGroupType>();
+        }
+
+        /// <summary>
+        /// Clears the filtered exclusions.
+        /// </summary>
+        public void ClearFilteredExclusions()
+        {
+            ExcludedByFilter = false;
+            foreach ( var groupType in GroupTypes )
+            {
+                groupType.ClearFilteredExclusions();
+            }
         }
 
         /// <summary>

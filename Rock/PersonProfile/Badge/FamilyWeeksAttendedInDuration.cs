@@ -50,7 +50,7 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            int duration = GetAttributeValue(badge, "Duration").AsInteger(false) ?? 16;
+            int duration = GetAttributeValue(badge, "Duration").AsIntegerOrNull() ?? 16;
             
             writer.Write(string.Format("<div class='badge badge-weeksattendanceduration badge-id-{0}' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration));
 

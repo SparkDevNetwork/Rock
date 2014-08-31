@@ -16,22 +16,20 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Caching;
-using System.Runtime.InteropServices;
 using System.Security.Permissions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Newtonsoft.Json;
 
 namespace CheckinClient
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
     [System.Runtime.InteropServices.ComVisibleAttribute( true )]
     public class RockCheckinScriptManager
@@ -40,12 +38,20 @@ namespace CheckinClient
         ObjectCache cache;
         bool warnedPrinterError = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockCheckinScriptManager"/> class.
+        /// </summary>
+        /// <param name="p">The p.</param>
         public RockCheckinScriptManager( Page p )
         {
             this.browserPage = (Page)p;
             cache = MemoryCache.Default;
         }
 
+        /// <summary>
+        /// Prints the labels.
+        /// </summary>
+        /// <param name="labelData">The label data.</param>
         public void PrintLabels( string labelData )
         {
             warnedPrinterError = false;
@@ -68,6 +74,11 @@ namespace CheckinClient
             //RawPrinterHelper.SendStringToPrinter( "ZDesigner GX420d (Copy 1)", s );
         }
 
+        /// <summary>
+        /// Gets the label contents.
+        /// </summary>
+        /// <param name="labelFile">The label file.</param>
+        /// <returns></returns>
         private string GetLabelContents( string labelFile )
         {
             string labelContents = string.Empty;
@@ -85,12 +96,10 @@ namespace CheckinClient
                     labelContents = client.DownloadString( labelFile );
                 }
 
-                int cacheDuration = 1440;
-
-                Int32.TryParse( ConfigurationManager.AppSettings["CacheLabelDuration"], out cacheDuration );
+                var rockConfig = RockConfig.Load();
 
                 CacheItemPolicy cachePolicy = new CacheItemPolicy();
-                cachePolicy.AbsoluteExpiration = new DateTimeOffset( DateTime.Now.AddSeconds( cacheDuration ) );
+                cachePolicy.AbsoluteExpiration = new DateTimeOffset( DateTime.Now.AddSeconds( rockConfig.CacheLabelDuration ) );
                 //add an item to the cache   
                 cache.Add( labelFile, labelContents, cachePolicy );
             }
@@ -98,6 +107,12 @@ namespace CheckinClient
             return labelContents;
         }
 
+        /// <summary>
+        /// Merges the label fields.
+        /// </summary>
+        /// <param name="labelContents">The label contents.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns></returns>
         private string MergeLabelFields( string labelContents, Dictionary<string, string> mergeFields )
         {
             foreach ( var mergeField in mergeFields )
@@ -118,16 +133,23 @@ namespace CheckinClient
             return labelContents;
         }
 
+        /// <summary>
+        /// Prints the label.
+        /// </summary>
+        /// <param name="labelContents">The label contents.</param>
+        /// <param name="labelPrinterIp">The label printer ip.</param>
         private void PrintLabel( string labelContents, string labelPrinterIp )
         {
+            var rockConfig = RockConfig.Load();
+            
             // if IP override
-            if ( ConfigurationManager.AppSettings["PrinterOverrideIp"] != string.Empty )
+            if ( !string.IsNullOrEmpty(rockConfig.PrinterOverrideIp) )
             {
-                PrintViaIp( labelContents, ConfigurationManager.AppSettings["PrinterOverrideIp"] );
+                PrintViaIp( labelContents, rockConfig.PrinterOverrideIp );
             }
-            else if ( ConfigurationManager.AppSettings["PrinterOverrideLocal"] != string.Empty ) // if printer local
-            {  
-                RawPrinterHelper.SendStringToPrinter( ConfigurationManager.AppSettings["PrinterOverrideLocal"], labelContents );
+            else if ( !string.IsNullOrEmpty(rockConfig.PrinterOverrideLocal) ) // if printer local
+            {
+                RawPrinterHelper.SendStringToPrinter( rockConfig.PrinterOverrideLocal, labelContents );
             }
             else // else print to given IP
             {
@@ -135,6 +157,11 @@ namespace CheckinClient
             }
         }
 
+        /// <summary>
+        /// Prints the via ip.
+        /// </summary>
+        /// <param name="labelContents">The label contents.</param>
+        /// <param name="ipAddress">The ip address.</param>
         private void PrintViaIp( string labelContents, string ipAddress )
         {
             if ( !warnedPrinterError )
@@ -168,9 +195,12 @@ namespace CheckinClient
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LabelItem
     {
-        public int PrinterDeviceId { get; set; }
+        public int? PrinterDeviceId { get; set; }
         public string PrinterAddress { get; set; }
         public string LabelFile { get; set; }
         public Dictionary<string, string> MergeFields { get; set; }

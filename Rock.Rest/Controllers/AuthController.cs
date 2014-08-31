@@ -45,7 +45,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Logins the specified login parameters.
+        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
@@ -64,7 +64,7 @@ namespace Rock.Rest.Controllers
                     if ( component.Authenticate( userLogin, loginParameters.Password ) )
                     {
                         valid = true;
-                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, false, false );
+                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, loginParameters.Persisted, false );
                     }
                 }
             }

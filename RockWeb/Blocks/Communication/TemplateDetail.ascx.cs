@@ -122,15 +122,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                string itemId = PageParameter( "TemplateId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "TemplateId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    ShowDetail( "TemplateId", 0 );
-                }
+                ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
 
         }
@@ -150,7 +142,7 @@ namespace RockWeb.Blocks.Communication
 
             string pageTitle = "New Template";
 
-            int? templateId = PageParameter( "TemplateId" ).AsInteger( false );
+            int? templateId = PageParameter( "TemplateId" ).AsIntegerOrNull();
             if ( templateId.HasValue )
             {
                 var template = new CommunicationTemplateService( new RockContext() ).Get( templateId.Value );
@@ -271,38 +263,28 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        private void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="templateId">The template identifier.</param>
+        private void ShowDetail( int templateId )
         {
-            if ( !itemKey.Equals( "TemplateId" ) )
-            {
-                return;
-            }
-
             Rock.Model.CommunicationTemplate template = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !templateId.Equals( 0 ) )
             {
                 template = new CommunicationTemplateService( new RockContext() )
                     .Queryable()
-                    .Where( c => c.Id == itemKeyValue )
+                    .Where( c => c.Id == templateId )
                     .FirstOrDefault();
                 if ( template != null )
                 {
                     lTitle.Text = template.Name.FormatAsHtmlTitle();
                 }
             }
-            else
+
+            if (template == null)
             {
                 template = new Rock.Model.CommunicationTemplate();
                 RockPage.PageTitle = "New Communication Template";
                 lTitle.Text = "New Communication Template".FormatAsHtmlTitle();
-            }
-
-            if ( template == null )
-            {
-                return;
             }
 
             CommunicationTemplateId = template.Id;

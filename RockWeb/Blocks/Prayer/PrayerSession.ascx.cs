@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Prayer
 
             mdFlag.SaveClick += mdFlag_SaveClick;
 
-            _flagLimit = GetAttributeValue( "FlagLimit" ).AsInteger();
+            _flagLimit = GetAttributeValue( "FlagLimit" ).AsIntegerOrNull();
             _categoryGuidString = GetAttributeValue( "CategoryGuid" );
             _enableCommunityFlagging = GetAttributeValue( "EnableCommunityFlagging" ).AsBoolean();
             lWelcomeInstructions.Text = GetAttributeValue( "WelcomeIntroductionText" );
@@ -255,20 +255,6 @@ namespace RockWeb.Blocks.Prayer
             var rockContext = new RockContext();
             var service = new NoteTypeService( rockContext );
             var noteType = service.Get( entityTypeId, noteTypeName );
-
-            // If a note type with the specified name does not exist, create one
-            if ( noteType == null )
-            {
-                noteType = new NoteType();
-                noteType.IsSystem = false;
-                noteType.EntityTypeId = entityTypeId;
-                noteType.EntityTypeQualifierColumn = string.Empty;
-                noteType.EntityTypeQualifierValue = string.Empty;
-                noteType.Name = noteTypeName;
-                service.Add( noteType );
-                rockContext.SaveChanges();
-            }
-
             NoteTypeId = noteType.Id;
         }
 

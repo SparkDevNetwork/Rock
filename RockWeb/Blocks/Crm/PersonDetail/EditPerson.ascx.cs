@@ -28,6 +28,11 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Data;
 
+/*******************************************************************************************************************************
+ * NOTE: The Security/EditMyAccount.ascx block has very similiar functionality.  If updating this block, make sure to check
+ * that block also.  It may need the same updates.
+ *******************************************************************************************************************************/
+
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
@@ -92,10 +97,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string script = string.Format( @"
     $('#{0}').change(function(){{
-        if ($(this).val() != '') {{
+        if ($(this).val() == '') {{
+            $('#{1}').val('');
+        }} else {{
             $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-    
-        }}
+        }} 
     }});
 
     $('#{1}').change(function(){{
@@ -156,9 +162,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+
+            rockContext.WrapTransaction( () =>
             {
-                var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
 
                 var changes = new List<string>();
@@ -241,7 +248,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
                 }
-                History.EvaluateChange( changes, "Anniversary Date", person.GraduationDate, graduationDate );
+                History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, graduationDate );
                 person.GraduationDate = graduationDate;
 
                 History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
@@ -358,7 +365,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
                 }
-                History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
+                History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
                 person.RecordStatusReasonValueId = newRecordStatusReasonId;
 
                 if ( person.IsValid )
@@ -370,7 +377,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                 Person.Id, changes );
                         }
-
                         if ( orphanedPhotoId.HasValue )
                         {
                             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -383,8 +389,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
 
-                        Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                     }
+
+                    Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+
                 }
             } );
         }
@@ -408,7 +416,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = String.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
-            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Gender );
+            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Age, Person.Gender );
 
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
@@ -461,7 +469,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
-                        numberType.Name = phoneNumberType.Name;
+                        numberType.Value = phoneNumberType.Value;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;

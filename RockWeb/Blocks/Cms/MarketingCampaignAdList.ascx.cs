@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            ddlApprovalStatus.BindToEnum( typeof( MarketingCampaignAdStatus ) );
+            ddlApprovalStatus.BindToEnum<MarketingCampaignAdStatus>();
             ddlApprovalStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
 
             ddlApprovalStatus.SetValue( rFilter.GetUserPreference( "Approval Status" ) );
@@ -118,8 +118,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( upperLowerValues.Length == 2 )
                 {
-                    pPriorityRange.LowerValue = upperLowerValues[0].AsInteger( false );
-                    pPriorityRange.UpperValue = upperLowerValues[1].AsInteger( false );
+                    pPriorityRange.LowerValue = upperLowerValues[0].AsIntegerOrNull();
+                    pPriorityRange.UpperValue = upperLowerValues[1].AsIntegerOrNull();
                 }
             }
 
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Cms
             {
                 case "Approval Status":
 
-                    int approvalStatusValue = e.Value.AsInteger( false ) ?? Rock.Constants.All.Id;
+                    int approvalStatusValue = e.Value.AsIntegerOrNull() ?? Rock.Constants.All.Id;
                     if ( approvalStatusValue != Rock.Constants.All.Id )
                     {
                         e.Value = e.Value.ConvertToEnum<MarketingCampaignAdStatus>().ConvertToString();
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Cms
 
                 case "Ad Type":
 
-                    var adType = new MarketingCampaignAdTypeService( new RockContext() ).Get( e.Value.AsInteger() ?? 0 );
+                    var adType = new MarketingCampaignAdTypeService( new RockContext() ).Get( e.Value.AsInteger() );
                     if ( adType != null )
                     {
                         e.Value = adType.Name;
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( marketingCampaignAdId == 0 )
             {
-                NavigateToLinkedPage( "DetailPage", "marketingCampaignAdId", 0, "marketingCampaignId", hfMarketingCampaignId.Value.AsInteger().Value );
+                NavigateToLinkedPage( "DetailPage", "marketingCampaignAdId", 0, "marketingCampaignId", hfMarketingCampaignId.Value.AsInteger() );
             }
             else
             {
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Cms
             var qry = marketingCampaignAdService.Queryable( "MarketingCampaign, MarketingCampaignAdType" );
 
             // limit to current marketingCampaign context (if there is one)
-            int? marketingCampaignId = hfMarketingCampaignId.Value.AsInteger( false );
+            int? marketingCampaignId = hfMarketingCampaignId.Value.AsIntegerOrNull();
             if ( marketingCampaignId.HasValue )
             {
                 qry = qry.Where( a => a.MarketingCampaignId == marketingCampaignId );
@@ -405,7 +405,6 @@ namespace RockWeb.Blocks.Cms
         {
             rFilter.Visible = visible;
             pnlMarketingCampaignAds.Visible = visible;
-            lTitle.Visible = visible;
         }
 
         #endregion

@@ -92,17 +92,9 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "reportId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "reportId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "reportId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( PageParameter( "reportId" ).AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -143,13 +135,13 @@ namespace RockWeb.Blocks.Reporting
         #region Events
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
+        /// Handles the SelectedIndexChanged event of the etpEntityType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void etpEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadDropdownsForEntityType( ddlEntityType.SelectedValueAsInt() );
+            LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
         }
 
         /// <summary>
@@ -159,7 +151,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            BindGrid( new ReportService(new RockContext()).Get( hfReportId.ValueAsInt() ) );
+            BindGrid( new ReportService( new RockContext() ).Get( hfReportId.ValueAsInt() ) );
         }
 
         /// <summary>
@@ -222,7 +214,7 @@ namespace RockWeb.Blocks.Reporting
                                 if ( nameParts.Count() > 1 )
                                 {
                                     string attributeIdPortion = nameParts[1];
-                                    int attributeID = attributeIdPortion.AsInteger() ?? 0;
+                                    int attributeID = attributeIdPortion.AsInteger();
                                     if ( attributeID > 0 )
                                     {
                                         AttributeCache attr = AttributeCache.Read( attributeID );
@@ -265,7 +257,7 @@ namespace RockWeb.Blocks.Reporting
             int? categoryId = null;
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() ?? 0 );
+            var report = reportService.Get( hfReportId.Value.AsInteger() );
 
             if ( report != null )
             {
@@ -323,9 +315,9 @@ namespace RockWeb.Blocks.Reporting
             report.Name = tbName.Text;
             report.Description = tbDescription.Text;
             report.CategoryId = cpCategory.SelectedValueAsInt();
-            report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
+            report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             report.DataViewId = ddlDataView.SelectedValueAsInt();
-            report.FetchTop = nbFetchTop.Text.AsInteger( false );
+            report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
 
             if ( !Page.IsValid )
             {
@@ -384,7 +376,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
-                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
+                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsIntegerOrNull();
 
                     string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
                     DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
@@ -422,7 +414,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( hfReportId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -487,9 +479,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlEntityType.DataSource = new DataViewService( new RockContext() ).GetAvailableEntityTypes().ToList();
-            ddlEntityType.DataBind();
-            ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
+            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
         }
 
         /// <summary>
@@ -501,8 +491,13 @@ namespace RockWeb.Blocks.Reporting
             if ( entityTypeId.HasValue )
             {
                 ddlDataView.Enabled = true;
-                ddlDataView.DataSource = new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList();
-                ddlDataView.DataBind();
+                ddlDataView.Items.Clear();
+
+                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).Select( a => new { a.Id, a.Name } ).ToList() )
+                {
+                    ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                }
+
                 ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
             }
             else
@@ -518,7 +513,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="ddlFields">The DDL fields.</param>
         private void LoadFieldsDropDown( RockDropDownList ddlFields )
         {
-            int? entityTypeId = ddlEntityType.SelectedValueAsInt();
+            int? entityTypeId = etpEntityType.SelectedEntityTypeId;
 
             if ( entityTypeId.HasValue )
             {
@@ -537,7 +532,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
-                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString("n") );
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString( "n" ) );
                     }
 
                     if ( entityField.IsPreviewable )
@@ -578,42 +573,32 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="reportId">The report identifier.</param>
+        public void ShowDetail( int reportId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( reportId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="reportId">The report identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int reportId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "reportId" ) )
-            {
-                return;
-            }
 
             var reportService = new ReportService( new RockContext() );
             Report report = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !reportId.Equals( 0 ) )
             {
-                report = reportService.Get( itemKeyValue );
-            }
-            else
-            {
-                report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                report = reportService.Get( reportId );
             }
 
             if ( report == null )
             {
-                return;
+                report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
             pnlDetails.Visible = true;
@@ -753,14 +738,14 @@ namespace RockWeb.Blocks.Reporting
             }
 
             LoadDropDowns();
-            LoadDropdownsForEntityType( report.EntityTypeId );
 
             SetEditMode( true );
 
             tbName.Text = report.Name;
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
-            ddlEntityType.SetValue( report.EntityTypeId );
+            etpEntityType.SelectedEntityTypeId = report.EntityTypeId;
+            LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
 
@@ -816,7 +801,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="filter">The filter.</param>
         private void BindGrid( Report report )
         {
-            if ( report != null && report.DataView != null )
+            if ( report != null )
             {
                 var errors = new List<string>();
 
@@ -950,9 +935,39 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
+
+                // if no fields are specified, show the default fields (Previewable/All) for the EntityType
+                var dataColumns = gReport.Columns.OfType<object>().Where(a => a.GetType() != typeof(SelectField));
+                if (dataColumns.Count() == 0)
+                {
+                    // show either the Previewable Columns or all (if there are no previewable columns)
+                    bool showAllColumns = !entityFields.Any( a => a.FieldKind == FieldKind.Property && a.IsPreviewable );
+                    foreach ( var entityField in entityFields.Where(a => a.FieldKind == FieldKind.Property) ) 
+                    {
+                        columnIndex++;
+                        selectedEntityFields.Add( columnIndex, entityField );
+
+                        BoundField boundField;
+                        if ( entityField.DefinedTypeGuid.HasValue )
+                        {
+                            boundField = new DefinedValueField();
+                        }
+                        else
+                        {
+                            boundField = Grid.GetGridField( entityField.PropertyType );
+                        }
+
+                        boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
+                        boundField.HeaderText = entityField.Name;
+                        boundField.SortExpression = entityField.Name;
+                        boundField.Visible = showAllColumns || entityField.IsPreviewable;
+                        gReport.Columns.Add( boundField );
+                    }
+                }
+
                 try
                 {
-                    //gReport.Caption = report.Name;
+                    gReport.ExportFilename = report.Name;
                     gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
                     gReport.DataBind();
                 }
@@ -1041,7 +1056,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportFieldType == ReportFieldType.DataSelectComponent )
             {
-                string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ?? 0 ).GetEntityType().FullName;
+                string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ).GetEntityType().FullName;
                 DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
 
                 if ( dataSelectComponent != null )
@@ -1104,7 +1119,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="fieldSelection">The field selection.</param>
         private void PopulateFieldPanelWidget( PanelWidget panelWidget, ReportField reportField, ReportFieldType reportFieldType, string fieldSelection )
         {
-            int entityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            int entityTypeId = etpEntityType.SelectedEntityTypeId ?? 0;
             if ( entityTypeId == 0 )
             {
                 return;
@@ -1127,7 +1142,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsGuid());
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid() );
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;
@@ -1137,7 +1152,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.DataSelectComponent:
-                    string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ?? 0 ).GetEntityType().FullName;
+                    string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ).GetEntityType().FullName;
                     dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     if ( dataSelectComponent != null )
                     {

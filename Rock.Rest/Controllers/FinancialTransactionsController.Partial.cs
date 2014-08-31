@@ -49,6 +49,15 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
+                name: "FinancialTransactionAlreadyScanned",
+                routeTemplate: "api/FinancialTransactions/AlreadyScanned",
+                defaults: new
+                {
+                    controller = "FinancialTransactions",
+                    action = "AlreadyScanned"
+                } );
+
+            routes.MapHttpRoute(
                 name: "GetContributionPersonGroupAddress",
                 routeTemplate: "api/FinancialTransactions/GetContributionPersonGroupAddress",
                 defaults: new
@@ -87,8 +96,22 @@ namespace Rock.Rest.Controllers
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
             financialTransactionScannedCheck.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
+            financialTransactionScannedCheck.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicr );
             FinancialTransaction financialTransaction = FinancialTransaction.FromJson( financialTransactionScannedCheck.ToJson() );
             return this.Post( financialTransaction );
+        }
+
+        /// <summary>
+        /// Returns true if a transaction with the same routing number, accountnumber and checknumber is already in the database
+        /// </summary>
+        /// <param name="scannedCheckMicr">The scanned check micr in the format {RoutingNumber}_{AccountNumber}_{CheckNumber}</param>
+        /// <returns></returns>
+        [HttpPost]
+        public bool AlreadyScanned( [FromBody]string scannedCheckMicr )
+        {
+            // NOTE: scannedCheckMicr param is [FromBody] so that it will be encrypted when using SSL
+            string checkMicrHash = Encryption.GetSHA1Hash( scannedCheckMicr );
+            return this.Get().Any( a => a.CheckMicrHash == checkMicrHash );
         }
 
         /// <summary>
@@ -131,7 +154,7 @@ namespace Rock.Rest.Controllers
                 parameters.Add( "personId", DBNull.Value );
             }
 
-            parameters.Add( "orderByZipCode", options.OrderByZipCode );
+            parameters.Add( "orderByPostalCode", options.OrderByPostalCode );
             var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
@@ -193,7 +216,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.CurrencyTypeValue.Name,
+                CurrencyTypeValueName = a.CurrencyTypeValue.Value,
                 a.Summary,
                 Account = a.TransactionDetails.FirstOrDefault().Account,
                 TotalAmount = a.TransactionDetails.Sum( d=> d.Amount)

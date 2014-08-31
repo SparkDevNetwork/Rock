@@ -90,6 +90,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CSS class.
+        /// </summary>
+        /// <value>
+        /// The CSS Class.
+        /// </value>
+        public string CssClass
+        {
+            get
+            {
+                return ViewState["CssClass"] as string;
+            }
+
+            set
+            {
+                ViewState["CssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -103,7 +122,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( showMessage )
                 {
-                    writer.AddAttribute( "class", "alert alert-" + alertType );
+                    writer.AddAttribute( "class", string.Format("alert alert-{0} {1}", alertType, CssClass) );
                     writer.AddAttribute( "id", this.ClientID );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

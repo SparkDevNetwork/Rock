@@ -323,6 +323,21 @@ namespace Rock.Data
             _objectSet.Add( item );
         }
 
+        /// <summary>
+        /// Calls _objectSet.RemoveRange which adds the given collection of items
+        /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <remarks>
+        ///   AddRange still ends up doing an INSERT statement for each item, but it's much faster than doing Add()
+        /// </remarks>
+        /// <returns></returns>
+        public virtual bool AddRange( IEnumerable<T> items )
+        {
+            _objectSet.AddRange( items );
+            return true;
+        }
+
         #endregion
 
         #region Reorder
@@ -381,6 +396,21 @@ namespace Rock.Data
         public virtual bool Delete (T item )
         {
             _objectSet.Remove( item );
+            return true;
+        }
+
+        /// <summary>
+        /// Calls _objectSet.RemoveRange which removes the given collection of items
+        /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <remarks>
+        ///   DeleteRange still ends up doing a DELETE statement for each item, but it's much faster than doing Delete()
+        /// </remarks>
+        /// <returns></returns>
+        public virtual bool DeleteRange( IEnumerable<T> items )
+        {
+            _objectSet.RemoveRange( items );
             return true;
         }
 

@@ -36,8 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
     [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
-    [BooleanField( "Complete Current Activity", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed)." )]
-    public class ActivateActivity : CompareAction
+    public class ActivateActivity : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -54,7 +53,7 @@ namespace Rock.Workflow.Action
             Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
             if ( guid.IsEmpty() )
             {
-                action.AddLogEntry( "Invalid Activity Property" );
+                action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
             }
 
@@ -65,15 +64,12 @@ namespace Rock.Workflow.Action
 
             if ( activityType == null )
             {
-                action.AddLogEntry( "Invalid Activity Property" );
+                action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
             }
 
-            if ( TestCompare( action ) )
-            {
-                WorkflowActivity.Activate( activityType, workflow );
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
-            }
+            WorkflowActivity.Activate( activityType, workflow );
+            action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
 
             return true;
         }

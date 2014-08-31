@@ -571,7 +571,7 @@ END:VCALENDAR
         /// <returns></returns>
         private int TextBoxToPositiveInteger( TextBox textBox, int minValue = 1 )
         {
-            int result = textBox.Text.AsInteger() ?? minValue;
+            int result = textBox.Text.AsIntegerOrNull() ?? minValue;
             if ( result < minValue )
             {
                 result = minValue;
@@ -721,8 +721,8 @@ END:VCALENDAR
                         else if ( _radMonthlyNth.Checked )
                         {
                             WeekDay monthWeekDay = new WeekDay();
-                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsInteger() ?? 1;
-                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsInteger() ?? 1 );
+                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsIntegerOrNull() ?? 1;
+                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsIntegerOrNull() ?? 1 );
                             rruleMonthly.ByDay.Add( monthWeekDay );
                         }
 
@@ -1313,23 +1313,7 @@ END:VCALENDAR
             }
 
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", "scroll-container scroll-container-vertical" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.Write( @"
-                <div class='scrollbar'>
-                    <div class='track'>
-                        <div class='thumb'>
-                            <div class='end'></div>
-                        </div>
-                    </div>
-                </div>
-                <div class='viewport'>
-                    <div class='overview'>
-
-                        <!-- modal body -->
-                        <div class=''>
-" );
 
             // Start DateTime
             _dpStartDateTime.RenderControl( writer );
@@ -1617,11 +1601,8 @@ END:VCALENDAR
             // Recurrence Panel: End
             writer.RenderEndTag();
 
-            // write out the closing divs that go after the recurrence panel
+            // write out the closing div for <div class='exclusions'>
             writer.Write( @"
-                            </div>
-                        </div>
-                    </div>
                 </div>
 " );
             writer.RenderEndTag();

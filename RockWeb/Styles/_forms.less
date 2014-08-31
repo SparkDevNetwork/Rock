@@ -6,7 +6,8 @@
     3. Input Sizing
     4. Control Specific Styles
     5. Validation
-
+    6. Custom Controls
+    7. Static Control
 */
 
 // 1. Bootstrap Overrides / Additions
@@ -74,11 +75,19 @@ a.aspNetDisabled {
     }
 }
 
+.controls {
+
+    .checkbox:first-child {
+        margin-top: 0;
+    }
+
+}
+
 
 // 2. Data Lists
 // -------------------------
 
-dl { // todo this is needed? 9/27/13
+dl:not(.dl-horizontal) { // todo this is needed? 9/27/13
     margin-bottom: 0;
 
     dt {
@@ -179,4 +188,28 @@ dl { // todo this is needed? 9/27/13
     color: @brand-danger;
     font-weight: @font-weight-light;
     float: left;
+}
+
+// 5. Custom Controls
+// -------------------------
+.btn-controlaligned {
+    margin-top: 24px;
+}
+
+
+// 6. Custom Controls
+// -------------------------
+
+
+// 7. Static Controls
+// -------------------------
+.form-group.static-control {
+
+    label {
+        margin-bottom: 0;
+    }
+
+    .form-control-static {
+        padding-top: 0;
+    }
 }

@@ -14,13 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -35,6 +39,24 @@ namespace Rock.Model
 
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the notification system email identifier.
+        /// </summary>
+        /// <value>
+        /// The notification system email identifier.
+        /// </value>
+        [DataMember]
+        public int? NotificationSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include actions in notification].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include actions in notification]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeActionsInNotification { get; set; }
+        
         /// <summary>
         /// Gets or sets the header.
         /// </summary>
@@ -54,24 +76,23 @@ namespace Rock.Model
         public string Footer { get; set; }
 
         /// <summary>
-        /// Gets or sets the inactive message.
-        /// </summary>
-        /// <value>
-        /// The inactive message.
-        /// </value>
-        [DataMember]
-        public string InactiveMessage { get; set; }
-
-        /// <summary>
         /// Gets or sets the delimited list of action buttons and actions.
         /// </summary>
         /// <value>
         /// The actions.
         /// </value>
-        [MaxLength( 300 )]
+        [MaxLength( 2000 )]
         [DataMember]
         public string Actions { get; set; }
 
+        /// <summary>
+        /// An optional text attribute that will be updated with the action that was selected
+        /// </summary>
+        /// <value>
+        /// The action attribute unique identifier.
+        /// </value>
+        [DataMember]
+        public Guid? ActionAttributeGuid { get; set; }
 
         #endregion
 
@@ -90,10 +111,70 @@ namespace Rock.Model
             set { _formAttributes = value; }
         }
         private ICollection<WorkflowActionFormAttribute> _formAttributes;
-        
+
+        /// <summary>
+        /// Gets or sets the notification system email.
+        /// </summary>
+        /// <value>
+        /// The notification system email.
+        /// </value>
+        public virtual SystemEmail NotificationSystemEmail {get;set;}
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActionForm"/> class.
+        /// </summary>
+        public WorkflowActionForm()
+        {
+            IncludeActionsInNotification = true;
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <returns></returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            mergeFields.Add( "Buttons", GetButtonsLiquid() );
+            return mergeFields;
+        }
+
+        private List<Dictionary<string, object>> GetButtonsLiquid()
+        {
+            var buttonList = new List<Dictionary<string, object>>();
+
+            foreach ( var actionButton in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var button = new Dictionary<string, object>();
+                var details = actionButton.Split( new char[] { '^' } );
+                if ( details.Length > 0 )
+                {
+                    button.Add( "Name", details[0] );
+
+                    if ( details.Length > 1 )
+                    {
+                        var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
+                        if ( definedValue != null )
+                        {
+                            button.Add( "Html", definedValue.GetAttributeValue( "ButtonHTML" ) );
+                        }
+                    }
+                }
+
+                buttonList.Add( button );
+            }
+
+            return buttonList;
+        }
 
         #endregion
 
@@ -111,6 +192,7 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActionFormConfiguration()
         {
+            this.HasOptional( f => f.NotificationSystemEmail ).WithMany().HasForeignKey( f => f.NotificationSystemEmailId ).WillCascadeOnDelete( false );
         }
     }
 

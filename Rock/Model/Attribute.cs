@@ -159,7 +159,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if a value is required.
         /// </summary>
@@ -248,7 +248,7 @@ namespace Rock.Model
 
                 if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
                 {
-                    int? binaryFileId = DefaultValue.AsInteger();
+                    int? binaryFileId = DefaultValue.AsIntegerOrNull();
                     if ( binaryFileId.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );

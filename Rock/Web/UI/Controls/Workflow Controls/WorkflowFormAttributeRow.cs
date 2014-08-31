@@ -86,7 +86,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfOrder.Value.AsInteger() ?? 0;
+                return _hfOrder.Value.AsInteger();
             }
             set
             {
@@ -207,14 +207,17 @@ namespace Rock.Web.UI.Controls
                 writer.Write( AttributeName );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();

@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Communication;
 
 namespace Rock.Workflow.Action
 {
@@ -45,7 +46,85 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+
+            if ( !action.LastProcessedDateTime.HasValue &&
+                action.ActionType != null &&
+                action.ActionType.WorkflowForm != null &&
+                action.ActionType.WorkflowForm.NotificationSystemEmailId.HasValue )
+            {
+                if ( action.Activity != null && ( action.Activity.AssignedPersonAliasId.HasValue || action.Activity.AssignedGroupId.HasValue ) )
+                {
+                    var recipients = new Dictionary<string, Dictionary<string, object>>();
+                    var workflowMergeFields = GetMergeFields( action );
+
+                    if ( action.Activity.AssignedPersonAliasId.HasValue)
+                    {
+                        var person = new PersonAliasService( rockContext ).Queryable()
+                            .Where( a => a.Id == action.Activity.AssignedPersonAliasId.Value )
+                            .Select( a => a.Person )
+                            .FirstOrDefault();
+
+                        if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
+                        {
+                            recipients.Add( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) );
+                            action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                        }
+                    }
+
+                    if ( action.Activity.AssignedGroupId.HasValue )
+                    {
+                        var personList = new GroupMemberService(rockContext).GetByGroupId( action.Activity.AssignedGroupId.Value )
+                            .Where( m =>
+                                m.GroupMemberStatus == GroupMemberStatus.Active &&
+                                m.Person.Email != "" )
+                            .Select( m => m.Person )
+                            .ToList();
+
+                        foreach( var person in personList)
+                        {
+                            recipients.Add( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) );
+                            action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                        }
+                    }
+
+                    if ( recipients.Count > 0 )
+                    {
+                        var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionType.WorkflowForm.NotificationSystemEmailId.Value );
+                        if ( systemEmail != null )
+                        {
+                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
+                            Email.Send( systemEmail.Guid, recipients, appRoot );
+                        }
+                        else
+                        {
+                            action.AddLogEntry( "Could not find the selected notifiction system email!", true );
+                        }
+                    }
+                    else
+                    {
+                        action.AddLogEntry( "Could not send form notifiction due to no assigned person or group member not having email address!", true );
+                    }
+                }
+                else
+                {
+                    action.AddLogEntry( "Could not send form notifiction due to no assigned person or group!", true );
+                }
+            }
+
             return false;
+        }
+
+        private Dictionary<string, object> CombinePersonMergeFields( Person person, Dictionary<string,object> mergeFields)
+        {
+            var personFields = new Dictionary<string, object>();
+            personFields.Add( "Person", person );
+
+            foreach(var keyVal in mergeFields)
+            {
+                personFields.Add( keyVal.Key, keyVal.Value );
+            }
+
+            return personFields;
         }
     }
 }

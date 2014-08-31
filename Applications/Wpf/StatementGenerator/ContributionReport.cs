@@ -173,7 +173,7 @@ namespace Rock.Apps.StatementGenerator
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
                 PersonId = Options.PersonId,
-                OrderByZipCode = true
+                OrderByPostalCode = true
             };
 
             var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Model.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();
@@ -350,8 +350,8 @@ namespace Rock.Apps.StatementGenerator
             int? personId = null;
             int groupId = 0;
 
-            personId = e.LayoutWriter.RecordSets.Current["PersonId"].ToString().AsInteger( false );
-            groupId = e.LayoutWriter.RecordSets.Current["GroupId"].ToString().AsInteger() ?? 0;
+            personId = e.LayoutWriter.RecordSets.Current["PersonId"].ToString().AsIntegerOrNull();
+            groupId = e.LayoutWriter.RecordSets.Current["GroupId"].ToString().AsInteger();
 
             string uriParam;
 

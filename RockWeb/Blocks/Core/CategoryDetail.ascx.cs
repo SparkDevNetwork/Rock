@@ -78,18 +78,10 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "CategoryId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string categoryIdParam = PageParameter( "CategoryId" );
+                if ( !string.IsNullOrEmpty( categoryIdParam ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "CategoryId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "CategoryId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( categoryIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -111,7 +103,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfCategoryId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -230,6 +222,7 @@ namespace RockWeb.Blocks.Core
             category.Name = tbName.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
 
@@ -270,35 +263,30 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="categoryId">The category identifier.</param>
+        public void ShowDetail( int categoryId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( categoryId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="categoryId">The category identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int categoryId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "CategoryId" ) )
-            {
-                return;
-            }
 
             var categoryService = new CategoryService( new RockContext() );
             Category category = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !categoryId.Equals( 0 ) )
             {
-                category = categoryService.Get( itemKeyValue );
+                category = categoryService.Get( categoryId );
             }
-            else
+
+            if ( category == null )
             {
                 category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
                 category.EntityTypeId = entityTypeId;
@@ -306,8 +294,9 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
 
-            if ( category == null || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if (category.EntityTypeId != entityTypeId || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
+                pnlDetails.Visible = false;
                 return;
             }
 
@@ -364,11 +353,21 @@ namespace RockWeb.Blocks.Core
         {
             if ( category.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                if ( !string.IsNullOrEmpty(category.IconCssClass)  )
+                {
+                    lIcon.Text = String.Format("<i class='{0}'></i>", category.IconCssClass);
+                }
+                else
+                {
+                    lIcon.Text = "<i class='fa fa-square-o'></i>";
+                }
             }
 
             SetEditMode( true );
@@ -395,6 +394,7 @@ namespace RockWeb.Blocks.Core
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
             lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
+            tbHighlightColor.Text = category.HighlightColor;
         }
 
         /// <summary>
@@ -409,7 +409,15 @@ namespace RockWeb.Blocks.Core
                 categoryIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", category.IconCssClass ) : "";
 
             hfCategoryId.SetValue( category.Id );
-            lReadOnlyTitle.Text = category.Name.FormatAsHtmlTitle();
+            lTitle.Text = category.Name.FormatAsHtmlTitle();
+            if ( !string.IsNullOrEmpty( category.IconCssClass ) )
+            {
+                lIcon.Text = String.Format( "<i class='{0}'></i>", category.IconCssClass );
+            }
+            else
+            {
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
+            }
 
             lblMainDetails.Text = new DescriptionList()
                 .Add("Entity Type", category.EntityType.Name)

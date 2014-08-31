@@ -13,7 +13,7 @@
         * Street2
         * City
         * State
-        * Zip
+        * PostalCode
         * StartDate
         * EndDate
         * CustomMessage1
@@ -23,7 +23,7 @@
     <param name="EndDate" datatype="datetime">The ending date of the date range</param>
 	<param name="AccountIds" datatype="varchar(max)">Comma delimited list of account ids. NULL means all</param>
 	<param name="PersonId" datatype="int">Person the statement if for. NULL means all persons that have transactions for the date range</param>
-	<param name="OrderByZipCode" datatype="int">Set to 1 to have the results sorted by ZipCode, 0 for no particular order</param>
+	<param name="OrderByPostalCode" datatype="int">Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
 	<remarks>	
 		Uses the following constants:
 			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
@@ -35,12 +35,12 @@
 	</code>
 </doc>
 */
-ALTER PROCEDURE [spFinance_ContributionStatementQuery]
+ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
 	@StartDate datetime
     , @EndDate datetime
     , @AccountIds varchar(max) 
     , @PersonId int -- NULL means all persons
-    , @OrderByZipCode bit
+    , @OrderByPostalCode bit
 AS
 BEGIN
     DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'	
@@ -77,7 +77,7 @@ BEGIN
         , [l].[Street2]
         , [l].[City]
         , [l].[State]
-        , [l].[Zip]
+        , [l].[PostalCode]
         , @StartDate [StartDate]
         , @EndDate [EndDate]
         , null [CustomMessage1]
@@ -138,5 +138,5 @@ BEGIN
             ([pg].[PersonId] = @personId)
         )
     ORDER BY
-    CASE WHEN @orderByZipCode = 1 THEN Zip END
+    CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
 END

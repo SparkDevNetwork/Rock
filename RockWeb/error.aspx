@@ -34,7 +34,10 @@
     
         
         <div id="content">
-            <img alt="Rock" id="logoImg" runat="server" class="pageheader-logo" src="#" />
+            
+            <div id="logo">
+                <asp:Literal ID="lLogoSvg" runat="server" />
+            </div>
 
             <div id="content-box">
                 <div class="row">
@@ -65,7 +68,7 @@
                                     <i class="fa fa-exclamation-triangle"></i>
                                 </p>
 
-                                <p>An error has occurred while processing your request.  The Rock administrators have 
+                                <p>An error has occurred while processing your request.  Your organization's administrators have 
                                 been notified of this problem.</p>
 
                                 <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>

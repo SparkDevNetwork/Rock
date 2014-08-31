@@ -98,7 +98,7 @@ namespace Rock.Model
             {
                 if ( rootGroupId != 0 )
                 {
-                    qry = qry.Where( a => a.Id == rootGroupId );
+                    qry = qry.Where( a => a.ParentGroupId == rootGroupId );
                 }
                 else
                 {
@@ -345,48 +345,83 @@ namespace Rock.Model
         /// <param name="street2">The street2.</param>
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
-        /// <param name="zip">The zip.</param>
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip )
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="country">The country.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
+            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
                  !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( zip ) )
+                 !String.IsNullOrWhiteSpace( postalCode ) || 
+                 !string.IsNullOrWhiteSpace( country ) )
             {
-                string addressChangeField = "Location";
-
-                var groupLocation = new GroupLocation();
-
-                // Get new or existing location and associate it with group
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip );
-                groupLocation.Location = location;
-                groupLocation.IsMailingLocation = true;
-                groupLocation.IsMappedLocation = true;
-
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( locationTypeGuid, out guid ) )
+                var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid.AsGuid() );
+                if ( locationType != null )
                 {
-                    var locationType = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                    if ( locationType != null )
+                    var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
+                    if ( location != null )
                     {
-                        addressChangeField = locationType.Name;
-                        groupLocation.GroupLocationTypeValueId = locationType.Id;
+                        var groupLocationService = new GroupLocationService(rockContext);
+                        if ( !groupLocationService.Queryable()
+                            .Where( gl =>
+                                gl.GroupId == family.Id &&
+                                gl.GroupLocationTypeValueId == locationType.Id &&
+                                gl.LocationId == location.Id )
+                            .Any() )
+                        {
+
+                            var familyChanges = new List<string>();
+
+                            if ( moveExistingToPrevious )
+                            {
+                                var prevLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
+                                if ( prevLocationType != null )
+                                {
+                                    foreach( var prevLoc in groupLocationService.Queryable()
+                                        .Where( gl =>
+                                            gl.GroupId == family.Id &&
+                                            gl.GroupLocationTypeValueId == locationType.Id ))
+                                    {
+                                        History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
+                                        prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
+                                        prevLoc.IsMailingLocation = false;
+                                        prevLoc.IsMappedLocation = false;
+                                    }
+                                }
+                            }
+
+                            string addressChangeField = locationType.Value;
+
+                            var groupLocation = groupLocationService.Queryable()
+                                .Where( gl =>
+                                    gl.GroupId == family.Id &&
+                                    gl.LocationId == location.Id )
+                                .FirstOrDefault();
+                            if (groupLocation == null)
+                            {
+                                groupLocation = new GroupLocation();
+                                groupLocation.Location = location;
+                                groupLocation.IsMailingLocation = true;
+                                groupLocation.IsMappedLocation = true;
+                                family.GroupLocations.Add( groupLocation );
+                            }
+                            groupLocation.GroupLocationTypeValueId = locationType.Id;
+
+                            History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
+                            History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
+                            History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
+
+                            rockContext.SaveChanges();
+
+                            foreach ( var fm in family.Members )
+                            {
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                    fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id );
+                            }
+                        }
                     }
-                }
-
-                family.GroupLocations.Add( groupLocation );
-
-                var familyChanges = new List<string>();
-                History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
-                History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
-                History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
-
-                rockContext.SaveChanges();
-
-                foreach(var fm in family.Members)
-                {
-                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                        fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id );
                 }
             }
         }

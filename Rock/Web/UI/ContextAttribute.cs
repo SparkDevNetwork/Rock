@@ -44,10 +44,19 @@ namespace Rock.Web.UI
         public string DefaultParameterName { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this ContextAware attribute is configurable in BlockProperties
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is configurable; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsConfigurable { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
         /// </summary>
         public ContextAwareAttribute()
         {
+            IsConfigurable = true;
         }
 
         /// <summary>

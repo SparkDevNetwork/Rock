@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Core
                         var definedValue = DefinedValueCache.Read( definedValueId );
                         if ( definedValue != null )
                         {
-                            e.Value = definedValue.Name;
+                            e.Value = definedValue.Value;
                         }
                     }
 
@@ -217,10 +217,10 @@ namespace RockWeb.Blocks.Core
             ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintTo.BindToEnum( typeof( PrintTo ) );
+            ddlPrintTo.BindToEnum<PrintTo>();
             ddlPrintTo.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
+            ddlPrintFrom.BindToEnum<PrintFrom>();
             ddlPrintFrom.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             ddlPrinter.Items.Clear();
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Core
                 {
                     a.Id,
                     a.Name,
-                    DeviceTypeName = a.DeviceType.Name,
+                    DeviceTypeName = a.DeviceType.Value,
                     a.IPAddress,
                     a.PrintToOverride,
                     a.PrintFrom,
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( d => d.Name.Contains( name ) );
             }
 
-            int? deviceTypeId = fDevice.GetUserPreference( "Device Type" ).AsInteger();
+            int? deviceTypeId = fDevice.GetUserPreference( "Device Type" ).AsIntegerOrNull();
             if ( deviceTypeId.HasValue )
             {
                 queryable = queryable.Where( d => d.DeviceTypeValueId == deviceTypeId.Value );
@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( d => d.PrintToOverride == printTo );
             }
 
-            int? printerId = fDevice.GetUserPreference( "Printer" ).AsInteger();
+            int? printerId = fDevice.GetUserPreference( "Printer" ).AsIntegerOrNull();
             if ( printerId.HasValue )
             {
                 queryable = queryable.Where( d => d.PrinterDeviceId == printerId );

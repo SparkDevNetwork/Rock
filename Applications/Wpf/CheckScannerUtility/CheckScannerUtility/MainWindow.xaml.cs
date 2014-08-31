@@ -52,7 +52,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( batchPage != null )
             {
-                if ( batchPage.ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
+                if ( batchPage.ScannedDocList.Where( a => !a.Uploaded ).Count() > 0 )
                 {
                     e.Cancel = true;
                     return;

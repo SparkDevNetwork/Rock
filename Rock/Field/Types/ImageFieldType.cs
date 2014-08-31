@@ -92,7 +92,7 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                int? binaryFileTypeId = configurationValues["binaryFileType"].Value.AsInteger();
+                int? binaryFileTypeId = configurationValues["binaryFileType"].Value.AsIntegerOrNull();
                 if ( binaryFileTypeId.HasValue )
                 {
                     var binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId.Value );
@@ -132,7 +132,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            int? idvalue = value.AsInteger();
+            int? idvalue = value.AsIntegerOrNull();
             if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
             {
                 ( control as Rock.Web.UI.Controls.ImageUploader ).BinaryFileId = idvalue;

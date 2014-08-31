@@ -48,14 +48,14 @@ namespace RockWeb.Blocks.Cms
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
     [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
-    {% include 'AdList' with Ads %}
+    {% include 'AdList' %}
 ", "", 3 )]
 
     [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 4 )]
     [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, true, "", "Filter", 6 )]
-    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
+    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1^Primary,2^Secondary", false, "1,2", "Filter", 7 )]
 
     [IntegerField( "Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 8 )]
     [IntegerField( "Image Height", "Height that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 9 )]
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
             if ( campusContext != null )
             {
                 // limit to ads that are targeted to the current campus context
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.Id.Equals( campusContext.Id ) ) );
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.CampusId.Equals( campusContext.Id ) ) );
             }
 
 

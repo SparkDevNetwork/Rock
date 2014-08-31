@@ -12,39 +12,34 @@
     
 </script>
 
-<asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
+<asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+    
     <div class="personprofile">
 
         <div class="personprofilebar-bio">
-            <div class="container">
                 <Rock:Zone Name="Individual Detail" runat="server" />
-            </div>
         </div>
 
         <div class="personprofilebar-badge">
-            <div class="container">
-                <div class="row">
-                    <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badge Bar Left" runat="server" />
-                    </div>
-                    <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badge Bar Middle" runat="server" />
-                    </div>
-                    <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badge Bar Right" runat="server" />
-                    </div>
+            <div class="row">
+                <div class="badge-group col-sm-4">
+                    <Rock:Zone Name="Badge Bar Left" runat="server" />
+                </div>
+                <div class="badge-group col-sm-4">
+                    <Rock:Zone Name="Badge Bar Middle" runat="server" />
+                </div>
+                <div class="badge-group col-sm-4">
+                    <Rock:Zone Name="Badge Bar Right" runat="server" />
                 </div>
             </div>
         </div>
 
         <div class="personprofilebar-family">
-			<div class="container">    
-                <Rock:Zone Name="Family Detail" runat="server" />
-            </div>
+            <Rock:Zone Name="Family Detail" runat="server" />
         </div>
 
-		<div class="container pagetabs">
+		<div class="pagetabs">
             <div class="row">
                 <div class="col-md-12">
                     <Rock:Zone Name="Sub Navigation" runat="server" />
@@ -52,7 +47,7 @@
             </div> 
 		</div>
 
-        <div class="container person-content">
+        <div class="person-content">
             <div class="row">
                 <div class="col-md-8">
                     <Rock:Zone Name="Section A1" runat="server" />
@@ -91,5 +86,5 @@
         </div>
 
 	</div>
-
+    
 </asp:Content>

@@ -84,6 +84,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public GroupMemberStatus GroupMemberStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true.
+        /// </summary>
+        /// <value>
+        /// The guest count.
+        /// </value>
+        [DataMember]
+        public int? GuestCount { get; set; }
+
         #endregion
 
         #region Virtual Properties

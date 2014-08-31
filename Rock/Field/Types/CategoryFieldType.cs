@@ -75,7 +75,6 @@ namespace Rock.Field.Types
             {
                 ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
-            controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Entity Type";
@@ -220,7 +219,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var guid = Guid.Empty;
-                var id = picker.ItemId.AsInteger();
+                var id = picker.ItemId.AsIntegerOrNull();
                 var category = CategoryCache.Read( id ?? 0 );
 
                 if ( category != null )

@@ -41,7 +41,7 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            int? intValue = value.AsInteger( false );
+            int? intValue = value.AsIntegerOrNull();
             if ( intValue.HasValue )
             {
                 System.DayOfWeek dayOfWeek = (System.DayOfWeek)intValue.Value;
@@ -95,7 +95,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 DayOfWeekPicker dayOfWeekPicker = control as DayOfWeekPicker;
-                dayOfWeekPicker.SelectedDayOfWeek = (System.DayOfWeek)( value.AsInteger() ?? 0 );
+                dayOfWeekPicker.SelectedDayOfWeek = (System.DayOfWeek)( value.AsInteger() );
             }
         }
     }

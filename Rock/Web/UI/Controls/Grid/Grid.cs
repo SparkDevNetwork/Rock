@@ -157,6 +157,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the filename to use when exporting the grid contents. 
+        /// The .xlsx extension will be appended if not given. Special characters are removed
+        /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
+        /// </summary>
+        /// <value>
+        /// The value of a the export's filename.
+        /// </value>
+        public string ExportFilename
+        {
+            get
+            {
+                string exportFilename = ViewState["ExportFilename"] as string;
+                if ( string.IsNullOrWhiteSpace( exportFilename ) )
+                {
+                    exportFilename = "RockExport.xlsx";
+                }
+                else if (! exportFilename.EndsWith( ".xlsx" ) )
+                {
+                    exportFilename += ".xlsx";
+                }
+                return exportFilename.RemoveSpecialCharacters();
+            }
+
+            set
+            {
+                ViewState["ExportFilename"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
         /// </summary>
         /// <value>
@@ -306,6 +336,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the bulk update page route.
+        /// </summary>
+        /// <value>
+        /// The bulk update page route.
+        /// </value>
+        public virtual string BulkUpdatePageRoute
+        {
+            get { return ViewState["BulkUpdatePageRoute"] as string ?? "~/BulkUpdate/{0}"; }
+            set { ViewState["BulkUpdatePageRoute"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -341,7 +383,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected keys.
         /// </value>
-        private List<object> SelectedKeys
+        public List<object> SelectedKeys
         {
             get
             {
@@ -357,6 +399,16 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a dictionary of objects that can be used independently of the actual objects that grid
+        /// is bound to. This is helpful when binding to an anonymous type, but an actual known type is needed
+        /// during row processing (i.e. RowDataBound events, or GetValue methods of custom grid fields)
+        /// </summary>
+        /// <value>
+        /// The object list
+        /// </value>
+        public Dictionary<string, object> ObjectList { get; set; }
+        
         #region Action Row Properties
 
         /// <summary>
@@ -454,6 +506,7 @@ namespace Rock.Web.UI.Controls
             this.Sorting += Grid_Sorting;
 
             this.Actions.MergeClick += Actions_MergeClick;
+            this.Actions.BulkUpdateClick += Actions_BulkUpdateClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
@@ -479,27 +532,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
-            {
-                string deleteButtonScriptFormat = @"
-   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
-  return Rock.dialogs.confirmDelete(event, '{1}');
-}});";
-                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
-            }
-
-
-            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
-
-            string gridSelectCellScriptFormat = @"
-   $('#{0} .grid-select-cell').on( 'click', function (event) {{
-  var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
-  {1}
-}});";
-            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
-
             if ( Page.IsPostBack )
             {
                 if ( this.DataKeys != null && this.DataKeys.Count > 0 )
@@ -535,6 +567,40 @@ namespace Rock.Web.UI.Controls
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
+            if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
+            {
+                string deleteButtonScriptFormat = @"
+   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
+  return Rock.dialogs.confirmDelete(event, '{1}');
+}});";
+                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
+            }
+            
+            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
+
+            string gridSelectCellScriptFormat = @"
+   $('#{0} .grid-select-cell').on( 'click', function (event) {{
+  var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+  {1}
+}});";
+            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
+
+            // render script for popovers
+            string popoverScript = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-popover", popoverScript, true );
         }
 
         /// <summary>
@@ -617,13 +683,8 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PrepareControlHierarchy();
-
-            // render script for popovers
-            string script = @"
-    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
-    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
-";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+            
+            RegisterJavaScript();
 
             this.RenderContents( writer );
         }
@@ -953,24 +1014,29 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void Actions_MergeClick( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            int? entitySetId = GetPersonEntitySet();
+            if (entitySetId.HasValue)
             {
-                var peopleSelected = SelectedKeys.ToList();
-
-                if ( !peopleSelected.Any() )
-                {
-                    OnGridRebind( e );
-                    peopleSelected = GetAllPersonIds();
-                }
-
-                if ( peopleSelected.Any() )
-                {
-                    Page.Response.Redirect( string.Format( MergePageRoute, peopleSelected.AsDelimited( "," ) ), false );
-                    Context.ApplicationInstance.CompleteRequest();
-                }
+                Page.Response.Redirect( string.Format( MergePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
             }
         }
 
+        /// <summary>
+        /// Handles the MergeClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void Actions_BulkUpdateClick( object sender, EventArgs e )
+        {
+            int? entitySetId = GetPersonEntitySet();
+            if ( entitySetId.HasValue )
+            {
+                Page.Response.Redirect( string.Format( BulkUpdatePageRoute, entitySetId.Value ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+        
         /// <summary>
         /// Handles the CommunicateClick event of the Actions control.
         /// </summary>
@@ -1112,7 +1178,7 @@ namespace Rock.Web.UI.Controls
             OnGridRebind( e );
 
             // create default settings
-            string filename = "export.xlsx";
+            string filename = ExportFilename;
             string workSheetName = "Export";
             string title = "Rock Export";
 
@@ -1124,7 +1190,6 @@ namespace Rock.Web.UI.Controls
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
-                filename = this.Caption.Replace( " ", "" ) + ".xlsx";
                 title = this.Caption;
             }
             else
@@ -1199,7 +1264,7 @@ namespace Rock.Web.UI.Controls
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
                 
                 // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if (oType == typeof(object) || oType == typeof(Rock.Data.IEntity))
+                if (oType == typeof(object) || oType.IsInterface )
                 {
                     if (data.Count > 0)
                     {
@@ -1210,13 +1275,15 @@ namespace Rock.Web.UI.Controls
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties());
                 IList<PropertyInfo> props = new List<PropertyInfo>();
+
+                var gridDataFields = this.Columns.OfType<BoundField>().Where( a => a.Visible );
                 
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any(a => a.DataField == prop.Name) && prop.GetGetMethod().IsVirtual )
                     {
-                        // skip over virtual properties since they are probably lazy loaded and it is too late to get them
+                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
                     }
 
@@ -1464,6 +1531,48 @@ namespace Rock.Web.UI.Controls
             }
 
             return personIds;
+        }
+
+        private int? GetPersonEntitySet()
+        {
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
+            {
+                var keys = SelectedKeys.ToList();
+
+                if ( !keys.Any() )
+                {
+                    OnGridRebind( new EventArgs() );
+                    keys = GetAllPersonIds();
+                }
+
+                if ( keys.Any() )
+                {
+                    var entitySet = new Rock.Model.EntitySet();
+                    entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+                    foreach( var key in keys)
+                    {
+                        try {
+                            var item = new Rock.Model.EntitySetItem();
+                            item.EntityId = (int)key;
+                            entitySet.Items.Add( item );
+                        }
+                        catch{}
+                    }
+
+                    if ( entitySet.Items.Any())
+                    {
+                        var rockContext = new RockContext();
+                        var service = new Rock.Model.EntitySetService( rockContext );
+                        service.Add( entitySet );
+                        rockContext.SaveChanges();
+                        return entitySet.Id;
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion

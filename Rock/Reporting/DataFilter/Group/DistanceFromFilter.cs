@@ -114,7 +114,7 @@ function() {
                 if ( locationGuid.HasValue )
                 {
                     var location = new LocationService( new RockContext() ).Get( locationGuid.Value );
-                    double miles = selectionValues[2].AsDouble() ?? 0;
+                    double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
 
                     result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
                 }
@@ -131,9 +131,9 @@ function() {
         {
             RockDropDownList groupLocationTypeList = new RockDropDownList();
             groupLocationTypeList.Items.Clear();
-            foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
-                groupLocationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
+                groupLocationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
             groupLocationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
@@ -244,7 +244,7 @@ function() {
                 }
 
                 var selectedLocationGeoPoint = location.GeoPoint;
-                double miles = selectionValues[2].AsDouble() ?? 0;
+                double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
                 double meters = miles * 1609.344;
 
                 GroupService groupService = new GroupService( (RockContext)serviceInstance.Context );

@@ -296,6 +296,7 @@ namespace RockWeb.Blocks.Core
             category.Description = tbDescription.Text;
             category.ParentCategoryId = catpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
            
@@ -384,6 +385,7 @@ namespace RockWeb.Blocks.Core
                 tbDescription.Text = category.Description;
                 catpParentCategory.SetValue( category.ParentCategoryId );
                 tbIconCssClass.Text = category.IconCssClass;
+                tbHighlightColor.Text = category.HighlightColor;
             }
             else
             {
@@ -391,6 +393,7 @@ namespace RockWeb.Blocks.Core
                 tbDescription.Text = string.Empty;
                 catpParentCategory.SetValue( _parentCategoryId );
                 tbIconCssClass.Text = string.Empty;
+                tbHighlightColor.Text = string.Empty;
             }
 
             hfIdValue.Value = categoryId.ToString();

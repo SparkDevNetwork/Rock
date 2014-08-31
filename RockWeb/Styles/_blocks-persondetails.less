@@ -13,6 +13,7 @@
     10. Responsive Overrides
     11. Person Merge
     12. Person Page Views
+    13. Deceased / Inactive Styles
 */
 
 // 1. Page Styles
@@ -22,7 +23,7 @@
     margin-top: -@spacing-md-px;
 
     small { // lighten up small elements a bit 
-        color: lighten(@text-color, 30%);
+        color: lighten(@persondetails-bio-color, 30%);
     }
 }
 
@@ -30,14 +31,18 @@
 // -------------------------
 
 .personprofilebar-bio {
-    background-color: @accent-light-color;
-    border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+    background-color: @persondetails-bio-bg;
+    border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     padding: @spacing-md-px @spacing-md-px 0 @spacing-md-px;
+    color: @persondetails-bio-color;
 
     .name {
         text-align: center;
+        margin-top: 0;
 
         .full-name {
+            font-size: 18px;
+            
             display: none;
         }
     }
@@ -47,17 +52,32 @@
         text-align: center;
     }
 
+    .nav li .persondetails-actions {
+        padding: 2px 0 0 15px;
+
+        &:hover, 
+        &:focus {
+            background-color: transparent;
+        }
+    }
+
     .actions { // edit individual button
         position: absolute;
         right: 50%;
         bottom: 6px;
         z-index: 10;
         margin-right: -52px;
+
+        a.btn-action {
+            color: @accent-bold-text-color;
+            background-color: @accent-bold-color;
+            border-color: darken(@accent-bold-color, 5%);
+        }
     }
 
     .photo {
         padding: 5px 5px 5px 5px;
-        background-color: #fff;
+        background-color: @accent-semibold-color;
         border: 1px solid #bdbdbd;
         display: table;
         max-width: 200px;
@@ -67,20 +87,20 @@
         .following-status {
             position: absolute;
             top: 0;
-            right: 0;
+            left: 0;
             cursor: pointer;
             width: 40px;
             height: 40px;
             z-index: 500;
             border-top: 70px solid @link-color;
-            border-left: 70px solid transparent;
+            border-right: 70px solid transparent;
             transition: 1s;
             opacity: .4;
 
             i {
                 position: absolute;
                 top: -60px;
-                right: 10px;
+                left: 10px;
                 color: #fff;
                 font-size: 24px;
                 transition: 1s;
@@ -117,15 +137,17 @@
     }
 
     .social-icons {
+        text-align: center;
+
         .icon {
-            float: left;
             background-color: @accent-bold-color;
             margin: 0 2px;
             border-radius: @border-radius-base;
             font-size: 16px;
+            display: inline-block;
 
             a {
-                color: @accent-bold-text-color;
+                color: #fff;
 
                 &:hover {
                     opacity: .6;
@@ -191,9 +213,10 @@
 
 .personprofilebar-badge
 {
-    background-color: @accent-color;
+    background-color: @persondetails-badge-bg;
     min-height: 64px;
-    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+    border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
+    color: @persondetails-badge-color;
 
     .badge-group {
         margin: @spacing-sm-px 0;
@@ -234,6 +257,7 @@
         table-layout: fixed;
         height: 40px;
         margin: 0 auto;
+        width: 220px;
 
         li {
             position: relative;
@@ -244,7 +268,7 @@
         
             span {
                 display: block;
-                background: @accent-bold-color;
+                background: @persondetails-badge-color;
                 position: absolute;
                 bottom: 0;
                 width: 8px;
@@ -431,34 +455,66 @@
 // -------------------------
 
 .personprofilebar-family {
-    background: @accent-color;
+    background: @persondetails-familybar-bg;
     padding: 12px 0;
-    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+    border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
+    color: @persondetails-familybar-color;
+    margin-top: 12px;
+
+    a {
+        color: @persondetails-familybar-color;
+    }
+
+    .groupmembers {
+        .member {   
+            a {
+                .clearfix();
+                border-radius: @border-radius-base;
+                padding: 8px;
+                display: block;
+            }
+
+            .person-image {
+                filter: grayscale(100%);
+                -webkit-filter: grayscale(100%); /* For Webkit browsers */
+                filter: gray; /* For IE 6 - 9 */
+                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
+                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */filter: grayscale(100%);
+                -webkit-filter: grayscale(100%); /* For Webkit browsers */
+                filter: gray; /* For IE 6 - 9 */
+                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
+                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+                transition: .5s;
+            }
+
+            &:hover {
+                background-color: darken(@persondetails-familybar-bg, 8%);
+                border-radius: @border-radius-base;
+
+                .person-image {
+                    filter: grayscale(0%);
+                    -webkit-filter: grayscale(0%);
+                    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
+                }
+            }
+        }
+    }
 
     .actions { // edit family button
         position: absolute; 
         right: 12px; 
         z-index: 999;
+
+        a.btn-action {
+            color: @accent-text-color;
+            background-color: @accent-color;
+            border-color: darken(@accent-color, 5%);
+        }
     }
 
     header {
         font-size: 16px;
         margin-bottom: @spacing-sm-px;
-    }
-    
-    .person-image {
-        -webkit-filter: grayscale(100%);
-        -moz-filter: grayscale(100%);
-        filter: gray;
-        filter: grayscale(100%);
-        filter: url('../../Assets/Images/(desaturate.svg#grayscale');
-        transition: .5s;
-
-        &:hover {
-            -webkit-filter: grayscale(0%);
-            -moz-filter: grayscale(0%);
-            filter: grayscale(0%);
-        }
     }
 
     .addresses ul {
@@ -609,6 +665,13 @@ span.field-value {
             text-align: left;
             padding-bottom: 0;
         }
+
+        .social-icons {
+            text-align: left;
+            .icon {
+                float: left;
+            }
+        }
     }
 
     .personprofilebar-badge {
@@ -641,7 +704,11 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-personselect {
+
+.table thead th.merge-personselect {
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+    border-color: lighten(@accent-bold-color, 5%);
     
     vertical-align: top !important;
 
@@ -652,6 +719,10 @@ span.field-value {
             margin-right: 12px;
             float: left;
         }
+    }
+
+    .btn-danger {
+        color: #fff;
     }
 
     small {
@@ -668,22 +739,54 @@ span.field-value {
 }
 
 .merge-photo {
-    border: 3px solid @accent-bold-color;
+    border: 3px solid @accent-semibold-color;
 }
 
 // 12. Person Page Views
 // -------------------------
 .panel-widget.pageviewsession {
 
-    .panel-heading {
-        small {
-            color: @accent-bold-color;
-        }
-    }
-
     .pageviewsession-client {
         color: @accent-bold-color;
         text-align: right;
         line-height: 1;
+    }
+}
+
+// 13. Deceased / Inactive Styles
+// -------------------------
+
+.person-bio {
+    div.deceased h1.title.name:after {
+        content: 'Deceased';
+        font-size: 14px;
+        margin-left: 12px;
+        color: @brand-danger;
+    }
+}
+
+.groupmembers {
+    .member.deceased {
+        
+        &:hover {
+            background-color: darken(@gray-light, 10%);
+        }
+
+        .person-info:after {
+            content: 'Deceased';
+            font-size: 10px;
+            color: @brand-danger;
+        }
+    }
+}
+
+//tr.deceased {
+//    td {
+//    }
+//}
+
+tr.inactive {
+    td {
+        color: lighten(@text-color, 30%);
     }
 }

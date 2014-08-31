@@ -19,7 +19,7 @@ using Rock.Field.Types;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// value stored as pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
     /// </summary>
     public class MetricEntityFieldAttribute : FieldAttribute
     {

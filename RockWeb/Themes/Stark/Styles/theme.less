@@ -51,6 +51,10 @@ header {
     .login-status {
         float: right;
     }
+
+    .navbar {
+        background-color: @header-bg;
+    }
 }
 
 // homepage items
@@ -127,6 +131,23 @@ footer {
         font-size: 210px;
         position: relative;
         top: -12px;
+    }
+}
+
+/* hide block panels */
+.panel-block {
+    border: 0;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
     }
 }
 

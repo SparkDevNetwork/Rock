@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security
@@ -62,10 +62,11 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        bool IsAuthorized( string action, Rock.Model.Person person );
+        bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -80,23 +81,26 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        bool IsPrivate( string action, Person person );
+        bool IsPrivate( string action, Person person, RockContext rockContext = null );
 
         /// <summary>
         /// Makes the action on the current entity private (Only the current user will have access).
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        void MakePrivate( string action, Person person );
+        /// <param name="rockContext">The rock context.</param>
+        void MakePrivate( string action, Person person, RockContext rockContext = null );
 
         /// <summary>
         /// If action on the current entity is private, removes security that made it private.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        void MakeUnPrivate( string action, Person person );
+        /// <param name="rockContext">The rock context.</param>
+        void MakeUnPrivate( string action, Person person, RockContext rockContext = null );
     }
 }

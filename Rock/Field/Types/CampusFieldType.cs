@@ -16,8 +16,6 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI.WebControls;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -30,6 +28,30 @@ namespace Rock.Field.Types
     public class CampusFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = value;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var campus = new CampusService( new RockContext() ).Get( value.AsInteger() );
+                if ( campus != null )
+                {
+                    formattedValue = campus.Name;
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -39,22 +61,15 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Label = "Campus";
+            var campusPicker = new CampusPicker { ID = id };
 
             CampusService campusService = new CampusService( new RockContext() );
             var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
 
-            editControl.Items.Add( Rock.Constants.None.ListItem );
-
             if ( campusList.Any() )
             {
-                foreach ( var campus in campusList )
-                {
-                    editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
-                }
-
-                return editControl;
+                campusPicker.Campuses = campusList;
+                return campusPicker;
             }
 
             return null;
@@ -71,18 +86,11 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            DropDownList dropDownList = control as DropDownList;
+            CampusPicker campusPicker = control as CampusPicker;
 
-            if ( dropDownList != null )
+            if ( campusPicker != null )
             {
-                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
-                {
-                    return null;
-                }
-                else
-                {
-                    return dropDownList.SelectedValue;
-                }
+                return campusPicker.SelectedCampusId.ToString();
             }
 
             return null;
@@ -99,8 +107,8 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                DropDownList dropDownList = control as DropDownList;
-                dropDownList.SetValue( value );
+                CampusPicker campusPicker = control as CampusPicker;
+                campusPicker.SelectedCampusId = value.AsIntegerOrNull();
             }
         }
 
@@ -112,7 +120,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsInteger(false);
+            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
         }
 
         /// <summary>

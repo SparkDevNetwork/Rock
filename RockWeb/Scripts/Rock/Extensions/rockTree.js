@@ -487,6 +487,7 @@
 
                 self.selectedNodes = selectedNodes;
                 self.$el.trigger('rockTree:selected', id);
+                self.$el.trigger('rockTree:itemClicked', id);
                 
                 // If there is an array of other events to trigger on select,
                 // loop through them and trigger each, passing along the
