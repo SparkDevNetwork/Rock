@@ -304,7 +304,10 @@ namespace RockInstaller
 
             result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
 
-            this.SendConsoleMessage( "File Download Complete!" );
+            if ( result.Success )
+            {
+                this.SendConsoleMessage( "File Download Complete!" );
+            }
 
             return result;
         }
@@ -670,11 +673,11 @@ namespace RockInstaller
             {
                 Uri url = new Uri( remoteFile );
 
+                // Get the total size of the file
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create( url );
                 System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse();
                 response.Close();
-
-                Int64 iSize = response.ContentLength;
+                double dTotal = (double)response.ContentLength;
 
                 // keeps track of the total bytes downloaded so we can update the progress bar
                 Int64 iRunningByteTotal = 0;
@@ -682,7 +685,6 @@ namespace RockInstaller
                 int nextProgressbarPercentToNotify = progressbarEventFrequency;
                 int nextConsolePercentToNotify = consoleMessageReportFrequency;
 
-            
                 // use the webclient object to download the file
                 using ( System.Net.WebClient client = new System.Net.WebClient() )
                 {
@@ -694,7 +696,8 @@ namespace RockInstaller
                         {
                             // loop the stream and get the file into the byte buffer
                             int iByteSize = 0;
-                            byte[] byteBuffer = new byte[iSize];
+                            int bufferSize = 65536;
+                            byte[] byteBuffer = new byte[bufferSize];
 
                             while ( (iByteSize = streamRemote.Read( byteBuffer, 0, byteBuffer.Length )) > 0 )
                             {
@@ -704,7 +707,6 @@ namespace RockInstaller
 
                                 // calculate the progress out of a base "100"
                                 double dIndex = (double)(iRunningByteTotal);
-                                double dTotal = (double)byteBuffer.Length;
                                 double dProgressPercentage = (dIndex / dTotal);
                                 int iProgressPercentage = (int)(dProgressPercentage * 100);
 
@@ -735,10 +737,19 @@ namespace RockInstaller
                                 }
                             } // while..
                             streamLocal.Close();
+                            streamLocal.Dispose();
                         }
                         streamRemote.Close();
+                        streamRemote.Dispose();
                     }
+                    client.Dispose();
                 }
+            }
+            catch ( OutOfMemoryException mex )
+            {
+                result.Success = false;
+                result.Message = @"The server ran out of memory while downloading Rock. You may want to consider using a server with more available resources or
+                                    try installing again.";
             }
             catch ( Exception ex )
             {

@@ -131,9 +131,9 @@ function() {
         {
             RockDropDownList groupLocationTypeList = new RockDropDownList();
             groupLocationTypeList.Items.Clear();
-            foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
             {
-                groupLocationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
+                groupLocationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
             groupLocationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );

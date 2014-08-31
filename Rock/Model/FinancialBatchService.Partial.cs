@@ -49,13 +49,13 @@ namespace Rock.Model
                 ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" );
                 if ( string.IsNullOrWhiteSpace( ccSuffix ) )
                 {
-                    ccSuffix = creditCardType.Name;
+                    ccSuffix = creditCardType.Value;
                 }
             }
 
             if ( string.IsNullOrWhiteSpace( ccSuffix ) && currencyType != null )
             {
-                ccSuffix = currencyType.Name;
+                ccSuffix = currencyType.Value;
             }
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix );

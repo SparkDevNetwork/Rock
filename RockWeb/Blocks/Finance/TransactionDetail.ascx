@@ -1,20 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionDetail" %>
 
-<!-- TODO talk about this... -->
-<style>
-    .transaction-image {
-        max-width: 400px;
-        max-height: 200px;
-        margin: 5px;
-    }
-
-    .transaction-image-thumbnail {
-        max-width: 200px;
-        max-height: 100px;
-        margin: 5px;
-    }
-</style>
-
 <script type="text/javascript">
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
@@ -82,7 +67,6 @@
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
                                     <asp:HiddenField ID="hfImageGuid" runat="server" Value='<%# Eval("Guid") %>' />
-                                    <Rock:RockDropDownList ID="ddlImageType" runat="server" /><br />
                                     <Rock:ImageUploader ID="imgupImage" runat="server" />
                                 </ItemTemplate>
                             </asp:DataList>

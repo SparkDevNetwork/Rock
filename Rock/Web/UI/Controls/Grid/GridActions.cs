@@ -54,6 +54,7 @@ namespace Rock.Web.UI.Controls
 
         private List<Control> _customActions;
         private LinkButton _lbMerge;
+        private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
@@ -256,6 +257,20 @@ namespace Rock.Web.UI.Controls
             iMerge.Attributes.Add( "class", "fa fa-users" );
             _lbMerge.Controls.Add( iMerge );
 
+            // control for bulk update
+            _lbBulkUpdate = new LinkButton();
+            Controls.Add( _lbBulkUpdate );
+            _lbBulkUpdate.ID = "lbBulkUpdate";
+            _lbBulkUpdate.CssClass = "btn-bulk-update btn btn-default btn-sm";
+            _lbBulkUpdate.ToolTip = "Bulk Update";
+            _lbBulkUpdate.Click += lbBulkUpdate_Click;
+            _lbBulkUpdate.CausesValidation = false;
+            _lbBulkUpdate.PreRender += lb_PreRender;
+            Controls.Add( _lbBulkUpdate );
+            HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
+            iBulkUpdate.Attributes.Add( "class", "fa fa-reply-all" );
+            _lbBulkUpdate.Controls.Add( iBulkUpdate );
+            
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );
             Controls.Add( _aExcelExport );
@@ -309,8 +324,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            _lbMerge.Visible = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
-
+            bool personGrid = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+            _lbMerge.Visible = personGrid;
+            _lbBulkUpdate.Visible = personGrid;
             _lbCommunicate.Visible = ShowCommunicate;
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
@@ -360,6 +376,20 @@ namespace Rock.Web.UI.Controls
                 MergeClick( sender, e );
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbBulkUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbBulkUpdate_Click( object sender, EventArgs e )
+        {
+            if ( BulkUpdateClick != null )
+            {
+                BulkUpdateClick( sender, e );
+            }
+        }
+
         /// <summary>
         /// Handles the Click event of the lbAdd control.
         /// </summary>
@@ -429,6 +459,11 @@ namespace Rock.Web.UI.Controls
         /// Occurs when merge action is clicked.
         /// </summary>
         public event EventHandler MergeClick;
+
+        /// <summary>
+        /// Occurs when bulk update action is clicked.
+        /// </summary>
+        public event EventHandler BulkUpdateClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.

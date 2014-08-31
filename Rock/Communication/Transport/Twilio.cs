@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
                 int fromValueId = int.MinValue;
                 if ( int.TryParse( fromValue, out fromValueId ) )
                 {
-                    fromPhone = DefinedValueCache.Read( fromValueId ).Name;
+                    fromPhone = DefinedValueCache.Read( fromValueId ).Value;
                 }
 
                 if ( !string.IsNullOrWhiteSpace( fromPhone ) )
@@ -164,7 +164,7 @@ namespace Rock.Communication.Transport
                 channelData.TryGetValue( "FromValue", out fromValue );
                 if (!string.IsNullOrWhiteSpace(fromValue))
                 {
-                    fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Name;
+                    fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Value;
                     if ( !string.IsNullOrWhiteSpace( fromPhone ) )
                     {
                         string accountSid = GetAttributeValue( "SID" );

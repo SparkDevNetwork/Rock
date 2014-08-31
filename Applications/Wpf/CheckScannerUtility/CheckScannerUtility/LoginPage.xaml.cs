@@ -90,8 +90,7 @@ namespace Rock.Apps.CheckScannerUtility
                     rockConfig.Password = txtPassword.Password;
                     rockConfig.Save();
 
-                    BatchPage batchPage = new BatchPage();
-                    batchPage.LoggedInPerson = person;
+                    BatchPage batchPage = new BatchPage( person );
 
                     if ( this.NavigationService.CanGoBack )
                     {
@@ -173,6 +172,19 @@ namespace Rock.Apps.CheckScannerUtility
         private void HideLoginWarning( object sender, System.Windows.Input.KeyEventArgs e )
         {
             lblLoginWarning.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Handles the KeyDown event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
+        private void Page_KeyDown( object sender, KeyEventArgs e )
+        {
+            if ( e.Key == Key.Enter )
+            {
+                btnLogin_Click( null, null );
+            }
         }
     }
 }

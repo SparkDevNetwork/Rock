@@ -331,7 +331,7 @@ namespace RockWeb.Blocks.Finance
                 tbAccountingCode.Text = !string.IsNullOrWhiteSpace( accountingCode ) ? accountingCode : string.Empty;
             }
 
-            ddlStatus.BindToEnum( typeof( BatchStatus ) );
+            ddlStatus.BindToEnum<BatchStatus>();
             ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
             string statusFilter = gfBatchFilter.GetUserPreference( "Status" );
             if (string.IsNullOrWhiteSpace(statusFilter))

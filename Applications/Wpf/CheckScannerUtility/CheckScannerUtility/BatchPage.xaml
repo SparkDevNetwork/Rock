@@ -12,7 +12,7 @@
       d:DesignHeight="500"
       d:DesignWidth="800"
       Title="Check Scanner - Edit Batch"
-      Loaded="Page_Loaded"
+      Loaded="batchPage_Loaded"
       Style="{StaticResource pageBackground}">
     <Grid>
         <Grid.Resources>
@@ -28,7 +28,7 @@
             <ax:AxRanger x:Name="rangerScanner"
                          TransportNewState="rangerScanner_TransportNewState"
                          TransportChangeOptionsState="rangerScanner_TransportChangeOptionsState"
-                         TransportItemInPocket="rangerScanner_TransportItemInPocket" />
+                         TransportSetItemOutput="rangerScanner_TransportSetItemOutput"/>
         </WindowsFormsHost>
         <WindowsFormsHost x:Name="micrImageHost"
                           Visibility="Collapsed"
@@ -125,7 +125,6 @@
                     Margin="4,4,4,4"
                     Style="{StaticResource buttonStyleMini}"
                     HorizontalAlignment="Left"
-
                     x:Name="btnAddBatch"
                     Click="btnAddBatch_Click">
                 <StackPanel Orientation="Horizontal">
@@ -181,7 +180,7 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            
+
                             <Label Grid.Row="0"
                                    Grid.Column="0"
                                    Style="{StaticResource labelStyleDt}"
@@ -211,7 +210,7 @@
                                    x:Name="lblBatchControlAmountReadOnly"
                                    Style="{StaticResource labelStyleDd}"
                                    Content="$123.45" />
-                            
+
                             <Label Grid.Row="2"
                                    Grid.Column="1"
                                    Style="{StaticResource labelStyleDt}"
@@ -221,25 +220,31 @@
                                    x:Name="lblBatchCampusReadOnly"
                                    Style="{StaticResource labelStyleDd}"
                                    Content="Home Campus" />
-                            
+
                             <Label x:Name="lblUploadProgress"
                                    Grid.Row="4"
                                    Style="{StaticResource labelStyleAlert}"
                                    Content="Upload Status" />
                             <StackPanel Grid.Row="4"
+                                        Grid.Column="0"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Left">
+
+                            </StackPanel>
+                            <StackPanel Grid.Row="4"
                                         Grid.Column="1"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right">
-                                <Button x:Name="btnScan"
-                                        Style="{StaticResource buttonStylePrimaryMini}"
-                                        Margin="4,4,0,0"
-                                        Content="Scan"
-                                        Click="btnScan_Click" />
                                 <Button Style="{StaticResource buttonStylePrimaryMini}"
                                         x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
                                         Click="btnEdit_Click" />
+                                <Button x:Name="btnScan"
+                                        Style="{StaticResource buttonStylePrimaryMini}"
+                                        Margin="4,4,0,0"
+                                        Content="Scan"
+                                        Click="btnScan_Click" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -326,7 +331,7 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <Label Content="Scanned Checks"
+                <Label Content="Scanned Items"
                        Style="{StaticResource labelStyleGridTitle}"
                        Grid.Row="1" />
                 <DataGrid Grid.Row="2"
@@ -355,16 +360,25 @@
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            Binding="{Binding CreatedDateTime}"
+                                            Binding="{Binding FinancialTransaction.CreatedDateTime}"
                                             HeaderStyle="{StaticResource gridHeaderStyleDateTime}"
-                                            CellStyle="{StaticResource gridCellStyleNumber}"
+                                            CellStyle="{StaticResource gridCellStyleDateTime}"
                                             CanUserResize="False"
                                             CanUserSort="False" />
 
-                        <DataGridTextColumn Header="AMOUNT"
-                                            HeaderStyle="{StaticResource gridHeaderStyleCurrency}"
-                                            CellStyle="{StaticResource gridCellStyleNumber}"
-                                            Binding="{Binding TotalAmount, Converter={StaticResource zeroCurrencyConverter}}"
+                        <DataGridTextColumn Header="TYPE"
+                                            Binding="{Binding FinancialTransaction.CurrencyTypeValue}"
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Width="*"
+                                            CanUserResize="False"
+                                            CanUserSort="False" />
+
+                        <DataGridTextColumn Header="CHECK NUMBER"
+                                            Binding="{Binding CheckNumber}"
+                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            CellStyle="{StaticResource gridCellStyle}"
+                                            Width="*"
                                             CanUserResize="False"
                                             CanUserSort="False" />
                     </DataGrid.Columns>

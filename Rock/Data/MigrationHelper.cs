@@ -797,7 +797,9 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <exception cref="System.Exception">Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!</exception>
+        public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid, bool isRequired = false )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
@@ -830,7 +832,7 @@ namespace Rock.Data
                 VALUES(
                     1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
                     '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
+                    {5},0,'{6}',0,{8},
                     '{7}')
 ",
                     blockTypeGuid,
@@ -840,7 +842,8 @@ namespace Rock.Data
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue.Replace( "'", "''" ),
-                    guid )
+                    guid,
+                    isRequired ? "1" : "0" )
             );
         }
 
@@ -900,6 +903,212 @@ namespace Rock.Data
                     '{2}','{3}','{4}',
                     {5},0,'{6}',0,0,
                     '{7}')
+",
+                    entityTypeName,
+                    fieldTypeGuid,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue,
+                    guid,
+                    entityTypeQualifierColumn,
+                    entityTypeQualifierValue )
+            );
+        }
+
+        /// <summary>
+        /// Adds or updates a group member Attribute for the given group for storing a particular defined value.
+        /// The defined values are constrained by the given defined type.
+        /// </summary>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="name">The name the group member attribute. The attribute key will become the name with the whitespace removed.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> the group member attribute will appear in the group member list grid.</param>
+        /// <param name="isMultiValue">if set to <c>true</c> the attribute will allow multiple defined values to be set.</param>
+        /// <param name="isRequired">if set to <c>true</c> the attribute will be required to be set.</param>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="guid">The unique identifier of the attribute.</param>
+        /// <param name="isSystem">if set to <c>true</c> the attribute is considered a system attribute..</param>
+        public void AddGroupMemberAttributeDefinedValue( string groupGuid, string name, string description, int order, string defaultValue, bool isGridColumn, bool isMultiValue, bool isRequired, string definedTypeGuid, string guid, bool isSystem = true )
+        {
+            UpdateGroupMemberAttributeDefinedValue( groupGuid, name, description, order, defaultValue, isGridColumn, isMultiValue, isRequired, definedTypeGuid, guid, isSystem );
+        }
+
+        /// <summary>
+        /// Adds or updates a group member Attribute for the given group for storing a particular defined value.
+        /// The defined values are constrained by the given defined type.
+        /// </summary>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="name">The name the group member attribute. The attribute key will become the name with the whitespace removed.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> the group member attribute will appear in the group member list grid.</param>
+        /// <param name="isMultiValue">if set to <c>true</c> the attribute will allow multiple defined values to be set.</param>
+        /// <param name="isRequired">if set to <c>true</c> the attribute will be required to be set.</param>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="guid">The unique identifier of the attribute.</param>
+        /// <param name="isSystem">if set to <c>true</c> the attribute is considered a system attribute..</param>
+        public void UpdateGroupMemberAttributeDefinedValue( string groupGuid, string name, string description, int order, string defaultValue, bool isGridColumn, bool isMultiValue, bool isRequired, string definedTypeGuid, string guid, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+                -- Add group member attribute for a group that holds a particular defined value (constrained by a defined type).
+
+                DECLARE @GroupId int = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+                DECLARE @GroupMemberEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{9}')
+                DECLARE @DefinedValueFieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @GroupMemberEntityTypeId
+                    AND [EntityTypeQualifierColumn] = '{8}'
+                    AND [EntityTypeQualifierValue] = CONVERT(NVARCHAR, @GroupId)
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [IsGridColumn] = '{15}',
+                        [DefaultValue] = '{6}',
+                        [IsMultiValue] = '{10}',
+                        [IsRequired] = '{11}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @GroupMemberEntityTypeId
+                    AND [EntityTypeQualifierColumn] = '{8}'
+                    AND [EntityTypeQualifierValue] = CONVERT(NVARCHAR, @GroupId)
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN                
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid],[CreatedDateTime])
+                    VALUES(
+                        {12},@DefinedValueFieldTypeId,@GroupMemberEntityTypeId,'{8}',CONVERT(NVARCHAR, @GroupId),
+                        '{2}','{3}','{4}',
+                        {5},{15},'{6}',{10},{11},
+                        '{7}', GETDATE() )
+                END
+
+                -- Add/Update the 'allowmultiple' and 'definedtype' attribute qualifiers
+
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{7}')
+                DECLARE @DefinedTypeId int = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{13}')
+                
+                IF NOT EXISTS( SELECT 1 FROM [AttributeQualifier] WHERE [AttributeId] = @AttributeId AND [Key] = 'allowmultiple' )
+                BEGIN
+                    INSERT INTO [AttributeQualifier] (
+                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                    VALUES(
+                       {12},@AttributeId,'allowmultiple','{14}',NEWID() )
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET
+                        [Key] = 'allowmultiple',
+                        [Value] = '{14}'
+                    WHERE [AttributeId] = @AttributeId AND [Key] = 'allowmultiple'
+                END
+
+                IF NOT EXISTS( SELECT 1 FROM [AttributeQualifier] WHERE [AttributeId] = @AttributeId AND [Key] = 'definedtype' )
+                BEGIN
+                    INSERT INTO [AttributeQualifier] (
+                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                    VALUES(
+                       {12},@AttributeId,'definedtype',CONVERT(NVARCHAR, @DefinedTypeId),NEWID() )
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET
+                        [Key] = 'definedtype',
+                        [Value] = CONVERT(NVARCHAR, @DefinedTypeId)
+                    WHERE [AttributeId] = @AttributeId AND [Key] = 'definedtype'
+                END
+",
+                    groupGuid,
+                    Rock.SystemGuid.FieldType.DEFINED_VALUE,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue,
+                    guid,
+                    "GroupId",
+                    Rock.SystemGuid.EntityType.GROUP_MEMBER,
+                    ( isMultiValue ? "1" : "0" ),
+                    ( isRequired ? "1" : "0" ),
+                    ( isSystem ? "1" : "0" ),
+                    definedTypeGuid,
+                    ( isMultiValue ? "True" : "False" ),
+                    ( isGridColumn ? "1" : "0" )
+                    )
+            );
+        }
+
+        /// <summary>
+        /// Updates the Entity Attribute for the given EntityType, FieldType, and name (key).
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Migration.Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = '{8}'
+                    AND [EntityTypeQualifierValue] = '{9}'
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = '{8}'
+                    AND [EntityTypeQualifierValue] = '{9}'
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN                
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')
+                END
 ",
                     entityTypeName,
                     fieldTypeGuid,
@@ -1076,7 +1285,8 @@ namespace Rock.Data
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="value">The value.</param>
-        public void AddBlockAttributeValue( string blockGuid, string attributeGuid, string value )
+        /// <param name="appendToExisting">if set to <c>true</c> appends the value to the existing value instead of replacing.</param>
+        public void AddBlockAttributeValue( string blockGuid, string attributeGuid, string value, bool appendToExisting = false )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1085,6 +1295,19 @@ namespace Rock.Data
 
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                DECLARE @TheValue NVARCHAR(MAX) = '{2}'
+
+                -- If appendToExisting (and any current value exists), get the current value before we delete it...
+                IF 1 = {3} AND EXISTS (SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                BEGIN
+                    SET @TheValue = (SELECT [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                    -- If the new value is not in the old value, append it.
+                    IF CHARINDEX( '{2}', @TheValue ) = 0 
+                    BEGIN
+                        SET @TheValue = (SELECT @TheValue + ',' + '{2}' )
+                    END
+                END
 
                 -- Delete existing attribute value first (might have been created by Rock system)
                 DELETE [AttributeValue]
@@ -1097,12 +1320,13 @@ namespace Rock.Data
                     [Guid])
                 VALUES(
                     1,@AttributeId,@BlockId,
-                    0,'{2}',
+                    0,@TheValue,
                     NEWID())
 ",
                     blockGuid,
                     attributeGuid,
-                    value.Replace( "'", "''" )
+                    value.Replace( "'", "''" ),
+                    ( appendToExisting ? "1" : "0" )
                 )
             );
         }
@@ -1263,11 +1487,11 @@ namespace Rock.Data
         /// Adds a new DefinedValue for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        public void AddDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1279,7 +1503,7 @@ namespace Rock.Data
 
                 INSERT INTO [DefinedValue] (
                     [IsSystem],[DefinedTypeId],[Order],
-                    [Name],[Description],
+                    [Value],[Description],
                     [Guid])
                 VALUES(
                     {4},@DefinedTypeId,@Order,
@@ -1287,7 +1511,7 @@ namespace Rock.Data
                     '{3}')
 ",
                     definedTypeGuid,
-                    name,
+                    value,
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" )
@@ -1298,11 +1522,11 @@ namespace Rock.Data
         /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
 
@@ -1315,7 +1539,7 @@ namespace Rock.Data
                     SET 
                         [IsSystem] = {4}
                         ,[DefinedTypeId] = @DefinedTypeId
-                        ,[Name] = '{1}'
+                        ,[Value] = '{1}'
                         ,[Description] = '{2}'
                     WHERE
                         [Guid] = '{3}'
@@ -1329,7 +1553,7 @@ namespace Rock.Data
                         ([IsSystem]
                         ,[DefinedTypeId]
                         ,[Order]
-                        ,[Name]
+                        ,[Value]
                         ,[Description]
                         ,[Guid])
                     VALUES
@@ -1342,7 +1566,7 @@ namespace Rock.Data
                 END
 ",
                     definedTypeGuid,
-                    name.Replace( "'", "''" ),
+                    value.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" )
@@ -1353,11 +1577,11 @@ namespace Rock.Data
         /// Updates the name of the defined value by.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateDefinedValueByName( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
+        public void UpdateDefinedValueByValue( string definedTypeGuid, string value, string description, int order, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
 
@@ -1372,14 +1596,14 @@ namespace Rock.Data
                         ,[Description] = '{2}'
                         ,[Order] = {3}
                     WHERE [DefinedTypeId] = @DefinedTypeId
-                    AND [Name] = '{1}'
+                    AND [Value] = '{1}'
                 END
                 ELSE
                 BEGIN
                     INSERT INTO [DefinedValue]
                         ([IsSystem]
                         ,[DefinedTypeId]
-                        ,[Name]
+                        ,[Value]
                         ,[Description]
                         ,[Order]
                         ,[Guid])
@@ -1393,12 +1617,14 @@ namespace Rock.Data
                 END
 ",
                     definedTypeGuid,
-                    name.Replace( "'", "''" ),
+                    value.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     order,
                     ( isSystem ? "1" : "0" )
                     ) );
-        }        /// <summary>
+        }        
+        
+        /// <summary>
         /// Deletes the DefinedValue.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -1452,10 +1678,10 @@ namespace Rock.Data
         /// Adds the name of the defined value attribute value by.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
-        /// <param name="definedValueName">Name of the defined value.</param>
+        /// <param name="definedValueValue">The defined value value.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="value">The value.</param>
-        public void AddDefinedValueAttributeValueByName( string definedTypeGuid, string definedValueName, string attributeKey, string value )
+        public void AddDefinedValueAttributeValueByValue( string definedTypeGuid, string definedValueValue, string attributeKey, string value )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1463,7 +1689,7 @@ namespace Rock.Data
                 SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
 
                 DECLARE @DefinedValueId int
-                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Value] = '{1}' )
 
                 DECLARE @AttributeId int
                 SET @AttributeId = (
@@ -1489,7 +1715,7 @@ namespace Rock.Data
                     NEWID())
 ",
                     definedTypeGuid,
-                    definedValueName,
+                    definedValueValue,
                     attributeKey,
                     value.Replace( "'", "''" )
                 )
@@ -1864,13 +2090,38 @@ INSERT INTO [dbo].[Auth]
         #region Group Type
 
         /// <summary>
-        /// Updates the GroupType for the given guid (if it exists); otherwise it inserts a new record.
+        /// Adds or Updates the GroupType for the given guid (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="groupTerm">The group term.</param>
         /// <param name="groupMemberTerm">The group member term.</param>
-        /// <param name="defaultGroupRoleGuid">The default group role unique identifier.</param>
+        /// <param name="allowMultipleLocations">if set to <c>true</c> [allow multiple locations].</param>
+        /// <param name="showInGroupList">if set to <c>true</c> [show in group list].</param>
+        /// <param name="showInNavigation">if set to <c>true</c> [show in navigation].</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="inheritedGroupTypeGuid">The inherited group type unique identifier.</param>
+        /// <param name="locationSelectionMode">The location selection mode.</param>
+        /// <param name="groupTypePurposeValueGuid">The group type purpose value unique identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void AddGroupType( string name, string description, string groupTerm, string groupMemberTerm, bool allowMultipleLocations,
+            bool showInGroupList, bool showInNavigation, string iconCssClass, int order, string inheritedGroupTypeGuid, int locationSelectionMode, string groupTypePurposeValueGuid,
+            string guid, bool isSystem = true )
+        {
+            UpdateGroupType( name, description, groupTerm, groupMemberTerm, null, allowMultipleLocations, showInGroupList, showInNavigation, 
+                iconCssClass, order, inheritedGroupTypeGuid, locationSelectionMode, groupTypePurposeValueGuid, guid, isSystem );
+        }
+
+        /// <summary>
+        /// Adds or Updates the GroupType for the given guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="groupTerm">The group term.</param>
+        /// <param name="groupMemberTerm">The group member term.</param>
+        /// <param name="defaultGroupRoleGuid">The guid for default group role. If you don't have a role yet, use 'null' and then use the <see cref="MigrationHelper.UpdateGroupTypeRole"/> method later when creating the new role.</param>
         /// <param name="allowMultipleLocations">if set to <c>true</c> [allow multiple locations].</param>
         /// <param name="showInGroupList">if set to <c>true</c> [show in group list].</param>
         /// <param name="showInNavigation">if set to <c>true</c> [show in navigation].</param>
@@ -1974,9 +2225,28 @@ INSERT INTO [dbo].[Auth]
                     ( groupTypePurposeValueGuid == null ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
             ) );
         }
+        
+        /// <summary>
+        /// Adds or Updates the GroupTypeRole for the given guid (if it exists); otherwise it inserts a new record.  Can also set the
+        /// role as the default for the given GroupType if isDefaultGroupTypeRole is set to true.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="name">The name of the role.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="maxCount">The maximum count.</param>
+        /// <param name="minCount">The minimum count.</param>
+        /// <param name="guid">The unique identifier of the group type role.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="isLeader">if set to <c>true</c> [is leader].</param>
+        /// <param name="isDefaultGroupTypeRole">if set to <c>true</c> the role will be set as the default role for the given group type.</param>
+        public void AddGroupTypeRole( string groupTypeGuid, string name, string description, int order, int? maxCount, int? minCount, string guid, bool isSystem = true, bool isLeader = false, bool isDefaultGroupTypeRole = false )
+        {
+            UpdateGroupTypeRole( groupTypeGuid, name, description, order, maxCount, minCount, guid, isSystem, isLeader, isDefaultGroupTypeRole );
+        }
 
         /// <summary>
-        /// Updates the GroupTypeRole for the given guid (if it exists); otherwise it inserts a new record.  Can also set the
+        /// Adds or Updates the GroupTypeRole for the given guid (if it exists); otherwise it inserts a new record.  Can also set the
         /// role as the default for the given GroupType if isDefaultGroupTypeRole is set to true.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
@@ -3128,5 +3398,197 @@ INSERT INTO [dbo].[Auth]
 
         #endregion
 
+        #region Deprecated Methods
+
+        /// <summary>
+        /// Adds a new DefinedValue for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void AddDefinedValue_pre20140819( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                INSERT INTO [DefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Name],[Description],
+                    [Guid])
+                VALUES(
+                    {4},@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    '{3}')
+",
+                    definedTypeGuid,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates (or Adds) the defined value for the given DefinedType.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateDefinedValue_pre20140819( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                        [IsSystem] = {4}
+                        ,[DefinedTypeId] = @DefinedTypeId
+                        ,[Name] = '{1}'
+                        ,[Description] = '{2}'
+                    WHERE
+                        [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    DECLARE @Order int
+                    SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Order]
+                        ,[Name]
+                        ,[Description]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,@Order
+                        ,'{1}'
+                        ,'{2}'
+                        ,'{3}')
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    guid,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates the name of the defined value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateDefinedValueByName_pre20140819( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                         [IsSystem] = {4}
+                        ,[Description] = '{2}'
+                        ,[Order] = {3}
+                    WHERE [DefinedTypeId] = @DefinedTypeId
+                    AND [Name] = '{1}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Name]
+                        ,[Description]
+                        ,[Order]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,'{1}'
+                        ,'{2}'
+                        ,{3}
+                        ,NEWID())
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    order,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the name of the defined value attribute value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="definedValueName">Name of the defined value.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        public void AddDefinedValueAttributeValueByName_pre20140819( string definedTypeGuid, string definedValueName, string attributeKey, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @DefinedValueId int
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{2}'
+                )
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @DefinedValueId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@DefinedValueId,
+                    0,'{3}',
+                    NEWID())
+",
+                    definedTypeGuid,
+                    definedValueName,
+                    attributeKey,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
+        #endregion
     }
 }

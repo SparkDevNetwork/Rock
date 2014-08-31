@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
             BlockTypeCache blockType = null;
             if ( cacheObj != null )
             {
-                blockType = Read( (int)cacheObj );
+                blockType = Read( (int)cacheObj, rockContext );
             }
 
             if ( blockType == null )

@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Finance
             FinancialPledge pledge;
             var rockContext = new RockContext();
             var pledgeService = new FinancialPledgeService( rockContext );
-            var pledgeId = int.Parse( hfPledgeId.Value );
+            var pledgeId = hfPledgeId.Value.AsInteger();
 
             if ( pledgeId == 0 )
             {
@@ -70,12 +70,13 @@ namespace RockWeb.Blocks.Finance
             }
 
             pledge.PersonId = ppPerson.PersonId;
-            pledge.AccountId = int.Parse( fpFund.SelectedValue );
-            pledge.TotalAmount = decimal.Parse( tbAmount.Text );
+            pledge.AccountId = fpFund.SelectedValue.AsIntegerOrNull();
+            pledge.TotalAmount = tbAmount.Text.AsDecimal();
 
-            pledge.StartDate = dpDateRange.LowerValue.Value;
-            pledge.EndDate = dpDateRange.UpperValue.Value;
-            pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
+            pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
+
+            pledge.PledgeFrequencyValueId = ddlFrequencyType.SelectedValue.AsIntegerOrNull();
 
             if ( !pledge.IsValid )
             {

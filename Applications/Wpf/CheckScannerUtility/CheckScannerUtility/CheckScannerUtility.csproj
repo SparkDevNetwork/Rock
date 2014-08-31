@@ -117,9 +117,12 @@
     </Compile>
     <Compile Include="RangerTypes.cs" />
     <Compile Include="RockConfig.cs" />
-    <Compile Include="ScannedCheckInfo.cs" />
+    <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
       <DependentUpon>ScanningPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScanningPromptPage.xaml.cs">
+      <DependentUpon>ScanningPromptPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ZeroCurrencyConverter.cs" />
     <Page Include="BatchItemDetailPage.xaml">
@@ -165,6 +168,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ScanningPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScanningPromptPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

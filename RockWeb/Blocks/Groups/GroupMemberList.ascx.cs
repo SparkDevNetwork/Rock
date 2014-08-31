@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Groups
                 cblRole.DataBind();
             }
 
-            cblStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            cblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         /// <summary>

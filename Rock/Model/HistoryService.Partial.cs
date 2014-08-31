@@ -30,6 +30,69 @@ namespace Rock.Model
     public partial class HistoryService
     {
         /// <summary>
+        /// Adds the changes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="changes">The changes.</param>
+        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes )
+        {
+            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null );
+        }
+        
+        /// <summary>
+        /// Adds the changes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="changes">The changes.</param>
+        /// <param name="caption">The caption.</param>
+        /// <param name="relatedModelType">Type of the related model.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
+        {
+            var entityType = EntityTypeCache.Read( modelType );
+            var category = CategoryCache.Read( categoryGuid );
+            var creationDate = RockDateTime.Now;
+
+            int? relatedEntityTypeId = null;
+            if ( relatedModelType != null )
+            {
+                var relatedEntityType = EntityTypeCache.Read( relatedModelType );
+                if ( relatedModelType != null )
+                {
+                    relatedEntityTypeId = relatedEntityType.Id;
+                }
+            }
+
+            if ( entityType != null && category != null )
+            {
+                var historyService = new HistoryService( rockContext );
+
+                foreach ( string message in changes.Where( m => m != null && m != "" ) )
+                {
+                    var history = new History();
+                    history.EntityTypeId = entityType.Id;
+                    history.CategoryId = category.Id;
+                    history.EntityId = entityId;
+                    history.Caption = caption;
+                    history.Summary = message;
+                    history.RelatedEntityTypeId = relatedEntityTypeId;
+                    history.RelatedEntityId = relatedEntityId;
+
+                    // Manually set creation date on these history items so that they will be grouped together
+                    history.CreatedDateTime = creationDate;
+
+                    historyService.Add( history );
+                }
+            }
+        }
+
+        /// <summary>
         /// Saves a list of history messages.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -55,43 +118,9 @@ namespace Rock.Model
         /// <param name="relatedEntityId">The related entity identifier.</param>
         public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
         {
-            var entityType = EntityTypeCache.Read(modelType);
-            var category = CategoryCache.Read(categoryGuid);
-            var creationDate = RockDateTime.Now;
+            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId );
 
-            int? relatedEntityTypeId = null;
-            if (relatedModelType != null)
-            {
-                var relatedEntityType = EntityTypeCache.Read(relatedModelType);
-                if (relatedModelType != null)
-                {
-                    relatedEntityTypeId = relatedEntityType.Id;
-                }
-            }
-
-            if (entityType != null && category != null)
-            {
-                var historyService = new HistoryService(rockContext);
-
-                foreach ( string message in changes.Where( m => m != null && m != "" ) )
-                {
-                    var history = new History();
-                    history.EntityTypeId = entityType.Id;
-                    history.CategoryId = category.Id;
-                    history.EntityId = entityId;
-                    history.Caption = caption;
-                    history.Summary = message;
-                    history.RelatedEntityTypeId = relatedEntityTypeId;
-                    history.RelatedEntityId = relatedEntityId;
-
-                    // Manually set creation date on these history items so that they will be grouped together
-                    history.CreatedDateTime = creationDate;
-
-                    historyService.Add( history );
-                }
-
-                rockContext.SaveChanges();
-            }
+            rockContext.SaveChanges();
         }
     }
 }

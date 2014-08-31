@@ -15,28 +15,21 @@
                 	    <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
                 	    <Rock:PersonPicker ID="ppInitiator" runat="server" Label="Initiator" />
                 	    <Rock:RockTextBox ID="tbStatus" runat="server" Label="Status Text"></Rock:RockTextBox>
-                	    <Rock:RockDropDownList ID="ddlState" runat="server" Label="State">
-                    	    <asp:ListItem Text="All" Value="" />
-                    	    <asp:ListItem Text="Active" Value="0" />
-                   	     <asp:ListItem Text="Completed" Value="1" />
-                 	    </Rock:RockDropDownList>
                 	    <Rock:DateRangePicker ID="drpActivated" runat="server" Label="Activated" />
 	                    <Rock:DateRangePicker ID="drpCompleted" runat="server" Label="Completed" />
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
+                            <asp:ListItem Selected="True" Text="Active" Value="Active" />
+                            <asp:ListItem Selected="True" Text="Completed" Value="Completed" />
+                        </Rock:RockCheckBoxList>
 	                </Rock:GridFilter>
 
 	                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-	                <Rock:Grid ID="gWorkflows" runat="server" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
+	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
 	                    <Columns>
 	                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-	                        <asp:BoundField DataField="InitiatorPersonAlias.Person.FullName" HeaderText="Initiated By" SortExpression="InitiatorPersonAlias.Person.FullName" />
-	                        <asp:BoundField DataField="Status" HeaderText="Status Text" SortExpression="Status" />
-	                        <asp:TemplateField ItemStyle-Wrap="false">
-	                            <HeaderTemplate>Active Activities</HeaderTemplate>
-	                            <ItemTemplate>
-	                                <asp:Literal ID="lActivities" runat="server"></asp:Literal>
-	                            </ItemTemplate>
-	                        </asp:TemplateField>
+	                        <asp:BoundField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
+                            <asp:BoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
 	                    </Columns>
     	            </Rock:Grid>
                 </div>

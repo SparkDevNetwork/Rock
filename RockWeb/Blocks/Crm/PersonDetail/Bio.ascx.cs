@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -39,21 +40,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
     [PersonBadgesField("Badges", "The label badges to display in this block.", false, "", "", 0)]
-    [CodeEditorField("Actions", @"
-Custom html content to display as a list of actions. Any instance of '{0}' will be replaced with the current person's id.
+    [WorkflowTypeField("Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1)]
+    [CodeEditorField("Additional Custom Actions", @"
+Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
 <pre>
-    &lt;li&gt;
-        &lt;a href='~/LaunchWorkflow/1?PersonId={0}' tabindex='0'&gt;First Action&lt;/a&gt;
-        &lt;a href='~/LaunchWorkflow/2?PersonId={0}' tabindex='0'&gt;Second Action&lt;/a&gt;
-        &lt;a href='~/LaunchWorkflow/3?PersonId={0}' tabindex='0'&gt;Third Action&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class='divider'&gt;&lt;/li&gt;
     &lt;li&gt;&lt;a href='~/LaunchWorkflow/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
-", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1 )]
-    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 2 )]
+", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
+    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -103,27 +99,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             }
                         }
                     }
-                }
-
-                var actions = GetAttributeValue( "Actions" );
-                if (!string.IsNullOrWhiteSpace(actions))
-                {
-                    ulActions.Visible = true;
-
-                    string appRoot = ResolveRockUrl( "~/" );
-                    string themeRoot = ResolveRockUrl( "~~/" );
-                    actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    if ( actions.Contains( "{0}" ) )
-                    {
-                        actions = string.Format( actions, Person.Id );
-                    }
-
-                    lActions.Text = actions;
-                }
-                else
-                {
-                    ulActions.Visible = false;
                 }
             }
 
@@ -226,6 +201,46 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     taglPersonTags.EntityGuid = Person.Guid;
                     taglPersonTags.GetTagValues( CurrentPersonId );
 
+                    StringBuilder sbActions = new StringBuilder();
+                    var workflowActions = GetAttributeValue( "WorkflowActions" );
+                    if ( !string.IsNullOrWhiteSpace( workflowActions ) )
+                    {
+                        var workflowTypeService = new WorkflowTypeService( rockContext );
+                        foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            Guid? guid = guidValue.AsGuidOrNull();
+                            if ( guid.HasValue )
+                            {
+                                var workflowType = workflowTypeService.Get( guid.Value );
+                                if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+                                {
+                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                                    sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
+                                        ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
+                                    sbActions.AppendLine();
+                                }
+                            }
+                        }
+                    }
+
+                    var actions = GetAttributeValue( "Actions" );
+                    if ( !string.IsNullOrWhiteSpace( actions ) )
+                    {
+                        string appRoot = ResolveRockUrl( "~/" );
+                        string themeRoot = ResolveRockUrl( "~~/" );
+                        actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                        if ( actions.Contains( "{0}" ) )
+                        {
+                            actions = string.Format( actions, Person.Id );
+                        }
+
+                        sbActions.Append(actions);
+                    }
+
+                    lActions.Text = sbActions.ToString();
+                    ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
+                  
                     // Every person should have an alias record with same id.  If it's missing, create it
                     if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                     {

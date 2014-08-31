@@ -62,13 +62,14 @@ namespace Rock.Data
         /// <returns></returns>
         private static string GetTypeKey( Dictionary<string, Type> fields )
         {
+            // class name must be unique, but can't be more than 1024 chars long.  Show generate a hash using the Fields
             string key = string.Empty;
             foreach ( var field in fields )
             {
                 key += field.Key + ";" + field.Value.Name + ";";
             }
-
-            return key;
+            
+            return "LinqRuntimeType" + key.GetHashCode();
         }
 
         /// <summary>

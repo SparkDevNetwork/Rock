@@ -371,7 +371,7 @@ namespace Rock.Web.Cache
             EntityTypeCache entityType = null;
             if ( cacheObj != null )
             {
-                entityType = Read( (int)cacheObj );
+                entityType = Read( (int)cacheObj, rockContext );
             }
 
             if ( entityType == null )

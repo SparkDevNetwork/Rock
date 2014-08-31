@@ -51,7 +51,7 @@
                             </div> 
                     
                             <div class="pull-right">
-                                <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                             </div>
 
                             <asp:CustomValidator ID="valRecipients" runat="server" OnServerValidate="valRecipients_ServerValidate" Display="None" ErrorMessage="At least one recipient is required." />
@@ -84,8 +84,11 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
+                        <asp:LinkButton ID="btnTest" runat="server" Text="Send Test" CssClass="btn btn-link" OnClick="btnTest_Click" />
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-link" OnClick="btnSave_Click" />
                     </div>
+
+                    <Rock:NotificationBox ID="nbTestResult" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
 
                 </asp:Panel>
 

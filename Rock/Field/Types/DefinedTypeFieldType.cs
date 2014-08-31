@@ -72,7 +72,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var definedType in definedTypes )
                 {
-                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString().ToUpper() ) );
                 }
                 return editControl;
             }
@@ -105,7 +105,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                    ( (ListControl)control ).SelectedValue = value.ToUpper();
             }
         }
 

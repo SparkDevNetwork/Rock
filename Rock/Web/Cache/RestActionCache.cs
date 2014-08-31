@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
             RestActionCache restAction = null;
             if ( cacheObj != null )
             {
-                restAction = Read( (int)cacheObj );
+                restAction = Read( (int)cacheObj, rockContext );
             }
 
             if ( restAction == null )

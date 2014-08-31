@@ -2,19 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <!-- TODO talk about this... -->
-        <style>
-            .check-image {
-                max-width: 500px;
-                margin: 5px;
-            }
-
-            .check-image-thumbnail {
-                max-width: 100px;
-                margin: 5px;
-            }
-        </style>
-
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
         <asp:HiddenField ID="hfHistoryPosition" runat="server" />
         <asp:HiddenField ID="hfTransactionId" runat="server" />
@@ -30,21 +17,28 @@
                 <Rock:HighlightLabel ID="hlRemainingCount" runat="server" />
             </div>
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched checks in this batch." />
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch." />
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbNoCheckImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Check Images found for this transaction." />
-                            <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This check is getting processed by ...." />
+                            <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
+                            <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
                             <Rock:NotificationBox ID="nbNoMicrWarning" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to determine Checking Account Number" />
-                            <asp:Image ID="imgCheck" runat="server" CssClass="check-image" AlternateText="Unable to display check. Verify that user is authorized to view Check Images." />
-                            <br />
-                            <asp:Image ID="imgCheckOtherSideThumbnail" runat="server" CssClass="check-image-thumbnail" ToolTip="Click to toggle" onclick="javascript: toggleCheckImages();" />
+                            <div>
+                                <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
+                            </div>
+                            <div>
+                                <asp:Repeater ID="rptrImages" runat="server">
+                                    <ItemTemplate>
+                                        <asp:Image ID="imgOther" ImageUrl='<%# ImageUrl( (int)Eval("BinaryFileId") ) %>' runat="server" CssClass="transaction-image-thumbnail" ToolTip="Click to toggle" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-4">
-                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                 </div>
 
                                 <div class="col-md-8">
@@ -61,7 +55,7 @@
                                                 <ItemTemplate>
                                                     <li class="address clearfix">
 
-                                                        <strong><%# Eval("GroupLocationTypeValue.Name") %></strong>
+                                                        <strong><%# Eval("GroupLocationTypeValue.Value") %></strong>
                                                         <p>
                                                             <%# Eval("Location.FormattedHtmlAddress") %>
                                                         </p>
@@ -78,9 +72,9 @@
                             <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Help="If the person isn't in the system yet, click this to add a new family." Visible="false">
                                 <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
                             </Rock:RockControlWrapper>
-                            <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the checking account." />
+                            <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." />
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
-                            <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
+                            <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
                                         <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeyup="javascript: updateRemainingAccountAllocation()" />
@@ -89,7 +83,7 @@
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
-                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the check." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
+                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the transaction image." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
 
                         </div>
                     </div>
@@ -120,26 +114,18 @@
         <script>
             function updateRemainingAccountAllocation() {
                 // do currency math in Cents instead of Dollars to avoid floating point math issues
-                var checkTotalAmountCents = null;
+                var transactionTotalAmountCents = null;
 
                 $('#<%=pnlView.ClientID%> .js-account-amount :input').each(function (index, elem) {
                     var accountAmountDollar = $(elem).val();
                     if (!isNaN(accountAmountDollar) && accountAmountDollar != "") {
-                        checkTotalAmountCents = (checkTotalAmountCents || 0.00) + Number(accountAmountDollar) * 100;
+                        transactionTotalAmountCents = (transactionTotalAmountCents || 0.00) + Number(accountAmountDollar) * 100;
                     }
                 });
 
-                var checkTotalAmountDollars = checkTotalAmountCents != null ? (checkTotalAmountCents / 100).toFixed(2) : null;
+                var transactionTotalAmountDollars = transactionTotalAmountCents != null ? (transactionTotalAmountCents / 100).toFixed(2) : null;
 
-                $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val(checkTotalAmountDollars);
-            }
-
-            function toggleCheckImages() {
-                var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
-                var image2src = $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src");
-
-                $('#<%=imgCheck.ClientID%>').attr("src", image2src);
-                $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src", image1src);
+                $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val(transactionTotalAmountDollars);
             }
 
             Sys.Application.add_load(function () {

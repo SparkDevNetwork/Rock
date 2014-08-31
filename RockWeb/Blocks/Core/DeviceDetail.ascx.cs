@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Core
             ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
+            ddlPrintFrom.BindToEnum<PrintFrom>();
 
             ddlPrinter.Items.Clear();
             ddlPrinter.DataSource = new DeviceService( new RockContext() )

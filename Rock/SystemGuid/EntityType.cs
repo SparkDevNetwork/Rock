@@ -60,5 +60,15 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.Schedule entity
         /// </summary>
         public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.WorkflowType entity
+        /// </summary>
+        public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.GroupMember entity.
+        /// </summary>
+        public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
     }
 }

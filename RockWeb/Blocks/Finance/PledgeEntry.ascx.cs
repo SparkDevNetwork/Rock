@@ -216,10 +216,10 @@ namespace RockWeb.Blocks.Finance
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
             bddlFrequency.Items.Clear();
-            var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name );
+            var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
             foreach ( var frequency in frequencies )
             {
-                bddlFrequency.Items.Add( new ListItem( frequency.Name, frequency.Id.ToString() ) );
+                bddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
             }
 
             bddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;

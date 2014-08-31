@@ -27,15 +27,13 @@ namespace Rock.Wpf
 {
     public static class WpfHelper
     {
-
-        // <summary>
-        /// Toggles the fade.
+        /// <summary>
+        /// Does a FadeIn of the control
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="speed">The speed.</param>
         public static void FadeIn( Control control, int speed = 0 )
         {
-            // TODO Move this to a shared dll
             control.Opacity = 0;
             control.Visibility = Visibility.Visible;
             Storyboard storyboard = new Storyboard();
@@ -48,13 +46,12 @@ namespace Rock.Wpf
         }
 
         /// <summary>
-        /// Fades the out.
+        /// Does a FadeOut of the control
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="speed">The speed.</param>
         public static void FadeOut( Control control, int speed = 2000 )
         {
-            // TODO Move this to a shared dll
             Storyboard storyboard = new Storyboard();
             TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
             DoubleAnimation fadeOutAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration( duration ) };

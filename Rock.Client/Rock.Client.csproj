@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6EA64BB9-9740-453A-939B-DF43AD9AC164}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rock.Client</RootNamespace>
+    <AssemblyName>Rock.Client</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CodeGenerated\Attendance.cs" />
+    <Compile Include="CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="CodeGenerated\Attribute.cs" />
+    <Compile Include="CodeGenerated\AttributeQualifier.cs" />
+    <Compile Include="CodeGenerated\AttributeValue.cs" />
+    <Compile Include="CodeGenerated\Audit.cs" />
+    <Compile Include="CodeGenerated\AuditDetail.cs" />
+    <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\BinaryFile.cs" />
+    <Compile Include="CodeGenerated\BinaryFileData.cs" />
+    <Compile Include="CodeGenerated\BinaryFileType.cs" />
+    <Compile Include="CodeGenerated\Block.cs" />
+    <Compile Include="CodeGenerated\BlockType.cs" />
+    <Compile Include="CodeGenerated\Campus.cs" />
+    <Compile Include="CodeGenerated\Category.cs" />
+    <Compile Include="CodeGenerated\Communication.cs" />
+    <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
+    <Compile Include="CodeGenerated\CommunicationRecipientActivity.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="CodeGenerated\DataView.cs" />
+    <Compile Include="CodeGenerated\DataViewFilter.cs" />
+    <Compile Include="CodeGenerated\DefinedType.cs" />
+    <Compile Include="CodeGenerated\DefinedValue.cs" />
+    <Compile Include="CodeGenerated\Device.cs" />
+    <Compile Include="CodeGenerated\EntityType.cs" />
+    <Compile Include="CodeGenerated\ExceptionLog.cs" />
+    <Compile Include="CodeGenerated\FieldType.cs" />
+    <Compile Include="CodeGenerated\FinancialAccount.cs" />
+    <Compile Include="CodeGenerated\FinancialBatch.cs" />
+    <Compile Include="CodeGenerated\FinancialPersonBankAccount.cs" />
+    <Compile Include="CodeGenerated\FinancialPersonSavedAccount.cs" />
+    <Compile Include="CodeGenerated\FinancialPledge.cs" />
+    <Compile Include="CodeGenerated\FinancialScheduledTransaction.cs" />
+    <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionImage.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionRefund.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
+    <Compile Include="CodeGenerated\Following.cs" />
+    <Compile Include="CodeGenerated\Group.cs" />
+    <Compile Include="CodeGenerated\GroupLocation.cs" />
+    <Compile Include="CodeGenerated\GroupMember.cs" />
+    <Compile Include="CodeGenerated\GroupType.cs" />
+    <Compile Include="CodeGenerated\GroupTypeRole.cs" />
+    <Compile Include="CodeGenerated\History.cs" />
+    <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\Layout.cs" />
+    <Compile Include="CodeGenerated\Location.cs" />
+    <Compile Include="CodeGenerated\MarketingCampaign.cs" />
+    <Compile Include="CodeGenerated\MarketingCampaignAd.cs" />
+    <Compile Include="CodeGenerated\MarketingCampaignAdType.cs" />
+    <Compile Include="CodeGenerated\MarketingCampaignAudience.cs" />
+    <Compile Include="CodeGenerated\MarketingCampaignCampus.cs" />
+    <Compile Include="CodeGenerated\Metric.cs" />
+    <Compile Include="CodeGenerated\MetricCategory.cs" />
+    <Compile Include="CodeGenerated\MetricValue.cs" />
+    <Compile Include="CodeGenerated\Note.cs" />
+    <Compile Include="CodeGenerated\NoteType.cs" />
+    <Compile Include="CodeGenerated\Page.cs" />
+    <Compile Include="CodeGenerated\PageContext.cs" />
+    <Compile Include="CodeGenerated\PageRoute.cs" />
+    <Compile Include="CodeGenerated\PageView.cs" />
+    <Compile Include="CodeGenerated\Person.cs" />
+    <Compile Include="CodeGenerated\PersonAlias.cs" />
+    <Compile Include="CodeGenerated\PersonBadge.cs" />
+    <Compile Include="CodeGenerated\PersonViewed.cs" />
+    <Compile Include="CodeGenerated\PhoneNumber.cs" />
+    <Compile Include="CodeGenerated\PluginMigration.cs" />
+    <Compile Include="CodeGenerated\PrayerRequest.cs" />
+    <Compile Include="CodeGenerated\Report.cs" />
+    <Compile Include="CodeGenerated\ReportField.cs" />
+    <Compile Include="CodeGenerated\RestAction.cs" />
+    <Compile Include="CodeGenerated\RestController.cs" />
+    <Compile Include="CodeGenerated\Schedule.cs" />
+    <Compile Include="CodeGenerated\ServiceJob.cs" />
+    <Compile Include="CodeGenerated\ServiceLog.cs" />
+    <Compile Include="CodeGenerated\Site.cs" />
+    <Compile Include="CodeGenerated\SiteDomain.cs" />
+    <Compile Include="CodeGenerated\SystemEmail.cs" />
+    <Compile Include="CodeGenerated\Tag.cs" />
+    <Compile Include="CodeGenerated\TaggedItem.cs" />
+    <Compile Include="CodeGenerated\UserLogin.cs" />
+    <Compile Include="CodeGenerated\Workflow.cs" />
+    <Compile Include="CodeGenerated\WorkflowAction.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionForm.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormAttribute.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionType.cs" />
+    <Compile Include="CodeGenerated\WorkflowActivity.cs" />
+    <Compile Include="CodeGenerated\WorkflowActivityType.cs" />
+    <Compile Include="CodeGenerated\WorkflowLog.cs" />
+    <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
+    <Compile Include="CodeGenerated\WorkflowType.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

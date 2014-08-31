@@ -116,10 +116,14 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                string peopleIds = PageParameter( "People" );
-                if ( !string.IsNullOrWhiteSpace( peopleIds ) )
+                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                if (setId.HasValue)
                 {
-                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger() ).ToList();
+                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                        .GetByEntitySetId( setId.Value )
+                        .Select( i => i.EntityId )
+                        .Distinct()
+                        .ToList();
 
                     // Get the people selected
                     var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
@@ -540,7 +544,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     sbHeaderData.AppendFormat( " <span class='merge-heading-location'>{0}{1}</span>",
                         loc.Location.ToStringSafe(),
-                        ( showType ? " (" + loc.GroupLocationTypeValue.Name + ")" : "" ) );
+                        ( showType ? " (" + loc.GroupLocationTypeValue.Value + ")" : "" ) );
                 }
 
                 sbHeaderData.Append( "</div>" );
@@ -756,11 +760,11 @@ namespace RockWeb.Blocks.Crm
                     var phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                     if ( phoneNumber != null )
                     {
-                        AddProperty( key, phoneType.Name, person.Id, phoneNumber.Number, phoneNumber.ToString() );
+                        AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.ToString() );
                     }
                     else
                     {
-                        AddProperty( key, phoneType.Name, person.Id, string.Empty, string.Empty );
+                        AddProperty( key, phoneType.Value, person.Id, string.Empty, string.Empty );
                     }
                 }
             }
@@ -996,7 +1000,7 @@ namespace RockWeb.Blocks.Crm
                 property.Values.Add( propertyValue );
             }
             propertyValue.Value = value != null ? value.Id.ToString() : string.Empty;
-            propertyValue.FormattedValue = value != null ? value.Name : string.Empty;
+            propertyValue.FormattedValue = value != null ? value.Value : string.Empty;
             propertyValue.Selected = selected;
         }
 
