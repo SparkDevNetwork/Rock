@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Crm
 
                 var campusi = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
                 cpCampus.Campuses = campusi;
-                cpCampus.Required = false;
+                cpCampus.Required = true;
 
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
@@ -372,6 +372,17 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the ServerValidate event of the cvSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
+        protected void cvSelection_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
+            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ); 
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -484,7 +495,7 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Review Reason Note", newReviewReasonNote );
                 }
 
-                if ( SelectedFields.Contains( ddlFollow.ClientID ) )
+                if ( SelectedFields.Contains( cpCampus.ClientID ) )
                 {
                     int? newCampusId = cpCampus.SelectedCampusId;
                     if ( newCampusId.HasValue )
@@ -492,7 +503,7 @@ namespace RockWeb.Blocks.Crm
                         var campus = CampusCache.Read(newCampusId.Value);
                         if ( campus != null )
                         {
-                            EvaluateChange( changes, "Family Campus", campus.Name );
+                            EvaluateChange( changes, "Campus (for all family members)", campus.Name );
                         }
                     }
                 }
@@ -578,8 +589,8 @@ namespace RockWeb.Blocks.Crm
 
                 if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null )
                 {
-                    changes.Add( string.Format( "Add a <span class='field-name'>{0}Note{1}</span> of <span class='field-value'>{2}</span>.",
-                        ( cbIsPrivate.Checked ? "Private " : "" ), ( cbIsAlert.Checked ? " (Alert)" : "" ), tbNote.Text.EscapeQuotes().ConvertCrLfToHtmlBr() ) );
+                    changes.Add( string.Format( "Add a <span class='field-name'>{0}Note{1}</span> of <p><span class='field-value'>{2}</span></p>.",
+                        ( cbIsPrivate.Checked ? "Private " : "" ), ( cbIsAlert.Checked ? " (Alert)" : "" ), tbNote.Text.ConvertCrLfToHtmlBr() ) );
                 }
 
                 #endregion
@@ -587,7 +598,7 @@ namespace RockWeb.Blocks.Crm
                 #region Group
 
                 int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
-                if ( groupId.HasValue )
+                if ( groupId.HasValue && groupId > 0 )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     if ( group != null )
@@ -649,9 +660,9 @@ namespace RockWeb.Blocks.Crm
                 sb.AppendFormat( "<p>You are about to make the following updates to {0} individuals:</p>", Individuals.Count().ToString( "N0" ) );
                 sb.AppendLine();
 
-                sb.AppendLine( "<ul>" );
+                sb.AppendLine( "<ol>" );
                 changes.ForEach( c => sb.AppendFormat("<li>{0}</li>\n", c));
-                sb.AppendLine( "</ul>" );
+                sb.AppendLine( "</ol>" );
 
                 sb.AppendLine( "<p>Please confirm that you want to make these updates.</p>");
 
@@ -825,6 +836,44 @@ namespace RockWeb.Blocks.Crm
                             History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, newReviewReasonNote );
                             person.ReviewReasonNote = newReviewReasonNote;
                         }
+                    }
+
+                    if ( SelectedFields.Contains( cpCampus.ClientID ) && cpCampus.SelectedCampusId.HasValue )
+                    {
+                        int campusId = cpCampus.SelectedCampusId.Value;
+
+                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+                        var familyMembers = new GroupMemberService( rockContext ).Queryable()
+                            .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                            .Select( m => new { m.PersonId, m.GroupId })
+                            .Distinct()
+                            .ToList();
+
+                        var families = new GroupMemberService( rockContext ).Queryable()
+                            .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                            .Select( m => m.Group )
+                            .Distinct()
+                            .ToList();
+
+                        foreach (int personId in ids)
+                        {
+                            var familyIds = familyMembers.Where( m => m.PersonId == personId ).Select( m => m.GroupId ).ToList();
+                            if (familyIds.Count == 1)
+                            {
+                                int familyId = familyIds.FirstOrDefault();
+                                var family = families.Where( g => g.Id == familyId).FirstOrDefault();
+                                {
+                                    if (family != null)
+                                    {
+                                        family.CampusId = campusId;
+                                    }
+                                    familyMembers.RemoveAll( m => m.GroupId == familyId );
+                                }
+                            }
+                        }
+
+                        rockContext.SaveChanges();
                     }
 
                     // Update following
@@ -1041,6 +1090,7 @@ namespace RockWeb.Blocks.Crm
                             if ( action == "Remove" )
                             {
                                 groupMemberService.DeleteRange( existingMembers );
+                                rockContext.SaveChanges();
                             }
                             else
                             {

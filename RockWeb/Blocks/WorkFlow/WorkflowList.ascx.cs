@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            if ( _workflowType != null )
+            if ( _workflowType != null && _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
                 gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;
@@ -69,11 +69,8 @@ namespace RockWeb.Blocks.WorkFlow
                 gWorkflows.Actions.ShowAdd = true;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
                 gWorkflows.GridRebind += gWorkflows_GridRebind;
-
-                // Block Security and special attributes (RockPage takes care of View)
-                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-                gWorkflows.Actions.ShowAdd = canAddEditDelete;
-                gWorkflows.IsDeleteEnabled = canAddEditDelete;
+                gWorkflows.Actions.ShowAdd = true;
+                gWorkflows.IsDeleteEnabled = true;
 
                 AddAttributeColumns();
 

@@ -650,7 +650,7 @@ namespace RockWeb.Blocks.WorkFlow
             pnlViewDetails.Visible = true;
             pnlEditDetails.Visible = false;
 
-            if ( IsUserAuthorized( Authorization.VIEW ) && Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 tdName.Description = Workflow.Name;
                 tdStatus.Description = Workflow.Status;

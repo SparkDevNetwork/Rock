@@ -1096,7 +1096,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             nbEditModeMessage.Text = string.Empty;
             // User must have 'Edit' rights to block, or 'Administrate' rights to workflow type
-            if ( !IsUserAuthorized( Authorization.EDIT ) && !workflowType.IsAuthorized( Authorization.ADMINISTRATE ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";

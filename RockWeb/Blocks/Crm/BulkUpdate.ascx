@@ -8,7 +8,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i>Bulk Update</h1>
+                <h1 class="panel-title"><i class="fa fa-reply-all"></i> Update Individuals</h1>
             </div>
 
             <div class="panel-body">
@@ -164,6 +164,8 @@
                             </div>
                         </div>
                     </Rock:PanelWidget>
+
+                    <asp:CustomValidator ID="cvSelection" runat="server" OnServerValidate="cvSelection_ServerValidate" Display="None" ErrorMessage="You have not selected anything to update." />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnComplete" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnComplete_Click" />
