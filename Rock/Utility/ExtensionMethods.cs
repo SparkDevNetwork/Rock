@@ -303,7 +303,7 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\\"" );
         }
 
         /// <summary>

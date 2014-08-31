@@ -65,6 +65,10 @@
     <Compile Include="Migrations\201408281632312_EntitySet.Designer.cs">
       <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408311348151_BulkUpdate.cs" />
+    <Compile Include="Migrations\201408311348151_BulkUpdate.Designer.cs">
+      <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
@@ -1161,6 +1165,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408281632312_EntitySet.resx">
       <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408311348151_BulkUpdate.resx">
+      <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
