@@ -46,10 +46,17 @@ namespace Rock.Rest
         }
         private Service<T> _service;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiController{T}"/> class.
+        /// </summary>
+        /// <param name="service">The service.</param>
         public ApiController( Service<T> service )
         {
-            _service = service;
-            _service.Context.Configuration.ProxyCreationEnabled = false;
+            Service = service;
+
+            // Turn off proxy creation by default so that when querying objects through rest, EF does not automatically navigate all child properties for requested objects
+            // When adding, updating, or deleting objects, the proxy should be enabled to properly track relationships that should or shouldn't be updated
+            SetProxyCreation( false );
         }
 
         // GET api/<controller>
@@ -57,7 +64,7 @@ namespace Rock.Rest
         [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
         public virtual IQueryable<T> Get()
         {
-            var result = _service.Queryable();
+            var result = Service.Queryable();
             return result;
         }
 
@@ -66,7 +73,7 @@ namespace Rock.Rest
         public virtual T Get( int id )
         {
             T model;
-            if ( !_service.TryGet( id, out model ) )
+            if ( !Service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             return model;
         }
@@ -75,18 +82,21 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
+            SetProxyCreation( true );
+
             CheckCanEdit( value );
 
-            _service.Add( value );
+            Service.Add( value );
 
             if ( !value.IsValid )
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
                     String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-            _service.Context.SaveChanges();
+            Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+
             // TODO set response.Headers.Location as per REST POST convention
             //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
             return response;
@@ -96,19 +106,21 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
+            SetProxyCreation( true );
+
             T targetModel;
-            if ( !_service.TryGet( id, out targetModel ) )
+            if ( !Service.TryGet( id, out targetModel ) )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
             CheckCanEdit( targetModel );
 
-            _service.SetValues( value, targetModel );
+            Service.SetValues( value, targetModel );
 
             if ( targetModel.IsValid )
             {
-                _service.Context.SaveChanges();
+                Service.Context.SaveChanges();
             }
             else
             {
@@ -120,16 +132,18 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Delete( int id )
         {
+            SetProxyCreation( true );
+
             T model;
-            if ( !_service.TryGet( id, out model ) )
+            if ( !Service.TryGet( id, out model ) )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
             CheckCanEdit( model );
 
-            _service.Delete( model );
-            _service.Context.SaveChanges();
+            Service.Delete( model );
+            Service.Context.SaveChanges();
         }
 
 
@@ -145,17 +159,18 @@ namespace Rock.Rest
             var dataView = new DataViewService( new RockContext() ).Get( id );
 
             CheckCanEdit( dataView );
+            SetProxyCreation( false );
 
             if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
             {
                 var errorMessages = new List<string>();
 
-                var paramExpression = _service.ParameterExpression;
-                var whereExpression = dataView.GetExpression( _service, paramExpression, out errorMessages );
+                var paramExpression = Service.ParameterExpression;
+                var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
                 if ( paramExpression != null && whereExpression != null )
                 {
-                    return _service.Get( paramExpression, whereExpression );
+                    return Service.Get( paramExpression, whereExpression );
                 }
             }
 
@@ -190,6 +205,10 @@ namespace Rock.Rest
             return null;
         }
 
+        /// <summary>
+        /// Gets the person alias.
+        /// </summary>
+        /// <returns></returns>
         protected virtual Rock.Model.PersonAlias GetPersonAlias()
         {
             var person = GetPerson();
@@ -201,6 +220,10 @@ namespace Rock.Rest
             return null;
         }
 
+        /// <summary>
+        /// Checks the can edit.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
         protected void CheckCanEdit( T entity )
         {
             if ( entity is ISecured )
@@ -209,23 +232,66 @@ namespace Rock.Rest
             }
         }
 
+        /// <summary>
+        /// Checks the can edit.
+        /// </summary>
+        /// <param name="securedModel">The secured model.</param>
         protected void CheckCanEdit( ISecured securedModel )
         {
             CheckCanEdit( securedModel, GetPerson() );
         }
 
+        /// <summary>
+        /// Checks the can edit.
+        /// </summary>
+        /// <param name="securedModel">The secured model.</param>
+        /// <param name="person">The person.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
         protected void CheckCanEdit( ISecured securedModel, Person person )
         {
             if ( securedModel != null )
             {
-                // Need to reload using service with a proxy enabled so that if model has custom
-                // parent authorities, those properties can be lazy-loaded and checked for authorization
-                ISecured reloadedModel = (ISecured)new Service<T>( new RockContext() ).Get( securedModel.Id );
-                if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                if ( IsProxy(securedModel) )
                 {
-                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    if ( !securedModel.IsAuthorized(Rock.Security.Authorization.EDIT, person))
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
+                }
+                else
+                {
+                    // Need to reload using service with a proxy enabled so that if model has custom
+                    // parent authorities, those properties can be lazy-loaded and checked for authorization
+                    SetProxyCreation( true );
+                    ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
+                    if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable proxy creation].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable proxy creation]; otherwise, <c>false</c>.
+        /// </value>
+        protected void SetProxyCreation( bool enabled )
+        {
+            Service.Context.Configuration.ProxyCreationEnabled = enabled;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type is proxy.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        protected bool IsProxy( object type )
+        {
+            return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType(type.GetType()) != type.GetType();
         }
     }
 }

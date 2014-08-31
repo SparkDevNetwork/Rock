@@ -27,7 +27,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" Required="True"/>
+                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
                             <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Required="True"/>
                         </div>
                     </div>

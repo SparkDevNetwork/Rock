@@ -121,6 +121,7 @@ h1 {
   height: 350px;
   overflow-y: scroll;
   overflow-x: hidden;
+  margin-bottom: 48px;
 }
 #console ol {
   list-style-type: none;

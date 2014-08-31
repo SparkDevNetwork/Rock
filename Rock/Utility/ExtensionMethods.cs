@@ -908,7 +908,7 @@ namespace Rock
 
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
-                return definedValue.Name;
+                return definedValue.Value;
             else
                 return string.Empty;
         }
@@ -1488,11 +1488,12 @@ namespace Rock
         /// <summary>
         /// Binds to enum.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="listControl">The list control.</param>
-        /// <param name="enumType">Type of the enum.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false )
         {
+            var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
@@ -1522,7 +1523,7 @@ namespace Rock
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Description,
                     v.Id
                 } );

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template." )]
 
-    [CustomRadioListField("Role", "Display the active workflows that the current user Initiated, or is currently Assigned To.", "0:Assigned To,1:Initiated", true, "0", "", 0 )]
+    [CustomRadioListField("Role", "Display the active workflows that the current user Initiated, or is currently Assigned To.", "0^Assigned To,1^Initiated", true, "0", "", 0 )]
     [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
     [CodeEditorField( "Contents", @"The Liquid template to use for displaying activities assigned to current user. 

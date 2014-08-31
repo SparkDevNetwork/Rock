@@ -257,7 +257,7 @@ namespace RockWeb.Blocks.Communication
                 cpChannel.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             }
 
-            ddlStatus.BindToEnum( typeof( CommunicationStatus ) );
+            ddlStatus.BindToEnum<CommunicationStatus>();
             // Replace the Transient status with an emtyp value (need an empty one, and don't need transient value)
             ddlStatus.Items[0].Text = string.Empty;
             ddlStatus.Items[0].Value = string.Empty;

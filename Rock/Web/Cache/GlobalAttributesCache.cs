@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -271,6 +271,98 @@ namespace Rock.Web.Cache
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the organization location.
+        /// </summary>
+        /// <value>
+        /// The organization location.
+        /// </value>
+        public Location OrganizationLocation
+        {
+            get 
+            {
+                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
+                if ( locGuid.HasValue )
+                {
+                    return new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the state of the organization.
+        /// </summary>
+        /// <value>
+        /// The state of the organization.
+        /// </value>
+        public string OrganizationState
+        {
+            get
+            {
+                // Check to see if there is an global attribute for organization address
+                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
+                if ( locGuid.HasValue )
+                {
+                    // If the organization location is still same as last check, use saved values
+                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
+                    {
+                        return Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
+                    }
+                    else
+                    {
+                        // otherwise read the new location and save the state
+                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
+                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                        if ( location != null )
+                        {
+                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, location.State );
+                            return location.State;
+                        }
+                    }
+                }
+
+                return string.Empty;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the organization country.
+        /// </summary>
+        /// <value>
+        /// The organization country.
+        /// </value>
+        public string OrganizationCountry
+        {
+            get
+            {
+                // Check to see if there is an global attribute for organization address
+                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
+                if ( locGuid.HasValue )
+                {
+                    // If the organization location is still same as last check, use saved values
+                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
+                    {
+                        return Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_COUNTRY );
+                    }
+                    else
+                    {
+                        // otherwise read the new location and save the country
+                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
+                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                        if ( location != null )
+                        {
+                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_COUNTRY, location.Country );
+                            return location.Country;
+                        }
+                    }
+                }
+
+                return string.Empty;
+            }
         }
 
         #endregion

@@ -97,10 +97,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string script = string.Format( @"
     $('#{0}').change(function(){{
-        if ($(this).val() != '') {{
+        if ($(this).val() == '') {{
+            $('#{1}').val('');
+        }} else {{
             $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-    
-        }}
+        }} 
     }});
 
     $('#{1}').change(function(){{
@@ -247,7 +248,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
                 }
-                History.EvaluateChange( changes, "Anniversary Date", person.GraduationDate, graduationDate );
+                History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, graduationDate );
                 person.GraduationDate = graduationDate;
 
                 History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
@@ -364,7 +365,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
                 }
-                History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
+                History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
                 person.RecordStatusReasonValueId = newRecordStatusReasonId;
 
                 if ( person.IsValid )
@@ -468,7 +469,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
-                        numberType.Name = phoneNumberType.Name;
+                        numberType.Value = phoneNumberType.Value;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;

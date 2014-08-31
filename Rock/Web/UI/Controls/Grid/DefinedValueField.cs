@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             if (dataValue is int)
             {
-                dataValue = Rock.Web.Cache.DefinedValueCache.Read((int)dataValue).Name;
+                dataValue = Rock.Web.Cache.DefinedValueCache.Read((int)dataValue).Value;
             }
 
             return base.FormatDataValue(dataValue, encode);

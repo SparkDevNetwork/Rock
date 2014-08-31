@@ -201,7 +201,7 @@ namespace Rock.Web.Cache
             LayoutCache layout = null;
             if ( cacheObj != null )
             {
-                layout = Read( (int)cacheObj );
+                layout = Read( (int)cacheObj, rockContext );
             }
 
             if ( layout == null )

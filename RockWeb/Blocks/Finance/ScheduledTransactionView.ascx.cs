@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Finance
 
                 var detailsRight = new DescriptionList()
                     .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
-                    .Add( "Frequency", txn.TransactionFrequencyValue != null ? txn.TransactionFrequencyValue.Name : string.Empty )
+                    .Add( "Frequency", txn.TransactionFrequencyValue != null ? txn.TransactionFrequencyValue.Value : string.Empty )
                     .Add( "Start Date", txn.StartDate.ToShortDateString() )
                     .Add( "End Date", txn.EndDate.HasValue ? txn.EndDate.Value.ToShortDateString() : string.Empty )
                     .Add( "Next Payment Date", txn.NextPaymentDate.HasValue ? txn.NextPaymentDate.Value.ToShortDateString() : string.Empty )
@@ -250,10 +250,10 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.CurrencyTypeValue != null )
                 {
-                    string currencyType = txn.CurrencyTypeValue.Name;
+                    string currencyType = txn.CurrencyTypeValue.Value;
                     if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
                     {
-                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Name ) : string.Empty;
+                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Value ) : string.Empty;
                     }
                     detailsLeft.Add( "Currency Type", currencyType );
                 }

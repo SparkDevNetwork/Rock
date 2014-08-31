@@ -36,5 +36,13 @@ namespace Rock.Security
         /// The password.
         /// </value>
         public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LoginParameters"/> information is going to be persisted.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if persisted; otherwise, <c>false</c>.
+        /// </value>
+        public bool Persisted { get; set; }
     }
 }

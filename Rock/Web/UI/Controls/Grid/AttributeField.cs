@@ -40,10 +40,25 @@ namespace Rock.Web.UI.Controls
             var row = controlContainer as GridViewRow;
             if ( row != null )
             {
-                var dataItem = ( row.DataItem as IHasAttributes );
-                if ( dataItem != null )
+                // First check if DataItem has attributes
+                var dataItem = row.DataItem as IHasAttributes;
+                if ( dataItem == null )
                 {
+                    // If the DataItem does not have attributes, check to see if there is an object list
+                    var grid = row.NamingContainer as Grid;
+                    if (grid != null && grid.ObjectList != null)
+                    {
+                        // If an object list exists, check to see if the associated object has attributes
+                        string key = grid.DataKeys[row.RowIndex].Value.ToString();
+                        if (!string.IsNullOrWhiteSpace(key) && grid.ObjectList.ContainsKey(key))
+                        {
+                            dataItem = grid.ObjectList[key] as IHasAttributes;
+                        }
+                    }
+                }
 
+                if (dataItem != null)
+                {
                     if ( dataItem.Attributes == null )
                     {
                         dataItem.LoadAttributes();

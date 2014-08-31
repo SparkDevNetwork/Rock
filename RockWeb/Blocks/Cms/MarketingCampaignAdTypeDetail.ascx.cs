@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlDateRangeType.BindToEnum( typeof( DateRangeTypeEnum ) );
+            ddlDateRangeType.BindToEnum<DateRangeTypeEnum>();
         }
 
         /// <summary>

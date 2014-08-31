@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Core
             hlInactive.Visible = !location.IsActive;
             if ( location.LocationTypeValue != null )
             {
-                hlType.Text = location.LocationTypeValue.Name;
+                hlType.Text = location.LocationTypeValue.Value;
                 hlType.Visible = true;
             }
             else
@@ -528,7 +528,7 @@ namespace RockWeb.Blocks.Core
 
             if ( location.LocationTypeValue != null )
             {
-                descriptionList.Add( "Location Type", location.LocationTypeValue.Name );
+                descriptionList.Add( "Location Type", location.LocationTypeValue.Value );
             }
 
             if ( location.PrinterDevice != null )

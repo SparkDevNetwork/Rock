@@ -253,7 +253,13 @@ namespace Rock.Model
                     NewExpression newExpression = Expression.New( constructorInfo );
                     MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
                     Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
-                    Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+                    
+                    // NOTE: having a NULL Dataview is OK.
+                    Expression whereExpression = null;
+                    if ( this.DataView != null )
+                    {
+                        whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+                    }
 
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )

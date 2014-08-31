@@ -135,7 +135,7 @@ namespace Rock.Communication.Transport
                 string replyTo = communication.GetChannelDataValue( "ReplyTo" );
 
                 // Check to make sure sending domain is a safe sender
-                var safeDomains = globalAttributes.GetValue( "SafeSenderDomains" ).SplitDelimitedValues().ToList();
+                var safeDomains = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
                 var emailParts = fromAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
                 if (emailParts.Length != 2 || !safeDomains.Contains(emailParts[1],StringComparer.OrdinalIgnoreCase))
                 {
@@ -222,6 +222,9 @@ namespace Rock.Communication.Transport
                         else
                         {
                             message.To.Clear();
+                            message.Headers.Clear();
+                            message.AlternateViews.Clear();
+
                             message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
 
                             // Create merge field dictionary

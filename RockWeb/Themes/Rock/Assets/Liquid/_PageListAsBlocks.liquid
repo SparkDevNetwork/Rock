@@ -4,7 +4,7 @@
             {% for childPage in page.pages %}
                 <li>
                     <a href="{{ childPage.id }}" {% if childPage.display-description != 'true' %} title="{{ childPage.description }}"{% endif %}>
-                        {% if childPage.icon-css-class != ' %}
+                        {% if childPage.icon-css-class != '' %}
                             <i class="{{ childPage.icon-css-class }} fa-lg"></i>
                         {% endif %}
                         <h3>{{ childPage.title }}</h3>

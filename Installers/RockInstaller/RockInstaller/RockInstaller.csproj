@@ -117,11 +117,11 @@
     <Content Include="Complete.aspx" />
     <Content Include="Styles\rock-installer.less" />
     <Content Include="bin\RockInstaller.dll.config" />
-    <None Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
     </None>
-    <None Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -132,7 +132,7 @@
     <Content Include="Default.aspx" />
     <Content Include="Start.aspx" />
     <Content Include="Styles\rock-installer.css" />
-    <Content Include="Web.config" />
+    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InstallController.cs" />

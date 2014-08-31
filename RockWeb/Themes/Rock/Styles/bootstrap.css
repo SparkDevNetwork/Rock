@@ -4320,7 +4320,7 @@ fieldset[disabled] .btn {
 }
 .btn-default {
   color: #524c43;
-  background-color: #ffffff;
+  background-color: #efefef;
   border-color: #dbd5cb;
 }
 .btn-default:hover,
@@ -4329,7 +4329,7 @@ fieldset[disabled] .btn {
 .btn-default.active,
 .open > .dropdown-toggle.btn-default {
   color: #524c43;
-  background-color: #e6e6e6;
+  background-color: #d6d6d6;
   border-color: #c2b8a7;
 }
 .btn-default:active,
@@ -4352,11 +4352,11 @@ fieldset[disabled] .btn-default:active,
 .btn-default.disabled.active,
 .btn-default[disabled].active,
 fieldset[disabled] .btn-default.active {
-  background-color: #ffffff;
+  background-color: #efefef;
   border-color: #dbd5cb;
 }
 .btn-default .badge {
-  color: #ffffff;
+  color: #efefef;
   background-color: #524c43;
 }
 .btn-primary {

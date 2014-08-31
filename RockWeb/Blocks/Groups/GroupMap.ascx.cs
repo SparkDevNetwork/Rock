@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Groups
 						<br>{{ GroupMember.Email }}
 					{% endif %}
 					{% for Phone in GroupMember.Person.PhoneNumbers %}
-						<br>{{ Phone.NumberTypeValue.Name }}: {{ Phone.NumberFormatted }}
+						<br>{{ Phone.NumberTypeValue.Value }}: {{ Phone.NumberFormatted }}
 					{% endfor %}
 				</div>
 				<br>
@@ -141,11 +141,11 @@ namespace RockWeb.Blocks.Groups
             {
                 var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Name )
+                    .ThenBy( v => v.Value )
                     .Select( v => new
                     {
                         v.Id,
-                        Name = v.Name.Pluralize(),
+                        Name = v.Value.Pluralize(),
                         Color = ( v.GetAttributeValue( "Color" ) ?? "" ).Replace( "#", "" )
                     } )
                     .ToList();
@@ -235,6 +235,17 @@ namespace RockWeb.Blocks.Groups
             string infoWindowJson = string.Format( @"{{ ""GroupPage"":""{0}"", ""PersonProfilePage"":""{1}"", ""MapPage"":""{2}"", ""Template"":""{3}"" }}", 
                 groupPage, personProfilePage, mapPage, template );
 
+            string latitude = "39.8282";
+            string longitude = "-98.5795";
+            string zoom = "4";
+            var orgLocation = GlobalAttributesCache.Read().OrganizationLocation;
+            if (orgLocation != null && orgLocation.GeoPoint != null)
+            {
+                latitude = orgLocation.GeoPoint.Latitude.ToString();
+                longitude = orgLocation.GeoPoint.Longitude.ToString();
+                zoom = "12";
+            }
+
             // write script to page
             string mapScriptFormat = @"
 <script> 
@@ -242,9 +253,10 @@ namespace RockWeb.Blocks.Groups
     Sys.Application.add_load(function () {{
 
         var groupId = {0};
+        var allMarkers = [];
         var groupItems = [];
-        var childGroupItems;
-        var groupMemberItems
+        var childGroupItems = [];
+        var groupMemberItems = [];
         var familyItems = {{}};
 
         var map;
@@ -263,42 +275,101 @@ namespace RockWeb.Blocks.Groups
 
         var infoWindowRequest = {6};
 
+        var min = .999999;
+        var max = 1.000001;
+
         initializeMap();
 
         function initializeMap() {{
 
+            // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
                 ,styles: mapStyle
-                ,center: new google.maps.LatLng(39.8282, -98.5795)
-                ,zoom: 4
+                ,center: new google.maps.LatLng({7}, {8})
+                ,zoom: {9}
             }};
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
             map.setTilt(45);
 
-            $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}', function( mapItems ) {{
+            // Query for group, child group, and group member locations asyncronously
+            $.when (
 
-                // Loop through array of map items
-                $.each(mapItems, function (i, mapItem) {{
-                    $('#lGroupName').text(mapItem.Name);
-                    var items = addMapItem(i, mapItem, '{3}');
-                    for (var i = 0; i < items.length; i++) {{
-                        groupItems.push(items[i]);
+                // Get group
+                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}', function( mapItems ) {{
+                    $.each(mapItems, function (i, mapItem) {{
+                        $('#lGroupName').text(mapItem.Name);
+                        var items = addMapItem(i, mapItem, '{3}');
+                        for (var i = 0; i < items.length; i++) {{
+                            groupItems.push(items[i]);
+                        }}
+                    }});
+                    if (groupItems.length == 0) {{
+                        $('.js-show-group').hide();
+                    }} else {{
+                        setAllMap(groupItems, null);
                     }}
-                }});
+                }}),
 
-                if (groupItems.length == 0) {{
-                    getChildGroups();
-                    $('.js-show-hide-options').hide();
-                }}
+                // Get Child Groups
+                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
+                    $.each(mapItems, function (i, mapItem) {{
+                        var items = addMapItem(i, mapItem, '{4}');
+                        for (var i = 0; i < items.length; i++) {{
+                            childGroupItems.push(items[i]);
+                        }}
+                    }});
+                    if (childGroupItems.length == 0) {{
+                        $('.js-show-child-groups').hide();
+                    }} else {{
+                        setAllMap(childGroupItems, null);
+                    }}
+                }}),
 
+                // Get Group Members
+                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members', function( mapItems ) {{
+                    $.each(mapItems, function (i, mapItem) {{
+                        var items = addMapItem(i, mapItem, '{5}');
+                        for (var i = 0; i < items.length; i++) {{
+                            groupMemberItems.push(items[i]);
+                        }}
+                    }});
+                    if (groupMemberItems.length == 0) {{
+                        $('.js-show-group-members').hide();
+                    }} else {{
+                        setAllMap(groupMemberItems, null);
+                    }}
+                }})
+
+            ).done( function() {{
+
+                // adjust any markers that may overlap
+                adjustOverlappedMarkers();
+
+                // When all three requests are done, set the map bounds
                 if (!bounds.isEmpty()) {{
                     map.fitBounds(bounds);
                 }}
-                       
-            }});    
+
+                // If a group map marker exists, check the group option and show marker
+                if ( groupItems.length > 0) {{
+                    $('#cbShowGroup').prop('checked', true);
+                    setAllMap(groupItems, map);
+
+                // Else check for group member locations, if they exists, select the members option and show member markers
+                }} else if ( groupMemberItems.length > 0) {{
+                    $('#cbShowGroupMembers').prop('checked', true);
+                    setAllMap(groupMemberItems, map);
+
+                // otherwise look for child groups and display their markers
+                }} else if ( childGroupItems.length > 0) {{
+                    $('#cbShowChildGroups').prop('checked', true);
+                    setAllMap(childGroupItems, map);
+                }} 
+                    
+            }});
 
         }}
 
@@ -329,6 +400,7 @@ namespace RockWeb.Blocks.Groups
                 }});
     
                 items.push(marker);
+                allMarkers.push(marker);
 
                 google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                     return function () {{
@@ -380,7 +452,7 @@ namespace RockWeb.Blocks.Groups
                 }})(polygon, i));
 
                 if ( mapItem.EntityId == {0} ) {{
-                    $('.js-connection-status-cb').closest('.form-group').show();
+                    $('.js-connection-status').show();
                 }}
         
             }}
@@ -401,52 +473,18 @@ namespace RockWeb.Blocks.Groups
         // Show/Hide child groups
         $('#cbShowChildGroups').click( function() {{
             if ($(this).prop('checked')) {{
-                if (typeof childGroupItems !== 'undefined') {{
-                    setAllMap(childGroupItems, map);
-                }} else {{
-                    getChildGroups();
-                }}
+                setAllMap(childGroupItems, map);
             }} else {{
-                if (typeof childGroupItems !== 'undefined') {{
-                    setAllMap(childGroupItems, null);
-                }} 
+                setAllMap(childGroupItems, null);
             }}
         }});
-
-        function getChildGroups() {{
-            childGroupItems = [];
-            $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
-                $.each(mapItems, function (i, mapItem) {{
-                    var items = addMapItem(i, mapItem, '{4}');
-                    for (var i = 0; i < items.length; i++) {{
-                        childGroupItems.push(items[i]);
-                    }}
-                }});
-                map.fitBounds(bounds);
-            }});
-        }}
 
         // Show/Hide group members
         $('#cbShowGroupMembers').click( function() {{
             if ($(this).prop('checked')) {{
-                if (typeof groupMemberItems !== 'undefined') {{
-                    setAllMap(groupMemberItems, map);
-                }} else {{
-                    groupMemberItems = [];
-                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members', function( mapItems ) {{
-                        $.each(mapItems, function (i, mapItem) {{
-                            var items = addMapItem(i, mapItem, '{5}');
-                            for (var i = 0; i < items.length; i++) {{
-                                groupMemberItems.push(items[i]);
-                            }}
-                        }});
-                        map.fitBounds(bounds);
-                    }});
-                }}
+                setAllMap(groupMemberItems, map);
             }} else {{
-                if (typeof groupMemberItems !== 'undefined') {{
-                    setAllMap(groupMemberItems, null);
-                }} 
+                setAllMap(groupMemberItems, null);
             }}
         }});
 
@@ -466,7 +504,6 @@ namespace RockWeb.Blocks.Groups
                                 familyItems[statusId].push(items[i]);
                             }}
                         }});
-                        map.fitBounds(bounds);
                     }});
                 }}
             }} else {{
@@ -500,11 +537,32 @@ namespace RockWeb.Blocks.Groups
             return color;
         }}
 
+        function adjustOverlappedMarkers() {{
+            
+            if (allMarkers.length > 1) {{
+                for(i=0; i < allMarkers.length-1; i++) {{
+                    var marker1 = allMarkers[i];
+                    var pos1 = marker1.getPosition();
+                    for(j=i+1; j < allMarkers.length; j++) {{
+                        var marker2 = allMarkers[j];
+                        var pos2 = marker2.getPosition();
+                        if (pos1.equals(pos2)) {{
+                            var newLat = pos1.lat() * (Math.random() * (max - min) + min);
+                            var newLng = pos1.lng() * (Math.random() * (max - min) + min);
+                            marker1.setPosition( new google.maps.LatLng(newLat,newLng) );
+                        }}
+                    }}
+                }}
+            }}
+
+        }}
+
     }});
 </script>";
 
             string mapScript = string.Format( mapScriptFormat,
-                groupId.Value, styleCode, polygonColors, _groupColor, _childGroupColor, _memberColor, infoWindowJson );
+                groupId.Value, styleCode, polygonColors, _groupColor, _childGroupColor, _memberColor, infoWindowJson,
+                latitude, longitude, zoom);
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
 

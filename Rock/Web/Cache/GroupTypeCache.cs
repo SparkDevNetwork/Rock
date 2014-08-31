@@ -477,7 +477,7 @@ namespace Rock.Web.Cache
             GroupTypeCache groupType = null;
             if ( cacheObj != null )
             {
-                groupType = Read( (int)cacheObj );
+                groupType = Read( (int)cacheObj, rockContext );
             }
 
             if ( groupType == null )

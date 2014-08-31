@@ -72,7 +72,7 @@ namespace Rock.Financial
         public override string ToString()
         {
             return string.Format( "{0} starting on {1}",
-                TransactionFrequencyValue.Description, StartDate );
+                TransactionFrequencyValue.Description, StartDate.ToShortDateString() );
         }
     }
 }

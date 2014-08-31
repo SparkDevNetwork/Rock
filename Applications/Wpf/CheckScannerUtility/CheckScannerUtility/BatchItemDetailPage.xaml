@@ -15,9 +15,9 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
         <Label Grid.Row="0"
                Grid.Column="1"
@@ -26,9 +26,7 @@
         <Image Grid.Row="1"
                Grid.Column="1"
                Name="imgFront"
-               Height="200"
-               Width="600"
-               Stretch="Fill"
+               Stretch="Uniform"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
                VerticalAlignment="Top"
@@ -40,9 +38,7 @@
         <Image Grid.Column="1"
                Grid.Row="3"
                Name="imgBack"
-               Height="200"
-               Width="600"
-               Stretch="Fill"
+               Stretch="Uniform"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
                VerticalAlignment="Top"
