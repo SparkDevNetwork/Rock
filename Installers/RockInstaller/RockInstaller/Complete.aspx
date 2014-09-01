@@ -134,11 +134,7 @@
             if ( !isDebug )
             {
                 // process the bin folder
-                System.Threading.Thread cleanup = new System.Threading.Thread( delegate()
-                {
-                    CleanUpInstall();
-                } );
-
+                System.Threading.Thread cleanup = new System.Threading.Thread( new System.Threading.ThreadStart( CleanUpInstall ) );
                 cleanup.IsBackground = true;
                 cleanup.Start();
             }
