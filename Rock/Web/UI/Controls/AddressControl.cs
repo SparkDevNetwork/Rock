@@ -403,7 +403,7 @@ namespace Rock.Web.UI.Controls
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PhoneNumberBox"/> class.
+        /// Initializes a new instance of the <see cref="AddressControl"/> class.
         /// </summary>
         public AddressControl()
             : base()
