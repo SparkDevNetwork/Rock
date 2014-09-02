@@ -594,7 +594,7 @@ namespace Rock.Web.Cache
             AttributeCache attribute = null;
             if ( cacheObj != null )
             {
-                attribute = Read( (int)cacheObj );
+                attribute = Read( (int)cacheObj, rockContext );
             }
 
             if ( attribute == null )
