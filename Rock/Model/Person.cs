@@ -1159,6 +1159,25 @@ namespace Rock.Model
             return this.FullName;
         }
 
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        {
+            if ( person.Guid.Equals( this.Guid ) )
+            {
+                return true;
+            }
+            else
+            {
+                return base.IsAuthorized( action, person, rockContext );
+            }
+        }
+
         #endregion
 
         #region Static Helper Methods
