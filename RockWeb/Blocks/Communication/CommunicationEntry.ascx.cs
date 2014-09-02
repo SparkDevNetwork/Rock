@@ -419,7 +419,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnTest_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid && CurrentPerson != null )
+            if ( Page.IsValid && CurrentPersonAliasId.HasValue )
             {
                 // Get existing or new communication record
                 var communication = UpdateCommunication( new RockContext() );
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                     var testCommunication = new Rock.Model.Communication();
-                    testCommunication.SenderPersonId = communication.SenderPersonId;
+                    testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
                     testCommunication.Subject = communication.Subject;
                     testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
                     testCommunication.ChannelEntityTypeId = communication.ChannelEntityTypeId;
@@ -438,7 +438,7 @@ namespace RockWeb.Blocks.Communication
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;
                     testCommunication.ReviewedDateTime = RockDateTime.Now;
-                    testCommunication.ReviewerPersonId = CurrentPerson.Id;;
+                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId.Value;
 
                     var testRecipient = new CommunicationRecipient();
                     if (communication.Recipients.Any())
@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Communication
                         testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                     }
                     testRecipient.Status = CommunicationRecipientStatus.Pending;
-                    testRecipient.PersonId = CurrentPerson.Id;
+                    testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
                     testCommunication.Recipients.Add( testRecipient );
 
                     var rockContext = new RockContext();
@@ -495,7 +495,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         communication.Status = CommunicationStatus.Approved;
                         communication.ReviewedDateTime = RockDateTime.Now;
-                        communication.ReviewerPersonId = CurrentPersonId;
+                        communication.ReviewerPersonAliasId = CurrentPersonAlias != null ? CurrentPersonAlias.Id : (int?)null;
 
                         if ( communication.FutureSendDateTime.HasValue &&
                             communication.FutureSendDateTime > RockDateTime.Now)
@@ -568,7 +568,7 @@ namespace RockWeb.Blocks.Communication
                     .Queryable("Person.PhoneNumbers")
                     .Where( r => r.CommunicationId == communication.Id))
                 {
-                    Recipients.Add( new Recipient( recipient.Person, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime));                
+                    Recipients.Add( new Recipient( recipient.PersonAlias, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime));                
                 }
             }
             else
@@ -881,7 +881,7 @@ namespace RockWeb.Blocks.Communication
             // Determine if user is allowed to save changes, if not, disable 
             // submit and save buttons 
             if ( IsUserAuthorized( "Approve" ) ||
-                CurrentPersonId == communication.SenderPersonId ||
+                CurrentPersonAliasId == communication.SenderPersonAliasId ||
                 IsUserAuthorized( Authorization.EDIT ) )
             {
                 btnSubmit.Enabled = true;
@@ -932,7 +932,7 @@ namespace RockWeb.Blocks.Communication
             {
                 communication = new Rock.Model.Communication();
                 communication.Status = CommunicationStatus.Transient;
-                communication.SenderPersonId = CurrentPersonId;
+                communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communicationService.Add( communication );
             }
             else
@@ -940,7 +940,7 @@ namespace RockWeb.Blocks.Communication
                 // Remove any deleted recipients
                 foreach(var recipient in communication.Recipients.ToList())
                 {
-                    if (!Recipients.Any( r => r.PersonId == recipient.PersonId))
+                    if (!Recipients.Any( r => r.PersonId == recipient.PersonAliasId))
                     {
                         recipientService.Delete(recipient);
                         communication.Recipients.Remove( recipient );
@@ -951,10 +951,10 @@ namespace RockWeb.Blocks.Communication
             // Add any new recipients
             foreach(var recipient in Recipients )
             {
-                if ( !communication.Recipients.Any( r => r.PersonId == recipient.PersonId ) )
+                if ( !communication.Recipients.Any( r => r.PersonAliasId == recipient.PersonId ) )
                 {
                     var communicationRecipient = new CommunicationRecipient();
-                    communicationRecipient.Person = new PersonService( (RockContext)communicationService.Context ).Get( recipient.PersonId );
+                    communicationRecipient.PersonAlias = new PersonService( (RockContext)communicationService.Context ).Get( recipient.PersonAliasId );
                     communication.Recipients.Add( communicationRecipient );
                 }
             }

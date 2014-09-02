@@ -1027,13 +1027,13 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         // delete communication recipient
-                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonId == person.Id ) )
+                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonAliasId == person.Id ) )
                         {
                             communicationRecipientService.Delete( recipient );
                         }
 
                         // delete communication
-                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonId == person.Id ) )
+                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
                         {
                             communicationService.Delete( communication );
                         }

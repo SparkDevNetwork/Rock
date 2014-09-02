@@ -325,12 +325,18 @@ namespace RockWeb.Blocks.Communication
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
                 {
-                    communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == personId );
+                    communications = communications
+                        .Where( c => 
+                            c.SenderPersonAlias != null && 
+                            c.SenderPersonAlias.PersonId == personId );
                 }
             }
             else
             {
-                communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == CurrentPersonId );
+                communications = communications
+                    .Where( c => 
+                        c.SenderPersonAliasId.HasValue && 
+                        c.SenderPersonAliasId.Value == CurrentPersonAliasId );
             }
 
             string content = rFilter.GetUserPreference( "Content" );

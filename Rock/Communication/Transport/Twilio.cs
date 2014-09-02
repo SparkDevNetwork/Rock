@@ -86,7 +86,7 @@ namespace Rock.Communication.Transport
                         {
                             try
                             {
-                                var phoneNumber = recipient.Person.PhoneNumbers
+                                var phoneNumber = recipient.PersonAlias.PhoneNumbers
                                     .Where( p => p.IsMessagingEnabled )
                                     .FirstOrDefault();
 

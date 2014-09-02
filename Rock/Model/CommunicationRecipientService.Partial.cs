@@ -39,7 +39,7 @@ namespace Rock.Model
                 .Where( r =>
                     r.CommunicationId == communicationId &&
                     r.Status == status &&
-                    ( !r.Person.IsDeceased.HasValue || !r.Person.IsDeceased.Value ) );
+                    ( !r.PersonAlias.IsDeceased.HasValue || !r.PersonAlias.IsDeceased.Value ) );
         }
 
         /// <summary>

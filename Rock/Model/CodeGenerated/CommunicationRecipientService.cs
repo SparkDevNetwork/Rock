@@ -87,7 +87,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this CommunicationRecipient target, CommunicationRecipient source )
         {
-            target.PersonId = source.PersonId;
+            target.PersonAliasId = source.PersonAliasId;
             target.CommunicationId = source.CommunicationId;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
