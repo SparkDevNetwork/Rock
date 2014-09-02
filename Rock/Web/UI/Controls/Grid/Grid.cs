@@ -1058,7 +1058,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.CurrentPerson != null )
                     {
-                        communication.SenderPersonId = rockPage.CurrentPerson.Id;
+                        communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
                     OnGridRebind( e );
@@ -1078,6 +1078,8 @@ namespace Rock.Web.UI.Controls
                             data = ( (DataView)this.DataSource ).Table;
                         }
 
+
+                        var recipients = new Dictionary<int,Dictionary<string, string>>();
                         foreach ( DataRow row in data.Rows )
                         {
                             int? personId = null;
@@ -1098,9 +1100,21 @@ namespace Rock.Web.UI.Controls
                             // If valid personid and either no people were selected or this person was selected add them as a recipient
                             if ( personId.HasValue && ( !peopleSelected.Any() || peopleSelected.Contains( personId.Value ) ) )
                             {
+                                recipients.Add( personId.Value, mergeValues);
+                            }
+                        }
+
+                        if ( recipients.Any() )
+                        {
+                            var personIds = recipients.Select( r => r.Key ).ToList();
+                            var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
+                            // Get the primary aliases
+                            foreach ( var personAlias in personAliasService.Queryable()
+                                .Where( p => p.PersonId == p.AliasPersonId && personIds.Contains( p.PersonId ) ) )
+                            {
                                 var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = personId.Value;
-                                recipient.AdditionalMergeValues = mergeValues;
+                                recipient.PersonAliasId = personAlias.Id;
+                                recipient.AdditionalMergeValues = recipients[personAlias.PersonId];
                                 communication.Recipients.Add( recipient );
                             }
                         }
@@ -1126,7 +1140,7 @@ namespace Rock.Web.UI.Controls
                                 if ( !peopleSelected.Any() || peopleSelected.Contains( personId ) )
                                 {
                                     var recipient = new Rock.Model.CommunicationRecipient();
-                                    recipient.PersonId = personId;
+                                    recipient.PersonAliasId = personId;
 
                                     foreach ( string mergeField in CommunicateMergeFields )
                                     {
@@ -1148,7 +1162,7 @@ namespace Rock.Web.UI.Controls
                             foreach ( int personId in peopleSelected )
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = personId;
+                                recipient.PersonAliasId = personId;
                                 communication.Recipients.Add( recipient );
                             }
                         }

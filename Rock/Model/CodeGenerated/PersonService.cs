@@ -56,7 +56,7 @@ namespace Rock.Model
             
             // ignoring Communication,SenderPersonId 
  
-            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
+            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;

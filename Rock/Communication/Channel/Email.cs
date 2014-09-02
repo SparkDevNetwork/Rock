@@ -84,7 +84,7 @@ You can view an online version of this email here:
             {
                 mergeValues.Add( "Person", person );
 
-                var recipient = communication.Recipients.Where( r => r.PersonId == person.Id ).FirstOrDefault();
+                var recipient = communication.Recipients.Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
                 {
                     // Add any additional merge fields created through a report
@@ -243,7 +243,7 @@ You can view an online version of this email here:
                         r.Status == CommunicationRecipientStatus.Pending )
                     .ToList() )
                 {
-                    var person = recipient.Person;
+                    var person = recipient.PersonAlias;
                     if ( person.IsDeceased ?? false )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
