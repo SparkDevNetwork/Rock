@@ -470,7 +470,7 @@ namespace Rock.Web.Cache
             SiteCache site = null;
             if ( cacheObj != null )
             {
-                site = Read( (int)cacheObj );
+                site = Read( (int)cacheObj, rockContext );
             }
 
             if ( site == null )

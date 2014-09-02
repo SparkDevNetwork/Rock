@@ -188,7 +188,7 @@ namespace Rock.Web.Cache
             RestControllerCache restController = null;
             if ( cacheObj != null )
             {
-                restController = Read( (int)cacheObj );
+                restController = Read( (int)cacheObj, rockContext );
             }
 
             if ( restController == null )
