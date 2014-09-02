@@ -154,6 +154,20 @@ namespace Rock.Apps.CheckScannerUtility
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
+
+            // set keyboard focus to the first input that needs a value
+            if ( string.IsNullOrEmpty( txtRockUrl.Text ) )
+            {
+                Keyboard.Focus( txtRockUrl );
+            }
+            else if ( string.IsNullOrEmpty( txtUsername.Text ) )
+            {
+                Keyboard.Focus( txtUsername );
+            }
+            else
+            {
+                Keyboard.Focus( txtPassword );
+            }
         }
 
         /// <summary>
