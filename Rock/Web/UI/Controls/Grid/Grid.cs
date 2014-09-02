@@ -1297,12 +1297,23 @@ namespace Rock.Web.UI.Controls
                     columnCounter++;
                 }
 
+                // Get any attribute columns
+                List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                foreach ( var attributeField in attributeFields )
+                {
+                    worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
+                    columnCounter++;
+                }
+
                 // print data
+                int dataIndex = 0;
                 foreach ( var item in data )
                 {
-                    columnCounter = 1;
+                    columnCounter = 0;
                     foreach ( PropertyInfo prop in props )
                     {
+                        columnCounter++;
+
                         object propValue = prop.GetValue( item, null );
 
                         string value = "";
@@ -1332,10 +1343,59 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }
 
-                        columnCounter++;
+                    }
+
+                    if ( attributeFields.Any() )
+                    {
+                        // First check if DataItem has attributes
+                        var dataItem = item as Rock.Attribute.IHasAttributes;
+                        if ( dataItem == null )
+                        {
+                            // If the DataItem does not have attributes, check to see if there is an object list
+                            if (ObjectList != null)
+                            {
+                                // If an object list exists, check to see if the associated object has attributes
+                                string key = DataKeys[dataIndex].Value.ToString();
+                                if (!string.IsNullOrWhiteSpace(key) && ObjectList.ContainsKey(key))
+                                {
+                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                }
+                            }
+                        }
+
+                        if ( dataItem != null )
+                        {
+                            if ( dataItem.Attributes == null )
+                            {
+                                dataItem.LoadAttributes();
+                            }
+
+                            foreach ( var attributeField in attributeFields )
+                            {
+                                columnCounter++;
+
+                                bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
+                                if ( exists )
+                                {
+                                    var attrib = dataItem.Attributes[attributeField.DataField];
+                                    string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
+                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, true );
+                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                }
+
+                                // format background color for alternating rows
+                                if ( rowCounter % 2 == 1 )
+                                {
+                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                                } 
+                               
+                            }
+                        }
                     }
 
                     rowCounter++;
+                    dataIndex++;
                 }
             }
 
