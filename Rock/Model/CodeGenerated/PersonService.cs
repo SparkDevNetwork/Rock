@@ -86,7 +86,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.ContactPersonId == item.Id ) )
+            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.ContactPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
