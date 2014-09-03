@@ -769,6 +769,10 @@ ul.rocktree ul {
   border-radius: 36px;
   padding: 2px 6px;
 }
+.list-as-blocks ul li.active a {
+  background-color: #428bca;
+  color: #ecf0f3;
+}
 @media (min-width: 768px) {
   .list-as-blocks ul li {
     margin: 0 2.5% 15px;
