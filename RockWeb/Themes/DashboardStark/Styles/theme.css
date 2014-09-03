@@ -2613,6 +2613,7 @@ table.attribute-grid tr th:nth-child(3) {
     12. Person Page Views
     13. Deceased / Inactive Styles
     14. Bulk Update
+    15. Photo Upload
 */
 .personprofile {
   margin-top: -15px;
@@ -3191,6 +3192,16 @@ tr.inactive td {
 }
 .bulk-update .no-select .form-group {
   opacity: 1;
+}
+.photoupload-photo .image-editor {
+  float: left;
+  margin-right: 48px;
+}
+.photoupload-photo .image-editor label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 150px;
+  overflow: hidden;
 }
 /*
     Used to manage styles for specific blocks.
