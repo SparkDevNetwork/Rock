@@ -351,17 +351,12 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( rockContext.SaveChanges() > 0 )
-            {
-                // flush cache content 
-                this.FlushCacheItem( entityValue );
+            rockContext.SaveChanges();
 
-                ShowView();
-            }
-            else
-            {
-                // TODO: service.ErrorMessages;
-            }
+            // flush cache content 
+            this.FlushCacheItem( entityValue );
+
+            ShowView();
         }
 
         /// <summary>

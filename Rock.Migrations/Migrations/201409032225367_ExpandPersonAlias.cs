@@ -73,6 +73,9 @@ namespace Rock.Migrations
             AddColumn( "dbo.FinancialPersonBankAccount", "PersonAliasId", c => c.Int( nullable: false ) );
             AddColumn( "dbo.FinancialPersonSavedAccount", "PersonAliasId", c => c.Int( nullable: false ) );
             AddColumn( "dbo.FinancialPledge", "PersonAliasId", c => c.Int() );
+            AddColumn( "dbo.Auth", "PersonAliasId", c => c.Int() );
+            AddColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.MarketingCampaign", "ContactPersonAliasId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -100,6 +103,15 @@ namespace Rock.Migrations
     
     UPDATE [FinancialPledge] SET
           [PersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [PersonId] )
+
+    UPDATE [Auth] SET
+          [PersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [PersonId] )
+
+    UPDATE [HtmlContent] SET
+          [ApprovedByPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [ApprovedByPersonId] )
+
+    UPDATE [MarketingCampaign] SET
+          [ContactPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [ContactPersonId] )
 " );
             DropForeignKey( "dbo.Communication", "ReviewerPersonId", "dbo.Person" );
             DropForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person" );
@@ -111,6 +123,9 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.FinancialPersonBankAccount", "PersonId", "dbo.Person" );
             DropForeignKey( "dbo.FinancialPersonSavedAccount", "PersonId", "dbo.Person" );
             DropForeignKey( "dbo.FinancialPledge", "PersonId", "dbo.Person" );
+            DropForeignKey( "dbo.Auth", "PersonId", "dbo.Person" );
+            DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person" );
+            DropForeignKey( "dbo.MarketingCampaign", "ContactPersonId", "dbo.Person" );
 
             DropIndex( "dbo.CommunicationRecipient", new[] { "PersonId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonId" } );
@@ -122,6 +137,9 @@ namespace Rock.Migrations
             DropIndex( "dbo.FinancialPersonBankAccount", new[] { "PersonId" } );
             DropIndex( "dbo.FinancialPersonSavedAccount", new[] { "PersonId" } );
             DropIndex( "dbo.FinancialPledge", new[] { "PersonId" } );
+            DropIndex( "dbo.Auth", new[] { "PersonId" } );
+            DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonId" } );
+            DropIndex( "dbo.MarketingCampaign", new[] { "ContactPersonId" } );
 
             DropColumn( "dbo.CommunicationRecipient", "PersonId" );
             DropColumn( "dbo.Communication", "SenderPersonId" );
@@ -133,6 +151,9 @@ namespace Rock.Migrations
             DropColumn( "dbo.FinancialPersonBankAccount", "PersonId" );
             DropColumn( "dbo.FinancialPersonSavedAccount", "PersonId" );
             DropColumn( "dbo.FinancialPledge", "PersonId" );
+            DropColumn( "dbo.Auth", "PersonId" );
+            DropColumn( "dbo.HtmlContent", "ApprovedByPersonId" );
+            DropColumn( "dbo.MarketingCampaign", "ContactPersonId" );
 
             CreateIndex( "dbo.CommunicationRecipient", "PersonAliasId" );
             CreateIndex( "dbo.Communication", "SenderPersonAliasId" );
@@ -144,6 +165,9 @@ namespace Rock.Migrations
             CreateIndex( "dbo.FinancialPersonBankAccount", "PersonAliasId" );
             CreateIndex( "dbo.FinancialPersonSavedAccount", "PersonAliasId" );
             CreateIndex( "dbo.FinancialPledge", "PersonAliasId" );
+            CreateIndex( "dbo.Auth", "PersonAliasId" );
+            CreateIndex( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
+            CreateIndex( "dbo.MarketingCampaign", "ContactPersonAliasId" );
 
             AddForeignKey( "dbo.Communication", "ReviewerPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonAliasId", "dbo.PersonAlias", "Id" );
@@ -155,6 +179,9 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.FinancialPersonBankAccount", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.FinancialPersonSavedAccount", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.FinancialPledge", "PersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.Auth", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.MarketingCampaign", "ContactPersonAliasId", "dbo.PersonAlias", "Id" );
 
         }
 
@@ -173,6 +200,9 @@ namespace Rock.Migrations
             AddColumn( "dbo.FinancialPersonBankAccount", "PersonId", c => c.Int( nullable: false ) );
             AddColumn( "dbo.FinancialScheduledTransaction", "AuthorizedPersonId", c => c.Int( nullable: false ) );
             AddColumn( "dbo.FinancialTransaction", "AuthorizedPersonId", c => c.Int() );
+            AddColumn( "dbo.MarketingCampaign", "ContactPersonId", c => c.Int() );
+            AddColumn( "dbo.HtmlContent", "ApprovedByPersonId", c => c.Int() );
+            AddColumn( "dbo.Auth", "PersonId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -200,6 +230,15 @@ namespace Rock.Migrations
 
     UPDATE [FinancialTransaction] SET
           [AuthorizedPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [AuthorizedPersonAliasId] )
+
+    UPDATE [MarketingCampaign] SET
+          [ContactPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [ContactPersonAliasId] )
+
+    UPDATE [HtmlContent] SET
+          [ApprovedByPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [ApprovedByPersonAliasId] )
+
+    UPDATE [Auth] SET
+          [PersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [PersonAliasId] )
 " );
 
             DropForeignKey( "dbo.CommunicationRecipient", "PersonAliasId", "dbo.PersonAlias" );
@@ -212,6 +251,9 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.FinancialPersonBankAccount", "PersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.FinancialScheduledTransaction", "AuthorizedPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.FinancialTransaction", "AuthorizedPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.MarketingCampaign", "ContactPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.Auth", "PersonAliasId", "dbo.PersonAlias" );
 
             DropIndex( "dbo.Communication", new[] { "ReviewerPersonAliasId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonAliasId" } );
@@ -223,6 +265,9 @@ namespace Rock.Migrations
             DropIndex( "dbo.FinancialPersonBankAccount", new[] { "PersonAliasId" } );
             DropIndex( "dbo.FinancialScheduledTransaction", new[] { "AuthorizedPersonAliasId" } );
             DropIndex( "dbo.FinancialTransaction", new[] { "AuthorizedPersonAliasId" } );
+            DropIndex( "dbo.MarketingCampaign", new[] { "ContactPersonAliasId" } );
+            DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonAliasId" } );
+            DropIndex( "dbo.Auth", new[] { "PersonAliasId" } );
 
             DropColumn( "dbo.Communication", "ReviewerPersonAliasId" );
             DropColumn( "dbo.Communication", "SenderPersonAliasId" );
@@ -234,6 +279,9 @@ namespace Rock.Migrations
             DropColumn( "dbo.FinancialPersonBankAccount", "PersonAliasId" );
             DropColumn( "dbo.FinancialScheduledTransaction", "AuthorizedPersonAliasId" );
             DropColumn( "dbo.FinancialTransaction", "AuthorizedPersonAliasId" );
+            DropColumn( "dbo.MarketingCampaign", "ContactPersonAliasId" );
+            DropColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
+            DropColumn( "dbo.Auth", "PersonAliasId" );
 
             CreateIndex( "dbo.Communication", "ReviewerPersonId" );
             CreateIndex( "dbo.Communication", "SenderPersonId" );
@@ -245,6 +293,9 @@ namespace Rock.Migrations
             CreateIndex( "dbo.FinancialPersonBankAccount", "PersonId" );
             CreateIndex( "dbo.FinancialScheduledTransaction", "AuthorizedPersonId" );
             CreateIndex( "dbo.FinancialTransaction", "AuthorizedPersonId" );
+            CreateIndex( "dbo.MarketingCampaign", "ContactPersonId" );
+            CreateIndex( "dbo.HtmlContent", "ApprovedByPersonId" );
+            CreateIndex( "dbo.Auth", "PersonId" );
 
             AddForeignKey( "dbo.CommunicationRecipient", "PersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person", "Id" );
@@ -256,6 +307,9 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.FinancialPersonBankAccount", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.FinancialScheduledTransaction", "AuthorizedPersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.FinancialTransaction", "AuthorizedPersonId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.MarketingCampaign", "ContactPersonId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.Auth", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
 
             Sql( @"
     DROP FUNCTION [dbo].[ufnUtility_GetPrimaryPersonAliasId]
