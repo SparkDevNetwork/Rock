@@ -69,9 +69,9 @@
     <Compile Include="Migrations\201408311348151_BulkUpdate.Designer.cs">
       <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409031520406_ExpandPersonAlias.cs" />
-    <Compile Include="Migrations\201409031520406_ExpandPersonAlias.Designer.cs">
-      <DependentUpon>201409031520406_ExpandPersonAlias.cs</DependentUpon>
+    <Compile Include="Migrations\201409031744271_ExpandPersonAlias.cs" />
+    <Compile Include="Migrations\201409031744271_ExpandPersonAlias.Designer.cs">
+      <DependentUpon>201409031744271_ExpandPersonAlias.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
@@ -1173,8 +1173,8 @@
     <EmbeddedResource Include="Migrations\201408311348151_BulkUpdate.resx">
       <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409031520406_ExpandPersonAlias.resx">
-      <DependentUpon>201409031520406_ExpandPersonAlias.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201409031744271_ExpandPersonAlias.resx">
+      <DependentUpon>201409031744271_ExpandPersonAlias.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>

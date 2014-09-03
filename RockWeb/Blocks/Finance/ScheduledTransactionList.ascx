@@ -18,7 +18,7 @@
                     <Rock:Grid ID="gList" AllowSorting="false" runat="server" EmptyDataText="No Scheduled Transactions Found" 
                         ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="gList_Edit">
                         <Columns>
-                            <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
+                            <asp:BoundField DataField="AuthorizedPersonAlias.Person" HeaderText="Contributor" />
                             <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starting" />

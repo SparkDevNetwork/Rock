@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Finance
 
             FinancialPledge financialPledge = new FinancialPledge();
 
-            financialPledge.PersonId = person.Id;
+            financialPledge.PersonAliasId = person.PrimaryAliasId;
             var financialAccount = financialAccountService.Get( GetAttributeValue( "Account" ).AsGuid() );
             if ( financialAccount != null )
             {
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Finance
             if ( sender != btnConfirm )
             {
                 var duplicatePledges = financialPledgeService.Queryable()
-                    .Where( a => a.PersonId == person.Id )
+                    .Where( a => a.PersonAlias.PersonId == person.Id )
                     .Where( a => a.AccountId == financialPledge.AccountId )
                     .Where( a => a.StartDate == financialPledge.StartDate )
                     .Where( a => a.EndDate == financialPledge.EndDate ).ToList();

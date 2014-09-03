@@ -109,7 +109,7 @@ namespace Rock.Data
         /// <value>
         /// The authorized person identifier.
         /// </value>
-        int? AuthorizedPersonId { get; set; }
+        int? AuthorizedPersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the check micr encrypted.

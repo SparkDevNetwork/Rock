@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var qryTransactionsToMatch = financialTransactionService.Queryable()
-                .Where( a => a.AuthorizedPersonId == null && a.ProcessedByPersonAliasId == null );
+                .Where( a => a.AuthorizedPersonAliasId == null && a.ProcessedByPersonAliasId == null );
 
             if ( batchId != 0 )
             {
@@ -198,7 +198,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             // display how many unmatched and unviewed transactions are remaining
-            var qryRemainingTransactionsCount = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
+            var qryRemainingTransactionsCount = financialTransactionService
+                .Queryable( "ProcessedByPersonAlias.Person" )
+                .Where( a => a.AuthorizedPersonAliasId == null );
             if ( batchId != 0 )
             {
                 qryRemainingTransactionsCount = qryRemainingTransactionsCount.Where( a => a.BatchId == batchId );
@@ -209,7 +211,9 @@ namespace RockWeb.Blocks.Finance
             // if a specific transactionId was specified (because we are navigating thru history), load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
             if ( toTransactionId.HasValue )
             {
-                qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.Id == toTransactionId );
+                qryTransactionsToMatch = financialTransactionService
+                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                    .Where( a => a.Id == toTransactionId );
             }
 
             if ( historyList.Any() && !toTransactionId.HasValue )
@@ -224,7 +228,10 @@ namespace RockWeb.Blocks.Finance
             if ( transactionToMatch == null )
             {
                 // we exhausted the transactions that aren't processed and aren't in our history list, so remove those those restrictions and show all transactions that haven't been matched yet
-                var qryRemainingTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
+                var qryRemainingTransactionsToMatch = financialTransactionService
+                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                    .Where( a => a.AuthorizedPersonAliasId == null );
+
                 if ( batchId != 0 )
                 {
                     qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
@@ -256,17 +263,17 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( transactionToMatch.ProcessedByPersonAlias != null )
                 {
-                    if ( transactionToMatch.AuthorizedPersonId.HasValue )
+                    if ( transactionToMatch.AuthorizedPersonAliasId.HasValue )
                     {
-                        nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                        nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                         nbIsInProcess.Visible = true;
                     }
                     else
                     {
                         // display a warning if some other user has this marked as InProcess (and it isn't matched)
-                        if ( transactionToMatch.ProcessedByPersonAliasId != this.CurrentPersonAlias.Id )
+                        if ( transactionToMatch.ProcessedByPersonAliasId != CurrentPersonAliasId )
                         {
-                            nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                            nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                             nbIsInProcess.Visible = true;
                         }
                     }
@@ -276,7 +283,7 @@ namespace RockWeb.Blocks.Finance
                 if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
                 {
                     transactionToMatch.ProcessedByPersonAlias = null;
-                    transactionToMatch.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
+                    transactionToMatch.ProcessedByPersonAliasId = CurrentPersonAliasId;
                     transactionToMatch.ProcessedDateTime = RockDateTime.Now;
                     rockContext.SaveChanges();
                 }
@@ -313,7 +320,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
                 {
-                    var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.Person );
+                    var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.PersonAlias.Person ).Distinct();
                     foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                     {
                         ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
@@ -334,16 +341,18 @@ namespace RockWeb.Blocks.Finance
                     ddlIndividual.SelectedIndex = 0;
                 }
 
-                if ( transactionToMatch.AuthorizedPersonId.HasValue )
+                if ( transactionToMatch.AuthorizedPersonAlias != null && transactionToMatch.AuthorizedPersonAlias.Person != null )
                 {
+                    var person = transactionToMatch.AuthorizedPersonAlias.Person;
+
                     // if the drop down does not contains the AuthorizedPerson of this transaction, add them to the drop down
                     // note, this can easily happen for non-check transactions
-                    if (!ddlIndividual.Items.OfType<ListItem>().Any( a => a.Value == transactionToMatch.AuthorizedPersonId.ToString() ))
+                    if ( !ddlIndividual.Items.OfType<ListItem>().Any( a => a.Value == person.Id.ToString() ) )
                     {
-                        ddlIndividual.Items.Add( new ListItem( transactionToMatch.AuthorizedPerson.FullNameReversed, transactionToMatch.AuthorizedPerson.Id.ToString() ) );
+                        ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
                     }
 
-                    ddlIndividual.SelectedValue = transactionToMatch.AuthorizedPersonId.ToString();
+                    ddlIndividual.SelectedValue = person.Id.ToString();
                 }
 
                 ddlIndividual_SelectedIndexChanged( null, null );
@@ -449,9 +458,13 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
-            var financialTransaction = financialTransactionService.Get( transactionId );
+            var financialTransaction = financialTransactionService
+                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                    .FirstOrDefault( t => t.Id == transactionId );
 
-            if ( financialTransaction != null && financialTransaction.ProcessedByPersonAliasId == this.CurrentPersonAlias.Id && financialTransaction.AuthorizedPersonId == null )
+            if ( financialTransaction != null && 
+                financialTransaction.ProcessedByPersonAliasId == CurrentPersonAliasId && 
+                financialTransaction.AuthorizedPersonAliasId == null )
             {
                 // if the current user marked this as processed, and it wasn't matched, clear out the processedby fields.  Otherwise, assume the other person is still editing it
                 financialTransaction.ProcessedByPersonAliasId = null;
@@ -484,7 +497,10 @@ namespace RockWeb.Blocks.Finance
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
-            var financialTransaction = financialTransactionService.Get( hfTransactionId.Value.AsInteger() );
+            int txnId = hfTransactionId.Value.AsInteger();
+            var financialTransaction = financialTransactionService
+                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                    .FirstOrDefault( t => t.Id == txnId );
 
             // set the AuthorizedPersonId (the person who wrote the check, for example) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
             int? authorizedPersonId = ppSelectNew.PersonId ?? ddlIndividual.SelectedValue.AsIntegerOrNull();
@@ -499,9 +515,11 @@ namespace RockWeb.Blocks.Finance
             }
 
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
-            if ( financialTransaction != null && financialTransaction.AuthorizedPersonId.HasValue && !authorizedPersonId.HasValue )
+            if ( financialTransaction != null && 
+                financialTransaction.AuthorizedPersonAliasId.HasValue && 
+                !authorizedPersonId.HasValue )
             {
-                financialTransaction.AuthorizedPersonId = null;
+                financialTransaction.AuthorizedPersonAliasId = null;
                 foreach ( var detail in financialTransaction.TransactionDetails )
                 {
                     financialTransactionDetailService.Delete( detail );
@@ -532,28 +550,36 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
+                var personAlias = new PersonAliasService( rockContext ).GetPrimary( authorizedPersonId.Value );
+
                 // if this transaction has an accountnumber associated with it (in other words, it's a scanned check), ensure there is a financialPersonBankAccount record
                 if ( !string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
-                    var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonId == authorizedPersonId ).FirstOrDefault();
+                    var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonAlias.PersonId == authorizedPersonId.Value ).FirstOrDefault();
                     if ( financialPersonBankAccount == null )
                     {
-                        financialPersonBankAccount = new FinancialPersonBankAccount();
-                        financialPersonBankAccount.PersonId = authorizedPersonId.Value;
-                        financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
-
-                        var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
-                        var parts = checkMicrClearText.Split( '_' );
-                        if ( parts.Length >= 2 )
+                        if ( personAlias != null )
                         {
-                            financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
-                        }
+                            financialPersonBankAccount = new FinancialPersonBankAccount();
+                            financialPersonBankAccount.PersonAliasId = personAlias.Id;
+                            financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
 
-                        financialPersonBankAccountService.Add( financialPersonBankAccount );
+                            var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
+                            var parts = checkMicrClearText.Split( '_' );
+                            if ( parts.Length >= 2 )
+                            {
+                                financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
+                            }
+
+                            financialPersonBankAccountService.Add( financialPersonBankAccount );
+                        }
                     }
                 }
 
-                financialTransaction.AuthorizedPersonId = authorizedPersonId;
+                if ( personAlias != null )
+                {
+                    financialTransaction.AuthorizedPersonAliasId = personAlias.Id;
+                }
 
                 // just in case this transaction is getting re-edited either by the same user, or somebody else, clean out any existing TransactionDetail records
                 foreach ( var detail in financialTransaction.TransactionDetails.ToList() )

@@ -62,19 +62,19 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
+            if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
