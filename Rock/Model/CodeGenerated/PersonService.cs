@@ -80,7 +80,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<HtmlContent>( Context ).Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
+            if ( new Service<HtmlContent>( Context ).Queryable().Any( a => a.ApprovedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
                 return false;
