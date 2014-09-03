@@ -228,7 +228,8 @@ You can view an online version of this email here:
             var rockContext = new RockContext();
             var communicationService = new CommunicationService( rockContext );
 
-            communication = communicationService.Get( communication.Id );
+            communication = communicationService.Queryable( "Recipients" )
+                .FirstOrDefault( t => t.Id == communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
@@ -237,13 +238,18 @@ You can view an online version of this email here:
             {
                 // Update any recipients that should not get sent the communication
                 var recipientService = new CommunicationRecipientService( rockContext );
-                foreach ( var recipient in recipientService.Queryable( "Person" )
+                foreach ( var recipient in recipientService.Queryable( "PersonAlias.Person" )
                     .Where( r =>
                         r.CommunicationId == communication.Id &&
                         r.Status == CommunicationRecipientStatus.Pending )
                     .ToList() )
                 {
-                    var person = recipient.PersonAlias;
+                    var person = recipient.PersonAlias.Person;
+                    if ( !(person.IsEmailActive ?? true))
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Email is not active!";
+                    }
                     if ( person.IsDeceased ?? false )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;

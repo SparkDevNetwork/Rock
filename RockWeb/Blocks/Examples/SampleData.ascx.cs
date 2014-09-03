@@ -1027,7 +1027,7 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         // delete communication recipient
-                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonAliasId == person.Id ) )
+                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id ) )
                         {
                             communicationRecipientService.Delete( recipient );
                         }

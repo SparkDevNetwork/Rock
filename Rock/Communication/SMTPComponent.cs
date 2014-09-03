@@ -214,7 +214,7 @@ namespace Rock.Communication.Transport
                     var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
                     if ( recipient != null )
                     {
-                        if ( string.IsNullOrWhiteSpace( recipient.PersonAlias.Email ) )
+                        if ( string.IsNullOrWhiteSpace( recipient.PersonAlias.Person.Email ) )
                         {
                             recipient.Status = CommunicationRecipientStatus.Failed;
                             recipient.StatusNote = "No Email Address";
@@ -225,7 +225,7 @@ namespace Rock.Communication.Transport
                             message.Headers.Clear();
                             message.AlternateViews.Clear();
 
-                            message.To.Add( new MailAddress( recipient.PersonAlias.Email, recipient.PersonAlias.FullName ) );
+                            message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
 
                             // Create merge field dictionary
                             var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
