@@ -247,9 +247,9 @@ namespace Rock.Model
                 mergeValues.Add( "Communication", this.Communication );
             }
 
-            if ( this.PersonAlias != null )
+            if ( this.PersonAlias != null && this.PersonAlias.Person != null )
             {
-                mergeValues.Add( "Person", this.PersonAlias );
+                mergeValues.Add( "Person", this.PersonAlias.Person );
             }
 
             // Add any additional merge fields created through a report
@@ -272,7 +272,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.PersonAlias.ToStringSafe();
+            return this.PersonAlias.Person.ToStringSafe();
         }
 
         #endregion

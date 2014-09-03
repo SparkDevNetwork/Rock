@@ -134,13 +134,13 @@ namespace Rock.Communication.Channel
             {
                 // Update any recipients that should not get sent the communication
                 var recipientService = new CommunicationRecipientService( rockContext );
-                foreach ( var recipient in recipientService.Queryable( "Person" )
+                foreach ( var recipient in recipientService.Queryable( "PersonAlias.Person" )
                     .Where( r =>
                         r.CommunicationId == communication.Id &&
                         r.Status == CommunicationRecipientStatus.Pending )
                     .ToList() )
                 {
-                    var person = recipient.PersonAlias;
+                    var person = recipient.PersonAlias.Person;
                     if ( person.IsDeceased ?? false )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
@@ -210,7 +210,7 @@ namespace Rock.Communication.Channel
                                             .Where( r => r.ResponseCode == responseCode )
                                             .OrderByDescending(r => r.CreatedDateTime).FirstOrDefault();
 
-                        if ( recipient != null )
+                        if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
                         {
                             CreateCommunication( fromPerson.Id, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
                         }

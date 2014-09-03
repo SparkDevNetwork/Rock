@@ -1052,14 +1052,18 @@ namespace Rock.Web.UI.Controls
                 var rockPage = Page as RockPage;
                 if ( rockPage != null )
                 {
+                    // Create communication 
+                    var rockContext = new RockContext();
+                    var service = new Rock.Model.CommunicationService( rockContext );
                     var communication = new Rock.Model.Communication();
                     communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
-
                     if ( rockPage.CurrentPerson != null )
                     {
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
+                    
+                    var recipients = new Dictionary<int, Dictionary<string, string>>();
 
                     OnGridRebind( e );
 
@@ -1078,8 +1082,6 @@ namespace Rock.Web.UI.Controls
                             data = ( (DataView)this.DataSource ).Table;
                         }
 
-
-                        var recipients = new Dictionary<int,Dictionary<string, string>>();
                         foreach ( DataRow row in data.Rows )
                         {
                             int? personId = null;
@@ -1103,21 +1105,6 @@ namespace Rock.Web.UI.Controls
                                 recipients.Add( personId.Value, mergeValues);
                             }
                         }
-
-                        if ( recipients.Any() )
-                        {
-                            var personIds = recipients.Select( r => r.Key ).ToList();
-                            var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
-                            // Get the primary aliases
-                            foreach ( var personAlias in personAliasService.Queryable()
-                                .Where( p => p.PersonId == p.AliasPersonId && personIds.Contains( p.PersonId ) ) )
-                            {
-                                var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonAliasId = personAlias.Id;
-                                recipient.AdditionalMergeValues = recipients[personAlias.PersonId];
-                                communication.Recipients.Add( recipient );
-                            }
-                        }
                     }
                     else
                     {
@@ -1139,19 +1126,17 @@ namespace Rock.Web.UI.Controls
                                 int personId = (int)idProp.GetValue( item, null );
                                 if ( !peopleSelected.Any() || peopleSelected.Contains( personId ) )
                                 {
-                                    var recipient = new Rock.Model.CommunicationRecipient();
-                                    recipient.PersonAliasId = personId;
-
+                                    var mergeValues = new Dictionary<string, string>();
                                     foreach ( string mergeField in CommunicateMergeFields )
                                     {
                                         object obj = item.GetPropertyValue( mergeField );
                                         if ( obj != null )
                                         {
-                                            recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                            mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
                                         }
                                     }
 
-                                    communication.Recipients.Add( recipient );
+                                    recipients.Add( personId, mergeValues );
                                 }
                             }
                         }
@@ -1161,18 +1146,28 @@ namespace Rock.Web.UI.Controls
                             // Couldn't determine data source, at least add recipients for any selected people
                             foreach ( int personId in peopleSelected )
                             {
-                                var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonAliasId = personId;
-                                communication.Recipients.Add( recipient );
+                                recipients.Add( personId, new Dictionary<string,string>() );
                             }
                         }
                     }
 
-                    if ( communication.Recipients.Any() )
+                    if ( recipients.Any() )
                     {
-                        var rockContext = new RockContext();
-                        var service = new Rock.Model.CommunicationService( rockContext );
                         service.Add( communication );
+                        
+                        var personIds = recipients.Select( r => r.Key ).ToList();
+                        var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
+
+                        // Get the primary aliases
+                        foreach ( var personAlias in personAliasService.Queryable()
+                            .Where( p => p.PersonId == p.AliasPersonId && personIds.Contains( p.PersonId ) ) )
+                        {
+                            var recipient = new Rock.Model.CommunicationRecipient();
+                            recipient.PersonAliasId = personAlias.Id;
+                            recipient.AdditionalMergeValues = recipients[personAlias.PersonId];
+                            communication.Recipients.Add( recipient );
+                        }
+
                         rockContext.SaveChanges();
 
                         Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );

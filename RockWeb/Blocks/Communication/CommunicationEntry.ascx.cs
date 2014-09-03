@@ -438,7 +438,7 @@ namespace RockWeb.Blocks.Communication
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;
                     testCommunication.ReviewedDateTime = RockDateTime.Now;
-                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId.Value;
+                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
                     var testRecipient = new CommunicationRecipient();
                     if (communication.Recipients.Any())
@@ -495,7 +495,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         communication.Status = CommunicationStatus.Approved;
                         communication.ReviewedDateTime = RockDateTime.Now;
-                        communication.ReviewerPersonAliasId = CurrentPersonAlias != null ? CurrentPersonAlias.Id : (int?)null;
+                        communication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
                         if ( communication.FutureSendDateTime.HasValue &&
                             communication.FutureSendDateTime > RockDateTime.Now)
@@ -559,16 +559,16 @@ namespace RockWeb.Blocks.Communication
         {
             Recipients.Clear();
 
-            if (communication != null)
+            if ( communication != null )
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
 
-                foreach(var recipient in new CommunicationRecipientService(new RockContext())
-                    .Queryable("Person.PhoneNumbers")
-                    .Where( r => r.CommunicationId == communication.Id))
+                foreach ( var recipient in new CommunicationRecipientService( new RockContext() )
+                    .Queryable( "PersonAlias.Person.PhoneNumbers" )
+                    .Where( r => r.CommunicationId == communication.Id ) )
                 {
-                    Recipients.Add( new Recipient( recipient.PersonAlias, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime));                
+                    Recipients.Add( new Recipient( recipient.PersonAlias.Person, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) );
                 }
             }
             else
@@ -881,7 +881,7 @@ namespace RockWeb.Blocks.Communication
             // Determine if user is allowed to save changes, if not, disable 
             // submit and save buttons 
             if ( IsUserAuthorized( "Approve" ) ||
-                CurrentPersonAliasId == communication.SenderPersonAliasId ||
+                ( CurrentPersonAliasId.HasValue && CurrentPersonAliasId == communication.SenderPersonAliasId ) ||
                 IsUserAuthorized( Authorization.EDIT ) )
             {
                 btnSubmit.Enabled = true;
@@ -926,6 +926,16 @@ namespace RockWeb.Blocks.Communication
             if ( CommunicationId.HasValue )
             {
                 communication = communicationService.Get( CommunicationId.Value );
+
+                // Remove any deleted recipients
+                foreach(var recipient in recipientService.GetByCommunicationId( CommunicationId.Value ) )
+                {
+                    if (!Recipients.Any( r => recipient.PersonAlias != null && r.PersonId == recipient.PersonAlias.PersonId))
+                    {
+                        recipientService.Delete(recipient);
+                        communication.Recipients.Remove( recipient );
+                    }
+                }
             }
 
             if (communication == null)
@@ -935,27 +945,19 @@ namespace RockWeb.Blocks.Communication
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communicationService.Add( communication );
             }
-            else
-            {
-                // Remove any deleted recipients
-                foreach(var recipient in communication.Recipients.ToList())
-                {
-                    if (!Recipients.Any( r => r.PersonId == recipient.PersonAliasId))
-                    {
-                        recipientService.Delete(recipient);
-                        communication.Recipients.Remove( recipient );
-                    }
-                }
-            }
 
             // Add any new recipients
             foreach(var recipient in Recipients )
             {
-                if ( !communication.Recipients.Any( r => r.PersonAliasId == recipient.PersonId ) )
+                if ( !communication.Recipients.Any( r => r.PersonAlias != null && r.PersonAlias.PersonId == recipient.PersonId ) )
                 {
-                    var communicationRecipient = new CommunicationRecipient();
-                    communicationRecipient.PersonAlias = new PersonService( (RockContext)communicationService.Context ).Get( recipient.PersonAliasId );
-                    communication.Recipients.Add( communicationRecipient );
+                    var person = new PersonService( rockContext ).Get( recipient.PersonId );
+                    if ( person != null )
+                    {
+                        var communicationRecipient = new CommunicationRecipient();
+                        communicationRecipient.PersonAlias = person.PrimaryAlias;
+                        communication.Recipients.Add( communicationRecipient );
+                    }
                 }
             }
 
