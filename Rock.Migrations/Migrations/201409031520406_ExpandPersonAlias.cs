@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class PersonAliasConvert : Rock.Migrations.RockMigration
+    public partial class ExpandPersonAlias : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -66,6 +66,8 @@ namespace Rock.Migrations
             AddColumn( "dbo.CommunicationRecipient", "PersonAliasId", c => c.Int( nullable: false ) );
             AddColumn( "dbo.Communication", "SenderPersonAliasId", c => c.Int() );
             AddColumn( "dbo.Communication", "ReviewerPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.PrayerRequest", "RequestedByPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.PrayerRequest", "ApprovedByPersonAliasId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -74,27 +76,42 @@ namespace Rock.Migrations
     UPDATE [Communication] SET
           [SenderPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [SenderPersonId] )
         , [ReviewerPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [ReviewerPersonId] )
+
+    UPDATE [PrayerRequest] SET
+          [RequestedByPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [RequestedByPersonId] )
+        , [ApprovedByPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [ApprovedByPersonId] )
+    
     
 " );
             DropForeignKey( "dbo.Communication", "ReviewerPersonId", "dbo.Person" );
             DropForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person" );
             DropForeignKey( "dbo.CommunicationRecipient", "PersonId", "dbo.Person" );
+            DropForeignKey( "dbo.PrayerRequest", "ApprovedByPersonId", "dbo.Person" );
+            DropForeignKey( "dbo.PrayerRequest", "RequestedByPersonId", "dbo.Person" );
 
             DropIndex( "dbo.CommunicationRecipient", new[] { "PersonId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonId" } );
             DropIndex( "dbo.Communication", new[] { "ReviewerPersonId" } );
+            DropIndex( "dbo.PrayerRequest", new[] { "RequestedByPersonId" } );
+            DropIndex( "dbo.PrayerRequest", new[] { "ApprovedByPersonId" } );
 
             DropColumn( "dbo.CommunicationRecipient", "PersonId" );
             DropColumn( "dbo.Communication", "SenderPersonId" );
             DropColumn( "dbo.Communication", "ReviewerPersonId" );
+            DropColumn( "dbo.PrayerRequest", "RequestedByPersonId" );
+            DropColumn( "dbo.PrayerRequest", "ApprovedByPersonId" );
 
             CreateIndex( "dbo.CommunicationRecipient", "PersonAliasId" );
             CreateIndex( "dbo.Communication", "SenderPersonAliasId" );
             CreateIndex( "dbo.Communication", "ReviewerPersonAliasId" );
+            CreateIndex( "dbo.PrayerRequest", "RequestedByPersonAliasId" );
+            CreateIndex( "dbo.PrayerRequest", "ApprovedByPersonAliasId" );
 
             AddForeignKey( "dbo.Communication", "ReviewerPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.CommunicationRecipient", "PersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.PrayerRequest", "ApprovedByPersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.PrayerRequest", "RequestedByPersonAliasId", "dbo.PersonAlias", "Id" );
 
         }
 
@@ -106,6 +123,8 @@ namespace Rock.Migrations
             AddColumn( "dbo.Communication", "ReviewerPersonId", c => c.Int() );
             AddColumn( "dbo.Communication", "SenderPersonId", c => c.Int() );
             AddColumn( "dbo.CommunicationRecipient", "PersonId", c => c.Int( nullable: false ) );
+            AddColumn( "dbo.PrayerRequest", "ApprovedByPersonId", c => c.Int() );
+            AddColumn( "dbo.PrayerRequest", "RequestedByPersonId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -114,28 +133,43 @@ namespace Rock.Migrations
     UPDATE [Communication] SET
           [SenderPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [SenderPersonAliasId] )
         , [ReviewerPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [ReviewerPersonAliasId] )
+
+    UPDATE [PrayerRequest] SET
+          [RequestedByPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [RequestedByPersonAliasId] )
+        , [ApprovedByPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [ApprovedByPersonAliasId] )
+    
     
 " );
 
             DropForeignKey( "dbo.CommunicationRecipient", "PersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.Communication", "SenderPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.Communication", "ReviewerPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.PrayerRequest", "RequestedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.PrayerRequest", "ApprovedByPersonAliasId", "dbo.PersonAlias" );
 
             DropIndex( "dbo.Communication", new[] { "ReviewerPersonAliasId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonAliasId" } );
             DropIndex( "dbo.CommunicationRecipient", new[] { "PersonAliasId" } );
+            DropIndex( "dbo.PrayerRequest", new[] { "ApprovedByPersonAliasId" } );
+            DropIndex( "dbo.PrayerRequest", new[] { "RequestedByPersonAliasId" } );
 
             DropColumn( "dbo.Communication", "ReviewerPersonAliasId" );
             DropColumn( "dbo.Communication", "SenderPersonAliasId" );
             DropColumn( "dbo.CommunicationRecipient", "PersonAliasId" );
+            DropColumn( "dbo.PrayerRequest", "ApprovedByPersonAliasId" );
+            DropColumn( "dbo.PrayerRequest", "RequestedByPersonAliasId" );
 
             CreateIndex( "dbo.Communication", "ReviewerPersonId" );
             CreateIndex( "dbo.Communication", "SenderPersonId" );
             CreateIndex( "dbo.CommunicationRecipient", "PersonId" );
+            CreateIndex( "dbo.PrayerRequest", "ApprovedByPersonId" );
+            CreateIndex( "dbo.PrayerRequest", "RequestedByPersonId" );
 
             AddForeignKey( "dbo.CommunicationRecipient", "PersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Communication", "ReviewerPersonId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.PrayerRequest", "RequestedByPersonId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.PrayerRequest", "ApprovedByPersonId", "dbo.Person", "Id" );
 
             Sql( @"
     DROP FUNCTION [dbo].[ufnUtility_GetPrimaryPersonAliasId]

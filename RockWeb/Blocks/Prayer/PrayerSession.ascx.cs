@@ -162,7 +162,8 @@ namespace RockWeb.Blocks.Prayer
                 hfPrayerIndex.Value = index.ToString();
                 var rockContext = new RockContext();
                 PrayerRequestService service = new PrayerRequestService( rockContext );
-                PrayerRequest request = service.Get( prayerRequestIds[index] );
+                int prayerRequestId = prayerRequestIds[index];
+                PrayerRequest request = service.Queryable( "RequestedByPersonAlias.Person" ).FirstOrDefault( p => p.Id == prayerRequestId );
                 ShowPrayerRequest( request, rockContext );
             }
             else
@@ -411,7 +412,7 @@ namespace RockWeb.Blocks.Prayer
             // put the request's id in the hidden field in case it needs to be flagged.
             hfIdValue.SetValue( prayerRequest.Id );
 
-            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPerson, 50, 50 );
+            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50 );
 
             notesComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )

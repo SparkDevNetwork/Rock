@@ -1300,6 +1300,20 @@ namespace Rock.Model
         /// <summary>
         /// Gets the photo image tag.
         /// </summary>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "" )
+        {
+            Person person =  personAlias != null ? personAlias.Person : null;
+            return GetPhotoImageTag( person, maxWidth, maxHeight, className );
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
