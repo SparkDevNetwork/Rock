@@ -20,7 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <Grid x:Name="grdTop"
               Grid.Row="0">
             <Grid.RowDefinitions>
@@ -208,29 +208,26 @@
 
                             <Label x:Name="lblUploadProgress"
                                    Grid.Row="4"
+                                   Grid.ColumnSpan="2"
+                                   HorizontalAlignment="Center"
                                    Style="{StaticResource labelStyleAlertInfo}"
                                    Content="Upload Status" />
-                            <StackPanel Grid.Row="4"
-                                        Grid.Column="0"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Left">
-
-                            </StackPanel>
-                            <StackPanel Grid.Row="4"
-                                        Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Right">
-                                <Button Style="{StaticResource buttonStylePrimaryMini}"
-                                        x:Name="btnEdit"
+                            <Button Style="{StaticResource buttonStylePrimary}"
+                                    Grid.Row="4"
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Left"
+                                    x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
                                         Click="btnEdit_Click" />
-                                <Button x:Name="btnScan"
-                                        Style="{StaticResource buttonStylePrimaryMini}"
-                                        Margin="4,4,0,0"
-                                        Content="Scan"
-                                        Click="btnScan_Click" />
-                            </StackPanel>
+                            <Button x:Name="btnScan"
+                                    Grid.Row="4"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource buttonStyleAction}"
+                                    Margin="4,4,0,0"
+                                    Content="Scan"
+                                    Click="btnScan_Click" />
                         </Grid>
                     </Border>
                 </StackPanel>
