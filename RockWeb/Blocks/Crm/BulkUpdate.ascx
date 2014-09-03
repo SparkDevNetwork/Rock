@@ -131,7 +131,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
+                    <Rock:PanelWidget ID="pwNote" runat="server" CssClass="no-select" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
                         <div class="panel-noteentry">
                             <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" />
                             <div class="settings clearfix">
@@ -143,7 +143,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
+                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" CssClass="no-select" TitleIconCssClass="fa fa-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAction_SelectedIndexChanged" >

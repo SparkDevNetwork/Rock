@@ -14,6 +14,7 @@
     11. Person Merge
     12. Person Page Views
     13. Deceased / Inactive Styles
+    14. Bulk Update
 */
 
 // 1. Page Styles
@@ -789,4 +790,33 @@ tr.inactive {
     td {
         color: lighten(@text-color, 30%);
     }
+}
+
+// 14. Bulk Update
+// -------------------------
+
+.bulk-update {
+
+    .form-group{
+        opacity: 0.5;
+
+        .control-label {
+            cursor: pointer;
+        }
+    }
+
+    .form-group.bulk-item-selected {
+        opacity: 1;
+
+        .control-label {
+            color: @brand-success;
+        }
+    }
+
+    .no-select {
+        .form-group{
+            opacity: 1;
+        }
+    }
+
 }
