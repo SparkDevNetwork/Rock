@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoOptOut.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoRequest.PhotoOptOut" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoOptOut.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoOptOut" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

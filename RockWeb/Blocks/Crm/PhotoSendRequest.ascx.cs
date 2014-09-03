@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.Crm.PhotoRequest
+namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// Block to build a list of people who should receive a photo request.
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
     [Description( "Block for selecting criteria to build a list of people who should receive a photo request." )]
     [CommunicationTemplateField( "Photo Request Template", "The template to use with this block to send requests.", true, "B9A0489C-A823-4C5C-A9F9-14A206EC3B88" )]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 300 )]
-    public partial class SendRequest : Rock.Web.UI.RockBlock
+    public partial class PhotoSendRequest : Rock.Web.UI.RockBlock
     {
         #region Fields
 

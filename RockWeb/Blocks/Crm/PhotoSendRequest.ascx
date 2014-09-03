@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SendRequest.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoRequest.SendRequest" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoSendRequest.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoSendRequest" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

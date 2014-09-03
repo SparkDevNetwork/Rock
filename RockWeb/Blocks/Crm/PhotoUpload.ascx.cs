@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.Crm.PhotoRequest
+namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// Allows a photo to be uploaded for the given person (logged in person) and optionally their family members.
@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
 
     [BooleanField( "Include Family Members", "If checked, other family members will also be displayed allowing their photos to be uploaded.", true )]
     [BooleanField( "Allow Staff", "If checked, staff members will also be allowed to upload new photos for themselves.", false )]
-    public partial class Upload : Rock.Web.UI.RockBlock
+    public partial class PhotoUpload : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -128,15 +128,15 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
             var imageEditor = e.Item.FindControl( "imgedPhoto" ) as Rock.Web.UI.Controls.ImageEditor;
             imageEditor.BinaryFileId = person.PhotoId;
             imageEditor.NoPictureUrl = Person.GetPhotoUrl( null, person.Age, person.Gender );
+            imageEditor.Label = string.Format( "{0}", person.FullName );
+
             if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == person.Id ).Count() > 0 )
             {
-                imageEditor.Label = string.Format( "{0} (staff member)", person.FullName );
-                imageEditor.ButtonCssClass = "invisible";
+                //imageEditor.ButtonCssClass = "invisible";
+                imageEditor.ButtonCssClass = "btn btn-default margin-t-sm aspNetDisabled";
+                imageEditor.ButtonText = "<i class='fa fa-ban'></i> Staff Member";
             }
-            else
-            {
-                imageEditor.Label = string.Format( "{0}", person.FullName );
-            }
+            
         }
 
         /// <summary>

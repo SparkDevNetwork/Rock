@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="VerifyPhoto.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoRequest.VerifyPhoto" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoVerify.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoVerify" %>
 <%@ Import Namespace="Rock.Web.UI.Controls" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

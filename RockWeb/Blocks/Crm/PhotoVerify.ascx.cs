@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Web.UI.HtmlControls;
 
-namespace RockWeb.Blocks.Crm.PhotoRequest
+namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// Allows uploaded photos to be verified.
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
 
     [IntegerField( "Photo Size", "The size of the preview photo. Default is 65.", false, 65 )]
 
-    public partial class VerifyPhoto : Rock.Web.UI.RockBlock
+    public partial class PhotoVerify : Rock.Web.UI.RockBlock
     {
         #region Fields
 
