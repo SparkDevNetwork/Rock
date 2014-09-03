@@ -46,14 +46,13 @@ namespace Rock.Model
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets PersonId of the <see cref="Rock.Model.Person"/> who is the contact for the marketing campaign.
+        /// Gets or sets the contact person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the Contact <see cref="Rock.Model.Person"/> for the marketing campaign. If the contact is external
-        /// or is not in the database, this value can be null.
+        /// The contact person alias identifier.
         /// </value>
         [DataMember]
-        public int? ContactPersonId { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the email address of the contact. 
@@ -101,13 +100,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the contact <see cref="Rock.Model.Person"/> if the contact is external or not in Rock, this value will be null.
+        /// Gets or sets the contact person alias.
         /// </summary>
         /// <value>
-        /// The contact <see cref="Rock.Model.Person"/> for the marketing Campaign.
+        /// The contact person alias.
         /// </value>
         [DataMember]
-        public virtual Person ContactPerson { get; set; }
+        public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the event <see cref="Rock.Model.Group"/> that is associated with this Marketing Campaign. 
@@ -174,7 +173,7 @@ namespace Rock.Model
         /// </summary>
         public MarketingCampaignConfiguration()
         {
-            this.HasOptional( p => p.ContactPerson ).WithMany().HasForeignKey( p => p.ContactPersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.EventGroup ).WithMany().HasForeignKey( p => p.EventGroupId).WillCascadeOnDelete( false );
         }
     }
