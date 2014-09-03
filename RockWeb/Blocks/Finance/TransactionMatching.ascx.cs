@@ -550,7 +550,7 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                var personAlias = new PersonAliasService( rockContext ).GetPrimary( authorizedPersonId.Value );
+                int? personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( authorizedPersonId.Value );
 
                 // if this transaction has an accountnumber associated with it (in other words, it's a scanned check), ensure there is a financialPersonBankAccount record
                 if ( !string.IsNullOrWhiteSpace( accountNumberSecured ) )
@@ -558,10 +558,10 @@ namespace RockWeb.Blocks.Finance
                     var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonAlias.PersonId == authorizedPersonId.Value ).FirstOrDefault();
                     if ( financialPersonBankAccount == null )
                     {
-                        if ( personAlias != null )
+                        if ( personAliasId.HasValue )
                         {
                             financialPersonBankAccount = new FinancialPersonBankAccount();
-                            financialPersonBankAccount.PersonAliasId = personAlias.Id;
+                            financialPersonBankAccount.PersonAliasId = personAliasId.Value;
                             financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
 
                             var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
@@ -576,9 +576,9 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                if ( personAlias != null )
+                if ( personAliasId.HasValue )
                 {
-                    financialTransaction.AuthorizedPersonAliasId = personAlias.Id;
+                    financialTransaction.AuthorizedPersonAliasId = personAliasId;
                 }
 
                 // just in case this transaction is getting re-edited either by the same user, or somebody else, clean out any existing TransactionDetail records
