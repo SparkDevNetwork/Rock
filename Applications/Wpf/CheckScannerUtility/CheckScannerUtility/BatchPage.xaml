@@ -3,8 +3,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:Forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
-      xmlns:ax="clr-namespace:AxRANGERLib;assembly=AxInterop.RANGERLib"
-      xmlns:ax2="clr-namespace:AxMTMicrImage;assembly=AxMTMicrImage"
       xmlns:rock="clr-namespace:Rock.Apps.CheckScannerUtility"
       x:Class="Rock.Apps.CheckScannerUtility.BatchPage"
       Name="batchPage"
@@ -22,20 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <WindowsFormsHost x:Name="rangerHost"
-                          Visibility="Collapsed"
-                          IsEnabled="False">
-            <ax:AxRanger x:Name="rangerScanner"
-                         TransportNewState="rangerScanner_TransportNewState"
-                         TransportChangeOptionsState="rangerScanner_TransportChangeOptionsState"
-                         TransportSetItemOutput="rangerScanner_TransportSetItemOutput"/>
-        </WindowsFormsHost>
-        <WindowsFormsHost x:Name="micrImageHost"
-                          Visibility="Collapsed"
-                          IsEnabled="False">
-            <ax2:AxMicrImage x:Name="micrImage"
-                             MicrDataReceived="micrImage_MicrDataReceived" />
-        </WindowsFormsHost>
+        
         <Grid x:Name="grdTop"
               Grid.Row="0">
             <Grid.RowDefinitions>
