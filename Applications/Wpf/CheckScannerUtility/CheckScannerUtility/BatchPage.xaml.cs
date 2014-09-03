@@ -55,7 +55,46 @@ namespace Rock.Apps.CheckScannerUtility
             ScannedDocList = new ConcurrentQueue<ScannedDocInfo>();
             BatchItemDetailPage = new BatchItemDetailPage();
             FirstPageLoad = true;
+
+            try
+            {
+                var micrImageHostPage = new MicrImageHostPage();
+                this.micrImage = micrImageHostPage.micrImage;
+            }
+            catch
+            {
+                // intentionally nothing.  means they don't have the MagTek driver
+            }
+
+            try
+            {
+                var rangerScannerHostPage = new RangerScannerHostPage();
+                this.rangerScanner = rangerScannerHostPage.rangerScanner;
+                this.rangerScanner.TransportNewState += rangerScanner_TransportNewState;
+                this.rangerScanner.TransportChangeOptionsState += rangerScanner_TransportChangeOptionsState;
+                this.rangerScanner.TransportSetItemOutput += rangerScanner_TransportSetItemOutput;
+            }
+            catch
+            {
+                // intentionally nothing.  means they don't have the Ranger driver
+            }
         }
+
+        /// <summary>
+        /// Gets or sets the micr image.
+        /// </summary>
+        /// <value>
+        /// The micr image.
+        /// </value>
+        public AxMTMicrImage.AxMicrImage micrImage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ranger scanner.
+        /// </summary>
+        /// <value>
+        /// The ranger scanner.
+        /// </value>
+        public AxRANGERLib.AxRanger rangerScanner { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [first page load].
@@ -744,7 +783,11 @@ namespace Rock.Apps.CheckScannerUtility
             bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
             WpfHelper.FadeOut( lblUploadProgress, 0 );
-            ConnectToScanner();
+            if ( !ConnectToScanner() )
+            {
+                NavigateToOptionsPage();
+            }
+
             UploadScannedDocsAsync();
 
             if ( this.FirstPageLoad )
@@ -851,13 +894,19 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Connects to scanner.
         /// </summary>
-        private void ConnectToScanner()
+        private bool ConnectToScanner()
         {
             var rockConfig = RockConfig.Load();
 
             if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
-                micrImageHost.IsEnabled = true;
+                if ( micrImage == null )
+                {
+                    // no MagTek driver
+                    return false;
+                }
+
+                micrImage.MicrDataReceived += micrImage_MicrDataReceived;
                 micrImage.CommPort = rockConfig.MICRImageComPort;
                 micrImage.PortOpen = false;
 
@@ -890,7 +939,7 @@ namespace Rock.Apps.CheckScannerUtility
                         ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
 
                         // get Version to test if we have a good connection to the device
-                        string version = null;
+                        string version = "-1";
                         try
                         {
                             this.Cursor = Cursors.Wait;
@@ -908,13 +957,13 @@ namespace Rock.Apps.CheckScannerUtility
                         else
                         {
                             MessageBox.Show( string.Format( "MagTek Device is not responding on COM{0}.", micrImage.CommPort ), "Scanner Error" );
-                            return;
+                            return false;
                         }
                     }
                     else
                     {
                         MessageBox.Show( string.Format( "MagTek Device is not attached to COM{0}.", micrImage.CommPort ), "Missing Scanner" );
-                        return;
+                        return false;
                     }
                 }
 
@@ -922,6 +971,19 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
+                try
+                {
+                    if ( this.rangerScanner == null )
+                    {
+                        // no ranger driver
+                        return false;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+
                 try
                 {
                     this.Cursor = Cursors.Wait;
@@ -942,6 +1004,8 @@ namespace Rock.Apps.CheckScannerUtility
                     ScannerFeederType = FeederType.SingleItem;
                 }
             }
+
+            return true;
         }
 
         /// <summary>
@@ -970,6 +1034,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnOptions_Click( object sender, RoutedEventArgs e )
+        {
+            NavigateToOptionsPage();
+        }
+
+        /// <summary>
+        /// Navigates to options page.
+        /// </summary>
+        private void NavigateToOptionsPage()
         {
             var optionsPage = new OptionsPage( this );
             this.NavigationService.Navigate( optionsPage );

@@ -50,7 +50,7 @@ namespace Rock.Apps.CheckScannerUtility
                 batchPage = ( mainWindow.Content as ScanningPage ).batchPage;
             }
 
-            if ( batchPage != null )
+            if ( batchPage != null && batchPage.rangerScanner != null)
             {
                 batchPage.rangerScanner.ShutDown();
             }
