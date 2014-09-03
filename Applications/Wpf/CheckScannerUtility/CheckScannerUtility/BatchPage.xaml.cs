@@ -889,6 +889,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                         ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
 
+                        // get Version to test if we have a good connection to the device
                         string version = null;
                         try
                         {
@@ -1163,7 +1164,6 @@ namespace Rock.Apps.CheckScannerUtility
             List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
             foreach ( var transaction in transactions )
             {
-                transaction.TransactionDetails = client.GetData<List<FinancialTransactionDetail>>( "api/FinancialTransactionDetails/", string.Format( "TransactionId eq {0}", transaction.Id ) );
                 transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
             }
 
