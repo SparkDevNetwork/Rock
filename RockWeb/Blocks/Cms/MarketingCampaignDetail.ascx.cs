@@ -433,6 +433,7 @@ namespace RockWeb.Blocks.Cms
             {
                 ppContactPerson.SetValue( null );
             }
+
             ddlEventGroup.SetValue( marketingCampaign.EventGroupId );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
