@@ -9,8 +9,12 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i> <asp:Literal ID="lGroupIconHtml" runat="server" /> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <h1 class="panel-title"> <asp:Literal ID="lGroupIconHtml" runat="server" /> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <div class="panel-labels">
+                    <asp:HyperLink ID="hlProfilePage" runat="server" CssClass="label label-type" Visible="false">View Profile <i class="fa fa-share-square-o"></i> </asp:HyperLink>
+                </div>
             </div>
+            
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -22,10 +26,17 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
-                            <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
+                        </div>
+                        <div class="col-md-6">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                             <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>

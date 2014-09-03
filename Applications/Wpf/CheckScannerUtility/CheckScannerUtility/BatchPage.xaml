@@ -223,7 +223,7 @@
 
                             <Label x:Name="lblUploadProgress"
                                    Grid.Row="4"
-                                   Style="{StaticResource labelStyleAlert}"
+                                   Style="{StaticResource labelStyleAlertInfo}"
                                    Content="Upload Status" />
                             <StackPanel Grid.Row="4"
                                         Grid.Column="0"

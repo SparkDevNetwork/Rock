@@ -433,7 +433,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void ProcessActionRequest()
         {
-            string action = PageParameter( "action" );
+            string action = PageParameter( "Command" );
             if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 CompleteFormAction( action );

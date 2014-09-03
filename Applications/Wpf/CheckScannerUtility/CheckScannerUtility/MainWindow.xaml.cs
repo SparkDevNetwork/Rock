@@ -52,12 +52,6 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( batchPage != null )
             {
-                if ( batchPage.ScannedDocList.Where( a => !a.Uploaded ).Count() > 0 )
-                {
-                    e.Cancel = true;
-                    return;
-                }
-                
                 batchPage.rangerScanner.ShutDown();
             }
 
