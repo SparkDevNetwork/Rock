@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Finance
                     ControlAmount = b.ControlAmount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
-                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonId.HasValue )
+                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
                 } )
                 .ToList();
         }

@@ -239,7 +239,7 @@ function() {
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
-                .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
+                .GroupBy( xx => ( xx.AuthorizedPersonAlias != null ? xx.AuthorizedPersonAlias.PersonId : 0 ) ).Select( xx =>
                     new
                     {
                         PersonId = xx.Key,
@@ -255,7 +255,7 @@ function() {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
             }
 
-            var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
+            var innerQry = financialTransactionQry.Select( xx => xx.PersonId ).AsQueryable();
 
             var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );

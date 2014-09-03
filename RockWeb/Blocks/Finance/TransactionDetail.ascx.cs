@@ -242,7 +242,15 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn != null )
             {
-                txn.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
+                if ( ppAuthorizedPerson.PersonId.HasValue )
+                {
+                    var primaryAlias = new PersonAliasService( rockContext ).GetPrimary( ppAuthorizedPerson.PersonId.Value );
+                    if ( primaryAlias != null )
+                    {
+                        txn.AuthorizedPersonAliasId = primaryAlias.Id;
+                    }
+                }
+
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
@@ -579,7 +587,7 @@ namespace RockWeb.Blocks.Finance
         {
             rockContext = rockContext ?? new RockContext();
             var txn = new FinancialTransactionService( rockContext )
-                .Queryable( "AuthorizedPerson,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
@@ -671,7 +679,7 @@ namespace RockWeb.Blocks.Finance
                 string rockUrlRoot = ResolveRockUrl( "/" );
 
                 var detailsLeft = new DescriptionList()
-                    .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty )
+                    .Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty )
                     .Add( "Amount", ( txn.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
                     .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
 
@@ -776,7 +784,14 @@ namespace RockWeb.Blocks.Finance
 
                 SetEditMode( true );
 
-                ppAuthorizedPerson.SetValue( txn.AuthorizedPerson );
+                if ( txn.AuthorizedPersonAlias != null )
+                {
+                    ppAuthorizedPerson.SetValue( txn.AuthorizedPersonAlias.Person );
+                }
+                else
+                {
+                    ppAuthorizedPerson.SetValue( null );
+                }
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
                 ddlSourceType.SetValue( txn.SourceTypeValueId );

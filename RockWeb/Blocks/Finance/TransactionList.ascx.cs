@@ -595,7 +595,7 @@ namespace RockWeb.Blocks.Finance
 
             // Qry
             var qry = new FinancialTransactionService( new RockContext() )
-                .Queryable( "AuthorizedPerson,ProcessedByPersonAlias.Person" );
+                .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" );
 
             // Set up the selection filter
             if ( _batch != null )
@@ -625,7 +625,7 @@ namespace RockWeb.Blocks.Finance
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
-                    qry = qry.Where( t => t.AuthorizedPersonId == _person.Id );
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == _person.Id );
                 }
 
                 // Date Range

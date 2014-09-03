@@ -45,14 +45,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who authorized the transaction. In the event of a gift this would be
-        /// the giver; in the event of a purchase this would be the purchaser.
+        /// Gets or sets the authorized person identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who authorized the transaction.
+        /// The authorized person identifier.
         /// </value>
         [DataMember]
-        public int? AuthorizedPersonId { get; set; }
+        public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
@@ -200,12 +199,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.Person"/> who authorized the transaction. For a gift this is a the giver, for a purchase this is the purchaser.
+        /// Gets or sets the authorized person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who authorized the transaction.
+        /// The authorized person alias.
         /// </value>
-        public virtual Person AuthorizedPerson { get; set; }
+        public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
@@ -380,7 +379,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionConfiguration()
         {
-            this.HasOptional( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );

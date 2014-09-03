@@ -43,13 +43,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who authorized the scheduled transaction.
+        /// Gets or sets the authorized person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who authorized the scheduled transaction.
+        /// The authorized person alias identifier.
         /// </value>
         [DataMember]
-        public int AuthorizedPersonId { get; set; }
+        public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the transaction frequency <see cref="Rock.Model.DefinedValue"/> that represents the frequency that this 
@@ -205,12 +205,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> that authorized the scheduled transaction.
+        /// Gets or sets the authorized person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> that authorized the scheduled transaction.
+        /// The authorized person alias.
         /// </value>
-        public virtual Person AuthorizedPerson { get; set; }
+        public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> for the financial gateway.
@@ -312,7 +312,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialScheduledTransactionConfiguration()
         {
-            this.HasRequired( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );

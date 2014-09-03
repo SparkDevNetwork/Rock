@@ -121,9 +121,9 @@ namespace RockWeb.Blocks.Finance
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var qry = financialPersonBankAccountService.Queryable();
 
-            if ( this.Person != null )
+            if ( this.Person != null && this.Person.PrimaryAliasId.HasValue )
             {
-                qry = qry.Where( a => a.PersonId == this.Person.Id );
+                qry = qry.Where( a => a.PersonAliasId == this.Person.PrimaryAliasId.Value );
 
                 SortProperty sortProperty = gList.SortProperty;
 

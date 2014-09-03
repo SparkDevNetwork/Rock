@@ -33,7 +33,8 @@
                             RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
-                                <asp:BoundField DataField="AuthorizedPerson.FullName" HeaderText="Person" SortExpression="AuthorizedPerson.LastName,AuthorizedPerson.NickName" />
+                                <asp:BoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Person" 
+                                    SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                                 <asp:BoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                 <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
                                 <asp:TemplateField HeaderText="Currency Type" >

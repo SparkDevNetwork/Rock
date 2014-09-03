@@ -69,7 +69,15 @@ namespace RockWeb.Blocks.Finance
                 pledge = pledgeService.Get( pledgeId );
             }
 
-            pledge.PersonId = ppPerson.PersonId;
+            if (ppPerson.PersonId.HasValue)
+            {
+                var personAlias = new PersonAliasService( rockContext ).GetPrimary( ppPerson.PersonId.Value );
+                if ( personAlias != null )
+                {
+                    pledge.PersonAliasId = personAlias.Id;
+                }
+            }
+
             pledge.AccountId = fpFund.SelectedValue.AsIntegerOrNull();
             pledge.TotalAmount = tbAmount.Text.AsDecimal();
 
@@ -127,7 +135,14 @@ namespace RockWeb.Blocks.Finance
             var isNewPledge = pledge.Id == 0;
 
             hfPledgeId.Value = pledge.Id.ToString();
-            ppPerson.SetValue( pledge.Person );
+            if ( pledge.PersonAlias != null )
+            {
+                ppPerson.SetValue( pledge.PersonAlias.Person );
+            }
+            else
+            {
+                ppPerson.SetValue( null );
+            }
             ppPerson.Enabled = !isReadOnly;
             fpFund.SetValue( pledge.Account );
             fpFund.Enabled = !isReadOnly;

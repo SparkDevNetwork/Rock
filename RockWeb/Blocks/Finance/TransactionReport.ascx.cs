@@ -205,8 +205,11 @@ namespace RockWeb.Blocks.Finance
                                             .Select( i => int.Parse( i.Value ) ).ToList();
 
             var qry = transService.Queryable("TransactionDetails.Account")
-                        .Where( t => t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) 
-                                && t.AuthorizedPerson.GivingGroupId == CurrentPerson.GivingGroupId );
+                        .Where( t => 
+                            t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
+                            t.AuthorizedPersonAlias != null &&
+                            t.AuthorizedPersonAlias.Person != null &&
+                            t.AuthorizedPersonAlias.Person.GivingGroupId == CurrentPerson.GivingGroupId );
 
             if (drpFilterDates.LowerValue.HasValue) {
                 qry = qry.Where(t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value);
