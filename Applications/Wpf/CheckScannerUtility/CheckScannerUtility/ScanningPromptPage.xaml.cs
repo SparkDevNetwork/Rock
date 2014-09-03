@@ -139,13 +139,13 @@ namespace Rock.Apps.CheckScannerUtility
             chkPromptToScanRearImage.IsChecked = rockConfig.PromptToScanRearImage;
             if (rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi)
             {
-                spRangerScanSettings.Visibility = System.Windows.Visibility.Visible;
-                spMagTekScanSettings.Visibility = System.Windows.Visibility.Collapsed;
+                spRangerScanSettings.Visibility = Visibility.Visible;
+                spMagTekScanSettings.Visibility = Visibility.Collapsed;
             }
             else
             {
-                spRangerScanSettings.Visibility = System.Windows.Visibility.Collapsed;
-                spMagTekScanSettings.Visibility = System.Windows.Visibility.Visible;
+                spRangerScanSettings.Visibility = Visibility.Collapsed;
+                spMagTekScanSettings.Visibility = Visibility.Visible;
             }
         }
     }

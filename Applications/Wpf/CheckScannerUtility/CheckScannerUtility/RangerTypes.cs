@@ -266,8 +266,15 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     public static class ScanButtonText
     {
+        // Text when the Ranger FeederType = MultipleItems
         public const string Scan = "Scan";
+
+        // Text when the Ranger FeederType = SingleItem
         public const string ScanCheck = "Scan Check";
+
+        /// <summary>
+        /// Text to show on the button when clicking it will Stop the scanner 
+        /// </summary>
         public const string Stop = "Stop";
 
         /// <summary>
