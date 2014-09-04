@@ -72,6 +72,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPersonId( int personAliasId )
+        {
+            var personAlias = Get( personAliasId );
+            if ( personAlias != null )
+            {
+                return personAlias.PersonId;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets the PersonAlias the by alias identifier.
         /// </summary>
         /// <param name="aliasPersonId">The alias person identifier.</param>
