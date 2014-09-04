@@ -112,8 +112,14 @@
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MicrImageHostPage.xaml.cs">
+      <DependentUpon>MicrImageHostPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OptionsPage.xaml.cs">
       <DependentUpon>OptionsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RangerScannerHostPage.xaml.cs">
+      <DependentUpon>RangerScannerHostPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="RangerTypes.cs" />
     <Compile Include="RockConfig.cs" />
@@ -163,7 +169,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MicrImageHostPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="OptionsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RangerScannerHostPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

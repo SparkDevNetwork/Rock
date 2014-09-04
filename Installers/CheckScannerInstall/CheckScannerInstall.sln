@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "CheckScannerInstall", "CheckScannerInstall.isproj", "{247D1B48-D91D-4299-BAD9-E0F17DEF0133}"
 	ProjectSection(ProjectDependencies) = postProject

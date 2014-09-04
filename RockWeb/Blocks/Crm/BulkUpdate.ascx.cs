@@ -660,9 +660,9 @@ namespace RockWeb.Blocks.Crm
                 sb.AppendFormat( "<p>You are about to make the following updates to {0} individuals:</p>", Individuals.Count().ToString( "N0" ) );
                 sb.AppendLine();
 
-                sb.AppendLine( "<ol>" );
+                sb.AppendLine( "<ul>" );
                 changes.ForEach( c => sb.AppendFormat("<li>{0}</li>\n", c));
-                sb.AppendLine( "</ol>" );
+                sb.AppendLine( "</ul>" );
 
                 sb.AppendLine( "<p>Please confirm that you want to make these updates.</p>");
 
@@ -1191,7 +1191,7 @@ namespace RockWeb.Blocks.Crm
                 pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
 
-                nbResult.Text = string.Format( "{0} {1} succesfully updated!",
+                nbResult.Text = string.Format( "{0} {1} succesfully updated.",
                     ids.Count().ToString( "N0" ), ( ids.Count() > 1 ? "people were" : "person was" ) ); ;
                 pnlResult.Visible = true;
             }

@@ -769,6 +769,10 @@ ul.rocktree ul {
   border-radius: 36px;
   padding: 2px 6px;
 }
+.list-as-blocks ul li.active a {
+  background-color: #282526;
+  color: #d3cec5;
+}
 @media (min-width: 768px) {
   .list-as-blocks ul li {
     margin: 0 2.5% 15px;
@@ -2612,6 +2616,8 @@ table.attribute-grid tr th:nth-child(3) {
     11. Person Merge
     12. Person Page Views
     13. Deceased / Inactive Styles
+    14. Bulk Update
+    15. Photo Upload
 */
 .personprofile {
   margin-top: -15px;
@@ -3175,6 +3181,31 @@ span.field-value {
 }
 tr.inactive td {
   color: #b7b7b7;
+}
+.bulk-update .form-group {
+  opacity: 0.5;
+}
+.bulk-update .form-group .control-label {
+  cursor: pointer;
+}
+.bulk-update .form-group.bulk-item-selected {
+  opacity: 1;
+}
+.bulk-update .form-group.bulk-item-selected .control-label {
+  color: #43be81;
+}
+.bulk-update .no-select .form-group {
+  opacity: 1;
+}
+.photoupload-photo .image-editor {
+  float: left;
+  margin-right: 48px;
+}
+.photoupload-photo .image-editor label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 150px;
+  overflow: hidden;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4413,6 +4444,11 @@ pre {
   transition: background-color 200ms linear;
 }
 .list-as-blocks ul li a:hover {
+  background-color: #5a8392;
+  border-color: #4c6f7c;
+  color: #fff;
+}
+.list-as-blocks ul li.active a {
   background-color: #567d8c;
   border-color: #4c6f7c;
   color: #fff;
