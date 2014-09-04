@@ -1525,7 +1525,9 @@ namespace Rock.Web.UI.Controls
                         {
                             displayColumns.Add( boundField );
                         }
-                        else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                        else if ( displayColumns.Count == 0 
+                            && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0
+                            && !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any())
                         {
                             allColumns.Add( boundField );
                         }
