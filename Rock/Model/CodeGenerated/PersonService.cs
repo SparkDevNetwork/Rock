@@ -96,7 +96,7 @@ namespace Rock.Model
             
             // ignoring PrayerRequest,RequestedByPersonId 
  
-            if ( new Service<Tag>( Context ).Queryable().Any( a => a.OwnerId == item.Id ) )
+            if ( new Service<Tag>( Context ).Queryable().Any( a => a.OwnerPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;

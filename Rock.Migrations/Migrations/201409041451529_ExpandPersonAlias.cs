@@ -77,6 +77,8 @@ namespace Rock.Migrations
             AddColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId", c => c.Int() );
             AddColumn( "dbo.MarketingCampaign", "ContactPersonAliasId", c => c.Int() );
             AddColumn( "dbo.Attendance", "PersonAliasId", c => c.Int() );
+            AddColumn( "dbo.GroupLocation", "GroupMemberPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.Tag", "OwnerPersonAliasId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -116,6 +118,12 @@ namespace Rock.Migrations
 
     UPDATE [Attendance] SET
           [PersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [PersonId] )
+
+    UPDATE [GroupLocation] SET
+          [GroupMemberPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [GroupMemberPersonId] )
+
+    UPDATE [Tag] SET
+          [OwnerPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [OwnerId] )
 " );
             DropForeignKey( "dbo.Communication", "ReviewerPersonId", "dbo.Person" );
             DropForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person" );
@@ -131,6 +139,8 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person" );
             DropForeignKey( "dbo.MarketingCampaign", "ContactPersonId", "dbo.Person" );
             DropForeignKey( "dbo.Attendance", "PersonId", "dbo.Person" );
+            DropForeignKey( "dbo.GroupLocation", "GroupMemberPersonId", "dbo.Person" );
+            DropForeignKey( "dbo.Tag", "OwnerId", "dbo.Person" );
 
             DropIndex( "dbo.CommunicationRecipient", new[] { "PersonId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonId" } );
@@ -146,6 +156,8 @@ namespace Rock.Migrations
             DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonId" } );
             DropIndex( "dbo.MarketingCampaign", new[] { "ContactPersonId" } );
             DropIndex( "dbo.Attendance", new[] { "PersonId" } );
+            DropIndex( "dbo.GroupLocation", new[] { "GroupMemberPersonId" } );
+            DropIndex( "dbo.Tag", new[] { "OwnerId" } );
 
             DropColumn( "dbo.CommunicationRecipient", "PersonId" );
             DropColumn( "dbo.Communication", "SenderPersonId" );
@@ -161,6 +173,8 @@ namespace Rock.Migrations
             DropColumn( "dbo.HtmlContent", "ApprovedByPersonId" );
             DropColumn( "dbo.MarketingCampaign", "ContactPersonId" );
             DropColumn( "dbo.Attendance", "PersonId" );
+            DropColumn( "dbo.GroupLocation", "GroupMemberPersonId" );
+            DropColumn( "dbo.Tag", "OwnerId" );
 
             CreateIndex( "dbo.CommunicationRecipient", "PersonAliasId" );
             CreateIndex( "dbo.Communication", "SenderPersonAliasId" );
@@ -176,6 +190,8 @@ namespace Rock.Migrations
             CreateIndex( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
             CreateIndex( "dbo.MarketingCampaign", "ContactPersonAliasId" );
             CreateIndex( "dbo.Attendance", "PersonAliasId" );
+            CreateIndex( "dbo.GroupLocation", "GroupMemberPersonAliasId" );
+            CreateIndex( "dbo.Tag", "OwnerPersonAliasId" );
 
             AddForeignKey( "dbo.Communication", "ReviewerPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonAliasId", "dbo.PersonAlias", "Id" );
@@ -191,6 +207,8 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.MarketingCampaign", "ContactPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.Attendance", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.GroupLocation", "GroupMemberPersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.Tag", "OwnerPersonAliasId", "dbo.PersonAlias", "Id" );
 
             Sql( @"
 /*
@@ -393,6 +411,8 @@ END
             AddColumn( "dbo.HtmlContent", "ApprovedByPersonId", c => c.Int() );
             AddColumn( "dbo.Auth", "PersonId", c => c.Int() );
             AddColumn( "dbo.Attendance", "PersonId", c => c.Int() );
+            AddColumn( "dbo.Tag", "OwnerId", c => c.Int() );
+            AddColumn( "dbo.GroupLocation", "GroupMemberPersonId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -432,6 +452,12 @@ END
 
     UPDATE [Attendance] SET
           [PersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [PersonAliasId] )
+
+    UPDATE [Tag] SET
+          [OwnerId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [OwnerPersonAliasId] )
+
+    UPDATE [GroupLocation] SET
+          [GroupMemberPersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [GroupMemberPersonAliasId] )
 " );
 
             DropForeignKey( "dbo.CommunicationRecipient", "PersonAliasId", "dbo.PersonAlias" );
@@ -448,6 +474,8 @@ END
             DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.Auth", "PersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.Attendance", "PersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.Tag", "OwnerPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.GroupLocation", "GroupMemberPersonAliasId", "dbo.PersonAlias" );
 
             DropIndex( "dbo.Communication", new[] { "ReviewerPersonAliasId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonAliasId" } );
@@ -463,6 +491,8 @@ END
             DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonAliasId" } );
             DropIndex( "dbo.Auth", new[] { "PersonAliasId" } );
             DropIndex( "dbo.Attendance", new[] { "PersonAliasId" } );
+            DropIndex( "dbo.Tag", new[] { "OwnerPersonAliasId" } );
+            DropIndex( "dbo.GroupLocation", new[] { "GroupMemberPersonAliasId" } );
 
             DropColumn( "dbo.Communication", "ReviewerPersonAliasId" );
             DropColumn( "dbo.Communication", "SenderPersonAliasId" );
@@ -478,6 +508,8 @@ END
             DropColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
             DropColumn( "dbo.Auth", "PersonAliasId" );
             DropColumn( "dbo.Attendance", "PersonAliasId" );
+            DropColumn( "dbo.Tag", "OwnerPersonAliasId" );
+            DropColumn( "dbo.GroupLocation", "GroupMemberPersonAliasId" );
 
             CreateIndex( "dbo.Communication", "ReviewerPersonId" );
             CreateIndex( "dbo.Communication", "SenderPersonId" );
@@ -493,6 +525,8 @@ END
             CreateIndex( "dbo.HtmlContent", "ApprovedByPersonId" );
             CreateIndex( "dbo.Auth", "PersonId" );
             CreateIndex( "dbo.Attendance", "PersonId" );
+            CreateIndex( "dbo.Tag", "OwnerId" );
+            CreateIndex( "dbo.GroupLocation", "GroupMemberPersonId" );
 
             AddForeignKey( "dbo.CommunicationRecipient", "PersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person", "Id" );
@@ -508,6 +542,8 @@ END
             AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Auth", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.Attendance", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.Tag", "OwnerId", "dbo.Person", "Id" );
+            AddForeignKey( "dbo.GroupLocation", "GroupMemberPersonId", "dbo.Person", "Id", cascadeDelete: true );
 
             Sql( @"
     DROP FUNCTION [dbo].[ufnUtility_GetPrimaryPersonAliasId]
@@ -605,10 +641,9 @@ BEGIN
 							1 as [Attended]
 						FROM
 							[Attendance] a
-							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 						WHERE 
 							[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
-							AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId)) 
+							AND a.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId)) 
 							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
 						) a ON [AttendedSunday] = s.[SundayDate]
 

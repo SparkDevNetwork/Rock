@@ -110,25 +110,25 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the Owner this Tag. If this value is Null, the Tag will be considered an Public/all user tag.
+        /// Gets or sets the owner person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> that represents the PersonId of the <see cref="Rock.Model.Person"/> who is the Owner of this Tag.  If this is a Public tag, this value will be null.
+        /// The owner person alias identifier.
         /// </value>
         [DataMember]
-        public int? OwnerId { get; set; }
+        public int? OwnerPersonAliasId { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who is the Owner of this Tag.
+        /// Gets or sets the owner person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who is the owner of the tag.
+        /// The owner person alias.
         /// </value>
-        public virtual Model.Person Owner { get; set; }
+        public virtual Model.PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the Entities that this Tag can be applied to.
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// </summary>
         public TagConfiguration()
         {
-            this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
