@@ -2445,6 +2445,7 @@ td.grid-col-actions {
   content: "\f1b3";
   font-family: FontAwesome;
   font-weight: normal;
+  margin-right: 4px;
 }
 .workflow-action .workflow-action-name:before {
   content: "\f1b2";
