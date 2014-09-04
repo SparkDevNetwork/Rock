@@ -174,18 +174,18 @@ function() {
         private void PopulateTagList()
         {
             int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
-            var tagQry = new TagService( new RockContext() ).Queryable().Where( a => a.EntityTypeId == entityTypePersonId );
+            var tagQry = new TagService( new RockContext() ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
             RockPage rockPage = _rblTagType.Page as RockPage;
 
             if ( _rblTagType.SelectedValueAsInt() == 1 )
             {
                 // Personal tags - tags where the ownerid is the current person id
-                tagQry = tagQry.Where( a => a.OwnerId == rockPage.CurrentPersonId ).OrderBy( a => a.Name );
+                tagQry = tagQry.Where( a => a.OwnerPersonAlias.PersonId == rockPage.CurrentPersonId ).OrderBy( a => a.Name );
             }
             else
             {
                 // Organizational tags - tags where the ownerid is null
-                tagQry = tagQry.Where( a => a.OwnerId == null ).OrderBy( a => a.Name );
+                tagQry = tagQry.Where( a => a.OwnerPersonAlias == null ).OrderBy( a => a.Name );
             }
 
             _ddlTagList.Items.Clear();
@@ -251,14 +251,14 @@ function() {
                     var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
                     if ( selectedTag != null )
                     {
-                        if ( selectedTag.OwnerId != null )
+                        if ( selectedTag.OwnerPersonAliasId.HasValue )
                         {
                             foreach ( var listItem in ddlTagList.Items.OfType<ListItem>() )
                             {
                                 listItem.Attributes["OptionGroup"] = "Personal";
                             }
 
-                            string tagText = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.Owner );
+                            string tagText = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.OwnerPersonAlias.Person );
                             ListItem currentTagListItem = new ListItem( tagText, selectedTagGuid.ToString() );
                             currentTagListItem.Attributes["OptionGroup"] = "Current";
                             ddlTagList.Items.Insert( 0, currentTagListItem );
