@@ -389,7 +389,6 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _attendances = new Collection<Attendance>();
             _aliases = new Collection<PersonAlias>();
         }
 
@@ -651,19 +650,6 @@ namespace Rock.Model
             set { _members = value; }
         }
         private ICollection<GroupMember> _members;
-
-        /// <summary>
-        /// Gets or set a collection containing the Person's <see cref="Rock.Model.Attendance"/> history.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
-        /// </value>
-        public virtual ICollection<Attendance> Attendances
-        {
-            get { return _attendances; }
-            set { _attendances = value; }
-        }
-        private ICollection<Attendance> _attendances;
 
         /// <summary>
         /// Gets or sets the aliases for this person

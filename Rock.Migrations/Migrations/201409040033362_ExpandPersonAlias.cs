@@ -76,6 +76,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.Auth", "PersonAliasId", c => c.Int() );
             AddColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId", c => c.Int() );
             AddColumn( "dbo.MarketingCampaign", "ContactPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.Attendance", "PersonAliasId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -112,6 +113,9 @@ namespace Rock.Migrations
 
     UPDATE [MarketingCampaign] SET
           [ContactPersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [ContactPersonId] )
+
+    UPDATE [Attendance] SET
+          [PersonAliasId] = [dbo].[ufnUtility_GetPrimaryPersonAliasId] ( [PersonId] )
 " );
             DropForeignKey( "dbo.Communication", "ReviewerPersonId", "dbo.Person" );
             DropForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person" );
@@ -126,6 +130,7 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.Auth", "PersonId", "dbo.Person" );
             DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person" );
             DropForeignKey( "dbo.MarketingCampaign", "ContactPersonId", "dbo.Person" );
+            DropForeignKey( "dbo.Attendance", "PersonId", "dbo.Person" );
 
             DropIndex( "dbo.CommunicationRecipient", new[] { "PersonId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonId" } );
@@ -140,6 +145,7 @@ namespace Rock.Migrations
             DropIndex( "dbo.Auth", new[] { "PersonId" } );
             DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonId" } );
             DropIndex( "dbo.MarketingCampaign", new[] { "ContactPersonId" } );
+            DropIndex( "dbo.Attendance", new[] { "PersonId" } );
 
             DropColumn( "dbo.CommunicationRecipient", "PersonId" );
             DropColumn( "dbo.Communication", "SenderPersonId" );
@@ -154,6 +160,7 @@ namespace Rock.Migrations
             DropColumn( "dbo.Auth", "PersonId" );
             DropColumn( "dbo.HtmlContent", "ApprovedByPersonId" );
             DropColumn( "dbo.MarketingCampaign", "ContactPersonId" );
+            DropColumn( "dbo.Attendance", "PersonId" );
 
             CreateIndex( "dbo.CommunicationRecipient", "PersonAliasId" );
             CreateIndex( "dbo.Communication", "SenderPersonAliasId" );
@@ -168,6 +175,7 @@ namespace Rock.Migrations
             CreateIndex( "dbo.Auth", "PersonAliasId" );
             CreateIndex( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
             CreateIndex( "dbo.MarketingCampaign", "ContactPersonAliasId" );
+            CreateIndex( "dbo.Attendance", "PersonAliasId" );
 
             AddForeignKey( "dbo.Communication", "ReviewerPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonAliasId", "dbo.PersonAlias", "Id" );
@@ -182,7 +190,188 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.Auth", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias", "Id" );
             AddForeignKey( "dbo.MarketingCampaign", "ContactPersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.Attendance", "PersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
 
+            Sql( @"
+/*
+<doc>
+	<summary>
+ 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+		is given it is looked up.  If the individual is an adult it will return family attendance if it's a child
+		it will return the individual's attendance. If a person is in two families once as a child once as an
+		adult it will pick the first role it finds.
+	</summary>
+
+	<returns>
+		* AttendanceCount
+		* SundaysInMonth
+		* Month
+		* Year
+	</returns>
+	<param name=""PersonId"" datatype=""int"">Person the badge is for</param>
+	<param name=""Role Guid"" datatype=""uniqueidentifier"">The role of the person in the family (optional)</param>
+	<param name=""Reference Date"" datatype=""datetime"">A date in the last month for the badge (optional, default is today)</param>
+	<param name=""Number of Months"" datatype=""int"">Number of months to display (optional, default is 24)</param>
+	<remarks>	
+		Uses the following constants:
+			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+			* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
+			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
+	</remarks>
+	<code>
+		EXEC [dbo].[spCheckin_BadgeAttendance] 2 -- Ted Decker (adult)
+		EXEC [dbo].[spCheckin_BadgeAttendance] 4 -- Noah Decker (child)
+	</code>
+</doc>
+*/
+
+ALTER PROCEDURE [dbo].[spCheckin_BadgeAttendance]
+	@PersonId int 
+	, @RoleGuid uniqueidentifier = null
+	, @ReferenceDate datetime = null
+	, @MonthCount int = 24
+AS
+BEGIN
+	DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
+	DECLARE @cROLE_CHILD uniqueidentifier = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
+	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+	DECLARE @StartDay datetime
+	DECLARE @LastDay datetime
+
+	-- if role (adult/child) is unknown determine it
+	IF (@RoleGuid IS NULL)
+	BEGIN
+		SELECT TOP 1 @RoleGuid =  gtr.[Guid] 
+			FROM [GroupTypeRole] gtr
+				INNER JOIN [GroupMember] gm ON gm.[GroupRoleId] = gtr.[Id]
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
+			WHERE gm.[PersonId] = @PersonId 
+				AND g.[GroupTypeId] = (SELECT [ID] FROM [GroupType] WHERE [Guid] = @cGROUP_TYPE_FAMILY)
+	END
+
+	-- if start date null get today's date
+	IF @ReferenceDate is null
+		SET @ReferenceDate = getdate()
+
+	-- set data boundaries
+	SET @LastDay = dbo.ufnUtility_GetLastDayOfMonth(@ReferenceDate) -- last day is most recent day
+	SET @StartDay = DATEADD(month, (@MonthCount * -1), @LastDay) -- start day is the oldest day
+
+	-- make sure last day is not in future (in case there are errant checkin data)
+	IF (@LastDay > getdate())
+	BEGIN
+		SET @LastDay = getdate()
+	END
+
+	--PRINT 'Last Day: ' + CONVERT(VARCHAR, @LastDay, 101) 
+	--PRINT 'Start Day: ' + CONVERT(VARCHAR, @StartDay, 101) 
+
+	-- query for attendance data
+	IF (@RoleGuid = @cROLE_ADULT)
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+						WHERE 
+							[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+							AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId)) 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+	ELSE
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+						WHERE 
+							[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+							AND pa.[PersonId] = @PersonId 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+
+	
+END
+" );
+
+            Sql( @"
+    -- create stored proc for attendance duration
+    /*
+    <doc>
+	    <summary>
+ 		    This function returns the number of weekends a member of a family has attended a weekend service
+		    in the last X weeks.
+	    </summary>
+
+	    <returns>
+		    * Number of weeks
+	    </returns>
+	    <param name=""PersonId"" datatype=""int"">The person id to use</param>
+	    <param name=""WeekDuration"" datatype=""int"">The number of weeks to use as the duration (default 16)</param>
+	    <remarks>	
+	    </remarks>
+	    <code>
+		    EXEC [dbo].[spCheckin_WeeksAttendedInDuration] 2 -- Ted Decker
+	    </code>
+    </doc>
+    */
+
+    ALTER PROCEDURE [dbo].[spCheckin_WeeksAttendedInDuration]
+	    @PersonId int
+	    ,@WeekDuration int = 16
+    AS
+    BEGIN
+	
+        DECLARE @LastSunday datetime 
+
+        SET @LastSunday = [dbo].[ufnUtility_GetPreviousSundayDate]()
+
+        SELECT 
+	        COUNT(DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) )
+        FROM
+	        [Attendance] a
+	        INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+        WHERE 
+	        [GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+	        AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId))
+	        AND a.[StartDateTime] BETWEEN DATEADD(WEEK, (@WeekDuration * -1), @LastSunday) AND @LastSunday 
+
+    END
+" );
         }
 
         /// <summary>
@@ -203,6 +392,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.MarketingCampaign", "ContactPersonId", c => c.Int() );
             AddColumn( "dbo.HtmlContent", "ApprovedByPersonId", c => c.Int() );
             AddColumn( "dbo.Auth", "PersonId", c => c.Int() );
+            AddColumn( "dbo.Attendance", "PersonId", c => c.Int() );
 
             Sql( @"
     UPDATE [CommunicationRecipient] SET
@@ -239,6 +429,9 @@ namespace Rock.Migrations
 
     UPDATE [Auth] SET
           [PersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [PersonAliasId] )
+
+    UPDATE [Attendance] SET
+          [PersonId] = [dbo].[ufnUtility_GetPersonIdFromPersonAlias] ( [PersonAliasId] )
 " );
 
             DropForeignKey( "dbo.CommunicationRecipient", "PersonAliasId", "dbo.PersonAlias" );
@@ -254,6 +447,7 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.MarketingCampaign", "ContactPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.HtmlContent", "ApprovedByPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.Auth", "PersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.Attendance", "PersonAliasId", "dbo.PersonAlias" );
 
             DropIndex( "dbo.Communication", new[] { "ReviewerPersonAliasId" } );
             DropIndex( "dbo.Communication", new[] { "SenderPersonAliasId" } );
@@ -268,6 +462,7 @@ namespace Rock.Migrations
             DropIndex( "dbo.MarketingCampaign", new[] { "ContactPersonAliasId" } );
             DropIndex( "dbo.HtmlContent", new[] { "ApprovedByPersonAliasId" } );
             DropIndex( "dbo.Auth", new[] { "PersonAliasId" } );
+            DropIndex( "dbo.Attendance", new[] { "PersonAliasId" } );
 
             DropColumn( "dbo.Communication", "ReviewerPersonAliasId" );
             DropColumn( "dbo.Communication", "SenderPersonAliasId" );
@@ -282,6 +477,7 @@ namespace Rock.Migrations
             DropColumn( "dbo.MarketingCampaign", "ContactPersonAliasId" );
             DropColumn( "dbo.HtmlContent", "ApprovedByPersonAliasId" );
             DropColumn( "dbo.Auth", "PersonAliasId" );
+            DropColumn( "dbo.Attendance", "PersonAliasId" );
 
             CreateIndex( "dbo.Communication", "ReviewerPersonId" );
             CreateIndex( "dbo.Communication", "SenderPersonId" );
@@ -296,6 +492,7 @@ namespace Rock.Migrations
             CreateIndex( "dbo.MarketingCampaign", "ContactPersonId" );
             CreateIndex( "dbo.HtmlContent", "ApprovedByPersonId" );
             CreateIndex( "dbo.Auth", "PersonId" );
+            CreateIndex( "dbo.Attendance", "PersonId" );
 
             AddForeignKey( "dbo.CommunicationRecipient", "PersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Communication", "SenderPersonId", "dbo.Person", "Id" );
@@ -310,9 +507,188 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.MarketingCampaign", "ContactPersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.HtmlContent", "ApprovedByPersonId", "dbo.Person", "Id" );
             AddForeignKey( "dbo.Auth", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.Attendance", "PersonId", "dbo.Person", "Id", cascadeDelete: true );
 
             Sql( @"
     DROP FUNCTION [dbo].[ufnUtility_GetPrimaryPersonAliasId]
+" );
+
+            Sql( @"
+/*
+<doc>
+	<summary>
+ 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+		is given it is looked up.  If the individual is an adult it will return family attendance if it's a child
+		it will return the individual's attendance. If a person is in two families once as a child once as an
+		adult it will pick the first role it finds.
+	</summary>
+
+	<returns>
+		* AttendanceCount
+		* SundaysInMonth
+		* Month
+		* Year
+	</returns>
+	<param name=""PersonId"" datatype=""int"">Person the badge is for</param>
+	<param name=""Role Guid"" datatype=""uniqueidentifier"">The role of the person in the family (optional)</param>
+	<param name=""Reference Date"" datatype=""datetime"">A date in the last month for the badge (optional, default is today)</param>
+	<param name=""Number of Months"" datatype=""int"">Number of months to display (optional, default is 24)</param>
+	<remarks>	
+		Uses the following constants:
+			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+			* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
+			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
+	</remarks>
+	<code>
+		EXEC [dbo].[spCheckin_BadgeAttendance] 2 -- Ted Decker (adult)
+		EXEC [dbo].[spCheckin_BadgeAttendance] 4 -- Noah Decker (child)
+	</code>
+</doc>
+*/
+
+ALTER PROCEDURE [dbo].[spCheckin_BadgeAttendance]
+	@PersonId int 
+	, @RoleGuid uniqueidentifier = null
+	, @ReferenceDate datetime = null
+	, @MonthCount int = 24
+AS
+BEGIN
+	DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
+	DECLARE @cROLE_CHILD uniqueidentifier = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
+	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+	DECLARE @StartDay datetime
+	DECLARE @LastDay datetime
+
+	-- if role (adult/child) is unknown determine it
+	IF (@RoleGuid IS NULL)
+	BEGIN
+		SELECT TOP 1 @RoleGuid =  gtr.[Guid] 
+			FROM [GroupTypeRole] gtr
+				INNER JOIN [GroupMember] gm ON gm.[GroupRoleId] = gtr.[Id]
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
+			WHERE gm.[PersonId] = @PersonId 
+				AND g.[GroupTypeId] = (SELECT [ID] FROM [GroupType] WHERE [Guid] = @cGROUP_TYPE_FAMILY)
+	END
+
+	-- if start date null get today's date
+	IF @ReferenceDate is null
+		SET @ReferenceDate = getdate()
+
+	-- set data boundaries
+	SET @LastDay = dbo.ufnUtility_GetLastDayOfMonth(@ReferenceDate) -- last day is most recent day
+	SET @StartDay = DATEADD(month, (@MonthCount * -1), @LastDay) -- start day is the oldest day
+
+	-- make sure last day is not in future (in case there are errant checkin data)
+	IF (@LastDay > getdate())
+	BEGIN
+		SET @LastDay = getdate()
+	END
+
+	--PRINT 'Last Day: ' + CONVERT(VARCHAR, @LastDay, 101) 
+	--PRINT 'Start Day: ' + CONVERT(VARCHAR, @StartDay, 101) 
+
+	-- query for attendance data
+	IF (@RoleGuid = @cROLE_ADULT)
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+						WHERE 
+							[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+							AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId)) 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+	ELSE
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+						WHERE 
+							[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+							AND a.[PersonId] = @PersonId 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+
+END
+" );
+
+            Sql( @"
+    -- create stored proc for attendance duration
+    /*
+    <doc>
+	    <summary>
+ 		    This function returns the number of weekends a member of a family has attended a weekend service
+		    in the last X weeks.
+	    </summary>
+
+	    <returns>
+		    * Number of weeks
+	    </returns>
+	    <param name=""PersonId"" datatype=""int"">The person id to use</param>
+	    <param name=""WeekDuration"" datatype=""int"">The number of weeks to use as the duration (default 16)</param>
+	    <remarks>	
+	    </remarks>
+	    <code>
+		    EXEC [dbo].[spCheckin_WeeksAttendedInDuration] 2 -- Ted Decker
+	    </code>
+    </doc>
+    */
+
+    ALTER PROCEDURE [dbo].[spCheckin_WeeksAttendedInDuration]
+	    @PersonId int
+	    ,@WeekDuration int = 16
+    AS
+    BEGIN
+	
+        DECLARE @LastSunday datetime 
+
+        SET @LastSunday = [dbo].[ufnUtility_GetPreviousSundayDate]()
+
+        SELECT 
+	        COUNT(DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) )
+        FROM
+	        [Attendance] a
+        WHERE 
+	        [GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
+	        AND a.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId))
+	        AND a.[StartDateTime] BETWEEN DATEADD(WEEK, (@WeekDuration * -1), @LastSunday) AND @LastSunday 
+
+    END
 " );
         }
     }
