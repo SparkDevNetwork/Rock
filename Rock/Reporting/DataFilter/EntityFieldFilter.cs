@@ -193,7 +193,16 @@ namespace Rock.Reporting.DataFilter
 
                 case SystemGuid.FieldType.TEXT:
 
-                    var ddlText = ComparisonControl( StringFilterComparisonTypes );
+                    RockDropDownList ddlText;
+                    if ( entityField.PropertyType == typeof( Guid ) )
+                    {
+                        ddlText = ComparisonControl( GuidFilterComparisonTypes );
+                    }
+                    else
+                    {
+                        ddlText = ComparisonControl( StringFilterComparisonTypes );
+                    }
+
                     ddlText.ID = string.Format( "{0}_ddlText", controlIdPrefix );
                     ddlText.AddCssClass( "js-filter-compare" );
                     parentControl.Controls.Add( ddlText );

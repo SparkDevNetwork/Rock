@@ -205,85 +205,124 @@ namespace Rock.Reporting
         /// <returns></returns>
         protected Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value )
         {
+            MemberExpression valueExpression;
+            Expression comparisonExpression = null;
+            bool isNullableType = property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof( Nullable<> );
+            if ( isNullableType )
+            {
+                // if Nullable Type compare on the .Value of the property (if it HasValue)
+                valueExpression = Expression.Property( property, "Value" );
+            }
+            else
+            {
+                valueExpression = property;
+            }
+
             if ( comparisonType == ComparisonType.Contains )
             {
-                return Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
+                comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
             }
 
-            if ( comparisonType == ComparisonType.DoesNotContain )
+            else if ( comparisonType == ComparisonType.DoesNotContain )
             {
-                return Expression.Not( Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value ) );
+                comparisonExpression = Expression.Not( Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value ) );
             }
 
-            if ( comparisonType == ComparisonType.EndsWith )
+            else if ( comparisonType == ComparisonType.EndsWith )
             {
-                return Expression.Call( property, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
+                comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
             }
 
-            if ( comparisonType == ComparisonType.EqualTo )
+            else if ( comparisonType == ComparisonType.EqualTo )
             {
-                return Expression.Equal( property, value );
+                comparisonExpression = Expression.Equal( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.GreaterThan )
+            else if ( comparisonType == ComparisonType.GreaterThan )
             {
-                return Expression.GreaterThan( property, value );
+                comparisonExpression = Expression.GreaterThan( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                return Expression.GreaterThanOrEqual( property, value );
+                comparisonExpression = Expression.GreaterThanOrEqual( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.IsBlank )
+            else if ( comparisonType == ComparisonType.IsBlank )
             {
-                if ( property.Type == typeof( string ) )
+                if ( valueExpression.Type == typeof( string ) )
                 {
-                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                    Expression emtpyString = Expression.Constant( string.Empty );
-                    return Expression.Or( Expression.Equal( trimmed, value ), Expression.Equal( property, Expression.Constant( null, property.Type ) ) );
+                    Expression trimmed = Expression.Call( valueExpression, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
+                    comparisonExpression = Expression.Or( Expression.Equal( trimmed, value ), Expression.Equal( valueExpression, Expression.Constant( null, valueExpression.Type ) ) );
                 }
                 else
                 {
-                    return Expression.Equal( property, Expression.Constant( null, property.Type ) );
+                    if ( isNullableType )
+                    {
+                        comparisonExpression = Expression.Equal(Expression.Property( property, "HasValue" ), Expression.Constant(false));
+                    }
+                    else
+                    {
+                        // if not a Nullable type, return false since there aren't any null values
+                        comparisonExpression = Expression.Constant( false );
+                    }
                 }
             }
 
-            if ( comparisonType == ComparisonType.IsNotBlank )
+            else if ( comparisonType == ComparisonType.IsNotBlank )
             {
-                if ( property.Type == typeof( string ) )
+                if ( valueExpression.Type == typeof( string ) )
                 {
-                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
+                    Expression trimmed = Expression.Call( valueExpression, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
                     Expression emtpyString = Expression.Constant( string.Empty );
-                    return Expression.NotEqual( trimmed, value );
+                    comparisonExpression = Expression.NotEqual( trimmed, value );
                 }
                 else
                 {
-                    return Expression.NotEqual( property, Expression.Constant( null, property.Type ) );
+                    if ( isNullableType )
+                    {
+                        comparisonExpression = Expression.Property( property, "HasValue" );
+                    }
+                    else
+                    {
+                        // if not a Nullable type, return true since there aren't any non-null values
+                        comparisonExpression = Expression.Constant( true );
+                    }
                 }
             }
 
-            if ( comparisonType == ComparisonType.LessThan )
+            else if ( comparisonType == ComparisonType.LessThan )
             {
-                return Expression.LessThan( property, value );
+                comparisonExpression = Expression.LessThan( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.LessThanOrEqualTo )
+            else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
             {
-                return Expression.LessThanOrEqual( property, value );
+                comparisonExpression = Expression.LessThanOrEqual( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.NotEqualTo )
+            else if ( comparisonType == ComparisonType.NotEqualTo )
             {
-                return Expression.NotEqual( property, value );
+                comparisonExpression = Expression.NotEqual( valueExpression, value );
             }
 
-            if ( comparisonType == ComparisonType.StartsWith )
+            else if ( comparisonType == ComparisonType.StartsWith )
             {
-                return Expression.Call( property, typeof( string ).GetMethod( "StartsWith", new Type[] { typeof( string ) } ), value );
+                comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "StartsWith", new Type[] { typeof( string ) } ), value );
             }
 
-            return null;
+            // unless we are simply checking for Null/NotNull, make sure to check on HasValue for Nullable types
+            if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+            {
+                if ( comparisonExpression != null && isNullableType )
+                {
+                    // if Nullable Type we are comparing on the .Value of the property, so also make sure it HasValue
+                    MemberExpression hasValue = Expression.Property( property, "HasValue" );
+                    return Expression.AndAlso( hasValue, comparisonExpression );
+                }
+            }
+
+            return comparisonExpression;
         }
 
         /// <summary>
@@ -325,6 +364,19 @@ namespace Rock.Reporting
                     ComparisonType.NotEqualTo |
                     ComparisonType.StartsWith |
                     ComparisonType.EndsWith;
+            }
+        }
+
+        /// <summary>
+        /// Gets the comparison types typically used for Guid fields
+        /// </summary>
+        public static ComparisonType GuidFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    ComparisonType.EqualTo |
+                    ComparisonType.NotEqualTo;
             }
         }
 
