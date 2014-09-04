@@ -259,6 +259,7 @@
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
+    <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
