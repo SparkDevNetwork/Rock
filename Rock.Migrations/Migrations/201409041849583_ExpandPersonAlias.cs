@@ -29,6 +29,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Rollups
+            Sql( @"
+    UPDATE [DefinedValue] set [Order] = 0 where [Guid] = '8B086A19-405A-451F-8D44-174E92D6B402' -- Check
+    UPDATE [DefinedValue] set [Order] = 1 where [Guid] = 'F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93' -- Cash
+    UPDATE [DefinedValue] set [Order] = 2 where [Guid] = '928A2E04-C77B-4282-888F-EC549CEE026A' -- Credit Card
+    UPDATE [DefinedValue] set [Order] = 3 where [Guid] = 'DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6' -- ACH
+
+    UPDATE [Attribute] SET [DefaultValue] = 'http://rock.organization.com/' WHERE [Guid] = '06E0E3FC-9A1C-43AF-8B3B-C760F9951012'
+    UPDATE [Attribute] SET [DefaultValue] = 'http://www.organization.com/' WHERE [Guid] = '49AD7AD6-9BAC-4743-B1E8-B917F6271924'
+" );
 
             Sql( @"
     /*
