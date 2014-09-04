@@ -134,6 +134,11 @@ namespace RockWeb.Blocks.Examples
         private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
+        /// Holds a cached copy of the attribute Id for each person Guid
+        /// </summary>
+        private Dictionary<Guid, int> _peopleAliasDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
         /// Holds a cache of the person object
         /// </summary>
         private Dictionary<Guid, Person> _personCache = new Dictionary<Guid, Person>();
@@ -781,6 +786,16 @@ namespace RockWeb.Blocks.Examples
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
+            // Put the person alias ids into the people alias dictionary for later use.
+            PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            foreach ( var personAlias in personAliasService.Queryable( "Person" )
+                .Where( a =>
+                    _peopleDictionary.Keys.Contains( a.Person.Guid ) &&
+                    a.PersonId == a.AliasPersonId ) )
+            { 
+                _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
+            }
+
             _stopwatch.Stop();
             _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
@@ -788,19 +803,12 @@ namespace RockWeb.Blocks.Examples
             // Now that person aliases have been saved, save the attendance records
             var attendanceService = new AttendanceService( rockContext );
             var attendanceGuids = attendanceData.Select( a => a.Key ).ToList();
-            foreach ( var alias in new PersonAliasService( rockContext ).Queryable()
-                .Where( a =>
-                    attendanceGuids.Contains( a.Person.Guid ) &&
-                    a.PersonId == a.AliasPersonId )
-                .Select( a => new
-                {
-                    PersonGuid = a.Person.Guid,
-                    AliasId = a.Id
-                } ) )
+            foreach ( var aliasKeyValue in _peopleAliasDictionary
+                .Where( a => attendanceGuids.Contains( a.Key )) )
             {
-                foreach ( var attendance in attendanceData[alias.PersonGuid] )
+                foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
                 {
-                    attendance.PersonAliasId = alias.AliasId;
+                    attendance.PersonAliasId = aliasKeyValue.Value;
                     attendanceService.Add( attendance );
                 }
             }
@@ -889,7 +897,7 @@ namespace RockWeb.Blocks.Examples
                     // Set the group location's GroupMemberPersonId if given (required?)
                     if ( elemGroup.Attribute( "meetsAtHomeOfPerson" ) != null )
                     {
-                        groupLocation.GroupMemberPersonId = _peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
+                        groupLocation.GroupMemberPersonAliasId = _peopleAliasDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
                     }
 
                     group.GroupLocations.Add( groupLocation );
