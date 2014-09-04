@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Reporting.DataSelect.Person
+namespace Rock.Reporting.DataSelect.FinancialTransaction
 {
     /// <summary>
     /// 
