@@ -51,6 +51,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? AccountId { get; set; }
 
         /// <summary>
