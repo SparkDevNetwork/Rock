@@ -390,6 +390,442 @@ END
 
     END
 " );
+
+            Sql( @"
+	/*
+	<doc>
+		<summary>
+ 			This procedure merges the data from the non-primary person to the primary person.  It
+			is used when merging people in Rock and should never be used outside of that process. 
+		</summary>
+
+		<returns>
+		</returns>
+		<param name=""Old Id"" datatype=""int"">The person id of the non-primary Person being merged</param>
+		<param name=""New Id"" datatype=""int"">The person id of the primary Person being merged</param>
+		<remarks>	
+			Uses the following constants:
+				* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+				* Group Role - Known Relationship Owner: 7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42
+				* Group Role - Implied Relationship Owner: CB9A0E14-6FCF-4C07-A49A-D7873F45E196
+		</remarks>
+		<code>
+		</code>
+	</doc>
+	*/
+
+	ALTER PROCEDURE [dbo].[spCrm_PersonMerge]
+		@OldId int
+		, @NewId int
+
+	AS
+	BEGIN
+
+		DECLARE @OldGuid uniqueidentifier
+		DECLARE @NewGuid uniqueidentifier
+
+		SET @OldGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @OldId )
+		SET @NewGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @NewId )
+
+		IF @OldGuid IS NOT NULL AND @NewGuid IS NOT NULL
+		BEGIN
+
+			DECLARE @PersonEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
+			DECLARE @PersonFieldTypeId INT = ( SELECT [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.PersonFieldType' )
+
+			SELECT DISTINCT G.[ID]
+			INTO #FamilyIDs
+			FROM [GroupMember] GM
+				INNER JOIN [Group] G ON G.[Id] = GM.[GroupId]
+				INNER JOIN [GroupType] GT ON GT.[Id] = G.[GroupTypeId]
+			WHERE GM.[PersonId] = @OldId
+				AND GT.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E'
+
+			-- Move/Update Known Relationships
+			EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
+
+			-- Move/Update Implied Relationships
+			EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, 'CB9A0E14-6FCF-4C07-A49A-D7873F45E196'
+
+			-- Group Member
+			-----------------------------------------------------------------------------------------------
+			-- Update any group members associated to old person to the new person where the new is not 
+			-- already in the group with the same role
+			UPDATE GMO
+				SET [PersonId] = @NewId
+			FROM [GroupMember] GMO
+				INNER JOIN [GroupTypeRole] GTR
+					ON GTR.[Id] = GMO.[GroupRoleId]
+				LEFT OUTER JOIN [GroupMember] GMN
+					ON GMN.[GroupId] = GMO.[GroupId]
+					AND GMN.[PersonId] = @NewId
+					AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
+			WHERE GMO.[PersonId] = @OldId
+				AND GMN.[Id] IS NULL
+
+			-- Delete any group members not updated (already existed with new id)
+			DELETE [GroupMember]
+			WHERE [PersonId] = @OldId
+
+			-- User Login
+			-----------------------------------------------------------------------------------------------
+			-- Update any user logins associated with old id to be associated with primary person
+			UPDATE [UserLogin]
+			SET [PersonId] = @NewId
+			WHERE [PersonId] = @OldId
+
+			-- Attribute
+			-----------------------------------------------------------------------------------------------
+			-- Update any attribute value that is associated to the old person to be associated to the new 
+			-- person. The 'PersonAttribute' stores it's values as person alias ids, so really shouldn't be
+			-- any values found here
+			UPDATE V
+				SET [EntityId] = @NewId
+			FROM [Attribute] A
+				INNER JOIN [Attributevalue] V
+					ON V.[AttributeId] = A.[Id]
+					AND V.[EntityId] = @OldId
+				LEFT OUTER JOIN [Attributevalue] NV
+					ON NV.[AttributeId] = A.[Id]
+					AND NV.[EntityId] = @NewId
+			WHERE A.[EntityTypeId] = @PersonEntityTypeId
+				AND NV.[Id] IS NULL
+
+			DELETE V
+			FROM [Attribute] A
+				INNER JOIN [Attributevalue] V
+					ON V.[AttributeId] = A.[Id]
+					AND V.[EntityId] = @OldId
+			WHERE A.[EntityTypeId] = @PersonEntityTypeId
+
+			-- Audit
+			-----------------------------------------------------------------------------------------------
+			-- Update any audit records that were associated to the old person to be associated to the new person
+			UPDATE [Audit] SET [EntityId] = @NewId
+			WHERE [EntityTypeId] = @PersonEntityTypeId
+			AND [EntityId] = @OldId
+
+			-- Auth
+			-----------------------------------------------------------------------------------------------
+			-- Update any auth records that were associated to the old person to be associated to the new person
+			-- There is currently not any UI to set security associated to person, so really shouldn't be
+			-- any values here to update
+			UPDATE A
+				SET [EntityId] = @NewId
+			FROM [Auth] A
+				LEFT OUTER JOIN [Auth] NA
+					ON NA.[EntityTypeId] = A.[EntityTypeId]
+					AND NA.[EntityId] = @NewId
+					AND NA.[Action] = A.[Action]
+			WHERE A.[EntityTypeId] = @PersonEntityTypeId
+				AND A.[EntityId] = @OldId
+				AND NA.[Id] IS NULL
+
+			DELETE [Auth]
+			WHERE [EntityTypeId] = @PersonEntityTypeId
+			AND [EntityId] = @OldId
+
+			-- Entity Set
+			-----------------------------------------------------------------------------------------------
+			-- Update any entity set items that are associated to the old person to be associated to the new 
+			-- person. 
+			UPDATE I
+				SET [EntityId] = @NewId
+			FROM [EntitySet] S
+				INNER JOIN [EntitySetItem] I
+					ON I.[EntitySetId] = S.[Id]
+					AND I.[EntityId] = @OldId
+				LEFT OUTER JOIN [EntitySetItem] NI
+					ON NI.[EntitySetId] = S.[Id]
+					AND NI.[EntityId] = @NewId
+			WHERE S.[EntityTypeId] = @PersonEntityTypeId
+				AND NI.[Id] IS NULL
+
+			DELETE I
+			FROM [EntitySet] S
+				INNER JOIN [EntitySetItem] I
+					ON I.[EntitySetId] = S.[Id]
+					AND I.[EntityId] = @OldId
+			WHERE S.[EntityTypeId] = @PersonEntityTypeId
+
+			-- Following
+			-----------------------------------------------------------------------------------------------
+			-- Update any followings that are associated to the old person to be associated to the new 
+			-- person. 
+			UPDATE F
+				SET [EntityId] = @NewId
+			FROM [Following] F
+				LEFT OUTER JOIN [Following] NF
+					ON NF.[EntityTypeId] = F.[EntityTypeId]
+					AND NF.[EntityId] = @NewId
+					AND NF.[PersonAliasId] = F.[PersonAliasId]
+			WHERE F.[EntityTypeId] = @PersonEntityTypeId
+				AND F.[EntityId] = @OldId
+				AND NF.[Id] IS NULL
+
+			DELETE [Following]
+			WHERE [EntityTypeId] = @PersonEntityTypeId
+			AND [EntityId] = @OldId
+
+			-- History
+			-----------------------------------------------------------------------------------------------
+			-- Update any history that is associated to the old person to be associated to the new person
+			UPDATE [History] SET [EntityId] = @NewId
+			WHERE [EntityTypeId] = @PersonEntityTypeId
+			AND [EntityId] = @OldId
+
+			-- Note
+			-----------------------------------------------------------------------------------------------
+			-- Update any note that is associated to the old person to be associated to the new person
+			UPDATE N
+				SET [EntityId] = @NewId
+			FROM [NoteType] NT
+				INNER JOIN [Note] N
+					ON N.[NoteTypeId] = NT.[Id]
+					AND N.[EntityId] = @OldId
+			WHERE NT.[EntityTypeId] = @PersonEntityTypeId
+		
+			-- Tags
+			-----------------------------------------------------------------------------------------------
+			-- Update any tags associated to the old person to be associated to the new person as long as 
+			-- same tag does not already exist for new person
+			UPDATE TIO
+				SET [EntityGuid] = @NewGuid
+			FROM [Tag] T
+				INNER JOIN [TaggedItem] TIO
+					ON TIO.[TagId] = T.[Id]
+					AND TIO.[EntityGuid] = @OldGuid
+				LEFT OUTER JOIN [TaggedItem] TIN
+					ON TIN.[TagId] = T.[Id]
+					AND TIN.[EntityGuid] = @NewGuid
+			WHERE T.[EntityTypeId] = @PersonEntityTypeId
+				AND TIN.[Id] IS NULL
+
+			-- Delete any tagged items still associated with old person (new person had same tag)
+			DELETE TIO
+			FROM [Tag] T
+				INNER JOIN [TaggedItem] TIO
+					ON TIO.[TagId] = T.[Id]
+					AND TIO.[EntityGuid] = @OldGuid
+			WHERE T.[EntityTypeId] = @PersonEntityTypeId
+
+
+			-- Remaining Tables
+			-----------------------------------------------------------------------------------------------
+			-- Update any column on any table that has a foreign key relationship to the Person table's Id
+			-- column ( Core tables are handled explicitely above, so this should only include custom tables )
+
+			DECLARE @Sql varchar(max)
+
+			DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
+			SELECT 
+				' UPDATE ' + tso.name +
+				' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
+				' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
+			FROM sys.foreign_key_columns kc
+				INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
+				INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
+				INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
+				INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
+				INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
+			WHERE so.name = 'Person'
+				AND rac.name = 'Id'
+				AND tso.name NOT IN (
+					 'GroupMember'
+					,'PhoneNumber'
+					,'UserLogin'
+				)
+
+			OPEN ForeignKeyCursor
+
+			FETCH NEXT
+			FROM ForeignKeyCursor
+			INTO @Sql
+
+			WHILE (@@FETCH_STATUS <> -1)
+			BEGIN
+
+				IF (@@FETCH_STATUS = 0)
+				BEGIN
+
+					EXEC(@Sql)
+			
+				END
+		
+				FETCH NEXT
+				FROM ForeignKeyCursor
+				INTO @Sql
+
+			END
+
+			CLOSE ForeignKeyCursor
+			DEALLOCATE ForeignKeyCursor
+
+
+			-- Person
+			-----------------------------------------------------------------------------------------------
+			-- Delete the old person record.  By this time it should not have any relationships 
+			-- with other tables 
+
+			DELETE Person
+			WHERE [Id] = @OldId
+
+		END
+
+	END
+" );
+
+            Sql( @"
+    DROP PROCEDURE [dbo].[spPersonMerge]
+" );
+
+            Sql( @"
+	/*
+	<doc>
+		<summary>
+ 			This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+			The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+		</summary>
+
+		<returns>
+			* PersonId
+			* GroupId
+			* AddressPersonNames
+			* Street1
+			* Street2
+			* City
+			* State
+			* PostalCode
+			* StartDate
+			* EndDate
+			* CustomMessage1
+			* CustomMessage2
+		</returns>
+		<param name=""StartDate"" datatype=""datetime"">The starting date of the date range</param>
+		<param name=""EndDate"" datatype=""datetime"">The ending date of the date range</param>
+		<param name=""AccountIds"" datatype=""varchar(max)"">Comma delimited list of account ids. NULL means all</param>
+		<param name=""PersonId"" datatype=""int"">Person the statement if for. NULL means all persons that have transactions for the date range</param>
+		<param name=""OrderByPostalCode"" datatype=""int"">Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
+		<remarks>	
+			Uses the following constants:
+				* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+				* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
+				* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
+		</remarks>
+		<code>
+			EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1  -- year 2014 statements for all persons
+		</code>
+	</doc>
+	*/
+	ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
+		@StartDate datetime
+		, @EndDate datetime
+		, @AccountIds varchar(max) 
+		, @PersonId int -- NULL means all persons
+		, @OrderByPostalCode bit
+	AS
+	BEGIN
+		DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'	
+		DECLARE @cLOCATION_TYPE_HOME uniqueidentifier = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+
+		-- SET NOCOUNT ON added to prevent extra result sets from
+		-- interfering with SELECT statements.
+		SET NOCOUNT ON;
+
+		;WITH tranListCTE
+		AS
+		(
+			SELECT  
+				[pa].[PersonId] 
+			FROM 
+				[FinancialTransaction] [ft]
+			INNER JOIN 
+				[FinancialTransactionDetail] [ftd] ON [ft].[Id] = [ftd].[TransactionId]
+			INNER JOIN 
+				[PersonAlias] [pa] ON [pa].[id] = [ft].[AuthorizedPersonAliasId]
+			WHERE 
+				([TransactionDateTime] >= @StartDate and [TransactionDateTime] < @EndDate)
+			AND 
+				(
+					(@AccountIds is null)
+					OR
+					(ftd.[AccountId] in (select * from ufnUtility_CsvToTable(@AccountIds)))
+				)
+		)
+
+		SELECT 
+			  [pg].[PersonId]
+			, [pg].[GroupId]
+			, [pn].[PersonNames] [AddressPersonNames]
+			, [l].[Street1]
+			, [l].[Street2]
+			, [l].[City]
+			, [l].[State]
+			, [l].[PostalCode]
+			, @StartDate [StartDate]
+			, @EndDate [EndDate]
+			, null [CustomMessage1]
+			, null [CustomMessage2]
+		FROM (
+			-- Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
+			-- These are Persons that give as part of a Group.  For example, Husband and Wife
+			SELECT DISTINCT
+				null [PersonId] 
+				, [g].[Id] [GroupId]
+			FROM 
+				[Person] [p]
+			INNER JOIN 
+				[Group] [g] ON [p].[GivingGroupId] = [g].[Id]
+			WHERE 
+				[p].[Id] in (SELECT * FROM tranListCTE)
+			UNION
+			-- Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
+			-- These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
+			-- to determine which address(es) the statements need to be mailed to 
+			SELECT  
+				[p].[Id] [PersonId],
+				[g].[Id] [GroupId]
+			FROM
+				[Person] [p]
+			JOIN 
+				[GroupMember] [gm]
+			ON 
+				[gm].[PersonId] = [p].[Id]
+			JOIN 
+				[Group] [g]
+			ON 
+				[gm].[GroupId] = [g].[Id]
+			WHERE
+				[p].[GivingGroupId] is null
+			AND
+				[g].[GroupTypeId] = (SELECT Id FROM GroupType WHERE [Guid] = @cGROUPTYPE_FAMILY)
+			AND [p].[Id] IN (SELECT * FROM tranListCTE)
+		) [pg]
+		CROSS APPLY 
+			[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId]) [pn]
+		JOIN 
+			[GroupLocation] [gl] 
+		ON 
+			[gl].[GroupId] = [pg].[GroupId]
+		JOIN
+			[Location] [l]
+		ON 
+			[l].[Id] = [gl].[LocationId]
+		WHERE 
+			[gl].[IsMailingLocation] = 1
+		AND
+			[gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
+		AND
+			(
+				(@personId is null) 
+			OR 
+				([pg].[PersonId] = @personId)
+			)
+		ORDER BY
+		CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
+	END
+" );
+
         }
 
         /// <summary>
@@ -725,6 +1161,699 @@ END
 
     END
 " );
+
+            Sql( @"
+    /*
+    <doc>
+	    <summary>
+ 		    This procedure merges the data from the non-primary person to the primary person.  It
+		    is used when merging people in Rock and should never be used outside of that process. 
+	    </summary>
+
+	    <returns>
+	    </returns>
+	    <param name=""Old Id"" datatype=""int"">The person id of the non-primary Person being merged</param>
+	    <param name=""New Id"" datatype=""int"">The person id of the rimary Person being merged</param>
+	    <remarks>	
+		    Uses the following constants:
+			    * Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+			    * Group Role - Known Relationship Owner: 7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42
+			    * Group Role - Implied Relationship Owner: CB9A0E14-6FCF-4C07-A49A-D7873F45E196
+	    </remarks>
+	    <code>
+	    </code>
+    </doc>
+    */
+
+    ALTER PROCEDURE [dbo].[spCrm_PersonMerge]
+        @OldId int
+	    , @NewId int
+
+    AS
+    BEGIN
+
+	    DECLARE @OldGuid uniqueidentifier
+	    DECLARE @NewGuid uniqueidentifier
+
+	    SET @OldGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @OldId )
+	    SET @NewGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @NewId )
+
+	    IF @OldGuid IS NOT NULL AND @NewGuid IS NOT NULL
+	    BEGIN
+
+		    DECLARE @PersonEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
+		    DECLARE @PersonFieldTypeId INT = ( SELECT [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.PersonFieldType' )
+
+		    -- Authorization
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any authorizations associated to old person that do not already have a matching 
+		    -- authorization for the new person
+		    UPDATE AO
+			    SET [PersonId] = @NewId
+		    FROM [Auth] AO
+			    LEFT OUTER JOIN [Auth] AN
+				    ON AN.[PersonId] = @NewId
+				    AND AN.[EntityTypeId] = AO.[EntityTypeId]
+				    AND AN.[EntityId] = AO.[EntityId]
+				    AND AN.[Action] = AO.[Action]
+				    AND AN.[AllowOrDeny] = AO.[AllowOrDeny]
+				    AND AN.[SpecialRole] = AO.[SpecialRole]
+		    WHERE AO.[PersonId] = @OldId
+			    AND AN.[Id] IS NULL
+
+		    -- Delete any authorizations not updated to new person
+		    DELETE [Auth]
+		    WHERE [PersonId] = @OldId
+
+		    -- Category
+		    -----------------------------------------------------------------------------------------------
+		    -- Currently UI does not allow categorizing people, but if it does in the future, would need 
+		    -- to add script to handle merge
+
+
+		    -- Communication Recipient
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any communication recipients associated to old person to the new person where the new
+		    -- person does not already have the recipient record
+		    UPDATE CRO
+			    SET [PersonId] = @NewId
+		    FROM [CommunicationRecipient] CRO
+			    LEFT OUTER JOIN [CommunicationRecipient] CRN
+				    ON CRN.[CommunicationId] = CRO.[CommunicationId]
+				    AND CRN.[PersonId] = @NewId
+		    WHERE CRO.[PersonId] = @OldId
+			    AND CRN.[Id] IS NULL
+
+		    -- Delete any remaining recipents that were not updated
+		    DELETE [CommunicationRecipient]
+		    WHERE [PersonId] = @OldId
+
+		    SELECT DISTINCT G.[ID]
+		    INTO #FamilyIDs
+		    FROM [GroupMember] GM
+			    INNER JOIN [Group] G ON G.[Id] = GM.[GroupId]
+			    INNER JOIN [GroupType] GT ON GT.[Id] = G.[GroupTypeId]
+		    WHERE GM.[PersonId] = @OldId
+			    AND GT.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E'
+
+		    -- Move/Update Known Relationships
+		    EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
+
+		    -- Move/Update Implied Relationships
+		    EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, 'CB9A0E14-6FCF-4C07-A49A-D7873F45E196'
+
+		    -- Group Member
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any group members associated to old person to the new person where the new is not 
+		    -- already in the group with the same role
+		    UPDATE GMO
+			    SET [PersonId] = @NewId
+		    FROM [GroupMember] GMO
+			    INNER JOIN [GroupTypeRole] GTR
+				    ON GTR.[Id] = GMO.[GroupRoleId]
+			    LEFT OUTER JOIN [GroupMember] GMN
+				    ON GMN.[GroupId] = GMO.[GroupId]
+				    AND GMN.[PersonId] = @NewId
+				    AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
+		    WHERE GMO.[PersonId] = @OldId
+			    AND GMN.[Id] IS NULL
+
+		    -- Delete any group members not updated (already existed with new id)
+		    DELETE [GroupMember]
+		    WHERE [PersonId] = @OldId
+		
+		    -- Note
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any note that is associated to the old person to be associated to the new person
+		    UPDATE N
+			    SET [EntityId] = @NewId
+		    FROM [NoteType] NT
+			    INNER JOIN [Note] N
+				    ON N.[NoteTypeId] = NT.[Id]
+				    AND N.[EntityId] = @OldId
+		    WHERE NT.[EntityTypeId] = @PersonEntityTypeId
+
+
+		    -- History
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any history that is associated to the old person to be associated to the new person
+		    UPDATE [History] SET [EntityId] = @NewId
+		    WHERE [EntityTypeId] = @PersonEntityTypeId
+		    AND [EntityId] = @OldId
+
+		    -- Tags
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any tags associated to the old person to be associated to the new person as long as 
+		    -- same tag does not already exist for new person
+		    UPDATE TIO
+			    SET [EntityGuid] = @NewGuid
+		    FROM [Tag] T
+			    INNER JOIN [TaggedItem] TIO
+				    ON TIO.[TagId] = T.[Id]
+				    AND TIO.[EntityGuid] = @OldGuid
+			    LEFT OUTER JOIN [TaggedItem] TIN
+				    ON TIN.[TagId] = T.[Id]
+				    AND TIN.[EntityGuid] = @NewGuid
+		    WHERE T.[EntityTypeId] = @PersonEntityTypeId
+			    AND TIN.[Id] IS NULL
+
+		    -- Delete any tagged items still associated with old person (new person had same tag)
+		    DELETE TIO
+		    FROM [Tag] T
+			    INNER JOIN [TaggedItem] TIO
+				    ON TIO.[TagId] = T.[Id]
+				    AND TIO.[EntityGuid] = @OldGuid
+		    WHERE T.[EntityTypeId] = @PersonEntityTypeId
+
+		    -- If old person and new person have tags with the same name for the same entity type,
+		    -- update the old person's tagged items to use the new person's tag
+		    UPDATE TIO
+			    SET [TagId] = TIN.[Id]
+		    FROM [Tag] T
+			    INNER JOIN [Tag] TN
+				    ON TN.[EntityTypeId] = T.[EntityTypeId]
+				    AND TN.[EntityTypeQualifierColumn] = T.[EntityTypeQualifierColumn]
+				    AND TN.[EntityTypeQualifierValue] = T.[EntityTypeQualifierValue]
+				    AND TN.[Name] = T.[Name]
+				    AND TN.[OwnerId] = @NewId
+			    INNER JOIN [TaggedItem] TIO
+				    ON TIO.[TagId] = T.[Id]
+			    LEFT OUTER JOIN [TaggedItem] TIN
+				    ON TIN.[TagId] = TN.[Id]
+		    WHERE T.[OwnerId] = @OldId
+			    AND TIN.[Id] IS NULL
+
+		    -- Delete any of the old person's tags that have the same name and are associated to same 
+		    -- entity type as a tag used bo the new person
+		    DELETE T
+		    FROM [Tag] T
+			    INNER JOIN [Tag] TN
+				    ON TN.[EntityTypeId] = T.[EntityTypeId]
+				    AND TN.[EntityTypeQualifierColumn] = T.[EntityTypeQualifierColumn]
+				    AND TN.[EntityTypeQualifierValue] = T.[EntityTypeQualifierValue]
+				    AND TN.[Name] = T.[Name]
+				    AND TN.[OwnerId] = @NewId
+		    WHERE T.[OwnerId] = @OldId
+
+
+		    -- Remaining Tables
+		    -----------------------------------------------------------------------------------------------
+		    -- Update any column on any table that has a foreign key relationship to the Person table's Id
+		    -- column  
+
+		    DECLARE @Sql varchar(max)
+
+		    DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
+		    SELECT 
+			    ' UPDATE ' + tso.name +
+			    ' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
+			    ' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
+		    FROM sys.foreign_key_columns kc
+			    INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
+			    INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
+			    INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
+			    INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
+			    INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
+		    WHERE so.name = 'Person'
+			    AND rac.name = 'Id'
+			    AND tso.name NOT IN (
+					    'Auth'
+				    ,'CommunicationRecipient'
+				    ,'GroupMember'
+				    ,'PhoneNumber'
+			    )
+
+		    OPEN ForeignKeyCursor
+
+		    FETCH NEXT
+		    FROM ForeignKeyCursor
+		    INTO @Sql
+
+		    WHILE (@@FETCH_STATUS <> -1)
+		    BEGIN
+
+			    IF (@@FETCH_STATUS = 0)
+			    BEGIN
+
+				    EXEC(@Sql)
+			
+			    END
+		
+			    FETCH NEXT
+			    FROM ForeignKeyCursor
+			    INTO @Sql
+
+		    END
+
+		    CLOSE ForeignKeyCursor
+		    DEALLOCATE ForeignKeyCursor
+
+
+		    -- Person
+		    -----------------------------------------------------------------------------------------------
+		    -- Delete the old person record.  By this time it should not have any relationships 
+		    -- with other tables 
+
+		    DELETE Person
+		    WHERE [Id] = @OldId
+
+	    END
+
+    END
+" );
+
+            Sql( @"
+    CREATE PROCEDURE [dbo].[spPersonMerge]
+    @OldId int, 
+    @NewId int,
+    @DeleteOldPerson bit
+
+    AS
+
+    DECLARE @OldGuid uniqueidentifier
+    DECLARE @NewGuid uniqueidentifier
+
+    SET @OldGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @OldId )
+    SET @NewGuid = ( SELECT [Guid] FROM [Person] WHERE [Id] = @NewId )
+
+    IF @OldGuid IS NOT NULL AND @NewGuid IS NOT NULL
+    BEGIN
+
+	    DECLARE @PersonEntityTypeId INT
+	    SET @PersonEntityTypeId = ( SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
+
+	    DECLARE @PersonFieldTypeId INT
+	    SET @PersonFieldTypeId = ( SELECT [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.PersonFieldType' )
+
+
+	    --BEGIN TRANSACTION
+
+
+	    -- Attribute Value
+	    -----------------------------------------------------------------------------------------------
+	    -- Update Attribute Values associated with person 
+	    -- The new user's attribute value will only get updated if the old user has a value, and the 
+	    -- new user does not (determining the correct value will eventually be decided by user in a UI)
+	    UPDATE AVO
+		    SET [EntityId] = @NewId
+	    FROM [Attribute] A
+	    INNER JOIN [AttributeValue] AVO
+		    ON AVO.[EntityId] = @OldId
+		    AND AVO.[AttributeId] = A.[Id]
+	    LEFT OUTER JOIN [AttributeValue] AVN
+		    ON AVO.[EntityId] = @NewId
+		    AND AVN.[AttributeId] = A.[Id]
+	    WHERE A.[EntityTypeId] = @PersonEntityTypeId
+	    AND AVN.[Id] IS NULL
+
+	    -- Delete any attribute values that were not updated (due to new person already having existing 
+	    -- value)
+	    DELETE AV
+	    FROM [Attribute] A
+	    INNER JOIN [AttributeValue] AV
+		    ON AV.[EntityId] = @OldId
+		    AND AV.[AttributeId] = A.[Id]
+	    WHERE A.[EntityTypeId] = @PersonEntityTypeId
+
+	    -- Update Attribute Values that have person as a value
+	    -- NOTE: BECAUSE VALUE IS A VARCHAR(MAX) COLUMN WE CANT ADD AN INDEX FOR ATTRIBUTEID AND
+	    -- VALUE.  THIS UPDATE COULD POTENTIALLY BE A BOTTLE-NECK FOR MERGES
+	    UPDATE AV
+		    SET [Value] = CAST( @NewGuid AS VARCHAR(64) )
+	    FROM [Attribute] A
+	    INNER JOIN [AttributeValue] AV
+		    ON AV.[AttributeId] = A.[Id]
+		    AND AV.[Value] = CAST( @OldGuid AS VARCHAR(64) )
+	    WHERE A.[FieldTypeId] = @PersonFieldTypeId
+
+
+	    -- Authorization
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any authorizations associated to old person that do not already have a matching 
+	    -- authorization for the new person
+	    UPDATE AO
+		    SET [PersonId] = @NewId
+	    FROM [Auth] AO
+	    LEFT OUTER JOIN [Auth] AN
+		    ON AN.[PersonId] = @NewId
+		    AND AN.[EntityTypeId] = AO.[EntityTypeId]
+		    AND AN.[EntityId] = AO.[EntityId]
+		    AND AN.[Action] = AO.[Action]
+		    AND AN.[AllowOrDeny] = AO.[AllowOrDeny]
+		    AND AN.[SpecialRole] = AO.[SpecialRole]
+	    WHERE AO.[PersonId] = @OldId
+	    AND AN.[Id] IS NULL
+
+	    -- Delete any authorizations not updated to new person
+	    DELETE [Auth]
+	    WHERE [PersonId] = @OldId
+
+
+	    -- Category
+	    -----------------------------------------------------------------------------------------------
+	    -- Currently UI does not allow categorizing people, but if it does in the future, would need 
+	    -- to add script to handle merge
+
+
+	    -- Communication Recipient
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any communication recipients associated to old person to the new person where the new
+	    -- person does not already have the recipient record
+	    UPDATE CRO
+		    SET [PersonId] = @NewId
+	    FROM [CommunicationRecipient] CRO
+	    LEFT OUTER JOIN [CommunicationRecipient] CRN
+		    ON CRN.[CommunicationId] = CRO.[CommunicationId]
+		    AND CRN.[PersonId] = @NewId
+	    WHERE CRO.[PersonId] = @OldId
+	    AND CRN.[Id] IS NULL
+
+	    -- Delete any remaining recipents that were not updated
+	    DELETE [CommunicationRecipient]
+	    WHERE [PersonId] = @OldId
+
+	    -- Group Member
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any group members associated to old person to the new person where the new is not 
+	    -- already in the group with the same role
+	    UPDATE GMO
+		    SET [PersonId] = @NewId
+	    FROM [GroupMember] GMO
+	    LEFT OUTER JOIN [GroupMember] GMN
+		    ON GMN.[GroupId] = GMO.[GroupId]
+		    AND GMN.[PersonId] = @NewId
+		    AND GMN.[GroupRoleId] = GMO.[GroupRoleId] -- If person can be in group twice with diff role
+	    WHERE GMO.[PersonId] = @OldId
+	    AND GMN.[Id] IS NULL
+
+	    -- Delete any group members not updated (already existed with new id)
+	    DELETE [GroupMember]
+	    WHERE [PersonId] = @OldId
+
+
+	    -- Note
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any note that is associated to the old person to be associated to the new person
+	    UPDATE N
+		    SET [EntityId] = @NewId
+	    FROM [NoteType] NT
+	    INNER JOIN [Note] N
+		    ON N.[NoteTypeId] = NT.[Id]
+		    AND N.[EntityId] = @OldId
+	    WHERE NT.[EntityTypeId] = @PersonEntityTypeId
+
+
+	    -- Phone Numbers
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any phone numbers associated to the old person that do not already exist for the new
+	    -- person
+	    UPDATE PNO
+		    SET [PersonId] = @NewId
+	    FROM [PhoneNumber] PNO
+	    INNER JOIN [PhoneNumber] PNN
+		    ON PNN.[PersonId] = @NewId
+		    AND PNN.[Number] = PNO.[Number]
+		    AND PNN.[Extension] = PNO.[Extension]
+		    AND PNN.[NumberTypeValueId] = PNO.[NumberTypeValueId]
+	    WHERE PNO.[PersonId] = @OldId
+	    AND PNN.[Id] IS NULL
+
+	    -- Delete any numbers not updated (new person already had same number)
+	    DELETE [PhoneNumber]
+	    WHERE [PersonId] = @OldId
+
+
+	    -- Tags
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any tags associated to the old person to be associated to the new person as long as 
+	    -- same tag does not already exist for new person
+	    UPDATE TIO
+		    SET [EntityGuid] = @NewGuid
+	    FROM [Tag] T
+	    INNER JOIN [TaggedItem] TIO
+		    ON TIO.[TagId] = T.[Id]
+		    AND TIO.[EntityGuid] = @OldGuid
+	    LEFT OUTER JOIN [TaggedItem] TIN
+		    ON TIN.[TagId] = T.[Id]
+		    AND TIN.[EntityGuid] = @NewGuid
+	    WHERE T.[EntityTypeId] = @PersonEntityTypeId
+	    AND TIN.[Id] IS NULL
+
+	    -- Delete any tagged items still associated with old person (new person had same tag)
+	    DELETE TIO
+	    FROM [Tag] T
+	    INNER JOIN [TaggedItem] TIO
+		    ON TIO.[TagId] = T.[Id]
+		    AND TIO.[EntityGuid] = @OldGuid
+	    WHERE T.[EntityTypeId] = @PersonEntityTypeId
+
+	    -- If old person and new person have tags with the same name for the same entity type,
+	    -- update the old person's tagged items to use the new person's tag
+	    UPDATE TIO
+		    SET [TagId] = TIN.[Id]
+	    FROM [Tag] T
+	    INNER JOIN [Tag] TN
+		    ON TN.[EntityTypeId] = T.[EntityTypeId]
+		    AND TN.[EntityTypeQualifierColumn] = T.[EntityTypeQualifierColumn]
+		    AND TN.[EntityTypeQualifierValue] = T.[EntityTypeQualifierValue]
+		    AND TN.[Name] = T.[Name]
+		    AND TN.[OwnerId] = @NewId
+	    INNER JOIN [TaggedItem] TIO
+		    ON TIO.[TagId] = T.[Id]
+	    LEFT OUTER JOIN [TaggedItem] TIN
+		    ON TIN.[TagId] = TN.[Id]
+	    WHERE T.[OwnerId] = @OldId
+	    AND TIN.[Id] IS NULL
+
+	    -- Delete any of the old person's tags that have the same name and are associated to same 
+	    -- entity type as a tag used bo the new person
+	    DELETE T
+	    FROM [Tag] T
+	    INNER JOIN [Tag] TN
+		    ON TN.[EntityTypeId] = T.[EntityTypeId]
+		    AND TN.[EntityTypeQualifierColumn] = T.[EntityTypeQualifierColumn]
+		    AND TN.[EntityTypeQualifierValue] = T.[EntityTypeQualifierValue]
+		    AND TN.[Name] = T.[Name]
+		    AND TN.[OwnerId] = @NewId
+	    WHERE T.[OwnerId] = @OldId
+
+
+	    -- Remaining Tables
+	    -----------------------------------------------------------------------------------------------
+	    -- Update any column on any table that has a foreign key relationship to the Person table's Id
+	    -- column  
+
+	    DECLARE @Sql varchar(max)
+
+	    DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
+	    SELECT 
+		    ' UPDATE ' + tso.name +
+		    ' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
+		    ' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
+	    FROM sys.foreign_key_columns kc
+	    INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
+	    INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
+	    INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
+	    INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
+	    INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
+	    WHERE so.name = 'Person'
+	    AND rac.name = 'Id'
+	    AND tso.name NOT IN (
+		     'Auth'
+		    ,'CommunicationRecipient'
+		    ,'GroupMember'
+		    ,'PhoneNumber'
+	    )
+
+	    OPEN ForeignKeyCursor
+
+	    FETCH NEXT
+	    FROM ForeignKeyCursor
+	    INTO @Sql
+
+	    WHILE (@@FETCH_STATUS <> -1)
+	    BEGIN
+
+		    IF (@@FETCH_STATUS = 0)
+		    BEGIN
+
+			    EXEC(@Sql)
+			
+		    END
+		
+		    FETCH NEXT
+		    FROM ForeignKeyCursor
+		    INTO @Sql
+
+	    END
+
+	    CLOSE ForeignKeyCursor
+	    DEALLOCATE ForeignKeyCursor
+
+
+	    -- Person
+	    -----------------------------------------------------------------------------------------------
+	    -- Optionally delete the old person record.  By this time it should not have any relationships 
+	    -- with other tables (if Rock is being synced with other data source, the sync may handle the
+	    -- delete)
+	
+	    IF @DeleteOldPerson = 1 
+	    BEGIN
+		    DELETE Person
+		    WHERE [Id] = @OldId
+	    END
+	
+	    --COMMIT TRANSACTION
+
+
+    END
+" );
+
+            Sql( @"
+    /*
+    <doc>
+	    <summary>
+ 		    This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+            The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+	    </summary>
+
+	    <returns>
+		    * PersonId
+            * GroupId
+            * AddressPersonNames
+            * Street1
+            * Street2
+            * City
+            * State
+            * PostalCode
+            * StartDate
+            * EndDate
+            * CustomMessage1
+            * CustomMessage2
+	    </returns>
+	    <param name=""StartDate"" datatype=""datetime"">The starting date of the date range</param>
+        <param name=""EndDate"" datatype=""datetime"">The ending date of the date range</param>
+	    <param name=""AccountIds"" datatype=""varchar(max)"">Comma delimited list of account ids. NULL means all</param>
+	    <param name=""PersonId"" datatype=""int"">Person the statement if for. NULL means all persons that have transactions for the date range</param>
+	    <param name=""OrderByPostalCode"" datatype=""int"">Set to 1 to have the results sorted by PostalCode, 0 for no particular order</param>
+	    <remarks>	
+		    Uses the following constants:
+			    * Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+			    * Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
+			    * Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
+	    </remarks>
+	    <code>
+		    EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1  -- year 2014 statements for all persons
+	    </code>
+    </doc>
+    */
+    ALTER PROCEDURE [spFinance_ContributionStatementQuery]
+	    @StartDate datetime
+        , @EndDate datetime
+        , @AccountIds varchar(max) 
+        , @PersonId int -- NULL means all persons
+        , @OrderByPostalCode bit
+    AS
+    BEGIN
+        DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'	
+        DECLARE @cLOCATION_TYPE_HOME uniqueidentifier = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+
+        -- SET NOCOUNT ON added to prevent extra result sets from
+	    -- interfering with SELECT statements.
+	    SET NOCOUNT ON;
+
+        ;WITH tranListCTE
+        AS
+        (
+            SELECT  
+                [AuthorizedPersonId] 
+            FROM 
+                [FinancialTransaction] [ft]
+            INNER JOIN 
+                [FinancialTransactionDetail] [ftd] ON [ft].[Id] = [ftd].[TransactionId]
+            WHERE 
+                ([TransactionDateTime] >= @StartDate and [TransactionDateTime] < @EndDate)
+            AND 
+                (
+                    (@AccountIds is null)
+                    OR
+                    (ftd.[AccountId] in (select * from ufnUtility_CsvToTable(@AccountIds)))
+                )
+        )
+
+        SELECT 
+            [pg].[PersonId]
+            , [pg].[GroupId]
+            , [pn].[PersonNames] [AddressPersonNames]
+            , [l].[Street1]
+            , [l].[Street2]
+            , [l].[City]
+            , [l].[State]
+            , [l].[PostalCode]
+            , @StartDate [StartDate]
+            , @EndDate [EndDate]
+            , null [CustomMessage1]
+            , null [CustomMessage2]
+        FROM (
+            -- Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
+            -- These are Persons that give as part of a Group.  For example, Husband and Wife
+            SELECT DISTINCT
+                null [PersonId] 
+                , [g].[Id] [GroupId]
+            FROM 
+                [Person] [p]
+            INNER JOIN 
+                [Group] [g] ON [p].[GivingGroupId] = [g].[Id]
+            WHERE 
+                [p].[Id] in (SELECT * FROM tranListCTE)
+            UNION
+            -- Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
+            -- These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
+            -- to determine which address(es) the statements need to be mailed to 
+            SELECT  
+                [p].[Id] [PersonId],
+                [g].[Id] [GroupId]
+            FROM
+                [Person] [p]
+            JOIN 
+                [GroupMember] [gm]
+            ON 
+                [gm].[PersonId] = [p].[Id]
+            JOIN 
+                [Group] [g]
+            ON 
+                [gm].[GroupId] = [g].[Id]
+            WHERE
+                [p].[GivingGroupId] is null
+            AND
+                [g].[GroupTypeId] = (SELECT Id FROM GroupType WHERE [Guid] = @cGROUPTYPE_FAMILY)
+            AND [p].[Id] IN (SELECT * FROM tranListCTE)
+        ) [pg]
+        CROSS APPLY 
+            [ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId]) [pn]
+        JOIN 
+            [GroupLocation] [gl] 
+        ON 
+            [gl].[GroupId] = [pg].[GroupId]
+        JOIN
+            [Location] [l]
+        ON 
+            [l].[Id] = [gl].[LocationId]
+        WHERE 
+            [gl].[IsMailingLocation] = 1
+        AND
+            [gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
+        AND
+            (
+                (@personId is null) 
+            OR 
+                ([pg].[PersonId] = @personId)
+            )
+        ORDER BY
+        CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
+    END
+" );
+
         }
     }
 }
