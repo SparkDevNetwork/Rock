@@ -318,7 +318,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        public decimal TotalAmount
+        public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
         }
