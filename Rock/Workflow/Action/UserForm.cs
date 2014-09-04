@@ -82,8 +82,10 @@ namespace Rock.Workflow.Action
 
                         foreach( var person in personList)
                         {
-                            recipients.Add( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) );
-                            action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                            if (!recipients.ContainsKey(person.Email)){
+                                recipients.Add( person.Email, CombinePersonMergeFields( person, workflowMergeFields ) );
+                                action.AddLogEntry( string.Format( "Form Notification sent to '{0}'", person.FullName ) );
+                            }  
                         }
                     }
 
