@@ -706,6 +706,7 @@ namespace RockWeb.Blocks.Examples
             var allFamilies = rockContext.Groups;
 
             List<Group> allGroups = new List<Group>();
+            var attendanceData = new Dictionary<Guid, List<Attendance>>();
 
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
@@ -726,7 +727,7 @@ namespace RockWeb.Blocks.Examples
                 // add their attendance data
                 if ( fabricateAttendance )
                 {
-                    AddFamilyAttendance( family, elemFamily, rockContext );
+                    AddFamilyAttendance( family, elemFamily, rockContext, attendanceData );
                 }
 
                 allGroups.Add( family );
@@ -777,9 +778,37 @@ namespace RockWeb.Blocks.Examples
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
             }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
             _stopwatch.Stop();
             _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+
+            // Now that person aliases have been saved, save the attendance records
+            var attendanceService = new AttendanceService( rockContext );
+            var attendanceGuids = attendanceData.Select( a => a.Key ).ToList();
+            foreach ( var alias in new PersonAliasService( rockContext ).Queryable()
+                .Where( a =>
+                    attendanceGuids.Contains( a.Person.Guid ) &&
+                    a.PersonId == a.AliasPersonId )
+                .Select( a => new
+                {
+                    PersonGuid = a.Person.Guid,
+                    AliasId = a.Id
+                } ) )
+            {
+                foreach ( var attendance in attendanceData[alias.PersonGuid] )
+                {
+                    attendance.PersonAliasId = alias.AliasId;
+                    attendanceService.Add( attendance );
+                }
+            }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
+
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added attendance records<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
         }
 
@@ -1196,7 +1225,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="family">The family.</param>
         /// <param name="elemFamily">The elem family.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void AddFamilyAttendance( Group family, XElement elemFamily, RockContext rockContext )
+        /// <param name="attendanceData">The attendance data.</param>
+        private void AddFamilyAttendance( Group family, XElement elemFamily, RockContext rockContext, Dictionary<Guid, List<Attendance>> attendanceData )
         {
             // return from here if there's not startingAttendance date
             if ( elemFamily.Attribute( "startingAttendance" ) == null )
@@ -1267,7 +1297,7 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
+            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId, attendanceData );
         }
 
         /// <summary>
@@ -1277,14 +1307,16 @@ namespace RockWeb.Blocks.Examples
         /// between the scheduleId and altScheduleId based on the percentage (pctAttendedRegularService)
         /// given.
         /// </summary>
-        /// <param name="familyMembers"></param>
+        /// <param name="familyMembers">The family members.</param>
         /// <param name="startingDate">The first date of attendance</param>
         /// <param name="endDate">The end date of attendance</param>
-        /// <param name="pctAttendance"></param>
-        /// <param name="pctAttendedRegularService"></param>
-        /// <param name="scheduleId"></param>
-        /// <param name="altScheduleId"></param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
+        /// <param name="pctAttendance">The PCT attendance.</param>
+        /// <param name="pctAttendedRegularService">The PCT attended regular service.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="altScheduleId">The alt schedule identifier.</param>
+        /// <param name="attendanceData">The attendance data.</param>
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, 
+            int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData )
         {
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
@@ -1339,7 +1371,6 @@ namespace RockWeb.Blocks.Examples
                         GroupId = item.GroupId,
                         LocationId = item.LocationId,
                         DeviceId = _kioskDeviceId,
-                        PersonId = member.PersonId,
                         AttendanceCode = attendanceCode,
                         StartDateTime = checkinDateTime,
                         EndDateTime = null,
@@ -1347,7 +1378,11 @@ namespace RockWeb.Blocks.Examples
                         CampusId = 1
                     };
 
-                    member.Person.Attendances.Add( attendance );
+                    if ( !attendanceData.Keys.Contains( member.Person.Guid ))
+                    {
+                        attendanceData.Add( member.Person.Guid, new List<Attendance>());
+                    }
+                    attendanceData[member.Person.Guid].Add( attendance);
                 }
             }
         }
