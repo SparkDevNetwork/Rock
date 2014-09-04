@@ -698,7 +698,7 @@ namespace Rock.Apps.CheckScannerUtility
                 int percentComplete = position++ * 100 / totalCount;
                 bw.ReportProgress( percentComplete );
 
-                Rock.Data.IFinancialTransactionScanned financialTransactionScanned;
+                FinancialTransaction financialTransactionScanned;
 
                 Guid transactionGuid = Guid.NewGuid();
                 if ( scannedDocInfo.IsCheck )

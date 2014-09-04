@@ -249,7 +249,6 @@
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
-    <Compile Include="Data\IFinancialTransactionScanned.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
