@@ -57,26 +57,29 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Handles the Click event of the btnStartStop control.
+        /// Handles the Click event of the btnStartStop control (only applies to Ranger scanners)
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnStartStop_Click( object sender, RoutedEventArgs e )
         {
-            if ( ScanButtonText.IsStartScan( btnStartStop.Content as string ) )
+            if ( batchPage.rangerScanner != null )
             {
-                StartScanning();
-            }
-            else
-            {
-                batchPage.rangerScanner.StopFeeding();
+                if ( ScanButtonText.IsStartScan( btnStartStop.Content as string ) )
+                {
+                    StartScanningRanger();
+                }
+                else
+                {
+                    batchPage.rangerScanner.StopFeeding();
+                }
             }
         }
 
         /// <summary>
-        /// Starts the scanning.
+        /// Starts the scanning for Ranger device
         /// </summary>
-        public void StartScanning()
+        public void StartScanningRanger()
         {
             if ( batchPage.ScannerFeederType.Equals( FeederType.SingleItem ) )
             {

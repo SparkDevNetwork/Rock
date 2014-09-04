@@ -33,6 +33,11 @@
                 <Label Style="{StaticResource labelStyle}">Rock URL</Label>
                 <TextBox Name="txtRockUrl"
                          Style="{StaticResource textboxStyleUrl}" />
+                <Label Name="lblScannerError"
+                       Style="{StaticResource labelStyleAlertError}"
+                       Content="ERROR: No scanner drivers. Make sure that either a Ranger or MagTek driver is installed."
+                       Visibility="Collapsed">
+                </Label>
                 <Label Name="lblScannerInterfaceType"
                        Style="{StaticResource labelStyle}">Scanner Interface</Label>
                 <ComboBox Name="cboScannerInterfaceType"

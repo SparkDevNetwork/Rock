@@ -3,8 +3,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:Forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
-      xmlns:ax="clr-namespace:AxRANGERLib;assembly=AxInterop.RANGERLib"
-      xmlns:ax2="clr-namespace:AxMTMicrImage;assembly=AxMTMicrImage"
       xmlns:rock="clr-namespace:Rock.Apps.CheckScannerUtility"
       x:Class="Rock.Apps.CheckScannerUtility.BatchPage"
       Name="batchPage"
@@ -22,20 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <WindowsFormsHost x:Name="rangerHost"
-                          Visibility="Collapsed"
-                          IsEnabled="False">
-            <ax:AxRanger x:Name="rangerScanner"
-                         TransportNewState="rangerScanner_TransportNewState"
-                         TransportChangeOptionsState="rangerScanner_TransportChangeOptionsState"
-                         TransportSetItemOutput="rangerScanner_TransportSetItemOutput"/>
-        </WindowsFormsHost>
-        <WindowsFormsHost x:Name="micrImageHost"
-                          Visibility="Collapsed"
-                          IsEnabled="False">
-            <ax2:AxMicrImage x:Name="micrImage"
-                             MicrDataReceived="micrImage_MicrDataReceived" />
-        </WindowsFormsHost>
+
         <Grid x:Name="grdTop"
               Grid.Row="0">
             <Grid.RowDefinitions>
@@ -223,29 +208,26 @@
 
                             <Label x:Name="lblUploadProgress"
                                    Grid.Row="4"
+                                   Grid.ColumnSpan="2"
+                                   HorizontalAlignment="Center"
                                    Style="{StaticResource labelStyleAlertInfo}"
                                    Content="Upload Status" />
-                            <StackPanel Grid.Row="4"
-                                        Grid.Column="0"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Left">
-
-                            </StackPanel>
-                            <StackPanel Grid.Row="4"
-                                        Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Right">
-                                <Button Style="{StaticResource buttonStylePrimaryMini}"
-                                        x:Name="btnEdit"
+                            <Button Style="{StaticResource buttonStylePrimary}"
+                                    Grid.Row="4"
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Left"
+                                    x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
                                         Click="btnEdit_Click" />
-                                <Button x:Name="btnScan"
-                                        Style="{StaticResource buttonStylePrimaryMini}"
-                                        Margin="4,4,0,0"
-                                        Content="Scan"
-                                        Click="btnScan_Click" />
-                            </StackPanel>
+                            <Button x:Name="btnScan"
+                                    Grid.Row="4"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource buttonStyleAction}"
+                                    Margin="4,4,0,0"
+                                    Content="Scan"
+                                    Click="btnScan_Click" />
                         </Grid>
                     </Border>
                 </StackPanel>

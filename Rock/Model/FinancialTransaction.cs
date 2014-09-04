@@ -28,19 +28,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial transaction in Rock.  This class implements the <c>FinancialTransactionBase</c> base class.
+    /// Represents a financial transaction in Rock.
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : FinancialTransactionBase<FinancialTransaction>
-    {
-    }
-
-    /// <summary>
-    /// An abstracted base class for FinancialTransaction so that we can have child classes like <see cref="FinancialTransactionRefund"/>.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class FinancialTransactionBase<T> : Model<T>, Rock.Data.IFinancialTransactionScanned where T : Model<T>, Rock.Security.ISecured, new()
+    public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
 
@@ -325,7 +317,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        public decimal TotalAmount
+        public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
         }
@@ -355,7 +347,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
-    public class FinancialTransactionScannedCheck : FinancialTransactionBase<FinancialTransactionScannedCheck>
+    public class FinancialTransactionScannedCheck : FinancialTransaction
     {
         /// <summary>
         /// Gets or sets the scanned check MICR.

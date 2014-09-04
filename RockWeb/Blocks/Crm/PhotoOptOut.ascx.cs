@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.Crm.PhotoRequest
+namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// Takes the given person (via Person.UrlEncodedKey) and opts them out of future photo requests.
