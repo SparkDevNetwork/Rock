@@ -15,11 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -54,32 +50,26 @@ namespace Rock.Reporting
             {
                 comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
             }
-
             else if ( comparisonType == ComparisonType.DoesNotContain )
             {
                 comparisonExpression = Expression.Not( Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value ) );
             }
-
             else if ( comparisonType == ComparisonType.EndsWith )
             {
                 comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
             }
-
             else if ( comparisonType == ComparisonType.EqualTo )
             {
                 comparisonExpression = Expression.Equal( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.GreaterThan )
             {
                 comparisonExpression = Expression.GreaterThan( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
                 comparisonExpression = Expression.GreaterThanOrEqual( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.IsBlank )
             {
                 if ( valueExpression.Type == typeof( string ) )
@@ -100,7 +90,6 @@ namespace Rock.Reporting
                     }
                 }
             }
-
             else if ( comparisonType == ComparisonType.IsNotBlank )
             {
                 if ( valueExpression.Type == typeof( string ) )
@@ -122,22 +111,18 @@ namespace Rock.Reporting
                     }
                 }
             }
-
             else if ( comparisonType == ComparisonType.LessThan )
             {
                 comparisonExpression = Expression.LessThan( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
             {
                 comparisonExpression = Expression.LessThanOrEqual( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.NotEqualTo )
             {
                 comparisonExpression = Expression.NotEqual( valueExpression, value );
             }
-
             else if ( comparisonType == ComparisonType.StartsWith )
             {
                 comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "StartsWith", new Type[] { typeof( string ) } ), value );
@@ -176,7 +161,6 @@ namespace Rock.Reporting
             return ddl;
         }
 
-
         /// <summary>
         /// Gets the comparison types typically used for string fields
         /// </summary>
@@ -189,7 +173,6 @@ namespace Rock.Reporting
                         ComparisonType.NotEqualTo |
                         ComparisonType.StartsWith |
                         ComparisonType.EndsWith;
-
 
         /// <summary>
         /// Gets the comparison types typically used for Guid fields
