@@ -79,6 +79,13 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// The personID of the currently logged in user.  If user is not logged in, returns null
+        /// </summary>
+        public int? CurrentPersonId
+        {
+            get { return RockPage.CurrentPersonId; }
+        }
+        /// <summary>
         /// Gets the current person alias.
         /// </summary>
         public PersonAlias CurrentPersonAlias
@@ -87,11 +94,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// The personID of the currently logged in user.  If user is not logged in, returns null
+        /// Gets the current person alias identifier.
         /// </summary>
-        public int? CurrentPersonId
+        /// <value>
+        /// The current person alias identifier.
+        /// </value>
+        public int? CurrentPersonAliasId
         {
-            get { return RockPage.CurrentPersonId; }
+            get { return RockPage.CurrentPersonAliasId; }
         }
 
         /// <summary>

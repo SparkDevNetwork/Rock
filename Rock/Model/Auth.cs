@@ -101,14 +101,14 @@ namespace Rock.Model
         public SpecialRole SpecialRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> that this Auth entity allows or denies access to. This is used for user based authorization
+        /// Gets or sets the Id of the <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. This is used for user based authorization
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> that this Auth entity allows or denies access to. This applies to user/person based authorization.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. This applies to user/person based authorization.
         /// If user/person based Authorization is not used this value will be null.
         /// </value>
         [DataMember]
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the GroupId of the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for group based authorization.
@@ -133,12 +133,12 @@ namespace Rock.Model
         public virtual Model.Group Group { get; set; }
         
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> that this Auth entity allows or denies access to. This is used for Person based authorization.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. This is used for Person based authorization.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> that this Auth entity allows or denies access to. If person based authorization is not used, this value will be null.
+        /// The <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. If person based authorization is not used, this value will be null.
         /// </value>
-        public virtual Model.Person Person { get; set; }
+        public virtual Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the the <see cref="Rock.Model.EntityType"/> of the entity that is being secured.
@@ -175,8 +175,8 @@ namespace Rock.Model
 
             if (SpecialRole != Model.SpecialRole.None)
                 sb.AppendFormat( "{0} ", SpecialRole.ToStringSafe().SplitCase() );
-            else if(Person != null)
-                sb.AppendFormat( "{0} ", Person.ToStringSafe() );
+            else if(PersonAlias != null)
+                sb.AppendFormat( "{0} ", PersonAlias.ToStringSafe() );
             else if(Group != null)
                 sb.AppendFormat( "{0} ", Group.ToStringSafe() );
 
@@ -202,7 +202,7 @@ namespace Rock.Model
         public AuthConfiguration()
         {
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
-            this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete(true);
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId).WillCascadeOnDelete( false );
         }
     }

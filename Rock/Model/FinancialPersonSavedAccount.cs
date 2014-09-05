@@ -39,13 +39,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the account owner.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the account holder.
+        /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
        
         /// <summary>
         /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
@@ -124,12 +124,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who is the account owner.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The Account Owner's <see cref="Rock.Model.Person"/> entity.
+        /// The person alias.
         /// </value>
-        public virtual Person Person { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the Payment Gateway service that was used to process this transaction.
@@ -193,7 +193,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialPersonSavedAccountConfiguration()
         {
-            this.HasRequired( t => t.Person ).WithMany().HasForeignKey( t => t.PersonId ).WillCascadeOnDelete( true );
+            this.HasRequired( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );

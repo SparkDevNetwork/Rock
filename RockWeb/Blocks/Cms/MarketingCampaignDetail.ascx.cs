@@ -168,7 +168,9 @@ namespace RockWeb.Blocks.Cms
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             MarketingCampaignService service = new MarketingCampaignService( new RockContext() );
-            MarketingCampaign item = service.Get( hfMarketingCampaignId.ValueAsInt() );
+            int marketingCampaignId = hfMarketingCampaignId.ValueAsInt();
+            MarketingCampaign item = service.Queryable( "ContactPersonAlias.Person" )
+                .FirstOrDefault( c => c.Id == marketingCampaignId );
             ShowEditDetails( item );
         }
 
@@ -210,13 +212,13 @@ namespace RockWeb.Blocks.Cms
             }
 
             marketingCampaign.Title = tbTitle.Text;
-            if ( ppContactPerson.SelectedValue.Equals( None.Id.ToString() ) )
+            if ( ppContactPerson.PersonId.HasValue )
             {
-                marketingCampaign.ContactPersonId = null;
+                marketingCampaign.ContactPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppContactPerson.PersonId.Value );
             }
             else
             {
-                marketingCampaign.ContactPersonId = ppContactPerson.PersonId;
+                marketingCampaign.ContactPersonAliasId = null;
             }
 
             marketingCampaign.ContactEmail = tbContactEmail.Text;
@@ -357,7 +359,8 @@ namespace RockWeb.Blocks.Cms
             if ( !marketingCampaignId.Equals( 0 ) )
             {
                 MarketingCampaignService marketingCampaignService = new MarketingCampaignService( new RockContext() );
-                marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
+                marketingCampaign = marketingCampaignService.Queryable( "ContactPersonAlias.Person" )
+                    .FirstOrDefault( c => c.Id == marketingCampaignId );
             }
 
             if (marketingCampaign == null)
@@ -422,7 +425,15 @@ namespace RockWeb.Blocks.Cms
             tbContactPhoneNumber.Text = marketingCampaign.ContactPhoneNumber;
 
             LoadDropDowns();
-            ppContactPerson.SetValue( marketingCampaign.ContactPerson );
+            if ( marketingCampaign.ContactPersonAlias != null )
+            {
+                ppContactPerson.SetValue( marketingCampaign.ContactPersonAlias.Person );
+            }
+            else
+            {
+                ppContactPerson.SetValue( null );
+            }
+
             ddlEventGroup.SetValue( marketingCampaign.EventGroupId );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();

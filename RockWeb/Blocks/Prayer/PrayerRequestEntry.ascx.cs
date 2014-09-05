@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( isAutoApproved )
             {
-                prayerRequest.ApprovedByPersonId = CurrentPersonId;
+                prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
                 var expireDays = Convert.ToDouble( GetAttributeValue( "ExpireDays" ) );
                 prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             prayerRequest.CategoryId = categoryId;
-            prayerRequest.RequestedByPersonId = CurrentPersonId;
+            prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
             prayerRequest.FirstName = dtbFirstName.Text.Trim().SanitizeHtml();
             prayerRequest.LastName = dtbLastName.Text.Trim().SanitizeHtml();
             prayerRequest.Email = dtbEmail.Text.Trim();

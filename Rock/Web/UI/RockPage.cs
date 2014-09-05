@@ -237,7 +237,7 @@ namespace Rock.Web.UI
                     }
                 }
 
-                if ( _CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                if ( _CurrentUser != null && _CurrentUser.Person != null && _currentPerson == null )
                 {
                     CurrentPerson = _CurrentUser.Person;
                 }
@@ -275,15 +275,15 @@ namespace Rock.Web.UI
         {
             get
             {
-                if ( _CurrentPerson != null )
+                if ( _currentPerson != null )
                 {
-                    return _CurrentPerson;
+                    return _currentPerson;
                 }
 
-                if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                if ( _currentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
                 {
-                    _CurrentPerson = Context.Items["CurrentPerson"] as Person;
-                    return _CurrentPerson;
+                    _currentPerson = Context.Items["CurrentPerson"] as Person;
+                    return _currentPerson;
                 }
 
                 return null;
@@ -292,33 +292,17 @@ namespace Rock.Web.UI
             private set
             {
                 Context.Items.Remove( "CurrentPerson" );
-                _CurrentPerson = value;
 
-                if ( _CurrentPerson != null )
+                _currentPerson = value;
+                if ( _currentPerson != null )
                 {
                     Context.Items.Add( "CurrentPerson", value );
                 }
-            }
-        }
-        private Person _CurrentPerson;
 
-        /// <summary>
-        /// Gets the current person alias.
-        /// </summary>
-        /// <value>
-        /// The current person alias.
-        /// </value>
-        public PersonAlias CurrentPersonAlias
-        {
-            get
-            {
-                if ( _CurrentPerson != null )
-                {
-                    return _CurrentPerson.PrimaryAlias;
-                }
-                return null;
+                _currentPersonAlias = null;
             }
         }
+        private Person _currentPerson;
 
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
@@ -334,6 +318,53 @@ namespace Rock.Web.UI
                 if ( CurrentPerson != null )
                 {
                     return CurrentPerson.Id;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <value>
+        /// The current person alias.
+        /// </value>
+        public PersonAlias CurrentPersonAlias
+        {
+            get
+            {
+                if (_currentPersonAlias != null)
+                {
+                    return _currentPersonAlias;
+                }
+
+                if ( _currentPerson != null )
+                {
+                    _currentPersonAlias = _currentPerson.PrimaryAlias;
+                    return _currentPersonAlias;
+                }
+
+                return null;
+            }
+        }
+        private PersonAlias _currentPersonAlias = null;
+
+        /// <summary>
+        /// Gets the current person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The current person alias identifier.
+        /// </value>
+        public int? CurrentPersonAliasId
+        {
+            get
+            {
+                if ( CurrentPersonAlias != null )
+                {
+                    return CurrentPersonAlias.Id;
                 }
                 else
                 {

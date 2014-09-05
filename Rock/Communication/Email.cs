@@ -36,7 +36,7 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
+        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "" )
         {
             try
             {

@@ -396,10 +396,10 @@ namespace RockWeb
                                     {
                                         string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
+                                        var recipients = new List<RecipientData>();
                                         foreach ( string emailAddress in emailAddresses )
                                         {
-                                            recipients.Add( emailAddress, mergeObjects );
+                                            recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
                                         }
 
                                         if ( recipients.Any() )

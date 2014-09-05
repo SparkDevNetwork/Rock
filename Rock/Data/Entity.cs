@@ -80,6 +80,7 @@ namespace Rock.Data
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [HideFromReporting]
         public string ForeignId { get; set; }
 
         #endregion

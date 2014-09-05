@@ -222,11 +222,17 @@ namespace RockWeb.Blocks.Utility
                     }
                 }
 
+                int? personAliasId = person.PrimaryAliasId;
+                if ( !personAliasId.HasValue )
+                {
+                    personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Id );
+                }
+
                 var attendances = new AttendanceService( rockContext )
                     .Queryable( "Schedule,Group,Location" )
                     .Where( a =>
-                        a.PersonId.HasValue &&
-                        a.PersonId == person.Id &&
+                        a.PersonAliasId.HasValue &&
+                        a.PersonAliasId == personAliasId &&
                         a.ScheduleId.HasValue &&
                         a.GroupId.HasValue &&
                         a.LocationId.HasValue &&

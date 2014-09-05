@@ -93,7 +93,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who approved the HTMLContent. If the HTMLContent had not been approved, this value will be null.
         /// </value>
         [DataMember]
-        public int? ApprovedByPersonId { get; set; }
+        public int? ApprovedByPersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the date and time that the HTMLContent was approved.
@@ -134,14 +134,14 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.
         /// </value>
         public virtual Block Block { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who approved the HTML content.
+        /// Gets or sets the approved by person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who approved the HTMLContent.
+        /// The approved by person alias.
         /// </value>
-        public virtual Model.Person ApprovedByPerson { get; set; }
+        public virtual Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
         #endregion
 
@@ -175,7 +175,7 @@ namespace Rock.Model
         public HtmlContentConfiguration()
         {
             this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete(false);
         }
     }
 

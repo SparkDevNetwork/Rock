@@ -73,6 +73,10 @@
     <Compile Include="Migrations\201409032225528_PageAndWorkflowChanges.Designer.cs">
       <DependentUpon>201409032225528_PageAndWorkflowChanges.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409041849583_ExpandPersonAlias.cs" />
+    <Compile Include="Migrations\201409041849583_ExpandPersonAlias.Designer.cs">
+      <DependentUpon>201409041849583_ExpandPersonAlias.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
@@ -1175,6 +1179,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409032225528_PageAndWorkflowChanges.resx">
       <DependentUpon>201409032225528_PageAndWorkflowChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409041849583_ExpandPersonAlias.resx">
+      <DependentUpon>201409041849583_ExpandPersonAlias.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>

@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( ppFilterPerson.PersonId.HasValue )
             {
-                pledges = pledges.Where( p => p.PersonId == ppFilterPerson.PersonId.Value );
+                pledges = pledges.Where( p => p.PersonAlias.PersonId == ppFilterPerson.PersonId.Value );
             }
 
             var accountIds = fpFilterAccount.SelectedValuesAsInt().Where( i => i != 0 ).ToList();

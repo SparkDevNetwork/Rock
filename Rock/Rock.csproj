@@ -215,6 +215,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
@@ -257,8 +258,15 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
+    <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">

@@ -35,11 +35,11 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/></returns>
         public IQueryable<Rock.Model.CommunicationRecipient> Get( int communicationId, CommunicationRecipientStatus status )
         {
-            return Queryable( "Communication" )
+            return Queryable( "Communication,PersonAlias.Person" )
                 .Where( r =>
                     r.CommunicationId == communicationId &&
                     r.Status == status &&
-                    ( !r.Person.IsDeceased.HasValue || !r.Person.IsDeceased.Value ) );
+                    ( !r.PersonAlias.Person.IsDeceased.HasValue || !r.PersonAlias.Person.IsDeceased.Value ) );
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/>.</returns>
         public IQueryable<Rock.Model.CommunicationRecipient> GetByCommunicationId( int communicationId )
         {
-            return Queryable( "Communication" )
+            return Queryable( "Communication,PersonAlias.Person" )
                 .Where( r => r.CommunicationId == communicationId );
         }
 

@@ -41,13 +41,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
+        /// Gets or sets the sender person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person" /> who is the sender of the Communication.
+        /// The sender person alias identifier.
         /// </value>
         [DataMember]
-        public int? SenderPersonId { get; set; }
+        public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Subject of the Communication
@@ -88,14 +88,13 @@ namespace Rock.Model
         public CommunicationStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the reviewer of the Communication.
+        /// Gets or sets the reviewer person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32" /> representing the PersonId of the <see cref="Rock.Model.Person"/> who is the reviewer of the Communication. If there is not reviewer
-        /// on this communication, this property will be null.
+        /// The reviewer person alias identifier.
         /// </value>
         [DataMember]
-        public int? ReviewerPersonId { get; set; }
+        public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time stamp of when the Communication was reviewed.
@@ -181,22 +180,22 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> of the Communication's sender.
+        /// Gets or sets the sender person alias.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Person"/> that represents the Communication's sender.
+        /// The sender person alias.
         /// </value>
         [DataMember]
-        public virtual Person Sender { get; set; }
+        public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> of the Communication's reviewer.
+        /// Gets or sets the reviewer person alias.
         /// </summary>
         /// <value>
-        /// The reviewer.
+        /// The reviewer person alias.
         /// </value>
         [DataMember]
-        public virtual Person Reviewer { get; set; }
+        public virtual PersonAlias ReviewerPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the Communication.
@@ -359,8 +358,8 @@ namespace Rock.Model
         public CommunicationConfiguration()
         {
             this.HasOptional( c => c.ChannelEntityType ).WithMany().HasForeignKey( c => c.ChannelEntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.Sender ).WithMany().HasForeignKey( c => c.SenderPersonId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.Reviewer ).WithMany().HasForeignKey( c => c.ReviewerPersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -92,7 +92,7 @@ namespace Rock.Model
             target.Version = source.Version;
             target.Content = source.Content;
             target.IsApproved = source.IsApproved;
-            target.ApprovedByPersonId = source.ApprovedByPersonId;
+            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedDateTime = source.ApprovedDateTime;
             target.StartDateTime = source.StartDateTime;
             target.ExpireDateTime = source.ExpireDateTime;

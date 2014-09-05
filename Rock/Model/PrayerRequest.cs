@@ -76,7 +76,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of <see cref="Rock.Model.Person"/> submitting the PrayerRequest.
         /// </value>
         [DataMember]
-        public int? RequestedByPersonId { get; set; }
+        public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that the PrayerRequest belongs to.
@@ -205,7 +205,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who approved this prayer request.
         /// </value>
         [DataMember]
-        public int? ApprovedByPersonId { get; set; }
+        public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the date this prayer request was approved.
@@ -221,13 +221,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who made the prayer request.
+        /// Gets or sets the requested by person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who made the prayer request.
+        /// The requested by person alias.
         /// </value>
         [DataMember]
-        public virtual Person RequestedByPerson { get; set; }
+        public virtual PersonAlias RequestedByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this prayer request belongs to.
@@ -248,13 +248,13 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who approved the prayer request.
+        /// Gets or sets the approved by person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who approved the prayer request.
+        /// The approved by person alias.
         /// </value>
         [DataMember]
-        public virtual Person ApprovedByPerson { get; set; }
+        public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
 
         /// <summary>
@@ -331,6 +331,8 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 
