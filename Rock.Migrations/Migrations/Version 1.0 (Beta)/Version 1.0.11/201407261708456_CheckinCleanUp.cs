@@ -72,7 +72,7 @@ namespace Rock.Migrations
     )
 
     DELETE FROM [Device]
-    WHERE D.[Guid] IN (
+    WHERE [Guid] IN (
         '1155287E-B79B-4464-9EA7-70DE1E43278C', 
         '1043CF18-4944-4372-BD4D-6D44FD10D9A8', 
         'E6138007-302F-42C1-AE98-7C992205ED13',
