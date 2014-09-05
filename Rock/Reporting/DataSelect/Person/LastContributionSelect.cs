@@ -142,11 +142,22 @@ namespace Rock.Reporting.DataSelect.Person
             // t.Transaction
             MemberExpression transactionProperty = Expression.Property( transactionDetailParameter, "Transaction" );
 
-            // t.Transaction.AuthorizedPersonId
-            MemberExpression authorizedPersonIdProperty = Expression.Property( transactionProperty, "AuthorizedPersonId" );
+            // t.Transaction.AuthorizedPersonAlias
+            MemberExpression authorizedPersonAliasProperty = Expression.Property( transactionProperty, "AuthorizedPersonAlias" );
 
-            // t.Transaction.AuthorizedPersonId == Convert(p.Id)
-            Expression whereClause = Expression.Equal(authorizedPersonIdProperty, Expression.Convert(entityIdProperty, typeof(int?)));
+            // t.Transaction.AuthorizedPersonAlias.PersonId
+            MemberExpression authorizedPersonIdProperty = Expression.Property( authorizedPersonAliasProperty, "PersonId" );
+
+            // t.Transaction.AuthorizedPersonAlias.PersonId == Convert(p.Id)
+            Expression whereClause = Expression.Equal(authorizedPersonIdProperty, Expression.Convert(entityIdProperty, typeof(int)));
+            
+            // t.Transaction.TransactionTypeValueId
+            MemberExpression transactionTypeValueIdProperty = Expression.Property( transactionProperty, "TransactionTypeValueId" );
+
+            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            
+            // t.Transaction.TransactionTypeValueId == transactionTypeContributionId
+            whereClause = Expression.And( whereClause, Expression.Equal( transactionTypeValueIdProperty, Expression.Constant( transactionTypeContributionId ) ) );
 
             // get the selected AccountId(s).  If there are any, limit to transactions that for that Account
             if ( !string.IsNullOrWhiteSpace( selection ) )
