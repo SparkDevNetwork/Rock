@@ -109,7 +109,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                                StartTime = g.StartTime
                                            } );                                                                    
             
-                if ( !String.IsNullOrWhiteSpace(clipUrl) )
+                if ( !String.IsNullOrWhiteSpace( clipUrl ) )
                 {
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => g.RecordingName == clipUrl );
 
@@ -125,6 +125,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = false;
+                    pnlShare.Visible = false;
                 }
                 else if ( weekendDateTime.HasValue || campusGuid.HasValue || !string.IsNullOrWhiteSpace( venue ) )
                 {
@@ -134,12 +135,14 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = true;
+                    pnlShare.Visible = true;
                 }
                 else 
                 {
                     mdWarning.Visible = true;             
                     pnlVideo.Visible = false;
                     pnlControls.Visible = false;
+                    pnlShare.Visible = false;
                 }
 
                 campusVenueWeekendTimeList = campusVenueWeekendTimeList.OrderBy( a => a.StartTime );
@@ -163,8 +166,11 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                         button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString( "n" ) );
                         button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted( "'" ) + " );";
                         button.Attributes["recordingName"] = campusServiceTimeList.RecordingName;
-
-                        button.Attributes.Add( "class", "btn btn-primary servicebutton" );
+                        button.Attributes.Add( "data-toggle", "tooltip" );
+                        button.Attributes.Add( "data-placement", "top" );
+                        button.Attributes.Add( "Type", "button" );
+                        button.Title = campusServiceTimeList.RecordingName;
+                        button.Attributes.Add( "class", "btn btn-default servicebutton" );
                         plcServiceTimeButtons.Controls.Add( button );
                     }
                 }
@@ -172,7 +178,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 {
                     mdWarning.Visible = true;
                     pnlVideo.Visible = false;
-                    pnlControls.Visible = false;
+                    pnlShare.Visible = false;
                 }
             }
         }
@@ -208,12 +214,20 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     channelData.Add( "From", orgFrom );
                 }
 
+                channelData.Add( "Subject", "Command Center Recording" );
+
+                string videoLink = "<a href='" + tbLink.Text + "'>Video Clip</a>";
+
                 if ( !string.IsNullOrWhiteSpace( tbEmailMessage.Text ) )
                 {
-                    channelData.Add( "Body", tbEmailMessage.Text );
+                    channelData.Add( "Body", "<html><body><p>" + tbEmailMessage.Text + "</p><p>"+ videoLink + "</p></body></html>" );
+                }
+                else
+                {
+                    channelData.Add( "Body", "<html><body><p>" + videoLink + "</p></body></html>" );
                 }
 
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );               
                 if ( channelEntity != null )
                 {
                     var channel = ChannelContainer.GetComponent( channelEntity.Name );
@@ -227,9 +241,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                         }
                     }
                 }
-                
             }
-        
         }
 
         protected void btnSendEmail_Click( object sender, EventArgs e )

@@ -9,50 +9,49 @@
         <asp:HiddenField ID="hfClipDuration" runat="server" />
 
         <Rock:NotificationBox ID="mdWarning" runat="server" Text="Recording not available" Visible="false" NotificationBoxType="Danger" />
-
+            
         <asp:Panel ID="pnlVideo" runat="server">
-
-            <div class="row">
-                <div class="col-sm-6">
-                    <h3><asp:Literal ID="lblTitle" runat="server" /></h3>
-                </div> 
-                <div class="col-sm-6">
-                    <div class="pull-right">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-play-circle-o"></i> <asp:Literal ID="lblTitle" runat="server" /></h1>
+                    <div class="panel-labels">
                         <Rock:HighlightLabel ID="lblCampus" LabelType="Campus" runat="server" />
                         <Rock:HighlightLabel ID="lblVenue" LabelType="Warning" runat="server" />
                     </div>
                 </div>
-            </div>
-                        
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="videocontent">                                          
-                        <a id="player" data-flashfit="true"></a>
-                    </div>
-                </div>
-            </div>
-
-        </asp:Panel>
-
-
-        <asp:Panel ID="pnlControls" runat="server">
-
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="servicebuttons">
-                        <div class="btn-group">
-                            <asp:PlaceHolder id="plcServiceTimeButtons" runat="server" />
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="videocontent">
+                                <a id="player" data-flashfit="true"></a>
+                            </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <asp:Panel ID="pnlControls" runat="server">
+                            <div class="col-sm-12">
+                                <div class="servicebuttons">
+                                    <div class="btn-group">
+                                        <asp:PlaceHolder id="plcServiceTimeButtons" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel> 
+                    </div>
                 </div>
             </div>
-
+        </asp:Panel>
+            
+        <asp:Panel ID="pnlShare" runat="server">
             <div class="sharebutton">
-                <a ID="sharebutton" class=" btn btn-success btn-xs" data-toggle="collapse" data-target="#sharepanel">Share</a>
+                <a ID="sharebutton" class="btn btn-success btn-xs pull-right" data-toggle="collapse" data-target="#sharepanel"><i class="fa fa-share-alt"></i> Share <i id="chevron-toggle" class="fa fa-chevron-down"></i> </a>
             </div>
-                
+            <br />   
             <div id="sharepanel" class="panel panel-default collapse">
                 <div class="panel-body">
+
+                    <asp:ValidationSummary ID="valSummary" runat="server" DisplayMode="BulletList" CssClass="alert alert-danger" 
+                        ValidationGroup="sharegroup" HeaderText="Please correct the following..." />
 
                     <div class="row">
                         <div class="col-sm-4">
@@ -80,15 +79,19 @@
 
                     <br />
 
-                    <Rock:RockTextBox ID="tbLink" runat="server" Label="Link" TextMode="Url" CssClass="js-urltextbox" />
-
-                    <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" TextMode="Email" />
+                    <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" 
+                        TextMode="Email" ValidationGroup="sharegroup" Required="true" />
 
                     <Rock:RockTextBox ID="tbEmailFrom" runat="server" Label="From" TextMode="Email" />
 
-                    <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" CssClass="form-control" Rows="3" TextMode="MultiLine" />
+                    <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" Help="The URL link will automatically be appended to this message." 
+                        CssClass="form-control" Rows="3" TextMode="MultiLine" />
 
-                    <Rock:BootstrapButton ID="btnSendEmail" runat="server" Text="Send" OnClick="btnSendEmail_Click" CssClass="btn btn-default pull-right" /> 
+                    <Rock:RockTextBox ID="tbLink" runat="server" Label="Link" Help="This URL link will be included automatically in the email message." 
+                        TextMode="Url" CssClass="js-urltextbox" ValidationGroup="sharegroup" Required="true" RequiredErrorMessage="A link hasn't been created yet.  Please set a start and end point." />
+
+                    <Rock:BootstrapButton ID="btnSendEmail" runat="server" Text="Send" OnClick="btnSendEmail_Click" CssClass="btn btn-default pull-right" 
+                        CausesValidation="true" ValidationGroup="sharegroup" /> 
 
                 </div>
             </div> 
@@ -141,7 +144,14 @@
 
         // Setup recording buttons
         $('.servicebutton').first().addClass('active');
+
+        // Toggle share button
+        $('#sharebutton').click(function () {
+            $('#chevron-toggle').toggleClass('fa-chevron-down fa-chevron-up');
+        })
     }
+
+    
 
     // Change recording playback
     function ChangeRecording(recording) {
