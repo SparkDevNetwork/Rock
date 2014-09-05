@@ -397,7 +397,7 @@
     <Compile Include="Reporting\DataSelect\Person\SpouseNameSelect.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\FirstLastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />

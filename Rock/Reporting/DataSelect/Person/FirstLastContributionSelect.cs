@@ -29,14 +29,61 @@ using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {
-    /// <summary>
-    /// 
-    /// </summary>
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    public class LastContributionSelect : DataSelectComponent
+    public class LastContributionSelect : FirstLastContributionSelect
     {
+        /// <summary>
+        /// Gets the first or last.
+        /// </summary>
+        /// <value>
+        /// The first or last.
+        /// </value>
+        internal override FirstLastContributionSelect.FirstLast FirstOrLast
+        {
+            get { return FirstLast.Last; }
+        }
+    }
+
+    [Description( "Selects First Contribution Date for a Person" )]
+    [Export( typeof( DataSelectComponent ) )]
+    [ExportMetadata( "ComponentName", "Select Person First Contribution" )]
+    public class FirstContributionSelect : FirstLastContributionSelect
+    {
+        /// <summary>
+        /// Gets the first or last.
+        /// </summary>
+        /// <value>
+        /// The first or last.
+        /// </value>
+        internal override FirstLastContributionSelect.FirstLast FirstOrLast
+        {
+            get { return FirstLast.First; }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public abstract class FirstLastContributionSelect : DataSelectComponent
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        internal enum FirstLast
+        {
+            First,
+            Last
+        }
+
+        /// <summary>
+        /// Gets the first or last.
+        /// </summary>
+        /// <value>
+        /// The first or last.
+        /// </value>
+        internal abstract FirstLast FirstOrLast { get; }
 
         #region Properties
 
@@ -78,7 +125,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "LastTransactionDateTime";
+                return FirstOrLast.ConvertToString() + "TransactionDateTime";
             }
         }
 
@@ -90,7 +137,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof(DateTime?); }
+            get { return typeof( DateTime? ); }
         }
 
         /// <summary>
@@ -103,7 +150,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Last Contribution Date";
+                return FirstOrLast.ConvertToString() + " Contribution Date";
             }
         }
 
@@ -118,10 +165,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
-        public override string GetTitle(Type entityType)
+        /// </value>
+        public override string GetTitle( Type entityType )
         {
-            return "Last Contribution";
+            return FirstOrLast.ConvertToString() + " Contribution";
         }
 
         /// <summary>
@@ -149,13 +196,13 @@ namespace Rock.Reporting.DataSelect.Person
             MemberExpression authorizedPersonIdProperty = Expression.Property( authorizedPersonAliasProperty, "PersonId" );
 
             // t.Transaction.AuthorizedPersonAlias.PersonId == Convert(p.Id)
-            Expression whereClause = Expression.Equal(authorizedPersonIdProperty, Expression.Convert(entityIdProperty, typeof(int)));
-            
+            Expression whereClause = Expression.Equal( authorizedPersonIdProperty, Expression.Convert( entityIdProperty, typeof( int ) ) );
+
             // t.Transaction.TransactionTypeValueId
             MemberExpression transactionTypeValueIdProperty = Expression.Property( transactionProperty, "TransactionTypeValueId" );
 
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
-            
+
             // t.Transaction.TransactionTypeValueId == transactionTypeContributionId
             whereClause = Expression.And( whereClause, Expression.Equal( transactionTypeValueIdProperty, Expression.Constant( transactionTypeContributionId ) ) );
 
@@ -170,18 +217,18 @@ namespace Rock.Reporting.DataSelect.Person
                     MemberExpression accountIdProperty = Expression.Property( transactionDetailParameter, "AccountId" );
 
                     // accountIds.Contains(t.AccountId)
-                    Expression selectedAccountIds = Expression.Constant(selectedAccountIdList);
-                    Expression containsExpression = Expression.Call(selectedAccountIds, "Contains", new Type[] {}, accountIdProperty );
+                    Expression selectedAccountIds = Expression.Constant( selectedAccountIdList );
+                    Expression containsExpression = Expression.Call( selectedAccountIds, "Contains", new Type[] { }, accountIdProperty );
 
                     // t.authorizedPersonId == Convert(p.Id) && accountIds.Contains(t.AccountId)
-                    whereClause = Expression.And(whereClause, containsExpression );
+                    whereClause = Expression.And( whereClause, containsExpression );
                 }
             }
 
             // t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
             var compare = new Expression[] { 
                     Expression.Constant(transactionDetails), 
-                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause , new ParameterExpression[] { transactionDetailParameter } ) 
+                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause, new ParameterExpression[] { transactionDetailParameter } ) 
                 };
 
             // transactions.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
@@ -194,9 +241,10 @@ namespace Rock.Reporting.DataSelect.Person
             var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
 
             // transaction.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id).Max( t => t.Transaction.transactionDateTime)
-            Expression maxExpression = Expression.Call( typeof( Queryable ), "Max", new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime? ) }, whereExpression, transactionDate );
+            string methodName = FirstOrLast == FirstLast.Last ? "Max" : "Min";
+            Expression maxMinExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime? ) }, whereExpression, transactionDate );
 
-            return maxExpression;
+            return maxMinExpression;
         }
 
         /// <summary>
@@ -210,7 +258,9 @@ namespace Rock.Reporting.DataSelect.Person
             accountPicker.AllowMultiSelect = true;
             accountPicker.ID = parentControl.ID + "_accountPicker";
             accountPicker.Label = "Account";
-            accountPicker.Help = "Pick accounts to show the last time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.";
+            accountPicker.Help = string.Format(
+                "Pick accounts to show the {0} time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.",
+                FirstOrLast.ConvertToString().ToLower() );
             parentControl.Controls.Add( accountPicker );
 
             return new System.Web.UI.Control[] { accountPicker };
@@ -240,7 +290,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( accountPicker != null )
                 {
                     var accountIds = accountPicker.SelectedValues.ToList().Select( a => a.AsInteger() ).ToList();
-                    var accountGuids = new FinancialAccountService(new RockContext()).GetByIds(accountIds).Select(a => a.Guid);
+                    var accountGuids = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).Select( a => a.Guid );
                     return accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }
             }
@@ -265,18 +315,17 @@ namespace Rock.Reporting.DataSelect.Person
                     foreach ( string accountGuid in selectionAccountGuidValues )
                     {
                         var account = new FinancialAccountService( new RockContext() ).Get( accountGuid.AsGuid() );
-                        if (account != null)
+                        if ( account != null )
                         {
-                            accountList.Add(account);
+                            accountList.Add( account );
                         }
                     }
-                    
+
                     accountPicker.SetValues( accountList );
                 }
             }
         }
 
         #endregion
-
     }
 }
