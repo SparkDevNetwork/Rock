@@ -287,9 +287,9 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot"></param>
-        /// <param name="themeRoot"></param>
-        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             var globalAttributes = GlobalAttributesCache.Read();
 
@@ -340,20 +340,25 @@ namespace Rock.Communication.Transport
 
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
-                foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
+                foreach ( var recipientData in recipients )
                 {
-                    var mergeObjects = recipient.Value;
-                    globalConfigValues.ToList().ForEach( g => mergeObjects[g.Key] = g.Value );
+                    foreach( var g in globalConfigValues )
+                    {
+                        if (recipientData.MergeFields.ContainsKey( g.Key ))
+                        {
+                            recipientData.MergeFields[g.Key] = g.Value;
+                        }
+                    }
 
                     List<string> sendTo = SplitRecipient( template.To );
-                    sendTo.Add( recipient.Key );
+                    sendTo.Add( recipientData.To );
                     foreach ( string to in sendTo )
                     {
                         message.To.Clear();
                         message.To.Add( to );
 
-                        string subject = template.Subject.ResolveMergeFields( mergeObjects );
-                        string body = Regex.Replace( template.Body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                        string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
+                        string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
                         if (!string.IsNullOrWhiteSpace(themeRoot))
                         {
