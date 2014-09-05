@@ -111,10 +111,37 @@ namespace Rock.Jobs
                     var activeJob = activeJobList.FirstOrDefault( a => a.Guid.Equals( jobKey.Name.AsGuid() ) );
                     if ( activeJob != null )
                     {
+
+                        bool rescheduleJob = false;
+                        
+                        // fix up the schedule if it has changed
                         if ( activeJob.CronExpression != jobCronTrigger.CronExpressionString )
                         {
+                            rescheduleJob = true;
+                        }
+
+                        // update the job detail if it has changed
+                        var scheduledJobDetail = scheduler.GetJobDetail( jobKey );
+                        var jobDetail = jobService.BuildQuartzJob( activeJob );
+
+                        if (scheduledJobDetail != null && jobDetail != null)
+                        {
+                            if (scheduledJobDetail.JobType != jobDetail.JobType)
+                            {
+                                rescheduleJob = true;
+                            }
+
+                            if (scheduledJobDetail.JobDataMap.ToJson() != jobDetail.JobDataMap.ToJson())
+                            {
+                                rescheduleJob = true;
+                            }
+                        }
+
+                        if (rescheduleJob)
+                        {
                             ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
-                            scheduler.RescheduleJob( jobCronTrigger.Key, newJobTrigger );
+                            scheduler.DeleteJob( jobKey );
+                            scheduler.ScheduleJob( jobDetail, newJobTrigger );
                         }
                     }
                 }
