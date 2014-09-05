@@ -132,7 +132,7 @@ function() {
             AccountPicker accountPicker = new AccountPicker();
 
             // NOTE: This filter is already designed to handle either Multiselect or SingleSelect mode, so all you have to is set this to true or false
-            accountPicker.AllowMultiSelect = false;
+            accountPicker.AllowMultiSelect = true;
             
             accountPicker.ID = filterControl.ID + "_accountPicker";
             accountPicker.AddCssClass( "js-account-picker" );
