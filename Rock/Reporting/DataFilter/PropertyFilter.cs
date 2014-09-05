@@ -282,7 +282,7 @@ namespace Rock.Reporting.DataFilter
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                         DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                         ConstantExpression constantExpression = Expression.Constant( dateValue );
-                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
@@ -295,7 +295,7 @@ namespace Rock.Reporting.DataFilter
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                         int intValue = values[1].AsIntegerOrNull() ?? int.MinValue;
                         ConstantExpression constantExpression = Expression.Constant( intValue );
-                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
@@ -308,7 +308,7 @@ namespace Rock.Reporting.DataFilter
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                         decimal decimalValue = values[1].AsDecimalOrNull() ?? decimal.MinValue;
                         ConstantExpression constantExpression = Expression.Constant( decimalValue );
-                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
@@ -355,7 +355,7 @@ namespace Rock.Reporting.DataFilter
                         {
                             ConstantExpression constantExpression = Expression.Constant( bool.Parse( values[0] ) );
                             ComparisonType comparisonType = ComparisonType.EqualTo;
-                            return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                            return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                             
                         }
                     }
@@ -378,7 +378,7 @@ namespace Rock.Reporting.DataFilter
                             constantExpression = Expression.Constant( values[1] );
                         }
 
-                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
 
                     break;
