@@ -181,9 +181,10 @@ namespace Rock.Model
         /// Gets the query.
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, RockContext rockContext, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -200,7 +201,7 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+                        IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
 
                         if ( serviceInstance != null )
                         {
