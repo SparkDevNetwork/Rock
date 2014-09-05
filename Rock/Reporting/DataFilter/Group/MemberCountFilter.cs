@@ -167,7 +167,7 @@ function () {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
             ddlIntegerCompare.Label = "Count";
             ddlIntegerCompare.ID = string.Format( "{0}_ddlIntegerCompare", filterControl.ID );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
