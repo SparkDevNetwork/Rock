@@ -603,6 +603,7 @@ $(document).ready(function() {
         {
             var errorMessages = new List<string>();
             grid.DataSource = null;
+            var rockContext = new RockContext();
 
             if ( dataView.EntityTypeId.HasValue )
             {
@@ -615,7 +616,7 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+                        var qry = dataView.GetQuery( grid.SortProperty, rockContext, out errorMessages );
 
                         if ( fetchRowCount.HasValue )
                         {
