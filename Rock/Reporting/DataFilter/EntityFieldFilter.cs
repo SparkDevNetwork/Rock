@@ -50,7 +50,7 @@ namespace Rock.Reporting.DataFilter
             {
                 case SystemGuid.FieldType.DATE:
 
-                    var ddlDateCompare = ComparisonControl( DateFilterComparisonTypes );
+                    var ddlDateCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.DateFilterComparisonTypes );
                     ddlDateCompare.ID = string.Format( "{0}_ddlDateCompare", controlIdPrefix );
                     ddlDateCompare.AddCssClass( "js-filter-compare" );
                     parentControl.Controls.Add( ddlDateCompare );
@@ -66,7 +66,7 @@ namespace Rock.Reporting.DataFilter
 
                 case SystemGuid.FieldType.TIME:
 
-                    var ddlTimeCompare = ComparisonControl( DateFilterComparisonTypes );
+                    var ddlTimeCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.DateFilterComparisonTypes );
                     ddlTimeCompare.ID = string.Format( "{0}_ddlTimeCompare", controlIdPrefix );
                     ddlTimeCompare.AddCssClass( "js-filter-compare" );
                     parentControl.Controls.Add( ddlTimeCompare );
@@ -83,7 +83,7 @@ namespace Rock.Reporting.DataFilter
                 case SystemGuid.FieldType.INTEGER:
                 case SystemGuid.FieldType.DECIMAL:
 
-                    var ddlNumberCompare = ComparisonControl( NumericFilterComparisonTypes );
+                    var ddlNumberCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
                     ddlNumberCompare.ID = string.Format( "{0}_ddlNumberCompare", controlIdPrefix );
                     ddlNumberCompare.AddCssClass( "js-filter-compare" );
                     parentControl.Controls.Add( ddlNumberCompare );
@@ -193,7 +193,16 @@ namespace Rock.Reporting.DataFilter
 
                 case SystemGuid.FieldType.TEXT:
 
-                    var ddlText = ComparisonControl( StringFilterComparisonTypes );
+                    RockDropDownList ddlText;
+                    if ( entityField.PropertyType == typeof( Guid ) )
+                    {
+                        ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.GuidFilterComparisonTypes );
+                    }
+                    else
+                    {
+                        ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
+                    }
+
                     ddlText.ID = string.Format( "{0}_ddlText", controlIdPrefix );
                     ddlText.AddCssClass( "js-filter-compare" );
                     parentControl.Controls.Add( ddlText );

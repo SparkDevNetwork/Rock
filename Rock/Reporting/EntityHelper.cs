@@ -55,77 +55,96 @@ namespace Rock.Reporting
 
             var entityFields = new List<EntityField>();
 
+            var entityProperties = entityType.GetProperties().ToList();
+            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual || p.Name == "Id" || p.Name == "Guid" || p.Name == "Order" ).ToList();
+
             // Get Properties
-            foreach ( var property in entityType.GetProperties() )
+            foreach ( var property in filteredEntityProperties )
             {
-                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                EntityField entityProperty = null;
+
+                // Enum Properties
+                if ( property.PropertyType.IsEnum )
                 {
-                    EntityField entityProperty = null;
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                }
 
-                    // Enum Properties
-                    if ( property.PropertyType.IsEnum )
+                // Boolean properties
+                else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+                {
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
+                }
+
+                // Date properties
+                else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+                {
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
+                }
+
+                // Decimal properties
+                else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
+                {
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
+                }
+
+                // Guid properties
+                else if ( property.PropertyType == typeof( Guid ) || property.PropertyType == typeof( Guid? ) )
+                {
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
+                }
+
+                // Text Properties
+                else if ( property.PropertyType == typeof( string ) )
+                {
+                    entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
+                }
+
+                // Integer Properties
+                else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
+                {
+                    var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+
+                    if ( definedValueAttribute != null )
                     {
+                        // Defined Value Properties
                         entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                        var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
+                        entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
                         entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                        entityProperty.DefinedTypeGuid = definedType.Guid;
                     }
-
-                    // Boolean properties
-                    if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
-                    {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                    }
-
-                    // Date properties
-                    if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+                    else
                     {
                         entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
+                        entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
                     }
+                }
 
-                    // Text Properties
-                    else if ( property.PropertyType == typeof( string ) )
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Unreported Entity PropertyType {0} for {1}", property.PropertyType.ToString(), property.Name ) );
+                }
+
+                if ( entityProperty != null )
+                {
+                    entityProperty.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
+                    if ( includeOnlyReportingFields )
                     {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                    }
-
-                    // Integer Properties
-                    else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
-                    {
-                        var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-
-                        if ( definedValueAttribute != null )
-                        {
-                            // Defined Value Properties
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
-                            entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                            entityProperty.DefinedTypeGuid = definedType.Guid;
-                        }
-                        else
-                        {
-                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                        }
-                    }
-
-                    if ( entityProperty != null )
-                    {
-                        entityProperty.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
-                        if ( includeOnlyReportingFields )
-                        {
-                            bool isReportable = !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any();
-                            if ( isReportable )
-                            {
-                                entityFields.Add( entityProperty );
-                            }
-                        }
-                        else
+                        bool isReportable = !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any();
+                        if ( isReportable )
                         {
                             entityFields.Add( entityProperty );
                         }
+                    }
+                    else
+                    {
+                        entityFields.Add( entityProperty );
                     }
                 }
             }

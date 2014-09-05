@@ -42,14 +42,14 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable( "Group,Schedule" )
+            return Queryable( "Group,Schedule,PersonAlias.Person" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&
                     a.LocationId == locationId &&
                     a.ScheduleId == scheduleId &&
                     a.GroupId == groupId &&
-                    a.PersonId == personId )
+                    a.PersonAlias.PersonId == personId )
                 .FirstOrDefault();
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable( "Group,Schedule" )
+            return Queryable( "Group,Schedule,PersonAlias.Person" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&

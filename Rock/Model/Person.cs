@@ -389,7 +389,6 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _attendances = new Collection<Attendance>();
             _aliases = new Collection<PersonAlias>();
         }
 
@@ -651,19 +650,6 @@ namespace Rock.Model
             set { _members = value; }
         }
         private ICollection<GroupMember> _members;
-
-        /// <summary>
-        /// Gets or set a collection containing the Person's <see cref="Rock.Model.Attendance"/> history.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
-        /// </value>
-        public virtual ICollection<Attendance> Attendances
-        {
-            get { return _attendances; }
-            set { _attendances = value; }
-        }
-        private ICollection<Attendance> _attendances;
 
         /// <summary>
         /// Gets or sets the aliases for this person
@@ -1295,6 +1281,20 @@ namespace Rock.Model
                     }
                 } 
             }
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "" )
+        {
+            Person person =  personAlias != null ? personAlias.Person : null;
+            return GetPhotoImageTag( person, maxWidth, maxHeight, className );
         }
 
         /// <summary>

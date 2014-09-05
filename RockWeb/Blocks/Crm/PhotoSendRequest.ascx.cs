@@ -122,11 +122,11 @@ namespace RockWeb.Blocks.Crm
                 // Get existing or new communication record
                 var communication = GetCommunication( new RockContext(), null );
 
-                if ( communication != null )
+                if ( communication != null && CurrentPersonAliasId.HasValue )
                 {
                     // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                     var testCommunication = new Rock.Model.Communication();
-                    testCommunication.SenderPersonId = communication.SenderPersonId;
+                    testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
                     testCommunication.Subject = communication.Subject;
                     testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
                     testCommunication.ChannelEntityTypeId = communication.ChannelEntityTypeId;
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Crm
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;
                     testCommunication.ReviewedDateTime = RockDateTime.Now;
-                    testCommunication.ReviewerPersonId = CurrentPerson.Id; ;
+                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId.Value;
 
                     var testRecipient = new CommunicationRecipient();
                     if ( communication.Recipients.Any() )
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Crm
                         testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                     }
                     testRecipient.Status = CommunicationRecipientStatus.Pending;
-                    testRecipient.PersonId = CurrentPerson.Id;
+                    testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
                     testCommunication.Recipients.Add( testRecipient );
 
                     var rockContext = new RockContext();
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         communication.Status = CommunicationStatus.Approved;
                         communication.ReviewedDateTime = RockDateTime.Now;
-                        communication.ReviewerPersonId = CurrentPersonId;
+                        communication.ReviewerPersonAliasId = CurrentPersonAliasId;
                         message = "Communication has been queued for sending.";
                     }
 
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Crm
 
             Rock.Model.Communication communication = new Rock.Model.Communication();
             communication.Status = CommunicationStatus.Transient;
-            communication.SenderPersonId = CurrentPersonId;
+            communication.SenderPersonAliasId = CurrentPersonAliasId;
             communicationService.Add( communication );
             communication.IsBulkCommunication = true;
             communication.ChannelEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id;
@@ -373,10 +373,10 @@ namespace RockWeb.Blocks.Crm
             {
                 foreach ( var personId in peopleIds )
                 {
-                    if ( !communication.Recipients.Any( r => r.PersonId == personId ) )
+                    if ( !communication.Recipients.Any( r => r.PersonAlias.PersonId == personId ) )
                     {
                         var communicationRecipient = new CommunicationRecipient();
-                        communicationRecipient.Person = new PersonService( (RockContext)communicationService.Context ).Get( personId );
+                        communicationRecipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( personId );
                         communication.Recipients.Add( communicationRecipient );
                     }
                 }

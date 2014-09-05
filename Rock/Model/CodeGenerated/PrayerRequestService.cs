@@ -90,7 +90,7 @@ namespace Rock.Model
             target.FirstName = source.FirstName;
             target.LastName = source.LastName;
             target.Email = source.Email;
-            target.RequestedByPersonId = source.RequestedByPersonId;
+            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
             target.CategoryId = source.CategoryId;
             target.Text = source.Text;
             target.Answer = source.Answer;
@@ -104,7 +104,7 @@ namespace Rock.Model
             target.IsApproved = source.IsApproved;
             target.FlagCount = source.FlagCount;
             target.PrayerCount = source.PrayerCount;
-            target.ApprovedByPersonId = source.ApprovedByPersonId;
+            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedOnDateTime = source.ApprovedOnDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

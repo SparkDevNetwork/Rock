@@ -88,7 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this MarketingCampaign target, MarketingCampaign source )
         {
             target.Title = source.Title;
-            target.ContactPersonId = source.ContactPersonId;
+            target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactEmail = source.ContactEmail;
             target.ContactPhoneNumber = source.ContactPhoneNumber;
             target.ContactFullName = source.ContactFullName;

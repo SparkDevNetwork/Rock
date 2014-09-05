@@ -720,7 +720,6 @@ namespace Rock.Apps.CheckScannerUtility
                 financialTransactionScanned.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
                 financialTransactionScanned.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
 
-                financialTransactionScanned.AuthorizedPersonId = null;
                 financialTransactionScanned.TransactionTypeValueId = transactionTypeValueContribution.Id;
 
                 if ( scannedDocInfo.IsCheck )

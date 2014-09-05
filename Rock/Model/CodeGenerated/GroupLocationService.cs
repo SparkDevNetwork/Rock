@@ -92,7 +92,7 @@ namespace Rock.Model
             target.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
             target.IsMailingLocation = source.IsMailingLocation;
             target.IsMappedLocation = source.IsMappedLocation;
-            target.GroupMemberPersonId = source.GroupMemberPersonId;
+            target.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

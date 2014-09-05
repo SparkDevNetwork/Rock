@@ -184,7 +184,7 @@ namespace Rock.CheckIn
         /// <param name="attendance">The attendance.</param>
         private static void AddAttendanceRecord( KioskLocationAttendance kioskLocationAttendance, Attendance attendance )
         {
-            if ( attendance.GroupId.HasValue && attendance.ScheduleId.HasValue && attendance.PersonId.HasValue )
+            if ( attendance.GroupId.HasValue && attendance.ScheduleId.HasValue && attendance.PersonAlias != null )
             {
                 var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.GroupId ).FirstOrDefault();
                 if ( groupAttendance == null )
@@ -206,7 +206,10 @@ namespace Rock.CheckIn
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }
 
-                scheduleAttendance.PersonIds.Add( attendance.PersonId.Value );
+                if ( !scheduleAttendance.PersonIds.Contains( attendance.PersonAlias.PersonId ) )
+                {
+                    scheduleAttendance.PersonIds.Add( attendance.PersonAlias.PersonId );
+                }
             }
         }
 

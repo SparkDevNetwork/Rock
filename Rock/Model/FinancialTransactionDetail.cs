@@ -52,6 +52,7 @@ namespace Rock.Model
         /// transaction detail.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int AccountId { get; set; }
 
         /// <summary>

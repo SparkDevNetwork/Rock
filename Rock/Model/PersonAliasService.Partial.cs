@@ -46,6 +46,47 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the primary alias.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public virtual PersonAlias GetPrimaryAlias( int personId )
+        {
+            return Queryable( "Person" )
+                .FirstOrDefault( a => a.PersonId == personId && a.AliasPersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets the primary alias identifier.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPrimaryAliasId( int personId )
+        {
+            var personAlias = GetPrimaryAlias( personId );
+            if ( personAlias != null )
+            {
+                return personAlias.Id;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPersonId( int personAliasId )
+        {
+            var personAlias = Get( personAliasId );
+            if ( personAlias != null )
+            {
+                return personAlias.PersonId;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets the PersonAlias the by alias identifier.
         /// </summary>
         /// <param name="aliasPersonId">The alias person identifier.</param>
