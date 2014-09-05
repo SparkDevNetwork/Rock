@@ -71,7 +71,7 @@ namespace Rock.Reporting
                 }
 
                 // Boolean properties
-                if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+                else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
                 {
                     entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
