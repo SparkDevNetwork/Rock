@@ -112,11 +112,11 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList();
+                var accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
 
                 if ( accountNames != null )
                 {
-                    result = string.Format( "Account: {0}", accountNames.AsDelimited(",") );
+                    result = string.Format( "Account: {0}", accountNames );
                 }
             }
 
