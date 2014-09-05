@@ -735,8 +735,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                         mergeObjects.Add( "User", user.ToDictionary() );
 
-                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                        recipients.Add( authorizedPersonAlias.Person.Email, mergeObjects );
+                        var recipients = new List<Rock.Communication.RecipientData>();
+                        recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
 
                         Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
