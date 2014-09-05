@@ -144,7 +144,7 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var comparisonControl = this.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo );
+            var comparisonControl = this.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
             comparisonControl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( comparisonControl );
 
@@ -301,10 +301,15 @@ function() {
             {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
             }
-            else
+            else if ( comparisonType == ComparisonType.EqualTo )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount == amount );
             }
+            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
+            }
+            
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ).AsQueryable();
 
