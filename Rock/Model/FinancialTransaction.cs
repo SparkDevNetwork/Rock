@@ -43,6 +43,7 @@ namespace Rock.Model
         /// The authorized person identifier.
         /// </value>
         [DataMember]
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
@@ -70,6 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
         /// </value>
         [DataMember]
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
@@ -100,6 +102,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
         public int TransactionTypeValueId { get; set; }
 
         /// <summary>
@@ -144,6 +147,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing an encrypted version of a scanned check's MICR information.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
@@ -156,6 +160,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 128 )]
         [Index]
+        [HideFromReporting]
         public string CheckMicrHash { get; set; }
 
         /// <summary>
