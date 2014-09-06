@@ -107,7 +107,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return "Total Giving";
         }
-        
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -234,8 +234,52 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
-            // TODO
-            return Expression.Constant(50.00M);
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length < 4 )
+            {
+                return null;
+            }
+
+            ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+            decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
+            DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
+            DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
+            var accountIdList = new List<int>();
+            if ( selectionValues.Length >= 5 )
+            {
+                var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+            }
+
+            bool limitToAccounts = accountIdList.Any();
+            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+
+            var financialTransactionQry = new FinancialTransactionDetailService( context ).Queryable()
+                .Where( xx => xx.Transaction.TransactionTypeValueId == transactionTypeContributionId )
+                .Where( xx => xx.Transaction.TransactionDateTime >= startDate && xx.Transaction.TransactionDateTime < endDate )
+                .Where( xx => !limitToAccounts || accountIdList.Contains( xx.AccountId ) );
+
+            if ( comparisonType == ComparisonType.LessThan )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
+            }
+            else if ( comparisonType == ComparisonType.EqualTo )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
+            }
+            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
+            }
+
+            var personTotalAmountQry = new PersonService( context ).Queryable()
+                .Select( p => financialTransactionQry
+                .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
+                .Sum( aa => aa.Amount) );
+
+            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personTotalAmountQry, entityIdProperty, "p" );
+
+            return selectExpression;
         }
     }
 }
