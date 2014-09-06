@@ -65,7 +65,7 @@
                                         <div class="col-md-6">
                                             <dl class="dl-horizontal margin-b-md">
                                                 <Rock:TermDescription ID="tdActivated" runat="server" Term="Activated"></Rock:TermDescription>
-                                                <Rock:TermDescription ID="tdComplete" runat="server" Term="Completed"></Rock:TermDescription>
+                                                <Rock:TermDescription ID="tdCompleted" runat="server" Term="Completed"></Rock:TermDescription>
                                             </dl>
                                             <dl class="dl-horizontal margin-b-md">
                                                 <asp:PlaceHolder ID="phActivityAttributes" runat="server" />
