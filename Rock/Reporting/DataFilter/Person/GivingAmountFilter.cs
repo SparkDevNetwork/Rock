@@ -309,7 +309,7 @@ function() {
             }
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
             }
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ).AsQueryable();
