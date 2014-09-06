@@ -38,6 +38,9 @@ namespace RockWeb.Blocks.WorkFlow
     [DisplayName( "Workflow Type Detail" )]
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
+
+    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.")]
+    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows." )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -298,6 +301,17 @@ namespace RockWeb.Blocks.WorkFlow
                     newAttributesState.Add( newAttribute );
 
                     guidXref.Add( attribute.Guid, newAttribute.Guid );
+
+                    foreach ( var qualifier in attribute.AttributeQualifiers )
+                    {
+                        var newQualifier = qualifier.Clone( false );
+                        newQualifier.Id = 0;
+                        newQualifier.Guid = Guid.NewGuid();
+                        newQualifier.IsSystem = false;
+                        newAttribute.AttributeQualifiers.Add( qualifier );
+
+                        guidXref.Add( qualifier.Guid, newQualifier.Guid );
+                    }
                 }
 
                 // Create new guids for all the existing activity types
@@ -324,6 +338,17 @@ namespace RockWeb.Blocks.WorkFlow
                         newActivityAttributes.Add( newAttribute );
 
                         guidXref.Add( attribute.Guid, newAttribute.Guid );
+
+                        foreach ( var qualifier in attribute.AttributeQualifiers )
+                        {
+                            var newQualifier = qualifier.Clone( false );
+                            newQualifier.Id = 0;
+                            newQualifier.Guid = Guid.NewGuid();
+                            newQualifier.IsSystem = false;
+                            newAttribute.AttributeQualifiers.Add( qualifier );
+
+                            guidXref.Add( qualifier.Guid, newQualifier.Guid );
+                        }
                     }
                     newActivityAttributesState.Add( newActivityType.Guid, newActivityAttributes );
 
@@ -425,6 +450,30 @@ namespace RockWeb.Blocks.WorkFlow
                 hfWorkflowTypeId.Value = workflowType.Id.ToString();
                 ShowEditDetails( workflowType, rockContext );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnLaunch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnLaunch_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            NavigateToLinkedPage( "WorkflowLaunchPage", qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnManage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnManage_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            NavigateToLinkedPage( "ManageWorkflowsPage", qryParams );
         }
 
         /// <summary>
@@ -1120,7 +1169,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 btnEdit.Visible = true;
 
-                btnSecurity.Title = workflowType.Name;
+                btnSecurity.Title = "Secure " + workflowType.Name;
                 btnSecurity.EntityId = workflowType.Id;
 
                 if ( workflowType.Id > 0 )
