@@ -339,7 +339,7 @@ namespace Rock.Reporting.DataFilter
                                 List<Guid> selectedValueGuids = selectedValues.Select( v => v.AsGuid() ).ToList();
                                 List<int> selectedIds = new DefinedValueService( serviceInstance.Context as RockContext ).GetByGuids( selectedValueGuids ).Select( a => a.Id ).ToList();
                                 ConstantExpression constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
-                                return Expression.Call( constantExpression, "Contains", new Type[] { }, propertyExpression );
+                                return ComparisonHelper.ComparisonExpression( ComparisonType.Contains, propertyExpression, constantExpression );
                             }
                         }
                     }
