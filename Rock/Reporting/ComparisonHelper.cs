@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Model;
@@ -48,7 +49,14 @@ namespace Rock.Reporting
 
             if ( comparisonType == ComparisonType.Contains )
             {
-                comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
+                if ( valueExpression.Type == typeof( int ) )
+                {
+                    comparisonExpression = Expression.Call( value, typeof(List<int>).GetMethod( "Contains", new Type[] { typeof(int) } ), valueExpression );
+                }
+                else
+                {
+                    comparisonExpression = Expression.Call( valueExpression, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
+                }
             }
             else if ( comparisonType == ComparisonType.DoesNotContain )
             {
