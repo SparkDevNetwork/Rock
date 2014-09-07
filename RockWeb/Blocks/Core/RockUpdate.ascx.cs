@@ -397,6 +397,9 @@ namespace RockWeb.Blocks.Core
 " );
         }
 
+        /// <summary>
+        /// Removes the old *.rdelete (Rock delete) files that were created during an update.
+        /// </summary>
         private void RemoveOldRDeleteFiles()
         {
             var rockDirectory = new DirectoryInfo( Server.MapPath( "~" ) );
@@ -544,8 +547,10 @@ namespace RockWeb.Blocks.Core
                         numberOfActiveRecords = 0;
                     }
 
+                    var environmentData = GetEnvDataAsJson();
+
                     // now send them to SDN/Rock server
-                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
+                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords, environmentData );
                 }
             }
             catch ( Exception ex )
@@ -561,16 +566,47 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Returns the environment data as json.
+        /// </summary>
+        /// <returns>a JSON formatted string</returns>
+        private string GetEnvDataAsJson()
+        {
+            string sqlVersion = "";
+            try
+            {
+                sqlVersion = Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
+            }
+            catch
+            {
+                // oh well, sorry, I have to move on...
+            }
+
+            EnvData envData = new EnvData()
+            {
+                AppRoot = ResolveRockUrl( "~/" ),
+                Architecture = (IntPtr.Size == 4) ? "32bit" : "64bit",
+                AspNetVersion = Environment.Version.ToString(),
+                IisVersion = Request.ServerVariables["SERVER_SOFTWARE"],
+                //Ram = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory,
+                ServerOs = Environment.OSVersion.ToString(),
+                SqlVersion = sqlVersion
+            };
+
+            return envData.ToJson();
+        }
+
+        /// <summary>
         /// Sends the public data and impact statistics to the Rock server.
         /// </summary>
-        /// <param name="rockInstanceId"></param>
-        /// <param name="version"></param>
-        /// <param name="ipAddress"></param>
-        /// <param name="publicUrl"></param>
-        /// <param name="organizationName"></param>
-        /// <param name="organizationAddress"></param>
-        /// <param name="numberOfActiveRecords"></param>
-        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords )
+        /// <param name="rockInstanceId">The rock instance identifier.</param>
+        /// <param name="version">The version.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="publicUrl">The public URL.</param>
+        /// <param name="organizationName">Name of the organization.</param>
+        /// <param name="organizationLocation">The organization location.</param>
+        /// <param name="numberOfActiveRecords">The number of active records.</param>
+        /// <param name="environmentData">The environment data (JSON).</param>
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords, string environmentData )
         {
             ImpactStatistic impactStatistic = new ImpactStatistic()
             {
@@ -580,7 +616,8 @@ namespace RockWeb.Blocks.Core
                 PublicUrl = publicUrl,
                 OrganizationName = organizationName,
                 OrganizationLocation = organizationLocation,
-                NumberOfActiveRecords = numberOfActiveRecords
+                NumberOfActiveRecords = numberOfActiveRecords,
+                EnvironmentData = environmentData
             };
 
             var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
@@ -621,6 +658,18 @@ namespace RockWeb.Blocks.Core
     }
 
     [Serializable]
+    public class EnvData
+    {
+        public string AppRoot { get; set; }
+        public string Architecture { get; set; }
+        public string AspNetVersion { get; set; }
+        public string IisVersion { get; set; }
+        public string Ram { get; set; }
+        public string ServerOs { get; set; }
+        public string SqlVersion { get; set; }
+    }
+
+    [Serializable]
     public class ImpactStatistic
     {
         public Guid RockInstanceId { get; set; }
@@ -630,6 +679,7 @@ namespace RockWeb.Blocks.Core
         public string OrganizationName { get; set; }
         public ImpactLocation OrganizationLocation { get; set; }
         public int NumberOfActiveRecords { get; set; }
+        public string EnvironmentData { get; set; }
     }
 
     [Serializable]
