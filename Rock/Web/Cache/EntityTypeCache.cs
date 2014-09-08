@@ -336,7 +336,7 @@ namespace Rock.Web.Cache
         public static EntityTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = EntityTypeCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType == null )
@@ -365,7 +365,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             EntityTypeCache entityType = null;
@@ -400,7 +400,7 @@ namespace Rock.Web.Cache
         public static EntityTypeCache Read( EntityType entityTypeModel )
         {
             string cacheKey = EntityTypeCache.CacheKey( entityTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType != null )
@@ -424,7 +424,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( EntityTypeCache.CacheKey( id ) );
         }
 

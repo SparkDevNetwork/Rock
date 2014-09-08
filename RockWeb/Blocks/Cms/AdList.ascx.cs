@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Cms
 
             string cacheKey = CacheKey();
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             Template template = cache[cacheKey] as Template;
 
             if ( template != null )

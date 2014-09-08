@@ -434,7 +434,7 @@ namespace Rock.Web.Cache
         public static SiteCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = SiteCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             SiteCache site = cache[cacheKey] as SiteCache;
 
             if ( site == null )
@@ -464,7 +464,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             SiteCache site = null;
@@ -500,7 +500,7 @@ namespace Rock.Web.Cache
         public static SiteCache Read( Site siteModel )
         {
             string cacheKey = SiteCache.CacheKey( siteModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             SiteCache site = cache[cacheKey] as SiteCache;
 
             if ( site != null )
@@ -524,7 +524,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( SiteCache.CacheKey( id ) );
         }
 
@@ -539,7 +539,7 @@ namespace Rock.Web.Cache
 
             string cacheKey = "Rock:DomainSites";
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             var sites = cache[cacheKey] as ConcurrentDictionary<string, int>;
             if ( sites == null )
             {

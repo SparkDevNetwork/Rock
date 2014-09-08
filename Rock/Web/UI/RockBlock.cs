@@ -323,7 +323,7 @@ namespace Rock.Web.UI
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Set( ItemCacheKey( key ), value, cacheItemPolicy );
         }
 
@@ -334,7 +334,7 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             return cache[ItemCacheKey( key )];
         }
 
@@ -345,7 +345,7 @@ namespace Rock.Web.UI
         /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
         }
 
@@ -357,7 +357,7 @@ namespace Rock.Web.UI
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         protected virtual void FlushSharedBlock( int blockId )
         {
-            MemoryCache cache = MemoryCache.Default;
+            MemoryCache cache = RockMemoryCache.Default;
             string blockKey = string.Format( ":RockBlock:{0}:", blockId );
             foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
             {
@@ -491,7 +491,7 @@ namespace Rock.Web.UI
                 CacheItemPolicy cacheDuration = new CacheItemPolicy();
                 cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( _blockCache.OutputCacheDuration );
 
-                ObjectCache cache = MemoryCache.Default;
+                ObjectCache cache = RockMemoryCache.Default;
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
             }
 
