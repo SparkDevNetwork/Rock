@@ -3777,6 +3777,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+.btn-tabled a:hover {
+  text-decoration: underline;
+}
 .control-label {
   font-weight: 700;
 }
