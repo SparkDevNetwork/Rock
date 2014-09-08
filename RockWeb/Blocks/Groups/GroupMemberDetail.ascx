@@ -11,7 +11,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"> <asp:Literal ID="lGroupIconHtml" runat="server" /> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 <div class="panel-labels">
-                    <asp:HyperLink ID="hlProfilePage" runat="server" CssClass="label label-type" Visible="false">View Profile <i class="fa fa-share-square-o"></i> </asp:HyperLink>
+                    <asp:HyperLink ID="hlProfilePage" runat="server" CssClass="label label-type" Visible="false">View Profile <i class="fa fa-chevron-right"></i> </asp:HyperLink>
                 </div>
             </div>
             
