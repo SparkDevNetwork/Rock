@@ -49,7 +49,7 @@
 
             <StackPanel x:Name="spPrinterOverride" Orientation="Vertical" Grid.Row="4" Grid.Column="3">
                 <TextBox x:Name="txtPrinterOverrideIp" Style="{StaticResource textboxStyle}" Height="44" Width="300" Margin="0,15,0,0" FontSize="24" Padding="4" ></TextBox>
-                <ScrollViewer CanContentScroll="True" HorizontalScrollBarVisibility="Hidden" Padding="20,20,20,20" MaxHeight="400">
+                <ScrollViewer CanContentScroll="True" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto" Padding="20,20,20,20" MaxHeight="400">
                     <StackPanel x:Name="spUsbPrinterList" Orientation="Vertical">
                     </StackPanel>
                 </ScrollViewer>
