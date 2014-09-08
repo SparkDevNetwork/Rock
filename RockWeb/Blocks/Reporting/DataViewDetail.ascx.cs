@@ -33,12 +33,16 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web;
 using Rock.Security;
+using Rock.Attribute;
+using System.Web.Http;
 
 namespace RockWeb.Blocks.Reporting
 {
     [DisplayName( "Data View Detail" )]
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
+
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -66,6 +70,15 @@ $(document).ready(function() {
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
 
             gReport.GridRebind += gReport_GridRebind;
+
+            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
+            //// note: this only makes a difference on Postback, not on the initial page visit
+            int databaseTimeout = ( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
+            {
+                sm.AsyncPostBackTimeout = databaseTimeout + 5;
+            }
         }
 
         /// <summary>
@@ -623,7 +636,38 @@ $(document).ready(function() {
                             qry = qry.Take( fetchRowCount.Value );
                         }
 
-                        grid.DataSource = qry.AsNoTracking().ToList();
+                        try
+                        {
+                            rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
+                            grid.DataSource = qry.AsNoTracking().ToList();
+                        }
+                        catch (Exception ex)
+                        {
+                            Exception exception = ex;
+                            while ( exception != null )
+                            {
+                                if ( exception is System.Data.SqlClient.SqlException )
+                                {
+                                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                                    {
+                                        nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                                        nbEditModeMessage.Text = "This dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        errorMessages.Add( exception.Message );
+                                        exception = exception.InnerException;
+                                    }
+                                }
+                                else
+                                {
+                                    errorMessages.Add( exception.Message );
+                                    exception = exception.InnerException;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -633,6 +677,7 @@ $(document).ready(function() {
                 grid.ExportFilename = dataView.Name;
                 if ( errorMessages.Any() )
                 {
+                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
                 }
 
