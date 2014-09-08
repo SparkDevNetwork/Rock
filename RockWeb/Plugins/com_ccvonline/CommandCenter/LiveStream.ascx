@@ -27,8 +27,9 @@
 
         <script type="text/javascript">
                 // setup player
-                flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf",
+                flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf",
                     {
+                        key: '#$392ba7eb81984ddb47a',
                         controls: {
                             time: false,
                             scrubber: false
