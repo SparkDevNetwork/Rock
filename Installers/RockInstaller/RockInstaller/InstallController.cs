@@ -391,10 +391,9 @@ namespace RockInstaller
 
             string tempWebConfig = serverPath + @"\webconfig.xml";
 
-            string passwordKey = RockInstallUtilities.GeneratePasswordKey(); ;
-            string dataEncryptionKey = RockInstallUtilities.GenerateRandomDataEncryptionKey();
-
             this.SendConsoleMessage( new ConsoleMessage( "--= Configuring Rock =--", ConsoleMessageType.Highlight ) );
+
+            string passwordKey = RockInstallUtilities.GeneratePasswordKey();
 
             // write connection string file
             result = WriteConnectionStringFile( installData.ConnectionString.Server, installData.ConnectionString.Database, installData.ConnectionString.Username, installData.ConnectionString.Password );
@@ -497,9 +496,17 @@ namespace RockInstaller
             node = document.Descendants( "appSettings" ).Elements("add").Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
             node.SetAttributeValue( "value", passwordKey );
             
-            // update machine key
+            // update data encryption key
+            string dataEncryptionKey = RockInstallUtilities.GeneratePasswordKey( 128 );
             node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
             node.SetAttributeValue( "value", dataEncryptionKey );
+
+            // update machine key
+            string validationKey = RockInstallUtilities.GenerateMachineKey( 64 );
+            string decryptionKey = RockInstallUtilities.GenerateMachineKey( 32 );
+            node = document.Descendants( "system.web" ).Elements( "machineKey" ).FirstOrDefault();
+            node.SetAttributeValue( "validationKey", validationKey );
+            node.SetAttributeValue( "decryptionKey", decryptionKey );
 
             document.Save( tempWebConfig );
 
