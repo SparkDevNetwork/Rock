@@ -55,6 +55,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DataTextBox" /> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public override bool Required
+        {
+            get
+            {
+                return ( base.Required || ( dataValidator != null && dataValidator.IsRequired ) );
+            }
+
+            set
+            {
+                base.Required = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the name of the entity property.
         /// </summary>
         /// <value>
@@ -77,7 +96,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
-                if (( this.Label == string.Empty ) && (LabelTextFromPropertyName))
+                if ( ( this.Label == string.Empty ) && ( LabelTextFromPropertyName ) )
                 {
                     this.Label = value.SplitCase();
                 }
