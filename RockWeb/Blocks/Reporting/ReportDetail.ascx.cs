@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -83,7 +84,7 @@ namespace RockWeb.Blocks.Reporting
 
             //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// note: this only makes a difference on Postback, not on the initial page visit
-            int databaseTimeout = ( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+            int databaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
@@ -825,6 +826,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     return;
                 }
+
                 var rockContext = new RockContext();
 
                 string authorizationMessage;
@@ -833,7 +835,6 @@ namespace RockWeb.Blocks.Reporting
                     nbEditModeMessage.Text = authorizationMessage;
                     return;
                 }
-
 
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).GetEntityType();
 
@@ -927,7 +928,7 @@ namespace RockWeb.Blocks.Reporting
                             }
 
                             boundField.Visible = reportField.ShowInGrid;
-                            
+
                             // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
                             gReport.Columns.Add( boundField );
                         }
@@ -953,7 +954,6 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
                 }
-
 
                 // if no fields are specified, show the default fields (Previewable/All) for the EntityType
                 var dataColumns = gReport.Columns.OfType<object>().Where( a => a.GetType() != typeof( SelectField ) );

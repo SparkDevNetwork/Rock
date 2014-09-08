@@ -19,22 +19,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Reporting;
 using Rock.Model;
+using Rock.Reporting;
+using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web;
-using Rock.Security;
-using Rock.Attribute;
-using System.Web.Http;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -73,7 +71,7 @@ $(document).ready(function() {
 
             //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// note: this only makes a difference on Postback, not on the initial page visit
-            int databaseTimeout = ( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+            int databaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
@@ -137,7 +135,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new DataViewService(new RockContext());
+            var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowEditDetails( item );
         }
@@ -148,7 +146,7 @@ $(document).ready(function() {
         /// <param name="dataViewFilter">The data view filter.</param>
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
         {
-            if (dataViewFilter != null)
+            if ( dataViewFilter != null )
             {
                 dataViewFilter.Guid = Guid.NewGuid();
                 foreach ( var childFilter in dataViewFilter.ChildFilters )
@@ -206,7 +204,6 @@ $(document).ready(function() {
                 return;
             }
 
-
             if ( dataView.Id.Equals( 0 ) )
             {
                 service.Add( dataView );
@@ -253,7 +250,7 @@ $(document).ready(function() {
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DataViewService service = new DataViewService(new RockContext());
+                DataViewService service = new DataViewService( new RockContext() );
                 DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -308,7 +305,7 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns( DataView dataView )
         {
-            var entityTypeService = new EntityTypeService(new RockContext());
+            var entityTypeService = new EntityTypeService( new RockContext() );
 
             ddlEntityType.Items.Clear();
             ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -354,7 +351,7 @@ $(document).ready(function() {
         {
             pnlDetails.Visible = false;
 
-            var dataViewService = new DataViewService(new RockContext());
+            var dataViewService = new DataViewService( new RockContext() );
             DataView dataView = null;
 
             if ( !dataViewId.Equals( 0 ) )
@@ -641,7 +638,7 @@ $(document).ready(function() {
                             rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                             grid.DataSource = qry.AsNoTracking().ToList();
                         }
-                        catch (Exception ex)
+                        catch ( Exception ex )
                         {
                             Exception exception = ex;
                             while ( exception != null )
@@ -704,7 +701,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            var service = new DataViewService(new RockContext());
+            var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowReport( item );
         }
