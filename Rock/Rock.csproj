@@ -223,6 +223,7 @@
     <Compile Include="Data\IChartData.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\IMigration.cs" />
+    <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />

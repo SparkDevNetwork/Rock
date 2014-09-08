@@ -46,6 +46,7 @@ namespace Rock.Data
         /// The created date time.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>

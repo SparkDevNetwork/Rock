@@ -48,6 +48,7 @@ namespace Rock.Data
         /// </value>
         [Key]
         [DataMember]
+        [IncludeForReporting]
         public int Id { get; set; }
 
         /// <summary>
@@ -65,6 +66,7 @@ namespace Rock.Data
         /// </value>
         [Index( IsUnique = true )]
         [DataMember]
+        [IncludeForReporting]
         public Guid Guid
         {
             get { return _guid; }

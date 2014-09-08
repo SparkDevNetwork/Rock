@@ -56,7 +56,9 @@ namespace Rock.Reporting
             var entityFields = new List<EntityField>();
 
             var entityProperties = entityType.GetProperties().ToList();
-            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual || p.Name == "Id" || p.Name == "Guid" || p.Name == "Order" ).ToList();
+            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual 
+                || p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() 
+                || p.Name == "Order" ).ToList();
 
             // Get Properties
             foreach ( var property in filteredEntityProperties )
