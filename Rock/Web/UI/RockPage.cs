@@ -690,7 +690,7 @@ namespace Rock.Web.UI
 
                     // Cache object used for block output caching
                     Page.Trace.Warn( "Getting memory cache" );
-                    ObjectCache cache = MemoryCache.Default;
+                    ObjectCache cache = RockMemoryCache.Default;
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1098,7 +1098,7 @@ namespace Rock.Web.UI
             if ( phLoadTime != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s </span>", "Page Load Time", tsDuration.TotalSeconds ) ) );
+                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s; Cache Size: {2:N2}kb </span>", "Page Load Time", tsDuration.TotalSeconds, (RockMemoryCache.TotalSize / 1024) ) ) );
             }
         }
 
