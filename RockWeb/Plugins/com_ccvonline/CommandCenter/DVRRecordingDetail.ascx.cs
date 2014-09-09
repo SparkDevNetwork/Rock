@@ -19,20 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
-using System.IO;
 using System.Linq;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Communication;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 using com.ccvonline.CommandCenter.Model;
 using com.ccvonline.CommandCenter.Data;
 
@@ -62,7 +57,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
             RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
         }

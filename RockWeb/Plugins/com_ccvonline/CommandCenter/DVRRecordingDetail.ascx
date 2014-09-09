@@ -23,7 +23,7 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="videocontent">
-                                <a id="player" data-flashfit="true"></a>
+                                <a id="player"></a>
                             </div>
                         </div>
                     </div>
@@ -130,16 +130,15 @@
 		{
 		    key: '#$392ba7eb81984ddb47a',
 			plugins: {
-			    f4m: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf' },
-			    httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.11.swf' },
+			    f4m: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf' },
+			    httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf' },
 			},
 			clip: {
 			    url: recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=' + clipStartEndUrl,
 			    urlResolvers: ['f4m'],
 			    provider: 'httpstreaming',
 			    baseUrl: 'http://ccvwowza:1935/commandcenter/',
-			    autoplay: true,
-			    scaling: 'fit'
+			    autoPlay: true
 			}
 		});
 
@@ -209,7 +208,7 @@
             $("#totaltime").val(total);
 
             // generate url
-            var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + (recordingstarttime*1000) + '&ClipDuration=' + (recordingduration*1000);
+            var url = baseUrl + '?ClipUrl=' + recordingurl + '&ClipStart=' + (recordingstarttime*1000) + '&ClipDuration=' + ((recordingduration*1000) - (recordingstarttime*1000));
             $(".js-urltextbox").val(url);
         }
     }
