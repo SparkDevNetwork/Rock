@@ -225,23 +225,24 @@
         }
 
         // move child directories
-        System.Threading.Tasks.Parallel.ForEach( sourceChildDirectories, d =>
+        foreach (DirectoryInfo dir in sourceChildDirectories)
         {
-            string destChildDirectory = Path.Combine( destDirName, d.Name );
+
+            string destChildDirectory = Path.Combine( destDirName, dir.Name );
             if ( Directory.Exists( destChildDirectory ) )
             {
                 DeleteDirectory( destChildDirectory );
             }
-            d.MoveTo( destChildDirectory );
-        } );
+            dir.MoveTo( destChildDirectory );
+        }
         
         // move child files
         FileInfo[] files = sourceDirectory.GetFiles();
 
-        System.Threading.Tasks.Parallel.ForEach( files, f =>
+        foreach(FileInfo file in files)
         {
             // Create the path to the new copy of the file.
-            string temppath = Path.Combine( destDirName, f.Name );
+            string temppath = Path.Combine( destDirName, file.Name );
 
             // check if file exists in dest if so delete
             if ( File.Exists( temppath ) )
@@ -250,8 +251,8 @@
             }
 
             // move the file.
-            f.MoveTo( temppath );
-        } );
+            file.MoveTo( temppath );
+        }
     }
 
 </script>
