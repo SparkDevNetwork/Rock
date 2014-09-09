@@ -1389,6 +1389,9 @@ namespace RockWeb.Blocks.Crm
 
                     if ( action == "Add" )
                     {
+                        pnlGroupMemberStatus.RemoveCssClass("fade-inactive");
+                        pnlGroupMemberAttributes.RemoveCssClass("fade-inactive");
+
                         ddlGroupRole.Label = "Role";
                         ddlGroupRole.Enabled = true;
 
@@ -1397,6 +1400,8 @@ namespace RockWeb.Blocks.Crm
                     }
                     else
                     {
+                        pnlGroupMemberStatus.AddCssClass("fade-inactive");
+                        pnlGroupMemberAttributes.AddCssClass("fade-inactive");
                         SetControlSelection( ddlGroupRole, "Role" );
                         SetControlSelection( ddlGroupMemberStatus, "Member Status" );
                     }
