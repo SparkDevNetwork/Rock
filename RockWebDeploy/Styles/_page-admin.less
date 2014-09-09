@@ -1,0 +1,206 @@
+﻿/*
+    Used to manage styles related to the CMS admin UI for on page editing
+    
+    1. Zone Configuration
+    2. Module Configuration
+    3. Admin Footer
+    4. Responsive Rules
+*/
+
+
+
+// 1. Zone Config
+// -------------------------
+
+.zone-instance.outline 
+{
+    border: 1px dashed #909090; /* todo */
+    min-height: 30px;
+    min-width: 120px;
+    position: relative;
+    margin: 1px;
+    border-radius: 3px;
+}
+
+.zone-configuration {
+    background: @adminbar-bg;
+    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+    border-radius:  @border-radius-base;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 25px;
+    z-index: 9000;
+    right: auto;
+
+    p {
+        float: left;   
+    }
+}
+
+.zone-configuration-bar {
+    color: @adminbar-text-color;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+
+    span {
+        display: block;
+        float: left;
+        font-size: 10px;
+        padding-right: 20px;
+        margin-top: 4px;
+    }
+} 
+
+// 2. Module Config
+// -------------------------
+.block-configuration {
+    background: @adminbar-bg;
+    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+    border-radius: @border-radius-base;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 2px;
+    width: 26px;
+    z-index: 9000;
+}
+
+.block-instance.outline 
+{
+    min-height: 36px;
+    clear: both;
+    display: block;
+    position: relative;
+}
+
+.config-bar {
+    -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+    box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+
+    & > a {
+        text-decoration: none;
+        padding: 0 !important; // important to keep themes from changing this
+        margin: 0 !important; // important to keep themes from changing this
+    }
+
+    a i.fa {
+        float: left;
+        margin-left: 5px;
+        margin-top: 3px;
+        font-size: 18px;
+        color: @adminbar-text-color;
+        margin-right: 10px;
+    }
+}
+
+.block-configuration-bar {
+    color: @adminbar-text-color;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+}
+
+.block-configuration-bar .btn
+{
+    margin-right: 12px;
+    color: @adminbar-text-color;
+    text-shadow: none;
+}
+
+.block-configuration-bar span {
+    display: block;
+    float: left;
+    font-size: 10px;
+    padding-right: 20px;
+    margin-top: 3px;
+}
+
+
+// 3. Admin Footer
+// -------------------------
+#cms-admin-footer {
+    bottom: 0;
+    width: 100%;
+    height: 26px;
+    z-index: 9999;
+    position: fixed;
+    right: 0;
+    margin-right: 0;
+    background: @adminbar-bg;
+    border-color: darken(@adminbar-bg, @const-border-darken-amt);
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+    color: @adminbar-text-color;
+    padding: 5px 12px 0 12px;
+    font-size: 80%;
+
+    > span {
+        display: none;
+        text-align: center;
+        margin-bottom: 4px;
+    }
+
+    .button-bar {
+        margin-top: -8px;
+        margin-left: 12px;
+        text-align: center;
+    }
+}
+
+#cms-admin-footer .button-bar {
+    
+}
+
+#cms-admin-footer .button-bar a 
+{
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+}
+
+#cms-admin-footer .btn
+{
+    color: @adminbar-text-color;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+
+// 4. Responsive Rules
+// -------------------------
+@media (min-width: @screen-sm-min) {
+
+    #cms-admin-footer {
+        height: 28px;
+        margin-right: 25px;
+        width: auto;
+
+        > span {
+            display: block;
+            text-align: left;
+            float: left;
+        }
+
+        .button-bar {
+            float: right;
+        }
+    }
+
+}
