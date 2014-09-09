@@ -13,9 +13,16 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lPanelTitle" runat="server" /></h1>
-                <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn pull-right" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
-                <Rock:HighlightLabel ID="hlRemainingCount" runat="server" />
+                <div class="row">
+                    <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn pull-right" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" CssClass="pull-right" LabelType="Info" ToolTip="Number of unmatched transactions remaining in this batch." />
+                    </div>
+                </div>
             </div>
+
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch." />
                 <asp:Panel ID="pnlEdit" runat="server">
@@ -94,11 +101,7 @@
                             <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12" style="text-align: right">
-                            <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" ToolTip="Number of unmatched transactions remaining in this batch." />
-                        </div>
-                    </div>
+
 
                 </asp:Panel>
             </div>
