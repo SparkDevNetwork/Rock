@@ -26,7 +26,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -204,17 +203,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
                 }
-
-                // display how many unmatched and unviewed transactions are remaining
-                var qryRemainingTransactionsCount = financialTransactionService
-                    .Queryable( "ProcessedByPersonAlias.Person" )
-                    .Where( a => a.AuthorizedPersonAliasId == null );
-                if ( batchId != 0 )
-                {
-                    qryRemainingTransactionsCount = qryRemainingTransactionsCount.Where( a => a.BatchId == batchId );
-                }
-
-                hlUnmatchedRemaining.Text = qryRemainingTransactionsCount.Count().ToString();
 
                 // if a specific transactionId was specified (because we are navigating thru history), load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
                 if ( toTransactionId.HasValue )
@@ -418,6 +406,19 @@ namespace RockWeb.Blocks.Finance
                     hfTransactionId.Value = string.Empty;
                 }
 
+                // display how many unmatched transactions are remaining
+                var qryTransactionCount = financialTransactionService.Queryable();
+                if ( batchId != 0 )
+                {
+                    qryTransactionCount = qryTransactionCount.Where( a => a.BatchId == batchId );
+                }
+
+                // get count of transactions that haven't been matched (not including the one we are currently editing)
+                int currentTranId = hfTransactionId.Value.AsInteger();
+                int unmatchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId == null && a.Id != currentTranId );
+                int totalBatchItemCount = qryTransactionCount.Count();
+                hlUnmatchedRemaining.Text = string.Format( "{0} remaining of {1} ", unmatchedRemainingCount, totalBatchItemCount );
+
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
             }
         }
@@ -467,12 +468,10 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
-            var financialTransaction = financialTransactionService
-                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
-                    .FirstOrDefault( t => t.Id == transactionId );
+            var financialTransaction = financialTransactionService.Get( transactionId );
 
-            if ( financialTransaction != null && 
-                financialTransaction.ProcessedByPersonAliasId == CurrentPersonAliasId && 
+            if ( financialTransaction != null &&
+                financialTransaction.ProcessedByPersonAliasId == CurrentPersonAliasId &&
                 financialTransaction.AuthorizedPersonAliasId == null )
             {
                 // if the current user marked this as processed, and it wasn't matched, clear out the processedby fields.  Otherwise, assume the other person is still editing it
@@ -524,8 +523,8 @@ namespace RockWeb.Blocks.Finance
             }
 
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
-            if ( financialTransaction != null && 
-                financialTransaction.AuthorizedPersonAliasId.HasValue && 
+            if ( financialTransaction != null &&
+                financialTransaction.AuthorizedPersonAliasId.HasValue &&
                 !authorizedPersonId.HasValue )
             {
                 financialTransaction.AuthorizedPersonAliasId = null;
@@ -543,7 +542,6 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-
                 bool requiresMicr = financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                 if ( requiresMicr && string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
