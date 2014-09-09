@@ -696,13 +696,13 @@ namespace RockWeb.Blocks.WorkFlow
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() && _activity.Id != previousActionId )
+                    if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActionId ) );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
                     }
                 }
                 else

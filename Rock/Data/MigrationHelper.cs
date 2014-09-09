@@ -2936,6 +2936,7 @@ INSERT INTO [dbo].[Auth]
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},
