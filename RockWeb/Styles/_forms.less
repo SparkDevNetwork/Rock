@@ -84,6 +84,18 @@ a.aspNetDisabled {
 }
 
 
+// highlight required fields
+.form-group.required {
+    .control-label:after {
+        font-family: FontAwesome;
+        content:'\f111';
+        margin-left: 4px;
+        font-size: 6px;
+        color: @required-field-color;
+        vertical-align: super;
+    }
+}
+
 // 2. Data Lists
 // -------------------------
 
