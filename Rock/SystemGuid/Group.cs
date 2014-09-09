@@ -40,5 +40,15 @@ namespace Rock.SystemGuid
         /// Get the photo request application group
         /// </summary>
         public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+
+        /// <summary>
+        /// The Finance Administrators Group guid
+        /// </summary>
+        public const string GROUP_FINANCE_ADMINISTRATORS = "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559";
+
+        /// <summary>
+        /// The Finance Users Group guid
+        /// </summary>
+        public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
     }
 }

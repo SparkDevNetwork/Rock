@@ -617,10 +617,10 @@ namespace Rock.Data
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,2,NEWID())
+                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,2,NEWID())
 " );
             Migration.Sql( sb.ToString() );
         }
@@ -1180,6 +1180,7 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         private void EnsureEntityTypeExists( string entityTypeName )
         {
+            // NOTE: If it doesn't exist, add it assuming that IsEntity=True and IsSecured=True.  The framework will correct it if those assumptions are incorrect
             Migration.Sql( string.Format( @"
                 if not exists (
                 select id from EntityType where name = '{0}')
@@ -1187,14 +1188,20 @@ namespace Rock.Data
                 INSERT INTO [EntityType]
                            ([Name]
                            ,[FriendlyName]
+                           ,[IsEntity]
+                           ,[IsSecured]  
+                           ,[IsCommon]  
                            ,[Guid])
                      VALUES
                            ('{0}'
                            ,null
+                           ,{1} 
+                           ,{2} 
+                           ,0 
                            ,newid()
                            )
                 end"
-                , entityTypeName )
+                , entityTypeName, 1, 1 )
             );
         }
 
@@ -1797,7 +1804,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1807,11 +1813,61 @@ INSERT INTO [dbo].[Auth]
            ,'{1}'
            ,'A'
            ,0
-           ,null
            ,@groupId
            ,'{3}')
 ";
             Migration.Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
+        }
+
+        /// <summary>
+        /// Adds the security auth record for the given entity type and group.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForEntityType( string entityTypeName, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,0
+           ,{2}
+           ,'{3}'
+           ,'{4}'
+           ,{5}
+           ,@groupId
+           ,'{6}')
+";
+            Migration.Sql( string.Format( sql, 
+                groupGuid ?? Guid.Empty.ToString(), // {0}
+                entityTypeName, // {1}
+                order, // {2}
+                action, // {3}
+                ( allow ? "A" : "D" ), // {4} 
+                specialRole, // {5} 
+                authGuid // {6}
+                ) );
         }
 
         /// <summary>
@@ -1867,7 +1923,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1877,7 +1932,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -1937,7 +1991,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1947,7 +2000,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -1987,7 +2039,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1997,7 +2048,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -2057,7 +2107,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -2067,7 +2116,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
