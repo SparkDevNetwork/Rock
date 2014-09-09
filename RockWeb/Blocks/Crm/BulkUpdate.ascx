@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="fa fa-user" Expanded="false">
+                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="fa fa-user" Expanded="false" CssClass="fade-inactive">
 
                         <div class="row">
                             <div class="col-sm-6">
@@ -122,7 +122,7 @@
 
                     </Rock:PanelWidget>
 
-                    <div class="row">
+                    <div class="row fade-inactive">
                         <div class="col-sm-6">
                             <asp:PlaceHolder ID="phAttributesCol1" runat="server" />
                         </div>
@@ -131,7 +131,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwNote" runat="server" CssClass="no-select" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
+                    <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
                         <div class="panel-noteentry">
                             <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" />
                             <div class="settings clearfix">
@@ -143,7 +143,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" CssClass="no-select" TitleIconCssClass="fa fa-users" Expanded="false">
+                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAction_SelectedIndexChanged" >
@@ -153,16 +153,16 @@
                                 </Rock:RockDropDownList>
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
                             </div>
-                            <div class="col-sm-6">
+                            <asp:Panel ID="pnlGroupMemberStatus" runat="server" CssClass="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" Visible="false" />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" Visible="false" />
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="row">
+                        <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="row">
                             <div class="col-sm-12">
                                 <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                             </div>
-                        </div>
+                        </asp:Panel>
                     </Rock:PanelWidget>
 
                     <asp:CustomValidator ID="cvSelection" runat="server" OnServerValidate="cvSelection_ServerValidate" Display="None" ErrorMessage="You have not selected anything to update." />
