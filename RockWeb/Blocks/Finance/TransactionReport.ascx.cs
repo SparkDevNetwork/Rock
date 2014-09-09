@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -70,8 +71,10 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
             cblAccounts.Label = GetAttributeValue( "AccountLabel" );
+            gTransactions.DataKeyNames = new string[] { "Id" };
             gTransactions.RowItemText = GetAttributeValue( "TransactionLabel" );
             gTransactions.EmptyDataText = string.Format( "No {0} found with the provided criteria.", GetAttributeValue( "TransactionLabel" ).ToLower() );
+            gTransactions.GridRebind += gTransactions_GridRebind;
         }
 
         /// <summary>
@@ -111,52 +114,21 @@ namespace RockWeb.Blocks.Finance
 
         }
 
-        protected void gTransactions_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gTransactions_GridRebind( object sender, EventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var txn = e.Row.DataItem as FinancialTransaction;
-                
-                // configure currency type
-                var lCurrencyType = e.Row.FindControl( "lCurrencyType" ) as Literal;
-                if ( txn != null && lCurrencyType != null )
-                {
-                    string currencyType = string.Empty;
-                    string creditCardType = string.Empty;
-
-                    if ( txn.CurrencyTypeValueId.HasValue )
-                    {
-                        int currencyTypeId = txn.CurrencyTypeValueId.Value;
-                        
-                        var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
-                        currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
-                            
-
-                        if ( txn.CreditCardTypeValueId.HasValue )
-                        {
-                            int creditCardTypeId = txn.CreditCardTypeValueId.Value;
-                            var creditCardTypeValue = DefinedValueCache.Read( creditCardTypeId );
-                            creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
-
-                            lCurrencyType.Text = string.Format( "{0} - {1}", currencyType, creditCardType );
-                        }
-                        else
-                        {
-                            lCurrencyType.Text = currencyType;
-                        }
-                    }
-                }
-
-                // create summary
-                var lSummaryText = e.Row.FindControl( "lSummaryText" ) as Literal;
-                foreach ( var transactionDetail in txn.TransactionDetails )
-                {
-                    lSummaryText.Text += string.Format( "{0} (${1})<br>", transactionDetail.Account, transactionDetail.Amount );
-                }
-            }
-
+            BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the bbtnApply control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bbtnApply_Click( object sender, EventArgs e )
         {
             BindGrid();
@@ -221,13 +193,12 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.TransactionDateTime.Value < lastDate ); 
             }
 
-            gTransactions.DataSource = qry.ToList();
-            gTransactions.DataBind();
+            var txns = qry.ToList();
 
             // get account totals
             Dictionary<string, decimal> accountTotals = new Dictionary<string, decimal>();
-            
-            foreach ( var transaction in qry.ToList() )
+
+            foreach ( var transaction in txns )
             {
                 foreach ( var transactionDetail in transaction.TransactionDetails )
                 {
@@ -242,6 +213,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            lAccountSummary.Text = string.Empty;
             if ( accountTotals.Count > 0 )
             {
                 pnlSummary.Visible = true;
@@ -254,6 +226,54 @@ namespace RockWeb.Blocks.Finance
             {
                 pnlSummary.Visible = false;
             }
+
+            gTransactions.DataSource = txns.Select( t => new
+            {
+                t.Id,
+                t.TransactionDateTime,
+                CurrencyType = FormatCurrencyType( t ),
+                Summary = FormatSummary( t ),
+                t.TotalAmount
+            } ).ToList();
+            gTransactions.DataBind();
+
+        }
+
+        protected string FormatCurrencyType( FinancialTransaction txn )
+        {
+            string currencyType = string.Empty;
+            string creditCardType = string.Empty;
+
+            if ( txn.CurrencyTypeValueId.HasValue )
+            {
+                int currencyTypeId = txn.CurrencyTypeValueId.Value;
+
+                var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
+                currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
+
+
+                if ( txn.CreditCardTypeValueId.HasValue )
+                {
+                    int creditCardTypeId = txn.CreditCardTypeValueId.Value;
+                    var creditCardTypeValue = DefinedValueCache.Read( creditCardTypeId );
+                    creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
+
+                    return string.Format( "{0} - {1}", currencyType, creditCardType );
+                }
+            }
+
+            return currencyType;
+        }
+
+
+        private string FormatSummary( FinancialTransaction txn )
+        {
+            var sb = new StringBuilder();
+            foreach ( var transactionDetail in txn.TransactionDetails )
+            {
+                sb.AppendFormat( "{0} (${1})<br>", transactionDetail.Account, transactionDetail.Amount );
+            }
+            return sb.ToString();
         }
 
         #endregion

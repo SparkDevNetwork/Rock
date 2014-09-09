@@ -695,6 +695,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts the HTML br to cr lf.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ConvertBrToCrLf( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Replace( "<br/>", Environment.NewLine ).Replace( "<br>", Environment.NewLine );
+        }
+        
+        /// <summary>
         /// HTML Encodes the string
         /// </summary>
         /// <param name="str">The string.</param>
