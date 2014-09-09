@@ -1253,7 +1253,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -1338,7 +1338,7 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
-                        worksheet.Cells[rowCounter, columnCounter].Value = value;
+                        worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
