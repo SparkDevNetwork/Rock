@@ -166,6 +166,201 @@ namespace Rock.Migrations
 
             #endregion
 
+            #region Set Report Security
+
+            // Set auth on Rock.Reporting.DataSelect.Person.FirstContributionSelect to only allow view to Finance Admins, Finance Users and Rock Admins
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.FirstContributionSelect ).FullName,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "C58E5152-2330-4D34-9C53-606554341D53" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.FirstContributionSelect ).FullName,
+                1,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_USERS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "43C4483B-3266-4E0B-9CCE-FFAA1EBFC519" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.FirstContributionSelect ).FullName,
+                2,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "CC03214B-5F01-4619-A62E-45A4C8A2E766" );
+
+            // deny everybody else
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.FirstContributionSelect ).FullName,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
+                "486E3BA8-9FD9-4FA3-96B5-FDAB8FD156F0" );
+
+            // Set auth on Rock.Reporting.DataSelect.Person.LastContributionSelect to only allow view to Finance Admins, Finance Users and Rock Admins
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.LastContributionSelect ).FullName,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "5F45DB5F-3196-4458-A1FF-2517A41482E9" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.LastContributionSelect ).FullName,
+                1,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_USERS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "8CCCAB09-741E-4A61-93B0-E31028E0AC43" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.LastContributionSelect ).FullName,
+                2,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "EB3F90C2-4A44-4B42-A296-61D61C4D1183" );
+
+            // deny everybody else
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.LastContributionSelect ).FullName,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
+                "0F939CC5-F0E2-4DCB-AB5F-6E5111801291" );
+
+
+            // Set auth on Rock.Reporting.DataSelect.Person.TotalGivingAmountSelect to only allow view to Finance Admins, Finance Users and Rock Admins
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.TotalGivingAmountSelect ).FullName,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "5BB65E0E-49CF-45B7-984B-9B0228000590" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.TotalGivingAmountSelect ).FullName,
+                1,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_USERS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "8E5A555A-EAB1-4C46-A270-62D8633264D5" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.TotalGivingAmountSelect ).FullName,
+                2,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "BB4F04BC-F984-4F0D-BAD9-F1162970E669" );
+
+            // deny everybody else
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataSelect.Person.TotalGivingAmountSelect ).FullName,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
+                "C4A6BE0B-48ED-4901-9EC4-F4ED1D84DBA6" );
+
+            // Set auth on Rock.Reporting.DataFilter.Person.FirstContributionDateFilter to only allow view to Finance Admins, Finance Users and Rock Admins
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.FirstContributionDateFilter ).FullName,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "71DDE91A-B4F6-4698-B9E3-0EF4D9097745" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.FirstContributionDateFilter ).FullName,
+                1,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_USERS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "404BD7D1-EC18-473E-94A4-00B22AAAD19F" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.FirstContributionDateFilter ).FullName,
+                2,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "DB6409C7-7200-4505-B87B-CAE47FF02CD9" );
+
+            // deny everybody else
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.FirstContributionDateFilter ).FullName,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
+                "AC650DF8-579F-4262-98B5-2B27A24D2101" );
+
+            // Set auth on Rock.Reporting.DataFilter.Person.GivingAmountFilter to only allow view to Finance Admins, Finance Users and Rock Admins
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.GivingAmountFilter ).FullName,
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "933C0B3C-9E96-484A-B8ED-F5EF205291D4" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.GivingAmountFilter ).FullName,
+                1,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_FINANCE_USERS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "08C1964E-F2BC-4DC4-B80D-17E720E921E3" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.GivingAmountFilter ).FullName,
+                2,
+                Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_ADMINISTRATORS,
+                Rock.Model.SpecialRole.None.ConvertToInt(),
+                "35738ED0-6A9C-497E-955C-EFBF0BA00100" );
+
+            // deny everybody else
+            RockMigrationHelper.AddSecurityAuthForEntityType(
+                typeof( Rock.Reporting.DataFilter.Person.GivingAmountFilter ).FullName,
+                3,
+                Rock.Security.Authorization.VIEW,
+                false,
+                null,
+                Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
+                "2C782356-FCCA-49CA-9B76-53A9AF5B1ECA" );
+
+            #endregion
+
             #region Sample Workflow
 
             RockMigrationHelper.UpdateEntityType("Rock.Model.Workflow", "3540E9A7-FE30-43A9-8B0A-A372B63DFC93", true, true);
@@ -459,6 +654,31 @@ namespace Rock.Migrations
             Sql( @"
     DELETE FROM [Report] where [Guid] = '4E3ECAE0-9D36-4C22-994D-AD31DE0F6FB7'
 " );
+
+            RockMigrationHelper.DeleteSecurityAuth( "C58E5152-2330-4D34-9C53-606554341D53" );
+            RockMigrationHelper.DeleteSecurityAuth( "43C4483B-3266-4E0B-9CCE-FFAA1EBFC519" );
+            RockMigrationHelper.DeleteSecurityAuth( "CC03214B-5F01-4619-A62E-45A4C8A2E766" );
+            RockMigrationHelper.DeleteSecurityAuth( "486E3BA8-9FD9-4FA3-96B5-FDAB8FD156F0" );
+            
+            RockMigrationHelper.DeleteSecurityAuth( "5F45DB5F-3196-4458-A1FF-2517A41482E9" );
+            RockMigrationHelper.DeleteSecurityAuth( "8CCCAB09-741E-4A61-93B0-E31028E0AC43" );
+            RockMigrationHelper.DeleteSecurityAuth( "EB3F90C2-4A44-4B42-A296-61D61C4D1183" );
+            RockMigrationHelper.DeleteSecurityAuth( "0F939CC5-F0E2-4DCB-AB5F-6E5111801291" );
+            
+            RockMigrationHelper.DeleteSecurityAuth( "5BB65E0E-49CF-45B7-984B-9B0228000590" );
+            RockMigrationHelper.DeleteSecurityAuth( "8E5A555A-EAB1-4C46-A270-62D8633264D5" );
+            RockMigrationHelper.DeleteSecurityAuth( "BB4F04BC-F984-4F0D-BAD9-F1162970E669" );
+            RockMigrationHelper.DeleteSecurityAuth( "C4A6BE0B-48ED-4901-9EC4-F4ED1D84DBA6" );
+            
+            RockMigrationHelper.DeleteSecurityAuth( "71DDE91A-B4F6-4698-B9E3-0EF4D9097745" );
+            RockMigrationHelper.DeleteSecurityAuth( "404BD7D1-EC18-473E-94A4-00B22AAAD19F" );
+            RockMigrationHelper.DeleteSecurityAuth( "DB6409C7-7200-4505-B87B-CAE47FF02CD9" );
+            RockMigrationHelper.DeleteSecurityAuth( "AC650DF8-579F-4262-98B5-2B27A24D2101" );
+            
+            RockMigrationHelper.DeleteSecurityAuth( "933C0B3C-9E96-484A-B8ED-F5EF205291D4" );
+            RockMigrationHelper.DeleteSecurityAuth( "08C1964E-F2BC-4DC4-B80D-17E720E921E3" );
+            RockMigrationHelper.DeleteSecurityAuth( "35738ED0-6A9C-497E-955C-EFBF0BA00100" );
+            RockMigrationHelper.DeleteSecurityAuth( "2C782356-FCCA-49CA-9B76-53A9AF5B1ECA" );
         }
     }
 }
