@@ -1219,7 +1219,7 @@ namespace Rock.Web.UI
                 string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
                 if ( scriptTemplate == null )
                 {
-                    string scriptFile = MapPath( "~/App_Data/GoogleAnalytics.txt" );
+                    string scriptFile = MapPath( "~/Assets/Misc/GoogleAnalytics.txt" );
                     if ( File.Exists( scriptFile ) )
                     {
                         scriptTemplate = File.ReadAllText( scriptFile );
