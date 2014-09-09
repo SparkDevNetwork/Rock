@@ -427,30 +427,6 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
-var toolbar_RockCustomConfigLight =
-	[
-        ['Source'],
-        ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
-        ['Format'], 
-        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
-	];
-
-var toolbar_RockCustomConfigFull =
-	[
-        ['Source'],
-        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
-        ['Find', 'Replace', '-', 'Scayt'],
-        ['Link', 'Unlink', 'Anchor'],
-        ['Styles', 'Format'],
-        '/',
-        ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
-        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
-        ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-        ['-', 'Table'],
-        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
-	];	
-
-
 // In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
 if (CKEDITOR.instances.{0}) {{
     try
@@ -466,7 +442,7 @@ if (CKEDITOR.instances.{0}) {{
 CKEDITOR.replace('{0}', {{ 
     {11}
     allowedContent: true,
-    toolbar: toolbar_RockCustomConfig{1},
+    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{1},
     removeButtons: '',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
     extraPlugins: '{5}',
