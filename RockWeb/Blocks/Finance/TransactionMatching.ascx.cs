@@ -149,268 +149,277 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// The transaction matching lock object
+        /// </summary>
+        private static object transactionMatchingLockObject = new object();
+
+        /// <summary>
         /// Navigates to the next (or previous) transaction to edit
         /// </summary>
         private void NavigateToTransaction( Direction direction )
         {
-            hfDoFadeIn.Value = "1";
-            nbSaveError.Visible = false;
-            int? fromTransactionId = hfTransactionId.Value.AsIntegerOrNull();
-            int? toTransactionId = null;
-            List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
-            int position = hfHistoryPosition.Value.AsIntegerOrNull() ?? -1;
+            // put a lock around the entire NavigateToTransaction logic so that the navigation and "other person editing" logic will work consistently even if multiple people are editing the same batch
+            lock ( transactionMatchingLockObject )
+            {
+                hfDoFadeIn.Value = "1";
+                nbSaveError.Visible = false;
+                int? fromTransactionId = hfTransactionId.Value.AsIntegerOrNull();
+                int? toTransactionId = null;
+                List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
+                int position = hfHistoryPosition.Value.AsIntegerOrNull() ?? -1;
 
-            if ( direction == Direction.Prev )
-            {
-                position--;
-            }
-            else
-            {
-                position++;
-            }
-
-            if ( historyList.Count > position )
-            {
-                if ( position >= 0 )
+                if ( direction == Direction.Prev )
                 {
-                    toTransactionId = historyList[position];
+                    position--;
                 }
                 else
                 {
-                    // if we trying to go previous when we are already at the start of the list, wrap around to the last item in the list
-                    toTransactionId = historyList.Last();
-                    position = historyList.Count - 1;
-                }
-            }
-
-            hfHistoryPosition.Value = position.ToString();
-
-            int batchId = hfBatchId.Value.AsInteger();
-            var rockContext = new RockContext();
-            var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
-            var financialTransactionService = new FinancialTransactionService( rockContext );
-            var qryTransactionsToMatch = financialTransactionService.Queryable()
-                .Where( a => a.AuthorizedPersonAliasId == null && a.ProcessedByPersonAliasId == null );
-
-            if ( batchId != 0 )
-            {
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
-            }
-
-            // display how many unmatched and unviewed transactions are remaining
-            var qryRemainingTransactionsCount = financialTransactionService
-                .Queryable( "ProcessedByPersonAlias.Person" )
-                .Where( a => a.AuthorizedPersonAliasId == null );
-            if ( batchId != 0 )
-            {
-                qryRemainingTransactionsCount = qryRemainingTransactionsCount.Where( a => a.BatchId == batchId );
-            }
-
-            hlUnmatchedRemaining.Text = qryRemainingTransactionsCount.Count().ToString();
-
-            // if a specific transactionId was specified (because we are navigating thru history), load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
-            if ( toTransactionId.HasValue )
-            {
-                qryTransactionsToMatch = financialTransactionService
-                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
-                    .Where( a => a.Id == toTransactionId );
-            }
-
-            if ( historyList.Any() && !toTransactionId.HasValue )
-            {
-                // since we are looking for a transaction we haven't viewed or matched yet, look for the next one in the database that we haven't seen yet
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => !historyList.Contains( a.Id ) );
-            }
-
-            qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
-
-            FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
-            if ( transactionToMatch == null )
-            {
-                // we exhausted the transactions that aren't processed and aren't in our history list, so remove those those restrictions and show all transactions that haven't been matched yet
-                var qryRemainingTransactionsToMatch = financialTransactionService
-                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
-                    .Where( a => a.AuthorizedPersonAliasId == null );
-
-                if ( batchId != 0 )
-                {
-                    qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
+                    position++;
                 }
 
-                // get the first transaction that we haven't visited yet, or the next one we have visited after one we are on, or simple the first unmatched one
-                transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId && !historyList.Contains( a.Id ) ).FirstOrDefault()
-                    ?? qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault()
-                    ?? qryRemainingTransactionsToMatch.FirstOrDefault();
-                if ( transactionToMatch != null )
+                if ( historyList.Count > position )
                 {
-                    historyList.Add( transactionToMatch.Id );
-                    position = historyList.LastIndexOf( transactionToMatch.Id );
-                    hfHistoryPosition.Value = position.ToString();
-                }
-            }
-            else
-            {
-                if ( !toTransactionId.HasValue )
-                {
-                    historyList.Add( transactionToMatch.Id );
-                }
-            }
-
-            nbNoUnmatchedTransactionsRemaining.Visible = transactionToMatch == null;
-            pnlEdit.Visible = transactionToMatch != null;
-            nbIsInProcess.Visible = false;
-            if ( transactionToMatch != null )
-            {
-                if ( transactionToMatch.ProcessedByPersonAlias != null )
-                {
-                    if ( transactionToMatch.AuthorizedPersonAliasId.HasValue )
+                    if ( position >= 0 )
                     {
-                        nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
-                        nbIsInProcess.Visible = true;
+                        toTransactionId = historyList[position];
                     }
                     else
                     {
-                        // display a warning if some other user has this marked as InProcess (and it isn't matched)
-                        if ( transactionToMatch.ProcessedByPersonAliasId != CurrentPersonAliasId )
+                        // if we trying to go previous when we are already at the start of the list, wrap around to the last item in the list
+                        toTransactionId = historyList.Last();
+                        position = historyList.Count - 1;
+                    }
+                }
+
+                hfHistoryPosition.Value = position.ToString();
+
+                int batchId = hfBatchId.Value.AsInteger();
+                var rockContext = new RockContext();
+                var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+                var qryTransactionsToMatch = financialTransactionService.Queryable()
+                    .Where( a => a.AuthorizedPersonAliasId == null && a.ProcessedByPersonAliasId == null );
+
+                if ( batchId != 0 )
+                {
+                    qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
+                }
+
+                // display how many unmatched and unviewed transactions are remaining
+                var qryRemainingTransactionsCount = financialTransactionService
+                    .Queryable( "ProcessedByPersonAlias.Person" )
+                    .Where( a => a.AuthorizedPersonAliasId == null );
+                if ( batchId != 0 )
+                {
+                    qryRemainingTransactionsCount = qryRemainingTransactionsCount.Where( a => a.BatchId == batchId );
+                }
+
+                hlUnmatchedRemaining.Text = qryRemainingTransactionsCount.Count().ToString();
+
+                // if a specific transactionId was specified (because we are navigating thru history), load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
+                if ( toTransactionId.HasValue )
+                {
+                    qryTransactionsToMatch = financialTransactionService
+                        .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                        .Where( a => a.Id == toTransactionId );
+                }
+
+                if ( historyList.Any() && !toTransactionId.HasValue )
+                {
+                    // since we are looking for a transaction we haven't viewed or matched yet, look for the next one in the database that we haven't seen yet
+                    qryTransactionsToMatch = qryTransactionsToMatch.Where( a => !historyList.Contains( a.Id ) );
+                }
+
+                qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
+
+                FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
+                if ( transactionToMatch == null )
+                {
+                    // we exhausted the transactions that aren't processed and aren't in our history list, so remove those those restrictions and show all transactions that haven't been matched yet
+                    var qryRemainingTransactionsToMatch = financialTransactionService
+                        .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                        .Where( a => a.AuthorizedPersonAliasId == null );
+
+                    if ( batchId != 0 )
+                    {
+                        qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
+                    }
+
+                    // get the first transaction that we haven't visited yet, or the next one we have visited after one we are on, or simple the first unmatched one
+                    transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId && !historyList.Contains( a.Id ) ).FirstOrDefault()
+                        ?? qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault()
+                        ?? qryRemainingTransactionsToMatch.FirstOrDefault();
+                    if ( transactionToMatch != null )
+                    {
+                        historyList.Add( transactionToMatch.Id );
+                        position = historyList.LastIndexOf( transactionToMatch.Id );
+                        hfHistoryPosition.Value = position.ToString();
+                    }
+                }
+                else
+                {
+                    if ( !toTransactionId.HasValue )
+                    {
+                        historyList.Add( transactionToMatch.Id );
+                    }
+                }
+
+                nbNoUnmatchedTransactionsRemaining.Visible = transactionToMatch == null;
+                pnlEdit.Visible = transactionToMatch != null;
+                nbIsInProcess.Visible = false;
+                if ( transactionToMatch != null )
+                {
+                    if ( transactionToMatch.ProcessedByPersonAlias != null )
+                    {
+                        if ( transactionToMatch.AuthorizedPersonAliasId.HasValue )
                         {
-                            nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                            nbIsInProcess.Text = string.Format( "Warning. This transaction was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
                             nbIsInProcess.Visible = true;
                         }
-                    }
-                }
-
-                // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional transaction matching sessions will know that it is currently getting looked at
-                if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
-                {
-                    transactionToMatch.ProcessedByPersonAlias = null;
-                    transactionToMatch.ProcessedByPersonAliasId = CurrentPersonAliasId;
-                    transactionToMatch.ProcessedDateTime = RockDateTime.Now;
-                    rockContext.SaveChanges();
-                }
-
-                hfTransactionId.Value = transactionToMatch.Id.ToString();
-
-                // get the first 2 images (should be no more than 2, but just in case)
-                var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
-
-                ddlIndividual.Items.Clear();
-                ddlIndividual.Items.Add( new ListItem( null, null ) );
-
-                // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
-                string checkMicrHashed = null;
-
-                if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
-                {
-                    try
-                    {
-                        var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
-                        var parts = checkMicrClearText.Split( '_' );
-                        if ( parts.Length >= 2 )
+                        else
                         {
-                            checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
+                            // display a warning if some other user has this marked as InProcess (and it isn't matched)
+                            if ( transactionToMatch.ProcessedByPersonAliasId != CurrentPersonAliasId )
+                            {
+                                nbIsInProcess.Text = string.Format( "Warning. This transaction is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias.Person, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                                nbIsInProcess.Visible = true;
+                            }
                         }
                     }
-                    catch
+
+                    // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional transaction matching sessions will know that it is currently getting looked at
+                    if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
                     {
-                        // intentionally ignore exception when decripting CheckMicrEncrypted since we'll be checking for null below
+                        transactionToMatch.ProcessedByPersonAlias = null;
+                        transactionToMatch.ProcessedByPersonAliasId = CurrentPersonAliasId;
+                        transactionToMatch.ProcessedDateTime = RockDateTime.Now;
+                        rockContext.SaveChanges();
                     }
-                }
 
-                hfCheckMicrHashed.Value = checkMicrHashed;
+                    hfTransactionId.Value = transactionToMatch.Id.ToString();
 
-                if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
-                {
-                    var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.PersonAlias.Person ).Distinct();
-                    foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
+                    // get the first 2 images (should be no more than 2, but just in case)
+                    var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
+
+                    ddlIndividual.Items.Clear();
+                    ddlIndividual.Items.Add( new ListItem( null, null ) );
+
+                    // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
+                    string checkMicrHashed = null;
+
+                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
                     {
-                        ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
+                        try
+                        {
+                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
+                            var parts = checkMicrClearText.Split( '_' );
+                            if ( parts.Length >= 2 )
+                            {
+                                checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
+                            }
+                        }
+                        catch
+                        {
+                            // intentionally ignore exception when decripting CheckMicrEncrypted since we'll be checking for null below
+                        }
                     }
-                }
 
-                bool requiresMicr = transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-                nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
+                    hfCheckMicrHashed.Value = checkMicrHashed;
 
-                if ( ddlIndividual.Items.Count == 2 )
-                {
-                    // only one person (and the None selection) are in the list, so init to the person
-                    ddlIndividual.SelectedIndex = 1;
+                    if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
+                    {
+                        var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.PersonAlias.Person ).Distinct();
+                        foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
+                        {
+                            ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
+                        }
+                    }
+
+                    bool requiresMicr = transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                    nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
+
+                    if ( ddlIndividual.Items.Count == 2 )
+                    {
+                        // only one person (and the None selection) are in the list, so init to the person
+                        ddlIndividual.SelectedIndex = 1;
+                    }
+                    else
+                    {
+                        // either zero or multiple people are in the list, so default to none so they are forced to choose
+                        ddlIndividual.SelectedIndex = 0;
+                    }
+
+                    if ( transactionToMatch.AuthorizedPersonAlias != null && transactionToMatch.AuthorizedPersonAlias.Person != null )
+                    {
+                        var person = transactionToMatch.AuthorizedPersonAlias.Person;
+
+                        // if the drop down does not contains the AuthorizedPerson of this transaction, add them to the drop down
+                        // note, this can easily happen for non-check transactions
+                        if ( !ddlIndividual.Items.OfType<ListItem>().Any( a => a.Value == person.Id.ToString() ) )
+                        {
+                            ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
+                        }
+
+                        ddlIndividual.SelectedValue = person.Id.ToString();
+                    }
+
+                    ddlIndividual_SelectedIndexChanged( null, null );
+
+                    ppSelectNew.SetValue( null );
+                    if ( transactionToMatch.TransactionDetails.Any() )
+                    {
+                        cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
+                    }
+                    else
+                    {
+                        cbTotalAmount.Text = string.Empty;
+                    }
+
+                    // update accountboxes
+                    foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
+                    {
+                        accountBox.Text = string.Empty;
+                    }
+
+                    foreach ( var detail in transactionToMatch.TransactionDetails )
+                    {
+                        var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
+                        if ( accountBox != null )
+                        {
+                            accountBox.Text = detail.Amount.ToString();
+                        }
+                    }
+
+                    if ( transactionToMatch.Images.Any() )
+                    {
+                        var primaryImage = transactionToMatch.Images
+                            .OrderBy( i => i.Order )
+                            .FirstOrDefault();
+                        imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                        imgPrimary.Visible = true;
+                        nbNoTransactionImageWarning.Visible = false;
+
+                        rptrImages.DataSource = transactionToMatch.Images
+                            .Where( i => !i.Id.Equals( primaryImage.Id ) )
+                            .OrderBy( i => i.Order )
+                            .ToList();
+                        rptrImages.DataBind();
+                    }
+                    else
+                    {
+                        imgPrimary.Visible = false;
+                        rptrImages.DataSource = null;
+                        rptrImages.DataBind();
+                        nbNoTransactionImageWarning.Visible = true;
+                    }
                 }
                 else
                 {
-                    // either zero or multiple people are in the list, so default to none so they are forced to choose
-                    ddlIndividual.SelectedIndex = 0;
+                    hfTransactionId.Value = string.Empty;
                 }
 
-                if ( transactionToMatch.AuthorizedPersonAlias != null && transactionToMatch.AuthorizedPersonAlias.Person != null )
-                {
-                    var person = transactionToMatch.AuthorizedPersonAlias.Person;
-
-                    // if the drop down does not contains the AuthorizedPerson of this transaction, add them to the drop down
-                    // note, this can easily happen for non-check transactions
-                    if ( !ddlIndividual.Items.OfType<ListItem>().Any( a => a.Value == person.Id.ToString() ) )
-                    {
-                        ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
-                    }
-
-                    ddlIndividual.SelectedValue = person.Id.ToString();
-                }
-
-                ddlIndividual_SelectedIndexChanged( null, null );
-
-                ppSelectNew.SetValue( null );
-                if ( transactionToMatch.TransactionDetails.Any() )
-                {
-                    cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
-                }
-                else
-                {
-                    cbTotalAmount.Text = string.Empty;
-                }
-
-                // update accountboxes
-                foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
-                {
-                    accountBox.Text = string.Empty;
-                }
-
-                foreach ( var detail in transactionToMatch.TransactionDetails )
-                {
-                    var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
-                    if ( accountBox != null )
-                    {
-                        accountBox.Text = detail.Amount.ToString();
-                    }
-                }
-
-                if ( transactionToMatch.Images.Any() )
-                {
-                    var primaryImage = transactionToMatch.Images
-                        .OrderBy( i => i.Order )
-                        .FirstOrDefault();
-                    imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
-                    imgPrimary.Visible = true;
-                    nbNoTransactionImageWarning.Visible = false;
-
-                    rptrImages.DataSource = transactionToMatch.Images
-                        .Where( i => !i.Id.Equals( primaryImage.Id ) )
-                        .OrderBy( i => i.Order )
-                        .ToList();
-                    rptrImages.DataBind();
-                }
-                else
-                {
-                    imgPrimary.Visible = false;
-                    rptrImages.DataSource = null;
-                    rptrImages.DataBind();
-                    nbNoTransactionImageWarning.Visible = true;
-                }
+                hfBackNextHistory.Value = historyList.AsDelimited( "," );
             }
-            else
-            {
-                hfTransactionId.Value = string.Empty;
-            }
-
-            hfBackNextHistory.Value = historyList.AsDelimited( "," );
         }
 
         #endregion
