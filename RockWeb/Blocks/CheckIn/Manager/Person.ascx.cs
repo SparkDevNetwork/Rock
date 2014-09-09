@@ -27,7 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Utility
+namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Utility
     [Description( "Displays person and details about recent check-ins." )]
 
     [LinkedPage("Manager Page", "Page used to manage check-in locations")]
-    public partial class Stark : Rock.Web.UI.RockBlock
+    public partial class Person : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Utility
             {
                 lName.Text = person.FullName;
 
-                string photoTag = Person.GetPhotoImageTag( person, 120, 120 );
+                string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
                 if ( person.PhotoId.HasValue )
                 {
                     lPhoto.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, photoTag );

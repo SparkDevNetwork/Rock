@@ -23,65 +23,68 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 
-public partial class error : System.Web.UI.Page
+namespace RockWeb.Themes.Stark.Layouts
 {
-    /// <summary>
-    /// Handles the Load event of the Page control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void Page_Load( object sender, EventArgs e )
+    public partial class Error : System.Web.UI.Page
     {
-                
-        // get error level
-        int errorLevel = 0;
-
-        if ( Request["error"] != null )
-            errorLevel = Int32.Parse( Request["error"].ToString() );
-
-        if ( errorLevel == 1 )
+        /// <summary>
+        /// Handles the Load event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Page_Load( object sender, EventArgs e )
         {
-            // check to see if the user is an admin, if so allow them to view the error details
-            var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
-            GroupService service = new GroupService( new RockContext() );
-            Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
+            // get error level
+            int errorLevel = 0;
 
-            if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
+            if ( Request["error"] != null )
+                errorLevel = Int32.Parse( Request["error"].ToString() );
+
+            if ( errorLevel == 1 )
             {
-                // is an admin
-                lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                // check to see if the user is an admin, if so allow them to view the error details
+                var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
-                // get exception from Session
-                if ( Session["Exception"] != null )
+                GroupService service = new GroupService( new RockContext() );
+                Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
+
+                if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
                 {
-                    ProcessException( (Exception)Session["Exception"], " " );
+                    // is an admin
+                    lErrorInfo.Text = "<h3>Exception Log:</h3>";
+
+                    // get exception from Session
+                    if ( Session["Exception"] != null )
+                    {
+                        ProcessException( (Exception)Session["Exception"], " " );
+                    }
                 }
             }
+
+            // clear session object
+            Session.Remove( "Exception" );
         }
 
-        // clear session object
-        Session.Remove( "Exception" );
-    }
-
-    /// <summary>
-    /// Processes the exception.
-    /// </summary>
-    /// <param name="ex">The ex.</param>
-    /// <param name="exLevel">The ex level.</param>
-    private void ProcessException( Exception ex, string exLevel )
-    {
-        lErrorInfo.Text += "<div class=\"alert alert-danger\">";
-        lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h3>";
-        lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
-        lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
-        lErrorInfo.Text += "</div>";
-
-        // check for inner exception
-        if ( ex.InnerException != null )
+        /// <summary>
+        /// Processes the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="exLevel">The ex level.</param>
+        private void ProcessException( Exception ex, string exLevel )
         {
-            //lErrorInfo.Text += "<p /><p />";
-            ProcessException( ex.InnerException, "-" + exLevel );
+            lErrorInfo.Text += "<div class=\"alert alert-danger\">";
+            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h3>";
+            lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
+            lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
+            lErrorInfo.Text += "</div>";
+
+            // check for inner exception
+            if ( ex.InnerException != null )
+            {
+                //lErrorInfo.Text += "<p /><p />";
+                ProcessException( ex.InnerException, "-" + exLevel );
+            }
         }
     }
 }
