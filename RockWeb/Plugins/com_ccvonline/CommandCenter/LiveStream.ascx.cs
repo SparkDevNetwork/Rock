@@ -28,10 +28,13 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
+            // Intentionally not using the latest version of flowplayer.  There are some issues with using version
+            // 3.2.18. The issues are not being able to toggle mute when a live stream in unavailable.  Also, 
+            // the newest version of the httpstreaming plugin is unreliable when passing clip duration parameters.
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.8.min.js" );
             RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
         }
 

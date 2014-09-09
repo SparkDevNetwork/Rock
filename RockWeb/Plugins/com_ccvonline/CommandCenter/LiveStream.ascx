@@ -26,27 +26,28 @@
         </div>
 
         <script type="text/javascript">
-                // setup player
-                flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf",
-                    {
-                        key: '#$392ba7eb81984ddb47a',
-                        controls: {
-                            time: false,
-                            scrubber: false
-                        },
-                        plugins: {
-                            rtmp: {
-                                url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf',
-                            }
-                        },
-                        clip: {
-                            url: '<%# Eval("[2]") %>',
-			                live: true,
-			                provider: 'rtmp',
-			                scaling: 'scale',
-			                onStart: function () { MutePlayers(); }
-			    }
-			});
+            // setup player
+            flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
+                {
+                    key: '#$392ba7eb81984ddb47a',
+                    controls: {
+                        time: false,
+                        scrubber: false
+                    },
+                    plugins: {
+                        rtmp: {
+                            url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf',
+                        }
+                    },
+                    clip: {
+                        url: '<%# Eval("[2]") %>',
+                        live: true,
+                        provider: 'rtmp',
+                        scaling: 'scale',
+                        onStart: function () { MutePlayers(); }
+                    },
+                    showErrors: false
+			    });
         </script>
 
     </ItemTemplate>
@@ -55,22 +56,33 @@
 
 <script type="text/javascript">   
 
-    // mute all videos on load except the first one
-    function MutePlayers() {
-        $f('*').each(function () {
-            this.mute();
+    function pageLoad() {
+
+        // untoggle first button
+        $('.audio-toggle').first().each(function () {
+            $(this).addClass('enabled');
+            $(this).removeClass('muted');
+            $(this).addClass('btn-primary');
+            $(this).removeClass('btn-default');
         });
 
-        $f('*').first().unmute();
+        //MutePlayers();    
     }
 
-    // untoggle first button
-    $('.audio-toggle').first().each(function () {
-        $(this).addClass('enabled');
-        $(this).removeClass('muted');
-        $(this).addClass('btn-primary');
-        $(this).removeClass('btn-default');
-    });
+    // mute all videos on load except the first one.  This logic
+    // is used instead of .First() because flow player does not 
+    // support it.
+    function MutePlayers() {
+        var counter = 0;
+        $f('*').each(function () {
+            counter++;
+            if (counter === 1) {
+                this.unmute();
+            } else {
+                this.mute();
+            }
+        });
+    }
 
     $('.audio-toggle').click(function (event) {
         // set flag if user clicked on current item this will note that they wish to mute current channel
