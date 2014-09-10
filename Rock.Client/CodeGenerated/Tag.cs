@@ -52,7 +52,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public int? OwnerId { get; set; }
+        public int? OwnerPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -31,10 +31,10 @@ namespace Rock.Client
     public partial class FinancialPledge
     {
         /// <summary />
-        public int? AccountId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
-        public int? PersonId { get; set; }
+        public int? AccountId { get; set; }
 
         /// <summary />
         public decimal TotalAmount { get; set; }

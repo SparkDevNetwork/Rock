@@ -31,7 +31,7 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction
     {
         /// <summary />
-        public int AuthorizedPersonId { get; set; }
+        public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
         public int TransactionFrequencyValueId { get; set; }

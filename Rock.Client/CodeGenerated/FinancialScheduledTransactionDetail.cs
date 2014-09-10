@@ -31,10 +31,10 @@ namespace Rock.Client
     public partial class FinancialScheduledTransactionDetail
     {
         /// <summary />
-        public int AccountId { get; set; }
+        public int ScheduledTransactionId { get; set; }
 
         /// <summary />
-        public int ScheduledTransactionId { get; set; }
+        public int AccountId { get; set; }
 
         /// <summary />
         public decimal Amount { get; set; }

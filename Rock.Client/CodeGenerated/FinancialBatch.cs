@@ -31,6 +31,9 @@ namespace Rock.Client
     public partial class FinancialBatch
     {
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -41,9 +44,6 @@ namespace Rock.Client
 
         /// <summary />
         public int /* BatchStatus*/ Status { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
 
         /// <summary />
         public string AccountingSystemCode { get; set; }
