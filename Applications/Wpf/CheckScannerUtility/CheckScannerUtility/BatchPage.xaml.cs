@@ -294,12 +294,12 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the persisted client.
+        /// Gets or sets the client that stays connected 
         /// </summary>
         /// <value>
         /// The persisted client.
         /// </value>
-        private RockRestClient persistedClient { get; set; }
+        private RockRestClient checkforDuplicateClient { get; set; }
 
         /// <summary>
         /// Determines whether [is duplicate scan] [the specified scanned document].
@@ -313,11 +313,11 @@ namespace Rock.Apps.CheckScannerUtility
                 return false;
             }
 
-            if ( persistedClient == null )
+            if ( checkforDuplicateClient == null )
             {
                 var rockConfig = RockConfig.Load();
-                persistedClient = new RockRestClient( rockConfig.RockBaseUrl );
-                persistedClient.Login( rockConfig.Username, rockConfig.Password );
+                checkforDuplicateClient = new RockRestClient( rockConfig.RockBaseUrl );
+                checkforDuplicateClient.Login( rockConfig.Username, rockConfig.Password );
             }
 
             // first check if we have already scanned this doc during this session (we might not have uploaded it yet)
@@ -326,7 +326,7 @@ namespace Rock.Apps.CheckScannerUtility
             // if we didn't already scan it in this session, check the server
             if ( !alreadyScanned )
             {
-                alreadyScanned = persistedClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
+                alreadyScanned = checkforDuplicateClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
             }
 
             return alreadyScanned;
@@ -779,8 +779,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void batchPage_Loaded( object sender, RoutedEventArgs e )
         {
-            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
-            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            spBatchDetailReadOnly.Visibility = Visibility.Visible;
+            spBatchDetailEdit.Visibility = Visibility.Collapsed;
             WpfHelper.FadeOut( lblUploadProgress, 0 );
             if ( !ConnectToScanner() )
             {
@@ -840,9 +840,13 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( SelectedFinancialBatch != null )
                 {
+                    // try to set the selected batch in the grid to our current batch (if it still exists in the database)
                     grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatch.Id ) );
                 }
-                else
+
+
+                // if there still isn't a selected batch, set it to the first one
+                if (grdBatches.SelectedValue == null)
                 {
                     grdBatches.SelectedIndex = 0;
                 }
@@ -851,13 +855,12 @@ namespace Rock.Apps.CheckScannerUtility
             bool startWithNewBatch = !pendingBatches.Any();
             if ( startWithNewBatch )
             {
-                // don't let them start without having at least one batch
-                btnCancel.IsEnabled = false;
-                btnAddBatch_Click( null, null );
+                // don't let them start without having at least one batch, so just show the list with the Add button
+                HideBatch();
             }
             else
             {
-                btnCancel.IsEnabled = true;
+                gBatchDetailList.Visibility = Visibility.Visible;
                 UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
             }
         }
@@ -1024,6 +1027,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnScan_Click( object sender, RoutedEventArgs e )
         {
+            // set the checkforDuplicateClient to null to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
+            checkforDuplicateClient = null;
             this.NavigationService.Navigate( this.ScanningPromptPage );
         }
 
@@ -1061,15 +1066,16 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void ShowBatch( bool showInEditMode )
         {
+            gBatchDetailList.Visibility = Visibility.Visible;
             if ( showInEditMode )
             {
-                bdrBatchDetailEdit.Visibility = Visibility.Visible;
-                bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+                spBatchDetailEdit.Visibility = Visibility.Visible;
+                spBatchDetailReadOnly.Visibility = Visibility.Collapsed;
             }
             else
             {
-                bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-                bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+                spBatchDetailEdit.Visibility = Visibility.Collapsed;
+                spBatchDetailReadOnly.Visibility = Visibility.Visible;
             }
 
             grdBatches.IsEnabled = !showInEditMode;
@@ -1081,8 +1087,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         private void HideBatch()
         {
-            bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
-            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            gBatchDetailList.Visibility = Visibility.Hidden;
         }
 
         /// <summary>
@@ -1176,7 +1181,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnCancel_Click( object sender, RoutedEventArgs e )
         {
             UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
-            ShowBatch( false );
+            btnAddBatch.IsEnabled = true;
         }
 
         /// <summary>
