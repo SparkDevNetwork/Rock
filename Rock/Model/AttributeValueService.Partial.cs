@@ -38,14 +38,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets Attribute Values by Attribute Id And Entity Id
+        /// Gets an Attribute Value by Attribute Id And Entity Id
         /// </summary>
         /// <param name="attributeId">Attribute Id.</param>
         /// <param name="entityId">Entity Id.</param>
-        /// <returns>An enumerable list of AttributeValue objects.</returns>
-        public IQueryable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
+        /// <returns></returns>
+        public AttributeValue GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
-            return Queryable().Where( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Queryable()
+                .Where( t =>
+                    t.AttributeId == attributeId &&
+                    ( 
+                        ( !t.EntityId.HasValue && !entityId.HasValue ) || 
+                        ( t.EntityId.HasValue && entityId.HasValue && t.EntityId.Value == entityId.Value )
+                    )
+                )
+                .FirstOrDefault();
         }
 
         /// <summary>

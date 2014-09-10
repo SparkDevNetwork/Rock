@@ -2124,8 +2124,10 @@ namespace Rock.Web.UI
         {
             var values = SessionUserPreferences();
             if ( values.ContainsKey( key ) )
-                foreach ( string value in SessionUserPreferences()[key] )
-                    return value;
+            {
+                return values[key];
+            }
+
             return string.Empty;
         }
 
@@ -2144,14 +2146,7 @@ namespace Rock.Web.UI
             var values = SessionUserPreferences();
             foreach ( var key in values.Where( v => v.Key.StartsWith( keyPrefix ) ) )
             {
-                string firstValue = string.Empty;
-                foreach ( string value in key.Value )
-                {
-                    firstValue = value;
-                    break;
-                }
-
-                selectedValues.Add( key.Key, firstValue );
+                selectedValues.Add( key.Key, key.Value );
             }
 
             return selectedValues;
@@ -2165,22 +2160,19 @@ namespace Rock.Web.UI
         /// <param name="value">A <see cref="System.String"/> representing the preference value.</param>
         public void SetUserPreference( string key, string value )
         {
-            var newValues = new List<string>();
-            newValues.Add( value );
-
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
             {
-                sessionValues[key] = newValues;
+                sessionValues[key] = value;
             }
             else
             {
-                sessionValues.Add( key, newValues );
+                sessionValues.Add( key, value );
             }
 
             if ( CurrentPerson != null )
             {
-                PersonService.SaveUserPreference( CurrentPerson, key, newValues );
+                PersonService.SaveUserPreference( CurrentPerson, key, value );
             }
         }
 
@@ -2191,18 +2183,18 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
-        private Dictionary<string, List<string>> SessionUserPreferences()
+        private Dictionary<string, string> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );
 
-            var userPreferences = Session[sessionKey] as Dictionary<string, List<string>>;
+            var userPreferences = Session[sessionKey] as Dictionary<string, string>;
             if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
                     userPreferences = PersonService.GetUserPreferences( CurrentPerson );
                 else
-                    userPreferences = new Dictionary<string, List<string>>();
+                    userPreferences = new Dictionary<string, string>();
 
                 Session[sessionKey] = userPreferences;
             }

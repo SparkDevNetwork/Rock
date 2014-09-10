@@ -467,9 +467,9 @@ namespace RockWeb.Blocks.WorkFlow
                     var attribute = AttributeCache.Read( formAttribute.AttributeId );
 
                     string value = attribute.DefaultValue;
-                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key].Any() )
+                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                     {
-                        value = _workflow.AttributeValues[attribute.Key][0].Value;
+                        value = _workflow.AttributeValues[attribute.Key].Value;
                     }
 
                     if ( formAttribute.IsReadOnly )

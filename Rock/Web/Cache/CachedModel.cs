@@ -233,7 +233,7 @@ namespace Rock.Web.Cache
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+        public Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -262,24 +262,23 @@ namespace Rock.Web.Cache
                 {
                     if ( this.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], rockContext );
+                        Rock.Attribute.Helper.SaveAttributeValue( model, attribute.Value, this.AttributeValues[attribute.Key].Value, rockContext );
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key.
+        /// Gets the value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The stored value as a string or null if none exists.</returns>
         public string GetAttributeValue( string key )
         {
             if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+                this.AttributeValues.ContainsKey( key ) )
             {
-                return this.AttributeValues[key][0].Value;
+                return this.AttributeValues[key].Value;
             }
 
             if ( this.Attributes != null &&
@@ -292,7 +291,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// Gets the value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of strings or an empty list if none exists.</returns>
@@ -317,11 +316,7 @@ namespace Rock.Web.Cache
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
             {
-                if ( this.AttributeValues[key].Count == 0 )
-                {
-                    this.AttributeValues[key].Add( new AttributeValue() );
-                }
-                this.AttributeValues[key][0].Value = value;
+                this.AttributeValues[key].Value = value;
             }
         }
 

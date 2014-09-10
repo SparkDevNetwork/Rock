@@ -138,9 +138,9 @@ namespace Rock.Workflow
             if ( values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
-                if ( keyValues.Count == 1 )
+                if ( keyValues != null )
                 {
-                    return keyValues[0].Value;
+                    return keyValues.Value;
                 }
             }
 

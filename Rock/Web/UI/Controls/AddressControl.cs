@@ -736,12 +736,11 @@ namespace Rock.Web.UI.Controls
                 .Where( v =>
                     (
                         v.AttributeValues.ContainsKey( "Country" ) &&
-                        v.AttributeValues["Country"].Any() &&
-                        v.AttributeValues["Country"][0].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase ) 
+                        v.AttributeValues["Country"] != null &&
+                        v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase ) 
                     ) ||
                     (
-                        ( !v.AttributeValues.ContainsKey( "Country" ) || 
-                        !v.AttributeValues["Country"].Any() ) &&
+                        ( !v.AttributeValues.ContainsKey( "Country" ) || v.AttributeValues["Country"] == null ) &&
                         v.Attributes.ContainsKey("Country") &&
                         v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase)
                     ) )

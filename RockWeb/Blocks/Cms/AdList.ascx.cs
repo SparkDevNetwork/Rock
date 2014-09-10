@@ -243,8 +243,8 @@ namespace RockWeb.Blocks.Cms
                 foreach ( var item in marketingCampaignAd.Attributes )
                 {
                     AttributeCache attribute = item.Value;
-                    List<AttributeValue> attributeValues = marketingCampaignAd.AttributeValues[attribute.Key];
-                    foreach ( AttributeValue attributeValue in attributeValues )
+                    var attributeValue = marketingCampaignAd.AttributeValues[attribute.Key];
+                    if ( attributeValue != null )
                     {
                         string valueHtml = string.Empty;
 
