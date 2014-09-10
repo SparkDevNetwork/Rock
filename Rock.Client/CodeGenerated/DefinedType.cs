@@ -31,9 +31,6 @@ namespace Rock.Client
     public partial class DefinedType
     {
         /// <summary />
-        public int? CategoryId { get; set; }
-
-        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -41,6 +38,9 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public string Name { get; set; }

@@ -31,9 +31,6 @@ namespace Rock.Client
     public partial class FinancialTransaction
     {
         /// <summary />
-        public int? ScheduledTransactionId { get; set; }
-
-        /// <summary />
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
@@ -68,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public string CheckMicrHash { get; set; }
+
+        /// <summary />
+        public int? ScheduledTransactionId { get; set; }
 
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
