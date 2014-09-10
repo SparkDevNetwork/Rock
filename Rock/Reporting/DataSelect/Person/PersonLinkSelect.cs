@@ -17,10 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
-using System.Linq.Expressions;
-using Rock.Data;
+using System.Web.UI.WebControls;
 using Rock.Model;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -28,13 +26,11 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select the Age of the Person" )]
+    [Description( "Show person's name as a link that navigates to the person's record" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Age" )]
-    public class AgeSelect : DataSelectComponent
+    [ExportMetadata( "ComponentName", "Select Person Link" )]
+    public class PersonLinkSelect : DataSelectComponent
     {
-        #region Properties
-
         /// <summary>
         /// Gets the name of the entity type. Filter should be an empty string
         /// if it applies to all entities
@@ -60,7 +56,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Age";
+                return "Name";
             }
         }
 
@@ -72,7 +68,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( int? ); }
+            get
+            {
+                return typeof( string );
+            }
         }
 
         /// <summary>
@@ -85,13 +84,9 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Age";
+                return "Name";
             }
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Gets the title.
@@ -103,7 +98,20 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Age";
+            return "Person Link";
+        }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            var result = new BoundField();
+            result.HtmlEncode = false;
+            return result;
         }
 
         /// <summary>
@@ -116,7 +124,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "BirthDate";
+                return "LastName,NickName";
             }
         }
 
@@ -127,62 +135,15 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
+        public override System.Linq.Expressions.Expression GetExpression( Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
-            DateTime currentDate = RockDateTime.Today;
-            int currentDayOfYear = currentDate.DayOfYear;
-            
-            //// have SQL Server do the following math (DateDiff only returns the integers):
-            //// If the person has had their birthday this year, their age is the DateDiff in Years, but if they haven't had their birthday yet, it is the DateDiff in years - 1;
-            var personAgeQuery = new PersonService( context ).Queryable()
-                .Select( p => currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate ) ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 );
+            // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
+            var personLinkQuery = new PersonService( context ).Queryable()
+                .Select( p => "<a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
 
-            var selectAgeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, entityIdProperty, "p" );
+            var personLinkExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLinkQuery, entityIdProperty, "p" );
 
-            return selectAgeExpression;
+            return personLinkExpression;
         }
-
-        /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <param name="parentControl"></param>
-        /// <returns></returns>
-        public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
-        {
-            return new System.Web.UI.Control[] { };
-        }
-
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
-        {
-            base.RenderControls( parentControl, writer, controls );
-        }
-
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override string GetSelection( System.Web.UI.Control[] controls )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
-        public override void SetSelection( System.Web.UI.Control[] controls, string selection )
-        {
-            // nothing to do
-        }
-
-        #endregion
     }
 }
