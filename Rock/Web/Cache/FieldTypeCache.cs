@@ -147,7 +147,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = "Rock:FieldType:All";
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             var allfieldTypes = cache[cacheKey] as List<FieldTypeCache>;
             if ( allfieldTypes == null )
             {
@@ -181,7 +181,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = FieldTypeCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
             if ( fieldType == null )
@@ -221,7 +221,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static FieldTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             FieldTypeCache fieldType = null;
@@ -256,7 +256,7 @@ namespace Rock.Web.Cache
         public static FieldTypeCache Read( FieldType fieldTypeModel )
         {
             string cacheKey = FieldTypeCache.CacheKey( fieldTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
             if ( fieldType != null )
@@ -280,7 +280,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( FieldTypeCache.CacheKey( id ) );
             cache.Remove( "Rock:FieldType:All" );
         }

@@ -690,7 +690,7 @@ namespace Rock.Web.UI
 
                     // Cache object used for block output caching
                     Page.Trace.Warn( "Getting memory cache" );
-                    ObjectCache cache = MemoryCache.Default;
+                    ObjectCache cache = RockMemoryCache.Default;
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );

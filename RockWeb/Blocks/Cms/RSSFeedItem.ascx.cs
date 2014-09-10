@@ -31,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -98,7 +99,7 @@ namespace RockWeb.Blocks.Cms
         private void ClearCache()
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( TemplateCacheKey );
         }
 
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.Cms
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
             Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             Template template = null;
 
             if ( cache[TemplateCacheKey] != null )

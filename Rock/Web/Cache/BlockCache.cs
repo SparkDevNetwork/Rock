@@ -267,7 +267,7 @@ namespace Rock.Web.Cache
         public static BlockCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = BlockCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             BlockCache block = cache[cacheKey] as BlockCache;
 
             if ( block == null )
@@ -297,7 +297,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             BlockCache block = null;
@@ -333,7 +333,7 @@ namespace Rock.Web.Cache
         public static BlockCache Read( Block blockModel )
         {
             string cacheKey = BlockCache.CacheKey( blockModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             BlockCache block = cache[cacheKey] as BlockCache;
 
             if ( block != null )
@@ -357,7 +357,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( BlockCache.CacheKey( id ) );
         }
 
