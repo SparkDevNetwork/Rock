@@ -709,7 +709,6 @@ namespace Rock.Attribute
                 attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = model.Id;
-                attributeValue.Order = 0;
                 attributeValueService.Add( attributeValue );
             }
 
@@ -751,7 +750,6 @@ namespace Rock.Attribute
                 attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = entityId;
-                attributeValue.Order = 0;
                 attributeValueService.Add(attributeValue);
             }
 
@@ -791,7 +789,6 @@ namespace Rock.Attribute
                     attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
                     attributeValue.EntityId = model.Id;
-                    attributeValue.Order = i;
                     attributeValueService.Add( attributeValue );
                 }
 
@@ -846,7 +843,6 @@ namespace Rock.Attribute
                         attributeValue.IsSystem = value.IsSystem;
                         attributeValue.AttributeId = value.AttributeId;
                         attributeValue.EntityId = value.EntityId;
-                        attributeValue.Order = value.Order;
                         attributeValue.Value = value.Value;
                         attributeValue.Id = value.Id;
                         attributeValue.Guid = value.Guid;
