@@ -535,6 +535,8 @@ namespace RockWeb.Blocks.Reporting
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
                 ddlFields.Items.Clear();
 
+                var listItems = new List<ListItem>();
+
                 // Add Fields for the EntityType
                 foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
                 {
@@ -558,7 +560,7 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Attributes["optiongroup"] = "Other";
                     }
 
-                    ddlFields.Items.Add( listItem );
+                    listItems.Add( listItem );
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
@@ -571,8 +573,13 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
                         listItem.Attributes["optiongroup"] = component.Section;
-                        ddlFields.Items.Add( listItem );
+                        listItems.Add( listItem );
                     }
+                }
+
+                foreach ( var item in listItems.OrderByDescending( a => (a.Attributes["optiongroup"] == "Common")).ThenBy( a => a.Text ).ToArray() )
+                {
+                    ddlFields.Items.Add(item);
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -948,7 +955,7 @@ namespace RockWeb.Blocks.Reporting
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            columnField.SortExpression = null;
+                            columnField.SortExpression = selectComponent.SortExpression;
                             columnField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( columnField );
                         }
