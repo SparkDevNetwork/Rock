@@ -116,7 +116,7 @@ namespace Rock.CheckIn
         {
             string cacheKey = KioskLocationAttendance.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             KioskLocationAttendance locationAttendance = cache[cacheKey] as KioskLocationAttendance;
 
             if ( locationAttendance != null )
@@ -157,7 +157,7 @@ namespace Rock.CheckIn
         /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             cache.Remove( KioskLocationAttendance.CacheKey( id ) );
         }
 

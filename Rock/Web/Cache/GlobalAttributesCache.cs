@@ -176,7 +176,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = GlobalAttributesCache.CacheKey();
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
 
             if ( globalAttributes != null )
@@ -214,7 +214,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( GlobalAttributesCache.CacheKey() );
         }
 
