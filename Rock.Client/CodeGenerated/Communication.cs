@@ -31,7 +31,7 @@ namespace Rock.Client
     public partial class Communication
     {
         /// <summary />
-        public int? SenderPersonId { get; set; }
+        public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
         public string Subject { get; set; }
@@ -46,7 +46,7 @@ namespace Rock.Client
         public int /* CommunicationStatus*/ Status { get; set; }
 
         /// <summary />
-        public int? ReviewerPersonId { get; set; }
+        public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ReviewedDateTime { get; set; }

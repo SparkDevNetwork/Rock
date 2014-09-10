@@ -31,10 +31,13 @@ namespace Rock.Client
     public partial class FinancialAccount
     {
         /// <summary />
-        public int? ParentAccountId { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
+        public int? AccountTypeValueId { get; set; }
+
+        /// <summary />
+        public int? ParentAccountId { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -62,9 +65,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? EndDate { get; set; }
-
-        /// <summary />
-        public int? AccountTypeValueId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

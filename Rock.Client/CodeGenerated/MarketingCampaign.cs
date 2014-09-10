@@ -37,7 +37,7 @@ namespace Rock.Client
         public string Title { get; set; }
 
         /// <summary />
-        public int? ContactPersonId { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary />
         public string ContactEmail { get; set; }

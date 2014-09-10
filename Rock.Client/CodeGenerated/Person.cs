@@ -31,6 +31,9 @@ namespace Rock.Client
     public partial class Person
     {
         /// <summary />
+        public int? GivingGroupId { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -92,9 +95,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? GraduationDate { get; set; }
-
-        /// <summary />
-        public int? GivingGroupId { get; set; }
 
         /// <summary />
         public string Email { get; set; }
