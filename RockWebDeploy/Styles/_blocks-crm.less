@@ -798,25 +798,30 @@ tr.inactive {
 
 .bulk-update {
 
-    .form-group{
-        opacity: 0.5;
+    .no-select {
+        .form-group{
+            opacity: 1;
+        }
+    }
+    
+    .fade-inactive {
+        .form-group{
+            opacity: 0.5;
 
-        .control-label {
-            cursor: pointer;
+            .control-label {
+                cursor: pointer;
+            }
         }
     }
 
     .form-group.bulk-item-selected {
         opacity: 1;
+        background-color: @gray-light;
+        padding: 12px;
+        border-radius: @border-radius-base;
 
         .control-label {
-            color: @brand-success;
-        }
-    }
-
-    .no-select {
-        .form-group{
-            opacity: 1;
+            
         }
     }
 
