@@ -10,12 +10,12 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="tFilter" runat="server">
-                        <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" AutoPostBack="false" />
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="false" EntityTypeName="Rock.Model.DefinedType" />
                     </Rock:GridFilter>
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gDefinedType" runat="server" AllowSorting="true" OnRowSelected="gDefinedType_Edit" TooltipField="Description">
                         <Columns>
-                            <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
+                            <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
                             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <asp:BoundField DataField="FieldTypeName" HeaderText="Field Type" SortExpression="FieldTypeName" />

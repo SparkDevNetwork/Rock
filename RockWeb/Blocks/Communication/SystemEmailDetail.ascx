@@ -21,7 +21,7 @@
                         <Rock:DataTextBox ID="tbTo" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="To" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Category" />
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.SystemEmail" />
                         <Rock:DataTextBox ID="tbCc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Cc" />
                         <Rock:DataTextBox ID="tbBcc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Bcc" />
                     </div>

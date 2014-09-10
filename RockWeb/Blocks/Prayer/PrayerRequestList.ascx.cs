@@ -263,8 +263,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var service = new CategoryService( new RockContext() );
-                        var category = service.Get( categoryId );
+                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;

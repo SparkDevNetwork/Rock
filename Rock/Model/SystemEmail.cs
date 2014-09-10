@@ -44,19 +44,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets a string to identify the category that the EmailTemplate belongs to.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String" /> representing the category that this EmailTemplate belongs to.
+        /// The category identifier.
         /// </value>
-        /// <remarks>
-        /// There are plans to update this to implement ICategorized and <see cref="Rock.Model.Category"/>. See https://github.com/SparkDevNetwork/Rock/issues/142
-        /// </remarks>
-        [MaxLength( 100 )]
         [DataMember]
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
         
         /// <summary>
         /// Gets or sets the Title of the EmailTemplate 
@@ -146,6 +142,16 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+        
         #endregion
 
         #region Methods
@@ -177,6 +183,7 @@ namespace Rock.Model
         /// </summary>
         public SystemEmailConfiguration()
         {
+            this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 
