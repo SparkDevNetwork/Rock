@@ -80,7 +80,7 @@ namespace Rock.Web.Cache
                 var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
                 if ( attributeCache != null )
                 {
-                    var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
+                    var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
                     AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
 
@@ -198,7 +198,7 @@ namespace Rock.Web.Cache
                     var attributeCache = AttributeCache.Read( attribute );
                     globalAttributes.Attributes.Add( attributeCache );
 
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
                     globalAttributes.AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
                 }

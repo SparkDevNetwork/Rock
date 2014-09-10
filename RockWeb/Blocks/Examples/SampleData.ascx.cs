@@ -760,7 +760,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
                     {
-                        var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
+                        var newValue = gm.Person.AttributeValues[attributeCache.Key];
                         if ( newValue != null )
                         {
                             newValue.EntityId = gm.Person.Id;
@@ -1178,15 +1178,12 @@ namespace RockWeb.Blocks.Examples
             if ( group.AttributeValues != null )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
-                foreach ( KeyValuePair<string, List<AttributeValue>> entry in group.AttributeValues )
+                foreach ( var entry in group.AttributeValues )
                 {
-                    foreach ( AttributeValue value in entry.Value )
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( entry.Value.AttributeId, group.Id );
+                    if ( attributeValue != null )
                     {
-                        var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( value.AttributeId, group.Id ).ToList();
-                        foreach ( var attributeValue in attributeValues )
-                        {
-                            attributeValueService.Delete( attributeValue );
-                        }
+                        attributeValueService.Delete( attributeValue );
                     }
                 }
             }
