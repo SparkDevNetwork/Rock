@@ -485,30 +485,38 @@ namespace RockInstaller
                 }
             }
 
-            // edit web.config
-            XDocument document = XDocument.Load( tempWebConfig );
+            try
+            {
+                // edit web.config
+                XDocument document = XDocument.Load( tempWebConfig );
 
-            // update timezone
-            var node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "OrgTimeZone" ).FirstOrDefault();
-            node.SetAttributeValue( "value", installData.HostingInfo.Timezone );
+                // update timezone
+                var node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "OrgTimeZone" ).FirstOrDefault();
+                node.SetAttributeValue( "value", installData.HostingInfo.Timezone );
 
-            // update password key
-            node = document.Descendants( "appSettings" ).Elements("add").Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
-            node.SetAttributeValue( "value", passwordKey );
-            
-            // update data encryption key
-            string dataEncryptionKey = RockInstallUtilities.GeneratePasswordKey( 128 );
-            node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
-            node.SetAttributeValue( "value", dataEncryptionKey );
+                // update password key
+                node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
+                node.SetAttributeValue( "value", passwordKey );
 
-            // update machine key
-            string validationKey = RockInstallUtilities.GenerateMachineKey( 64 );
-            string decryptionKey = RockInstallUtilities.GenerateMachineKey( 32 );
-            node = document.Descendants( "system.web" ).Elements( "machineKey" ).FirstOrDefault();
-            node.SetAttributeValue( "validationKey", validationKey );
-            node.SetAttributeValue( "decryptionKey", decryptionKey );
+                // update data encryption key
+                string dataEncryptionKey = RockInstallUtilities.GeneratePasswordKey( 128 );
+                node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
+                node.SetAttributeValue( "value", dataEncryptionKey );
 
-            document.Save( tempWebConfig );
+                // update machine key
+                string validationKey = RockInstallUtilities.GenerateMachineKey( 64 );
+                string decryptionKey = RockInstallUtilities.GenerateMachineKey( 32 );
+                node = document.Descendants( "system.web" ).Elements( "machineKey" ).FirstOrDefault();
+                node.SetAttributeValue( "validationKey", validationKey );
+                node.SetAttributeValue( "decryptionKey", decryptionKey );
+
+                document.Save( tempWebConfig );
+            }
+            catch ( Exception ex )
+            {
+                result.Success = false;
+                result.Message = "An error occurred while customizing the web.config file for Rock. " + ex.Message;
+            }
 
             this.UpdateProgressBar( 100 );
             return result;
