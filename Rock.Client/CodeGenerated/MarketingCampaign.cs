@@ -31,9 +31,6 @@ namespace Rock.Client
     public partial class MarketingCampaign
     {
         /// <summary />
-        public int? EventGroupId { get; set; }
-
-        /// <summary />
         public string Title { get; set; }
 
         /// <summary />
@@ -47,6 +44,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ContactFullName { get; set; }
+
+        /// <summary />
+        public int? EventGroupId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
