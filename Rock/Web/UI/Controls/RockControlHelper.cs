@@ -80,7 +80,14 @@ namespace Rock.Web.UI.Controls
                 }
                 if ( rockControl.Required )
                 {
-                    cssClass.Append( " required" );
+                    if ( ( rockControl is RockTextBox ) && !( rockControl as RockTextBox ).DisplayRequiredIndicator )
+                    {
+                        // if this is a RockTextBox and DisplayRequiredIndicator is false, don't add the " required " cssclass
+                    }
+                    else
+                    {
+                        cssClass.Append( " required" );
+                    }
                 }
                 if (!string.IsNullOrWhiteSpace(additionalCssClass))
                 {
