@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="8" virtualPath="/RockWeb/global.asax" hash="ffffffff94abbb4a" filehash="7f0aee16e80" flags="150000" assembly="App_global.asax" type="ASP.global_asax">
+<preserve resultType="8" virtualPath="/RockWeb/global.asax" hash="ffffffff94abbb4a" filehash="67f6216b3e1" flags="150000" assembly="App_global.asax" type="ASP.global_asax">
   <filedeps>
     <filedep name="/RockWeb/global.asax" />
   </filedeps>

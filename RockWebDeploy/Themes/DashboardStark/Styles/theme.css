@@ -1800,6 +1800,14 @@ a.aspNetDisabled {
 .controls .checkbox:first-child {
   margin-top: 0;
 }
+.form-group.required .control-label:after {
+  font-family: FontAwesome;
+  content: '\f111';
+  margin-left: 4px;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
+}
 dl:not(.dl-horizontal) {
   margin-bottom: 0;
 }
@@ -2538,7 +2546,7 @@ table.attribute-grid tr th:nth-child(3) {
 
     1. Contributions - block add a contribution transaction
     2. Scheduled Transactions - Styles for the scheduled transaction blocks
-
+    3. Transaction Matching
 
 */
 .contribution-payment .tab-content {
@@ -2600,6 +2608,18 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .scheduledtransaction-item .actions {
   margin: 6px 0;
+}
+.transaction-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border: 2px solid #428bca;
+}
+.transaction-image-thumbnail {
+  max-width: 200px;
+  max-height: 100px;
+  margin: 5px;
+  cursor: pointer;
+  border: 2px solid #428bca;
 }
 /*
     Used to manage styles related to the person details page
@@ -3183,20 +3203,20 @@ span.field-value {
 tr.inactive td {
   color: #808080;
 }
-.bulk-update .form-group {
+.bulk-update .no-select .form-group {
+  opacity: 1;
+}
+.bulk-update .fade-inactive .form-group {
   opacity: 0.5;
 }
-.bulk-update .form-group .control-label {
+.bulk-update .fade-inactive .form-group .control-label {
   cursor: pointer;
 }
 .bulk-update .form-group.bulk-item-selected {
   opacity: 1;
-}
-.bulk-update .form-group.bulk-item-selected .control-label {
-  color: #5cb85c;
-}
-.bulk-update .no-select .form-group {
-  opacity: 1;
+  background-color: #999999;
+  padding: 12px;
+  border-radius: 4px;
 }
 .photoupload-photo .image-editor {
   float: left;
@@ -3251,6 +3271,16 @@ iframe.email-body {
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. User Entry
+    2. 
+
+*/
+.workflow-entry-panel > h1:first-of-type {
+  margin-top: 0;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3843,9 +3873,6 @@ a.help {
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
-  /*.well {
-            background-color: @accent-color;
-        }*/
 }
 .panel-widget {
   border-color: #d5d5d5;

@@ -62,7 +62,7 @@
                         </div>
                         <div class="col-md-6">                
                             <Rock:DataTextBox ID="tbGLCode" runat="server"
-                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
+                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" Label="GL Code" />
                             <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
                             <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
                             <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />           
