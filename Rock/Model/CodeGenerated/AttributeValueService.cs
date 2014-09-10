@@ -90,7 +90,6 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.AttributeId = source.AttributeId;
             target.EntityId = source.EntityId;
-            target.Order = source.Order;
             target.Value = source.Value;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

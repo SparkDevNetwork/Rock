@@ -67,15 +67,6 @@ namespace Rock.Model
         public int? EntityId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Order of the AttributeValue. 
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the order of AttributeValue.
-        /// </value>
-        [DataMember]
-        public int? Order { get; set; }
-        
-        /// <summary>
         /// Gets or sets the value.
         /// </summary>
         /// <value>
