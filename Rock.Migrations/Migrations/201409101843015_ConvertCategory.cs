@@ -34,7 +34,9 @@ namespace Rock.Migrations
             CreateIndex("dbo.DefinedType", "CategoryId");
             CreateIndex("dbo.SystemEmail", "CategoryId");
             AddForeignKey("dbo.DefinedType", "CategoryId", "dbo.Category", "Id");
-            AddForeignKey("dbo.SystemEmail", "CategoryId", "dbo.Category", "Id");
+            AddForeignKey( "dbo.SystemEmail", "CategoryId", "dbo.Category", "Id" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.SystemEmail", "System Email", "Rock.Model.SystemEmail, Rock, Version=1.0.12.0, Culture=neutral, PublicKeyToken=null", true, true, "B21FD119-893E-46C0-B42D-E4CDD5C8C49D" );
 
             Sql( @"
     DECLARE @DefinedTypeEntity int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedType' )
