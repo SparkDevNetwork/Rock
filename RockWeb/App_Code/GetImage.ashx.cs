@@ -337,16 +337,23 @@ namespace RockWeb
         /// <param name="physFilePath">The physical file path.</param>
         private void Cache( byte[] fileContent, string physFilePath )
         {
-            // ensure that the Cache folder exists
-            string cacheFolderPath = Path.GetDirectoryName( physFilePath );
-            if ( !Directory.Exists( cacheFolderPath ) )
+            try
             {
-                Directory.CreateDirectory( cacheFolderPath );
-            }
+                // ensure that the Cache folder exists
+                string cacheFolderPath = Path.GetDirectoryName( physFilePath );
+                if ( !Directory.Exists( cacheFolderPath ) )
+                {
+                    Directory.CreateDirectory( cacheFolderPath );
+                }
 
-            using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
+                using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
+                {
+                    binWriter.Write( fileContent );
+                }
+            }
+            catch
             {
-                binWriter.Write( fileContent );
+                // if it fails, do nothing. They might have a hosting provider that doesn't allow writing to disk
             }
         }
 
@@ -369,6 +376,7 @@ namespace RockWeb
             }
             catch
             {
+                // if it fails, return null, which will result in fetching it from the database instead
                 return null;
             }
         }
