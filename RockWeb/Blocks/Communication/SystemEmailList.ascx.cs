@@ -52,8 +52,7 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            BindFilter();
-
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
@@ -75,6 +74,7 @@ namespace RockWeb.Blocks.Communication
             {
                 if ( !Page.IsPostBack )
                 {
+                    BindFilter();
                     BindGrid();
                 }
             }
@@ -99,10 +99,41 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
+            int? categoryId = cpCategory.SelectedValueAsInt();
+            rFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "");
+
             BindGrid();
         }
 
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( e.Key == "Category" )
+            {
+                int? categoryId = e.Value.AsIntegerOrNull();
+                if ( categoryId.HasValue )
+                {
+                    var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                    if ( category != null )
+                    {
+                        e.Value = category.Name;
+                    }
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+        }
 
         /// <summary>
         /// Handles the AddClick event of the gEmailTemplates control.
@@ -162,22 +193,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindFilter()
         {
-            ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( new ListItem(All.Text, All.Id.ToString()) );
-
-            SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
-            var items = emailTemplateService.Queryable().
-                Where( a => a.Category.Trim() != "" && a.Category != null ).
-                OrderBy( a => a.Category ).
-                Select( a => a.Category.Trim() ).
-                Distinct().ToList();
-
-            foreach ( var item in items )
-            {
-                ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
-                ddlCategoryFilter.Items.Add( li );
-            }
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            cpCategory.SetValue( categoryId );
         }
 
         /// <summary>
@@ -185,23 +202,24 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindGrid()
         {
-            SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
+            var systemEmailService = new SystemEmailService( new RockContext() );
             SortProperty sortProperty = gEmailTemplates.SortProperty;
 
-            var emailTemplates = emailTemplateService.Queryable();
+            var systemEmails = systemEmailService.Queryable( "Category" );
 
-            if ( ddlCategoryFilter.SelectedValue != All.Id.ToString() )
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId.HasValue )
             {
-                emailTemplates = emailTemplates.Where( a => a.Category.Trim() == ddlCategoryFilter.SelectedValue );
+                systemEmails = systemEmails.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value  );
             }
 
             if ( sortProperty != null )
             {
-                gEmailTemplates.DataSource = emailTemplates.Sort( sortProperty ).ToList();
+                gEmailTemplates.DataSource = systemEmails.Sort( sortProperty ).ToList();
             }
             else
             {
-                gEmailTemplates.DataSource = emailTemplates.OrderBy( a => a.Category ).ThenBy( a => a.Title ).ToList();
+                gEmailTemplates.DataSource = systemEmails.OrderBy( a => a.Category.Name ).ThenBy( a => a.Title ).ToList();
             }
 
             gEmailTemplates.DataBind();

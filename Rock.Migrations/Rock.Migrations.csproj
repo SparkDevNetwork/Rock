@@ -93,6 +93,10 @@
     <Compile Include="Migrations\201409091616463_UpdateDataErrorWF.Designer.cs">
       <DependentUpon>201409091616463_UpdateDataErrorWF.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409101843015_ConvertCategory.cs" />
+    <Compile Include="Migrations\201409101843015_ConvertCategory.Designer.cs">
+      <DependentUpon>201409101843015_ConvertCategory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
@@ -1210,6 +1214,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409091616463_UpdateDataErrorWF.resx">
       <DependentUpon>201409091616463_UpdateDataErrorWF.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409101843015_ConvertCategory.resx">
+      <DependentUpon>201409101843015_ConvertCategory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>

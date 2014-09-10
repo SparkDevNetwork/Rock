@@ -117,7 +117,7 @@
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
-                    $hfItemIds.val('');
+                    $hfItemIds.val('0');
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected
