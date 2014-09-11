@@ -23,6 +23,9 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ComparisonHelper
     {
         /// <summary>

@@ -816,6 +816,7 @@ namespace Rock.Security
         /// <param name="entityId">The entity id.</param>
         /// <param name="allowOrDeny">Allow or Deny ("A" or "D").</param>
         /// <param name="specialRole">The special role.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <param name="personAliasId">The person alias id.</param>
         /// <param name="groupId">The group id.</param>
         /// <param name="order">The order.</param>
