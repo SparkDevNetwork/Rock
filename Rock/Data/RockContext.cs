@@ -278,7 +278,7 @@ namespace Rock.Data
         /// Gets or sets the accounts.
         /// </summary>
         /// <value>
-        /// The fund.
+        /// The Financial Account.
         /// </value>
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 

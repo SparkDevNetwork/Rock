@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Pledge Entry" )]
     [Category( "Finance" )]
-    [Description( "Allows a website visitor to create pledge for the configured account funds, start and end date. This block also creates a new person record if a matching person could not be found." )]
+    [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
 
     [BooleanField( "Enable Smart Names", "Check the first name for 'and' and '&' and split it to just use the first name provided.", true, Order = 1 )]
     [AccountField( "Account", "The account that new pledges will be allocated toward", true, Rock.SystemGuid.FinancialAccount.GENERAL_FUND, "", Order = 2 )]

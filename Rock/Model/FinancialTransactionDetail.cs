@@ -44,11 +44,11 @@ namespace Rock.Model
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this 
+        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/account that the <see cref="Amount"/> of this 
         /// detail line item should be credited towards.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.FinancialAccount"/>/fund that is affected by this
+        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.FinancialAccount"/>/account that is affected by this
         /// transaction detail.
         /// </value>
         [DataMember]

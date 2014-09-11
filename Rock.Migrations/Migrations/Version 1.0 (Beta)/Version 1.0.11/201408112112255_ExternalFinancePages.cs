@@ -136,7 +136,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "3FC83F0E-8BAA-4CB3-BAD0-0CFBE0E621AA", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Manage Scheduled Transactions Page", "ManageScheduledTransactionsPage", "", "Link to be used for managing an individual's scheduled transactions.", 3, @"", "15E4ED16-138C-4FE6-AB9B-A860E716289E" );
 
             // Attrib for BlockType: Transaction Report:Account Label
-            RockMigrationHelper.AddBlockTypeAttribute( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Account Label", "AccountLabel", "", "The label to use to describe accounts (e.g. 'Accounts', 'Funds', etc.)", 2, @"Funds", "D9865EC2-8C6E-443C-BDFA-4E22193E8C36" );
+            RockMigrationHelper.AddBlockTypeAttribute( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Account Label", "AccountLabel", "", "The label to use to describe accounts.", 2, @"Accounts", "D9865EC2-8C6E-443C-BDFA-4E22193E8C36" );
 
             // Attrib for BlockType: Transaction Report:Accounts
             RockMigrationHelper.AddBlockTypeAttribute( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D", "17033CDD-EF97-4413-A483-7B85A787A87F", "Accounts", "Accounts", "", "List of accounts to allow the person to view", 3, @"", "A5601A16-0E00-4C08-A74B-D84FE5047C30" );
@@ -229,7 +229,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "E7B2EEF7-B06E-4FFF-8443-A10DEC30E1FD", "E541A25B-3D59-43B5-A963-DA26222A41B7", @"621e03c5-6586-450b-a340-cc7d9727b69a" );
 
             // Attrib Value for Block:Transaction Report, Attribute:Account Label Page: View My Giving, Site: Rock Solid Church
-            RockMigrationHelper.AddBlockAttributeValue( "0B62A727-1AEB-4134-AFAE-1EBB73A6B098", "D9865EC2-8C6E-443C-BDFA-4E22193E8C36", @"Funds" );
+            RockMigrationHelper.AddBlockAttributeValue( "0B62A727-1AEB-4134-AFAE-1EBB73A6B098", "D9865EC2-8C6E-443C-BDFA-4E22193E8C36", @"Accounts" );
 
             // Attrib Value for Block:Transaction Report, Attribute:Accounts Page: View My Giving, Site: Rock Solid Church
             RockMigrationHelper.AddBlockAttributeValue( "0B62A727-1AEB-4134-AFAE-1EBB73A6B098", "A5601A16-0E00-4C08-A74B-D84FE5047C30", @"4410306f-3fb5-4a57-9a80-09a3f9d40d0c,67c6181c-1d8c-44d7-b262-b81e746f06d8" );
@@ -446,7 +446,7 @@ INSERT INTO [dbo].[HtmlContent]
      VALUES
            (@PledgeContentBlock
            ,1
-           ,'<p>The report below will allow you to view your previous giving. Use the date and fund filters to adjust the display.</p> <hr />'
+           ,'<p>The report below will allow you to view your previous giving. Use the date and account filters to adjust the display.</p> <hr />'
            ,1
            ,1
            ,getdate()

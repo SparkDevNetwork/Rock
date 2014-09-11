@@ -25,8 +25,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial pledge that an individual has made to be given to the specified <see cref="Rock.Model.FinancialAccount"/>/fund.  This includes
-    /// the fund that the pledge is directed to, the amount, the pledge frequency and the time period for the pledge.
+    /// Represents a financial pledge that an individual has made to be given to the specified <see cref="Rock.Model.FinancialAccount"/>/account.  This includes
+    /// the account that the pledge is directed to, the amount, the pledge frequency and the time period for the pledge.
     /// </summary>
     [Table( "FinancialPledge" )]
     [DataContract]
@@ -109,10 +109,10 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or fund that the pledge is being directed toward.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.FinancialAccount"/> or fund that the pledge is being directed toward.
+        /// The <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </value>
         public virtual FinancialAccount Account { get; set; }
 
