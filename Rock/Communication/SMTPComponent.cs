@@ -204,7 +204,12 @@ namespace Rock.Communication.Transport
                     }
                 }
 
+                var historyService = new HistoryService( rockContext );
                 var recipientService = new CommunicationRecipientService( rockContext );
+
+                var personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+                var communicationEntityTypeId = EntityTypeCache.Read("Rock.Model.Communication" ).Id;
+                var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext).Id;
 
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
@@ -264,7 +269,20 @@ namespace Rock.Communication.Transport
                                 }
 
                                 recipient.TransportEntityTypeName = this.GetType().FullName;
+
+                                historyService.Add( new History
+                                {
+                                    CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                    EntityTypeId = personEntityTypeId,
+                                    CategoryId = communicationCategoryId,
+                                    EntityId = recipient.PersonAlias.PersonId,
+                                    Summary = string.Format( "Sent communication from <span class='field-value'>{0}</span>.", message.From.DisplayName ),
+                                    Caption = message.Subject, 
+                                    RelatedEntityTypeId = communicationEntityTypeId,
+                                    RelatedEntityId = communication.Id
+                                } );
                             }
+
                             catch ( Exception ex )
                             {
                                 recipient.Status = CommunicationRecipientStatus.Failed;

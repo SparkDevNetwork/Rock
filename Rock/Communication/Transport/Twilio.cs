@@ -74,7 +74,12 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     var twilio = new TwilioRestClient( accountSid, authToken );
 
+                    var historyService = new HistoryService( rockContext );
                     var recipientService = new CommunicationRecipientService( rockContext );
+
+                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
+                    var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
 
                     var globalConfigValues = GlobalAttributesCache.GetMergeFields( null );
 
@@ -107,7 +112,20 @@ namespace Rock.Communication.Transport
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
-                                    recipient.UniqueMessageId = response.Sid; 
+                                    recipient.UniqueMessageId = response.Sid;
+
+                                    historyService.Add( new History
+                                    {
+                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                        EntityTypeId = personEntityTypeId,
+                                        CategoryId = communicationCategoryId,
+                                        EntityId = recipient.PersonAlias.PersonId,
+                                        Summary = "Sent SMS message.",
+                                        Caption = message,
+                                        RelatedEntityTypeId = communicationEntityTypeId,
+                                        RelatedEntityId = communication.Id
+                                    } );
+                                
                                 }
                                 else
                                 {
