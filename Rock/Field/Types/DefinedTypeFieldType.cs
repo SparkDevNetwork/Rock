@@ -66,6 +66,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             var definedTypes = new Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
             if ( definedTypes.Any() )
