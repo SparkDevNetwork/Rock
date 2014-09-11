@@ -210,7 +210,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 // accountIds
-                var selectedAccountIdList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
+                var selectedAccountIdList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList(); 
                 if ( selectedAccountIdList.Count() > 0 )
                 {
                     // t.AccountId
@@ -289,7 +289,7 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    var accountIds = accountPicker.SelectedValues.ToList().Select( a => a.AsInteger() ).ToList();
+                    var accountIds = accountPicker.SelectedValues.AsIntegerList(); 
                     var accountGuids = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).Select( a => a.Guid );
                     return accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }
