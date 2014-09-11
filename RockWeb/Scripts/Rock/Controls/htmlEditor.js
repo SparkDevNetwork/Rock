@@ -11,7 +11,7 @@
 	            [
                     ['Source'],
                     ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
-                    ['Styles', 'Format'],
+                    ['Format'],
                     ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	            ],
 
