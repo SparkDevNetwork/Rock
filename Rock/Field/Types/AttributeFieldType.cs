@@ -30,7 +30,6 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
     /// </summary>
-    [Serializable]
     public class AttributeFieldType : FieldType
     {
         private const string ENTITY_TYPE_KEY = "entitytype";
@@ -51,16 +50,12 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var names = new List<string>();
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    Guid guid = Guid.Empty;
-                    if ( Guid.TryParse( guidValue, out guid ) )
+                    var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
+                    if ( attribute != null )
                     {
-                        var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
-                        if ( attribute != null )
-                        {
-                            names.Add( attribute.Name );
-                        }
+                        names.Add( attribute.Name );
                     }
                 }
 
@@ -191,11 +186,11 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ENTITY_TYPE_KEY ) )
             {
-                int entityTypeId = 0;
-                if ( Int32.TryParse( configurationValues[ENTITY_TYPE_KEY].Value, out entityTypeId ) )
+                int? entityTypeId = configurationValues[ENTITY_TYPE_KEY].Value.AsIntegerOrNull();
+                if ( entityTypeId.HasValue )
                 {
                     Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
-                    var attributes = attributeService.GetByEntityTypeId( entityTypeId );
+                    var attributes = attributeService.GetByEntityTypeId( entityTypeId.Value );
                     if ( attributes.Any() )
                     {
                         foreach ( var attribute in attributes )
@@ -238,16 +233,12 @@ namespace Rock.Field.Types
 
             var guids = new List<string>();
 
-            foreach ( string id in ids )
+            foreach ( int attributeId in ids.AsIntegerList() )
             {
-                int attributeId = int.MinValue;
-                if ( int.TryParse( id, out attributeId ) )
+                var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                if ( attribute != null )
                 {
-                    var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-                    if ( attribute != null )
-                    {
-                        guids.Add( attribute.Guid.ToString() );
-                    }
+                    guids.Add( attribute.Guid.ToString() );
                 }
             }
 
@@ -267,27 +258,33 @@ namespace Rock.Field.Types
                 if ( control != null && control is ListControl )
                 {
                     var ids = new List<string>();
-                    foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                     {
-                        Guid guid = Guid.Empty;
-                        if ( Guid.TryParse( guidValue, out guid ) )
+                        var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
+                        if ( attribute != null )
                         {
-                            var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
-                            if ( attribute != null )
-                            {
-                                ids.Add( attribute.Id.ToString() );
-                            }
+                            ids.Add( attribute.Id.ToString() );
                         }
                     }
 
                     var listControl = control as ListControl;
-                    foreach ( ListItem li in listControl.Items )
+
+                    if ( ids.Any() )
                     {
-                        li.Selected = ids.Contains( li.Value );
+                        foreach ( ListItem li in listControl.Items )
+                        {
+                            li.Selected = ids.Contains( li.Value );
+                        }
+                    }
+                    else
+                    {
+                        if ( listControl.Items.Count > 0 )
+                        {
+                            listControl.SelectedIndex = 0;
+                        }
                     }
                 }
             }
         }
-
     }
 }
