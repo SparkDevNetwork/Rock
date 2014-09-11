@@ -68,6 +68,11 @@ namespace RockWeb
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
+        /// <summary>
+        /// The Application log filename
+        /// </summary>
+        private const string APP_LOG_FILENAME = "RockApplication";
+
         #endregion
 
         #region Asp.Net Events
@@ -91,8 +96,9 @@ namespace RockWeb
         {
             try
             {
-                DateTime startDateTime = RockDateTime.Now;
+                LogMessage( APP_LOG_FILENAME, "Application Started" );
 
+                DateTime startDateTime = RockDateTime.Now;
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
@@ -476,13 +482,18 @@ namespace RockWeb
             {
                 // log the reason that the application end was fired
                 HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
-
                 if ( runtime != null )
                 {
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
                     // send debug info to debug window
                     System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
+
+                    LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutDownMessage );
+                }
+                else
+                {
+                    LogMessage( APP_LOG_FILENAME, "Application Ended" );
                 }
             }
             catch
@@ -537,6 +548,8 @@ namespace RockWeb
                     var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                     if ( migrator.GetPendingMigrations().Any() )
                     {
+                        LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
+
                         migrator.Update();
                         result = true;
                     }
@@ -960,6 +973,26 @@ namespace RockWeb
             ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
         }
 
+        private static void LogMessage( string fileName, string message )
+        {
+            try
+            {
+                string directory = AppDomain.CurrentDomain.BaseDirectory;
+                directory = Path.Combine( directory, "App_Data", "Logs" );
+
+                if ( !Directory.Exists( directory ) )
+                {
+                    Directory.CreateDirectory( directory );
+                }
+
+                string filePath = Path.Combine( directory, fileName +  ".csv" );
+                string when = RockDateTime.Now.ToString();
+
+                File.AppendAllText( filePath, string.Format( "{0},{1}\r\n", when, message ) );
+            }
+            catch { }
+
+        }
         #endregion
 
         #endregion
