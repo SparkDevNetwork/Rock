@@ -25,9 +25,9 @@
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
         <Setter Property="FontFamily"
-                Value="./resources/#Open Sans Bold"></Setter>
+                Value="./resources/#Open Sans SemiBold"></Setter>
         <Setter Property="FontWeight" 
-                Value="Bold"></Setter>
+                Value="SemiBold"></Setter>
     </Style>
     
 
@@ -526,7 +526,7 @@
         <Setter Property="Width"
                 Value="Auto" />
         <Setter Property="Height"
-                Value="28" />
+                Value="36" />
         <Setter Property="Foreground" 
                 Value="#000" />
         <Setter Property="Background"
@@ -540,7 +540,7 @@
                             CornerRadius="4,4,4,4"
                             BorderThickness="1"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            Padding="8,2,8,2"
+                            Padding="12,0,12,0"
                             Background="{TemplateBinding Background}"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
@@ -739,7 +739,7 @@
            TargetType="{x:Type Page}" >
         <Setter 
                Property="Background"
-               Value="#FF373737"
+               Value="#dbd5cb"
                />
     </Style>
 
