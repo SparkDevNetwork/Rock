@@ -7886,7 +7886,7 @@ h1 {
   opacity: 0.33;
 }
 body {
-  background: #4b5c65 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  background-color: transparent;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -7895,8 +7895,7 @@ body {
 }
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   body {
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px;
+    background-color: transparent;
   }
 }
 .checkin-header {
@@ -8208,6 +8207,22 @@ input.checkin-phone-entry {
   font-weight: 700;
   font-style: normal;
 }
-.checkin-body-container {
-  width: 80%;
+html {
+  background: #4b5c65 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  background-size: cover;
+  height: 100%;
+}
+body {
+  background: url('../Assets/Images/logo.png') right bottom no-repeat;
+  height: 100%;
+}
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+  html {
+    background-image: url('../Assets/Images/background@2x.jpg');
+    background-size: 1348px 1024px;
+  }
+  body {
+    background-image: url('../Assets/Images/logo@2x.png');
+    background-size: 496px 504px;
+  }
 }
