@@ -45,7 +45,8 @@ namespace RockWeb.Blocks.Finance
             gPledges.DataKeyNames = new[] { "id" };
             gPledges.Actions.AddClick += gPledges_Add;
             gPledges.GridRebind += gPledges_GridRebind;
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            gfPledges.ApplyFilterClick += gfPledges_ApplyFilterClick;
+            gfPledges.DisplayFilterValue += gfPledges_DisplayFilterValue;
 
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPledges.Actions.ShowAdd = canAddEditDelete;
@@ -60,10 +61,21 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            drpDates.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
+            apFilterAccount.SetValues( gfPledges.GetUserPreference( "Accounts" ).Split(',').Select( a => a.AsInteger()) );
+            ppFilterPerson.SetValue( new PersonService( new RockContext() ).Get( gfPledges.GetUserPreference( "Person" ).AsInteger() ) );
         }
 
         /// <summary>
@@ -126,12 +138,78 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// Gfs the pledges_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gfPledges_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Date Range":
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "Person":
+                    int? personId = e.Value.AsIntegerOrNull();
+                    if ( personId != null )
+                    {
+                        var person = new PersonService( new RockContext() ).Get( personId.Value );
+                        if ( person != null )
+                        {
+                            e.Value = person.ToString();
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+                    break;
+
+                case "Accounts":
+
+                    var accountIdList = e.Value.Split( ',' ).Select( a => a.AsInteger() ).Where( w => w > 0 ).ToList();
+                    if ( accountIdList.Any() )
+                    {
+                        var service = new FinancialAccountService( new RockContext() );
+                        var accounts = service.GetByIds( accountIdList );
+                        if ( accounts != null && accounts.Any() )
+                        {
+                            e.Value = accounts.Select( a => a.Name ).ToList().AsDelimited( "," );
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+
+                    break;
+
+                default:
+                    e.Value = string.Empty;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfPledges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gfPledges_ApplyFilterClick( object sender, EventArgs e )
         {
+            gfPledges.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            gfPledges.SaveUserPreference( "Person", ppFilterPerson.PersonId.ToString() );
+            gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
             BindGrid();
         }
 
@@ -144,17 +222,46 @@ namespace RockWeb.Blocks.Finance
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
 
-            if ( ppFilterPerson.PersonId.HasValue )
+            int? personId = gfPledges.GetUserPreference("Person").AsIntegerOrNull();
+
+            if ( personId.HasValue )
             {
-                pledges = pledges.Where( p => p.PersonAlias.PersonId == ppFilterPerson.PersonId.Value );
+                pledges = pledges.Where( p => p.PersonAlias.PersonId == personId );
             }
 
-            var accountIds = fpFilterAccount.SelectedValuesAsInt().Where( i => i != 0 ).ToList();
+            var accountIds = gfPledges.GetUserPreference( "Accounts" ).Split( ',' ).Select( a => a.AsInteger() ).Where( w => w > 0 );
 
             if ( accountIds.Any() )
             {
                 pledges = pledges.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
             }
+
+            // Date Range
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
+            var filterStartDate = drp.LowerValue ?? DateTime.MinValue;
+            var filterEndDate = drp.UpperValue ?? DateTime.MaxValue;
+            /****
+             * Include any pledges whose Start/EndDates overlap with the Filtered Date Range
+             * 
+             * * Pledge1 Range 1/1/2011 - 12/31/2011
+             * * Pledge2 Range 1/1/0000 - 1/1/9999
+             * * Pledge3 Range 6/1/2011 - 6/1/2012
+             * 
+             * Filter1 Range 1/1/2010 - 1/1/2013
+             * * * All Pledges should show
+             * Filter1 Range 1/1/2012 - 1/1/2013
+             * * * Pledge2 and Pledge3 should show
+             * Filter2 Range 5/1/2012 - 5/2/2012
+             * * * Pledge2 and Pledge3 should show
+             * Filter3 Range 5/1/2012 - 1/1/9999
+             * * * Pledge2 and Pledge3 should show
+             * Filter4 Range 5/1/2010 - 5/1/2010
+             * * * Pledge2 should show
+             ***/
+
+            // exclude pledges that start after the filter's end date or end before the filter's start date
+            pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
