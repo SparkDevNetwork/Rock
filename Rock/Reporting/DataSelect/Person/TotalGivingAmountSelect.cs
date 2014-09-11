@@ -151,8 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <summary>
         /// Renders the controls.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
         public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
@@ -163,7 +162,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
@@ -186,7 +184,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )

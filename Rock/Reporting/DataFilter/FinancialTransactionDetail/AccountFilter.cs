@@ -27,6 +27,9 @@ using Rock.Model;
 
 namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Transaction Detail by Account" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Account Filter" )]

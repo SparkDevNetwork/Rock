@@ -29,6 +29,9 @@ using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
@@ -46,6 +49,9 @@ namespace Rock.Reporting.DataSelect.Person
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Selects First Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person First Contribution" )]

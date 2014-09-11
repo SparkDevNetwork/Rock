@@ -27,6 +27,9 @@ using Rock.Model;
 
 namespace Rock.Reporting.DataFilter.FinancialPledge
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Pledge by Account" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Account Filter" )]
