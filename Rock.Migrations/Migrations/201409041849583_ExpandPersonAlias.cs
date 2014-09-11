@@ -443,14 +443,6 @@ END
 			DECLARE @PersonEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
 			DECLARE @PersonFieldTypeId INT = ( SELECT [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.PersonFieldType' )
 
-			SELECT DISTINCT G.[ID]
-			INTO #FamilyIDs
-			FROM [GroupMember] GM
-				INNER JOIN [Group] G ON G.[Id] = GM.[GroupId]
-				INNER JOIN [GroupType] GT ON GT.[Id] = G.[GroupTypeId]
-			WHERE GM.[PersonId] = @OldId
-				AND GT.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E'
-
 			-- Move/Update Known Relationships
 			EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
 
@@ -1257,14 +1249,6 @@ END
 		    -- Delete any remaining recipents that were not updated
 		    DELETE [CommunicationRecipient]
 		    WHERE [PersonId] = @OldId
-
-		    SELECT DISTINCT G.[ID]
-		    INTO #FamilyIDs
-		    FROM [GroupMember] GM
-			    INNER JOIN [Group] G ON G.[Id] = GM.[GroupId]
-			    INNER JOIN [GroupType] GT ON GT.[Id] = G.[GroupTypeId]
-		    WHERE GM.[PersonId] = @OldId
-			    AND GT.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E'
 
 		    -- Move/Update Known Relationships
 		    EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
