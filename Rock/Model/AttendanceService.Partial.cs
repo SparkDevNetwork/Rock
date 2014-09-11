@@ -99,13 +99,13 @@ namespace Rock.Model
 
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
-                var groupIdList = groupIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                var groupIdList = groupIds.Split( ',' ).AsIntegerList();
                 qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
             {
-                var campusIdList = campusIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                var campusIdList = campusIds.Split( ',' ).AsIntegerList();
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 

@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             drpDates.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
-            apFilterAccount.SetValues( gfPledges.GetUserPreference( "Accounts" ).Split(',').Select( a => a.AsInteger()) );
+            apFilterAccount.SetValues( gfPledges.GetUserPreference( "Accounts" ).Split(',').AsIntegerList());
             ppFilterPerson.SetValue( new PersonService( new RockContext() ).Get( gfPledges.GetUserPreference( "Person" ).AsInteger() ) );
         }
 
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Finance
 
                 case "Accounts":
 
-                    var accountIdList = e.Value.Split( ',' ).Select( a => a.AsInteger() ).Where( w => w > 0 ).ToList();
+                    var accountIdList = e.Value.Split( ',' ).AsIntegerList();
                     if ( accountIdList.Any() )
                     {
                         var service = new FinancialAccountService( new RockContext() );
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Finance
                 pledges = pledges.Where( p => p.PersonAlias.PersonId == personId );
             }
 
-            var accountIds = gfPledges.GetUserPreference( "Accounts" ).Split( ',' ).Select( a => a.AsInteger() ).Where( w => w > 0 );
+            var accountIds = gfPledges.GetUserPreference( "Accounts" ).Split( ',' ).AsIntegerList();
 
             if ( accountIds.Any() )
             {

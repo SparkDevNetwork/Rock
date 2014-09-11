@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Finance
                 nbSaveError.Visible = false;
                 int? fromTransactionId = hfTransactionId.Value.AsIntegerOrNull();
                 int? toTransactionId = null;
-                List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
+                List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList().Where( a => a > 0 ).ToList();
                 int position = hfHistoryPosition.Value.AsIntegerOrNull() ?? -1;
 
                 if ( direction == Direction.Prev )
