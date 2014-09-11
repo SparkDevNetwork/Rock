@@ -791,9 +791,9 @@ namespace Rock.Model
                     attributeValue = new Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
                     attributeValue.EntityId = person.Id;
+                    attributeValueService.Add( attributeValue );
                 }
                 attributeValue.Value = value;
-                attributeValueService.Add( attributeValue );
             }
 
             rockContext.SaveChanges();
