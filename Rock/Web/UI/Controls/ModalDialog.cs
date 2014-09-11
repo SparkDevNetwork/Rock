@@ -41,7 +41,9 @@ namespace Rock.Web.UI.Controls
         private HtmlGenericControl _subtitleSmall;
         private LiteralControl _subtitle;
 
+        private Literal _scrollStartLiteral;
         private Panel _contentPanel;
+        private Literal _scrollEndLiteral;
 
         private Panel _footerPanel;
         private HtmlAnchor _serverSaveLink;
@@ -143,6 +145,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [scrollbar enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [scrollbar enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ScrollbarEnabled
+        {
+            get { return ViewState["ScrollbarEnabled"] as bool? ?? true; }
+            set { ViewState["ScrollbarEnabled"] = value; }
+        }
+
+        /// <summary>
         /// The content of the popup.
         /// </summary>
         [
@@ -185,11 +199,13 @@ namespace Rock.Web.UI.Controls
             _dialogPanel.Controls.Add( _headerPanel );
             //_headerPanel.ID = "headerPanel";
             _headerPanel.CssClass = "modal-header";
-            
+
+            // add start div of modal-body
+            _dialogPanel.Controls.Add( new Literal { Text = @"<div class='modal-body'>" } );
+
             // Content Panel wrapper with scroll-container
-            var scrollStartLiteral = new Literal();
-            scrollStartLiteral.Text = @"
-            <div class='modal-body'>
+            _scrollStartLiteral = new Literal();
+            _scrollStartLiteral.Text = @"
                 <div class='modal-dialog-scroll-container scroll-container scroll-container-vertical'>                
                     <div class='scrollbar'>
                         <div class='track'>
@@ -201,20 +217,22 @@ namespace Rock.Web.UI.Controls
                     <div class='viewport'>
                         <div class='overview'>";
 
-            _dialogPanel.Controls.Add( scrollStartLiteral );
+            _dialogPanel.Controls.Add( _scrollStartLiteral );
 
             _contentPanel = new Panel();
             _dialogPanel.Controls.Add( _contentPanel );
             _contentPanel.ID = "contentPanel";
 
-            var scrollEndLiteral = new Literal();
-            scrollEndLiteral.Text = @"
+            _scrollEndLiteral = new Literal();
+            _scrollEndLiteral.Text = @"
                         </div>
                     </div>
-                </div>
-            </div>";
+                </div>";
 
-            _dialogPanel.Controls.Add( scrollEndLiteral );
+            _dialogPanel.Controls.Add( _scrollEndLiteral );
+
+            // add end div of modal-body
+            _dialogPanel.Controls.Add( new Literal { Text = "</div>" } );
 
             // Footer
             _footerPanel = new Panel();
@@ -283,6 +301,9 @@ namespace Rock.Web.UI.Controls
             _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
+
+            _scrollStartLiteral.Visible = ScrollbarEnabled;
+            _scrollEndLiteral.Visible = ScrollbarEnabled;
 
             if ( !_serverSaveLink.Visible )
             {
