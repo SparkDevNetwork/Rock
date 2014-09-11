@@ -61,10 +61,10 @@ namespace Rock.Rest.Controllers
             }
 
             var accountList = qry.OrderBy( f => f.Order ).ThenBy( f => f.Name ).ToList();
-            var accountItemList = accountList.Select( fund => new TreeViewItem
+            var accountItemList = accountList.Select( a => new TreeViewItem
                 {
-                    Id = fund.Id.ToString(),
-                    Name = HttpUtility.HtmlEncode( fund.PublicName )
+                    Id = a.Id.ToString(),
+                    Name = HttpUtility.HtmlEncode( a.PublicName )
                 } ).ToList();
 
             var resultIds = accountList.Select( f => f.Id );

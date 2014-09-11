@@ -21,7 +21,7 @@
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="True"/>
-                            <Rock:AccountPicker ID="fpFund" runat="server" Label="Fund" Required="True"/>
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
             
                             <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
                         </div>

@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Finance
                 pledge.PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppPerson.PersonId.Value );
             }
 
-            pledge.AccountId = fpFund.SelectedValue.AsIntegerOrNull();
+            pledge.AccountId = apAccount.SelectedValue.AsIntegerOrNull();
             pledge.TotalAmount = tbAmount.Text.AsDecimal();
 
             pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
@@ -140,8 +140,8 @@ namespace RockWeb.Blocks.Finance
                 ppPerson.SetValue( null );
             }
             ppPerson.Enabled = !isReadOnly;
-            fpFund.SetValue( pledge.Account );
-            fpFund.Enabled = !isReadOnly;
+            apAccount.SetValue( pledge.Account );
+            apAccount.Enabled = !isReadOnly;
             tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
             tbAmount.ReadOnly = isReadOnly;
 

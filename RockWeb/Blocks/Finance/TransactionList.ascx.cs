@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Transaction List" )]
     [Category( "Finance" )]
-    [Description( "Builds a list of all financial transactions which can be filtered by date, account/fund, transaction type, etc." )]
+    [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
     [LinkedPage( "Detail Page" )]
