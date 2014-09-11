@@ -93,6 +93,7 @@ namespace Rock.Rest
                     HttpStatusCode.BadRequest,
                     String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -120,6 +121,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else
