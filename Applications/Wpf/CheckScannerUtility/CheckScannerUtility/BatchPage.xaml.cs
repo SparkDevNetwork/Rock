@@ -712,7 +712,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 financialTransactionScanned.BatchId = SelectedFinancialBatch.Id;
                 financialTransactionScanned.TransactionCode = string.Empty;
-                financialTransactionScanned.Summary = string.Format( "Scanned from {0}", appInfo );
+                financialTransactionScanned.Summary = "Scanned from Check Scanner Utility";
 
                 financialTransactionScanned.Guid = transactionGuid;
                 financialTransactionScanned.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
