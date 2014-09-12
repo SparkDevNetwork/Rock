@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-sitemap"></i> Site Map</h1>
+                <h1 class="panel-title"><i class="fa fa-sitemap"></i><asp:Literal runat="server" Text=" Page Map" /></h1>
             </div>
             <div class="panel-body">
 

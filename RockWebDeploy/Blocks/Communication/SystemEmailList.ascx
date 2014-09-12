@@ -13,11 +13,11 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
-                        <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="false" EntityTypeName="Rock.Model.SystemEmail" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnRowSelected="gEmailTemplates_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
+                            <asp:BoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
                             <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                             <asp:BoundField DataField="FromName" HeaderText="From Name" SortExpression="FromName" />
                             <asp:BoundField DataField="From" HeaderText="From Address" SortExpression="From" />
