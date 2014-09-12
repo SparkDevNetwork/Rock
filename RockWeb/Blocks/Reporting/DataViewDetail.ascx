@@ -96,10 +96,6 @@
             Sys.Application.add_load(function () {
                 $('#preview-modal-scroll-container').mouseenter(function () {
                     $('#preview-modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
-
-                    $('.scroll-container').on('mouseenter', function () {
-                        $('.scroll-container').tinyscrollbar_update('relative');
-                    });
                 });
             });
         </script>
