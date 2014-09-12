@@ -58,6 +58,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Shows the filter in expanded mode
+        /// </summary>
+        public void Show()
+        {
+            EnsureChildControls();
+            _hfVisible.Value = "true";
+        }
+
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         private void RegisterJavaScript()

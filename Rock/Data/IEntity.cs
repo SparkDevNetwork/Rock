@@ -46,6 +46,14 @@ namespace Rock.Data
         Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        string ForeignId { get; set; }
+
+        /// <summary>
         /// Gets the Entity Type ID for this entity.
         /// </summary>
         /// <value>

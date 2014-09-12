@@ -68,6 +68,11 @@ namespace RockWeb
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
+        /// <summary>
+        /// The Application log filename
+        /// </summary>
+        private const string APP_LOG_FILENAME = "RockApplication";
+
         #endregion
 
         #region Asp.Net Events
@@ -91,31 +96,12 @@ namespace RockWeb
         {
             try
             {
-                DateTime startDateTime = RockDateTime.Now;
+                LogMessage( APP_LOG_FILENAME, "Application Starting..." );
 
+                DateTime startDateTime = RockDateTime.Now;
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-                }
-
-                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
-                // This should be removed after 1.0.9
-                try
-                {
-                    string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
-                    if ( System.IO.File.Exists( physicalFile ) )
-                    {
-                        System.IO.File.Delete( physicalFile );
-                    }
-                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
-                    if ( System.IO.File.Exists( physicalFile ) )
-                    {
-                        System.IO.File.Delete( physicalFile );
-                    }
-                }
-                catch
-                {
-                    // Intentionally Blank
                 }
 
                 // Get a db context
@@ -206,10 +192,13 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
+
+                LogMessage( APP_LOG_FILENAME, "Application Started Succesfully" );
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
-                Error66( ex );
+                SetError66();
+                throw ( new Exception( "Error occurred during application startup", ex ) );
             }
         }
 
@@ -223,14 +212,11 @@ namespace RockWeb
             try
             {
                 UserLoginService.UpdateLastLogin( UserLogin.GetCurrentUserName() );
+            }
+            catch { }
 
-                // add new session id
-                Session["RockSessionId"] = Guid.NewGuid();
-            }
-            catch ( Exception ex )
-            {
-                Error66( ex );
-            }
+            // add new session id
+            Session["RockSessionId"] = Guid.NewGuid();
         }
 
         /// <summary>
@@ -254,10 +240,7 @@ namespace RockWeb
                     rockContext.SaveChanges();
                 }
             }
-            catch ( Exception ex )
-            {
-                Error66( ex );
-            }
+            catch { }
         }
 
         /// <summary>
@@ -267,22 +250,15 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            try
+            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
             {
-                if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                if ( Context.Request.Url != null )
                 {
-                    if ( Context.Request.Url != null )
-                    {
-                        Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
-                    }
+                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
                 }
+            }
 
-                Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
-            }
-            catch ( Exception ex )
-            {
-                Error66( ex );
-            }
+            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>
@@ -292,10 +268,8 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_AuthenticateRequest( object sender, EventArgs e )
         {
-
         }
 
-        // default error handling
         /// <summary>
         /// Handles the Error event of the Application control.
         /// </summary>
@@ -305,164 +279,36 @@ namespace RockWeb
         {
             try
             {
+                // Save information before IIS redirects to Error.aspx on an unhandled 500 error (configured in Web.Config).
                 HttpContext context = HttpContext.Current;
-
-                // If the current context is null, there's nothing that can be done. Just return.
-                if ( context == null )
+                if ( context != null )
                 {
-                    return;
-                }
+                    var ex = context.Server.GetLastError();
 
-                // log error
-                var ex = Context.Server.GetLastError();
+                    SendNotification( ex );
 
-                if ( ex != null )
-                {
-                    bool logException = true;
-
-                    // string to send a message to the error page to prevent infinite loops
-                    // of error reporting from incurring if there is an exception on the error page
-                    string errorQueryParm = "?type=exception&error=1";
-
-                    string errorCount = context.Request["error"];
-                    if ( !string.IsNullOrWhiteSpace( errorCount ) )
+                    object siteId = context.Items["Rock:SiteId"];
+                    if ( context.Session != null )
                     {
-                        if ( errorCount == "1" )
+                        if ( siteId != null )
                         {
-                            errorQueryParm = "?type=exception&error=2";
+                            context.Session["Rock:SiteId"] = context.Items["Rock:SiteId"];
                         }
-                        else if ( errorCount == "2" )
-                        {
-                            // something really bad is occurring stop logging errors as we're in an infinate loop
-                            logException = false;
-                        }
+
+                        context.Session["RockLastException"] = ex;
                     }
-
-                    if ( logException )
+                    else
                     {
-                        string status = "500";
-
-                        var globalAttributesCache = GlobalAttributesCache.Read();
-
-                        // determine if 404's should be tracked as exceptions
-                        bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
-
-                        // set status to 404
-                        if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
+                        if ( siteId != null )
                         {
-                            status = "404";
+                            context.Cache["Rock:SiteId"] = context.Items["Rock:SiteId"];
                         }
 
-                        if ( status == "500" || track404 )
-                        {
-                            LogError( ex, context );
-                            context.Server.ClearError();
-
-                            string errorPage = string.Empty;
-
-                            // determine error page based on the site
-                            SiteService service = new SiteService( new RockContext() );
-                            string siteName = string.Empty;
-
-                            if ( context.Items["Rock:SiteId"] != null )
-                            {
-                                int siteId;
-                                Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
-
-                                // load site
-                                Site site = service.Get( siteId );
-                                siteName = site.Name;
-                                errorPage = site.ErrorPage;
-                            }
-
-                            // Attempt to store exception in session. Session state may not be available
-                            // within the context of an HTTP handler or the REST API.
-                            try { Session["Exception"] = ex; }
-                            catch ( HttpException ) { }
-
-                            // email notifications if 500 error
-                            if ( status == "500" )
-                            {
-                                try
-                                {
-                                    // setup merge codes for email
-                                    var mergeObjects = new Dictionary<string, object>();
-                                    mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
-
-                                    // get email addresses to send to
-                                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-
-                                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
-                                    {
-                                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                                        foreach ( string emailAddress in emailAddresses )
-                                        {
-                                            recipients.Add( emailAddress, mergeObjects );
-                                        }
-
-                                        if ( recipients.Any() )
-                                        {
-                                            bool sendNotification = true;
-
-                                            string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
-                                            var serverVarList = context.Request.ServerVariables;
-
-                                            if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
-                                            {
-                                                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                                                foreach ( string nameValue in nameValues )
-                                                {
-                                                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                                                    {
-                                                        if ( nameAndValue.Length == 2 )
-                                                        {
-                                                            var serverValue = serverVarList[nameAndValue[0]];
-                                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
-                                                            {
-                                                                sendNotification = false;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            if ( sendNotification )
-                                            {
-                                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
-                                            }
-                                        }
-                                    }
-                                }
-                                catch
-                                {
-                                }
-                            }
-
-                            // redirect to error page
-                            if ( !string.IsNullOrEmpty( errorPage ) )
-                            {
-                                Response.Redirect( errorPage + errorQueryParm, false );
-                                Context.ApplicationInstance.CompleteRequest();
-                            }
-                            else
-                            {
-                                Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
-                                Context.ApplicationInstance.CompleteRequest();
-                            }
-
-                            // intentially throw ThreadAbort
-                            Response.End();
-                        }
+                        context.Cache["RockLastException"] = ex;
                     }
                 }
             }
-            catch ( Exception ex )
-            {
-                Error66( ex );
-            }
+            catch { }
         }
 
         /// <summary>
@@ -476,35 +322,41 @@ namespace RockWeb
             {
                 // log the reason that the application end was fired
                 HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
-
                 if ( runtime != null )
                 {
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
                     // send debug info to debug window
                     System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ) );
+
+                    LogMessage( APP_LOG_FILENAME, "Application Ended: " + shutDownMessage );
                 }
+                else
+                {
+                    LogMessage( APP_LOG_FILENAME, "Application Ended" );
+                }
+
+                // close out jobs infrastructure if running under IIS
+                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                if ( runJobsInContext )
+                {
+                    if ( sched != null )
+                    {
+                        sched.Shutdown();
+                    }
+                }
+
+                // process the transaction queue
+                DrainTransactionQueue();
+
+                // mark any user login stored as 'IsOnline' in the database as offline
+                MarkOnlineUsersOffline();
+            
             }
             catch
             {
                 // intentionally ignore exception
             }
-
-            // close out jobs infrastructure if running under IIS
-            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-            if ( runJobsInContext )
-            {
-                if ( sched != null )
-                {
-                    sched.Shutdown();
-                }
-            }
-
-            // process the transaction queue
-            DrainTransactionQueue();
-
-            // mark any user login stored as 'IsOnline' in the database as offline
-            MarkOnlineUsersOffline();
         }
 
         #endregion
@@ -537,6 +389,8 @@ namespace RockWeb
                     var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                     if ( migrator.GetPendingMigrations().Any() )
                     {
+                        LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
+
                         migrator.Update();
                         result = true;
                     }
@@ -660,29 +514,6 @@ namespace RockWeb
             }
 
             return result;
-        }
-
-        /// Formats the exception.
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="exLevel">The ex level.</param>
-        /// <returns></returns>
-        private string FormatException( Exception ex, string exLevel )
-        {
-            string message = string.Empty;
-
-            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
-
-            // check for inner exception
-            if ( ex.InnerException != null )
-            {
-                //lErrorInfo.Text += "<p /><p />";
-                message += FormatException( ex.InnerException, "-" + exLevel );
-            }
-
-            return message;
         }
 
         /// <summary>
@@ -850,27 +681,142 @@ namespace RockWeb
             var all = Rock.Web.Cache.FieldTypeCache.All();
         }
 
-        private void Error66( Exception ex )
+
+        /// <summary>
+        /// Sets flag for serious error
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        private void SetError66()
         {
-            LogError( ex, HttpContext.Current );
-
-            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
+            HttpContext context = HttpContext.Current;
+            if ( context != null )
             {
-                try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-
-                if ( HttpContext.Current.Server != null )
+                if ( context.Session != null )
                 {
-                    HttpContext.Current.Server.ClearError();
+                    context.Session["RockExceptionOrder"] = "66";
                 }
-
-                if ( HttpContext.Current.Response != null )
+                else
                 {
-                    HttpContext.Current.Response.Clear();
-                    HttpContext.Current.Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                    context.Cache["RockExceptionOrder"] = "66";
                 }
             }
         }
+
+        /// <summary>
+        /// Sends the notification.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        private void SendNotification( Exception ex )
+        {
+            int? pageId = ( Context.Items["Rock:PageId"] ?? "" ).ToString().AsIntegerOrNull(); ;
+            int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();;
+            PersonAlias personAlias = null;
+
+            try
+            {
+                var user = UserLoginService.GetCurrentUser();
+                if ( user != null && user.Person != null )
+                {
+                    personAlias = user.Person.PrimaryAlias;
+                }
+            }
+            catch { }
+
+            try
+            {
+                ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
+            }
+            catch { }
+
+            try
+            {
+                string siteName = "Rock";
+                if ( siteId.HasValue )
+                {
+                    var site = SiteCache.Read( siteId.Value );
+                    if ( site != null )
+                    {
+                        siteName = site.Name;
+                    }
+                }
+
+                // setup merge codes for email
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+
+                // get email addresses to send to
+                var globalAttributesCache = GlobalAttributesCache.Read();
+                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
+                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                {
+                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                    var recipients = new List<RecipientData>();
+                    foreach ( string emailAddress in emailAddresses )
+                    {
+                        recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
+                    }
+
+                    if ( recipients.Any() )
+                    {
+                        bool sendNotification = true;
+
+                        string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                        var serverVarList = Context.Request.ServerVariables;
+
+                        if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                        {
+                            string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( string nameValue in nameValues )
+                            {
+                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                {
+                                    if ( nameAndValue.Length == 2 )
+                                    {
+                                        var serverValue = serverVarList[nameAndValue[0]];
+                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                        {
+                                            sendNotification = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if ( sendNotification )
+                        {
+                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// Formats the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="exLevel">The ex level.</param>
+        /// <returns></returns>
+        private string FormatException( Exception ex, string exLevel )
+        {
+            string message = string.Empty;
+
+            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace.ConvertCrLfToHtmlBr() + "</p>";
+
+            // check for inner exception
+            if ( ex.InnerException != null )
+            {
+                //lErrorInfo.Text += "<p /><p />";
+                message += FormatException( ex.InnerException, "-" + exLevel );
+            }
+
+            return message;
+        } 
 
         #region Static Methods
 
@@ -958,6 +904,27 @@ namespace RockWeb
             }
 
             ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
+        }
+
+        private static void LogMessage( string fileName, string message )
+        {
+            try
+            {
+                string directory = AppDomain.CurrentDomain.BaseDirectory;
+                directory = Path.Combine( directory, "App_Data", "Logs" );
+
+                if ( !Directory.Exists( directory ) )
+                {
+                    Directory.CreateDirectory( directory );
+                }
+
+                string filePath = Path.Combine( directory, fileName +  ".csv" );
+                string when = RockDateTime.Now.ToString();
+
+                File.AppendAllText( filePath, string.Format( "{0},{1}\r\n", when, message ) );
+            }
+            catch { }
+
         }
 
         #endregion

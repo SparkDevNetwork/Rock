@@ -1,0 +1,42 @@
+﻿<%@ control language="C#" autoeventwireup="true" inherits="RockWeb.Blocks.Security.RestKeyList, RockWeb" %>
+
+<asp:UpdatePanel ID="upnlRestKeys" runat="server">
+    <ContentTemplate>
+
+        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="true" />
+        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
+        <asp:Panel ID="pnlRestKeyList" CssClass="panel panel-block" runat="server">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-key"></i> REST Key List</h1>
+            </div>
+            <div class="panel-body">
+
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gRestKeyList" runat="server" EmptyDataText="No Rest Keys Found" AllowSorting="true" OnRowDataBound="gRestKeyList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gRestKeyList_RowSelected">
+                        <Columns>
+                            <asp:BoundField DataField="LastName" HeaderText="Name" SortExpression="LastName" />
+                            <asp:TemplateField>
+                                <HeaderTemplate>Description</HeaderTemplate>
+                                <ItemTemplate>
+                                    <asp:Label ID="lblDescription" runat="server" />
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField>
+                                <HeaderTemplate>Key</HeaderTemplate>
+                                <ItemTemplate>
+                                    <asp:Label ID="lblKey" runat="server" />
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <Rock:DeleteField OnClick="gRestKeyList_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
+            </div>
+
+        </asp:Panel>
+
+    </ContentTemplate>
+</asp:UpdatePanel>

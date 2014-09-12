@@ -39,13 +39,12 @@ namespace Rock.Attribute
         Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
-        /// associated with the attribute and object instance
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+        Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
@@ -57,21 +56,21 @@ namespace Rock.Attribute
         Dictionary<string, string> AttributeValueDefaults { get; }        
         
         /// <summary>
-        /// Gets the first value of an attribute key.
+        /// Gets the value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         string GetAttributeValue( string key );
 
         /// <summary>
-        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// Gets the value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of string values or an empty list if none exist.</returns>
         List<string> GetAttributeValues( string key );
 
         /// <summary>
-        /// Sets the first value of an attribute key in memory.  Note, this will not persist value to database
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>

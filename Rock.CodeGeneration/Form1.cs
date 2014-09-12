@@ -644,8 +644,16 @@ order by [parentTable], [columnName]
             }
         }
 
+        private Dictionary<Type, Dictionary<string, string>> _entityProperties { get; set; }
+
         private Dictionary<string, string> GetEntityProperties( Type type )
         {
+            _entityProperties = _entityProperties ?? new Dictionary<Type, Dictionary<string, string>>();
+            if (_entityProperties.ContainsKey(type))
+            {
+                return _entityProperties[type];
+            }
+            
             var properties = new Dictionary<string, string>();
 
             var interfaces = type.GetInterfaces();
@@ -683,6 +691,8 @@ order by [parentTable], [columnName]
                     }
                 }
             }
+
+            _entityProperties[type] = properties;
 
             return properties;
         }

@@ -263,8 +263,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var service = new CategoryService( new RockContext() );
-                        var category = service.Get( categoryId );
+                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -464,7 +463,7 @@ namespace RockWeb.Blocks.Prayer
                     else
                     {
                         prayerRequest.IsApproved = true;
-                        prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
+                        prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                         prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
 
                         // reset the flag count only to zero ONLY if it had a value previously.

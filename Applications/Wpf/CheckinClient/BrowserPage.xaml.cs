@@ -70,8 +70,6 @@ namespace CheckinClient
 
             closeClickBuffer++;
 
-            btnClose.Opacity = closeClickBuffer / 300;
-
             if ( closeClickBuffer > 300 )
                 Application.Current.Shutdown();
         }
@@ -81,7 +79,6 @@ namespace CheckinClient
         {
             closeClickBuffer = 0;
             closeButtonRestartTimer.Stop();
-            btnClose.Opacity = .01;
         }
     }
 }

@@ -173,7 +173,7 @@ namespace Rock.Web.UI.Controls
                 {
                     exportFilename = "RockExport.xlsx";
                 }
-                else if (! exportFilename.EndsWith( ".xlsx" ) )
+                else if ( !exportFilename.EndsWith( ".xlsx" ) )
                 {
                     exportFilename += ".xlsx";
                 }
@@ -185,7 +185,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["ExportFilename"] = value;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
         /// </summary>
@@ -361,12 +361,12 @@ namespace Rock.Web.UI.Controls
 
         private Dictionary<int, string> RowSelectedColumns
         {
-            get 
+            get
             {
                 var rowSelectedColumns = ViewState["RowSelectedColumns"] as Dictionary<int, string>;
-                if (rowSelectedColumns == null)
+                if ( rowSelectedColumns == null )
                 {
-                    rowSelectedColumns = new Dictionary<int,string>();
+                    rowSelectedColumns = new Dictionary<int, string>();
                     ViewState["RowSelectedColumns"] = rowSelectedColumns;
                 }
                 return rowSelectedColumns;
@@ -374,7 +374,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["RowSelectedColumns"] = value;
-            }                
+            }
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace Rock.Web.UI.Controls
             {
                 foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
-                    if (col.SelectionMode == SelectionMode.Multiple)
+                    if ( col.SelectionMode == SelectionMode.Multiple )
                     {
                         return col.SelectedKeys;
                     }
@@ -408,7 +408,7 @@ namespace Rock.Web.UI.Controls
         /// The object list
         /// </value>
         public Dictionary<string, object> ObjectList { get; set; }
-        
+
         #region Action Row Properties
 
         /// <summary>
@@ -515,7 +515,7 @@ namespace Rock.Web.UI.Controls
             {
                 int pageSize = 50;
                 int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize );
-                if (pageSize != 50 || pageSize != 500 || pageSize != 5000)
+                if ( pageSize != 50 || pageSize != 500 || pageSize != 5000 )
                 {
                     pageSize = 50;
                 }
@@ -583,7 +583,7 @@ namespace Rock.Web.UI.Controls
                 string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
             }
-            
+
             string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
 
             string gridSelectCellScriptFormat = @"
@@ -683,7 +683,7 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PrepareControlHierarchy();
-            
+
             RegisterJavaScript();
 
             this.RenderContents( writer );
@@ -746,7 +746,7 @@ namespace Rock.Web.UI.Controls
 
             return result;
         }
-        
+
         #endregion
 
         #region Events
@@ -764,7 +764,7 @@ namespace Rock.Web.UI.Controls
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
-                if ( !( column is INotRowSelectedField ) && !(column is HyperLinkField ) )
+                if ( !( column is INotRowSelectedField ) && !( column is HyperLinkField ) )
                 {
                     RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
                 }
@@ -857,7 +857,7 @@ namespace Rock.Web.UI.Controls
                 // the previously posted back values in the columns SelectedKeys property
                 foreach ( var col in this.Columns.OfType<SelectField>() )
                 {
-                    if (string.IsNullOrWhiteSpace(col.DataSelectedField) && col.SelectedKeys.Any() )
+                    if ( string.IsNullOrWhiteSpace( col.DataSelectedField ) && col.SelectedKeys.Any() )
                     {
                         var colIndex = this.Columns.IndexOf( col ).ToString();
                         CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
@@ -880,7 +880,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
         /// </summary>
@@ -963,7 +963,7 @@ namespace Rock.Web.UI.Controls
             if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = int.MinValue;
-                if (int.TryParse( e.CommandArgument.ToString(), out rowIndex) )
+                if ( int.TryParse( e.CommandArgument.ToString(), out rowIndex ) )
                 {
                     RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
                     OnRowSelected( a );
@@ -1015,7 +1015,7 @@ namespace Rock.Web.UI.Controls
         void Actions_MergeClick( object sender, EventArgs e )
         {
             int? entitySetId = GetPersonEntitySet();
-            if (entitySetId.HasValue)
+            if ( entitySetId.HasValue )
             {
                 Page.Response.Redirect( string.Format( MergePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
@@ -1036,7 +1036,7 @@ namespace Rock.Web.UI.Controls
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
-        
+
         /// <summary>
         /// Handles the CommunicateClick event of the Actions control.
         /// </summary>
@@ -1052,14 +1052,18 @@ namespace Rock.Web.UI.Controls
                 var rockPage = Page as RockPage;
                 if ( rockPage != null )
                 {
+                    // Create communication 
+                    var rockContext = new RockContext();
+                    var service = new Rock.Model.CommunicationService( rockContext );
                     var communication = new Rock.Model.Communication();
                     communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
-
                     if ( rockPage.CurrentPerson != null )
                     {
-                        communication.SenderPersonId = rockPage.CurrentPerson.Id;
+                        communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
+
+                    var recipients = new Dictionary<int, Dictionary<string, string>>();
 
                     OnGridRebind( e );
 
@@ -1098,10 +1102,7 @@ namespace Rock.Web.UI.Controls
                             // If valid personid and either no people were selected or this person was selected add them as a recipient
                             if ( personId.HasValue && ( !peopleSelected.Any() || peopleSelected.Contains( personId.Value ) ) )
                             {
-                                var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = personId.Value;
-                                recipient.AdditionalMergeValues = mergeValues;
-                                communication.Recipients.Add( recipient );
+                                recipients.Add( personId.Value, mergeValues );
                             }
                         }
                     }
@@ -1125,40 +1126,48 @@ namespace Rock.Web.UI.Controls
                                 int personId = (int)idProp.GetValue( item, null );
                                 if ( !peopleSelected.Any() || peopleSelected.Contains( personId ) )
                                 {
-                                    var recipient = new Rock.Model.CommunicationRecipient();
-                                    recipient.PersonId = personId;
-
+                                    var mergeValues = new Dictionary<string, string>();
                                     foreach ( string mergeField in CommunicateMergeFields )
                                     {
                                         object obj = item.GetPropertyValue( mergeField );
                                         if ( obj != null )
                                         {
-                                            recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                            mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
                                         }
                                     }
 
-                                    communication.Recipients.Add( recipient );
+                                    recipients.Add( personId, mergeValues );
                                 }
                             }
                         }
-                        
-                        if (idProp == null)
+
+                        if ( idProp == null )
                         {
                             // Couldn't determine data source, at least add recipients for any selected people
                             foreach ( int personId in peopleSelected )
                             {
-                                var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = personId;
-                                communication.Recipients.Add( recipient );
+                                recipients.Add( personId, new Dictionary<string, string>() );
                             }
                         }
                     }
 
-                    if ( communication.Recipients.Any() )
+                    if ( recipients.Any() )
                     {
-                        var rockContext = new RockContext();
-                        var service = new Rock.Model.CommunicationService( rockContext );
                         service.Add( communication );
+
+                        var personIds = recipients.Select( r => r.Key ).ToList();
+                        var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
+
+                        // Get the primary aliases
+                        foreach ( var personAlias in personAliasService.Queryable()
+                            .Where( p => p.PersonId == p.AliasPersonId && personIds.Contains( p.PersonId ) ) )
+                        {
+                            var recipient = new Rock.Model.CommunicationRecipient();
+                            recipient.PersonAliasId = personAlias.Id;
+                            recipient.AdditionalMergeValues = recipients[personAlias.PersonId];
+                            communication.Recipients.Add( recipient );
+                        }
+
                         rockContext.SaveChanges();
 
                         Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
@@ -1244,7 +1253,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -1262,26 +1271,26 @@ namespace Rock.Web.UI.Controls
                 // get access to the List<> and its properties
                 IList data = (IList)this.DataSource;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-                
+
                 // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if (oType == typeof(object) || oType.IsInterface )
+                if ( oType == typeof( object ) || oType.IsInterface )
                 {
-                    if (data.Count > 0)
+                    if ( data.Count > 0 )
                     {
                         oType = data[0].GetType();
                     }
                 }
 
                 // get all properties of the objects in the grid
-                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties());
+                IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
                 IList<PropertyInfo> props = new List<PropertyInfo>();
 
                 var gridDataFields = this.Columns.OfType<BoundField>().Where( a => a.Visible );
-                
+
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any(a => a.DataField == prop.Name) && prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any( a => a.DataField == prop.Name ) && prop.GetGetMethod().IsVirtual )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
@@ -1297,12 +1306,23 @@ namespace Rock.Web.UI.Controls
                     columnCounter++;
                 }
 
+                // Get any attribute columns
+                List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                foreach ( var attributeField in attributeFields )
+                {
+                    worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
+                    columnCounter++;
+                }
+
                 // print data
+                int dataIndex = 0;
                 foreach ( var item in data )
                 {
-                    columnCounter = 1;
+                    columnCounter = 0;
                     foreach ( PropertyInfo prop in props )
                     {
+                        columnCounter++;
+
                         object propValue = prop.GetValue( item, null );
 
                         string value = "";
@@ -1318,7 +1338,7 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
-                        worksheet.Cells[rowCounter, columnCounter].Value = value;
+                        worksheet.Cells[rowCounter, columnCounter].Value = value.ConvertBrToCrLf();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -1332,10 +1352,59 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }
 
-                        columnCounter++;
+                    }
+
+                    if ( attributeFields.Any() )
+                    {
+                        // First check if DataItem has attributes
+                        var dataItem = item as Rock.Attribute.IHasAttributes;
+                        if ( dataItem == null )
+                        {
+                            // If the DataItem does not have attributes, check to see if there is an object list
+                            if ( ObjectList != null )
+                            {
+                                // If an object list exists, check to see if the associated object has attributes
+                                string key = DataKeys[dataIndex].Value.ToString();
+                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                {
+                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                }
+                            }
+                        }
+
+                        if ( dataItem != null )
+                        {
+                            if ( dataItem.Attributes == null )
+                            {
+                                dataItem.LoadAttributes();
+                            }
+
+                            foreach ( var attributeField in attributeFields )
+                            {
+                                columnCounter++;
+
+                                bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
+                                if ( exists )
+                                {
+                                    var attrib = dataItem.Attributes[attributeField.DataField];
+                                    string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
+                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, true );
+                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                }
+
+                                // format background color for alternating rows
+                                if ( rowCounter % 2 == 1 )
+                                {
+                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                                }
+
+                            }
+                        }
                     }
 
                     rowCounter++;
+                    dataIndex++;
                 }
             }
 
@@ -1415,7 +1484,7 @@ namespace Rock.Web.UI.Controls
         public void CreatePreviewColumns( Type modelType )
         {
             this.Columns.Clear();
-            foreach(var column in GetPreviewColumns(modelType))
+            foreach ( var column in GetPreviewColumns( modelType ) )
             {
                 this.Columns.Add( column );
             }
@@ -1432,7 +1501,7 @@ namespace Rock.Web.UI.Controls
             var allColumns = new List<DataControlField>();
 
             // If displaying people, add select field (for merging & communication)
-            if ( !string.IsNullOrWhiteSpace(PersonIdField) )
+            if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
                 var selectField = new SelectField();
                 displayColumns.Add( selectField );
@@ -1456,7 +1525,9 @@ namespace Rock.Web.UI.Controls
                         {
                             displayColumns.Add( boundField );
                         }
-                        else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                        else if ( displayColumns.Count == 0
+                            && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0
+                            && !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
                         {
                             allColumns.Add( boundField );
                         }
@@ -1551,17 +1622,18 @@ namespace Rock.Web.UI.Controls
                     entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                     entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
-                    foreach( var key in keys)
+                    foreach ( var key in keys )
                     {
-                        try {
+                        try
+                        {
                             var item = new Rock.Model.EntitySetItem();
                             item.EntityId = (int)key;
                             entitySet.Items.Add( item );
                         }
-                        catch{}
+                        catch { }
                     }
 
-                    if ( entitySet.Items.Any())
+                    if ( entitySet.Items.Any() )
                     {
                         var rockContext = new RockContext();
                         var service = new Rock.Model.EntitySetService( rockContext );
@@ -1711,7 +1783,7 @@ namespace Rock.Web.UI.Controls
 
             return bf;
         }
-        
+
         #endregion
 
     }

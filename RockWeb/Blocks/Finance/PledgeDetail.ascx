@@ -21,14 +21,14 @@
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="True"/>
-                            <Rock:AccountPicker ID="fpFund" runat="server" Label="Fund" Required="True"/>
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
             
                             <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
                         </div>
 
                         <div class="col-md-6">
                             <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
-                            <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Required="True"/>
+                            <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" />
                         </div>
                     </div>
 

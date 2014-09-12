@@ -40,9 +40,6 @@ namespace Rock.Client
         public int? EntityId { get; set; }
 
         /// <summary />
-        public int? Order { get; set; }
-
-        /// <summary />
         public string Value { get; set; }
 
         /// <summary />

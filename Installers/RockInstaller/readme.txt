@@ -69,6 +69,10 @@ ___ 9. Open the SQL file and make the following edits:
               GO
               ALTER DATABASE [RockRMS_NewDbName] SET  READ_WRITE 
               GO
+         * Remove the following strings from the file in the order below:
+            'TEXTIMAGE_ON [PRIMARY]'
+            'ON [PRIMARY]'
+
 
 ___ 10. Zip the file into a new file named 'sql-latest.sql'
 

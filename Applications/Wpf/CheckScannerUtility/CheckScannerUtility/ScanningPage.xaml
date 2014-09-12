@@ -101,6 +101,15 @@
                        Margin="8"
                        VerticalAlignment="Bottom"
                        Style="{StaticResource labelStyleCaption}">Back</Label>
+                <Button Name="btnDeleteItem"
+                        Grid.Column="1"
+                        Content="Delete Item"
+                        Style="{StaticResource buttonStyleMini}"
+                        Margin="8"
+                        HorizontalAlignment="Right"
+                        Click="btnDeleteItem_Click"
+                        />
+                        
                 <Image Grid.Column="0"
                    Grid.Row="1"
                    Name="imgFront"
@@ -128,6 +137,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -167,8 +177,24 @@
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             </Label>
+            <Label Name="lblExceptions"
+                   Style="{StaticResource labelStyleAlertError}"
+                   Content="ERROR: --"
+                   Grid.Row="2"
+                   Panel.ZIndex="1"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Visibility="Collapsed">
+            </Label>
+            <Label Name="lblSomeBadScans"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="WARNING: One or more check scans have issues. Review the scanned checks before continuing. You might need to rescan some checks."
+                   Grid.Row="2"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2">
+            </Label>
 
-            <Button Grid.Row="2"
+            <Button Grid.Row="3"
                     Grid.Column="0"
                     Margin="8"
                     x:Name="btnStartStop"
@@ -176,7 +202,7 @@
                     Content="Start/Stop/Scan Check"
                     HorizontalAlignment="Left"
                     Click="btnStartStop_Click" />
-            <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" FlowDirection="RightToLeft">
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" FlowDirection="RightToLeft">
                 <Button Style="{StaticResource buttonStyle}"
                                     x:Name="btnCancel"
                                     Margin="4,4,0,0"

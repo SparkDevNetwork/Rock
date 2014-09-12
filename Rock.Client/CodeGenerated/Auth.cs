@@ -49,7 +49,7 @@ namespace Rock.Client
         public int /* SpecialRole*/ SpecialRole { get; set; }
 
         /// <summary />
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
         public int? GroupId { get; set; }

@@ -46,7 +46,7 @@ namespace Rock.Client
         public bool IsMappedLocation { get; set; }
 
         /// <summary />
-        public int? GroupMemberPersonId { get; set; }
+        public int? GroupMemberPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

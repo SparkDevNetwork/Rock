@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Administration
 
         private string GetCacheInfo()
         {
-            var cache = MemoryCache.Default;
+            var cache = Rock.Web.Cache.RockMemoryCache.Default;
 
             //StringBuilder sbItems = new StringBuilder();
             Dictionary<string, int> cacheSize = new Dictionary<string, int>();

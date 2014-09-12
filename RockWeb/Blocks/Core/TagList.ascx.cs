@@ -322,7 +322,9 @@ namespace RockWeb.Blocks.Core
                     EntityTypeName = t.EntityType.FriendlyName,
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
-                    Owner = t.OwnerId.HasValue ? t.Owner.LastName + ", " + t.Owner.NickName : "Organization"
+                    Owner = ( t.OwnerPersonAlias != null && t.OwnerPersonAlias.Person != null ) ? 
+                        t.OwnerPersonAlias.Person.LastName + ", " + t.OwnerPersonAlias.Person.NickName : 
+                        "Organization"
                 } ).ToList();
 
                 rGrid.DataBind();
@@ -345,18 +347,18 @@ namespace RockWeb.Blocks.Core
                 {
                     // Only allow sorting of public tags if authorized to Administer
                     rGrid.Columns[0].Visible = _canConfigure;
-                    queryable = queryable.Where( t => !t.OwnerId.HasValue );
+                    queryable = queryable.Where( t => !t.OwnerPersonAliasId.HasValue );
                 }
                 else
                 {
                     int? personId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
                     if ( _canConfigure && personId.HasValue )
                     {
-                        queryable = queryable.Where( t => t.OwnerId == personId.Value );
+                        queryable = queryable.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == personId.Value );
                     }
                     else
                     {
-                        queryable = queryable.Where( t => t.OwnerId == CurrentPersonId );
+                        queryable = queryable.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == CurrentPersonId );
                     }
                 }
 

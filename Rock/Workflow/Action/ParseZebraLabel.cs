@@ -70,13 +70,10 @@ namespace Rock.Workflow.Action
 
                 binaryFile.LoadAttributes();
 
-                var newValues = new List<AttributeValue>();
-
                 var attributeValue = new AttributeValue();
                 attributeValue.Value = sb.ToString();
-                newValues.Add( attributeValue );
 
-                binaryFile.AttributeValues["MergeCodes"] = newValues;
+                binaryFile.AttributeValues["MergeCodes"] = attributeValue;
                 binaryFile.SaveAttributeValues( rockContext );
             }
             

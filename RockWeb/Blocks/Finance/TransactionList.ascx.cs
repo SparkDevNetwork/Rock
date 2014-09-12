@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Transaction List" )]
     [Category( "Finance" )]
-    [Description( "Builds a list of all financial transactions which can be filtered by date, account/fund, transaction type, etc." )]
+    [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
     [LinkedPage( "Detail Page" )]
@@ -159,7 +159,17 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 BindFilter();
-                BindGrid();
+                
+                if ( gfTransactions.Visible )
+                {
+                    //// NOTE: Special Case for this List Block since there could be a very large number of transactions:
+                    //// If the filter is shown, don't automatically populate the grid. Wait for them to hit apply on the filter
+                    gfTransactions.Show();
+                }
+                else
+                {
+                    BindGrid();
+                }
             }
 
             if ( _batch != null )
@@ -301,6 +311,7 @@ namespace RockWeb.Blocks.Finance
         protected void gfTransactions_ApplyFilterClick( object sender, EventArgs e )
         {
             gfTransactions.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            gfTransactions.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfTransactions.SaveUserPreference( "Amount Range", nreAmount.DelimitedValues );
             gfTransactions.SaveUserPreference( "Transaction Code", tbTransactionCode.Text );
             gfTransactions.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
@@ -511,8 +522,10 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             drpDates.DelimitedValues = gfTransactions.GetUserPreference( "Date Range" );
+            nbRowLimit.Text = gfTransactions.GetUserPreference( "Row Limit" );
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
+
 
             var accountService = new FinancialAccountService( new RockContext() );
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -595,7 +608,7 @@ namespace RockWeb.Blocks.Finance
 
             // Qry
             var qry = new FinancialTransactionService( new RockContext() )
-                .Queryable( "AuthorizedPerson,ProcessedByPersonAlias.Person" );
+                .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" );
 
             // Set up the selection filter
             if ( _batch != null )
@@ -625,7 +638,7 @@ namespace RockWeb.Blocks.Finance
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
-                    qry = qry.Where( t => t.AuthorizedPersonId == _person.Id );
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == _person.Id );
                 }
 
                 // Date Range
@@ -640,6 +653,13 @@ namespace RockWeb.Blocks.Finance
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
                     qry = qry.Where( t => t.TransactionDateTime < upperDate );
+                }
+
+                // Row Limit
+                int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
+                if (rowLimit.HasValue)
+                {
+                    qry = qry.Take( rowLimit.Value );
                 }
 
                 // Amount Range

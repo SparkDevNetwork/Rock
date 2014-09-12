@@ -197,7 +197,7 @@ Rock.controls.tagList.initialize({{
                 EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
                 .Select( i => new
                 {
-                    OwnerId = i.Tag.OwnerId,
+                    OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
                     Name = i.Tag.Name
                 } ) )
             {
@@ -253,7 +253,7 @@ Rock.controls.tagList.initialize({{
                         tag.EntityTypeId = EntityTypeId;
                         tag.EntityTypeQualifierColumn = EntityQualifierColumn;
                         tag.EntityTypeQualifierValue = EntityQualifierValue;
-                        tag.OwnerId = currentPersonId.Value;
+                        tag.OwnerPersonAliasId = personAlias != null ? personAlias.Id : (int?)null;
                         tag.Name = tagName;
                     }
 

@@ -93,6 +93,7 @@ namespace Rock.Rest
                     HttpStatusCode.BadRequest,
                     String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -120,6 +121,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else
@@ -224,7 +226,7 @@ namespace Rock.Rest
         /// Checks the can edit.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        protected void CheckCanEdit( T entity )
+        protected virtual void CheckCanEdit( T entity )
         {
             if ( entity is ISecured )
             {
@@ -236,7 +238,7 @@ namespace Rock.Rest
         /// Checks the can edit.
         /// </summary>
         /// <param name="securedModel">The secured model.</param>
-        protected void CheckCanEdit( ISecured securedModel )
+        protected virtual void CheckCanEdit( ISecured securedModel )
         {
             CheckCanEdit( securedModel, GetPerson() );
         }
@@ -248,7 +250,7 @@ namespace Rock.Rest
         /// <param name="person">The person.</param>
         /// <exception cref="System.Web.Http.HttpResponseException">
         /// </exception>
-        protected void CheckCanEdit( ISecured securedModel, Person person )
+        protected virtual void CheckCanEdit( ISecured securedModel, Person person )
         {
             if ( securedModel != null )
             {

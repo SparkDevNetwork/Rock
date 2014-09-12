@@ -12,7 +12,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Margin="8" Orientation="Horizontal" VerticalAlignment="Center">
             <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
@@ -62,15 +62,28 @@
         </StackPanel>
 
         <Grid VerticalAlignment="Bottom" Grid.Row="1" Grid.ColumnSpan="2" >
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Label Name="lblScannerDriverError"
+                   Style="{StaticResource labelStyleAlertError}"
+                   Content="ERROR: Scanner Driver not available"
+                   Grid.Row="0"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2">
+            </Label>
             <Button 
-                    Margin="8"
+                Grid.Row="1"    
+                Margin="8"
                     x:Name="btnBack"
                     Style="{StaticResource buttonStyle}"
                     Content="Back"
                     HorizontalAlignment="Left"
                     Click="btnBack_Click" />
             <Button 
-                    Margin="8"
+                Grid.Row="1"        
+                Margin="8"
                     x:Name="btnNext"
                     Style="{StaticResource buttonStylePrimary}"
                     Content="Scan"

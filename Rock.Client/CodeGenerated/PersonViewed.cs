@@ -31,10 +31,10 @@ namespace Rock.Client
     public partial class PersonViewed
     {
         /// <summary />
-        public int? TargetPersonAliasId { get; set; }
+        public int? ViewerPersonAliasId { get; set; }
 
         /// <summary />
-        public int? ViewerPersonAliasId { get; set; }
+        public int? TargetPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ViewDateTime { get; set; }

@@ -31,16 +31,10 @@ namespace Rock.Client
     public partial class SystemEmail
     {
         /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public string Title { get; set; }
@@ -71,6 +65,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

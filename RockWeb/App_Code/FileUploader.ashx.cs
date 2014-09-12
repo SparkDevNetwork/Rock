@@ -24,6 +24,7 @@ using System.Web.SessionState;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -62,8 +63,7 @@ namespace RockWeb
                 // No file or no data?  No good.
                 if ( uploadedFile == null || uploadedFile.ContentLength == 0 )
                 {
-                    context.Response.Write( "0" );
-                    return;
+                    throw new Rock.Web.FileUploadException( "No File Specified", System.Net.HttpStatusCode.BadRequest );
                 }
 
                 // Check to see if this is a BinaryFileType/BinaryFile or just a plain content file
@@ -160,6 +160,22 @@ namespace RockWeb
 
             RockContext rockContext = new RockContext();
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+
+            if ( binaryFileType == null )
+            {
+                throw new Rock.Web.FileUploadException( "Binary file type must be specified", System.Net.HttpStatusCode.Forbidden );
+            }
+            else
+            {
+                // Note: There is a RequireSecurity flag on BinaryFileType, but that is to speed up Gets of images. We should always check security on FileUploads
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                Person currentPerson = currentUser != null ? currentUser.Person : null;
+
+                if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );
+                }
+            }
 
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
             BinaryFile binaryFile = new BinaryFile();

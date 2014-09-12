@@ -34,7 +34,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Initializes a new instance of the <see cref="OptionsPage"/> class.
         /// </summary>
-        public OptionsPage(BatchPage batchPage)
+        public OptionsPage( BatchPage batchPage )
         {
             InitializeComponent();
             this.BatchPage = batchPage;
@@ -66,11 +66,14 @@ namespace Rock.Apps.CheckScannerUtility
                 cboScannerInterfaceType.SelectedItem = "MagTek";
                 lblMakeModel.Content = "MagTek";
 
-                string version = null;
+                string version = "-1";
                 try
                 {
                     this.Cursor = Cursors.Wait;
-                    version = BatchPage.micrImage.Version();
+                    if ( BatchPage.micrImage != null )
+                    {
+                        version = BatchPage.micrImage.Version();
+                    }
                 }
                 finally
                 {
@@ -89,8 +92,16 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 cboScannerInterfaceType.SelectedItem = "Ranger";
-                lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", BatchPage.rangerScanner.GetTransportInfo( "General", "Make" ), BatchPage.rangerScanner.GetTransportInfo( "General", "Model" ) );
-                lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", BatchPage.rangerScanner.GetVersion() );
+                if ( BatchPage.rangerScanner != null )
+                {
+                    lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", BatchPage.rangerScanner.GetTransportInfo( "General", "Make" ), BatchPage.rangerScanner.GetTransportInfo( "General", "Model" ) );
+                    lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", BatchPage.rangerScanner.GetVersion() );
+                }
+                else
+                {
+                    lblMakeModel.Content = "Scanner Type: ERROR";
+                    lblInterfaceVersion.Content = "Interface Version: ERROR";
+                }
             }
 
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
@@ -128,13 +139,31 @@ namespace Rock.Apps.CheckScannerUtility
             cboImageOption.Items.Add( "Color" );
 
             cboScannerInterfaceType.Items.Clear();
-            cboScannerInterfaceType.Items.Add( "Ranger" );
-            cboScannerInterfaceType.Items.Add( "MagTek" );
+            if ( this.BatchPage.rangerScanner != null )
+            {
+                cboScannerInterfaceType.Items.Add( "Ranger" );
+            }
+
+            if ( this.BatchPage.micrImage != null )
+            {
+                cboScannerInterfaceType.Items.Add( "MagTek" );
+            }
+
+            if ( cboScannerInterfaceType.Items.Count == 0 )
+            {
+                lblScannerError.Visibility = Visibility.Visible;
+                btnSave.IsEnabled = false;
+            }
+            else
+            {
+                lblScannerError.Visibility = Visibility.Collapsed;
+                btnSave.IsEnabled = true;
+            }
 
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
 
             cboTransactionSourceType.Items.Clear();
-            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy(a => a.Order).ThenBy(a => a.Value).ToList();
+            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 
         /// <summary>
@@ -219,7 +248,11 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.Save();
 
             // shutdown the scanner so that options will be reloaded when the batch page loads
-            BatchPage.rangerScanner.ShutDown();
+            if ( BatchPage.rangerScanner != null )
+            {
+                BatchPage.rangerScanner.ShutDown();
+            }
+
             this.NavigationService.GoBack();
         }
 

@@ -93,7 +93,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialTransaction target, FinancialTransaction source )
         {
-            target.AuthorizedPersonId = source.AuthorizedPersonId;
+            target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
             target.BatchId = source.BatchId;
             target.GatewayEntityTypeId = source.GatewayEntityTypeId;
             target.TransactionDateTime = source.TransactionDateTime;

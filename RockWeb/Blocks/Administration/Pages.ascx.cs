@@ -226,6 +226,7 @@ namespace RockWeb.Blocks.Administration
                     page.BrowserTitle = page.PageTitle;
                     page.EnableViewState = true;
                     page.IncludeAdminFooter = true;
+                    page.MenuDisplayChildPages = true;
 
                     Rock.Model.Page lastPage =
                         pageService.GetByParentPageId( _page.Id ).

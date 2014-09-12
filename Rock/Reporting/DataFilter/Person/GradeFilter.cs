@@ -133,7 +133,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             var controls = new List<Control>();
 
-            var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
             ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );

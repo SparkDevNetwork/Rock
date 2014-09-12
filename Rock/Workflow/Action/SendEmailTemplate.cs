@@ -52,7 +52,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var mergeFields = GetMergeFields( action );
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
+            var recipients = new List<RecipientData>();
 
             string to = GetAttributeValue( action, "To" );
 
@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( toValue, mergeFields );
+                                    recipients.Add( new RecipientData( toValue, mergeFields ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -101,7 +101,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
-                                            recipients.Add( person.Email, personDict );
+                                            recipients.Add( new RecipientData( person.Email, personDict ) );
                                         }
                                     }
                                     break;
@@ -122,7 +122,7 @@ namespace Rock.Workflow.Action
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
-                                                recipients.Add( person.Email, personDict );
+                                                recipients.Add( new RecipientData( person.Email, personDict ) );
                                             }
                                         }
                                     }
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                recipients.Add( to, mergeFields );
+                recipients.Add( new RecipientData( to, mergeFields ) );
             }
 
             if ( recipients.Any() )

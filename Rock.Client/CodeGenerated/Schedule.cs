@@ -31,12 +31,6 @@ namespace Rock.Client
     public partial class Schedule
     {
         /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -59,6 +53,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

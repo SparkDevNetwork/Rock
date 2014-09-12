@@ -45,7 +45,7 @@ namespace Rock.Model
                 .Where( t => t.Tag.EntityTypeId == entityTypeId &&
                     ( t.Tag.EntityTypeQualifierColumn == entityQualifierColumn || (t.Tag.EntityTypeQualifierColumn == null && entityQualifierColumn == null)) &&
                     ( t.Tag.EntityTypeQualifierValue == entityQualifierValue || (t.Tag.EntityTypeQualifierValue == null && entityQualifierValue == null)) &&
-                    ( t.Tag.OwnerId == null || ( ownerId.HasValue && t.Tag.OwnerId == ownerId ) ) &&
+                    ( t.Tag.OwnerPersonAlias == null || ( ownerId.HasValue && t.Tag.OwnerPersonAlias.PersonId == ownerId ) ) &&
                     t.EntityGuid == entityGuid
                     )
                 .OrderBy( t => t.Tag.Name);

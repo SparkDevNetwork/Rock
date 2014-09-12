@@ -45,6 +45,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             action.Activity.Workflow.MarkComplete();
+
             action.AddLogEntry( "Marked workflow complete" );
 
             return true;

@@ -140,16 +140,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     if ( !socialCategoryGuid.IsEmpty() )
                     {
                         var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid ) );
-                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Values = v.Value } );
+                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value } );
 
                         rptSocial.DataSource = result
                             .Where( r =>
-                                r.Values.Count > 0 &&
-                                r.Values[0].Value != string.Empty )
+                                r.Value != null &&
+                                r.Value.Value != string.Empty )
                             .OrderBy( r => r.Attribute.Order )
                             .Select( r => new
                             {
-                                url = r.Values[0].Value,
+                                url = r.Value.Value,
                                 name = r.Attribute.Name,
                                 icon = r.Attribute.IconCssClass
                             } )

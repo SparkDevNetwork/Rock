@@ -24,7 +24,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a detail item of a <see cref="Rock.Model.FinancialScheduledTransaction"/>.  It represents a gift/payment to be made to an <see cref="Rock.Model.FinancialAccount"/>/fund
+    /// Represents a detail item of a <see cref="Rock.Model.FinancialScheduledTransaction"/>.  It represents a gift/payment to be made to an <see cref="Rock.Model.FinancialAccount"/>/account
     /// as part of the scheduled transaction. This allows multiple payments/gifts to be consolidated into one scheduled transaction.
     /// </summary>
     [Table( "FinancialScheduledTransactionDetail" )]
@@ -43,10 +43,10 @@ namespace Rock.Model
         public int ScheduledTransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that that the transaction detail <see cref="Amount"/> should be directed toward.
+        /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/account that that the transaction detail <see cref="Amount"/> should be directed toward.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/fund that this transaction detail is directed toward.
+        /// A <see cref="System.Int32"/> representing the AccountId of the <see cref="Rock.Model.FinancialAccount"/>/account that this transaction detail is directed toward.
         /// </value>
         [DataMember]
         public int AccountId { get; set; }
@@ -101,10 +101,10 @@ namespace Rock.Model
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this transaction detail will be credited toward.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/>/account that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </summary>
         /// <value>
-        /// Tehe <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this transaction detail will be credited toward.
+        /// Tehe <see cref="Rock.Model.FinancialAccount"/>/account that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </value>
         public virtual FinancialAccount Account { get; set; }
 

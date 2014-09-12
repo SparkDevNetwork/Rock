@@ -25,6 +25,7 @@ using System.Xml;
 using System.Xml.Linq;
 
 using Rock.Web;
+using Rock.Web.Cache;
 
 public class SyndicationFeedHelper
 {
@@ -37,7 +38,7 @@ public class SyndicationFeedHelper
     /// <param name="feedUrl">A <see cref="System.String"/> representing the URL of the feed.</param>
     public static void ClearCachedFeed( string feedUrl )
     {
-        ObjectCache cache = MemoryCache.Default;
+        ObjectCache cache = RockMemoryCache.Default;
         string cacheKey = GetFeedCacheKey( feedUrl );
 
         cache.Remove( cacheKey );
@@ -73,7 +74,7 @@ public class SyndicationFeedHelper
             return feedDictionary;
         }
 
-        ObjectCache feedCache = MemoryCache.Default;
+        ObjectCache feedCache = RockMemoryCache.Default;
 
         if ( feedCache[GetFeedCacheKey( feedUrl )] != null )
         {

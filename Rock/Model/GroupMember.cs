@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -136,6 +137,56 @@ namespace Rock.Model
         public override string ToString()
         {
             return Person.ToStringSafe();
+        }
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            string action = string.Empty;
+            if ( state == System.Data.Entity.EntityState.Added)
+            {
+                action = "Added to group.";
+            }
+            else if ( state == System.Data.Entity.EntityState.Deleted)
+            {
+                action = "Removed from group.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(action))
+            {
+                var rockContext = (RockContext)dbContext;
+
+                var group = this.Group;
+                if ( group == null )
+                {
+                    group = new GroupService( rockContext ).Get( this.GroupId );
+                }
+
+                if (group != null)
+                {
+                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    var groupEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                    var groupMembershipCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(), rockContext ).Id;
+
+                    new HistoryService( rockContext ).Add( new History
+                    {
+                        EntityTypeId = personEntityTypeId,
+                        CategoryId = groupMembershipCategoryId,
+                        EntityId = this.PersonId,
+                        Summary = action,
+                        Caption = group.Name,
+                        RelatedEntityTypeId = groupEntityTypeId,
+                        RelatedEntityId = this.GroupId
+                    } );
+
+                }
+            }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         #endregion

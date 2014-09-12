@@ -303,7 +303,7 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\\"" );
         }
 
         /// <summary>
@@ -694,6 +694,21 @@ namespace Rock
             return str.Replace( Environment.NewLine, "<br/>" ).Replace( "\x0A", "<br/>" );
         }
 
+        /// <summary>
+        /// Converts the HTML br to cr lf.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ConvertBrToCrLf( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Replace( "<br/>", Environment.NewLine ).Replace( "<br>", Environment.NewLine );
+        }
+        
         /// <summary>
         /// HTML Encodes the string
         /// </summary>
@@ -1737,6 +1752,26 @@ namespace Rock
             foreach ( T item in items )
                 strings.Add( item.ToString() );
             return String.Join( delimiter, strings.ToArray() );
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<Guid> AsGuidList( this IEnumerable<string> items)
+        {
+            return items.Select( a => a.AsGuidOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<int> AsIntegerList( this IEnumerable<string> items )
+        {
+            return items.Select( a => a.AsIntegerOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
         }
 
         /// <summary>

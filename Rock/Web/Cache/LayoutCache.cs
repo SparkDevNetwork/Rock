@@ -165,7 +165,7 @@ namespace Rock.Web.Cache
         public static LayoutCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = LayoutCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             LayoutCache Layout = cache[cacheKey] as LayoutCache;
 
             if ( Layout == null )
@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             LayoutCache layout = null;
@@ -232,7 +232,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = LayoutCache.CacheKey( LayoutModel.Id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             LayoutCache Layout = cache[cacheKey] as LayoutCache;
 
             if ( Layout != null )
@@ -256,7 +256,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( LayoutCache.CacheKey( id ) );
         }
 

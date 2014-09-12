@@ -32,9 +32,9 @@
         </Menu>
         <Grid Grid.Column="1" Grid.Row="2" Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="70"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
                 <Label Content="Statement Generator" Style="{StaticResource labelStyleBannerTitle}" />

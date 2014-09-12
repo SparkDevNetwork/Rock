@@ -53,17 +53,57 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201408261602488_TransactionImageOrder.cs" />
-    <Compile Include="Migrations\201408261602488_TransactionImageOrder.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.cs" />
-    <Compile Include="Migrations\201408270020397_DuplicateCheckScan.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408270020397_DuplicateCheckScan.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408270020397_DuplicateCheckScan.Designer.cs">
       <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408281632312_EntitySet.cs" />
-    <Compile Include="Migrations\201408281632312_EntitySet.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408281632312_EntitySet.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408281632312_EntitySet.Designer.cs">
       <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408311348151_BulkUpdate.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408311348151_BulkUpdate.Designer.cs">
+      <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409032225528_PageAndWorkflowChanges.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409032225528_PageAndWorkflowChanges.Designer.cs">
+      <DependentUpon>201409032225528_PageAndWorkflowChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409041849583_ExpandPersonAlias.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409041849583_ExpandPersonAlias.Designer.cs">
+      <DependentUpon>201409041849583_ExpandPersonAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409052356474_TransactionDateTimeIndex.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409052356474_TransactionDateTimeIndex.Designer.cs">
+      <DependentUpon>201409052356474_TransactionDateTimeIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409061203308_WorkflowUpdates.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409061203308_WorkflowUpdates.Designer.cs">
+      <DependentUpon>201409061203308_WorkflowUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409080542069_HtmlButtonsForWorkflows.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409080542069_HtmlButtonsForWorkflows.Designer.cs">
+      <DependentUpon>201409080542069_HtmlButtonsForWorkflows.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409091616463_UpdateDataErrorWF.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409091616463_UpdateDataErrorWF.Designer.cs">
+      <DependentUpon>201409091616463_UpdateDataErrorWF.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409101843015_ConvertCategory.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409101843015_ConvertCategory.Designer.cs">
+      <DependentUpon>201409101843015_ConvertCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409102055306_UniqueAttributeValues.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409102055306_UniqueAttributeValues.Designer.cs">
+      <DependentUpon>201409102055306_UniqueAttributeValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409120432120_AddPersonLinkSelect.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409120432120_AddPersonLinkSelect.Designer.cs">
+      <DependentUpon>201409120432120_AddPersonLinkSelect.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.Designer.cs">
@@ -73,8 +113,8 @@
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.Designer.cs">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408252322078_ActivatedByActivity.cs" />
-    <Compile Include="Migrations\201408252322078_ActivatedByActivity.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408252322078_ActivatedByActivity.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408252322078_ActivatedByActivity.Designer.cs">
       <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
@@ -1153,14 +1193,44 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201408261602488_TransactionImageOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408270020397_DuplicateCheckScan.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408270020397_DuplicateCheckScan.resx">
       <DependentUpon>201408270020397_DuplicateCheckScan.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408281632312_EntitySet.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408281632312_EntitySet.resx">
       <DependentUpon>201408281632312_EntitySet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408311348151_BulkUpdate.resx">
+      <DependentUpon>201408311348151_BulkUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409032225528_PageAndWorkflowChanges.resx">
+      <DependentUpon>201409032225528_PageAndWorkflowChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409041849583_ExpandPersonAlias.resx">
+      <DependentUpon>201409041849583_ExpandPersonAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409052356474_TransactionDateTimeIndex.resx">
+      <DependentUpon>201409052356474_TransactionDateTimeIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409061203308_WorkflowUpdates.resx">
+      <DependentUpon>201409061203308_WorkflowUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409080542069_HtmlButtonsForWorkflows.resx">
+      <DependentUpon>201409080542069_HtmlButtonsForWorkflows.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409091616463_UpdateDataErrorWF.resx">
+      <DependentUpon>201409091616463_UpdateDataErrorWF.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409101843015_ConvertCategory.resx">
+      <DependentUpon>201409101843015_ConvertCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409102055306_UniqueAttributeValues.resx">
+      <DependentUpon>201409102055306_UniqueAttributeValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201409120432120_AddPersonLinkSelect.resx">
+      <DependentUpon>201409120432120_AddPersonLinkSelect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408201603057_DataIntegrityFeatures.resx">
       <DependentUpon>201408201603057_DataIntegrityFeatures.cs</DependentUpon>
@@ -1168,7 +1238,7 @@
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.12\201408221117347_AddPersonDuplicateFinderProc.resx">
       <DependentUpon>201408221117347_AddPersonDuplicateFinderProc.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408252322078_ActivatedByActivity.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408252322078_ActivatedByActivity.resx">
       <DependentUpon>201408252322078_ActivatedByActivity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">

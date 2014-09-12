@@ -74,7 +74,12 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     var twilio = new TwilioRestClient( accountSid, authToken );
 
+                    var historyService = new HistoryService( rockContext );
                     var recipientService = new CommunicationRecipientService( rockContext );
+
+                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
+                    var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
 
                     var globalConfigValues = GlobalAttributesCache.GetMergeFields( null );
 
@@ -86,7 +91,7 @@ namespace Rock.Communication.Transport
                         {
                             try
                             {
-                                var phoneNumber = recipient.Person.PhoneNumbers
+                                var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
                                     .Where( p => p.IsMessagingEnabled )
                                     .FirstOrDefault();
 
@@ -107,7 +112,20 @@ namespace Rock.Communication.Transport
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
-                                    recipient.UniqueMessageId = response.Sid; 
+                                    recipient.UniqueMessageId = response.Sid;
+
+                                    historyService.Add( new History
+                                    {
+                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                        EntityTypeId = personEntityTypeId,
+                                        CategoryId = communicationCategoryId,
+                                        EntityId = recipient.PersonAlias.PersonId,
+                                        Summary = "Sent SMS message.",
+                                        Caption = message,
+                                        RelatedEntityTypeId = communicationEntityTypeId,
+                                        RelatedEntityId = communication.Id
+                                    } );
+                                
                                 }
                                 else
                                 {
@@ -137,10 +155,10 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot"></param>
-        /// <param name="themeRoot"></param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
+        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             throw new NotImplementedException();
         }

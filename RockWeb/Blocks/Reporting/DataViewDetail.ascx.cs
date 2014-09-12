@@ -19,26 +19,28 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Reporting;
 using Rock.Model;
+using Rock.Reporting;
+using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Reporting
 {
     [DisplayName( "Data View Detail" )]
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
+
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -66,6 +68,15 @@ $(document).ready(function() {
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
 
             gReport.GridRebind += gReport_GridRebind;
+
+            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
+            //// note: this only makes a difference on Postback, not on the initial page visit
+            int databaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
+            {
+                sm.AsyncPostBackTimeout = databaseTimeout + 5;
+            }
         }
 
         /// <summary>
@@ -124,7 +135,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new DataViewService(new RockContext());
+            var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowEditDetails( item );
         }
@@ -135,7 +146,7 @@ $(document).ready(function() {
         /// <param name="dataViewFilter">The data view filter.</param>
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
         {
-            if (dataViewFilter != null)
+            if ( dataViewFilter != null )
             {
                 dataViewFilter.Guid = Guid.NewGuid();
                 foreach ( var childFilter in dataViewFilter.ChildFilters )
@@ -193,7 +204,6 @@ $(document).ready(function() {
                 return;
             }
 
-
             if ( dataView.Id.Equals( 0 ) )
             {
                 service.Add( dataView );
@@ -240,7 +250,7 @@ $(document).ready(function() {
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DataViewService service = new DataViewService(new RockContext());
+                DataViewService service = new DataViewService( new RockContext() );
                 DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -295,7 +305,7 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns( DataView dataView )
         {
-            var entityTypeService = new EntityTypeService(new RockContext());
+            var entityTypeService = new EntityTypeService( new RockContext() );
 
             ddlEntityType.Items.Clear();
             ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -341,7 +351,7 @@ $(document).ready(function() {
         {
             pnlDetails.Visible = false;
 
-            var dataViewService = new DataViewService(new RockContext());
+            var dataViewService = new DataViewService( new RockContext() );
             DataView dataView = null;
 
             if ( !dataViewId.Equals( 0 ) )
@@ -603,6 +613,7 @@ $(document).ready(function() {
         {
             var errorMessages = new List<string>();
             grid.DataSource = null;
+            var rockContext = new RockContext();
 
             if ( dataView.EntityTypeId.HasValue )
             {
@@ -615,14 +626,45 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+                        var qry = dataView.GetQuery( grid.SortProperty, rockContext, out errorMessages );
 
                         if ( fetchRowCount.HasValue )
                         {
                             qry = qry.Take( fetchRowCount.Value );
                         }
 
-                        grid.DataSource = qry.AsNoTracking().ToList();
+                        try
+                        {
+                            rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
+                            grid.DataSource = qry.AsNoTracking().ToList();
+                        }
+                        catch ( Exception ex )
+                        {
+                            Exception exception = ex;
+                            while ( exception != null )
+                            {
+                                if ( exception is System.Data.SqlClient.SqlException )
+                                {
+                                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                                    {
+                                        nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                                        nbEditModeMessage.Text = "This dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        errorMessages.Add( exception.Message );
+                                        exception = exception.InnerException;
+                                    }
+                                }
+                                else
+                                {
+                                    errorMessages.Add( exception.Message );
+                                    exception = exception.InnerException;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -632,6 +674,7 @@ $(document).ready(function() {
                 grid.ExportFilename = dataView.Name;
                 if ( errorMessages.Any() )
                 {
+                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
                 }
 
@@ -658,7 +701,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            var service = new DataViewService(new RockContext());
+            var service = new DataViewService( new RockContext() );
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowReport( item );
         }

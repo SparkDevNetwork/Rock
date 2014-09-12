@@ -391,28 +391,28 @@ namespace Rock.Attribute
                     allAttributes.Add( attribute );
                 }
 
-                var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
+                var attributeValues = new Dictionary<string, Rock.Model.AttributeValue>();
 
                 if ( allAttributes.Any() )
                 {
                     foreach ( var attribute in allAttributes )
                     {
                         // Add a placeholder for this item's value for each attribute
-                        attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
+                        attributeValues.Add( attribute.Key, null );
                     }
 
                     // Read this item's value(s) for each attribute 
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                    foreach ( var attributeValue in attributeValueService.Queryable()
+                    foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
                         .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                     {
-                        attributeValues[AttributeCache.Read( attributeValue.AttributeId ).Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
+                        attributeValues[attributeValue.Attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
                     }
 
                     // Look for any attributes that don't have a value and create a default value entry
                     foreach ( var attribute in allAttributes )
                     {
-                        if ( attributeValues[attribute.Key].Count == 0 )
+                        if ( attributeValues[attribute.Key] == null )
                         {
                             var attributeValue = new Rock.Model.AttributeValue();
                             attributeValue.AttributeId = attribute.Id;
@@ -424,20 +424,14 @@ namespace Rock.Attribute
                             {
                                 attributeValue.Value = attribute.DefaultValue;
                             }
-                            attributeValues[attribute.Key].Add( attributeValue );
+                            attributeValues[attribute.Key] = attributeValue;
                         }
                         else
                         {
-                            if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) )
+                            if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
+                                String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
                             {
-                                foreach ( var value in attributeValues[attribute.Key] )
-                                {
-                                    if ( String.IsNullOrWhiteSpace( value.Value ) )
-                                    {
-                                        value.Value = attribute.DefaultValue;
-                                    }
-
-                                }
+                                attributeValues[attribute.Key].Value = attribute.DefaultValue;
                             }
                         }
                     }
@@ -678,7 +672,7 @@ namespace Rock.Attribute
         {
             foreach ( var attribute in model.Attributes )
             {
-                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key], rockContext );
+                SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
             }
         }
 
@@ -698,7 +692,7 @@ namespace Rock.Attribute
 
             var attributeValueService = new Model.AttributeValueService( rockContext );
 
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
             if ( attributeValue == null )
             {
                 if ( newValue == null )
@@ -709,7 +703,6 @@ namespace Rock.Attribute
                 attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = model.Id;
-                attributeValue.Order = 0;
                 attributeValueService.Add( attributeValue );
             }
 
@@ -719,7 +712,7 @@ namespace Rock.Attribute
 
             if ( model.AttributeValues != null )
             {
-                model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
+                model.AttributeValues[attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
             }
 
         }
@@ -740,7 +733,7 @@ namespace Rock.Attribute
 
             var attributeValueService = new Model.AttributeValueService( rockContext );
 
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId).FirstOrDefault();
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId);
             if (attributeValue == null)
             {
                 if (newValue == null)
@@ -751,65 +744,12 @@ namespace Rock.Attribute
                 attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = entityId;
-                attributeValue.Order = 0;
                 attributeValueService.Add(attributeValue);
             }
 
             attributeValue.Value = newValue;
 
             rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Saves an attribute value.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="newValues">The new values.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, RockContext rockContext = null )
-        {
-            rockContext = rockContext ?? new RockContext();
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).ToList();
-            int i = 0;
-
-            while ( i < attributeValues.Count || i < newValues.Count )
-            {
-                Rock.Model.AttributeValue attributeValue;
-
-                if ( i < attributeValues.Count )
-                {
-                    attributeValue = attributeValues[i];
-                }
-                else
-                {
-                    attributeValue = new Rock.Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = model.Id;
-                    attributeValue.Order = i;
-                    attributeValueService.Add( attributeValue );
-                }
-
-                if ( i >= newValues.Count )
-                    attributeValueService.Delete( attributeValue );
-                else
-                {
-                    if ( attributeValue.Value != newValues[i].Value )
-                        attributeValue.Value = newValues[i].Value;
-                    newValues[i] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
-                }
-
-                i++;
-            }
-
-            rockContext.SaveChanges();
-
-            model.AttributeValues[attribute.Key] = newValues;
         }
 
         /// <summary>
@@ -836,23 +776,25 @@ namespace Rock.Attribute
             // Copy Attribute Values
             if ( source.AttributeValues != null )
             {
-                target.AttributeValues = new Dictionary<string, List<Model.AttributeValue>>();
+                target.AttributeValues = new Dictionary<string, Model.AttributeValue>();
                 foreach ( var item in source.AttributeValues )
                 {
-                    var list = new List<Model.AttributeValue>();
-                    foreach ( var value in item.Value )
+                    var value = item.Value;
+                    if ( value != null )
                     {
                         var attributeValue = new Model.AttributeValue();
                         attributeValue.IsSystem = value.IsSystem;
                         attributeValue.AttributeId = value.AttributeId;
                         attributeValue.EntityId = value.EntityId;
-                        attributeValue.Order = value.Order;
                         attributeValue.Value = value.Value;
                         attributeValue.Id = value.Id;
                         attributeValue.Guid = value.Guid;
-                        list.Add( attributeValue );
+                        target.AttributeValues.Add( item.Key, attributeValue );
                     }
-                    target.AttributeValues.Add( item.Key, list );
+                    else
+                    {
+                        target.AttributeValues.Add( item.Key, null );
+                    }
                 }
             }
             else
@@ -929,7 +871,7 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, validationGroup, setValue, true );
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
                 }
             }
         }
@@ -989,9 +931,9 @@ namespace Rock.Attribute
                         HtmlGenericControl dd = new HtmlGenericControl( "dd" );
 
                         string value = attribute.DefaultValue;
-                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key].Any())
+                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key] != null )
                         {
-                            value = item.AttributeValues[attribute.Key][0].Value;
+                            value = item.AttributeValues[attribute.Key].Value;
                         }
 
                         string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
@@ -1028,7 +970,7 @@ namespace Rock.Attribute
                         // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
                         // The AttributeCache.Read method returns null
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = new List<AttributeValue>() { value };
+                        item.AttributeValues[attribute.Key] = value;
                     }
                 }
             }

@@ -45,7 +45,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
@@ -164,7 +164,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
-        public virtual Person Person { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Communication"/>.
@@ -247,9 +247,9 @@ namespace Rock.Model
                 mergeValues.Add( "Communication", this.Communication );
             }
 
-            if ( this.Person != null )
+            if ( this.PersonAlias != null && this.PersonAlias.Person != null )
             {
-                mergeValues.Add( "Person", this.Person );
+                mergeValues.Add( "Person", this.PersonAlias.Person );
             }
 
             // Add any additional merge fields created through a report
@@ -272,7 +272,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Person.ToStringSafe();
+            return this.PersonAlias.Person.ToStringSafe();
         }
 
         #endregion
@@ -299,7 +299,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationRecipientConfiguration()
         {
-            this.HasRequired( r => r.Person).WithMany().HasForeignKey( r => r.PersonId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.PersonAlias).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
         }
     }
