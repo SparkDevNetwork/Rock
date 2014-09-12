@@ -152,10 +152,14 @@ INSERT INTO [dbo].[ReportField] (
 " );
             // update the photo request page route
             Sql( @"
-        UPDATE [PageRoute]
-        SET [Route] = 'PhotoRequest/Upload/{rckipid}'
-        WHERE [Route] = 'PhotoRequest/Upload/{Person}'
+    UPDATE [PageRoute]
+    SET [Route] = 'PhotoRequest/Upload/{rckipid}'
+    WHERE [Route] = 'PhotoRequest/Upload/{Person}'
 ");
+
+            RockMigrationHelper.AddSecurityAuthForPage( "8559A9F1-C6A4-4945-B393-74F6706A8FA2", 0, "View", true, null, Model.SpecialRole.AllAuthenticatedUsers.ConvertToInt(), "2CDAA4DC-53B4-4A19-B168-9051E4E52DBC" );
+            RockMigrationHelper.AddSecurityAuthForPage( "8559A9F1-C6A4-4945-B393-74F6706A8FA2", 1, "View", false, null, Model.SpecialRole.AllUsers.ConvertToInt(), "9658AFEE-2849-46BF-9EC8-5CF30B97EED8" );
+
             #endregion
 
         }
