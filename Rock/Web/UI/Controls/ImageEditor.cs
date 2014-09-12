@@ -261,6 +261,7 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
+        private HiddenField _hfOriginalBinaryFileId;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
@@ -293,6 +294,30 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// The OriginalBinaryFileId of the image displayed on in the main image (before uploading any new one occurs)
+        /// </summary>
+        /// <value>
+        /// The binary file identifier of the original file
+        /// </value>
+        public int? OriginalBinaryFileId
+        {
+            get
+            {
+                EnsureChildControls();
+                int? result = _hfOriginalBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // OriginalBinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// The BinaryFileId of the image displayed on in the main image (not necessarily the one being cropped in the Modal)
         /// </summary>
         /// <value>
@@ -319,6 +344,12 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfBinaryFileId.Value = value.ToString();
+
+                // only set the OriginalBinaryFileId once...
+                if ( string.IsNullOrEmpty( _hfOriginalBinaryFileId.Value ) )
+                {
+                    _hfOriginalBinaryFileId.Value = _hfBinaryFileId.Value;
+                }
             }
         }
 
@@ -461,6 +492,10 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
 
+            _hfOriginalBinaryFileId = new HiddenField();
+            _hfOriginalBinaryFileId.ID = this.ID + "_hfOriginalBinaryFileId";
+            Controls.Add( _hfOriginalBinaryFileId );
+
             _hfCropBinaryFileId = new HiddenField();
             _hfCropBinaryFileId.ID = this.ID + "_hfCropBinaryFileId";
             Controls.Add( _hfCropBinaryFileId );
@@ -567,6 +602,7 @@ namespace Rock.Web.UI.Controls
                     FileSaved( this, e );
                 }
 
+                _hfOriginalBinaryFileId.Value = this.BinaryFileId.ToStringSafe();
                 _mdImageDialog.Hide();
             }
             catch ( ImageResizer.Plugins.Basic.SizeLimits.SizeLimitException )
@@ -660,7 +696,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _lbShowModal_Click( object sender, EventArgs e )
         {
-            if ( !BinaryFileId.HasValue )
+            // return if there's no image to crop or if this is a new upload before the image is replaced
+            if ( !BinaryFileId.HasValue || ( sender == _lbUploadImage && OriginalBinaryFileId == BinaryFileId ) )
             {
                 // no image to crop. they probably cancelled the image upload dialog
                 return;
@@ -777,6 +814,8 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             _hfBinaryFileId.RenderControl( writer );
+            writer.WriteLine();
+            _hfOriginalBinaryFileId.RenderControl( writer );
             writer.WriteLine();
             _hfCropBinaryFileId.RenderControl( writer );
             writer.WriteLine();

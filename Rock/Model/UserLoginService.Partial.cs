@@ -365,6 +365,10 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
+            var historyService = new HistoryService( rockContext );
+
+            var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
 
             if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
             {
@@ -372,6 +376,26 @@ namespace Rock.Model
                 if ( userLogin != null )
                 {
                     userLogin.LastLoginDateTime = RockDateTime.Now;
+
+                    if ( userLogin.PersonId.HasValue )
+                    {
+                        var summary = new System.Text.StringBuilder();
+                        summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userLogin.UserName );
+                        if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+                        {
+                            summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                                HttpContext.Current.Request.Url.AbsoluteUri, HttpContext.Current.Request.UserHostAddress );
+                        }
+                        summary.Append( "." );
+
+                        historyService.Add( new History
+                        {
+                            EntityTypeId = personEntityTypeId,
+                            CategoryId = activityCategoryId,
+                            EntityId = userLogin.PersonId.Value,
+                            Summary = summary.ToString()
+                        } );
+                    }
                     rockContext.SaveChanges();
                 }
             }

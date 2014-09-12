@@ -71,12 +71,12 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The category.
+        /// The category identifier.
         /// </value>
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -94,6 +94,22 @@ namespace Rock.Web.Cache
         /// </value>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        public CategoryCache Category
+        {
+            get
+            {
+                if ( CategoryId.HasValue )
+                    return CategoryCache.Read( CategoryId.Value );
+                return null;
+            }
+        }        
+        
         /// <summary>
         /// Gets the type of the field.
         /// </summary>
@@ -165,7 +181,7 @@ namespace Rock.Web.Cache
                 this.IsSystem = definedType.IsSystem;
                 this.FieldTypeId = definedType.FieldTypeId;
                 this.Order = definedType.Order;
-                this.Category = definedType.Category;
+                this.CategoryId = definedType.CategoryId;
                 this.Name = definedType.Name;
                 this.Description = definedType.Description;
 
@@ -204,7 +220,7 @@ namespace Rock.Web.Cache
         public static DefinedTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = DefinedTypeCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             DefinedTypeCache definedType = cache[cacheKey] as DefinedTypeCache;
 
             if ( definedType == null )
@@ -238,7 +254,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             DefinedTypeCache definedType = null;
@@ -279,7 +295,7 @@ namespace Rock.Web.Cache
         public static DefinedTypeCache Read( DefinedType definedTypeModel, RockContext rockContext = null )
         {
             string cacheKey = DefinedTypeCache.CacheKey( definedTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             DefinedTypeCache definedType = cache[cacheKey] as DefinedTypeCache;
 
             if ( definedType != null )
@@ -304,7 +320,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( DefinedTypeCache.CacheKey( id ) );
         }
 

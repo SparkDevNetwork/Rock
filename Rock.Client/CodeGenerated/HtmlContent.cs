@@ -46,7 +46,7 @@ namespace Rock.Client
         public bool IsApproved { get; set; }
 
         /// <summary />
-        public int? ApprovedByPersonId { get; set; }
+        public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? ApprovedDateTime { get; set; }

@@ -204,7 +204,12 @@ namespace Rock.Communication.Transport
                     }
                 }
 
+                var historyService = new HistoryService( rockContext );
                 var recipientService = new CommunicationRecipientService( rockContext );
+
+                var personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+                var communicationEntityTypeId = EntityTypeCache.Read("Rock.Model.Communication" ).Id;
+                var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext).Id;
 
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
@@ -214,7 +219,7 @@ namespace Rock.Communication.Transport
                     var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
                     if ( recipient != null )
                     {
-                        if ( string.IsNullOrWhiteSpace( recipient.Person.Email ) )
+                        if ( string.IsNullOrWhiteSpace( recipient.PersonAlias.Person.Email ) )
                         {
                             recipient.Status = CommunicationRecipientStatus.Failed;
                             recipient.StatusNote = "No Email Address";
@@ -225,7 +230,7 @@ namespace Rock.Communication.Transport
                             message.Headers.Clear();
                             message.AlternateViews.Clear();
 
-                            message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
+                            message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
 
                             // Create merge field dictionary
                             var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
@@ -264,7 +269,20 @@ namespace Rock.Communication.Transport
                                 }
 
                                 recipient.TransportEntityTypeName = this.GetType().FullName;
+
+                                historyService.Add( new History
+                                {
+                                    CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                    EntityTypeId = personEntityTypeId,
+                                    CategoryId = communicationCategoryId,
+                                    EntityId = recipient.PersonAlias.PersonId,
+                                    Summary = string.Format( "Sent communication from <span class='field-value'>{0}</span>.", message.From.DisplayName ),
+                                    Caption = message.Subject, 
+                                    RelatedEntityTypeId = communicationEntityTypeId,
+                                    RelatedEntityId = communication.Id
+                                } );
                             }
+
                             catch ( Exception ex )
                             {
                                 recipient.Status = CommunicationRecipientStatus.Failed;
@@ -287,9 +305,9 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot"></param>
-        /// <param name="themeRoot"></param>
-        public override void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot )
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             var globalAttributes = GlobalAttributesCache.Read();
 
@@ -340,20 +358,25 @@ namespace Rock.Communication.Transport
 
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
-                foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
+                foreach ( var recipientData in recipients )
                 {
-                    var mergeObjects = recipient.Value;
-                    globalConfigValues.ToList().ForEach( g => mergeObjects[g.Key] = g.Value );
+                    foreach( var g in globalConfigValues )
+                    {
+                        if (recipientData.MergeFields.ContainsKey( g.Key ))
+                        {
+                            recipientData.MergeFields[g.Key] = g.Value;
+                        }
+                    }
 
                     List<string> sendTo = SplitRecipient( template.To );
-                    sendTo.Add( recipient.Key );
+                    sendTo.Add( recipientData.To );
                     foreach ( string to in sendTo )
                     {
                         message.To.Clear();
                         message.To.Add( to );
 
-                        string subject = template.Subject.ResolveMergeFields( mergeObjects );
-                        string body = Regex.Replace( template.Body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                        string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
+                        string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
                         if (!string.IsNullOrWhiteSpace(themeRoot))
                         {

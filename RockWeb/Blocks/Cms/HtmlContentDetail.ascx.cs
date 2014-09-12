@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Cms
             {
                 // if this block doesn't require Approval, mark it as approved
                 htmlContent.IsApproved = true;
-                htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                htmlContent.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 htmlContent.ApprovedDateTime = RockDateTime.Now;
             }
             else
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Cms
                 if ( currentUserCanApprove && hfApprovalStatus.Value.AsBoolean() )
                 {
                     htmlContent.IsApproved = true;
-                    htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                    htmlContent.ApprovedByPersonAliasId = CurrentPersonAliasId;
                     htmlContent.ApprovedDateTime = RockDateTime.Now;
                 }
                 else
@@ -351,17 +351,12 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( rockContext.SaveChanges() > 0 )
-            {
-                // flush cache content 
-                this.FlushCacheItem( entityValue );
+            rockContext.SaveChanges();
 
-                ShowView();
-            }
-            else
-            {
-                // TODO: service.ErrorMessages;
-            }
+            // flush cache content 
+            this.FlushCacheItem( entityValue );
+
+            ShowView();
         }
 
         /// <summary>
@@ -427,7 +422,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbApprove_Click( object sender, EventArgs e )
         {
-            SetApprovalValues( true, CurrentPerson );
+            SetApprovalValues( true, CurrentPersonAlias );
         }
 
         /// <summary>
@@ -437,7 +432,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeny_Click( object sender, EventArgs e )
         {
-            SetApprovalValues( false, CurrentPerson );
+            SetApprovalValues( false, CurrentPersonAlias );
         }
 
         #endregion
@@ -461,7 +456,7 @@ namespace RockWeb.Blocks.Cms
                     ModifiedDateTime = "(" + v.ModifiedDateTime.ToElapsedString() + ")",
                     ModifiedByPerson = v.ModifiedByPersonAlias != null ? v.ModifiedByPersonAlias.Person : null,
                     Approved = v.IsApproved,
-                    ApprovedByPerson = v.ApprovedByPerson,
+                    ApprovedByPerson = v.ApprovedByPersonAlias != null ? v.ApprovedByPersonAlias.Person : null,
                     v.StartDateTime,
                     v.ExpireDateTime
                 } ).ToList();
@@ -494,7 +489,7 @@ namespace RockWeb.Blocks.Cms
                 lVersion.Text = string.Format( "Version {0} | ", htmlContent.Version );
             }
 
-            SetApprovalValues( htmlContent.IsApproved, htmlContent.ApprovedByPerson );
+            SetApprovalValues( htmlContent.IsApproved, htmlContent.ApprovedByPersonAlias );
 
             drpDateRange.LowerValue = htmlContent.StartDateTime;
             drpDateRange.UpperValue = htmlContent.ExpireDateTime;
@@ -507,7 +502,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="approved">if set to <c>true</c> [approved].</param>
         /// <param name="person">The person.</param>
-        private void SetApprovalValues( bool approved, Person person )
+        private void SetApprovalValues( bool approved, PersonAlias personAlias )
         {
             string cssClass = string.Empty;
 
@@ -523,11 +518,16 @@ namespace RockWeb.Blocks.Cms
             lblApprovalStatus.Text = string.Format( "<span class='{0}'>{1}</span>", cssClass, approved ? "Approved" : "Not-Approved" );
 
             hfApprovalStatus.Value = approved.ToTrueFalse();
-            lblApprovalStatusPerson.Visible = person != null;
-            if ( person != null )
+
+            if ( personAlias != null && personAlias.Person != null )
+            { 
+                lblApprovalStatusPerson.Visible = true;
+                lblApprovalStatusPerson.Text = "by " + personAlias.Person.FullName;
+                hfApprovalStatusPersonId.Value = personAlias.Person.Id.ToString();
+            }
+            else
             {
-                lblApprovalStatusPerson.Text = "by " + person.FullName;
-                hfApprovalStatusPersonId.Value = person.Id.ToString();
+                lblApprovalStatusPerson.Visible = false;
             }
         }
 

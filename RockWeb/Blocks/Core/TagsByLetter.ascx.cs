@@ -129,7 +129,12 @@ namespace RockWeb.Blocks.Core
             // get tags
             var qry = new TagService( new RockContext() )
                 .Queryable()
-                .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
+                .Where(t => 
+                    t.EntityTypeId == entityId &&
+                    (
+                        ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
+                        ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
+                    ) )
                 .Select(t => new
                 {
                     Id = t.Id,

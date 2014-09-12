@@ -138,8 +138,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get 
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -342,6 +348,7 @@ namespace Rock.Web.UI.Controls
             _hfPersonId = new HiddenField();
             Controls.Add( _hfPersonId );
             _hfPersonId.ID = "hfPersonId";
+            _hfPersonId.Value = "0";
 
             _hfPersonName = new HiddenField();
             Controls.Add( _hfPersonName );

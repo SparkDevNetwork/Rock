@@ -25,9 +25,9 @@
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">
         <Setter Property="FontFamily"
-                Value="./resources/#Open Sans Bold"></Setter>
+                Value="./resources/#Open Sans SemiBold"></Setter>
         <Setter Property="FontWeight" 
-                Value="Bold"></Setter>
+                Value="SemiBold"></Setter>
     </Style>
     
 
@@ -41,6 +41,23 @@
                 Value="Bold"></Setter>
         <Setter Property="Label.FontSize"
                 Value="16"></Setter>
+    </Style>
+
+    <!-- Label style: Title -->
+    <Style x:Key="labelStylePanelTitle"
+           TargetType="{x:Type Label}">
+        <Setter Property="FontFamily"
+                Value="./resources/#Open Sans Light"></Setter>
+        <Setter Property="Label.Margin"
+                Value="0,2,0,0"></Setter>
+        <Setter Property="Label.HorizontalAlignment"
+                Value="Left"></Setter>
+        <Setter Property="Label.FontWeight"
+                Value="Normal"></Setter>
+        <Setter Property="Label.FontSize"
+                Value="16"></Setter>
+        <Setter Property="Label.Foreground"
+                Value="#6A6A6A"></Setter>
     </Style>
 
     <!-- Label style: Title -->
@@ -509,7 +526,7 @@
         <Setter Property="Width"
                 Value="Auto" />
         <Setter Property="Height"
-                Value="28" />
+                Value="36" />
         <Setter Property="Foreground" 
                 Value="#000" />
         <Setter Property="Background"
@@ -523,7 +540,7 @@
                             CornerRadius="4,4,4,4"
                             BorderThickness="1"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            Padding="8,2,8,2"
+                            Padding="12,0,12,0"
                             Background="{TemplateBinding Background}"
                             >
                         <ContentPresenter Content="{TemplateBinding Content}"
@@ -624,22 +641,35 @@
     <!-- 
         Border Styles 
         -->
-    <Style x:Key='borderStyleWell'
+
+    <Style x:Key='borderStylePanelTitle'
            TargetType="{x:Type Border}">
         <Setter Property="Background"
-                Value="WhiteSmoke" />
-        <Setter Property="CornerRadius"
-                Value="4" />
+                Value="#efefef" />
         <Setter Property="MinHeight"
                 Value="20" />
-        <Setter Property="Padding"
-                Value="19" />
         <Setter Property="BorderBrush"
-                Value="#e3e3e3" />
+                Value="#e2e2e2" />
         <Setter Property="BorderThickness"
                 Value="1" />
         <Setter Property="Margin"
-                Value="0,0,0,10" />
+                Value="0,0,0,0" />
+    </Style>
+    
+    <Style x:Key='borderStyleWell'
+           TargetType="{x:Type Border}">
+        <Setter Property="Background"
+                Value="#ffffff" />
+        <Setter Property="MinHeight"
+                Value="20" />
+        <Setter Property="Padding"
+                Value="6,10" />
+        <Setter Property="BorderBrush"
+                Value="#e2e2e2" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Margin"
+                Value="0,0,0,0" />
     </Style>
 
     <!-- 
@@ -709,7 +739,7 @@
            TargetType="{x:Type Page}" >
         <Setter 
                Property="Background"
-               Value="#FF373737"
+               Value="#dbd5cb"
                />
     </Style>
 
@@ -721,5 +751,19 @@
             Value="#dbd5cb"
             />
     </Style>
+    
+    <Style x:Key="rowDefinitionActions" TargetType="RowDefinition" >
+        <Setter
+            Property="Height"
+            Value="55" />
+    </Style>
+
+    <Style x:Key="rowDefinitionPanelTitle" TargetType="RowDefinition" >
+        <Setter
+            Property="Height"
+            Value="70" />
+    </Style>
+
+    
 
 </ResourceDictionary>

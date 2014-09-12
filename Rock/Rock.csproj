@@ -215,6 +215,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
@@ -222,6 +223,7 @@
     <Compile Include="Data\IChartData.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\IMigration.cs" />
+    <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
@@ -249,7 +251,6 @@
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
-    <Compile Include="Data\IFinancialTransactionScanned.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
@@ -258,7 +259,17 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
+    <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
@@ -389,7 +400,7 @@
     <Compile Include="Reporting\DataSelect\Person\SpouseNameSelect.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\FirstLastContributionSelect.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
@@ -631,6 +642,8 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\ContactInfoRow.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />

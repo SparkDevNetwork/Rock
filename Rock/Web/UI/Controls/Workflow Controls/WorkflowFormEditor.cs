@@ -228,9 +228,15 @@ namespace Rock.Web.UI.Controls
             _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
             Controls.Add( _ddlNotificationSystemEmail );
 
-            _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
-                .Where( e => e.Category == "Workflow" ).OrderBy( e => e.Title ).ToList();
-            _ddlNotificationSystemEmail.DataBind();
+            Guid? systemEmails = Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid();
+            if ( systemEmails.HasValue )
+            {
+                _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
+                    .Where( e => e.Category.Guid.Equals( systemEmails.Value ) )
+                    .OrderBy( e => e.Title )
+                    .ToList();
+                _ddlNotificationSystemEmail.DataBind();
+            }
             _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
 
             _cbIncludeActions = new RockCheckBox();

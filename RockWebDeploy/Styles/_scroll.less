@@ -1,0 +1,141 @@
+﻿/*
+    Used to manage styles related to Rock's internal scrollbar
+
+*/
+
+
+// basic scroll styles
+.scroll-container { 
+    
+    clear: both; 
+
+    .viewport {   
+        overflow: hidden; 
+        position: relative; 
+    }
+
+    .overview { 
+        list-style: none; 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+    }
+
+    .scrollbar { 
+    }
+
+    .track { 
+        position: relative;  
+        background-color: @scroll-track-color;
+        border-radius: 4px;  
+        padding: 0; 
+    }
+
+    .thumb { 
+        cursor: pointer; 
+        overflow: hidden; 
+        position: absolute; 
+        border-radius: 120px;
+        background-color: @scroll-thumb-color;
+
+        // keeps the thumb from being selectable like text
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .disable { 
+        display: none; 
+    }
+}
+
+// styles for verticle scrollers
+.scroll-container-vertical {
+    width: 520px;
+
+    .viewport {
+        width: 500px;
+        height: 375px;
+    }
+
+    .overview {
+        width: 100%;
+    }
+
+    .scrollbar { 
+        position: relative; 
+        float: right; 
+        width: 15px; 
+    }
+
+    .track { 
+        height: 100%; 
+        width: 1px;
+        border-radius: 4px;  
+    }
+
+    .thumb { 
+        height: 20px; 
+        width: 13px; 
+        top: 0;
+        margin-left: -6px;
+    }
+}
+
+// styles for horizonal scrollers
+.scroll-container-horizontal { 
+    width: 100%; 
+    margin: 0; 
+
+    .viewport { 
+        width: 100%; 
+        min-height: 200px; 
+    }
+
+    .overview {}
+
+    .scrollbar { 
+        position: relative; 
+        height: 15px; 
+        clear: both; 
+        margin: 0 auto;
+    }
+
+    .track { 
+        height: 1px; 
+        width: 13px; 
+        padding: 0 1px; 
+    }
+
+    .thumb { 
+        margin-top: -8px; 
+        border-radius: 10px;
+        height: 13px; 
+        width: 20px; 
+    }
+}
+
+// styles for scrollers in panels
+.panel-widget .scroll-container,
+.panel-default .scroll-container {
+    .track {
+        background-color: @accent-color;
+    }
+
+    .thumb {
+        background-color: darken(@accent-color, 10%);
+    }
+}
+
+.noSelect { 
+    user-select: none; 
+    -o-user-select: none; 
+    -moz-user-select: none; 
+    -khtml-user-select: none; 
+    -webkit-user-select: none; 
+}
+
+                

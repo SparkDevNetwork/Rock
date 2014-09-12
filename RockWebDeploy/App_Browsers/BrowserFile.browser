@@ -1,0 +1,11 @@
+﻿<browsers>
+    <browser refID="Default">
+        <controlAdapters>
+            <adapter controlType="System.Web.UI.WebControls.CheckBox" adapterType="Rock.Web.UI.Adapters.CheckBoxAdapter, Rock"/>
+            <adapter controlType="System.Web.UI.WebControls.CheckBoxList" adapterType="Rock.Web.UI.Adapters.CheckBoxListAdapter, Rock"/>
+            <adapter controlType="System.Web.UI.WebControls.RadioButton" adapterType="Rock.Web.UI.Adapters.RadioButtonAdapter, Rock"/>
+            <adapter controlType="System.Web.UI.WebControls.RadioButtonList" adapterType="Rock.Web.UI.Adapters.RadioButtonListAdapter, Rock"/>
+            <adapter controlType="System.Web.UI.WebControls.DropDownList" adapterType="Rock.Web.UI.Adapters.DropDownListAdapter, Rock"/>
+        </controlAdapters>
+    </browser>
+</browsers>

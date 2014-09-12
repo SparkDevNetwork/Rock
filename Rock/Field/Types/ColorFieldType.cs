@@ -40,7 +40,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var ddl = new RockDropDownList { ID = id }; 
+            var ddl = new RockDropDownList { ID = id };
+            ddl.Items.Add( new ListItem() );
 
             Type colors = typeof( System.Drawing.Color );
             PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );

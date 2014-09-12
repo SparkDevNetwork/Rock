@@ -30,9 +30,9 @@
                             </Rock:GridFilter>
                             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit">
                                 <Columns>
-                                    <asp:BoundField DataField="Person.NickName" HeaderText="First Name" SortExpression="Person.NickName" />
-                                    <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
-                                    <asp:BoundField DataField="GroupRole.Name" HeaderText="Role" SortExpression="GroupRole.Name" />
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="Person.NickName" />
+                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
+                                    <asp:BoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
                                     <asp:BoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
                                 </Columns>
                             </Rock:Grid>

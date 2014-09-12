@@ -226,13 +226,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     a.ScheduleId.HasValue &&
                     a.GroupId.HasValue &&
                     a.LocationId.HasValue &&
-                    a.PersonId.HasValue &&
+                    a.PersonAlias != null &&
                     a.DidAttend &&
                     a.StartDateTime > today &&
                     activeScheduleIds.Contains( a.ScheduleId.Value ) &&
                     groupIds.Contains( a.GroupId.Value ) )
                 .Select( a =>
-                    a.PersonId.Value )
+                    a.PersonAlias.PersonId )
                 .Distinct();
 
             // Create a qry to get the last checkin date (used in next statement's join)
@@ -241,17 +241,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     a.ScheduleId.HasValue &&
                     a.GroupId.HasValue &&
                     a.LocationId.HasValue &&
-                    a.PersonId.HasValue &&
+                    a.PersonAliasId.HasValue &&
                     a.DidAttend &&
                     scheduleIds.Contains( a.ScheduleId.Value) && 
                     groupIds.Contains( a.GroupId.Value ) )
                 .GroupBy( a => new
                 {
-                    PersonId = a.PersonId
+                    PersonId = a.PersonAlias.PersonId
                 } )
                 .Select( g => new PersonResult 
                 {
-                    Id = g.Key.PersonId.Value,
+                    Id = g.Key.PersonId,
                     Guid = Guid.Empty,
                     Name = "",
                     PhotoId = null,
@@ -382,7 +382,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var img = e.Item.FindControl( "imgPerson" ) as Literal;
                 if (img != null)
                 {
-                    img.Text = Person.GetPhotoImageTag( person.PhotoId, null, person.Gender, 50, 50 );
+                    img.Text = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, null, person.Gender, 50, 50 );
                 }
 
                 var lStatus = e.Item.FindControl( "lStatus" ) as Literal;
@@ -723,6 +723,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     foreach ( var groupLocSched in attendances
                         .Where( a => 
                             a.StartDateTime < chartTime &&
+                            a.PersonAlias != null &&
                             activeSchedules.Contains( a.ScheduleId.Value ) )
                         .GroupBy( a => new
                         {
@@ -735,7 +736,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             ScheduleId = g.Key.ScheduleId,
                             GroupId = g.Key.GroupId,
                             LocationId = g.Key.LocationId,
-                            PersonIds = g.Select( a => a.PersonId.Value).ToList()
+                            PersonIds = g.Select( a => a.PersonAlias.PersonId).Distinct().ToList()
                         } ) )
                     {
                         AddGroupCount( chartTime, groupLocSched.GroupId, groupLocSched.PersonIds, current );
@@ -1059,7 +1060,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         var dayStart = RockDateTime.Today;
                         var now = RockDateTime.Now;
-                        var attendees = new AttendanceService( rockContext ).Queryable( "Group" )
+                        var attendees = new AttendanceService( rockContext ).Queryable( "Group,PersonAlias.Person" )
                             .Where( a =>
                                 a.ScheduleId.HasValue &&
                                 a.GroupId.HasValue &&
@@ -1070,14 +1071,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 a.DidAttend &&
                                 activeSchedules.Contains( a.ScheduleId.Value ) )
                             .Distinct()
-                            .OrderBy( a => a.Person.NickName )
-                            .ThenBy( a => a.Person.LastName )
+                            .OrderBy( a => a.PersonAlias.Person.NickName )
+                            .ThenBy( a => a.PersonAlias.Person.LastName )
                             .ToList();
 
                         var results = attendees
                             .Select( a => new
                             {
-                                Person = a.Person,
+                                Person = a.PersonAlias.Person,
                                 Group = a.Group
                             } )
                             .Distinct()

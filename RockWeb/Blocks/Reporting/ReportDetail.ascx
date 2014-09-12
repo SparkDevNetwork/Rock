@@ -38,7 +38,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" SourceTypeName="Rock.Model.Report, Rock" PropertyName="FetchTop" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
+                            <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                 Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
                         </div>
                         <div class="col-md-6">

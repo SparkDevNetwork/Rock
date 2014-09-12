@@ -87,7 +87,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialPledge target, FinancialPledge source )
         {
-            target.PersonId = source.PersonId;
+            target.PersonAliasId = source.PersonAliasId;
             target.AccountId = source.AccountId;
             target.TotalAmount = source.TotalAmount;
             target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;

@@ -562,7 +562,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = AttributeCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
             if ( attribute == null )
@@ -591,7 +591,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             AttributeCache attribute = null;
@@ -627,7 +627,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
             if ( attribute != null )
@@ -657,7 +657,7 @@ namespace Rock.Web.Cache
 
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
 
             var cachePolicy = new CacheItemPolicy();
             cache.Set( cacheKey, attribute, cachePolicy );
@@ -672,7 +672,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the attribute to remove from cache</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( AttributeCache.CacheKey( id ) );
         }
 

@@ -31,18 +31,6 @@ namespace Rock.Client
     public partial class PrayerRequest
     {
         /// <summary />
-        public int? ApprovedByPersonId { get; set; }
-
-        /// <summary />
-        public int? RequestedByPersonId { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
         public string FirstName { get; set; }
 
         /// <summary />
@@ -50,6 +38,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Email { get; set; }
+
+        /// <summary />
+        public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary />
         public int? CategoryId { get; set; }
@@ -91,6 +82,9 @@ namespace Rock.Client
         public int? PrayerCount { get; set; }
 
         /// <summary />
+        public int? ApprovedByPersonAliasId { get; set; }
+
+        /// <summary />
         public DateTime? ApprovedOnDateTime { get; set; }
 
         /// <summary />
@@ -98,6 +92,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

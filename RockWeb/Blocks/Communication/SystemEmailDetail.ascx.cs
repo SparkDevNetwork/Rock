@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Communication
                 emailTemplate = emailTemplateService.Get( emailTemplateId );
             }
 
-            emailTemplate.Category = tbCategory.Text;
+            emailTemplate.CategoryId = cpCategory.SelectedValueAsInt();
             emailTemplate.Title = tbTitle.Text;
             emailTemplate.FromName = tbFromName.Text;
             emailTemplate.From = tbFrom.Text;
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Communication
                 lActionTitle.Text = ActionTitle.Edit( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
-                tbCategory.Text = emailTemplate.Category;
+                cpCategory.SetValue( emailTemplate.CategoryId );
                 tbTitle.Text = emailTemplate.Title;
                 tbFromName.Text = emailTemplate.FromName;
                 tbFrom.Text = emailTemplate.From;
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Communication
                 lActionTitle.Text = ActionTitle.Add( SystemEmail.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = 0.ToString();
 
-                tbCategory.Text = string.Empty;
+                cpCategory.SetValue( (int?)null );
                 tbTitle.Text = string.Empty;
                 tbFromName.Text = string.Empty;
                 tbFrom.Text = string.Empty;

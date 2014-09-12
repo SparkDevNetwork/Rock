@@ -89,7 +89,7 @@ namespace Rock
 
             if (!Start.HasValue && End.HasValue)
             {
-                return string.Format( "through {0}", Start.Value.ToString( dateFormat ) );
+                return string.Format( "through {0}", End.Value.ToString( dateFormat ) );
             }
 
             return string.Empty;

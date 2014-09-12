@@ -130,13 +130,13 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            GroupTypePicker dropDownList = control as GroupTypePicker;
-            if (dropDownList != null && !string.IsNullOrWhiteSpace(value))
+            GroupTypePicker groupTypePicker = control as GroupTypePicker;
+            if (groupTypePicker != null && !string.IsNullOrWhiteSpace(value))
             {
                 Guid groupTypeGuid = Guid.Empty;
                 if (Guid.TryParse(value, out groupTypeGuid))
                 {
-                    dropDownList.SelectedGroupTypeId = new GroupTypeService( new RockContext() ).Queryable()
+                    groupTypePicker.SelectedGroupTypeId = new GroupTypeService( new RockContext() ).Queryable()
                         .Where( g => g.Guid.Equals(groupTypeGuid))
                         .Select( g => g.Id )
                         .FirstOrDefault();

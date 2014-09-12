@@ -8,7 +8,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i>Bulk Update</h1>
+                <h1 class="panel-title"><i class="fa fa-reply-all"></i> Update Individuals</h1>
             </div>
 
             <div class="panel-body">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="fa fa-user" Expanded="false">
+                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="fa fa-user" Expanded="false" CssClass="fade-inactive">
 
                         <div class="row">
                             <div class="col-sm-6">
@@ -122,7 +122,7 @@
 
                     </Rock:PanelWidget>
 
-                    <div class="row">
+                    <div class="row fade-inactive">
                         <div class="col-sm-6">
                             <asp:PlaceHolder ID="phAttributesCol1" runat="server" />
                         </div>
@@ -153,17 +153,19 @@
                                 </Rock:RockDropDownList>
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
                             </div>
-                            <div class="col-sm-6">
+                            <asp:Panel ID="pnlGroupMemberStatus" runat="server" CssClass="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" Visible="false" />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" Visible="false" />
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="row">
+                        <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="row">
                             <div class="col-sm-12">
                                 <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                             </div>
-                        </div>
+                        </asp:Panel>
                     </Rock:PanelWidget>
+
+                    <asp:CustomValidator ID="cvSelection" runat="server" OnServerValidate="cvSelection_ServerValidate" Display="None" ErrorMessage="You have not selected anything to update." />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnComplete" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnComplete_Click" />

@@ -25,8 +25,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial pledge that an individual has made to be given to the specified <see cref="Rock.Model.FinancialAccount"/>/fund.  This includes
-    /// the fund that the pledge is directed to, the amount, the pledge frequency and the time period for the pledge.
+    /// Represents a financial pledge that an individual has made to be given to the specified <see cref="Rock.Model.FinancialAccount"/>/account.  This includes
+    /// the account that the pledge is directed to, the amount, the pledge frequency and the time period for the pledge.
     /// </summary>
     [Table( "FinancialPledge" )]
     [DataContract]
@@ -36,13 +36,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who made the pledge.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who made the pledge.
+        /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
@@ -51,6 +51,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int? AccountId { get; set; }
 
         /// <summary>
@@ -100,18 +101,18 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who is making the pledge.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who is making the pledge.
+        /// The person alias.
         /// </value>
-        public virtual Person Person { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or fund that the pledge is being directed toward.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.FinancialAccount"/> or fund that the pledge is being directed toward.
+        /// The <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </value>
         public virtual FinancialAccount Account { get; set; }
 
@@ -156,7 +157,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialPledgeConfiguration()
         {
-            this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Account ).WithMany().HasForeignKey( p => p.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PledgeFrequencyValue ).WithMany().HasForeignKey( p => p.PledgeFrequencyValueId ).WillCascadeOnDelete( false );
         }

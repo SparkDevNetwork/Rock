@@ -24,9 +24,9 @@
 
         <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="70"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
             </Grid.RowDefinitions>
 
             <Grid Height="Auto" Grid.Row="1" >

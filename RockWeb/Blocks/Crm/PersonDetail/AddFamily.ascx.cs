@@ -57,6 +57,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private int _childRoleId = 0;
         private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
         private List<GroupMember> _groupMembers = null;
+        private DefinedValueCache _homePhone = null;
+        private DefinedValueCache _cellPhone = null;
 
         #endregion
 
@@ -68,10 +70,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <value>
         /// The index of the current category.
         /// </value>
-        protected int CurrentCategoryIndex
+        protected int CurrentPageIndex
         {
-            get { return ViewState["CurrentCategoryIndex"] as int? ?? 0; }
-            set { ViewState["CurrentCategoryIndex"] = value; }
+            get { return ViewState["CurrentPageIndex"] as int? ?? 0; }
+            set { ViewState["CurrentPageIndex"] = value; }
         }
 
         #endregion
@@ -100,7 +102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ) );
+            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
             var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
             if (AdultMaritalStatus != null)
             {
@@ -123,7 +125,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
             bool.TryParse( GetAttributeValue( "Grade" ), out _requireGrade );
 
-            lTitle.Text = ("Add Family").FormatAsHtmlTitle(); 
+            lTitle.Text = ("Add Family").FormatAsHtmlTitle();
+
+            _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+            _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
         }
 
         /// <summary>
@@ -141,17 +146,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                // Update the name on attribute panels
-                if ( CurrentCategoryIndex == 0 )
+                // Update the name on secondary pages
+                if ( CurrentPageIndex == 0 )
                 {
                     foreach ( var familyMemberRow in nfmMembers.FamilyMemberRows )
                     {
+                        string personName = string.Format( "{0} {1}", familyMemberRow.FirstName, familyMemberRow.LastName );
+
+                        var contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == familyMemberRow.PersonGuid );
+                        if (contactInfoRow != null)
+                        {
+                            contactInfoRow.PersonName = personName;
+                        }
+
                         foreach ( var attributeControl in attributeControls )
                         {
                             var attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == familyMemberRow.PersonGuid );
                             if ( attributeRow != null )
                             {
-                                attributeRow.PersonName = string.Format( "{0} {1}", familyMemberRow.FirstName, familyMemberRow.LastName );
+                                attributeRow.PersonName = personName;
                             }
                         }
                     }
@@ -192,33 +205,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var adults = _groupMembers.Where( m => m.GroupRoleId != _childRoleId).ToList();
-            if (adults.Any())
-            {
-                //if ( adults.Any( a => a.Person.FirstName == "") )
-                //{
-                    lAdultCaption.Text = "The adults in this family are ";
-                //}
-                //else
-                //{
-                //    var firstNames = adults.Select( a => "<span class='adult-name'>" + a.Person.FirstName + "</span>" ).ToList();
-                //    if ( firstNames.Count() > 1 )
-                //    {
-                //        lAdultCaption.Text = firstNames.AsDelimited( " and " ) + " are ";
-                //    }
-                //    else
-                //    {
-                //        lAdultCaption.Text = firstNames.FirstOrDefault() + " is ";
-                //    }
-                //}
-
-                lAdultCaption.Visible = true;
-                ddlMaritalStatus.Visible = true;
-            }
-            else
-            {
-                lAdultCaption.Visible = false;
-                ddlMaritalStatus.Visible = false;
-            }
+            ddlMaritalStatus.Visible = adults.Any();
 
             base.OnPreRender( e );
         }
@@ -258,6 +245,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             NewFamilyMembersRow row = sender as NewFamilyMembersRow;
 
+            var contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
+            if (contactInfoRow != null)
+            {
+                nfciContactInfo.ContactInfoRows.Remove( contactInfoRow );
+            }
+
             foreach ( var attributeControl in attributeControls )
             {
                 var attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == row.PersonGuid );
@@ -272,10 +265,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         protected void btnPrevious_Click( object sender, EventArgs e )
         {
-            if ( CurrentCategoryIndex > 0 )
+            if ( CurrentPageIndex > 0 )
             {
-                CurrentCategoryIndex--;
-                ShowAttributeCategory( CurrentCategoryIndex );
+                CurrentPageIndex--;
+                ShowPage( CurrentPageIndex );
             }
         }
 
@@ -283,10 +276,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
-                if ( CurrentCategoryIndex < attributeControls.Count )
+                if ( CurrentPageIndex < ( attributeControls.Count + 1) )
                 {
-                    CurrentCategoryIndex++;
-                    ShowAttributeCategory( CurrentCategoryIndex );
+                    CurrentPageIndex++;
+                    ShowPage( CurrentPageIndex );
                 }
                 else
                 {
@@ -349,12 +342,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             nfmMembers.ClearRows();
+            nfciContactInfo.ClearRows();
 
             foreach ( var familyMember in familyMembers )
             {
+                string familyMemberGuidString = familyMember.Person.Guid.ToString().Replace( "-", "_" );
+
                 var familyMemberRow = new NewFamilyMembersRow();
                 nfmMembers.Controls.Add( familyMemberRow );
-                familyMemberRow.ID = string.Format( "row_{0}", familyMember.Person.Guid.ToString().Replace( "-", "_" ) );
+                familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuidString );
                 familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
                 familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
                 familyMemberRow.PersonGuid = familyMember.Person.Guid;
@@ -362,6 +358,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMemberRow.RequireGrade = _requireGrade;
                 familyMemberRow.RoleId = familyMember.GroupRoleId;
                 familyMemberRow.ShowGrade = familyMember.GroupRoleId == _childRoleId;
+
+                var contactInfoRow = new NewFamilyContactInfoRow();
+                nfciContactInfo.Controls.Add( contactInfoRow );
+                contactInfoRow.ID = string.Format( "ci_row_{0}", familyMemberGuidString );
+                contactInfoRow.PersonGuid = familyMember.Person.Guid;
+
+                if ( _homePhone != null  )
+                {
+                    var homePhoneNumber = familyMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
+                    if (homePhoneNumber != null)
+                    {
+                        contactInfoRow.HomePhoneNumber = homePhoneNumber.NumberFormatted;
+                        contactInfoRow.HomePhoneCountryCode = homePhoneNumber.CountryCode;
+                    }
+                }
+
+                if ( _cellPhone != null )
+                {
+                    var cellPhoneNumber = familyMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
+                    if ( cellPhoneNumber != null )
+                    {
+                        contactInfoRow.CellPhoneNumber = cellPhoneNumber.NumberFormatted;
+                        contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;
+                    }
+                }
+
+                contactInfoRow.Email = familyMember.Person.Email;
 
                 if ( setSelection )
                 {
@@ -382,7 +405,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var attributeRow = new NewFamilyAttributesRow();
                     attributeControl.Controls.Add( attributeRow );
-                    attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMember.Person.Guid );
+                    attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMemberGuidString );
                     attributeRow.AttributeList = attributeControl.AttributeList;
                     attributeRow.PersonGuid = familyMember.Person.Guid;
 
@@ -393,7 +416,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            ShowAttributeCategory( CurrentCategoryIndex );
+            ShowPage( CurrentPageIndex );
         }
 
         private List<GroupMember> GetControlData()
@@ -443,6 +466,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
 
+                NewFamilyContactInfoRow contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
+                if ( contactInfoRow != null )
+                {
+                    string homeNumber = PhoneNumber.CleanNumber( contactInfoRow.HomePhoneNumber );
+                    if ( _homePhone != null && !string.IsNullOrWhiteSpace( homeNumber ) )
+                    {
+                        var homePhoneNumber = new PhoneNumber();
+                        homePhoneNumber.NumberTypeValueId = _homePhone.Id;
+                        homePhoneNumber.Number = homeNumber;
+                        homePhoneNumber.CountryCode = PhoneNumber.CleanNumber( contactInfoRow.HomePhoneCountryCode );
+                        groupMember.Person.PhoneNumbers.Add( homePhoneNumber );
+                    }
+
+                    string cellNumber = PhoneNumber.CleanNumber( contactInfoRow.CellPhoneNumber );
+                    if ( _cellPhone != null && !string.IsNullOrWhiteSpace( cellNumber ) )
+                    {
+                        var cellPhoneNumber = new PhoneNumber();
+                        cellPhoneNumber.NumberTypeValueId = _cellPhone.Id;
+                        cellPhoneNumber.Number = cellNumber;
+                        cellPhoneNumber.CountryCode = PhoneNumber.CleanNumber( contactInfoRow.CellPhoneCountryCode );
+                        groupMember.Person.PhoneNumbers.Add( cellPhoneNumber );
+                    }
+
+                    groupMember.Person.Email = contactInfoRow.Email;
+                }
+
                 groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
@@ -466,10 +515,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var rows = nfmMembers.FamilyMemberRows;
             var familyMemberGuid = Guid.NewGuid();
+            string familyMemberGuidString = familyMemberGuid.ToString().Replace( "-", "_" );
 
             var familyMemberRow = new NewFamilyMembersRow();
             nfmMembers.Controls.Add( familyMemberRow );
-            familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuid.ToString().Replace( "-", "_" ) );
+            familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuidString );
             familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
             familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
             familyMemberRow.PersonGuid = familyMemberGuid;
@@ -500,28 +550,34 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMemberRow.LastName = rows[0].LastName;
             }
 
+            var contactInfoRow = new NewFamilyContactInfoRow();
+            nfciContactInfo.Controls.Add( contactInfoRow );
+            contactInfoRow.ID = string.Format( "ci_row_{0}", familyMemberGuidString );
+            contactInfoRow.PersonGuid = familyMemberGuid;
+
             foreach ( var attributeControl in attributeControls )
             {
                 var attributeRow = new NewFamilyAttributesRow();
                 attributeControl.Controls.Add( attributeRow );
-                attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMemberGuid );
+                attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMemberGuidString );
                 attributeRow.AttributeList = attributeControl.AttributeList;
                 attributeRow.PersonGuid = familyMemberGuid;
             }
         }
 
-        private void ShowAttributeCategory( int index )
+        private void ShowPage( int index )
         {
             pnlFamilyData.Visible = ( index == 0 );
+            pnlContactInfo.Visible = ( index == 1 );
 
             attributeControls.ForEach( c => c.Visible = false );
-            if ( index > 0 && attributeControls.Count >= index )
+            if ( index > 1 && attributeControls.Count >= ( index - 1) )
             {
-                attributeControls[index - 1].Visible = true;
+                attributeControls[index - 2].Visible = true;
             }
 
             btnPrevious.Visible = index > 0;
-            btnNext.Text = index < attributeControls.Count ? "Next" : "Finish";
+            btnNext.Text = index < ( attributeControls.Count + 1) ? "Next" : "Finish";
         }
 
         #endregion

@@ -137,7 +137,7 @@ namespace Rock.Reporting.DataFilter.Person
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );
             }
 
-            var ddl = ComparisonControl( NumericFilterComparisonTypes );
+            var ddl = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
             ddl.ID = filterControl.ID + "_1";
             filterControl.Controls.Add( ddl );
 

@@ -448,8 +448,8 @@ namespace RockWeb.Blocks.Security
 
                 mergeObjects.Add( "Persons", personDictionaries.ToArray() );
 
-                var recipients = new Dictionary<string, Dictionary<string, object>>();
-                recipients.Add( person.Email, mergeObjects );
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
                 Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
@@ -487,8 +487,8 @@ namespace RockWeb.Blocks.Security
                 mergeObjects.Add( "Person", personDictionary );
                 mergeObjects.Add( "User", user );
 
-                var recipients = new Dictionary<string, Dictionary<string, object>>();
-                recipients.Add( person.Email, mergeObjects );
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
                 Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
 
@@ -531,8 +531,8 @@ namespace RockWeb.Blocks.Security
                         mergeObjects.Add( "Person", personDictionary );
                         mergeObjects.Add( "User", user );
 
-                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                        recipients.Add( person.Email, mergeObjects );
+                        var recipients = new List<RecipientData>();
+                        recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
                         Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
