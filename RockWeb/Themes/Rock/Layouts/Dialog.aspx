@@ -108,10 +108,6 @@
     <script type="text/javascript">
         Sys.Application.add_load(function () {
             $('#modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
-
-            $('.scroll-container').on('mouseenter', function () {
-                $('.scroll-container').tinyscrollbar_update('relative');
-            });
         });
     </script>
 </body>
