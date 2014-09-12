@@ -643,7 +643,7 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/error.aspx?type=security", false );
+                        Response.Redirect( "~/Error.aspx?type=security", false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
                 }

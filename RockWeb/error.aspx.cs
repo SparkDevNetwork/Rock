@@ -20,8 +20,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -34,97 +37,85 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Page_Load( object sender, EventArgs e )
         {
-            lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+            try
+            {
+                lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
 
-            string errorType = Request["type"];
-            if ( string.IsNullOrWhiteSpace( errorType ) )
-            {
-                errorType = "exception";
-            }
+                string errorType = Request["type"];
+                if ( string.IsNullOrWhiteSpace( errorType ) )
+                {
+                    errorType = "exception";
+                }
 
-            if ( errorType.Equals( "security", StringComparison.OrdinalIgnoreCase ) )
-            {
-                ShowSecurityError();
+                if ( errorType.Equals( "security", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    ShowSecurityError();
+                }
+                else
+                {
+                    ShowException();
+                }
             }
-            else
-            {
-                ShowException();
-            }
+            catch { }
         }
 
+        /// <summary>
+        /// Shows the security error.
+        /// </summary>
         private void ShowSecurityError()
         {
             pnlSecurity.Visible = true;
+            pnlException.Visible = false;
         }
 
+        /// <summary>
+        /// Shows the exception.
+        /// </summary>
         private void ShowException()
         {
-            pnlException.Visible = true;
-
-            // get error level
-            int errorLevel = 0;
-
-            if ( Request["error"] != null )
+            Exception ex = GetSavedValue("RockLastException") as Exception;
+            if ( ex != null )
             {
-                errorLevel = Int32.Parse( Request["error"].ToString() );
-            }
-            else
-            {
-                if ( Request.RequestContext.HttpContext.Items["error"] != null )
+                int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? "" ).ToString().AsIntegerOrNull();
+                if (siteId.HasValue)
                 {
-                    errorLevel = Int32.Parse( Request.RequestContext.HttpContext.Items["error"].ToString() );
-                }
-            }
-
-
-            switch ( errorLevel )
-            {
-                case 1:
-                    // check to see if the user is an admin, if so allow them to view the error details
-                    var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-
-                    try
+                    var site = SiteCache.Read(siteId.Value);
+                    if (site != null && !string.IsNullOrWhiteSpace( site.ErrorPage))
                     {
+                        Context.Response.Redirect( site.ErrorPage, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
+                    }
+                }
+
+                pnlSecurity.Visible = false;
+                pnlException.Visible = true;
+
+                int? errorLevel = ( GetSavedValue("RockExceptionOrder") ?? "" ).ToString().AsIntegerOrNull();
+
+                ClearSavedValue( "RockExceptionOrder" );
+                ClearSavedValue( "RockLastException" );
+
+                bool showDetails = errorLevel.HasValue && errorLevel.Value == 66;
+                if (!showDetails)
+                {
+                    try 
+                    {
+                        // check to see if the user is an admin, if so allow them to view the error details
+                        var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
                         GroupService service = new GroupService( new RockContext() );
                         Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
-
-                        if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
-                        {
-                            // get exception from Session
-                            if ( Session["Exception"] != null )
-                            {
-                                // is an admin
-                                lErrorInfo.Text = "<h3>Exception Log:</h3>";
-
-                                ProcessException( (Exception)Session["Exception"], " " );
-                            }
-                        }
+                        showDetails = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
                     }
-                    catch { }
+                    catch {}
+                }
 
-                    break;
-
-                case 66: // massive errors from global.asax.cs or routehandler
-
-                    if ( Session["Exception"] != null )
-                    {
-                        lErrorInfo.Text = "<h3>Exception Log:</h3>";
-                        ProcessException( (Exception)Session["Exception"], " " );
-                    }
-                    else
-                    {
-                        if ( Request.RequestContext.HttpContext.Items["Exception"] != null )
-                        {
-                            lErrorInfo.Text = "<h3>Exception Log:</h3>";
-                            ProcessException( (Exception)Request.RequestContext.HttpContext.Items["Exception"], " " );
-                        }
-                    }
-                    break;
+                if (showDetails)
+                {
+                    lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                    ProcessException( ex, " " );
+                }
             }
-
-            // clear session object
-            Session.Remove( "Exception" );
-
         }
 
         /// <summary>
@@ -135,7 +126,7 @@ namespace RockWeb
         private void ProcessException( Exception ex, string exLevel )
         {
             lErrorInfo.Text += "<div class=\"alert alert-danger\">";
-            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h3>";
+            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h4>";
             lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
             lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
             lErrorInfo.Text += "</div>";
@@ -147,5 +138,38 @@ namespace RockWeb
                 ProcessException( ex.InnerException, "-" + exLevel );
             }
         }
+
+        /// <summary>
+        /// Gets the saved value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private object GetSavedValue(string key)
+        {
+            object item = null;
+            if ( Context.Session != null)
+            {
+                item = Context.Session[key];
+            }
+            if (item == null)
+            {
+                item = Context.Cache[key];
+            }
+            return item;
+        }
+
+        /// <summary>
+        /// Clears the saved value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        private void ClearSavedValue(string key)
+        {
+            if ( Context.Session != null)
+            {
+                Context.Session.Remove(key);
+            }
+            Context.Cache.Remove(key);
+        }
+
     }
 }
