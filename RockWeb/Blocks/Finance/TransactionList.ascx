@@ -12,8 +12,8 @@
                 </div>
                 <div class="panel-body">
 
-                    <Rock:NotificationBox ID="nbClosedWarning" runat="server" NotificationBoxType="Info" Title="Note"
-                        Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="true" />
+                    <Rock:NotificationBox ID="nbClosedWarning" CssClass="margin-b-lg" runat="server" NotificationBoxType="Info" Title="Note"
+                        Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="false" />
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfTransactions" runat="server">
