@@ -167,13 +167,15 @@ namespace RockWeb
             }
             else
             {
-                // Note: There is a RequireSecurity flag on BinaryFileType, but that is to speed up Gets of images. We should always check security on FileUploads
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                Person currentPerson = currentUser != null ? currentUser.Person : null;
-
-                if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                if ( binaryFileType.RequiresSecurity )
                 {
-                    throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );
+                    var currentUser = UserLoginService.GetCurrentUser();
+                    Person currentPerson = currentUser != null ? currentUser.Person : null;
+
+                    if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    {
+                        throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );
+                    }
                 }
             }
 
