@@ -554,7 +554,7 @@ namespace Rock.Web.UI
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
                 Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.Person impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
