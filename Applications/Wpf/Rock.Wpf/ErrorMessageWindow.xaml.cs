@@ -26,6 +26,11 @@ namespace Rock.Wpf
     {
         public ErrorMessageWindow( Exception ex )
         {
+            if (ex is AggregateException)
+            {
+                ex = ( ex as AggregateException ).Flatten();
+            }
+
             string message = ex.Message;
             var innerEx = ex.InnerException;
             while (innerEx != null)
@@ -33,8 +38,9 @@ namespace Rock.Wpf
                 message += "\n" + innerEx.Message;
                 innerEx = innerEx.InnerException;
             }
+
             InitializeComponent();
-            txtErrorMessage.Text = message;
+            lblErrorMessage.Content = message;
         }
 
         /// <summary>
