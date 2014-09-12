@@ -47,15 +47,14 @@ namespace RockWeb.Blocks.Security
         {
             base.OnLoad( e );
 
-            if ( CurrentUser == null || !CurrentUser.IsAuthenticated )
+            if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
                 DisplayErrorText( "You must login before changing your password" );
                 pnlChangePassword.Visible = false;
             }
-
-            if ( !Page.IsPostBack )
+            else
             {
-                if ( CurrentUser != null )
+                if ( !Page.IsPostBack )
                 {
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
                     if ( component.SupportsChangePassword )

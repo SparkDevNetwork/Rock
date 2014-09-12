@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Crm
             var people = new List<Person>();
             Person targetPerson = null;
 
-            string personKey = PageParameter( "Person" );
+            string personKey = PageParameter( "rckipid" );
             if ( ! string.IsNullOrEmpty( personKey ) )
             {
                 try

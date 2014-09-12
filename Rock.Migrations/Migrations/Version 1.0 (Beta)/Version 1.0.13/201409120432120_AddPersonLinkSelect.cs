@@ -150,7 +150,12 @@ INSERT INTO [dbo].[ReportField] (
             1,@AttributeId,@GroupMemberCategoryId,'~/page/' + CAST(@GroupPageId as varchar) + '?GroupId={0}', NEWID())
     END
 " );
-
+            // update the photo request page route
+            Sql( @"
+        UPDATE [PageRoute]
+        SET [Route] = 'PhotoRequest/Upload/{rckipid}'
+        WHERE [Route] = 'PhotoRequest/Upload/{Person}'
+");
             #endregion
 
         }
