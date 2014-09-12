@@ -751,5 +751,19 @@
             Value="#dbd5cb"
             />
     </Style>
+    
+    <Style x:Key="rowDefinitionActions" TargetType="RowDefinition" >
+        <Setter
+            Property="Height"
+            Value="55" />
+    </Style>
+
+    <Style x:Key="rowDefinitionPanelTitle" TargetType="RowDefinition" >
+        <Setter
+            Property="Height"
+            Value="70" />
+    </Style>
+
+    
 
 </ResourceDictionary>

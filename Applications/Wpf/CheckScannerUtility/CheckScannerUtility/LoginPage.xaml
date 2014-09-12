@@ -32,45 +32,31 @@
                 Margin="0,40,0,0" >
             </Frame>
 
-            <Label Style="{StaticResource labelStylePanelTitle}" FontSize="21" HorizontalAlignment="Left">
-                Login
-            </Label>
-            
-            <Label Name="lblRockUrl"
-                           Style="{StaticResource labelStyleBold}">Rock URL</Label>
-            <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxStyleUrl}" HorizontalAlignment="Stretch" Width="Auto" />
-            
-            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0">Username</Label>
-            <TextBox Name="txtUsername"
-                             Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto"
-                             KeyDown="HideLoginWarning" />
+            <Label Style="{StaticResource labelStylePanelTitle}" FontSize="21" HorizontalAlignment="Left" Content="Login" />
 
-            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0">Password</Label>
-            <PasswordBox Name="txtPassword"
-                                 Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto"
-                                 KeyDown="HideLoginWarning" />
+            <Label Name="lblRockUrl" Style="{StaticResource labelStyleBold}" Content="Rock URL" />
+            <TextBox Name="txtRockUrl" Style="{StaticResource textboxStyleUrl}" HorizontalAlignment="Stretch" Width="Auto" />
+
+            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0" Content="Username" />
+            <TextBox Name="txtUsername" Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto" KeyDown="HideLoginWarning" />
+
+            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0" Content="Password" />
+            <PasswordBox Name="txtPassword" Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto" KeyDown="HideLoginWarning" />
 
             <Button Name="btnLogin"
-                            Click="btnLogin_Click"
-                            HorizontalAlignment="Left"
+                    Click="btnLogin_Click"
+                    HorizontalAlignment="Left"
                     Margin="2,10,0,0"
-                            Style="{StaticResource buttonStylePrimary}">Login</Button>
+                    Style="{StaticResource buttonStylePrimary}" Content="Login" />
 
             <Label Name="lblLoginWarning"
-                           Style="{StaticResource labelStyleAlert}"
-                           Content="Sorry, we couldn't find an account matching that username/password."
-                           MaxHeight="150" />
-
-
-
-
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="Sorry, we couldn't find an account matching that username/password."
+                   MaxHeight="150" />
 
         </StackPanel>
-        <Frame Grid.Column="2" Grid.Row="1" VerticalAlignment="Bottom"
-                    
-                    Source="images/check-scanner.xaml"
-                    Opacity="0.2"
-                    />
+        
+        <!-- Check Scanner Logo -->
+        <Frame Grid.Column="2" Grid.Row="1" VerticalAlignment="Bottom" Source="images/check-scanner.xaml" Opacity="0.2" />
     </Grid>
 </Page>
