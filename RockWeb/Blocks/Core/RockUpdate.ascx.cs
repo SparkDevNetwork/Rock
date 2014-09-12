@@ -131,15 +131,15 @@ namespace RockWeb.Blocks.Core
             WriteAppOffline();
             try
             {
+                pnlUpdatesAvailable.Visible = false;
+
                 if ( ! UpdateRockPackage( version ) )
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
                 }
 
-                pnlUpdatesAvailable.Visible = false;
                 lRockVersion.Text = "";
-
                 SendStatictics( version );
             }
             catch ( Exception ex )
@@ -152,6 +152,11 @@ namespace RockWeb.Blocks.Core
             RemoveAppOffline();
         }
 
+        /// <summary>
+        /// Enables and sets the appropriate CSS class on the install buttons and each div panel.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -179,6 +184,11 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the particular version button that was clicked.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             string version = e.CommandArgument.ToString();
