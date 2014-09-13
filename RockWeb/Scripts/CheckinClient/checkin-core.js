@@ -1,9 +1,9 @@
-var myScroll;
+var bodyScroll;
 
 Sys.Application.add_load(function () {
 
     resizeBody();
-    myScroll = new IScroll('.checkin-scroll-panel', {
+    bodyScroll = new IScroll('.checkin-scroll-panel', {
         scrollbars: true,
         mouseWheel: true,
         interactiveScrollbars: true,
