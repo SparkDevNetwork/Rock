@@ -124,6 +124,16 @@ namespace RockWeb.Blocks.Crm
                     HtmlImage imgPersonImage = e.Row.FindControl( "imgPersonImage" ) as HtmlImage;
                     if ( imgPersonImage != null )
                     {
+                         if ( groupMember.Person.PhotoId == null )
+                         {
+                             var deleteField = gList.Columns.OfType<DeleteField>().First();
+                             var cell = (e.Row.Cells[gList.Columns.IndexOf( deleteField )] as DataControlFieldCell).Controls[0];
+                             if ( cell != null )
+                             {
+                                cell.Visible = false;
+                             }
+                         }
+
                         imgPersonImage.Src = String.Format( @"{0}&width={1}", Person.GetPhotoUrl( groupMember.Person.PhotoId, groupMember.Person.Gender ), size );
                         imgPersonImage.Style.Add( "width", sizepx );
                     }
@@ -158,6 +168,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
         }
+
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -168,6 +179,51 @@ namespace RockWeb.Blocks.Crm
             size = GetAttributeValue( "PhotoSize" );
             sizepx = string.Format( "{0}px", size );
             BindGrid();
+        }
+
+        /// <summary>
+        /// Redirect to the person's profile when their row is clicked.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_RowSelected( object sender, RowEventArgs e )
+        {
+            int personId = (int)e.RowKeyValues["PersonId"];
+            Response.Redirect( string.Format( "~/Person/{0}", personId ), false );
+
+            // this remaining stuff prevents .NET from quietly throwing ThreadAbortException
+            Context.ApplicationInstance.CompleteRequest();
+            return;
+        }
+
+        /// <summary>
+        /// Handles the Delete event to delete the photo.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_Delete( object sender, RowEventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            int currentRowsPersonId = (int)e.RowKeyValues["PersonId"];
+
+            GroupService groupService = new GroupService( rockContext );
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            
+            // Set their group member record to Active
+            Group group = groupService.Get( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
+            GroupMember groupMember = group.Members.Where( m => m.PersonId == currentRowsPersonId ).FirstOrDefault();
+            if ( groupMember != null )
+            {
+                binaryFileService.Delete( groupMember.Person.Photo );
+
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                groupMember.Person.Photo = null;
+                groupMember.Person.PhotoId = null;
+
+                rockContext.SaveChanges();
+                _photoRequestGroup = group;
+                BindGrid();
+            }
         }
 
         /// <summary>
