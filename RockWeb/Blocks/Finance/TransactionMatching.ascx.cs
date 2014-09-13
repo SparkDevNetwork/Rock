@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
+
         #region Base Control Methods
 
         /// <summary>
@@ -415,9 +416,17 @@ namespace RockWeb.Blocks.Finance
 
                 // get count of transactions that haven't been matched (not including the one we are currently editing)
                 int currentTranId = hfTransactionId.Value.AsInteger();
-                int unmatchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId == null && a.Id != currentTranId );
+                int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
                 int totalBatchItemCount = qryTransactionCount.Count();
-                hlUnmatchedRemaining.Text = string.Format( "{0} remaining of {1} ", unmatchedRemainingCount, totalBatchItemCount );
+                //hlUnmatchedRemaining.Text = string.Format( "{0} remaining of {1} ", matchedRemainingCount, totalBatchItemCount );
+
+                int percentComplete = (int)Math.Round( (double)(100 * matchedRemainingCount) / totalBatchItemCount );
+
+                lProgressBar.Text = String.Format( @"<div class='progress'>
+                    <div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
+                        {0}%
+                    </div>
+                </div>", percentComplete);
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
             }
