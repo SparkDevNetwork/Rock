@@ -13,7 +13,7 @@
                     Visible="false"></Rock:NotificationBox>
                 <Rock:NotificationBox runat="server" ID="nbMessage" NotificationBoxType="Success" Visible="false"></Rock:NotificationBox>
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="people">
+                    <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_RowSelected" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="photo">
                         <Columns>
                             <asp:TemplateField>
                                 <HeaderTemplate>
@@ -44,6 +44,7 @@
                             </asp:TemplateField>
                             <asp:BoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
                             <asp:BoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />
+                            <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>
