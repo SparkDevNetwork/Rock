@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Finance
 
             foreach ( var account in accounts.ToList() )
             {
-                ListItem checkbox = new ListItem(account.Name, account.Id.ToString(), true);
+                ListItem checkbox = new ListItem(account.PublicName, account.Id.ToString(), true);
                 checkbox.Selected = true;
 
                 cblAccounts.Items.Add( checkbox );
