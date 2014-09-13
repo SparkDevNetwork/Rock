@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="2" virtualPath="/RockWeb/App_Browsers/" hash="ffffffff94abbb4a" filehash="ffffc88840985937" flags="110000" assembly="App_Browsers" type="ASP.ApplicationBrowserCapabilitiesFactory">
-  <filedeps>
-    <filedep name="/RockWeb/App_Browsers/BrowserFile.browser" />
-  </filedeps>
-</preserve>
