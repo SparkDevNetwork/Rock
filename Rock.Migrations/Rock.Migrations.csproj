@@ -53,6 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\201409142128150_AddPhotoRequestGroupPage.cs" />
+    <Compile Include="Migrations\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
+      <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
@@ -1193,6 +1197,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201409142128150_AddPhotoRequestGroupPage.resx">
+      <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
     </EmbeddedResource>
