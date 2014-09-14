@@ -53,7 +53,7 @@
                     </div>
                 </div>
 
-                <div class="actions">
+                <div class="actions margin-t-md">
                     <asp:LinkButton ID="lbUpdate" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbUpdate_Click" />
                     <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel Schedule" CssClass="btn btn-link js-cancel-txn" CausesValidation="false" OnClick="lbCancel_Click" Visible="false" />
                     <asp:LinkButton ID="lbReactivate" runat="server" Text="Reactivate Schedule" CssClass="btn btn-link js-reactivate-txn" CausesValidation="false" OnClick="lbReactivate_Click" Visible="false"/>
