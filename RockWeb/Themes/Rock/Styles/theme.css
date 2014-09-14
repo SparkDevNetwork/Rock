@@ -2055,12 +2055,6 @@ td.grid-col-actions {
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #ffffff;
-  color: #999999;
-  border-color: #d4d4d4;
-}
-.grid-actions .btn:hover {
-  background-color: #e6e6e6;
 }
 .table-light thead th {
   background-color: inherit;
@@ -3866,6 +3860,9 @@ a.help {
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
+}
+.panel .panel-heading .checkbox {
+  margin: 0;
 }
 .panel .panel-heading .panel-labels {
   float: right;
