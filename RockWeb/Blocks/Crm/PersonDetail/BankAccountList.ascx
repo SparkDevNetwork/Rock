@@ -7,7 +7,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-money"></i> Bank Account List</h1>
+                <h1 class="panel-title"><i class="fa fa-bank"></i> Bank Account List</h1>
             </div>
             <div class="panel-body">
 
