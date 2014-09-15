@@ -1221,9 +1221,9 @@ namespace Rock.Data
 
                 IF NOT EXISTS(Select * FROM [AttributeValue] WHERE [Guid] = '{3}')
                     INSERT INTO [AttributeValue] (
-                        [IsSystem],[AttributeId],[EntityId],[Order],[Value],[Guid])
+                        [IsSystem],[AttributeId],[EntityId],[Value],[Guid])
                     VALUES(
-                        1,@AttributeId,{1},0,'{2}','{3}')
+                        1,@AttributeId,{1},'{2}','{3}')
 ",
                     attributeGuid,
                     entityId,
@@ -1323,11 +1323,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@BlockId,
-                    0,@TheValue,
+                    @TheValue,
                     NEWID())
 ",
                     blockGuid,
@@ -1667,11 +1667,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     definedValueGuid,
@@ -1714,11 +1714,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{3}',
+                    '{3}',
                     NEWID())
 ",
                     definedTypeGuid,
@@ -2819,11 +2819,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@PersonBadgeId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     personBadgeGuid,
@@ -3376,11 +3376,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@ActionTypeId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     actionTypeGuid,
@@ -3415,22 +3415,22 @@ INSERT INTO [dbo].[Auth]
                     BEGIN
                         INSERT INTO [AttributeValue] (
                             [IsSystem],[AttributeId],[EntityId],
-                            [Order],[Value],
+                            [Value],
                             [Guid])
                         VALUES(
                             1,@AttributeId,@ActionTypeId,
-                            0,'{2}',
+                            '{2}',
                             NEWID())                    
                     END
                     ELSE
                     BEGIN
                         INSERT INTO [AttributeValue] (
                             [IsSystem],[AttributeId],[EntityId],
-                            [Order],[Value],
+                            [Value],
                             [Guid])
                         SELECT TOP 1
                             1,@AttributeId,@ActionTypeId,
-                            0,CONVERT(nvarchar(50), [Guid]),
+                            CONVERT(nvarchar(50), [Guid]),
                             NEWID()
                         FROM [PersonAlias]
                         ORDER BY [Id]       
@@ -3623,11 +3623,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{3}',
+                    '{3}',
                     NEWID())
 ",
                     definedTypeGuid,
