@@ -314,9 +314,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             mergeObjects.Add( "GradeDetailPageUrl", gradeDetailPageUrl.ToString() );
 
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
+            var recipients = new List<RecipientData>();
 
-            recipients.Add( facilitator.Email, mergeObjects );
+            recipients.Add( new RecipientData( facilitator.Email, mergeObjects ) );
 
             Email.Send( com.ccvonline.Residency.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
 
