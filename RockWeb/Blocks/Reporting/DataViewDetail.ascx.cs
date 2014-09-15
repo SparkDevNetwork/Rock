@@ -108,7 +108,8 @@ $(document).ready(function() {
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            CreateFilterControl( ViewState["EntityTypeId"] as int?, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false );
+            RockContext rockContext = new RockContext();
+            CreateFilterControl( ViewState["EntityTypeId"] as int?, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
         }
 
         /// <summary>
@@ -315,7 +316,8 @@ $(document).ready(function() {
         /// <summary>
         /// Binds the data transformations.
         /// </summary>
-        public void BindDataTransformations()
+        /// <param name="rockContext">The rock context.</param>
+        public void BindDataTransformations( RockContext rockContext )
         {
             ddlTransform.Items.Clear();
             int? entityTypeId = etpEntityType.SelectedEntityTypeId;
@@ -324,9 +326,12 @@ $(document).ready(function() {
                 var filteredEntityType = EntityTypeCache.Read( entityTypeId.Value );
                 foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
                 {
-                    var transformEntityType = EntityTypeCache.Read( component.TypeName );
-                    ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
-                    ddlTransform.Items.Add( li );
+                    if ( component.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                    {
+                        var transformEntityType = EntityTypeCache.Read( component.TypeName );
+                        ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
+                        ddlTransform.Items.Add( li );
+                    }
                 }
             }
 
@@ -448,10 +453,11 @@ $(document).ready(function() {
             etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
             cpCategory.SetValue( dataView.CategoryId );
 
-            BindDataTransformations();
+            var rockContext = new RockContext();
+            BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
-            CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true );
+            CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true, rockContext );
         }
 
         /// <summary>
@@ -752,13 +758,14 @@ $(document).ready(function() {
         /// <param name="filteredEntityTypeId">The filtered entity type identifier.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection )
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
             phFilters.Controls.Clear();
             if ( filter != null && filteredEntityTypeId.HasValue )
             {
                 var filteredEntityType = EntityTypeCache.Read( filteredEntityTypeId.Value );
-                CreateFilterControl( phFilters, filter, filteredEntityType.Name, setSelection );
+                CreateFilterControl( phFilters, filter, filteredEntityType.Name, setSelection, rockContext );
             }
         }
 
@@ -769,7 +776,8 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         /// <param name="filteredEntityTypeName">Name of the filtered entity type.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        private void CreateFilterControl( Control parentControl, DataViewFilter filter, string filteredEntityTypeName, bool setSelection )
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateFilterControl( Control parentControl, DataViewFilter filter, string filteredEntityTypeName, bool setSelection, RockContext rockContext )
         {
             if ( filter.ExpressionType == FilterExpressionType.Filter )
             {
@@ -780,7 +788,7 @@ $(document).ready(function() {
                 filterControl.FilteredEntityTypeName = filteredEntityTypeName;
                 if ( filter.EntityTypeId.HasValue )
                 {
-                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value );
+                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
                     if ( entityTypeCache != null )
                     {
                         filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -813,7 +821,7 @@ $(document).ready(function() {
                 groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
                 foreach ( var childFilter in filter.ChildFilters )
                 {
-                    CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection );
+                    CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection, rockContext );
                 }
             }
         }
@@ -906,15 +914,16 @@ $(document).ready(function() {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.Guid = Guid.NewGuid();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+            var rockContext = new RockContext();
 
-            BindDataTransformations();
+            BindDataTransformations( rockContext );
 
             var emptyFilter = new DataViewFilter();
             emptyFilter.ExpressionType = FilterExpressionType.Filter;
             emptyFilter.Guid = Guid.NewGuid();
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
-            CreateFilterControl( etpEntityType.SelectedEntityTypeId, dataViewFilter, true );
+            CreateFilterControl( etpEntityType.SelectedEntityTypeId, dataViewFilter, true, rockContext );
         }
 
         #endregion
