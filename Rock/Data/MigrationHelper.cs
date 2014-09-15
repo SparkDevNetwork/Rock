@@ -529,6 +529,7 @@ namespace Rock.Data
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="idParameter">The id parameter.</param>
+        [Obsolete("Use UpdatePageContext")]
         public void AddPageContext( string pageGuid, string entity, string idParameter )
         {
             Migration.Sql( string.Format( @"
@@ -542,6 +543,47 @@ namespace Rock.Data
                     1, @PageId, '{1}', '{2}', newid())
 ", pageGuid, entity, idParameter ) );
 
+        }
+
+        /// <summary>
+        /// Adds or Updates PageContext to the given page, entity, idParameter
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="entity">The entity value.</param>
+        /// <param name="idParameter">The idparameter value.</param>
+        /// <param name="guid">The unique identifier for the PageContext record.</param>
+        public void UpdatePageContext( string pageGuid, string entity, string idParameter, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                DECLARE @PageContextId int
+                SET @PageContextId = (SELECT TOP 1 [Id] FROM [PageContext] WHERE [PageId] = @PageId and [Entity] = '{1}' and [IdParameter] = '{2}')
+                IF @PageContextId IS NULL
+                BEGIN
+                    INSERT INTO [PageContext] (
+                        [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
+                    VALUES(
+                        1, @PageId, '{1}', '{2}', '{3}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [PageContext] set [Guid] = '{3}' where [Id] = @PageContextId
+                END
+
+", pageGuid, entity, idParameter, guid ) );
+
+        }
+
+        /// <summary>
+        /// Deletes the page context.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeletePageContext( string guid )
+        {
+            Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
         }
 
         #endregion
