@@ -427,9 +427,13 @@ namespace Rock.Model
                 {
                     return this.ParentPage;
                 }
-                else
+                else if (this.Layout != null && this.Layout.Site != null)
                 {
                     return this.Layout.Site;
+                }
+                else
+                {
+                    return base.ParentAuthority;
                 }
             }
         }
