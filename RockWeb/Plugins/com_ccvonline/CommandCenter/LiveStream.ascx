@@ -30,11 +30,11 @@
             flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
                 {
                     key: '#$392ba7eb81984ddb47a',
-                    controls: {
-                        time: false,
-                        scrubber: false
-                    },
                     plugins: {
+                        controls: {
+                            time: false,
+                            scrubber: false
+                        },
                         rtmp: {
                             url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf',
                         }
