@@ -1529,8 +1529,6 @@ fieldset .actions {
 }
 .well-message {
   text-align: center;
-  background-color: #ecf0f1;
-  border: 1px solid #dde4e6;
 }
 .well-message h1 {
   font-size: 38px;
@@ -1538,6 +1536,26 @@ fieldset .actions {
 .well-message i {
   font-size: 84px;
   margin: 12px 0;
+}
+.well-message.well-message-info {
+  background-color: #3498db;
+  color: #ffffff;
+  border-color: #3498db;
+}
+.well-message.well-message-success {
+  background-color: #18bc9c;
+  color: #ffffff;
+  border-color: #18bc9c;
+}
+.well-message.well-message-danger {
+  background-color: #e74c3c;
+  color: #ffffff;
+  border-color: #e74c3c;
+}
+.well-message.well-message-warning {
+  background-color: #f39c12;
+  color: #ffffff;
+  border-color: #f39c12;
 }
 ul.groupmembers {
   list-style: none;
@@ -3981,25 +3999,25 @@ a.help {
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #dde4e6;
 }
-.panel-block .panel-heading {
+.panel-block > .panel-heading {
   background-color: #ecf0f1;
   /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
             float: right;
             margin-top: 2px;
         }*/
 }
-.panel-block .panel-heading:before,
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:before,
+.panel-block > .panel-heading:after {
   content: " ";
   display: table;
 }
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:after {
   clear: both;
 }
-.panel-block .panel-heading .panel-title {
+.panel-block > .panel-heading .panel-title {
   float: left;
 }
-.panel-block .panel-heading .panel-title i {
+.panel-block > .panel-heading .panel-title i {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
