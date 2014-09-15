@@ -126,7 +126,7 @@
         }
 
         // setup player
-        flowplayer("player", "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf",
+        flowplayer("player", "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
 		{
 		    key: '#$392ba7eb81984ddb47a',
 			plugins: {
