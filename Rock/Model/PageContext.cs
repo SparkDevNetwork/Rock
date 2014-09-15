@@ -57,6 +57,8 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_PageId")]
+        [Index( "IX_PageIdEntityIdParameter", 0, IsUnique=true )]
         public int PageId { get; set; }
         
         /// <summary>
@@ -68,6 +70,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
+        [Index( "IX_PageIdEntityIdParameter", 1, IsUnique = true )]
         public string Entity { get; set; }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
         public string IdParameter { get; set; }
 
         #endregion
