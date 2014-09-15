@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an account or a fund that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.  
+    /// Represents an account that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.  
     /// FinancialAccounts are hierarchical and are orderable.
     /// </summary>
     [Table( "FinancialAccount" )]
@@ -77,7 +77,26 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string PublicName { get; set; }
+        public string PublicName
+        {
+            get
+            {
+                if ( string.IsNullOrWhiteSpace( _publicName ) )
+                {
+                    return this.Name;
+                }
+                else
+                {
+                    return _publicName;
+                }
+            }
+            set
+            {
+                _publicName = value;
+            }
+        }
+        
+        private string _publicName = string.Empty;
 
         /// <summary>
         /// Gets or sets the user defined description of the FinancialAccount.
@@ -229,7 +248,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Fund Configuration class.
+    /// FinancialAccount Configuration class.
     /// </summary>
     public partial class FinancialAccountConfiguration : EntityTypeConfiguration<FinancialAccount>
     {

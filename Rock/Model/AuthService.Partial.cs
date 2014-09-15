@@ -37,36 +37,12 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Auth> Get( int entityTypeId, int? entityId )
         {
-            return Queryable()
+            return Queryable( "PersonAlias.Person" )
                 .Where( t => 
                     t.EntityTypeId == entityTypeId && 
                     ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
                 )
                 .OrderBy( t => t.Order );
-        }
-        
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Auth"/> entities by <see cref="Rock.Model.Group"/>.
-        /// </summary>
-        /// <param name="groupId">A <see cref="System.Int32"/> representing the GroupId of the Security Role <see cref="Rock.Model.Group"/> to search by.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Group"/>.
-        /// </returns>
-        public IQueryable<Auth> GetByGroupId( int? groupId )
-        {
-            return Queryable().Where( t => ( t.GroupId == groupId || ( groupId == null && t.GroupId == null ) ) ).OrderBy( t => t.Order );
-        }
-        
-        /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Auth"/> entities by <see cref="Rock.Model.Person"/>.
-        /// </summary>
-        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to search by </param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Person"/>.
-        /// </returns>
-        public IQueryable<Auth> GetByPersonId( int? personId )
-        {
-            return Queryable().Where( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -78,7 +54,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Auth"/> entities (Authorizations) for the specified entity and action.</returns>
         public IQueryable<Auth> GetAuths( int entityTypeId, int? entityId, string action )
         {
-            return Queryable().
+            return Queryable( "PersonAlias.Person" ).
                     Where( A => A.EntityTypeId == entityTypeId &&
                         A.EntityId == entityId &&
                         A.Action == action ).

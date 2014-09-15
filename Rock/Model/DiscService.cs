@@ -243,7 +243,7 @@ namespace Rock.Model
         private static int AttributeValueLookup(Person person, string attrib)
         {
             int retVal = 0;
-            bool bCatch = int.TryParse(person.AttributeValues[attrib][0].Value, out retVal);
+            bool bCatch = int.TryParse(person.AttributeValues[attrib].Value, out retVal);
             return retVal;
         }
 
@@ -287,7 +287,7 @@ namespace Rock.Model
                         break;
                     case "LastSaveDate":
                         DateTime lastAssessmentDate = DateTime.MinValue;
-                        bool bCatch = DateTime.TryParse(person.AttributeValues[attrib][0].Value, out lastAssessmentDate);
+                        bool bCatch = DateTime.TryParse(person.AttributeValues[attrib].Value, out lastAssessmentDate);
                         savedScores.LastSaveDate = lastAssessmentDate;
                         break;
                 }

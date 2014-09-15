@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
-                        workflowNavigationCategory.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
+                        workflowNavigationCategory.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType, workflowType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) ) );
                     }
                 }
 
@@ -364,6 +364,14 @@ namespace RockWeb.Blocks.WorkFlow
         public bool HasForms { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance can manage; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanManage { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType"/> class.
         /// </summary>
         public WorkflowNavigationWorkflowType()
@@ -374,7 +382,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType"/> class.
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
-        public WorkflowNavigationWorkflowType( WorkflowType workflowType )
+        public WorkflowNavigationWorkflowType( WorkflowType workflowType, bool canManage )
         {
             Id = workflowType.Id;
             Name = workflowType.Name;
@@ -383,6 +391,7 @@ namespace RockWeb.Blocks.WorkFlow
             WorkTerm = workflowType.WorkTerm;
             HasForms = workflowType.HasActiveForms;
             HighlightColor = string.Empty;
+            CanManage = canManage;
         }
     }
 }

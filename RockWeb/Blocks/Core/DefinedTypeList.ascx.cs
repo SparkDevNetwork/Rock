@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Core
 
             BindFilter();
             tFilter.ApplyFilterClick += tFilter_ApplyFilterClick;
+            tFilter.DisplayFilterValue += tFilter_DisplayFilterValue;
 
             gDefinedType.DataKeyNames = new string[] { "id" };
             gDefinedType.Actions.ShowAdd = true;
@@ -88,9 +89,34 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void tFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            tFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
+            int? categoryId = cpCategory.SelectedValueAsInt();
+            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
 
             gDefinedType_Bind();
+        }
+
+        void tFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( e.Key == "Category" )
+            {
+                int? categoryId = e.Value.AsIntegerOrNull();
+                if ( categoryId.HasValue )
+                {
+                    var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                    if ( category != null )
+                    {
+                        e.Value = category.Name;
+                    }
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
         }
 
         #endregion
@@ -183,22 +209,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( new ListItem( Rock.Constants.All.Text, string.Empty ) );
-
-            var items = new DefinedTypeService( new RockContext() ).Queryable()
-                .Where( a => a.Category != string.Empty)
-                .OrderBy( a => a.Category )
-                .Select( a => a.Category )
-                .Distinct()
-                .ToList();
-
-            foreach ( var item in items )
-            {
-                ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && tFilter.GetUserPreference( "Category" ) == item );
-                ddlCategoryFilter.Items.Add( li );
-            }
+            int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            cpCategory.SetValue( categoryId );
         }
 
         /// <summary>
@@ -206,21 +218,12 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void gDefinedType_Bind()
         {
-            var queryable = new DefinedTypeService( new RockContext() ).Queryable().Select( a =>
-                new
-                {
-                    a.Id,
-                    a.Category,
-                    a.Name,
-                    a.Description,
-                    a.IsSystem,
-                    FieldTypeName = a.FieldType.Name
-                } );
+            var queryable = new DefinedTypeService( new RockContext() ).Queryable();
 
-            string categoryFilter = tFilter.GetUserPreference( "Category" );
-            if ( !string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != Rock.Constants.All.Text )
+            int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId.HasValue )
             {
-                queryable = queryable.Where( a => a.Category == categoryFilter );
+                queryable = queryable.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
             }
 
             SortProperty sortProperty = gDefinedType.SortProperty;
@@ -230,10 +233,21 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                queryable = queryable.OrderBy( a => a.Category ).ThenBy( a => a.Name );
+                queryable = queryable.OrderBy( a => a.Category.Name ).ThenBy( a => a.Name );
             }
 
-            gDefinedType.DataSource = queryable.ToList();
+            gDefinedType.DataSource = queryable
+                .Select( a =>
+                new
+                {
+                    a.Id,
+                    Category = a.Category.Name,
+                    a.Name,
+                    a.Description,
+                    a.IsSystem,
+                    FieldTypeName = a.FieldType.Name
+                } )
+                .ToList();
             gDefinedType.DataBind();
         }
 

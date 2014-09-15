@@ -79,6 +79,13 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// The personID of the currently logged in user.  If user is not logged in, returns null
+        /// </summary>
+        public int? CurrentPersonId
+        {
+            get { return RockPage.CurrentPersonId; }
+        }
+        /// <summary>
         /// Gets the current person alias.
         /// </summary>
         public PersonAlias CurrentPersonAlias
@@ -87,11 +94,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// The personID of the currently logged in user.  If user is not logged in, returns null
+        /// Gets the current person alias identifier.
         /// </summary>
-        public int? CurrentPersonId
+        /// <value>
+        /// The current person alias identifier.
+        /// </value>
+        public int? CurrentPersonAliasId
         {
-            get { return RockPage.CurrentPersonId; }
+            get { return RockPage.CurrentPersonAliasId; }
         }
 
         /// <summary>
@@ -313,7 +323,7 @@ namespace Rock.Web.UI
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Set( ItemCacheKey( key ), value, cacheItemPolicy );
         }
 
@@ -324,7 +334,7 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             return cache[ItemCacheKey( key )];
         }
 
@@ -335,7 +345,7 @@ namespace Rock.Web.UI
         /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
         }
 
@@ -347,7 +357,7 @@ namespace Rock.Web.UI
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         protected virtual void FlushSharedBlock( int blockId )
         {
-            MemoryCache cache = MemoryCache.Default;
+            MemoryCache cache = RockMemoryCache.Default;
             string blockKey = string.Format( ":RockBlock:{0}:", blockId );
             foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
             {
@@ -481,7 +491,7 @@ namespace Rock.Web.UI
                 CacheItemPolicy cacheDuration = new CacheItemPolicy();
                 cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( _blockCache.OutputCacheDuration );
 
-                ObjectCache cache = MemoryCache.Default;
+                ObjectCache cache = RockMemoryCache.Default;
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
             }
 
@@ -645,8 +655,14 @@ namespace Rock.Web.UI
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            Response.Redirect( LinkedPageUrl( attributeKey, queryParams ), false );
-            Context.ApplicationInstance.CompleteRequest();
+            string url = LinkedPageUrl( attributeKey, queryParams );
+
+            // Verify valid url before redirecting (otherwise may get an 'Object moved to here' error in browser)
+            if ( !string.IsNullOrWhiteSpace( url ) )
+            {
+                Response.Redirect( url, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>

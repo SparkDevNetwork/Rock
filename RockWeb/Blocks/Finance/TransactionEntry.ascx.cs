@@ -64,27 +64,30 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
+    Please confirm the information below. Once you have confirmed that the information is 
+    accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 13 )]
 
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to transfer the amount above from my account. I acknowledge that I may
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
+    By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
+    to transfer the amount above from my account. I acknowledge that I may
+    update the transaction information at any time by returning to this website. Please 
+    call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
-achieve our mission.  We are so grateful for your commitment.
+    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+    achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 15 )]
 
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
@@ -691,36 +694,36 @@ achieve our mission.  We are so grateful for your commitment.
 
                 string errorMessage = string.Empty;
 
-                Person authorizedPerson = null;
+                PersonAlias authorizedPersonAlias = null;
                 string referenceNumber = string.Empty;
                 int? currencyTypeValueId = hfPaymentTab.Value == "ACH" ? achCurrencyType.Id : ccCurrencyType.Id;
 
                 if ( string.IsNullOrWhiteSpace( ScheduleId ) )
                 {
                     var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
-                    if ( transaction != null )
+                    if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                     {
-                        authorizedPerson = transaction.AuthorizedPerson;
+                        authorizedPersonAlias = transaction.AuthorizedPersonAlias;
                         referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                     }
                 }
                 else
                 {
                     var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( ScheduleId );
-                    if ( scheduledTransaction != null )
+                    if ( scheduledTransaction != null  )
                     {
-                        authorizedPerson = scheduledTransaction.AuthorizedPerson;
+                        authorizedPersonAlias = scheduledTransaction.AuthorizedPersonAlias;
                         referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
                     }
                 }
 
-                if ( authorizedPerson != null )
+                if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null )
                 {
                     if ( phCreateLogin.Visible )
                     {
                         var user = UserLoginService.Create(
                             rockContext,
-                            authorizedPerson,
+                            authorizedPersonAlias.Person,
                             Rock.Model.AuthenticationServiceType.Internal,
                             EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                             txtUserName.Text,
@@ -730,13 +733,13 @@ achieve our mission.  We are so grateful for your commitment.
                         var mergeObjects = new Dictionary<string, object>();
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                        var personDictionary = authorizedPerson.ToDictionary();
+                        var personDictionary = authorizedPersonAlias.Person.ToDictionary();
                         mergeObjects.Add( "Person", personDictionary );
 
                         mergeObjects.Add( "User", user.ToDictionary() );
 
-                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                        recipients.Add( authorizedPerson.Email, mergeObjects );
+                        var recipients = new List<Rock.Communication.RecipientData>();
+                        recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
 
                         Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
@@ -752,29 +755,32 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        var savedAccount = new FinancialPersonSavedAccount();
-                        savedAccount.PersonId = authorizedPerson.Id;
-                        savedAccount.ReferenceNumber = referenceNumber;
-                        savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
-                        savedAccount.TransactionCode = TransactionCode;
-                        savedAccount.GatewayEntityTypeId = gateway.TypeId;
-                        savedAccount.CurrencyTypeValueId = currencyTypeValueId;
-                        savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
+                        if ( authorizedPersonAlias != null )
+                        {
+                            var savedAccount = new FinancialPersonSavedAccount();
+                            savedAccount.PersonAliasId = authorizedPersonAlias.Id;
+                            savedAccount.ReferenceNumber = referenceNumber;
+                            savedAccount.Name = txtSaveAccount.Text;
+                            savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                            savedAccount.TransactionCode = TransactionCode;
+                            savedAccount.GatewayEntityTypeId = gateway.TypeId;
+                            savedAccount.CurrencyTypeValueId = currencyTypeValueId;
+                            savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
 
-                        var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
-                        savedAccountService.Add( savedAccount );
-                        rockContext.SaveChanges();
+                            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+                            savedAccountService.Add( savedAccount );
+                            rockContext.SaveChanges();
 
-                        cbSaveAccount.Visible = false;
-                        txtSaveAccount.Visible = false;
-                        phCreateLogin.Visible = false;
-                        divSaveActions.Visible = false;
+                            cbSaveAccount.Visible = false;
+                            txtSaveAccount.Visible = false;
+                            phCreateLogin.Visible = false;
+                            divSaveActions.Visible = false;
 
-                        nbSaveAccount.Title = "Success";
-                        nbSaveAccount.Text = "The account has been saved for future use";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                        nbSaveAccount.Visible = true;
+                            nbSaveAccount.Title = "Success";
+                            nbSaveAccount.Text = "The account has been saved for future use";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                            nbSaveAccount.Visible = true;
+                        }
                     }
                 }
                 else
@@ -1359,6 +1365,12 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
+                if ( !person.PrimaryAliasId.HasValue)
+                {
+                    errorMessage = "There was a problem creating the person's primary alias";
+                    return false;
+                }
+
                 PaymentInfo paymentInfo = GetPaymentInfo();
                 if ( paymentInfo == null )
                 {
@@ -1382,10 +1394,10 @@ achieve our mission.  We are so grateful for your commitment.
                     schedule.PersonId = person.Id;
 
                     var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
-                    if ( scheduledTransaction != null )
+                    if ( scheduledTransaction != null  )
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
-                        scheduledTransaction.AuthorizedPersonId = person.Id;
+                        scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
                         scheduledTransaction.GatewayEntityTypeId = EntityTypeCache.Read( gateway.TypeGuid ).Id;
                         scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
                         scheduledTransaction.CreditCardTypeValueId = CreditCardTypeValueId;
@@ -1443,7 +1455,7 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( transaction != null )
                     {
                         transaction.TransactionDateTime = RockDateTime.Now;
-                        transaction.AuthorizedPersonId = person.Id;
+                        transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
                         transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;

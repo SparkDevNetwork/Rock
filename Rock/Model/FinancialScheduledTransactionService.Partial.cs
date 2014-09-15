@@ -49,11 +49,11 @@ namespace Rock.Model
 
             if ( givingGroupId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPerson.GivingGroupId == givingGroupId.Value );
+                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId.Value );
             }
             else if ( personId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPersonId == personId );
+                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
             }
 
             return qry
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
-            return Queryable( "ScheduledTransactionDetails" )
+            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
                 .Where( t => t.GatewayScheduleId == scheduleId )
                 .FirstOrDefault();
         }
@@ -222,7 +222,7 @@ namespace Rock.Model
                         transaction.TransactionCode = payment.TransactionCode;
                         transaction.TransactionDateTime = payment.TransactionDateTime;
                         transaction.ScheduledTransactionId = scheduledTransaction.Id;
-                        transaction.AuthorizedPersonId = scheduledTransaction.AuthorizedPersonId;
+                        transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
                         transaction.TransactionTypeValueId = contributionTxnTypeId;
 

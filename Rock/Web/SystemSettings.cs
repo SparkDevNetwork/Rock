@@ -135,7 +135,7 @@ namespace Rock.Web
         {
             string cacheKey = SystemSettings.CacheKey();
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             SystemSettings systemSettings = cache[cacheKey] as SystemSettings;
 
             if ( systemSettings != null )

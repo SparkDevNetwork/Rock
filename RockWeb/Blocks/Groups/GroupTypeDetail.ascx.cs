@@ -816,7 +816,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void LoadDropDowns( int? groupTypeId )
         {
-            ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
+            ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
 
             cblLocationSelectionModes.Items.Clear();
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );

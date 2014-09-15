@@ -136,8 +136,8 @@ namespace RockWeb.Blocks.Groups
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                         mergeObjects.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                                        recipients.Add( person.Email, mergeObjects );
+                                        var recipients = new List<RecipientData>();
+                                        recipients.Add( new RecipientData( person.Email, mergeObjects ) );
                                         Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                                     }
 

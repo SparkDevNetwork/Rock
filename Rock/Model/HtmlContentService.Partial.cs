@@ -35,7 +35,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> entity objects that were approved by the specified <see cref="Rock.Model.Person"/>.</returns>
         public IQueryable<HtmlContent> GetByApprovedByPersonId( int? approvedByPersonId )
         {
-            return Queryable().Where( t => ( t.ApprovedByPersonId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonId == null ) ) );
+            return Queryable().Where( t => ( t.ApprovedByPersonAliasId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonAliasId == null ) ) );
         }
         
         /// <summary>
@@ -71,7 +71,7 @@ namespace Rock.Model
         {
             // Only consider approved content and content that is not prior to the start date 
             // or past the expire date
-            var content = Queryable().
+            var content = Queryable( "ApprovedByPersonAlias.Person" ).
                 Where( c => c.IsApproved &&
                     ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
                     ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );

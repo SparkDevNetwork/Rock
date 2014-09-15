@@ -91,14 +91,14 @@ namespace Rock.Model
         public bool IsMappedLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person identifier.  A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
-        /// created this way, the member's person id is saved with the group location
+        /// Gets or sets the group member person alias identifier.  A GroupLocation can optionally be created by selecting one of the group 
+        /// member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
         /// </summary>
         /// <value>
-        /// The group member person identifier.
+        /// The group member person alias identifier.
         /// </value>
         [DataMember]
-        public int? GroupMemberPersonId { get; set; }
+        public int? GroupMemberPersonAliasId { get; set; }
 
         #endregion
 
@@ -131,13 +131,13 @@ namespace Rock.Model
         public virtual DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person. A GroupLocation can optionally be created by selecting one of the group member's locations.  If the GroupLocation is 
-        /// created this way, the member is saved with the group location
+        /// Gets or sets the group member person alias. A GroupLocation can optionally be created by selecting one of the 
+        /// group member's locations. If the GroupLocation is created this way, the member is saved with the group location
         /// </summary>
         /// <value>
-        /// The group member person.
+        /// The group member person alias.
         /// </value>
-        public virtual Person GroupMemberPerson { get; set; }
+        public virtual PersonAlias GroupMemberPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule">Schedules</see> that are associated with this GroupLocation.
@@ -187,7 +187,7 @@ namespace Rock.Model
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.GroupLocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.GroupMemberPerson ).WithMany().HasForeignKey( t => t.GroupMemberPersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( t => t.GroupMemberPersonAlias ).WithMany().HasForeignKey( t => t.GroupMemberPersonAliasId ).WillCascadeOnDelete( true );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }

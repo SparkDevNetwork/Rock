@@ -15,20 +15,8 @@
                 <asp:Panel ID="pnlFamilyData" runat="server">
 
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-12">
                             <h4>Family Members</h4>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="form-horizontal">
-                                <div class="form-group form-no-margin">
-                                    <label class="col-sm-8 control-label label-right">
-                                        <asp:Literal ID="lAdultCaption" runat="server" />
-                                    </label>
-                                    <div class="col-sm-4">
-                                        <Rock:RockDropDownList ID="ddlMaritalStatus" CssClass="input-sm" runat="server" />
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -41,6 +29,8 @@
                     <div class="row">
                         <div class="col-md-4">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
+                            <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" Required="true"
+                                Label="The adults in this family are" RequiredErrorMessage="Adult Marital Status is Required" />
                         </div>
 
                         <div class="col-md-8">
@@ -48,6 +38,10 @@
                         </div>
                     </div>
 
+                </asp:Panel>
+
+                <asp:Panel ID="pnlContactInfo" runat="server" Visible="false">
+                    <Rock:NewFamilyContactInfo ID="nfciContactInfo" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlAttributes" runat="server" Visible="true">

@@ -235,6 +235,22 @@ namespace Rock.Data
         public DbSet<Device> Devices { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity sets.
+        /// </summary>
+        /// <value>
+        /// The entity sets.
+        /// </value>
+        public DbSet<EntitySet> EntitySets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity set items.
+        /// </summary>
+        /// <value>
+        /// The entity set items.
+        /// </value>
+        public DbSet<EntitySetItem> EntitySetItems { get; set; }
+        
+        /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
         /// <value>
@@ -262,7 +278,7 @@ namespace Rock.Data
         /// Gets or sets the accounts.
         /// </summary>
         /// <value>
-        /// The fund.
+        /// The Financial Account.
         /// </value>
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 

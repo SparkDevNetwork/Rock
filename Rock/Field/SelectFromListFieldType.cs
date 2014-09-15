@@ -47,6 +47,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
+            editControl.Items.Add( new ListItem() );
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( ListSource.Any() )

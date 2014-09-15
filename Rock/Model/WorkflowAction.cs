@@ -121,6 +121,42 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is criteria valid.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is criteria valid; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public virtual bool IsCriteriaValid
+        {
+            get
+            {
+                bool result = true;
+
+                if ( ActionType != null &&
+                    ActionType.CriteriaAttributeGuid.HasValue )
+                {
+                    result = false;
+
+                    string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                    Guid guid = ActionType.CriteriaValue.AsGuid();
+                    if ( guid.IsEmpty() )
+                    {
+                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                    }
+                    else
+                    {
+                        string value = GetWorklowAttributeValue( guid );
+                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent security authority for this WorkflowAction.
         /// </summary>
         /// <value>
@@ -160,7 +196,7 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            if ( TestCriteria() )
+            if ( IsCriteriaValid )
             {
                 bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
 
@@ -168,7 +204,7 @@ namespace Rock.Model
 
                 AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
-                if ( success )
+                if ( success && this.ActionType != null )
                 {
                     if ( this.ActionType.IsActionCompletedOnSuccess )
                     {
@@ -191,36 +227,6 @@ namespace Rock.Model
 
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Tests the criteria.
-        /// </summary>
-        /// <returns></returns>
-        private bool TestCriteria()
-        {
-            bool result = true;
-
-            if ( ActionType != null &&
-                ActionType.CriteriaAttributeGuid.HasValue )
-            {
-                result = false;
-
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
-
-                Guid guid = ActionType.CriteriaValue.AsGuid();
-                if ( guid.IsEmpty() )
-                {
-                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                }
-                else
-                {
-                    string value = GetWorklowAttributeValue( guid );
-                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                }
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -340,23 +346,20 @@ namespace Rock.Model
                             value = Activity.GetAttributeValue( attribute.Key );
                         }
 
-                        if ( !string.IsNullOrWhiteSpace( value ) )
+                        var field = attribute.FieldType.Field;
+
+                        string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+                        var attributeLiquid = new Dictionary<string, object>();
+                        attributeLiquid.Add( "Name", attribute.Name );
+                        attributeLiquid.Add( "Key", attribute.Key );
+                        attributeLiquid.Add( "Value", formattedValue );
+                        attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                        if ( field is Rock.Field.ILinkableFieldType )
                         {
-                            var field = attribute.FieldType.Field;
-
-                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
-                            var attributeLiquid = new Dictionary<string, object>();
-                            attributeLiquid.Add( "Name", attribute.Name );
-                            attributeLiquid.Add( "Key", attribute.Key );
-                            attributeLiquid.Add( "Value", formattedValue );
-                            attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
-                            if ( field is Rock.Field.ILinkableFieldType )
-                            {
-                                attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
-                            }
-
-                            attributeList.Add( attributeLiquid );
+                            attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
                         }
+
+                        attributeList.Add( attributeLiquid );
                     }
                 }
             }

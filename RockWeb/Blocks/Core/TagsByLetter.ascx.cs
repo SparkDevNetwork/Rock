@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,7 +129,12 @@ namespace RockWeb.Blocks.Core
             // get tags
             var qry = new TagService( new RockContext() )
                 .Queryable()
-                .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
+                .Where(t => 
+                    t.EntityTypeId == entityId &&
+                    (
+                        ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
+                        ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
+                    ) )
                 .Select(t => new
                 {
                     Id = t.Id,

@@ -263,7 +263,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             if ( activity.CompletedDateTime.HasValue )
             {
                 _lblStatus.Visible = true;
-                _lblStatus.Text = "<span class='label label-danger'>Completed</span>";
+                _lblStatus.Text = "<span class='label label-default'>Completed</span>";
             }
             else if (activity.ActivatedDateTime.HasValue)
             {

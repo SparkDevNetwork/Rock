@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,10 +56,11 @@ namespace RockWeb.Blocks.Core
                 var service = new TaggedItemService( new RockContext() );
                 foreach ( dynamic item in service.Get(
                     contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Guid )
-                    .Select( i => new {
-                        OwnerId = i.Tag.OwnerId,
+                    .Select( i => new
+                    {
+                        OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
                         Name = i.Tag.Name
-                    }))
+                    } ) )
                 {
                     if ( sb.Length > 0 )
                         sb.Append( ',' );

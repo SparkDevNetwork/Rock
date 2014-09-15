@@ -69,16 +69,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the name of the category that this DefinedType belongs to.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String" /> representing the name of the Category.
+        /// The category identifier.
         /// </value>
-        [MaxLength( 100 )]
         [DataMember]
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
         
         /// <summary>
         /// Gets or sets the Name of the DefinedType.
@@ -121,7 +120,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<DefinedValue> DefinedValues { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FieldType"/> that is used to set/select, and at times display the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that are associated with
         /// this DefinedType. 
@@ -163,7 +171,8 @@ namespace Rock.Model
         /// </summary>
         public DefinedTypeConfiguration()
         {
-            this.HasOptional( p => p.FieldType ).WithMany().HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+            this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FieldType ).WithMany().HasForeignKey( t => t.FieldTypeId ).WillCascadeOnDelete( false );
         }
     }
 

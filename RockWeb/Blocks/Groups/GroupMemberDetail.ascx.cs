@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -33,6 +34,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
+    [LinkedPage("Person Profile Page", "The person profile page to link to.")]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -299,6 +301,17 @@ namespace RockWeb.Blocks.Groups
                 if ( groupMember != null )
                 {
                     groupMember.LoadAttributes();
+
+                    if ( !string.IsNullOrWhiteSpace(GetAttributeValue("PersonProfilePage")) )
+                    {
+                        var personPageParams = new Dictionary<string, string>();
+                        personPageParams.Add( "PersonId", groupMember.Person.Id.ToString() );
+                        var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
+
+                        hlProfilePage.NavigateUrl = personProfilePage;
+                        hlProfilePage.Visible = true;
+                    }
+                    
                 }
             }
             else
@@ -337,7 +350,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                lGroupIconHtml.Text = string.Empty;
+                lGroupIconHtml.Text = "<i class='fa fa-user' ></i>";
             }
 
             if ( groupMember.Id.Equals( 0 ) )
@@ -416,7 +429,7 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupRole.DataBind();
             }
 
-            rblStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            rblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         #endregion

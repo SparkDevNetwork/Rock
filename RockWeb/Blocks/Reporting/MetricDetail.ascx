@@ -87,5 +87,15 @@
 
         </asp:Panel>
 
+        <Rock:ModalDialog ID="mdEntityTypeChanged" runat="server" Title="Confirm Series Partition Change">
+            <Content>
+                <Rock:NotificationBox ID="nbEntityTypeChanged" runat="server" NotificationBoxType="Warning" />
+                <div class="actions">
+                    <asp:LinkButton ID="btnDeleteValuesAndSave" runat="server" Text="Delete Values" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancelForEntityTypeChange" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelForEntityTypeChange_Click" />
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -41,6 +41,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name );
             if ( templates.Any() )

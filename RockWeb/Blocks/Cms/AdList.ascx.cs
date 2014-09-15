@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Cms
     [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, true, "", "Filter", 6 )]
-    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
+    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1^Primary,2^Secondary", false, "1,2", "Filter", 7 )]
 
     [IntegerField( "Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 8 )]
     [IntegerField( "Image Height", "Height that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 9 )]
@@ -243,8 +243,8 @@ namespace RockWeb.Blocks.Cms
                 foreach ( var item in marketingCampaignAd.Attributes )
                 {
                     AttributeCache attribute = item.Value;
-                    List<AttributeValue> attributeValues = marketingCampaignAd.AttributeValues[attribute.Key];
-                    foreach ( AttributeValue attributeValue in attributeValues )
+                    var attributeValue = marketingCampaignAd.AttributeValues[attribute.Key];
+                    if ( attributeValue != null )
                     {
                         string valueHtml = string.Empty;
 
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Cms
 
             string cacheKey = CacheKey();
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             Template template = cache[cacheKey] as Template;
 
             if ( template != null )

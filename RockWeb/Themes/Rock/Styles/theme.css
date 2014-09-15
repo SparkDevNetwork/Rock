@@ -769,6 +769,10 @@ ul.rocktree ul {
   border-radius: 36px;
   padding: 2px 6px;
 }
+.list-as-blocks ul li.active a {
+  background-color: #282526;
+  color: #d3cec5;
+}
 @media (min-width: 768px) {
   .list-as-blocks ul li {
     margin: 0 2.5% 15px;
@@ -1745,6 +1749,7 @@ ul.rocklist .rocklist-item.selected {
     4. Control Specific Styles
     5. Validation
     6. Custom Controls
+    7. Static Control
 */
 .form-actions {
   padding: 12px 16px;
@@ -1794,6 +1799,14 @@ a.aspNetDisabled {
 }
 .controls .checkbox:first-child {
   margin-top: 0;
+}
+.form-group.required .control-label:after {
+  font-family: FontAwesome;
+  content: '\f111';
+  margin-left: 4px;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
 }
 dl:not(.dl-horizontal) {
   margin-bottom: 0;
@@ -1875,6 +1888,12 @@ dl:not(.dl-horizontal) dd {
 }
 .btn-controlaligned {
   margin-top: 24px;
+}
+.form-group.static-control label {
+  margin-bottom: 0;
+}
+.form-group.static-control .form-control-static {
+  padding-top: 0;
 }
 /*
     Used to manage styles related to Rock's dashboard
@@ -2432,6 +2451,7 @@ td.grid-col-actions {
   content: "\f1b3";
   font-family: FontAwesome;
   font-weight: normal;
+  margin-right: 4px;
 }
 .workflow-action .workflow-action-name:before {
   content: "\f1b2";
@@ -2462,17 +2482,24 @@ td.grid-col-actions {
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
 }
-.panel-group .panel-workflowitem .panel-heading .panel-title {
+.panel-group .panel-workflowitem .panel-heading a {
+  display: block;
+}
+.panel-group .panel-workflowitem .panel-heading a .panel-title {
   width: 100%;
 }
-.panel-group .panel-workflowitem .panel-heading a h3 {
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 {
   margin: 0;
 }
-.panel-group .panel-workflowitem .panel-heading a h3 i {
+.panel-group .panel-workflowitem .panel-heading a .panel-title h3 i {
   font-size: 35px;
   margin-right: 12px;
 }
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation {
+  margin-top: 8px;
+}
 .panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
+  margin-top: 6px;
   font-family: FontAwesome;
   content: "\f077";
   font-size: 20px;
@@ -2519,7 +2546,7 @@ table.attribute-grid tr th:nth-child(3) {
 
     1. Contributions - block add a contribution transaction
     2. Scheduled Transactions - Styles for the scheduled transaction blocks
-
+    3. Transaction Matching
 
 */
 .contribution-payment .tab-content {
@@ -2582,6 +2609,18 @@ table.attribute-grid tr th:nth-child(3) {
 .scheduledtransaction-item .actions {
   margin: 6px 0;
 }
+.transaction-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border: 2px solid #282526;
+}
+.transaction-image-thumbnail {
+  max-width: 200px;
+  max-height: 100px;
+  margin: 5px;
+  cursor: pointer;
+  border: 2px solid #282526;
+}
 /*
     Used to manage styles related to the person details page
     
@@ -2598,6 +2637,8 @@ table.attribute-grid tr th:nth-child(3) {
     11. Person Merge
     12. Person Page Views
     13. Deceased / Inactive Styles
+    14. Bulk Update
+    15. Photo Upload
 */
 .personprofile {
   margin-top: -15px;
@@ -3162,6 +3203,31 @@ span.field-value {
 tr.inactive td {
   color: #b7b7b7;
 }
+.bulk-update .no-select .form-group {
+  opacity: 1;
+}
+.bulk-update .fade-inactive .form-group {
+  opacity: 0.5;
+}
+.bulk-update .fade-inactive .form-group .control-label {
+  cursor: pointer;
+}
+.bulk-update .form-group.bulk-item-selected {
+  opacity: 1;
+  background-color: #f3f3f4;
+  padding: 12px;
+  border-radius: 4px;
+}
+.photoupload-photo .image-editor {
+  float: left;
+  margin-right: 48px;
+}
+.photoupload-photo .image-editor label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 150px;
+  overflow: hidden;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -3205,6 +3271,16 @@ iframe.email-body {
 }
 .panel.panel-widget.checkin-grouptype {
   border-top-color: #5593a4;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. User Entry
+    2. 
+
+*/
+.workflow-entry-panel > h1:first-of-type {
+  margin-top: 0;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3731,6 +3807,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+.btn-tabled a:hover {
+  text-decoration: underline;
+}
 .control-label {
   font-weight: 700;
 }
@@ -3794,9 +3873,6 @@ a.help {
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
-  /*.well {
-            background-color: @accent-color;
-        }*/
 }
 .panel-widget {
   border-color: #dbd5cb;
@@ -4155,6 +4231,9 @@ fieldset[disabled] .btn-authenication.active {
 .form-no-margin {
   margin: 0;
 }
+ul.list-padded {
+  margin-top: 12px;
+}
 ul.list-padded li {
   margin-top: 12px;
 }
@@ -4396,6 +4475,11 @@ pre {
   transition: background-color 200ms linear;
 }
 .list-as-blocks ul li a:hover {
+  background-color: #5a8392;
+  border-color: #4c6f7c;
+  color: #fff;
+}
+.list-as-blocks ul li.active a {
   background-color: #567d8c;
   border-color: #4c6f7c;
   color: #fff;

@@ -10,7 +10,6 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-cloud-download"></i> Rock Update</h1>
@@ -33,7 +32,7 @@
                     </div>
 
                     <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Warning">
-                        We recommend that you always take a backup of your database and website before updating Rock.
+                        We highly recommend that you always take a backup of your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
                         Also, be patient when updating. An update can take anywhere from a few seconds
                         to 10 minutes depending on the size and your download speed.</Rock:NotificationBox>
@@ -84,7 +83,7 @@
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
                     <div class="well well-message">
                         <h1>Eureka, Pay Dirt!</h1>
-                        <i class="fa fa-exclamation-triangle" style="color: #40b957"></i>
+                        <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
                     </div>
 
@@ -92,7 +91,7 @@
 
                     <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
 
-                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Warning" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
+                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">

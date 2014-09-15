@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Finance
             FinancialPledge pledge;
             var rockContext = new RockContext();
             var pledgeService = new FinancialPledgeService( rockContext );
-            var pledgeId = int.Parse( hfPledgeId.Value );
+            var pledgeId = hfPledgeId.Value.AsInteger();
 
             if ( pledgeId == 0 )
             {
@@ -69,14 +69,18 @@ namespace RockWeb.Blocks.Finance
                 pledge = pledgeService.Get( pledgeId );
             }
 
-            pledge.PersonId = ppPerson.PersonId;
-            pledge.AccountId = int.Parse( fpFund.SelectedValue );
-            pledge.TotalAmount = decimal.Parse( tbAmount.Text );
+            if (ppPerson.PersonId.HasValue)
+            {
+                pledge.PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppPerson.PersonId.Value );
+            }
+
+            pledge.AccountId = apAccount.SelectedValue.AsIntegerOrNull();
+            pledge.TotalAmount = tbAmount.Text.AsDecimal();
 
             pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
             pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
 
-            pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.PledgeFrequencyValueId = ddlFrequencyType.SelectedValue.AsIntegerOrNull();
 
             if ( !pledge.IsValid )
             {
@@ -107,7 +111,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlDetails.Visible = true;
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
-            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
+            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ), true );
 
             FinancialPledge pledge = null;
 
@@ -127,10 +131,17 @@ namespace RockWeb.Blocks.Finance
             var isNewPledge = pledge.Id == 0;
 
             hfPledgeId.Value = pledge.Id.ToString();
-            ppPerson.SetValue( pledge.Person );
+            if ( pledge.PersonAlias != null )
+            {
+                ppPerson.SetValue( pledge.PersonAlias.Person );
+            }
+            else
+            {
+                ppPerson.SetValue( null );
+            }
             ppPerson.Enabled = !isReadOnly;
-            fpFund.SetValue( pledge.Account );
-            fpFund.Enabled = !isReadOnly;
+            apAccount.SetValue( pledge.Account );
+            apAccount.Enabled = !isReadOnly;
             tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
             tbAmount.ReadOnly = isReadOnly;
 

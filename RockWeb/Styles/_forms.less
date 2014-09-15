@@ -7,6 +7,7 @@
     4. Control Specific Styles
     5. Validation
     6. Custom Controls
+    7. Static Control
 */
 
 // 1. Bootstrap Overrides / Additions
@@ -82,6 +83,18 @@ a.aspNetDisabled {
 
 }
 
+
+// highlight required fields
+.form-group.required {
+    .control-label:after {
+        font-family: FontAwesome;
+        content:'\f111';
+        margin-left: 4px;
+        font-size: 6px;
+        color: @required-field-color;
+        vertical-align: super;
+    }
+}
 
 // 2. Data Lists
 // -------------------------
@@ -193,4 +206,22 @@ dl:not(.dl-horizontal) { // todo this is needed? 9/27/13
 // -------------------------
 .btn-controlaligned {
     margin-top: 24px;
+}
+
+
+// 6. Custom Controls
+// -------------------------
+
+
+// 7. Static Controls
+// -------------------------
+.form-group.static-control {
+
+    label {
+        margin-bottom: 0;
+    }
+
+    .form-control-static {
+        padding-top: 0;
+    }
 }

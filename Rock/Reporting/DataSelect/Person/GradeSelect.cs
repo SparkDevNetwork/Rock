@@ -108,6 +108,20 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the sort expression to apply to the GridField (For example "LastName, NickName")
+        /// </summary>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortExpression
+        {
+            get
+            {
+                return "GraduationDate";
+            }
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>

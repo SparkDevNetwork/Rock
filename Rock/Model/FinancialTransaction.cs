@@ -28,31 +28,23 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial transaction in Rock.  This class implements the <c>FinancialTransactionBase</c> base class.
+    /// Represents a financial transaction in Rock.
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : FinancialTransactionBase<FinancialTransaction>
-    {
-    }
-
-    /// <summary>
-    /// An abstracted base class for FinancialTransaction so that we can have child classes like <see cref="FinancialTransactionRefund"/>.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class FinancialTransactionBase<T> : Model<T> where T : Model<T>, Rock.Security.ISecured, new()
+    public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who authorized the transaction. In the event of a gift this would be
-        /// the giver; in the event of a purchase this would be the purchaser.
+        /// Gets or sets the authorized person identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who authorized the transaction.
+        /// The authorized person identifier.
         /// </value>
         [DataMember]
-        public int? AuthorizedPersonId { get; set; }
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
+        public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
@@ -79,6 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
         /// </value>
         [DataMember]
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
@@ -109,6 +102,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
         public int TransactionTypeValueId { get; set; }
 
         /// <summary>
@@ -153,7 +147,21 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing an encrypted version of a scanned check's MICR information.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public string CheckMicrEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets hash of the Check Routing, AccountNumber, and CheckNumber.  Stored as a SHA1 hash so that it can be matched without being known
+        /// Enables detection of duplicate scanned checks
+        /// </summary>
+        /// <value>
+        /// The check micr hash.
+        /// </value>
+        [DataMember]
+        [MaxLength( 128 )]
+        [Index]
+        [HideFromReporting]
+        public string CheckMicrHash { get; set; }
 
         /// <summary>
         /// Gets or sets the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction" /> that triggered
@@ -188,12 +196,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.Person"/> who authorized the transaction. For a gift this is a the giver, for a purchase this is the purchaser.
+        /// Gets or sets the authorized person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who authorized the transaction.
+        /// The authorized person alias.
         /// </value>
-        public virtual Person AuthorizedPerson { get; set; }
+        public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
@@ -314,7 +322,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        public decimal TotalAmount
+        public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
         }
@@ -344,7 +352,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
-    public class FinancialTransactionScannedCheck : FinancialTransactionBase<FinancialTransactionScannedCheck>
+    public class FinancialTransactionScannedCheck : FinancialTransaction
     {
         /// <summary>
         /// Gets or sets the scanned check MICR.
@@ -368,7 +376,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionConfiguration()
         {
-            this.HasOptional( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );

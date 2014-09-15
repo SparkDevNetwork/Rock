@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using System.Web;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -138,9 +138,9 @@ namespace Rock.Workflow
             if ( values.ContainsKey( key ) )
             {
                 var keyValues = values[key];
-                if ( keyValues.Count == 1 )
+                if ( keyValues != null )
                 {
-                    return keyValues[0].Value;
+                    return keyValues.Value;
                 }
             }
 
@@ -181,6 +181,15 @@ namespace Rock.Workflow
             mergeFields.Add( "Action", action );
             mergeFields.Add( "Activity", action.Activity );
             mergeFields.Add( "Workflow", action.Activity.Workflow );
+
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if (currentPerson != null)
+                {
+                    mergeFields.Add( "CurrentPerson", currentPerson );
+                }
+            }
 
             return mergeFields;
         }

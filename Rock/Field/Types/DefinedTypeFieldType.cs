@@ -66,13 +66,14 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             var definedTypes = new Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )
                 {
-                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString().ToUpper() ) );
                 }
                 return editControl;
             }
@@ -105,7 +106,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                    ( (ListControl)control ).SelectedValue = value.ToUpper();
             }
         }
 

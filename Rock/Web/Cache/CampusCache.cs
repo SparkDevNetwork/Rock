@@ -187,7 +187,7 @@ namespace Rock.Web.Cache
         public static CampusCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CampusCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
             if ( campus == null )
@@ -217,7 +217,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CampusCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             CampusCache campus = null;
@@ -253,7 +253,7 @@ namespace Rock.Web.Cache
         public static CampusCache Read( Campus campusModel )
         {
             string cacheKey = CampusCache.CacheKey( campusModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
             if ( campus != null )
@@ -277,7 +277,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( CampusCache.CacheKey( id ) );
         }
 

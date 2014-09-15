@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,15 +47,14 @@ namespace RockWeb.Blocks.Security
         {
             base.OnLoad( e );
 
-            if ( CurrentUser == null || !CurrentUser.IsAuthenticated )
+            if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
                 DisplayErrorText( "You must login before changing your password" );
                 pnlChangePassword.Visible = false;
             }
-
-            if ( !Page.IsPostBack )
+            else
             {
-                if ( CurrentUser != null )
+                if ( !Page.IsPostBack )
                 {
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
                     if ( component.SupportsChangePassword )

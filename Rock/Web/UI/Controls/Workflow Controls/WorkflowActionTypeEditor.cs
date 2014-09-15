@@ -378,7 +378,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _ddlCriteriaComparisonType );
             _ddlCriteriaComparisonType.ID = this.ID + "_ddlCriteriaComparisonType";
             _ddlCriteriaComparisonType.CssClass = "js-action-criteria-comparison";
-            _ddlCriteriaComparisonType.BindToEnum( typeof( ComparisonType ) );
+            _ddlCriteriaComparisonType.BindToEnum<ComparisonType>();
             _ddlCriteriaComparisonType.Label = "&nbsp;";
 
             _tbddlCriteriaValue = new RockTextOrDropDownList();

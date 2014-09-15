@@ -161,7 +161,7 @@ namespace Rock.Web.Cache
         public static RestActionCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestActionCache.CacheKey( id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             RestActionCache RestAction = cache[cacheKey] as RestActionCache;
 
             if ( RestAction == null )
@@ -190,7 +190,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             RestActionCache restAction = null;
@@ -225,7 +225,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Read( string apiId, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[apiId];
 
             RestActionCache restAction = null;
@@ -261,7 +261,7 @@ namespace Rock.Web.Cache
         public static RestActionCache Read( RestAction RestActionModel )
         {
             string cacheKey = RestActionCache.CacheKey( RestActionModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             RestActionCache restAction = cache[cacheKey] as RestActionCache;
 
             if ( restAction != null )
@@ -285,7 +285,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( RestActionCache.CacheKey( id ) );
         }
 

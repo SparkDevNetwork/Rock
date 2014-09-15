@@ -82,9 +82,9 @@ namespace Rock.Model
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValue>> attrib in job.AttributeValues )
+            foreach ( var attrib in job.AttributeValues )
             {
-                map.Add( attrib.Key, attrib.Value[0].Value );
+                map.Add( attrib.Key, attrib.Value.Value );
             }
 
             // create the quartz job object

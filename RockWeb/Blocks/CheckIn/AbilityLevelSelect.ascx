@@ -27,26 +27,29 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
 
-    <div class="row checkin-header">
-        <div class="col-md-12">
-            <h1><asp:Literal ID="lPersonName" runat="server"></asp:Literal></h1>
-        </div>
+    <div class="checkin-header">
+        <h1><asp:Literal ID="lPersonName" runat="server"></asp:Literal></h1>
     </div>
                 
-    <div class="row checkin-body">
-        <div class="col-md-12">
+    <div class="checkin-body">
 
-            <div class="control-group checkin-body-container">
-                <label class="control-label">Select Ability Level</label>
-                <div class="controls">
-                    <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Guid").ToString().ToUpper() %>' OnClientClick="disableButton(this);" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
-                        </ItemTemplate>
-                    </asp:Repeater>
+        <div class="checkin-scroll-panel">
+            <div class="scroller">
+
+                <div class="control-group checkin-body-container">
+                    <label class="control-label">Select Ability Level</label>
+                    <div class="controls">
+                        <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Guid").ToString().ToUpper() %>' OnClientClick="disableButton(this);" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
                 </div>
+
             </div>
         </div>
+
     </div>
         
    

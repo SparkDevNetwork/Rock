@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         foreach ( var action in activity.ActiveActions )
                         {
-                            if ( action.ActionType.WorkflowForm != null )
+                            if ( action.ActionType.WorkflowForm != null && action.IsCriteriaValid )
                             {
                                 _activity = activity;
                                 _activity.LoadAttributes();
@@ -433,7 +433,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void ProcessActionRequest()
         {
-            string action = PageParameter( "action" );
+            string action = PageParameter( "Command" );
             if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 CompleteFormAction( action );
@@ -450,6 +450,10 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                }
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
@@ -463,31 +467,39 @@ namespace RockWeb.Blocks.WorkFlow
                     var attribute = AttributeCache.Read( formAttribute.AttributeId );
 
                     string value = attribute.DefaultValue;
-                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key].Any() )
+                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                     {
-                        value = _workflow.AttributeValues[attribute.Key][0].Value;
+                        value = _workflow.AttributeValues[attribute.Key].Value;
                     }
 
                     if ( formAttribute.IsReadOnly )
                     {
-                        RockLiteral lAttribute = new RockLiteral();
-                        lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
-                        lAttribute.Label = formAttribute.Attribute.Name;
-
                         var field = attribute.FieldType.Field;
                         string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
-                        if ( field is Rock.Field.ILinkableFieldType )
+
+                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.HTML.AsGuid() ) )
                         {
-                            string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
-                            url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
-                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            phAttributes.Controls.Add( new LiteralControl( formattedValue ) );
                         }
                         else
                         {
-                            lAttribute.Text = formattedValue;
-                        }
+                            RockLiteral lAttribute = new RockLiteral();
+                            lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
+                            lAttribute.Label = attribute.Name;
 
-                        phAttributes.Controls.Add( lAttribute );
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
+                                lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            }
+                            else
+                            {
+                                lAttribute.Text = formattedValue;
+                            }
+
+                            phAttributes.Controls.Add( lAttribute );
+                        }
                     }
                     else
                     {
@@ -515,11 +527,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( string.IsNullOrWhiteSpace( buttonHtml ) )
                     {
-                        buttonHtml = "<a href='{{ ButtonLink }}' onclick='{{ ButtonClick }}' class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                        buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                     }
 
                     var buttonMergeFields = new Dictionary<string, object>();
-                    buttonMergeFields.Add( "ButtonText", details[0] );
+                    buttonMergeFields.Add( "ButtonText", details[0].EscapeQuotes() );
                     buttonMergeFields.Add( "ButtonClick",
                             string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
                             BlockValidationGroup ) );
@@ -571,7 +583,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         private void CompleteFormAction( string formAction )
-        {
+        { 
             if ( !string.IsNullOrWhiteSpace( formAction ) &&
                 _workflow != null &&
                 _actionType != null &&
@@ -580,6 +592,15 @@ namespace RockWeb.Blocks.WorkFlow
                 _action != null )
             {
 
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
+                if ( CurrentPerson != null )
+                {
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+                } 
+                
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted succesfully.";
 
@@ -595,7 +616,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                         if ( actionDetails.Length > 3 && !string.IsNullOrWhiteSpace( actionDetails[3] ) )
                         {
-                            responseText = actionDetails[3];
+                            responseText = actionDetails[3].ResolveMergeFields( mergeFields );
                         }
                         break;
                     }
@@ -604,6 +625,11 @@ namespace RockWeb.Blocks.WorkFlow
                 _action.MarkComplete();
                 _action.FormAction = formAction;
                 _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
+
+                if (_action.ActionType.IsActivityCompletedOnSuccess)
+                {
+                    _action.Activity.MarkComplete();
+                }
 
                 if ( _actionType.WorkflowForm.ActionAttributeGuid.HasValue )
                 {
@@ -626,12 +652,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
-
-                // save current activity form's actions (to formulate response if needed).
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
 
                 if ( !activityTypeGuid.IsEmpty() )
                 {
@@ -665,10 +685,10 @@ namespace RockWeb.Blocks.WorkFlow
                         WorkflowId = _workflow.Id;
                     }
 
-                    int? previousActivityId = null;
-                    if ( _activity != null )
+                    int? previousActionId = null;
+                    if ( _action != null )
                     {
-                        previousActivityId = _activity.Id;
+                        previousActionId = _action.Id;
                     }
 
                     ActionTypeId = null;
@@ -676,13 +696,13 @@ namespace RockWeb.Blocks.WorkFlow
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() && _activity.Id != previousActivityId )
+                    if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActivityId ) );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
                     }
                 }
                 else

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Utility
             // setup javascript for when a file is done uploading
             fuprFileUpload.DoneFunctionClientScript = string.Format( doneScriptFormat, hfSelectedFolder.ClientID );
 
-            if (PageParameter("browserMode") == "image")
+            if ( PageParameter( "browserMode" ) == "image" )
             {
                 // point file uploads to ImageUploader.ashx which has special rules for file uploads
                 fuprFileUpload.UploadUrl = "ImageUploader.ashx";
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Utility
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            mdError.Hide();
+            nbErrorMessage.Visible = false;
 
             if ( !this.IsPostBack )
             {
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Utility
                 {
                     rootFolder = Rock.Security.Encryption.DecryptString( rootFolderEncrypted );
                 }
-                catch (Exception)
+                catch ( Exception )
                 {
                     // respond with BadRequest if they somehow provided an encrypted rootFolder value that isn't valid
                     Response.StatusCode = 400;
@@ -234,23 +234,31 @@ namespace RockWeb.Blocks.Utility
 
             sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'><i class=\"fa fa-folder\"></i> {1}</span> \n", HttpUtility.HtmlEncode( relativeFolderPath ), directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
 
-            List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
-
-            if ( subDirectoryList.Any() )
+            try
             {
-                sb.AppendLine( "<ul>" );
+                List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
 
-                foreach ( var subDirectoryPath in subDirectoryList )
+                if ( subDirectoryList.Any() )
                 {
-                    sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                    sb.AppendLine( "<ul>" );
+
+                    foreach ( var subDirectoryPath in subDirectoryList )
+                    {
+                        sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                    }
+
+                    sb.AppendLine( "</ul>" );
                 }
 
-                sb.AppendLine( "</ul>" );
+                sb.AppendLine( "</li>" );
+
+                return sb.ToString();
             }
-
-            sb.AppendLine( "</li>" );
-
-            return sb.ToString();
+            catch ( Exception ex )
+            {
+                ShowErrorMessage( ex, string.Format( "Unable to access folder {0}. Contact your administrator.", directoryPath ) );
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -259,34 +267,36 @@ namespace RockWeb.Blocks.Utility
         /// <param name="relativeFolderPath">The folder path.</param>
         protected void ListFolderContents( string relativeFolderPath )
         {
-            string rootFolder = GetRootFolderPath();
-            string physicalRootFolder = this.MapPath( rootFolder );
-            string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
-
-            var sb = new StringBuilder();
-            sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
-
-            string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
-            if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
+            try
             {
-                imageFileTypeWhiteList = "*.*";
-            }
+                string rootFolder = GetRootFolderPath();
+                string physicalRootFolder = this.MapPath( rootFolder );
+                string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
 
-            // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
-            List<string> fileFilters = imageFileTypeWhiteList.Split( new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries )
-                .Select( s => s = "*." + s.TrimStart( new char[] { '*', ' ' } ).TrimStart( '.' )) // ensure that the filter starts with '*.'
-                .ToList();
-            List<string> fileList = new List<string>();
-            foreach ( var filter in fileFilters )
-            {
-                fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
-            }
+                var sb = new StringBuilder();
+                sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
 
-            nbNoFilesInfo.Visible = !fileList.Any();
+                string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
+                if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
+                {
+                    imageFileTypeWhiteList = "*.*";
+                }
 
-            foreach ( var filePath in fileList )
-            {
-                string nameHtmlFormat = @"
+                // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
+                List<string> fileFilters = imageFileTypeWhiteList.Split( new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries )
+                    .Select( s => s = "*." + s.TrimStart( new char[] { '*', ' ' } ).TrimStart( '.' ) ) // ensure that the filter starts with '*.'
+                    .ToList();
+                List<string> fileList = new List<string>();
+                foreach ( var filter in fileFilters )
+                {
+                    fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
+                }
+
+                nbNoFilesInfo.Visible = !fileList.Any();
+
+                foreach ( var filePath in fileList )
+                {
+                    string nameHtmlFormat = @"
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
@@ -301,22 +311,27 @@ namespace RockWeb.Blocks.Utility
 </li>
 ";
 
-                string fileName = Path.GetFileName( filePath );
-                string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
-                string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
-                string nameHtml = string.Format(
-                    nameHtmlFormat,
-                    HttpUtility.HtmlEncode( relativeFilePath ),
-                    imageUrl,
-                    fileName );
+                    string fileName = Path.GetFileName( filePath );
+                    string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
+                    string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
+                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
+                    string nameHtml = string.Format(
+                        nameHtmlFormat,
+                        HttpUtility.HtmlEncode( relativeFilePath ),
+                        imageUrl,
+                        fileName );
 
-                sb.AppendLine( nameHtml );
+                    sb.AppendLine( nameHtml );
+                }
+
+                sb.AppendLine( "</ul>" );
+
+                lblFiles.Text = sb.ToString();
             }
-
-            sb.AppendLine( "</ul>" );
-
-            lblFiles.Text = sb.ToString();
+            catch ( Exception ex )
+            {
+                ShowErrorMessage( ex, string.Format( "Unable to list contents of folder {0}. Contact your administrator.", relativeFolderPath ) );
+            }
         }
 
         /// <summary>
@@ -513,7 +528,7 @@ namespace RockWeb.Blocks.Utility
         private void ShowErrorMessage( Exception ex, string friendlyMessage )
         {
             nbErrorMessage.Text = friendlyMessage;
-            mdError.Show();
+            nbErrorMessage.Visible = true;
             ExceptionLogService.LogException( ex, this.Context );
         }
 

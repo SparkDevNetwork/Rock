@@ -102,9 +102,15 @@ namespace Rock.Model
             
             // ignoring Communication,ModifiedByPersonAliasId 
             
+            // ignoring Communication,ReviewerPersonAliasId 
+            
+            // ignoring Communication,SenderPersonAliasId 
+            
             // ignoring CommunicationRecipient,CreatedByPersonAliasId 
             
             // ignoring CommunicationRecipient,ModifiedByPersonAliasId 
+            
+            // ignoring CommunicationRecipient,PersonAliasId 
             
             // ignoring CommunicationRecipientActivity,CreatedByPersonAliasId 
             
@@ -136,6 +142,14 @@ namespace Rock.Model
             
             // ignoring Device,ModifiedByPersonAliasId 
             
+            // ignoring EntitySet,CreatedByPersonAliasId 
+            
+            // ignoring EntitySet,ModifiedByPersonAliasId 
+            
+            // ignoring EntitySetItem,CreatedByPersonAliasId 
+            
+            // ignoring EntitySetItem,ModifiedByPersonAliasId 
+            
             // ignoring ExceptionLog,CreatedByPersonAliasId 
             
             // ignoring ExceptionLog,ModifiedByPersonAliasId 
@@ -164,6 +178,10 @@ namespace Rock.Model
             
             // ignoring FinancialPledge,ModifiedByPersonAliasId 
             
+            // ignoring FinancialPledge,PersonAliasId 
+            
+            // ignoring FinancialScheduledTransaction,AuthorizedPersonAliasId 
+            
             // ignoring FinancialScheduledTransaction,CreatedByPersonAliasId 
             
             // ignoring FinancialScheduledTransaction,ModifiedByPersonAliasId 
@@ -171,6 +189,8 @@ namespace Rock.Model
             // ignoring FinancialScheduledTransactionDetail,CreatedByPersonAliasId 
             
             // ignoring FinancialScheduledTransactionDetail,ModifiedByPersonAliasId 
+            
+            // ignoring FinancialTransaction,AuthorizedPersonAliasId 
             
             // ignoring FinancialTransaction,CreatedByPersonAliasId 
             
@@ -218,6 +238,8 @@ namespace Rock.Model
             
             // ignoring History,ModifiedByPersonAliasId 
             
+            // ignoring HtmlContent,ApprovedByPersonAliasId 
+            
             // ignoring HtmlContent,CreatedByPersonAliasId 
             
             // ignoring HtmlContent,ModifiedByPersonAliasId 
@@ -229,6 +251,8 @@ namespace Rock.Model
             // ignoring Location,CreatedByPersonAliasId 
             
             // ignoring Location,ModifiedByPersonAliasId 
+            
+            // ignoring MarketingCampaign,ContactPersonAliasId 
             
             // ignoring MarketingCampaign,CreatedByPersonAliasId 
             
@@ -316,9 +340,13 @@ namespace Rock.Model
             
             // ignoring PluginMigration,ModifiedByPersonAliasId 
             
+            // ignoring PrayerRequest,ApprovedByPersonAliasId 
+            
             // ignoring PrayerRequest,CreatedByPersonAliasId 
             
             // ignoring PrayerRequest,ModifiedByPersonAliasId 
+            
+            // ignoring PrayerRequest,RequestedByPersonAliasId 
             
             // ignoring Report,CreatedByPersonAliasId 
             
@@ -363,6 +391,8 @@ namespace Rock.Model
             // ignoring Tag,CreatedByPersonAliasId 
             
             // ignoring Tag,ModifiedByPersonAliasId 
+            
+            // ignoring Tag,OwnerPersonAliasId 
             
             // ignoring TaggedItem,CreatedByPersonAliasId 
             

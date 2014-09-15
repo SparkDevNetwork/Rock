@@ -294,11 +294,19 @@ pre {
                 transition: background-color 200ms linear;
 
                 &:hover {
-                    background-color: @accent-blue;
+                    background-color: lighten(@accent-blue, 2%);
                     border-color: darken(@accent-blue, 5%);
                     color: #fff;
                 }
 
+            }
+
+            &.active {
+                a {
+                    background-color: @accent-blue;
+                    border-color: darken(@accent-blue, 5%);
+                    color: #fff;
+                }
             }
         }
     }

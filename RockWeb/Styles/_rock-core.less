@@ -29,9 +29,10 @@
 @import "_blocks-core.less";
 @import "_blocks-groups.less";
 @import "_blocks-finance.less";
-@import "_blocks-persondetails.less";
+@import "_blocks-crm.less";
 @import "_blocks-communication.less";
 @import "_blocks-checkinadmin.less";
+@import "_blocks-workflow.less";
 
 @import "_page-specific.less";
 
@@ -130,6 +131,14 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+.btn-tabled {
+    a {
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
 .nav-pills {
     //margin: 10px 0; -- commented out JME 2/10/2014 to see impact
 }
@@ -216,10 +225,6 @@ a.help {
 
     .panel-body {
         border-radius: 0 0 4px 4px;
-
-        /*.well {
-            background-color: @accent-color;
-        }*/
     }
 }
 
@@ -484,6 +489,8 @@ a.help {
 // list extensions
 
 ul.list-padded {
+    margin-top: 12px;
+
     li {
         margin-top: 12px;
 
@@ -524,5 +531,3 @@ h6.condensed {
 div.aspNetDisabled {
     opacity: 0.5;
 }
-
-

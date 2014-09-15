@@ -177,7 +177,10 @@ namespace RockWeb.Blocks.Core
                     .Where( t =>
                         t.Id != tagId &&
                         t.Name == name &&
-                        t.OwnerId.Equals( ownerId ) &&
+                        ( 
+                            ( t.OwnerPersonAlias == null && !ownerId.HasValue ) || 
+                            ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value ) 
+                        ) &&
                         t.EntityTypeId == entityTypeId &&
                         t.EntityTypeQualifierColumn == qualifierCol &&
                         t.EntityTypeQualifierValue == qualifierVal )
@@ -189,9 +192,14 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                int? ownerPersonAliasId = null;
+                if (ownerId.HasValue)
+                {
+                    ownerPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ownerId.Value );
+                }
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
-                tag.OwnerId = ownerId;
+                tag.OwnerPersonAliasId = ownerPersonAliasId;
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = qualifierCol;
                 tag.EntityTypeQualifierValue = qualifierVal;
@@ -285,7 +293,7 @@ namespace RockWeb.Blocks.Core
             
             if ( tag == null )
             {
-                tag = new Tag { Id = 0, OwnerId = CurrentPersonId };
+                tag = new Tag { Id = 0, OwnerPersonAliasId = CurrentPersonAliasId, OwnerPersonAlias = CurrentPersonAlias };
                 if ( entityTypeId.HasValue )
                 {
                     tag.EntityTypeId = entityTypeId.Value;
@@ -297,7 +305,7 @@ namespace RockWeb.Blocks.Core
 
             bool readOnly = false;
 
-            if ( !_canConfigure && tag.OwnerId != CurrentPersonId )
+            if ( !_canConfigure && ( tag.OwnerPersonAlias == null || tag.OwnerPersonAlias.PersonId != CurrentPersonId ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
@@ -350,15 +358,16 @@ namespace RockWeb.Blocks.Core
 
             tbName.Text = tag.Name;
             tbDescription.Text = tag.Description;
-            if ( tag.OwnerId.HasValue )
+            if ( tag.OwnerPersonAlias != null )
             {
                 rblScope.SelectedValue = "Personal";
+                ppOwner.SetValue( tag.OwnerPersonAlias.Person );
             }
             else
             {
                 rblScope.SelectedValue = "Organization";
+                ppOwner.SetValue( null );
             }
-            ppOwner.SetValue( tag.Owner );
 
             ddlEntityType.Items.Clear();
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );

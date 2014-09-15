@@ -103,7 +103,7 @@ namespace Rock.Rest.Controllers
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = entityQualifier;
                 tag.EntityTypeQualifierValue = entityQualifierValue;
-                tag.OwnerId = ownerId;
+                tag.OwnerPersonAliasId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).GetPrimaryAliasId( ownerId );
                 tag.Name = name;
                 tagService.Add( tag );
             }
@@ -119,6 +119,7 @@ namespace Rock.Rest.Controllers
                 tag.TaggedItems.Add( taggedItem );
             }
 
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -178,7 +179,7 @@ namespace Rock.Rest.Controllers
                     ( i.Tag.EntityTypeId == entityTypeId ) &&
                     ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == string.Empty || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
                     ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == string.Empty || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( i.Tag.OwnerId == ownerId ) &&
+                    ( i.Tag.OwnerPersonAlias != null && i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
                     ( i.Tag.Name == name ) &&
                     ( i.EntityGuid.Equals( entityGuid ) ) );
 

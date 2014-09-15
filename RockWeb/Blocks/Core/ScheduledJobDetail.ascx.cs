@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlNotificationStatus.BindToEnum( typeof( JobNotificationStatus ) );
+            ddlNotificationStatus.BindToEnum<JobNotificationStatus>();
 
             int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
 

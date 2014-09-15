@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
-                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Groups
                 cblRole.DataBind();
             }
 
-            cblStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            cblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         /// <summary>
@@ -402,14 +402,32 @@ namespace RockWeb.Blocks.Groups
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
+                    List<GroupMember> groupMembers = null;
+
                     if ( sortProperty != null )
                     {
-                        gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+                        groupMembers = qry.Sort( sortProperty ).ToList();
                     }
                     else
                     {
-                        gGroupMembers.DataSource = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                        groupMembers = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                     }
+
+                    // Since we're not binding to actual workflow list, but are using AttributeField columns,
+                    // we need to save the workflows into the grid's object list
+                    gGroupMembers.ObjectList = new Dictionary<string, object>();
+                    groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
+
+                    gGroupMembers.DataSource = groupMembers.Select( m => new
+                    {
+                        m.Id,
+                        m.Guid,
+                        m.PersonId,
+                        NickName = m.Person.NickName,
+                        LastName = m.Person.LastName,
+                        GroupRole = m.GroupRole.Name,
+                        m.GroupMemberStatus
+                    } ).ToList();
 
                     gGroupMembers.DataBind();
                 }

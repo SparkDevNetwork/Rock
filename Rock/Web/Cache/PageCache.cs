@@ -784,7 +784,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = PageCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             PageCache page = cache[cacheKey] as PageCache;
 
             if ( page == null )
@@ -814,7 +814,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PageCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             PageCache page = null;
@@ -850,7 +850,7 @@ namespace Rock.Web.Cache
         public static PageCache Read( Page pageModel )
         {
             string cacheKey = PageCache.CacheKey( pageModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             PageCache page = cache[cacheKey] as PageCache;
 
             if ( page != null )
@@ -874,7 +874,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( PageCache.CacheKey( id ) );
         }
 
@@ -883,7 +883,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayout( int layoutId )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
@@ -898,7 +898,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushLayoutBlocks( int layoutId )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {

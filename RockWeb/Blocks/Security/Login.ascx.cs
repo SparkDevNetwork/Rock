@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -355,8 +355,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
             mergeObjects.Add( "User", userLogin.ToDictionary() );
 
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
-            recipients.Add( userLogin.Person.Email, mergeObjects );
+            var recipients = new List<RecipientData>();
+            recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );
 
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
         }
