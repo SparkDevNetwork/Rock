@@ -266,6 +266,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
         private HtmlAnchor _aRemove;
+        private Label _lSaveStatus;
         private LinkButton _lbShowModal;
         private LinkButton _lbUploadImage;
 
@@ -530,6 +531,13 @@ namespace Rock.Web.UI.Controls
             _lbUploadImage.Text = this.ButtonText;
             Controls.Add( _lbUploadImage );
 
+            _lSaveStatus = new Label();
+            _lSaveStatus.ID = this.ID + "_lSaveStatus";
+            _lSaveStatus.CssClass = "fa fa-2x fa-check-circle-o text-success";
+            _lSaveStatus.Style.Add( "vertical-align", "bottom" );
+            _lSaveStatus.Visible = false;
+            Controls.Add( _lSaveStatus );
+
             _fileUpload = new FileUpload();
             _fileUpload.ID = this.ID + "_fu";
             Controls.Add( _fileUpload );
@@ -600,6 +608,7 @@ namespace Rock.Web.UI.Controls
                 if ( FileSaved != null )
                 {
                     FileSaved( this, e );
+                    _lSaveStatus.Visible = true;
                 }
 
                 _hfOriginalBinaryFileId.Value = this.BinaryFileId.ToStringSafe();
@@ -806,6 +815,10 @@ namespace Rock.Web.UI.Controls
             _lbUploadImage.Text = this.ButtonText;
             _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.RenderControl( writer );
+
+            // render the circle check status for when save happens
+            writer.WriteLine();
+            _lSaveStatus.RenderControl( writer );
 
             writer.WriteLine();
             _aRemove.RenderControl( writer );
