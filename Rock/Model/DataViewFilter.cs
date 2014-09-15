@@ -141,7 +141,7 @@ namespace Rock.Model
         public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
             // First check if user is authorized for model
-            bool authorized = base.IsAuthorized( action, person );
+            bool authorized = base.IsAuthorized( action, person, rockContext );
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
@@ -152,7 +152,7 @@ namespace Rock.Model
                     var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( filterComponent != null )
                     {
-                        authorized = filterComponent.IsAuthorized( action, person );
+                        authorized = filterComponent.IsAuthorized( action, person, rockContext );
                     }
                 }
 
@@ -160,7 +160,7 @@ namespace Rock.Model
                 {
                     foreach ( var childFilter in ChildFilters )
                     {
-                        if ( !childFilter.IsAuthorized( action, person ) )
+                        if ( !childFilter.IsAuthorized( action, person, rockContext ) )
                         {
                             return false;
                         }
