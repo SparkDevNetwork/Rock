@@ -507,12 +507,16 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( entityTypeId.HasValue )
             {
+                var rockContext = new RockContext();
                 ddlDataView.Enabled = true;
                 ddlDataView.Items.Clear();
 
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).Select( a => new { a.Id, a.Name } ).ToList() )
+                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList() )
                 {
-                    ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                    if ( dataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                    {
+                        ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                    }
                 }
 
                 ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -727,13 +731,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     isAuthorized = false;
                     authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
-                }
-                else 
-                {
-                    if ( report.DataView.IsAuthorizedForAllDataViewComponents( Authorization.VIEW, this.CurrentPerson, rockContext, out authorizationMessage ) )
-                    {
-                        isAuthorized = false;
-                    }
                 }
             }
 
