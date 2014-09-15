@@ -151,6 +151,20 @@ create table #codeTable (
     insert into #codeTable
     SELECT @crlf
 
+    insert into #codeTable
+    SELECT @crlf
+    
+    -- Page Contexts
+    insert into #codeTable
+      SELECT '            // Add/Update PageContext for Page:' + p.InternalName + ', Entity: ' + pc.Entity + ', Parameter: ' + pc.IdParameter  
+      + @crlf +
+      + '            RockMigrationHelper.UpdatePageContext( "' + convert(nvarchar(max), p.Guid) + '", "' + pc.Entity +  '", "' + pc.IdParameter +  '", "' + convert(nvarchar(max), pc.Guid) + '");'
+      + @crlf
+    FROM [dbo].[PageContext] [pc]
+    join [Page] [p]
+    on [p].[Id] = [pc].[PageId]
+    where [p].[Id] = @PageId
+
     select CodeText [MigrationUp] from #codeTable 
     where REPLACE(CodeText, @crlf, '') != ''
     order by Id
@@ -216,6 +230,15 @@ create table #codeTable (
 	from [Page] [p]
 	join [Layout] [l] on [l].[Id] = [p].[layoutId]
 	join [site] [s] on [s].[Id] = [l].[siteId]
+    where [p].[Id] = @PageId
+
+    insert into #codeTable
+    SELECT '            // Delete PageContext for Page:' + p.InternalName + ', Entity: ' + pc.Entity + ', Parameter: ' + pc.IdParameter  + @crlf +
+    + '            DeletePageContext( "' + convert(nvarchar(max), pc.Guid) + '");'
+    + @crlf  
+    FROM [dbo].[PageContext] [pc]
+    join [Page] [p]
+    on [p].[Id] = [pc].[PageId]
     where [p].[Id] = @PageId
 
     select CodeText [MigrationDown] from #codeTable
