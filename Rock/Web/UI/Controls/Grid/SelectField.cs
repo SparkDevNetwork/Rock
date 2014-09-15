@@ -170,12 +170,21 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
+            this.HeaderTemplate = new SelectFieldHeaderTemplate();
             this.ItemTemplate = new SelectFieldTemplate();
             var grid = control as Grid;
             if (grid != null)
             {
                 ColumnIndex = grid.Columns.IndexOf( this );
             }
+
+            string script = string.Format( @"
+    $('input[id$=""_cbSelectHead_{0}""]').click( function() {{
+    $(this).closest('table').find('input[id$=""_cbSelect_{0}""]').prop('checked', $(this).prop('checked'));
+    }});
+", ColumnIndex );
+            ScriptManager.RegisterStartupScript( control, control.GetType(), "select-all-" + ColumnIndex.ToString(), script, true );
+
 
             return base.Initialize( sortingEnabled, control );
         }
@@ -330,6 +339,40 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SelectFieldHeaderTemplate : ITemplate
+    {
+        /// <summary>
+        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// </summary>
+        /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
+        public void InstantiateIn( Control container )
+        {
+            var cell = container as DataControlFieldCell;
+            if ( cell != null )
+            {
+                var selectField = cell.ContainingField as SelectField;
+                if ( selectField != null )
+                {
+                    Literal l = new Literal();
+                    l.Text = selectField.HeaderText;
+                    cell.Controls.Add( l );
+
+                    if ( selectField.SelectionMode == SelectionMode.Multiple )
+                    {
+                        string colIndex = selectField.ColumnIndex.ToString();
+                        CheckBox cb = new CheckBox();
+                        cb.ID = "cbSelectHead_" + colIndex;
+                        cb.AddCssClass( "select-all" );
+                        cell.Controls.Add( cb );
+                    }
+                }
+            }
+        }
     }
 
     #region Enumerations
