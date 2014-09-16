@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Crm
                             lStatus.Text = "<span class='label label-success'>Verified</span>";
                             break;
                         case GroupMemberStatus.Pending:
-                            lStatus.Text = "<span class='label label-warning'>Pending Verification</span>";
+                            lStatus.Text = "<span class='label label-warning'>Pending</span>";
                             break;
                         default:
                             break;
