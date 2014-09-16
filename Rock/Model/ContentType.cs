@@ -24,17 +24,17 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Type of <see cref="Rock.Model.MarketingCampaignAd"/>.
+    /// Represents a Type of <see cref="Rock.Model.ContentType"/>.
     /// </summary>
-    [Table( "MarketingCampaignAdType" )]
+    [Table( "ContentType" )]
     [DataContract]
-    public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
+    public partial class ContentType : Model<ContentType>
     {
 
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this MarketingCampaignAdType is part of the Rock core system/framework. 
+        /// Gets or sets a flag indicating if this ContentType is part of the Rock core system/framework. 
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> flag that is <c>true</c> if this MarketingCAmpaignAdType is part of the Rock core system/framework; otherwise <c>false</c>.
@@ -43,15 +43,24 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the MarketingCampaignAdType. This property is required.
+        /// Gets or sets the name of the ContentType. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String" /> representing the name of the MarketingCampaignAdType.
+        /// A <see cref="System.String" /> representing the name of the ContentType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires approval].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires approval]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresApproval { get; set; }
 
         /// <summary>
         /// Gets or sets an <see cref="DateRangeTypeEnum"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
@@ -90,12 +99,12 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class MarketingCampaignAdTypeConfiguration : EntityTypeConfiguration<MarketingCampaignAdType>
+    public partial class ContentTypeConfiguration : EntityTypeConfiguration<ContentType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MarketingCampaignAdTypeConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="ContentTypeConfiguration" /> class.
         /// </summary>
-        public MarketingCampaignAdTypeConfiguration()
+        public ContentTypeConfiguration()
         {
         }
     }
@@ -104,6 +113,21 @@ namespace Rock.Model
 
     #region Enumerations
 
+    /// <summary>
+    /// Represents the type of DateRange that is supported.
+    /// </summary>
+    public enum DateRangeTypeEnum : byte
+    {
+        /// <summary>
+        /// Allows a single date.
+        /// </summary>
+        SingleDate = 1,
+
+        /// <summary>
+        /// Allows a date range (start - end date)
+        /// </summary>
+        DateRange = 2
+    }
 
     #endregion
 

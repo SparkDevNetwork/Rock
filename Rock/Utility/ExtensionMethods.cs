@@ -1609,11 +1609,23 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        public static T SelectedValueAsEnum<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
         {
-            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
+            return listControl.SelectedValue.ConvertToEnum<T>( defaultValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static T? SelectedValueAsEnumOrNull<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
+        {
+            return listControl.SelectedValue.ConvertToEnumOrNull<T>( defaultValue );
+        }
+        
         /// <summary>
         /// Selecteds the value as unique identifier.
         /// </summary>
@@ -1627,7 +1639,7 @@ namespace Rock
             }
             else
             {
-                return listControl.SelectedValue.AsGuid();
+                return listControl.SelectedValue.AsGuidOrNull();
             }
         }
 
