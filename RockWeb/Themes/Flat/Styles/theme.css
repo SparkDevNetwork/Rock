@@ -2261,10 +2261,10 @@ td.grid-col-actions {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #98a3ab;
+  border: 1px solid #cfd9db;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #b4bcc2;
+  background-color: #ecf0f1;
   position: relative;
 }
 .panel-note article .date {
@@ -4035,10 +4035,6 @@ a.help {
 }
 .panel-block > .panel-heading {
   background-color: #ecf0f1;
-  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
-            float: right;
-            margin-top: 2px;
-        }*/
 }
 .panel-block > .panel-heading:before,
 .panel-block > .panel-heading:after {

@@ -43,11 +43,17 @@
 
                     <asp:HiddenField ID="hfPrayerIndex" runat="server"/>
 
-                    <div class="well" style="min-height:100px">
+
+                        <strong>Prayer Request</strong>
+                        <br />
                         <asp:Literal ID="lPrayerText" runat="server" />
 
-                        <p id="pPrayerAnswer" runat="server"><span class="label label-success">Update!</span> <asp:Literal ID="lPrayerAnswerText" runat="server"></asp:Literal></p>
-                    </div>
+                        <div id="divPrayerAnswer" runat="server" class="margin-t-lg">
+                            <strong>Update</strong> 
+                            <br />
+                            <asp:Literal ID="lPrayerAnswerText" runat="server"></asp:Literal>
+                        </div>
+
 
                     <div class="actions margin-b-md">
                         <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" />
