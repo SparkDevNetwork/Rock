@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowPrayerRequest( PrayerRequest prayerRequest, RockContext rockContext )
         {
             pnlPrayer.Visible = true;
-            pPrayerAnswer.Visible = false;
+            divPrayerAnswer.Visible = false;
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Prayer
             // Show their answer if there is one on the request.
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Answer ) )
             {
-                pPrayerAnswer.Visible = true;
+                divPrayerAnswer.Visible = true;
                 lPrayerAnswerText.Text = prayerRequest.Answer.EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
