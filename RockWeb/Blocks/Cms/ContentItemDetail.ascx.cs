@@ -31,11 +31,11 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Marketing Campaign - Ad Detail" )]
+    [DisplayName( "Content - Item Detail" )]
     [Category( "CMS" )]
-    [Description( "Displays the details for an Ad." )]
+    [Description( "Displays the details for a content item." )]
 
-    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve Ads." )]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve items." )]
     
     public partial class ContentItemDetail : RockBlock, IDetailBlock
     {
@@ -71,14 +71,12 @@ namespace RockWeb.Blocks.Cms
             if ( !IsUserAuthorized( "Approve" ) )
             {
                 // change approval status to pending if any values are changed
-                string onchangeScriptFormat = @"
+                string onchangeScript = string.Format( @"
                     $('#{0}').removeClass('alert-success alert-danger').addClass('alert-info');
                     $('#{0}').text('Pending Approval');
                     $('#{1}').val('1');
                     $('#{2}').val('');
-                    $('#{3}').hide();";
-
-                string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
+                    $('#{3}').hide();", lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
                 // catch changes from any HtmlEditors (special case)
                 var htmlEditors = phAttributes.ControlsOfTypeRecursive<Rock.Web.UI.Controls.HtmlEditor>();
@@ -98,101 +96,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Edit Events
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
-            var adtypes = contentTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-            ddlContentType.DataSource = adtypes;
-            ddlContentType.DataBind();
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
-        public void ShowDetail( int contentItemId )
-        {
-            ShowDetail( contentItemId, null );
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
-        /// <param name="contentChannelId">The marketing campaign id.</param>
-        public void ShowDetail( int contentItemId, int? contentChannelId )
-        {
-            pnlDetails.Visible = false;
-
-            ContentItem contentItem = null;
-
-            lbApprove.Visible = IsUserAuthorized( "Approve" );
-            lbDeny.Visible = IsUserAuthorized( "Approve" );
-
-            var rockContext = new RockContext();
-
-            if ( !contentItemId.Equals( 0 ) )
-            {
-                contentItem = new ContentItemService( rockContext ).Get( contentItemId );
-            }
-
-            if (contentItem == null && contentChannelId.HasValue )
-            {
-                contentItem = new ContentItem { Id = 0, ContentItemStatus = ContentItemStatus.PendingApproval };
-                contentItem.ContentChannelId = contentChannelId.Value;
-                contentItem.ContentChannel = new ContentChannelService( rockContext ).Get( contentItem.ContentChannelId );
-            }
-
-            if ( contentItem == null )
-            {
-                return;
-            }
-
-            contentItem.LoadAttributes();
-
-            pnlDetails.Visible = true;
-            hfContentItemId.Value = contentItem.Id.ToString();
-            hfContentChannelId.Value = contentItem.ContentChannelId.ToString();
-
-            if ( contentItem.Id.Equals( 0 ) )
-            {
-                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
-            }
-            else
-            {
-                lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
-            }
-
-            LoadDropDowns();
-            ddlContentType.SetValue( contentItem.ContentTypeId );
-            tbPriority.Text = contentItem.Priority.ToString();
-
-            SetApprovalValues( contentItem.ContentItemStatus, new PersonService( rockContext ).Get( contentItem.ContentChannelStatusPersonId ?? 0 ) );
-
-            if ( contentItemId.Equals( 0 ) )
-            {
-                drpAdDateRange.LowerValue = null;
-                drpAdDateRange.UpperValue = null;
-                dpAdSingleDate.SelectedDate = null;
-            }
-            else
-            {
-                drpAdDateRange.LowerValue = contentItem.StartDate;
-                drpAdDateRange.UpperValue = contentItem.EndDate;
-                dpAdSingleDate.SelectedDate = contentItem.StartDate;
-            }
-
-            tbUrl.Text = contentItem.Url;
-
-            LoadAdAttributes( contentItem, true, true );
-
-            pnlDetails.Visible = true;
-        }
+        #region Events
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlContentType control.
@@ -209,60 +113,6 @@ namespace RockWeb.Blocks.Cms
             SetApprovalValues( ContentItemStatus.PendingApproval, null );
 
             LoadAdAttributes( contentItem, true, true );
-        }
-
-        /// <summary>
-        /// Loads the attribute controls.
-        /// </summary>
-        /// <param name="contentItem">The marketing campaign ad.</param>
-        /// <param name="createControls">if set to <c>true</c> [create controls].</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void LoadAdAttributes( Rock.Attribute.IHasAttributes contentItem, bool createControls, bool setValues )
-        {
-            if ( string.IsNullOrWhiteSpace( ddlContentType.SelectedValue ) )
-            {
-                return;
-            }
-
-            int marketingAdTypeId = int.Parse( ddlContentType.SelectedValue );
-
-            ContentType contentType = new ContentTypeService( new RockContext() ).Get( marketingAdTypeId );
-            drpAdDateRange.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
-            dpAdSingleDate.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.SingleDate );
-
-            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
-
-            contentItem.Attributes = contentItem.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            contentItem.AttributeValues = contentItem.AttributeValues ?? new Dictionary<string, AttributeValue>();
-            foreach ( var attribute in attributesForAdType )
-            {
-                contentItem.Attributes.AddOrReplace( attribute.Key, attribute );
-
-                if ( !contentItem.AttributeValues.ContainsKey( attribute.Key ) ||
-                    contentItem.AttributeValues[attribute.Key] == null )
-                {
-                    contentItem.AttributeValues.AddOrReplace( attribute.Key, new AttributeValue { Value = attribute.DefaultValue } );
-                }
-            }
-
-            if ( createControls )
-            {
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, setValues );
-            }
-        }
-
-        /// <summary>
-        /// Gets the type of the attributes for ad.
-        /// </summary>
-        /// <param name="marketingAdTypeId">The marketing ad type id.</param>
-        /// <returns></returns>
-        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
-        {
-            ContentItem temp = new ContentItem();
-            temp.ContentTypeId = marketingAdTypeId;
-            temp.LoadAttributes();
-            return temp.Attributes.Values.ToList();
         }
 
         /// <summary>
@@ -307,15 +157,15 @@ namespace RockWeb.Blocks.Cms
                 contentItem.ContentChannelStatusPersonId = null;
             }
 
-            if (drpAdDateRange.Visible)
+            if (drpDateRange.Visible)
             {
-                contentItem.StartDate = drpAdDateRange.LowerValue ?? DateTime.MinValue;
-                contentItem.EndDate = drpAdDateRange.UpperValue ?? DateTime.MaxValue;
+                contentItem.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
+                contentItem.EndDate = drpDateRange.UpperValue ?? DateTime.MaxValue;
             }
 
-            if (dpAdSingleDate.Visible)
+            if (dpSingleDate.Visible)
             {
-                contentItem.StartDate = dpAdSingleDate.SelectedDate ?? DateTime.MinValue;
+                contentItem.StartDate = dpSingleDate.SelectedDate ?? DateTime.MinValue;
                 contentItem.EndDate = contentItem.StartDate;
             }
 
@@ -384,6 +234,101 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
+            var adtypes = contentTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            ddlContentType.DataSource = adtypes;
+            ddlContentType.DataBind();
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
+        public void ShowDetail( int contentItemId )
+        {
+            ShowDetail( contentItemId, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
+        /// <param name="contentChannelId">The marketing campaign id.</param>
+        public void ShowDetail( int contentItemId, int? contentChannelId )
+        {
+            pnlDetails.Visible = false;
+
+            ContentItem contentItem = null;
+
+            lbApprove.Visible = IsUserAuthorized( "Approve" );
+            lbDeny.Visible = IsUserAuthorized( "Approve" );
+
+            var rockContext = new RockContext();
+
+            if ( !contentItemId.Equals( 0 ) )
+            {
+                contentItem = new ContentItemService( rockContext ).Get( contentItemId );
+            }
+
+            if ( contentItem == null && contentChannelId.HasValue )
+            {
+                contentItem = new ContentItem { Id = 0, ContentItemStatus = ContentItemStatus.PendingApproval };
+                contentItem.ContentChannelId = contentChannelId.Value;
+                contentItem.ContentChannel = new ContentChannelService( rockContext ).Get( contentItem.ContentChannelId );
+            }
+
+            if ( contentItem == null )
+            {
+                return;
+            }
+
+            contentItem.LoadAttributes();
+
+            pnlDetails.Visible = true;
+            hfContentItemId.Value = contentItem.Id.ToString();
+            hfContentChannelId.Value = contentItem.ContentChannelId.ToString();
+
+            if ( contentItem.Id.Equals( 0 ) )
+            {
+                lActionTitle.Text = ActionTitle.Add( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Edit( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
+            }
+
+            LoadDropDowns();
+            ddlContentType.SetValue( contentItem.ContentTypeId );
+            tbPriority.Text = contentItem.Priority.ToString();
+
+            SetApprovalValues( contentItem.ContentItemStatus, new PersonService( rockContext ).Get( contentItem.ContentChannelStatusPersonId ?? 0 ) );
+
+            if ( contentItemId.Equals( 0 ) )
+            {
+                drpDateRange.LowerValue = null;
+                drpDateRange.UpperValue = null;
+                dpSingleDate.SelectedDate = null;
+            }
+            else
+            {
+                drpDateRange.LowerValue = contentItem.StartDate;
+                drpDateRange.UpperValue = contentItem.EndDate;
+                dpSingleDate.SelectedDate = contentItem.StartDate;
+            }
+
+            tbUrl.Text = contentItem.Url;
+
+            LoadAdAttributes( contentItem, true, true );
+
+            pnlDetails.Visible = true;
+        }
+
+
+        /// <summary>
         /// Sets the approval values.
         /// </summary>
         /// <param name="status">The status.</param>
@@ -411,6 +356,60 @@ namespace RockWeb.Blocks.Cms
                 lblApprovalStatusPerson.Text = "by " + person.FullName;
                 hfApprovalStatusPersonId.Value = person.Id.ToString();
             }
+        }
+
+        /// <summary>
+        /// Loads the attribute controls.
+        /// </summary>
+        /// <param name="contentItem">The marketing campaign ad.</param>
+        /// <param name="createControls">if set to <c>true</c> [create controls].</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void LoadAdAttributes( Rock.Attribute.IHasAttributes contentItem, bool createControls, bool setValues )
+        {
+            if ( string.IsNullOrWhiteSpace( ddlContentType.SelectedValue ) )
+            {
+                return;
+            }
+
+            int marketingAdTypeId = int.Parse( ddlContentType.SelectedValue );
+
+            ContentType contentType = new ContentTypeService( new RockContext() ).Get( marketingAdTypeId );
+            drpDateRange.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+            dpSingleDate.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.SingleDate );
+
+            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+
+            contentItem.Attributes = contentItem.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+            contentItem.AttributeValues = contentItem.AttributeValues ?? new Dictionary<string, AttributeValue>();
+            foreach ( var attribute in attributesForAdType )
+            {
+                contentItem.Attributes.AddOrReplace( attribute.Key, attribute );
+
+                if ( !contentItem.AttributeValues.ContainsKey( attribute.Key ) ||
+                    contentItem.AttributeValues[attribute.Key] == null )
+                {
+                    contentItem.AttributeValues.AddOrReplace( attribute.Key, new AttributeValue { Value = attribute.DefaultValue } );
+                }
+            }
+
+            if ( createControls )
+            {
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, setValues );
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attributes for ad.
+        /// </summary>
+        /// <param name="marketingAdTypeId">The marketing ad type id.</param>
+        /// <returns></returns>
+        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
+        {
+            ContentItem temp = new ContentItem();
+            temp.ContentTypeId = marketingAdTypeId;
+            temp.LoadAttributes();
+            return temp.Attributes.Values.ToList();
         }
 
         #endregion
