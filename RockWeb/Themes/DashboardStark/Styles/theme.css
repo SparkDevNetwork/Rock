@@ -2098,6 +2098,9 @@ td.grid-col-actions {
 .table-padded th {
   padding: 12px !important;
 }
+.grid-select-field {
+  text-align: center;
+}
 .grid-select-field .checkbox,
 .grid-select-field .radio {
   padding-left: 0;
