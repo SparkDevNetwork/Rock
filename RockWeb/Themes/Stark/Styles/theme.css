@@ -3302,6 +3302,20 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
+    1. Prayer Session
+    2. 
+
+*/
+.prayer-session .panel-note {
+  border: 0;
+  box-shadow: none;
+}
+.prayer-session .panel-note > .panel-body {
+  padding: 0;
+}
+/*
+    Used to manage styles for specific blocks.
+
     1. Error Page 
     2. Blank Page
     3. Exception Page
@@ -4384,16 +4398,17 @@ footer .footer-address {
   top: -12px;
 }
 /* hide block panels */
-.panel-block {
+.panel.panel-block {
   border: 0;
+  box-shadow: none;
 }
-.panel-block > .panel-heading {
+.panel.panel-block > .panel-heading {
   display: none;
 }
-.panel-block > .panel-body {
+.panel.panel-block > .panel-body {
   padding: 0;
 }
-.panel-block > .panel-body .grid.grid-panel {
+.panel.panel-block > .panel-body .grid.grid-panel {
   margin: 0;
 }
 @media (min-width: 768px) {

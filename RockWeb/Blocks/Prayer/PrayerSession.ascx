@@ -18,39 +18,53 @@
         </asp:Panel>
 
         <!-- The detail for each prayer -->
-        <asp:Panel ID="pnlPrayer" runat="server" Visible="false" CssClass="panel panel-default">
-           <div class="panel-body">
-
-            <asp:HiddenField ID="hfPrayerIndex" runat="server"/>
-            <div class="banner">
-                <h1>
-                    <asp:Literal ID="lPersonIconHtml" runat="server" />
-                    <asp:Literal ID="lTitle" runat="server" />
-                </h1>
-                <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
-                <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
-                <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
-            </div>
-            <div class="well" style="min-height:100px">
-            <asp:Literal ID="lPrayerText" runat="server" />
-
-            <p id="pPrayerAnswer" runat="server"><span class="label label-success">Update!</span> <asp:Literal ID="lPrayerAnswerText" runat="server"></asp:Literal></p>
+        
+        <asp:Panel ID="pnlPrayer" runat="server" Visible="false">
+           
+            <div class="clearfix margin-b-md">
+                <Rock:HighlightLabel ID="hlblNumber" runat="server" CssClass="pull-right" LabelType="Default" Text="# 0" />
             </div>
 
-            <div class="actions">
-                <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary" OnClick="lbNext_Click" />
-                <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
-                <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
-                <p class="text-right"><Rock:HighlightLabel ID="hlblNumber" runat="server" LabelType="Default" Text="# 0" /></p>
+            <div class="panel panel-default">
+                 <div class="panel-heading clearfix">
+                    <h3 class="panel-title pull-left">
+                        <asp:Literal ID="lPersonIconHtml" runat="server" />
+                        <asp:Literal ID="lTitle" runat="server" />
+                    </h3>
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
+                        <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
+                        <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
+
+                    </div>
+                </div>
+            
+                <div class="panel-body">
+
+                    <asp:HiddenField ID="hfPrayerIndex" runat="server"/>
+
+                    <div class="well" style="min-height:100px">
+                        <asp:Literal ID="lPrayerText" runat="server" />
+
+                        <p id="pPrayerAnswer" runat="server"><span class="label label-success">Update!</span> <asp:Literal ID="lPrayerAnswerText" runat="server"></asp:Literal></p>
+                    </div>
+
+                    <div class="actions margin-b-md">
+                        <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" />
+                        <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
+                        <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
+                    </div>
+
+                    <!-- Comments -->
+                    <h4>Comments</h4>
+                    <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+                         DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
+                        ShowPrivateCheckBox="false" ShowSecurityButton="false" 
+                        AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
+
+                </div>
             </div>
-
-            <!-- Comments -->
-            <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
-                 DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
-                ShowPrivateCheckBox="false" ShowSecurityButton="false" 
-                AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
-
-        </div>
+           
         </asp:Panel>
 
         <!-- Modal for flag confirmation -->
