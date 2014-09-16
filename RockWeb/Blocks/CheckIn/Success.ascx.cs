@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.CheckIn
 
                                         foreach ( var label in printFromServer )
                                         {
-                                            var labelCache = KioskLabel.Read( label.FileId );
+                                            var labelCache = KioskLabel.Read( label.FileGuid );
                                             if ( labelCache != null )
                                             {
                                                 if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
