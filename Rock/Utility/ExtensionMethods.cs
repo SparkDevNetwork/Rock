@@ -1491,13 +1491,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// Try's to set the selected value. If the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( this ListControl listControl, int? value )
         {
             listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="entity">The entity.</param>
+        public static void SetValue( this ListControl listControl, IEntity entity )
+        {
+            listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
         }
 
         /// <summary>
