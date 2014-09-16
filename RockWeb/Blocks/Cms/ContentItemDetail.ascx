@@ -2,11 +2,11 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <!-- Ad Details Controls -->
+        <!-- Item Details Controls -->
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-certificate"></i> <asp:Literal ID="lActionTitleAd" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-certificate"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
@@ -39,22 +39,33 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlContentType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ContentType, Rock" PropertyName="Name"
-                                Label="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlContentType_SelectedIndexChanged" />
-
-                            <Rock:DateRangePicker ID="drpAdDateRange" runat="server" Label="Date Range" Required="true" />
-                            <Rock:DatePicker ID="dpAdSingleDate" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="StartDate" Label="Date" Required="true" />
+                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Title" Label="Title" />
                         </div>
-
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Url" Label="Web Address" />
-                            <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Priority" Label="Priority" />
                         </div>
                     </div>
 
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:CodeEditor ID="ceContent" runat="server" Label="Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400" />
+                        </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlContentType" runat="server" DataTextField="Name" DataValueField="Id" Label="Content Type" 
+                                AutoPostBack="true" OnSelectedIndexChanged="ddlContentType_SelectedIndexChanged" />
+                            <Rock:DateTimePicker ID="dpStartDateTime" runat="server" Label="Start" Required="true" />
+                            <Rock:DateTimePicker ID="dpExpireDateTime" runat="server" Label="Expire"  />
+                            <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Priority" Label="Priority" />
+                            <Rock:DataTextBox ID="tbPermalink" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Permalink" Label="Permalink" />
+                        </div>
+
+                        <div class="col-md-6 attributes">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
                         <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
