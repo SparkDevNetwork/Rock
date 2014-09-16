@@ -39,7 +39,7 @@ namespace Rock.Field.Types
             {
                 var service = new CampusService( new RockContext() );
                 var qry = service.Queryable();
-                return qry.OrderBy( a => a.Name ).ToDictionary( k => k.Id.ToString(), v => v.Name );
+                return qry.OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }
         }
     }
