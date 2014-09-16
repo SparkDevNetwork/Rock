@@ -2489,13 +2489,30 @@ td.grid-col-actions {
   margin-bottom: 12px;
 }
 .panel-group .panel-workflowitem {
+  border-color: #e2e2e2;
   margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem > .panel-heading {
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading .badge {
+  color: #eeeeee;
+  background-color: #333333;
+}
+.panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #e2e2e2;
 }
 .panel-group .panel-workflowitem:hover {
   background-color: #fff;
 }
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
+  background-color: #eeeeee;
 }
 .panel-group .panel-workflowitem .panel-heading a {
   display: block;
