@@ -20,8 +20,8 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a DefinedType.
+    /// Stored as DefinedType.Guid
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DefinedTypeFieldAttribute : FieldAttribute
     {
         /// <summary>

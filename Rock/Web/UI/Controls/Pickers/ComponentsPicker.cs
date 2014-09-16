@@ -31,10 +31,10 @@ namespace Rock.Web.UI.Controls
     public class ComponentsPicker : RockCheckBoxList
     {
         /// <summary>
-        /// Gets or sets the binary file type id.
+        /// Sets the type of the container.
         /// </summary>
         /// <value>
-        /// The binary file type id.
+        /// The type of the container.
         /// </value>
         public virtual string ContainerType
         {
@@ -72,22 +72,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected component ids.
+        /// Gets the selected component guids.
         /// </summary>
         /// <value>
-        /// The selected component ids.
+        /// The selected component guids
         /// </value>
         public List<Guid> SelectedComponents
         {
             get
             {
-                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => Guid.Parse( a.Value ) ).ToList();
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsGuid() ).ToList();
             }
             set
             {
                 foreach ( ListItem componentItem in this.Items )
                 {
-                    componentItem.Selected = value.Exists( a => a.Equals( Guid.Parse( componentItem.Value ) ) );
+                    componentItem.Selected = value.Exists( a => a.Equals( componentItem.Value.AsGuid() ) );
                 }
             }
         }
