@@ -28,7 +28,7 @@ namespace Rock.Attribute
     public class SecurityRoleFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="SecurityRoleFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
