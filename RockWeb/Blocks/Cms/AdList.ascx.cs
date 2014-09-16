@@ -133,8 +133,8 @@ namespace RockWeb.Blocks.Cms
             string campuses = GetAttributeValue( "Campuses" );
             if ( !string.IsNullOrWhiteSpace( campuses ) )
             {
-                List<int> idlist = campuses.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => idlist.Contains( x.CampusId ) ) );
+                var guidList = campuses.SplitDelimitedValues().AsGuidList();
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => guidList.Contains( x.Campus.Guid ) ) );
             }
 
             // Ad Types

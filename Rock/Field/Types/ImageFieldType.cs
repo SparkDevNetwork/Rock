@@ -20,13 +20,14 @@ using System.IO;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display an image value
+    /// Stored as BinaryFile.Guid
     /// </summary>
-    [Serializable]
     public class ImageFieldType : BinaryFileFieldType
     {
         /// <summary>
@@ -55,7 +56,7 @@ namespace Rock.Field.Types
                     // width
                     if ( configurationValues != null &&
                         configurationValues.ContainsKey( "width" ) &&
-                        !String.IsNullOrWhiteSpace( configurationValues["width"].Value ) )
+                        !string.IsNullOrWhiteSpace( configurationValues["width"].Value ) )
                     {
                         queryParms = "&width=" + configurationValues["width"].Value;
                     }
@@ -63,19 +64,21 @@ namespace Rock.Field.Types
                     // height
                     if ( configurationValues != null &&
                         configurationValues.ContainsKey( "height" ) &&
-                        !String.IsNullOrWhiteSpace( configurationValues["height"].Value ) )
+                        !string.IsNullOrWhiteSpace( configurationValues["height"].Value ) )
                     {
                         queryParms += "&height=" + configurationValues["height"].Value;
                     }
                 }
 
-                string imageUrlFormat = "<img src='" + imagePath + "?id={0}{1}' />";
-                return string.Format( imageUrlFormat, value, queryParms );
+                var image = new BinaryFileService( new RockContext() ).Get( value.AsGuid() );
+                if ( image != null )
+                {
+                    string imageUrlFormat = "<img src='" + imagePath + "?id={0}{1}' />";
+                    return string.Format( imageUrlFormat, image.Id, queryParms );
+                }
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -115,13 +118,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
+            var picker = control as ImageUploader;
+
+            if ( picker != null )
             {
-                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId;
-                return imageId.ToString();
+                int? id = picker.BinaryFileId;
+                if ( id.HasValue )
+                {
+                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
+
+                    if ( binaryFile != null )
+                    {
+                        return binaryFile.Guid.ToString();
+                    }
+                }
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>
@@ -132,10 +145,18 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            int? idvalue = value.AsIntegerOrNull();
-            if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
+            var picker = control as ImageUploader;
+
+            if ( picker != null )
             {
-                ( control as Rock.Web.UI.Controls.ImageUploader ).BinaryFileId = idvalue;
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var item = new BinaryFileService( new RockContext() ).Get( guid );
+                if ( item != null )
+                {
+                    picker.BinaryFileId = item.Id;
+                }
             }
         }
     }

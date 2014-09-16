@@ -28,7 +28,7 @@ namespace Rock.Attribute
     public class WorkflowTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="WorkflowTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
