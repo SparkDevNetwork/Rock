@@ -54,6 +54,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         {
             base.OnInit( e );
 
+            // Using the newest version of flowplayer and plugins (as of 9/1/2014) for this block since it works best
+            // for DVR playback.  The older versions would struggle to play video when a different recording was
+            // selected.
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
