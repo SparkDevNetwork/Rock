@@ -40,7 +40,7 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            Guid? guid = value.AsGuid();
+            Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
                 var service = new FinancialAccountService( new RockContext() );

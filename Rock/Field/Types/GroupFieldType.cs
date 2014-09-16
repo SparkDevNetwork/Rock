@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using Rock.Data;
@@ -24,6 +25,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) Group
+    /// Stored as Group.Guid
     /// </summary>
     public class GroupFieldType : FieldType, IEntityFieldType
     {
@@ -39,10 +41,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = value;
 
-            int? groupId = value.AsIntegerOrNull();
-            if (groupId.HasValue)
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get(groupId.Value);
+                var group = new GroupService( new RockContext() ).Get( guid.Value );
                 if (group != null)
                 {
                     formattedValue = group.Name;
@@ -74,10 +76,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupPicker groupPicker = control as GroupPicker;
-            if ( groupPicker != null )
+            GroupPicker picker = control as GroupPicker;
+            if ( picker != null )
             {
-                return groupPicker.SelectedValue;
+                int? id = picker.ItemId.AsIntegerOrNull();
+                if ( id.HasValue )
+                {
+                    var group = new GroupService( new RockContext() ).Get( id.Value );
+
+                    if ( group != null )
+                    {
+                        return group.Guid.ToString();
+                    }
+                }
             }
 
             return null;
@@ -91,13 +102,15 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as GroupPicker;
+
+            if ( picker != null )
             {
-                GroupPicker groupPicker = control as GroupPicker;
-                int groupId = 0;
-                int.TryParse( value, out groupId );
-                Group group = new GroupService( new RockContext() ).Get( groupId );
-                groupPicker.SetValue( group );
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var group = new GroupService( new RockContext() ).Get( guid );
+                picker.SetValue( group );
             }
         }
 
@@ -109,7 +122,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new GroupService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
         }
 
         /// <summary>
@@ -120,7 +135,9 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            SetEditValue( control, configurationValues, id.ToString() );
+            var item = new GroupService( new RockContext() ).Get( id ?? 0 );
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }

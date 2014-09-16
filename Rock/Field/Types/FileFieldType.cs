@@ -23,13 +23,14 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Model;
+using Rock.Data;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to display or upload a new binary file of a specific type
+    /// Stored as BinaryFile.Guid
     /// </summary>
-    [Serializable]
     public class FileFieldType : BinaryFileFieldType
     {
         /// <summary>
@@ -53,12 +54,16 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.FileUploader )
+            var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
+            if ( fileUploader != null )
             {
-                var fileSelector = (Rock.Web.UI.Controls.FileUploader)control;
-
-                return fileSelector.BinaryFileId.ToString();
+                var binaryFile = new BinaryFileService( new RockContext() ).Get( fileUploader.BinaryFileId ?? 0 );
+                if ( binaryFile != null )
+                {
+                    binaryFile.Guid.ToString();
+                }
             }
+
             return null;
         }
 
@@ -70,14 +75,13 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null && control != null && control is Rock.Web.UI.Controls.FileUploader )
+            var fileUploader = control as Rock.Web.UI.Controls.FileUploader;
+            if ( fileUploader != null )
             {
-                var fileSelector = (Rock.Web.UI.Controls.FileUploader)control;
-
-                int binaryFileId = 0;
-                if ( Int32.TryParse( value, out binaryFileId ) )
+                var binaryFile = new BinaryFileService( new RockContext() ).Get( value.AsGuid() );
+                if (binaryFile != null)
                 {
-                    fileSelector.BinaryFileId = binaryFileId;
+                    fileUploader.BinaryFileId = binaryFile.Id; 
                 }
             }
         }
