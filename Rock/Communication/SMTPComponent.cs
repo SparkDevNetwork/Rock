@@ -245,7 +245,7 @@ namespace Rock.Communication.Transport
                             string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
-                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
                                 message.AlternateViews.Add( plainTextView );
                             }
 
@@ -253,7 +253,7 @@ namespace Rock.Communication.Transport
                             string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
-                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                 message.AlternateViews.Add( htmlView );
                             }
 
