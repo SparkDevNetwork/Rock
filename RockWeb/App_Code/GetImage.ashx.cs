@@ -147,7 +147,7 @@ namespace RockWeb
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
-                BinaryFileType_RequiresSecurity = a.BinaryFileType.RequiresSecurity,
+                BinaryFileType_RequiresViewSecurity = a.BinaryFileType.RequiresViewSecurity,
                 ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
@@ -159,9 +159,9 @@ namespace RockWeb
                 return;
             }
 
-            //// if the binaryFile's BinaryFileType requires security, check security
-            //// note: we put a RequiresSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
-            if ( binaryFileMetaData.BinaryFileType_RequiresSecurity )
+            //// if the binaryFile's BinaryFileType requires view security, check security
+            //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
+            if ( binaryFileMetaData.BinaryFileType_RequiresViewSecurity )
             {
                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                 Person currentPerson = currentUser != null ? currentUser.Person : null;

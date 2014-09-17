@@ -167,15 +167,12 @@ namespace RockWeb
             }
             else
             {
-                if ( binaryFileType.RequiresSecurity )
-                {
-                    var currentUser = UserLoginService.GetCurrentUser();
-                    Person currentPerson = currentUser != null ? currentUser.Person : null;
+                var currentUser = UserLoginService.GetCurrentUser();
+                Person currentPerson = currentUser != null ? currentUser.Person : null;
 
-                    if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                    {
-                        throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );
-                    }
+                if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );
                 }
             }
 
