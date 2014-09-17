@@ -347,6 +347,7 @@ namespace Rock.Model
         {
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
+            activity.ActivityTypeId = activityType.Id;
             activity.ActivityType = activityType;
             activity.ActivatedDateTime = RockDateTime.Now;
             activity.LoadAttributes();

@@ -426,8 +426,9 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.setShowPrintMargin(false);
 
+                document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                 ce_{0}.getSession().on('change', function(e) {{
-                    document.getElementById('{0}').value = ce_{0}.getValue();
+                    document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                     {3}
                 }});
 ";
@@ -437,6 +438,24 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
+        }
+
+        /// <summary>
+        /// Processes the postback data for the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        /// <param name="postDataKey">The index within the posted collection that references the content to load.</param>
+        /// <param name="postCollection">The collection posted to the server.</param>
+        /// <returns>
+        /// true if the posted content is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
+        {
+            if ( base.LoadPostData( postDataKey, postCollection ) )
+            {
+                base.Text = HttpUtility.HtmlDecode( base.Text );
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

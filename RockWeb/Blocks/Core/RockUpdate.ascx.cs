@@ -172,13 +172,13 @@ namespace RockWeb.Blocks.Core
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-primary" );
-                        divPanel.AddCssClass( "panel-primary" );
+                        divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-default" );
-                        divPanel.AddCssClass( "panel-default" );
+                        divPanel.AddCssClass( "panel-block" );
                     }
                 }
             }

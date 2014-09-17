@@ -76,7 +76,7 @@ namespace Rock.Workflow.Action
                         else if ( entity is Group && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid(), rockContext ).Id )
                         {
                             var group = entity as Group;
-                            SetWorkflowAttributeValue( action, guid, group.Id.ToString() );
+                            SetWorkflowAttributeValue( action, guid, group.Guid.ToString() );
                             return true;
                         }
                         else

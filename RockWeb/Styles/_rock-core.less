@@ -33,6 +33,7 @@
 @import "_blocks-communication.less";
 @import "_blocks-checkinadmin.less";
 @import "_blocks-workflow.less";
+@import "_blocks-prayer.less";
 
 @import "_page-specific.less";
 
@@ -256,6 +257,7 @@ a.help {
 }
 
 .panel-info {
+        
     .panel-body {
         background-color: @body-bg;
     }
@@ -307,7 +309,7 @@ a.help {
 
     border-top-color: @panel-top-border-color;
 
-    .panel-heading {
+    > .panel-heading {
         background-color: @gray-lighter;
         .clearfix();
 
@@ -318,11 +320,6 @@ a.help {
                 color: #6a6a6a;
             }
         }
-
-        /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
-            float: right;
-            margin-top: 2px;
-        }*/
     }
 
     .panel-body {
