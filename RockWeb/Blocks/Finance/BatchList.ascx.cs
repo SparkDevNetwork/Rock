@@ -532,12 +532,7 @@ namespace RockWeb.Blocks.Finance
                             {
                                 if ( UnMatchedTxns )
                                 {
-                                    notes.Append( "<span class='label label-danger'>Unmatched Transactions</span><br/>" );
-                                }
-
-                                if ( ControlAmount != TransactionAmount)
-                                {
-                                    notes.Append( "<span class='label label-warning'>Transaction Total Does Not Match Control Amount</span><br/>" );
+                                    notes.Append( "<span class='label label-warning'>Unmatched Transactions</span><br/>" );
                                 }
 
                                 break;
