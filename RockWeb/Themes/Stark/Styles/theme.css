@@ -1527,8 +1527,6 @@ fieldset .actions {
 }
 .well-message {
   text-align: center;
-  background-color: #eeeeee;
-  border: 1px solid #e2e2e2;
 }
 .well-message h1 {
   font-size: 38px;
@@ -1536,6 +1534,26 @@ fieldset .actions {
 .well-message i {
   font-size: 84px;
   margin: 12px 0;
+}
+.well-message.well-message-info {
+  background-color: #d9edf7;
+  color: #3a87ad;
+  border-color: #bce8f1;
+}
+.well-message.well-message-success {
+  background-color: #dff0d8;
+  color: #468847;
+  border-color: #d6e9c6;
+}
+.well-message.well-message-danger {
+  background-color: #f2dede;
+  color: #b94a48;
+  border-color: #eed3d7;
+}
+.well-message.well-message-warning {
+  background-color: #fcf8e3;
+  color: #c09853;
+  border-color: #fbeed5;
 }
 ul.groupmembers {
   list-style: none;
@@ -2080,6 +2098,9 @@ td.grid-col-actions {
 .table-padded th {
   padding: 12px !important;
 }
+.grid-select-field {
+  text-align: center;
+}
 .grid-select-field .checkbox,
 .grid-select-field .radio {
   padding-left: 0;
@@ -2238,10 +2259,10 @@ td.grid-col-actions {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #808080;
+  border: 1px solid #d5d5d5;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #999999;
+  background-color: #eeeeee;
   position: relative;
 }
 .panel-note article .date {
@@ -2468,13 +2489,30 @@ td.grid-col-actions {
   margin-bottom: 12px;
 }
 .panel-group .panel-workflowitem {
+  border-color: #e2e2e2;
   margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem > .panel-heading {
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #e2e2e2;
+}
+.panel-group .panel-workflowitem > .panel-heading .badge {
+  color: #eeeeee;
+  background-color: #333333;
+}
+.panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #e2e2e2;
 }
 .panel-group .panel-workflowitem:hover {
   background-color: #fff;
 }
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
+  background-color: #eeeeee;
 }
 .panel-group .panel-workflowitem .panel-heading a {
   display: block;
@@ -3284,6 +3322,20 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
+    1. Prayer Session
+    2. 
+
+*/
+.prayer-session .panel-note {
+  border: 0;
+  box-shadow: none;
+}
+.prayer-session .panel-note > .panel-body {
+  padding: 0;
+}
+/*
+    Used to manage styles for specific blocks.
+
     1. Error Page 
     2. Blank Page
     3. Exception Page
@@ -3979,25 +4031,21 @@ a.help {
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #e2e2e2;
 }
-.panel-block .panel-heading {
+.panel-block > .panel-heading {
   background-color: #eeeeee;
-  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
-            float: right;
-            margin-top: 2px;
-        }*/
 }
-.panel-block .panel-heading:before,
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:before,
+.panel-block > .panel-heading:after {
   content: " ";
   display: table;
 }
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:after {
   clear: both;
 }
-.panel-block .panel-heading .panel-title {
+.panel-block > .panel-heading .panel-title {
   float: left;
 }
-.panel-block .panel-heading .panel-title i {
+.panel-block > .panel-heading .panel-title i {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
@@ -4366,16 +4414,17 @@ footer .footer-address {
   top: -12px;
 }
 /* hide block panels */
-.panel-block {
+.panel.panel-block {
   border: 0;
+  box-shadow: none;
 }
-.panel-block > .panel-heading {
+.panel.panel-block > .panel-heading {
   display: none;
 }
-.panel-block > .panel-body {
+.panel.panel-block > .panel-body {
   padding: 0;
 }
-.panel-block > .panel-body .grid.grid-panel {
+.panel.panel-block > .panel-body .grid.grid-panel {
   margin: 0;
 }
 @media (min-width: 768px) {

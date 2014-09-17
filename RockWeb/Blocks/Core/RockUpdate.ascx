@@ -19,19 +19,19 @@
                  <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
-                        <i class="fa fa-anchor" style="color: #49ace5"></i>
+                        <i class="fa fa-anchor"></i>
                         <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing.</p>
                     </div>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlUpdatesAvailable" Visible="false" runat="server">
-                    <div class="well well-message">
+                    <div class="well well-message well-message-info">
                         <h1>You're Missing Some Pieces</h1>
-                        <i class="fa fa-puzzle-piece" style="color: #49ace5"></i>
+                        <i class="fa fa-puzzle-piece"></i>
                         <p>We've expanded the puzzle, let's get you up-to-date.</p>
                     </div>
 
-                    <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Warning">
+                    <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger">
                         We highly recommend that you always take a backup of your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
                         Also, be patient when updating. An update can take anywhere from a few seconds
@@ -81,7 +81,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
-                    <div class="well well-message">
+                    <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
@@ -91,13 +91,13 @@
 
                     <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
 
-                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>NOTE:</strong> Any database changes will take effect at the next page load." />
+                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>Note</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
-                    <div class="well well-message">
+                    <div class="well well-message well-message-danger">
                         <h1>Whoa... That Wasn't Suppose To Happen</h1>
-                        <i class="fa fa-exclamation-circle" style="color: #d9534f"></i>
+                        <i class="fa fa-exclamation-circle"></i>
                         <p>An error ocurred during the update process.</p>
                     </div>
             
@@ -105,14 +105,8 @@
                 
                     <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Heading="Here's what happened..." />
                 </asp:Panel>       
-
-
             </div>
         </div>
-
-
-       
-
 
     </ContentTemplate>
 </asp:UpdatePanel>

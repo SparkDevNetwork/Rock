@@ -155,7 +155,14 @@ namespace Rock.Model
         /// </returns>
         public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return this.Metric.IsAuthorized( action, person, rockContext );
+            if ( this.Metric != null )
+            {
+                return this.Metric.IsAuthorized( action, person, rockContext );
+            }
+            else
+            {
+                return action == Rock.Security.Authorization.VIEW;
+            }
         }
 
         /// <summary>

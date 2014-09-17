@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.WorkFlow
         #region Fields
 
         private bool _canEdit = false;
+        private PersonAliasService _personAliasService = null;
+        private GroupService _groupService = null;
 
         #endregion
 
@@ -442,16 +444,26 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 var tdAssignedToPerson = e.Item.FindControl( "tdAssignedToPerson" ) as TermDescription;
-                if ( tdAssignedToPerson != null && activity.AssignedPersonAlias != null && activity.AssignedPersonAlias.Person != null )
+                if ( tdAssignedToPerson != null && activity.AssignedPersonAliasId.HasValue )
                 {
-                    var person = activity.AssignedPersonAlias.Person;
-                    tdAssignedToPerson.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                    var person = _personAliasService.Queryable()
+                        .Where( a => a.Id == activity.AssignedPersonAliasId.Value )
+                        .Select( a => a.Person )
+                        .FirstOrDefault();
+                    if ( person != null )
+                    {
+                        tdAssignedToPerson.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                    }
                 }
 
                 var tdAssignedToGroup = e.Item.FindControl( "tdAssignedToGroup" ) as TermDescription;
-                if ( tdAssignedToGroup != null && activity.AssignedGroup != null )
+                if ( tdAssignedToGroup != null && activity.AssignedGroupId.HasValue )
                 {
-                    tdAssignedToGroup.Description = activity.AssignedGroup.Name;
+                    var group = _groupService.Get( activity.AssignedGroupId.Value);
+                    if ( group != null )
+                    {
+                        tdAssignedToGroup.Description = activity.AssignedGroup.Name;
+                    }
                 }
 
                 var tdActivated = e.Item.FindControl( "tdActivated" ) as TermDescription;
@@ -705,6 +717,9 @@ namespace RockWeb.Blocks.WorkFlow
                     phViewAttributes.Controls.Add( td );
                 }
 
+                var rockContext = new RockContext();
+                _personAliasService = new PersonAliasService( rockContext );
+                _groupService = new GroupService( rockContext );
                 rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
                 rptrActivities.DataBind();
 
@@ -803,6 +818,8 @@ namespace RockWeb.Blocks.WorkFlow
                 Helper.AddDisplayControls( Workflow, phAttributes );
             }
 
+            var rockContext = new RockContext();
+
             phActivities.Controls.Clear();
             foreach ( var activity in Workflow.Activities.OrderBy( a => a.ActivatedDateTime ) )
             {
@@ -813,7 +830,7 @@ namespace RockWeb.Blocks.WorkFlow
                 activityEditor.ValidationGroup = btnSave.ValidationGroup;
                 activityEditor.IsDeleteEnabled = !activity.LastProcessedDateTime.HasValue;
                 activityEditor.DeleteActivityTypeClick += workflowActivityEditor_DeleteActivityClick;
-                activityEditor.SetWorkflowActivity( activity, setValues );
+                activityEditor.SetWorkflowActivity( activity, rockContext, setValues);
 
                 foreach ( WorkflowAction action in activity.Actions.OrderBy( a => a.ActionType.Order ) )
                 {

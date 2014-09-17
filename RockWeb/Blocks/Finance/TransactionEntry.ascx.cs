@@ -1526,6 +1526,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 pnlDupWarning.Visible = true;
+                divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
             }

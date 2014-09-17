@@ -20,7 +20,7 @@ using Rock.Web.Cache;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Stored as Category.Guid
     /// </summary>
     public class CategoryFieldAttribute : FieldAttribute
     {
