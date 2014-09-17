@@ -57,10 +57,10 @@ namespace RockWeb.Blocks.Groups
 
             try
             {
-                string groupValue = GetAttributeValue( "Group" );
+                var groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
                 string personKey = PageParameter( "Person" );
 
-                if ( string.IsNullOrWhiteSpace( groupValue ) )
+                if ( !groupGuid.HasValue )
                 {
                     ShowConfigError( "The 'Group' configuration for this block has not been set." );
                 }
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         GroupService groupService = new GroupService( rockContext );
-                        Group group = groupService.Get( groupValue.AsInteger() );
+                        Group group = groupService.Get( groupGuid.Value );
                         if ( group == null )
                         {
                             ShowConfigError( "The 'Group' configuration for this block is incorrect." );

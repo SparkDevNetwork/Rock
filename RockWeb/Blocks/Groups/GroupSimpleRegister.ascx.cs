@@ -85,14 +85,14 @@ namespace RockWeb.Blocks.Groups
                 var person = GetPerson( rockContext );
                 if ( person != null )
                 {
-                    int groupId = GetAttributeValue( "Group" ).AsInteger();
+                    Guid? groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
 
-                    if ( groupId > 0 )
+                    if ( groupGuid.HasValue )
                     {
                         var groupService = new GroupService( rockContext );
                         var groupMemberService = new GroupMemberService( rockContext );
 
-                        var group = groupService.Get( groupId );
+                        var group = groupService.Get( groupGuid.Value );
                         if ( group != null && group.GroupType.DefaultGroupRoleId.HasValue )
                         {
                             string linkedPage = GetAttributeValue( "ConfirmationPage" );
