@@ -8,7 +8,7 @@
             <ItemTemplate>
                 <div class="photoupload-photo">
                     <Rock:ImageEditor ID="imgedPhoto" runat="server" Label="Name" ButtonText="<i class='fa fa-pencil'></i> Select Photo" 
-                        ButtonCssClass="btn btn-primary margin-t-sm" CommandArgument='<%# Eval("Id") %>' 
+                        ButtonCssClass="btn btn-primary btn-sm margin-t-sm" CommandArgument='<%# Eval("Id") %>' 
                         OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false" />
                 </div>
             </ItemTemplate>
