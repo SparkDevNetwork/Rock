@@ -69,6 +69,10 @@
     <Compile Include="Migrations\201409171938301_UpdateWorkflowEmails.Designer.cs">
       <DependentUpon>201409171938301_UpdateWorkflowEmails.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.cs" />
+    <Compile Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.Designer.cs">
+      <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
@@ -1220,6 +1224,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409171938301_UpdateWorkflowEmails.resx">
       <DependentUpon>201409171938301_UpdateWorkflowEmails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.resx">
+      <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>

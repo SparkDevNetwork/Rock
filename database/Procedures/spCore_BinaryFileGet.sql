@@ -30,7 +30,7 @@ BEGIN
         , bf.[IsTemporary] 
         , bf.[IsSystem]
         , bf.[BinaryFileTypeId]
-		, bft.[RequiresSecurity]
+		, bft.[RequiresViewSecurity]
         , bf.[Url]
         , bf.[FileName] 
         , bf.[MimeType]
