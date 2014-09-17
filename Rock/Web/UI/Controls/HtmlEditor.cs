@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -445,6 +446,7 @@ CKEDITOR.replace('{0}', {{
     toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{1},
     removeButtons: '',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    htmlEncodeOutput: true,
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
     rockFileBrowserOptions: {{ 
@@ -461,6 +463,9 @@ CKEDITOR.replace('{0}', {{
             {4}
         }},
         instanceReady: function (e) {{
+
+            CKEDITOR.instances.{0}.updateElement();
+
             // update the underlying TextElement when there is a change event in SOURCE mode
             $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
@@ -547,6 +552,24 @@ CKEDITOR.replace('{0}', {{
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
             base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Processes the postback data for the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        /// <param name="postDataKey">The index within the posted collection that references the content to load.</param>
+        /// <param name="postCollection">The collection posted to the server.</param>
+        /// <returns>
+        /// true if the posted content is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
+        {
+            if ( base.LoadPostData( postDataKey, postCollection ) )
+            {
+                base.Text = HttpUtility.HtmlDecode( base.Text );
+                return true;
+            }
+            return false;
         }
     }
 }
