@@ -136,9 +136,8 @@ pre {
 // 3. Bootstrap Overrides    */
 // ------------------------- 
 
+
 // panel tweaks
-
-
 .panel {
     border-radius: 0;
     border-top-width: 0;
@@ -164,6 +163,12 @@ pre {
     &.panel-primary {
         .panel-heading {
             background-color: @brand-primary;
+        }
+    }
+
+    &.panel-widget {
+        .panel-heading {
+            background-color: @gray-lighter;
         }
     }
 }
@@ -210,6 +215,21 @@ pre {
 /*#region  
 // 4. Rock Overrides         */
 // -------------------------
+
+.person-image {
+    border-radius: 4px;
+}
+
+// type ahead styles
+.tt-suggestion {
+ 
+  p {
+
+      &:hover {
+          background-color: @accent-blue-light;
+      }
+  }
+}
 
 .smartsearch {
     margin: 12px 4%;
