@@ -299,7 +299,18 @@ namespace RockWeb.Blocks.Crm
             if ( _photoRequestGroup != null )
             {
                 nbConfigError.Visible = false;
-                var members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending || cbShowAll.Checked ).ToList();
+
+                List<GroupMember> members = null;
+
+                if ( cbShowAll.Checked )
+                {
+                    members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending || m.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
+                }
+                else
+                {
+                    members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending ).ToList();
+                }
+                
                 gList.DataSource = members;
                 if ( members == null || members.Count == 0 )
                 {
