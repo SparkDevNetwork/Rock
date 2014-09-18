@@ -13,12 +13,14 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lPanelTitle" runat="server" /></h1>
+
+                <asp:Literal ID="lProgressBar" runat="server"></asp:Literal>
+                
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
                 
-                <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlRemainingCount" runat="server" />
-                    <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" ToolTip="Number of unmatched transactions remaining in this batch." />
-                </div>
+                <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server"  Visible="false">
+                    <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
+                </Rock:RockControlWrapper>
             </div>
 
             <div class="panel-body">
@@ -42,11 +44,12 @@
                         </div>
                         <div class="col-md-5">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." />
                                 </div>
 
-                                <div class="col-md-8">
+                                <div class="col-md-6">
                                     <asp:Panel ID="pnlPreview" CssClass="contents" runat="server">
                                         <asp:Literal ID="lPersonName" runat="server" />
                                         <p>
@@ -74,10 +77,7 @@
                                 </div>
                             </div>
 
-                            <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Help="If the person isn't in the system yet, click this to add a new family." Visible="false">
-                                <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
-                            </Rock:RockControlWrapper>
-                            <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." />
+                            
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">

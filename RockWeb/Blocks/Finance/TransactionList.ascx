@@ -12,13 +12,13 @@
                 </div>
                 <div class="panel-body">
 
-                    <Rock:NotificationBox ID="nbClosedWarning" runat="server" NotificationBoxType="Info" Title="Note"
-                        Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="true" />
+                    <Rock:NotificationBox ID="nbClosedWarning" CssClass="margin-b-lg" runat="server" NotificationBoxType="Info" Title="Note"
+                        Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="false" />
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfTransactions" runat="server">
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
-                            <Rock:NumberBox ID="nbRowLimit" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
+                            <Rock:NumberBox ID="nbRowLimit" runat="server" CssClass="input-width-sm" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                 Help="Limits the number of rows returned in the grid. Leave blank to show all rows." />
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
                             <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>

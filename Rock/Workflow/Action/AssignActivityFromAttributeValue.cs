@@ -80,11 +80,11 @@ namespace Rock.Workflow.Action
 
                     else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid(), rockContext ).Id )
                     {
-                        // If attribute type is a group, value should be group id
-                        int? groupId = action.GetWorklowAttributeValue( guid ).AsIntegerOrNull();
-                        if ( groupId.HasValue )
+                        // If attribute type is a group, value should be group guid
+                        Guid? groupGuid = action.GetWorklowAttributeValue( guid ).AsGuidOrNull();
+                        if ( groupGuid.HasValue )
                         {
-                            var group = new GroupService( rockContext ).Get( groupId.Value );
+                            var group = new GroupService( rockContext ).Get( groupGuid.Value );
                             if ( group != null )
                             {
                                 action.Activity.AssignedPersonAlias = null;

@@ -49,15 +49,15 @@ namespace Rock.Web.UI.Controls
             {
                 this.Items.Clear();
 
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, "0" ) );
-                }
+                
+                // always add an empty option regardless of IsRequired
+                this.Items.Add( new ListItem() );
 
                 if ( IncludeGlobalOption )
                 {
                     this.Items.Add( new ListItem( "None (Global Attributes)", "0" ) );
                 }
+                
 
                 var entities = value.OrderBy( e => e.FriendlyName ).ToList();
 

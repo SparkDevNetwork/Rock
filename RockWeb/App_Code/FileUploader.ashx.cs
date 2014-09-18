@@ -167,8 +167,7 @@ namespace RockWeb
             }
             else
             {
-                // Note: There is a RequireSecurity flag on BinaryFileType, but that is to speed up Gets of images. We should always check security on FileUploads
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                var currentUser = UserLoginService.GetCurrentUser();
                 Person currentPerson = currentUser != null ? currentUser.Person : null;
 
                 if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )

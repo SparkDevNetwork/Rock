@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as Category.Guid
     /// </summary>
     public class CategoryFieldType : FieldType, IEntityFieldType
     {
@@ -144,7 +144,6 @@ namespace Rock.Field.Types
             }
         }
 
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -214,23 +213,21 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as CategoryPicker;
-            string result = null;
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
                 var id = picker.ItemId.AsIntegerOrNull();
-                var category = CategoryCache.Read( id ?? 0 );
-
-                if ( category != null )
+                if ( id.HasValue )
                 {
-                    guid = category.Guid;
+                    var category = CategoryCache.Read( id.Value );
+                    if ( category != null )
+                    {
+                        return category.Guid.ToString();
+                    }
                 }
-
-                result = guid.ToString();
             }
 
-            return result;
+            return string.Empty;
         }
 
         /// <summary>
@@ -242,17 +239,13 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
-            {
-                var picker = control as CategoryPicker;
+            var picker = control as CategoryPicker;
 
-                if ( picker != null )
-                {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var category = new CategoryService( new RockContext() ).Get( guid );
-                    picker.SetValue( category );
-                }
+            if ( picker != null )
+            {
+                Guid? guid = value.AsGuidOrNull();
+                var category = new CategoryService( new RockContext() ).Get( guid.Value );
+                picker.SetValue( category );
             }
         }
 

@@ -515,7 +515,7 @@ namespace Rock.Web.UI.Controls
             {
                 int pageSize = 50;
                 int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize );
-                if ( pageSize != 50 || pageSize != 500 || pageSize != 5000 )
+                if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
                     pageSize = 50;
                 }

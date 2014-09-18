@@ -42,16 +42,14 @@ namespace Rock.Web
         /// </returns>
         protected override bool IsValidRequestString( HttpContext context, string value, RequestValidationSource requestValidationSource, string collectionKey, out int validationFailureIndex )
         {
-            if ( requestValidationSource == RequestValidationSource.Form )
-            {
-                // TODO: For now do not validate form values.  Eventually should provide way for just specific controls to be ignored
-                validationFailureIndex = -1;
-                return true;
-            }
-            else
-            {
-                return base.IsValidRequestString( context, value, requestValidationSource, collectionKey, out validationFailureIndex );
-            }
+            bool valid = base.IsValidRequestString( context, value, requestValidationSource, collectionKey, out validationFailureIndex );
+            //if (!valid && requestValidationSource == RequestValidationSource.Form )
+            //{
+            //    // TODO: For now do not validate form values.  Eventually should provide way for just specific controls to be ignored
+            //    validationFailureIndex = -1;
+            //    return true;
+            //}
+            return valid;
         }
     }
 }
