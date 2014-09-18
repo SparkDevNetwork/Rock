@@ -150,8 +150,8 @@ namespace Rock.Model
         /// <returns></returns>
         public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context)
         {
-            bool requiresSecurity;
-            return EndGet( asyncResult, context, out requiresSecurity );
+            bool requiresViewSecurity;
+            return EndGet( asyncResult, context, out requiresViewSecurity );
         }
 
         /// <summary>
@@ -159,9 +159,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="asyncResult">The asynchronous result.</param>
         /// <param name="context">The context.</param>
-        /// <param name="requiresSecurity">if set to <c>true</c> [requires security].</param>
+        /// <param name="requiresViewSecurity">if set to <c>true</c> [requires security].</param>
         /// <returns></returns>
-        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresSecurity )
+        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresViewSecurity )
         {
             // restore the command from the context
             SqlCommand cmd = (SqlCommand)context.Items["cmd"];
@@ -177,9 +177,8 @@ namespace Rock.Model
                 binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
 
-                // return requiresSecurity to let caller know that security needs to be checked on this binaryFile
-                requiresSecurity = (bool)reader["RequiresSecurity"];
-                
+                // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
+                requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
                 
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
