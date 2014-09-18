@@ -1,111 +1,86 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelDetail" %>
 
-<asp:UpdatePanel ID="upContentChannels" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server">
+
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
             <asp:HiddenField ID="hfContentChannelId" runat="server" />
+            <asp:HiddenField ID="hfContentTypeId" runat="server" />
 
-                <div id="pnlEditDetails" class="panel panel-block" runat="server">
-                    <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-bullhorn"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
-                    </div>
-                    <div class="panel-body">
+            <div class="panel-heading">
+                <h1 class="panel-title">
+                    <asp:Literal ID="lIcon" runat="server" />
+                    <asp:Literal ID="lTitle" runat="server" />
+                </h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlContentType" runat="server" LabelType="Type" />
+                </div>
+            </div>
 
-                        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-                        <fieldset>
-                    
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="Title" />
-                                    <Rock:PersonPicker ID="ppContactPerson" runat="server" Label="Contact" OnSelectPerson="ppContactPerson_SelectPerson" />
-                                    <Rock:DataTextBox ID="tbContactEmail" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ContactEmail" Label="Contact Email" />
-                                    <Rock:DataTextBox ID="tbContactPhoneNumber" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ContactPhoneNumber" Label="Contact Phone" />
-                                    <Rock:DataTextBox ID="tbContactFullName" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ContactFullName" Label="Contact Name" />
-                                    <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" Label="Linked Event" />
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:CampusesPicker ID="cpCampuses" runat="server" />
-                            
-                                    <div class="grid">
-                                        <Rock:Grid ID="gContentChannelAudiencesPrimary" runat="server" DisplayType="Light">
-                                            <Columns>
-                                                <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
-                                                <Rock:DeleteField OnClick="gContentChannelAudiences_Delete" />
-                                            </Columns>
-                                        </Rock:Grid>
-                                    </div>
-                                    <div class="grid">
-                                        <Rock:Grid ID="gContentChannelAudiencesSecondary" runat="server" DisplayType="Light">
-                                            <Columns>
-                                                <asp:BoundField DataField="Name" HeaderText="Secondary Audience" />
-                                                <Rock:DeleteField OnClick="gContentChannelAudiences_Delete" />
-                                            </Columns>
-                                        </Rock:Grid>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+            <div class="panel-body">
 
-                        <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+
+                <div id="pnlEditDetails" runat="server">
+
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="Name" />
+                        </div>
+                        <div class="col-md-6">
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Item's Require Approval" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
+                            <div id="divRss" runat="server" class="js-content-channel-rss"> 
+                                <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />
+                                <Rock:DataTextBox ID="tbItemUrl" runat="server" Label="Item Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ItemUrl" />
+                                <Rock:NumberBox ID="nbTimetoLive" runat="server" Label="Time to Live (TTL)" NumberType="Integer" MinimumValue="0" 
+                                    Help="The number of minutes a feed can stay cached before it is refreshed from the source."/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                    </div>
+
                 </div>
 
-                <fieldset id="fieldsetViewDetails" class="panel panel-block" runat="server">
-                
-                    <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-bullhorn"></i> <asp:Literal ID="lCampaignTitle" runat="server" /></h1>
-                        <div class="panel-labels">
-                            <asp:Literal ID="lCampusLabels" runat="server"></asp:Literal>
-                        </div>
-                    </div>
-                    <div class="panel-body">
+                <fieldset id="fieldsetViewSummary" runat="server" >
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <p class="description">
+                        <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
+                    </p>
 
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                        <div class="row">
-                            <div class="col-md-6">
-                                <asp:Literal ID="lDetailsCol1" runat="server" />
-                            </div>
-                            <div class="col-md-6">
-                                <asp:Literal ID="lDetailsCol2" runat="server" />
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                        </div>
+                    <asp:Literal ID="lDetails" runat="server" />
+
+                    <div class="actions">
+                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                     </div>
 
                 </fieldset>
 
-            
-
-            
+            </div>
 
         </asp:Panel>
-
-        <Rock:NotificationBox ID="nbWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
-
-        <asp:Panel ID="pnlContentChannelAudiencePicker" CssClass="panel panel-block" runat="server" Visible="false">
-            
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i> Audience Selection</h1>
-            </div>
-            <div class="panel-body">
-
-                <Rock:DataDropDownList ID="ddlContentChannelAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ContentChannelAudience, Rock"
-                PropertyName="Name" Label="Select Audiences" />
-                <asp:HiddenField ID="hfContentChannelAudienceIsPrimary" runat="server" />
-                <div class="actions">
-                    <asp:LinkButton ID="btnAddContentChannelAudience" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddContentChannelAudience_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancelAddContentChannelAudience" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancelAddContentChannelAudience_Click"></asp:LinkButton>
-                </div>
-
-            </div>
-            
-        </asp:Panel>
-
+        
     </ContentTemplate>
 </asp:UpdatePanel>

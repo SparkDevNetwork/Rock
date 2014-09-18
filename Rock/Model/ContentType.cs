@@ -1,4 +1,6 @@
-﻿// <copyright>
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +20,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -54,15 +55,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [requires approval].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [requires approval]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool RequiresApproval { get; set; }
-
-        /// <summary>
         /// Gets or sets an <see cref="DateRangeTypeEnum"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
@@ -75,6 +67,24 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the channels.
+        /// </summary>
+        /// <value>
+        /// The channels.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<ContentChannel> Channels { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        public ContentType()
+        {
+            Channels = new Collection<ContentChannel>();
+        }
 
         #endregion
 

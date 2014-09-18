@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -74,6 +75,15 @@ namespace Rock.Model
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [requires approval].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires approval]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresApproval { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [enable RSS].
         /// </summary>
         /// <value>
@@ -122,6 +132,27 @@ namespace Rock.Model
         [DataMember]
         public virtual ContentType ContentType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the items.
+        /// </summary>
+        /// <value>
+        /// The items.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<ContentItem> Items { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentChannel"/> class.
+        /// </summary>
+        public ContentChannel()
+        {
+            Items = new Collection<ContentItem>();
+        }
+
         #endregion
 
         #region Methods
@@ -152,7 +183,7 @@ namespace Rock.Model
         /// </summary>
         public ContentChannelConfiguration()
         {
-            this.HasRequired( c => c.ContentType ).WithMany().HasForeignKey( c => c.ContentTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.ContentType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -28,18 +28,28 @@ using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 using System.ComponentModel;
 using Rock.Security;
+using Newtonsoft.Json;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content - Type Detail")]
+    [DisplayName("Content Type Detail")]
     [Category("CMS")]
     [Description("Displays the details for a content type.")]
     public partial class ContentTypeDetail : RockBlock, IDetailBlock
     {
-        #region Child Grid States
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the state of the channel attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the channel attributes.
+        /// </value>
+        private List<Attribute> ChannelAttributesState { get; set; }
 
         /// <summary>
         /// Gets or sets the state of the attributes.
@@ -47,22 +57,37 @@ namespace RockWeb.Blocks.Cms
         /// <value>
         /// The state of the attributes.
         /// </value>
-        private ViewStateList<Attribute> AttributesState
-        {
-            get
-            {
-                return ViewState["AttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["AttributesState"] = value;
-            }
-        }
+        private List<Attribute> ItemAttributesState { get; set;}
 
         #endregion
 
         #region Control Methods
+
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["ChannelAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ChannelAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                ChannelAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }            
+            
+            json = ViewState["ItemAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ItemAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                ItemAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -72,11 +97,23 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gContentItemAttributeTypes.DataKeyNames = new string[] { "Guid" };
-            gContentItemAttributeTypes.Actions.ShowAdd = true;
-            gContentItemAttributeTypes.Actions.AddClick += gContentItemAttributeType_Add;
-            gContentItemAttributeTypes.GridRebind += gContentItemAttributeType_GridRebind;
-            gContentItemAttributeTypes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gChannelAttributes.DataKeyNames = new string[] { "Guid" };
+            gChannelAttributes.Actions.ShowAdd = true;
+            gChannelAttributes.Actions.AddClick += gChannelAttributes_Add;
+            gChannelAttributes.GridRebind += gChannelAttributes_GridRebind;
+            gChannelAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gChannelAttributes.GridReorder += gChannelAttributes_GridReorder;
+
+            gItemAttributes.DataKeyNames = new string[] { "Guid" };
+            gItemAttributes.Actions.ShowAdd = true;
+            gItemAttributes.Actions.AddClick += gItemAttributes_Add;
+            gItemAttributes.GridRebind += gItemAttributes_GridRebind;
+            gItemAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gItemAttributes.GridReorder += gItemAttributes_GridReorder;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -91,150 +128,82 @@ namespace RockWeb.Blocks.Cms
             {
                 ShowDetail( PageParameter( "contentTypeId" ).AsInteger() );
             }
-        }
-
-        #endregion
-
-        #region AttributeTypes Grid and Picker
-
-        /// <summary>
-        /// Handles the Add event of the gContentItemAttributeType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentItemAttributeType_Add( object sender, EventArgs e )
-        {
-            gContentItemAttributeType_ShowEdit( Guid.Empty );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gContentItemAttributeType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentItemAttributeType_Edit( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            gContentItemAttributeType_ShowEdit( attributeGuid );
-        }
-
-        /// <summary>
-        /// Gs the marketing campaign ad attribute type_ show edit.
-        /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
-        protected void gContentItemAttributeType_ShowEdit( Guid attributeGuid )
-        {
-            pnlDetails.Visible = false;
-            pnlContentTypeAttribute.Visible = true;
-
-            Attribute attribute;
-            if ( attributeGuid.Equals( Guid.Empty ) )
+            else
             {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtContentTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for ad type " + tbName.Text );
+                ShowDialog();
+            }
+        }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["ChannelAttributesState"] = JsonConvert.SerializeObject( ChannelAttributesState, Formatting.None, jsonSetting );
+            ViewState["ItemAttributesState"] = JsonConvert.SerializeObject( ItemAttributesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Gets the bread crumbs.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? contentTypeId = PageParameter( pageReference, "contentTypeId" ).AsIntegerOrNull();
+            if ( contentTypeId != null )
+            {
+                ContentType contentType = new ContentTypeService( new RockContext() ).Get( contentTypeId.Value );
+                if ( contentType != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( contentType.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Content Type", pageReference ) );
+                }
             }
             else
             {
-                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtContentTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
+                // don't show a breadcrumb if we don't have a pageparam to work with
             }
 
-            edtContentTypeAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
-
-            edtContentTypeAttributes.SetAttributeProperties( attribute, typeof( ContentItem ) );
+            return breadCrumbs;
         }
-
-        /// <summary>
-        /// Handles the Delete event of the gContentItemAttributeType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gContentItemAttributeType_Delete( object sender, RowEventArgs e )
-        {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributesState.RemoveEntity( attributeGuid );
-
-            BindContentItemAttributeTypeGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gContentItemAttributeType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentItemAttributeType_GridRebind( object sender, EventArgs e )
-        {
-            BindContentItemAttributeTypeGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSaveAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSaveAttribute_Click( object sender, EventArgs e )
-        {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtContentTypeAttributes.GetAttributeProperties( attribute );
-
-            // Controls will show warnings
-            if ( !attribute.IsValid )
-            {
-                return;
-            }
-
-            AttributesState.RemoveEntity( attribute.Guid );
-            AttributesState.Add( attribute );
-
-            pnlDetails.Visible = true;
-            pnlContentTypeAttribute.Visible = false;
-
-            BindContentItemAttributeTypeGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancelAttribute_Click( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = true;
-            pnlContentTypeAttribute.Visible = false;
-        }
-
-        /// <summary>
-        /// Binds the marketing campaign ad attribute type grid.
-        /// </summary>
-        private void BindContentItemAttributeTypeGrid()
-        {
-            gContentItemAttributeTypes.DataSource = AttributesState.OrderBy( a => a.Name ).ToList();
-            gContentItemAttributeTypes.DataBind();
-        }
-
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            ShowEditDetails( GetContentType( hfContentTypeId.Value.AsInteger() ) );
         }
 
+
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             ContentType contentType;
@@ -253,55 +222,378 @@ namespace RockWeb.Blocks.Cms
                 contentType = contentTypeService.Get( contentTypeId );
             }
 
-            contentType.Name = tbName.Text;
-            contentType.RequiresApproval = cbRequireApproval.Checked;
-            contentType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
-
-            if ( !contentType.IsValid )
+            if ( contentType != null )
             {
-                // Controls will render the error messages                    
+                contentType.Name = tbName.Text;
+                contentType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
+
+                if ( !Page.IsValid || !contentType.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+
+                    rockContext.SaveChanges();
+
+                    // get it back to make sure we have a good Id for it for the Attributes
+                    contentType = contentTypeService.Get( contentType.Guid );
+
+                    // Save the Channel Attributes
+                    int entityTypeId = EntityTypeCache.Read( typeof( ContentChannel ) ).Id;
+                    SaveAttributes( contentType.Id, entityTypeId, ChannelAttributesState, rockContext );
+
+                    // Save the Item Attributes
+                    entityTypeId = EntityTypeCache.Read( typeof( ContentItem ) ).Id;
+                    SaveAttributes( contentType.Id, entityTypeId, ItemAttributesState, rockContext );
+
+                } );
+
+                // Redirect so that channel list on same page rebuilds the attribute columns correctly
+                Response.Redirect( RockPage.PageReference.BuildUrl(), false);
+            }
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            int contentTypeId = hfContentTypeId.ValueAsInt();
+            if ( contentTypeId != 0 )
+            {
+                ShowDetail( contentTypeId );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            int contentTypeId = hfContentTypeId.ValueAsInt();
+            if ( contentTypeId != 0 )
+            {
+                ShowReadonlyDetails( GetContentType( contentTypeId ) );
+            }
+        }
+
+        #region Channel Attributes
+
+        /// <summary>
+        /// Handles the Add event of the gChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gChannelAttributes_Add( object sender, EventArgs e )
+        {
+            gChannelAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gChannelAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gChannelAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the marketing campaign ad attribute type_ show edit.
+        /// </summary>
+        /// <param name="attributeId">The attribute id.</param>
+        protected void gChannelAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtChannelAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Channel Attribute" );
+
+            }
+            else
+            {
+                attribute = ChannelAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtChannelAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Channel Attribute" );
+            }
+
+            edtChannelAttributes.ReservedKeyNames = ChannelAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
+            edtChannelAttributes.SetAttributeProperties( attribute, typeof( ContentChannel ) );
+
+            ShowDialog( "ChannelAttributes", true );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gChannelAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var movedChannel = ChannelAttributesState.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
+            if ( movedChannel != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherChannel in ChannelAttributesState.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherChannel.Order = otherChannel.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherChannel in ChannelAttributesState.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherChannel.Order = otherChannel.Order - 1;
+                    }
+                }
+
+                movedChannel.Order = e.NewIndex;
+            }
+
+            BindChannelAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gChannelAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            ChannelAttributesState.RemoveEntity( attributeGuid );
+
+            BindChannelAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gChannelAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindChannelAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgChannelAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgChannelAttributes_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtChannelAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
                 return;
             }
 
-            rockContext.WrapTransaction( () =>
+            if ( ChannelAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                AttributeService attributeService = new AttributeService( rockContext );
-                AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
-                CategoryService categoryService = new CategoryService( rockContext );
+                attribute.Order = ChannelAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                ChannelAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = ChannelAttributesState.Any() ? ChannelAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+            ChannelAttributesState.Add( attribute );
 
-                rockContext.SaveChanges();
+            BindChannelAttributesGrid();
 
-                // get it back to make sure we have a good Id for it for the Attributes
-                contentType = contentTypeService.Get( contentType.Guid );
-
-                var entityTypeId = EntityTypeCache.Read( typeof( ContentItem ) ).Id;
-                string qualifierColumn = "ContentTypeId";
-                string qualifierValue = contentType.Id.ToString();
-
-                // Get the existing attributes for this entity type and qualifier value
-                var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
-
-                // Delete any of those attributes that were removed in the UI
-                var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
-                foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-                {
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-
-                    attributeService.Delete( attr );
-                }
-
-                rockContext.SaveChanges();
-
-                // Update the Attributes that were assigned in the UI
-                foreach ( var attributeState in AttributesState )
-                {
-                    Rock.Attribute.Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
-                }
-
-            } );
-
-            NavigateToParentPage();
+            HideDialog();
         }
+
+        /// <summary>
+        /// Binds the marketing campaign ad attribute type grid.
+        /// </summary>
+        private void BindChannelAttributesGrid()
+        {
+            gChannelAttributes.DataSource = ChannelAttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+            gChannelAttributes.DataBind();
+        }
+
+        #endregion
+
+        #region Item Attributes
+
+        /// <summary>
+        /// Handles the Add event of the gItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gItemAttributes_Add( object sender, EventArgs e )
+        {
+            gItemAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gItemAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gItemAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the marketing campaign ad attribute type_ show edit.
+        /// </summary>
+        /// <param name="attributeId">The attribute id.</param>
+        protected void gItemAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtItemAttributes.ActionTitle = ActionTitle.Add( tbName.Text + " Item Attribute" );
+
+            }
+            else
+            {
+                attribute = ItemAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
+            }
+
+            edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
+            edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentItem ) );
+
+            ShowDialog( "ItemAttributes", true );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gItemAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var movedItem = ItemAttributesState.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in ItemAttributesState.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in ItemAttributesState.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = e.NewIndex;
+            }
+
+            BindItemAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gItemAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            ItemAttributesState.RemoveEntity( attributeGuid );
+
+            BindItemAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gItemAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindItemAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgItemAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgItemAttributes_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtItemAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( ItemAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = ItemAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                ItemAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = ItemAttributesState.Any() ? ItemAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+            ItemAttributesState.Add( attribute );
+
+            BindItemAttributesGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the marketing campaign ad attribute type grid.
+        /// </summary>
+        private void BindItemAttributesGrid()
+        {
+            gItemAttributes.DataSource = ItemAttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+            gItemAttributes.DataBind();
+        }
+
+        #endregion
 
         #endregion
 
@@ -316,78 +608,280 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the type of the content.
+        /// </summary>
+        /// <param name="contentTypeId">The content type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private ContentType GetContentType( int contentTypeId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            var contentType = new ContentTypeService( rockContext )
+                .Queryable()
+                .Where( t => t.Id == contentTypeId )
+                .FirstOrDefault();
+            return contentType;
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="contentTypeId">The marketing campaign ad type identifier.</param>
         public void ShowDetail( int contentTypeId )
         {
-            pnlDetails.Visible = true;
             ContentType contentType = null;
+
+            bool editAllowed = true;
 
             var rockContext = new RockContext();
 
             if ( !contentTypeId.Equals( 0 ) )
             {
-                contentType = new ContentTypeService( rockContext ).Get( contentTypeId );
-                lActionTitle.Text = "Content Type Detail".FormatAsHtmlTitle();
+                contentType = GetContentType( contentTypeId );
+                if ( contentType != null )
+                {
+                    editAllowed = contentType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
             }
 
-            if ( contentType == null )
+            if ( contentType == null)
             {
                 contentType = new ContentType { Id = 0 };
-                lActionTitle.Text = "Content Type Detail".FormatAsHtmlTitle();
             }
 
-            LoadDropDowns();
-
-            // load data into UI controls
-            AttributesState = new ViewStateList<Attribute>();
-
             hfContentTypeId.Value = contentType.Id.ToString();
-            tbName.Text = contentType.Name;
-            cbRequireApproval.Checked = contentType.RequiresApproval;
-            ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
 
-            AttributeService attributeService = new AttributeService( rockContext );
-
-            string qualifierValue = contentType.Id.ToString();
-            var qry = attributeService.GetByEntityTypeId( new ContentItem().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            AttributesState.AddAll( qry.ToList() );
-            BindContentItemAttributeTypeGrid();
-
-            // render UI based on Authorized and IsSystem
             bool readOnly = false;
-
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentType.FriendlyTypeName );
             }
 
-            if ( contentType.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( ContentType.FriendlyTypeName );
-            }
+            // load attribute data 
+            ChannelAttributesState = new List<Attribute>();
+            ItemAttributesState = new List<Attribute>();
+
+            AttributeService attributeService = new AttributeService( new RockContext() );
+
+            string qualifierValue = contentType.Id.ToString();
+
+            attributeService.GetByEntityTypeId( new ContentChannel().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .ToList()
+                .ForEach( a => ChannelAttributesState.Add( a ) );
+
+            attributeService.GetByEntityTypeId( new ContentItem().TypeId ).AsQueryable()
+                .Where( a => 
+                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) && 
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .ToList()
+                .ForEach( a => ItemAttributesState.Add( a ) );
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( ContentType.FriendlyTypeName );
-                btnCancel.Text = "Close";
+                lbEdit.Visible = false;
+                ShowReadonlyDetails( contentType );
+            }
+            else
+            {
+                lbEdit.Visible = true;
+                if ( contentType.Id > 0 )
+                {
+                    ShowReadonlyDetails( contentType );
+                }
+                else
+                {
+                    ShowEditDetails( contentType );
+                }
             }
 
-            tbName.ReadOnly = readOnly;
-            ddlDateRangeType.Enabled = !readOnly;
-            gContentItemAttributeTypes.Enabled = !readOnly;
+            lbSave.Visible = !readOnly;
 
-            btnSave.Visible = !readOnly;
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="contentType">Type of the content.</param>
+        private void ShowReadonlyDetails( ContentType contentType )
+        {
+            SetEditMode( false );
+
+            if ( contentType != null )
+            {
+                hfContentTypeId.SetValue( contentType.Id );
+
+                SetHeadingInfo( contentType, contentType.Name );
+
+                lDetails.Text = new DescriptionList()
+                    .Add( "Date Range Type", contentType.DateRangeType.ConvertToString())
+                    .Html;
+
+                var channelAttributesList = new List<string>();
+                foreach ( var attribute in ChannelAttributesState.OrderBy( a => a.Order ) )
+                {
+                    var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+                    channelAttributesList.Add( string.Format( "{0} ({1})", attribute.Name, ( fieldType != null ? fieldType.Name : "?" ) ) );
+                }
+
+                var itemAttributesList = new List<string>();
+                foreach ( var attribute in ItemAttributesState.OrderBy( a => a.Order ) )
+                {
+                    var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+                    itemAttributesList.Add( string.Format( "{0} ({1})", attribute.Name, ( fieldType != null ? fieldType.Name : "?" ) ) );
+                }
+
+                lAttributeDetails.Text = new DescriptionList()
+                    .Add( "Channel Attributes", channelAttributesList.AsDelimited( "<br/>" ) )
+                    .Add( "Item Attributes", itemAttributesList.AsDelimited( "<br/>" ) )
+                    .Html;
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="contentType">Type of the content.</param>
+        protected void ShowEditDetails( ContentType contentType )
+        {
+            if ( contentType != null )
+            {
+                hfContentTypeId.Value = contentType.Id.ToString();
+                string title = contentType.Id > 0 ?
+                    ActionTitle.Edit( ContentType.FriendlyTypeName ) :
+                    ActionTitle.Add( ContentType.FriendlyTypeName );
+
+
+                SetHeadingInfo( contentType, title );
+
+                SetEditMode( true );
+
+                LoadDropDowns();
+
+                tbName.Text = contentType.Name;
+                ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
+
+                BindChannelAttributesGrid();
+                BindItemAttributesGrid();
+            }
+        }
+
+        /// <summary>
+        /// Saves the attributes.
+        /// </summary>
+        /// <param name="contentTypeId">The content type identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveAttributes( int contentTypeId, int entityTypeId, List<Attribute> attributes, RockContext rockContext )
+        {
+            string qualifierColumn = "ContentTypeId";
+            string qualifierValue = contentTypeId.ToString();
+
+            AttributeService attributeService = new AttributeService( rockContext );
+
+            // Get the existing attributes for this entity type and qualifier value
+            var existingAttributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = attributes.Select( a => a.Guid );
+            foreach ( var attr in existingAttributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                attributeService.Delete( attr );
+            }
+
+            rockContext.SaveChanges();
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attr in attributes )
+            {
+                Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Sets the heading information.
+        /// </summary>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="title">The title.</param>
+        private void SetHeadingInfo( ContentType contentType, string title )
+        {
+            lTitle.Text = title.FormatAsHtmlTitle();
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewSummary.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ITEMATTRIBUTES":
+                    {
+                        dlgItemAttributes.Show();
+                        break;
+                    }
+                case "CHANNELATTRIBUTES":
+                    {
+                        dlgChannelAttributes.Show();
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ITEMATTRIBUTES":
+                    {
+                        dlgItemAttributes.Hide();
+                        break;
+                    }
+                case "CHANNELATTRIBUTES":
+                    {
+                        dlgChannelAttributes.Hide();
+                        break;
+                    }
+            }
+
+            hfActiveDialog.Value = string.Empty;
         }
 
         #endregion
 
-    }
+}
 }
