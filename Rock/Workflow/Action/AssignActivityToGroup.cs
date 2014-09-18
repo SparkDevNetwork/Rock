@@ -47,10 +47,10 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            int? groupId = GetAttributeValue( action, "Group" ).AsIntegerOrNull();
-            if ( groupId.HasValue )
+            var groupGuid = GetAttributeValue( action, "Group" ).AsGuidOrNull();
+            if ( groupGuid.HasValue )
             {
-                var group = new GroupService( rockContext ).Get( groupId.Value );
+                var group = new GroupService( rockContext ).Get( groupGuid.Value );
                 if ( group != null )
                 {
                     action.Activity.AssignedPersonAlias = null;

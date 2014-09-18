@@ -77,7 +77,26 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string PublicName { get; set; }
+        public string PublicName
+        {
+            get
+            {
+                if ( string.IsNullOrWhiteSpace( _publicName ) )
+                {
+                    return this.Name;
+                }
+                else
+                {
+                    return _publicName;
+                }
+            }
+            set
+            {
+                _publicName = value;
+            }
+        }
+        
+        private string _publicName = string.Empty;
 
         /// <summary>
         /// Gets or sets the user defined description of the FinancialAccount.

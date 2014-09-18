@@ -186,10 +186,10 @@
                         <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block">
                             <h4>Warning!</h4>
                             <p>
-                                You have already submitted a transaction that has been processed.  Are you sure you want
+                                You have already submitted a similar transaction that has been processed.  Are you sure you want
                             to submit another possible duplicate transaction?
                             </p>
-                            <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-primary" OnClick="btnConfirm_Click" />
+                            <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="btnConfirm_Click" />
                         </asp:Panel>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
 
         <div id="divActions" runat="server" class="actions">
             <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrev_Click" Visible="false" />
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click" />
         </div>
 
         <asp:HiddenField ID="hfCurrentPage" runat="server" />

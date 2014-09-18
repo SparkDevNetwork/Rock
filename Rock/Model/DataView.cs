@@ -26,6 +26,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -171,6 +172,54 @@ namespace Rock.Model
 
                 return base.ParentAuthority;
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is authorized for all data view components] [the specified data view].
+        /// </summary>
+        /// <param name="dataViewAction">The data view action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="authorizationMessage">The authorization message.</param>
+        /// <returns></returns>
+        public bool IsAuthorizedForAllDataViewComponents( string dataViewAction, Person person, RockContext rockContext, out string authorizationMessage )
+        {
+            bool isAuthorized = true;
+            authorizationMessage = string.Empty;
+
+            if ( !this.IsAuthorized( dataViewAction, person ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            }
+
+            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person, rockContext ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = "INFO: Data view uses an entity type that you do not have access to view.";
+            }
+
+            if ( this.DataViewFilter != null && !this.DataViewFilter.IsAuthorized( Authorization.VIEW, person ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = "INFO: Data view contains a filter that you do not have access to view.";
+            }
+
+            if ( this.TransformEntityTypeId != null )
+            {
+                string dataTransformationComponentTypeName = EntityTypeCache.Read( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
+                var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
+                if ( dataTransformationComponent != null )
+                {
+                    if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, person ) )
+                    {
+                        isAuthorized = false;
+                        authorizationMessage = "INFO: Data view contains a data transformation that you do not have access to view.";
+                    }
+                }
+            }
+
+            return isAuthorized;
         }
 
         #endregion

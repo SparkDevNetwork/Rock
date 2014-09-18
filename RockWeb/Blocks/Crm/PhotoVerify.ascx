@@ -6,23 +6,17 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading text-right">
-                <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="show all" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
+                <h1 class="panel-title"><i class="fa fa-camera"></i> Verify Photo List</h1>
+                <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox  runat="server" ID="nbConfigError" NotificationBoxType="Danger" Text="Block must be configured for a particular group."
                     Visible="false"></Rock:NotificationBox>
-                <Rock:NotificationBox runat="server" ID="nbMessage" NotificationBoxType="Success" Visible="false"></Rock:NotificationBox>
+                <Rock:NotificationBox runat="server" ID="nbMessage" CssClass="margin-b-lg" NotificationBoxType="Success" Visible="false"></Rock:NotificationBox>
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="people">
+                    <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_RowSelected" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="photo">
                         <Columns>
-                            <asp:TemplateField>
-                                <HeaderTemplate>
-                                    <asp:CheckBox runat="server" ID="cbAll" />
-                                </HeaderTemplate>
-                                <ItemTemplate>
-                                    <asp:CheckBox runat="server" ID="cbSelected" />
-                                </ItemTemplate>
-                            </asp:TemplateField>
+                            <Rock:SelectField />
                             <asp:TemplateField >
                                 <HeaderTemplate>
                                     Photo
@@ -35,21 +29,19 @@
                             </asp:TemplateField>
                             <asp:BoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <asp:BoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
+                            <asp:BoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
+                            <asp:BoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />
                             <asp:TemplateField>
                                 <HeaderTemplate>Status
                                 </HeaderTemplate>
                                 <ItemTemplate>
-                                    <i runat="server" ID="iStatus" data-toggle="tooltip" class="flag"></i>
+                                    <asp:Literal runat="server" ID="lStatus"></asp:Literal>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:BoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />
-                            <asp:BoundField DataField="Person.Email" HeaderText="Email" SortExpression="Person.Email" />
+                            <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>
-            </div>
-            <div class="actions margin-h-md margin-v-md">
-                <Rock:BootstrapButton ID="bbtnVerify" runat="server" Text="Verify" CssClass="btn btn-primary" OnClick="bbtnVerify_Click"></Rock:BootstrapButton>
             </div>
         </asp:Panel>
     </ContentTemplate>

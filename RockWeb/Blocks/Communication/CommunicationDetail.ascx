@@ -143,16 +143,18 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpEvents" runat="server" Title="Activity" Expanded="false">
-                        <div class="grid">
-                            <Rock:Grid ID="gActivity" runat="server" AllowSorting="true" RowItemText="Activity">
-                                <Columns>
-                                    <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
-                                    <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.PersonAlias.Person" 
-                                        SortExpression="CommunicationRecipient.PersonAlias.Person.LastName,CommunicationRecipient.PersonAlias.Person.NickName" />
-                                    <asp:BoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
-                                    <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
-                                </Columns>
-                            </Rock:Grid>
+                        <div class="grid grid-panel">
+                            <div class="grid">
+                                <Rock:Grid ID="gActivity" runat="server" AllowSorting="true" RowItemText="Activity">
+                                    <Columns>
+                                        <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
+                                        <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.PersonAlias.Person" 
+                                            SortExpression="CommunicationRecipient.PersonAlias.Person.LastName,CommunicationRecipient.PersonAlias.Person.NickName" />
+                                        <asp:BoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
+                                        <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
                         </div>
                     </Rock:PanelWidget>
 

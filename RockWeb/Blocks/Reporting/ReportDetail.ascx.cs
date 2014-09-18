@@ -492,7 +492,11 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+            var rockContext = new RockContext();
+            etpEntityType.EntityTypes = new EntityTypeService( rockContext )
+                .GetEntities()
+                .Where( a => a.IsAuthorized(Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext))
+                .OrderBy( t => t.FriendlyName ).ToList();
         }
 
         /// <summary>
@@ -503,12 +507,16 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( entityTypeId.HasValue )
             {
+                var rockContext = new RockContext();
                 ddlDataView.Enabled = true;
                 ddlDataView.Items.Clear();
 
-                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).Select( a => new { a.Id, a.Name } ).ToList() )
+                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList() )
                 {
-                    ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                    if ( dataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                    {
+                        ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                    }
                 }
 
                 ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -684,10 +692,16 @@ namespace RockWeb.Blocks.Reporting
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            if ( !report.IsAuthorized( reportAction, CurrentPerson ) )
+            if ( !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
+            }
+
+            if ( report.EntityType != null && !report.EntityType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
+            {
+                isAuthorized = false;
+                authorizationMessage = "INFO: This report uses an entity type that you do not have access to view.";
             }
 
             if ( report.ReportFields != null )
@@ -700,10 +714,10 @@ namespace RockWeb.Blocks.Reporting
                         var dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                         if ( dataSelectComponent != null )
                         {
-                            if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+                            if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
                             {
                                 isAuthorized = false;
-                                authorizationMessage = "INFO: This Reports contains a data selection component that you do not have access to view.";
+                                authorizationMessage = "INFO: This report contains a data selection component that you do not have access to view.";
                                 break;
                             }
                         }
@@ -717,28 +731,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     isAuthorized = false;
                     authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
-                }
-                else
-                {
-                    if ( report.DataView.DataViewFilter != null && !report.DataView.DataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
-                    {
-                        isAuthorized = false;
-                        authorizationMessage = "INFO: The Data View for this report contains a filter that you do not have access to view.";
-                    }
-
-                    if ( report.DataView.TransformEntityTypeId != null )
-                    {
-                        string dataTransformationComponentTypeName = EntityTypeCache.Read( report.DataView.TransformEntityTypeId ?? 0, rockContext ).GetEntityType().FullName;
-                        var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
-                        if ( dataTransformationComponent != null )
-                        {
-                            if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
-                            {
-                                isAuthorized = false;
-                                authorizationMessage = "INFO: The Data View for this report contains a data transformation that you do not have access to view.";
-                            }
-                        }
-                    }
                 }
             }
 
@@ -831,15 +823,15 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( !report.EntityTypeId.HasValue )
                 {
+                    gReport.Visible = false;
                     return;
                 }
 
                 var rockContext = new RockContext();
 
-                string authorizationMessage;
-                if ( !this.IsAuthorizedForAllReportComponents( Authorization.VIEW, report, rockContext, out authorizationMessage ) )
+                if ( !report.IsAuthorized(Authorization.VIEW, this.CurrentPerson, rockContext))
                 {
-                    nbEditModeMessage.Text = authorizationMessage;
+                    gReport.Visible = false;
                     return;
                 }
 
@@ -993,6 +985,7 @@ namespace RockWeb.Blocks.Reporting
 
                 try
                 {
+                    gReport.Visible = true;
                     gReport.ExportFilename = report.Name;
                     rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                     gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );

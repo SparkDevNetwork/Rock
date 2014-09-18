@@ -302,11 +302,11 @@ namespace RockWeb.Blocks.CheckIn
                 foreach ( string key in labelAttributeKeys )
                 {
                     var attributeValue = groupType.GetAttributeValue( key );
-                    int binaryFileId = attributeValue.AsInteger();
-                    var fileName = binaryFileService.Queryable().Where( a => a.Id == binaryFileId ).Select( a => a.FileName ).FirstOrDefault();
+                    Guid binaryFileGuid = attributeValue.AsGuid();
+                    var fileName = binaryFileService.Queryable().Where( a => a.Guid == binaryFileGuid ).Select( a => a.FileName ).FirstOrDefault();
                     if ( fileName != null )
                     {
-                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = fileName } );
+                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileGuid = binaryFileGuid, FileName = fileName } );
                     }
                 }
             }
@@ -549,9 +549,9 @@ namespace RockWeb.Blocks.CheckIn
             foreach ( var item in list )
             {
                 // add checkinlabels to dropdownlist if they aren't already a checkin label for this grouptype
-                if ( !checkinGroupTypeEditor.CheckinLabels.Select( a => a.BinaryFileId ).Contains( item.Id ) )
+                if ( !checkinGroupTypeEditor.CheckinLabels.Select( a => a.BinaryFileGuid ).Contains( item.Guid ) )
                 {
-                    ddlCheckinLabel.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    ddlCheckinLabel.Items.Add( new ListItem( item.FileName, item.Guid.ToString() ) );
                 }
             }
 
@@ -588,7 +588,7 @@ namespace RockWeb.Blocks.CheckIn
             groupTypeEditor.Expanded = true;
 
             var checkinLabelAttributeInfo = new CheckinGroupTypeEditor.CheckinLabelAttributeInfo();
-            checkinLabelAttributeInfo.BinaryFileId = ddlCheckinLabel.SelectedValueAsInt() ?? 0;
+            checkinLabelAttributeInfo.BinaryFileGuid = ddlCheckinLabel.SelectedValue.AsGuid();
             checkinLabelAttributeInfo.FileName = ddlCheckinLabel.SelectedItem.Text;
 
             // have the attribute key just be the filename without spaces, but make sure it is not a duplicate
@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.CheckIn
                         attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );
                         attribute.EntityTypeQualifierColumn = "Id";
                         attribute.EntityTypeQualifierValue = groupTypeDB.Id.ToString();
-                        attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
+                        attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileGuid.ToString();
                         attribute.Key = checkinLabelAttributeInfo.AttributeKey;
                         attribute.Name = checkinLabelAttributeInfo.FileName;
 

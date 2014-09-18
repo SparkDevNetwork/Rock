@@ -211,7 +211,7 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
             /// The binary file unique identifier.
             /// </value>
             [DataMember]
-            public int BinaryFileId { get; set; }
+            public Guid BinaryFileGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the name of the file.

@@ -29,8 +29,8 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a checkbox list of MEF Components of a specific type
+    /// Stored as a pipe-delimited list of EntityType.Guid
     /// </summary>
-    [Serializable]
     public class ComponentsFieldType : FieldType
     {
         /// <summary>
@@ -49,10 +49,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var selectedGuids = new List<Guid>();
-                value.SplitDelimitedValues().ToList().ForEach( v => selectedGuids.Add( Guid.Parse( v ) ) );
-
-                foreach( Guid guid in selectedGuids)
+                foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
                 {
                     var entityType = EntityTypeCache.Read( guid );
                     if ( entityType != null )
@@ -104,7 +101,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "container", new ConfigurationValue( "Container Assembly Name", "The assembly name of the MEF container to show components of", "" ) );
+            configurationValues.Add( "container", new ConfigurationValue( "Container Assembly Name", "The assembly name of the MEF container to show components of", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 &&
                 controls[0] != null && controls[0] is TextBox )
@@ -141,7 +138,7 @@ namespace Rock.Field.Types
         {
             try
             {
-                ComponentsPicker editControl = new ComponentsPicker { ID = id }; 
+                ComponentsPicker editControl = new ComponentsPicker { ID = id };
 
                 if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
                 {
@@ -164,10 +161,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ComponentsPicker )
+            var picker = control as ComponentsPicker;
+            if ( picker != null )
             {
-                return ( (ComponentsPicker)control ).SelectedComponents.AsDelimited("|");
+                return picker.SelectedComponents.AsDelimited( "|" );
             }
+
             return null;
         }
 
@@ -179,16 +178,13 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as ComponentsPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is ComponentsPicker )
                 {
-                    var selectedGuids = new List<Guid>();
-                    value.SplitDelimitedValues().ToList().ForEach( v => selectedGuids.Add( Guid.Parse( v ) ) );
-                    ( (ComponentsPicker)control ).SelectedComponents = selectedGuids;
+                    picker.SelectedComponents = value.SplitDelimitedValues().AsGuidList();
                 }
             }
         }
-
     }
 }

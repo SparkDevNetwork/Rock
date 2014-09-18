@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", Order = 0 )]
-    [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
