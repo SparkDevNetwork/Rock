@@ -4436,9 +4436,6 @@ pre {
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
 }
-.panel.panel-widget .panel-heading {
-  background-color: #efefef;
-}
 .tag-letterlist a {
   color: #ee7624;
 }
@@ -4466,12 +4463,6 @@ pre {
 /*#endregion */
 /*#region  
 // 4. Rock Overrides         */
-.person-image {
-  border-radius: 4px;
-}
-.tt-suggestion p:hover {
-  background-color: #eaf7fc;
-}
 .smartsearch {
   margin: 12px 4%;
   border: 0;
