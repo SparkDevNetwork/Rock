@@ -56,20 +56,22 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
-            int groupId = GetAttributeValue( "Group" ).AsInteger();
-            if ( groupId == 0 )
+            Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
+            int groupId = 0;
+            
+            if ( groupGuid == Guid.Empty )
             {
                 groupId = PageParameter( "GroupId" ).AsInteger();
             }
 
-            if ( groupId != 0 )
+            if ( !(groupId == 0 && groupGuid == Guid.Empty ))
             {
                 string key = string.Format( "Group:{0}", groupId );
                 _group = RockPage.GetSharedItem( key ) as Group;
                 if ( _group == null )
                 {
                     _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
-                        .Where( g => g.Id == groupId )
+                        .Where( g => g.Id == groupId || g.Guid == groupGuid )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, _group );
                 }

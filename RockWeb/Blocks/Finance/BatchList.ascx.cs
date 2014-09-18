@@ -517,7 +517,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         case BatchStatus.Closed : return "label label-default";
                         case BatchStatus.Open: return "label label-info";
-                        case BatchStatus.Pending: return "label label-warning";
+                        case BatchStatus.Pending: return "label label-default";
                     }
 
                     return string.Empty;
@@ -536,12 +536,7 @@ namespace RockWeb.Blocks.Finance
                             {
                                 if ( UnMatchedTxns )
                                 {
-                                    notes.Append( "<span class='label label-danger'>Unmatched Transactions</span><br/>" );
-                                }
-
-                                if ( ControlAmount != TransactionAmount)
-                                {
-                                    notes.Append( "<span class='label label-warning'>Transaction Total Does Not Match Control Amount</span><br/>" );
+                                    notes.Append( "<span class='label label-warning'>Unmatched Transactions</span><br/>" );
                                 }
 
                                 break;

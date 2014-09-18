@@ -141,13 +141,13 @@ namespace RockWeb
                 {
                     var rockContext = new RockContext();
 
-                    bool requiresSecurity = false;
-                    BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresSecurity );
+                    bool requiresViewSecurity = false;
+                    BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
                     if ( binaryFile != null )
                     {
                         //// if the binaryFile's BinaryFileType requires security, check security
-                        //// note: we put a RequiresSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
-                        if ( requiresSecurity )
+                        //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
+                        if ( requiresViewSecurity )
                         {
                             var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                             Person currentPerson = currentUser != null ? currentUser.Person : null;
