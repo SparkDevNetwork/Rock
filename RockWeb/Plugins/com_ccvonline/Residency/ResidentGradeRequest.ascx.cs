@@ -178,9 +178,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 {
                     if ( component.Authenticate( userLogin, tbPassword.Text ) )
                     {
-                        int groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsInteger();
+                        var graderRoleGuid = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsGuid();
 
-                        Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( groupId );
+                        Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( graderRoleGuid );
 
                         // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
                         bool userAuthorizedToGrade = ( residencyGraderSecurityRole != null ) && residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
