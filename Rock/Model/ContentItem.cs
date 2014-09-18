@@ -35,10 +35,19 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the ContentTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentItem.
+        /// Gets or sets the content channel identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> that represents the MarketingTypeAdTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentItem.
+        /// The content channel identifier.
+        /// </value>
+        [DataMember]
+        public int ContentChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content type identifier.
+        /// </summary>
+        /// <value>
+        /// The content type identifier.
         /// </value>
         [DataMember]
         public int ContentTypeId { get; set; }
@@ -49,6 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The title.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string Title { get; set; }
 
@@ -124,13 +134,22 @@ namespace Rock.Model
         /// <value>
         /// The permalink.
         /// </value>
-        [MaxLength( 2000 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string Permalink { get; set; }
 
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the content channel.
+        /// </summary>
+        /// <value>
+        /// The content channel.
+        /// </value>
+        [DataMember]
+        public virtual ContentChannel ContentChannel { get; set; }
 
         /// <summary>
         /// Gets or sets the the <see cref="Rock.Model.ContentType"/> of this ad.
@@ -169,6 +188,7 @@ namespace Rock.Model
         /// </summary>
         public ContentItemConfiguration()
         {
+            this.HasRequired( i => i.ContentChannel ).WithMany( c => c.Items ).HasForeignKey( i => i.ContentChannelId ).WillCascadeOnDelete( false );
             this.HasRequired( i => i.ContentType ).WithMany().HasForeignKey( i => i.ContentTypeId ).WillCascadeOnDelete( false );
         }
     }

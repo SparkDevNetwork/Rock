@@ -89,7 +89,6 @@ namespace Rock.Model
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
-            target.RequiresApproval = source.RequiresApproval;
             target.DateRangeType = source.DateRangeType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

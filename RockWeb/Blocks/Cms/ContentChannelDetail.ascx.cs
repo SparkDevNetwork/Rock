@@ -19,50 +19,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 using System.ComponentModel;
+using Rock.Security;
+using Newtonsoft.Json;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Marketing Campaign - Campaign Detail")]
+    [DisplayName("Content Channel Detail")]
     [Category("CMS")]
-    [Description("Displays the details for campaign.")]
-    //[LinkedPage( "Event Page" )]
+    [Description("Displays the details for a content channel.")]
     public partial class ContentChannelDetail : RockBlock, IDetailBlock
     {
-        #region Child Grid States
-
-        /// <summary>
-        /// Gets or sets the state of the marketing campaign audiences.
-        /// </summary>
-        /// <value>
-        /// The state of the marketing campaign audiences.
-        /// </value>
-        private ViewStateList<ContentChannelAudience> ContentChannelAudiencesState
-        {
-            get
-            {
-                return ViewState["ContentChannelAudiencesState"] as ViewStateList<ContentChannelAudience>;
-            }
-
-            set
-            {
-                ViewState["ContentChannelAudiencesState"] = value;
-            }
-        }
-
-        #endregion
 
         #region Control Methods
 
@@ -74,22 +52,17 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            LoadCampusPicker();
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
 
-            gContentChannelAudiencesPrimary.DataKeyNames = new string[] { "id" };
-            gContentChannelAudiencesPrimary.Actions.ShowAdd = true;
-            gContentChannelAudiencesPrimary.Actions.AddClick += gContentChannelAudiencesPrimary_Add;
-            gContentChannelAudiencesPrimary.GridRebind += gContentChannelAudiences_GridRebind;
-            gContentChannelAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
+            string script = @"
+    $('.js-content-channel-enable-rss').change( function() {
+        $(this).closest('div.form-group').siblings('div.js-content-channel-rss').slideToggle()
+    });
+";
+            ScriptManager.RegisterStartupScript( cbEnableRss, cbEnableRss.GetType(), "enable-rss", script, true );
 
-            gContentChannelAudiencesSecondary.DataKeyNames = new string[] { "id" };
-            gContentChannelAudiencesSecondary.Actions.ShowAdd = true;
-            gContentChannelAudiencesSecondary.Actions.AddClick += gContentChannelAudiencesSecondary_Add;
-            gContentChannelAudiencesSecondary.GridRebind += gContentChannelAudiences_GridRebind;
-            gContentChannelAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
-
-            // Hide Event until we implement more stuff for Marketing Campaign Events
-            ddlEventGroup.Visible = false;
         }
 
         /// <summary>
@@ -102,12 +75,33 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentChannelId" ).AsInteger() );
+                ShowDetail( PageParameter( "contentChannelId" ).AsInteger(), PageParameter("contentTypeId").AsIntegerOrNull() );
+            }
+            else
+            {
+                if ( pnlEditDetails.Visible )
+                {
+                    var rockContext = new RockContext();
+                    ContentChannel channel;
+                    int? channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                    if ( channelId.HasValue && channelId.Value > 0 )
+                    {
+                        channel = new ContentChannelService( rockContext ).Get( channelId.Value );
+                    }
+                    else
+                    {
+                        channel = new ContentChannel { Id = 0, ContentTypeId = PageParameter("contentTypeId").AsInteger() };
+                    }
+                    channel.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false );
+
+                }
             }
         }
 
         /// <summary>
-        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// Gets the bread crumbs.
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>
@@ -115,63 +109,318 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int id = int.MinValue;
-            if ( int.TryParse( PageParameter( pageReference, "contentChannelId" ), out id ) )
+            int? contentChannelId = PageParameter( pageReference, "contentChannelId" ).AsIntegerOrNull();
+            if ( contentChannelId != null )
             {
-                var service = new ContentChannelService( new RockContext() );
-                var item = service.Get( id );
-                if ( item != null )
+                ContentChannel contentChannel = new ContentChannelService( new RockContext() ).Get( contentChannelId.Value );
+                if ( contentChannel != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( item.Title, pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( contentChannel.Name, pageReference ) );
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New Marketing Campaign", pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( "New Content Channel", pageReference ) );
                 }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
             }
 
             return breadCrumbs;
         }
-
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
-            SetEditMode( false );
+            ShowEditDetails( GetContentChannel( hfContentChannelId.Value.AsInteger() ) );
+        }
 
-            if ( hfContentChannelId.Value.Equals( "0" ) )
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            ContentChannel contentChannel;
+
+            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+
+            int contentChannelId = hfContentChannelId.Value.AsInteger();
+             
+            if ( contentChannelId == 0 )
             {
-                // Cancelling on Add.  Return to Grid
-                NavigateToParentPage();
+                contentChannel = new ContentChannel { ContentTypeId = hfContentTypeId.ValueAsInt() };
+                contentChannelService.Add( contentChannel );
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
-                ContentChannelService service = new ContentChannelService( new RockContext() );
-                ContentChannel item = service.Get( hfContentChannelId.ValueAsInt() );
-                ShowReadonlyDetails( item );
+                contentChannel = contentChannelService.Get( contentChannelId );
+            }
+
+            if ( contentChannel != null )
+            {
+                contentChannel.Name = tbName.Text;
+                contentChannel.Description = tbDescription.Text;
+                contentChannel.IconCssClass = tbIconCssClass.Text;
+                contentChannel.RequiresApproval = cbRequireApproval.Checked;
+                contentChannel.EnableRss = cbEnableRss.Checked;
+                contentChannel.ChannelUrl = tbChannelUrl.Text;
+                contentChannel.ItemUrl = tbItemUrl.Text;
+                contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
+
+                contentChannel.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, contentChannel );
+
+                if ( !Page.IsValid || !contentChannel.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    contentChannel.SaveAttributeValues( rockContext );
+                } );
+
+                var pageReference = RockPage.PageReference;
+                pageReference.Parameters.AddOrReplace( "contentChannelId", contentChannel.Id.ToString() );
+                Response.Redirect( pageReference.BuildUrl(), false );
+            }
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            int contentChannelId = hfContentChannelId.ValueAsInt();
+            if ( contentChannelId != 0 )
+            {
+                ShowReadonlyDetails( GetContentChannel( contentChannelId ) );
+            }
+            else
+            {
+                NavigateToParentPage();
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the btnEdit control.
+        /// Handles the BlockUpdated event of the control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ContentChannelService service = new ContentChannelService( new RockContext() );
             int contentChannelId = hfContentChannelId.ValueAsInt();
-            ContentChannel item = service.Queryable( "ContactPersonAlias.Person" )
-                .FirstOrDefault( c => c.Id == contentChannelId );
-            ShowEditDetails( item );
+            if ( contentChannelId != 0 )
+            {
+                ShowReadonlyDetails( GetContentChannel( contentChannelId ) );
+            }
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Gets the type of the content.
+        /// </summary>
+        /// <param name="contentChannelId">The content type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private ContentChannel GetContentChannel( int contentChannelId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            var contentChannel = new ContentChannelService( rockContext )
+                .Queryable( "ContentType" )
+                .Where( t => t.Id == contentChannelId )
+                .FirstOrDefault();
+            return contentChannel;
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="contentChannelId">The marketing campaign ad type identifier.</param>
+        public void ShowDetail( int contentChannelId )
+        {
+            ShowDetail( contentChannelId, null );
+        }
+
+        public void ShowDetail( int contentChannelId, int? contentTypeId )
+        {
+            ContentChannel contentChannel = null;
+
+            bool editAllowed = true;
+
+            var rockContext = new RockContext();
+
+            if ( !contentChannelId.Equals( 0 ) )
+            {
+                contentChannel = GetContentChannel( contentChannelId );
+                if ( contentChannel != null )
+                {
+                    editAllowed = contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
+            }
+
+            if ( contentChannel == null && contentTypeId.HasValue )
+            {
+                var contentType = new ContentTypeService(rockContext).Get( contentTypeId.Value );
+                if (contentType != null)
+                {
+                    contentChannel = new ContentChannel { 
+                        Id = 0, 
+                        ContentType = contentType,
+                        ContentTypeId = contentType.Id
+                    };
+                }
+            }
+
+            if ( contentChannel != null )
+            {
+                hfContentChannelId.Value = contentChannel.Id.ToString();
+                hfContentTypeId.Value = contentChannel.ContentTypeId.ToString();
+
+                bool readOnly = false;
+                nbEditModeMessage.Text = string.Empty;
+
+                if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentChannel.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    lbEdit.Visible = false;
+                    ShowReadonlyDetails( contentChannel );
+                }
+                else
+                {
+                    lbEdit.Visible = true;
+                    if ( contentChannel.Id > 0 )
+                    {
+                        ShowReadonlyDetails( contentChannel );
+                    }
+                    else
+                    {
+                        ShowEditDetails( contentChannel );
+                    }
+                }
+
+                lbSave.Visible = !readOnly;
+            }
+
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="contentChannel">Type of the content.</param>
+        private void ShowReadonlyDetails( ContentChannel contentChannel )
+        {
+            SetEditMode( false );
+
+            if ( contentChannel != null )
+            {
+                hfContentChannelId.SetValue( contentChannel.Id );
+
+                SetHeadingInfo( contentChannel, contentChannel.Name );
+                SetEditMode( false );
+
+                lGroupDescription.Text = contentChannel.Description;
+
+                var descriptionList = new DescriptionList();
+                if ( contentChannel.EnableRss )
+                {
+                    descriptionList
+                    .Add( "Item's Require Approval", contentChannel.RequiresApproval.ToString() )
+                    .Add( "Channel Url", contentChannel.ChannelUrl )
+                    .Add( "Item Url", contentChannel.ItemUrl );
+                }
+
+                contentChannel.LoadAttributes();
+                foreach ( var attribute in contentChannel.Attributes
+                    .Where( a => a.Value.IsGridColumn )
+                    .OrderBy( a => a.Value.Order )
+                    .Select( a => a.Value ) )
+                {
+                    if ( contentChannel.AttributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        string value = attribute.FieldType.Field.FormatValue( null,
+                            contentChannel.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
+                        descriptionList.Add( attribute.Name, value );
+                    }
+                }
+
+                lDetails.Text = descriptionList.Html;
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="contentChannel">Type of the content.</param>
+        protected void ShowEditDetails( ContentChannel contentChannel )
+        {
+            if ( contentChannel != null )
+            {
+                hfContentChannelId.Value = contentChannel.Id.ToString();
+                string title = contentChannel.Id > 0 ?
+                    ActionTitle.Edit( ContentChannel.FriendlyTypeName ) :
+                    ActionTitle.Add( ContentChannel.FriendlyTypeName );
+
+                SetHeadingInfo( contentChannel, title );
+
+                SetEditMode( true );
+
+                tbName.Text = contentChannel.Name;
+                tbDescription.Text = contentChannel.Description;
+                tbIconCssClass.Text = contentChannel.IconCssClass;
+                cbRequireApproval.Checked = contentChannel.RequiresApproval;
+                cbEnableRss.Checked = contentChannel.EnableRss;
+
+                divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
+                tbChannelUrl.Text = contentChannel.ChannelUrl;
+                tbItemUrl.Text = contentChannel.ItemUrl;
+                nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
+
+                contentChannel.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );
+            }
+        }
+
+        /// <summary>
+        /// Sets the heading information.
+        /// </summary>
+        /// <param name="contentChannel">Type of the content.</param>
+        /// <param name="title">The title.</param>
+        private void SetHeadingInfo( ContentChannel contentChannel, string title )
+        {
+            string cssIcon = contentChannel.IconCssClass;
+            if (string.IsNullOrWhiteSpace(cssIcon))
+            {
+                cssIcon = "fa fa-bullhorn";
+            }
+            lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
+            lTitle.Text = title.FormatAsHtmlTitle();
+            hlContentType.Text = contentChannel.ContentType.Name;
         }
 
         /// <summary>
@@ -181,481 +430,13 @@ namespace RockWeb.Blocks.Cms
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
+            fieldsetViewSummary.Visible = !editable;
 
-            HideSecondaryBlocks( editable );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-
-            ContentChannel contentChannel;
-
-            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-
-            int contentChannelId = int.Parse( hfContentChannelId.Value );
-
-            if ( contentChannelId == 0 )
-            {
-                contentChannel = new ContentChannel();
-                contentChannelService.Add( contentChannel );
-            }
-            else
-            {
-                contentChannel = contentChannelService.Get( contentChannelId );
-            }
-
-            contentChannel.Title = tbTitle.Text;
-            if ( ppContactPerson.PersonId.HasValue )
-            {
-                contentChannel.ContactPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppContactPerson.PersonId.Value );
-            }
-            else
-            {
-                contentChannel.ContactPersonAliasId = null;
-            }
-
-            contentChannel.ContactEmail = tbContactEmail.Text;
-            contentChannel.ContactPhoneNumber = tbContactPhoneNumber.Text;
-            contentChannel.ContactFullName = tbContactFullName.Text;
-
-            if ( ddlEventGroup.SelectedValue.Equals( None.Id.ToString() ) )
-            {
-                contentChannel.EventGroupId = null;
-            }
-            else
-            {
-                contentChannel.EventGroupId = int.Parse( ddlEventGroup.SelectedValue );
-            }
-
-            if ( !contentChannel.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            rockContext.WrapTransaction( () =>
-            {
-                /* Save ContentChannelAudiences to db */
-                if ( contentChannel.ContentChannelAudiences == null )
-                {
-                    contentChannel.ContentChannelAudiences = new List<ContentChannelAudience>();
-                }
-
-                // delete Audiences that aren't assigned in the UI anymore
-                ContentChannelAudienceService contentChannelAudienceService = new ContentChannelAudienceService( rockContext );
-                var deletedAudiences = from audienceInDB in contentChannel.ContentChannelAudiences.AsQueryable()
-                                       where !( from audienceStateItem in ContentChannelAudiencesState
-                                                select audienceStateItem.AudienceTypeValueId ).Contains( audienceInDB.AudienceTypeValueId )
-                                       select audienceInDB;
-                deletedAudiences.ToList().ForEach( a =>
-                {
-                    var aud = contentChannelAudienceService.Get( a.Guid );
-                    contentChannelAudienceService.Delete( aud );
-                } );
-
-                rockContext.SaveChanges();
-
-                // add or update the Audiences that are assigned in the UI
-                foreach ( var item in ContentChannelAudiencesState )
-                {
-                    ContentChannelAudience contentChannelAudience = contentChannel.ContentChannelAudiences.FirstOrDefault( a => a.AudienceTypeValueId.Equals( item.AudienceTypeValueId ) );
-                    if ( contentChannelAudience == null )
-                    {
-                        contentChannelAudience = new ContentChannelAudience();
-                        contentChannel.ContentChannelAudiences.Add( contentChannelAudience );
-                    }
-
-                    contentChannelAudience.AudienceTypeValueId = item.AudienceTypeValueId;
-                    contentChannelAudience.IsPrimary = item.IsPrimary;
-                }
-
-                /* Save ContentChannelCampuses to db */
-
-                // Update ContentChannelCampuses with UI values
-                if ( contentChannel.ContentChannelCampuses == null )
-                {
-                    contentChannel.ContentChannelCampuses = new List<ContentChannelCampus>();
-                }
-
-                // take care of deleted Campuses
-                ContentChannelCampusService contentChannelCampusService = new ContentChannelCampusService( rockContext );
-                var deletedCampuses = from mcc in contentChannel.ContentChannelCampuses.AsQueryable()
-                                      where !cpCampuses.SelectedCampusIds.Contains( mcc.CampusId )
-                                      select mcc;
-
-                deletedCampuses.ToList().ForEach( a =>
-                {
-                    var c = contentChannelCampusService.Get( a.Guid );
-                    contentChannelCampusService.Delete( c );
-                } );
-
-                rockContext.SaveChanges();
-
-                // add or update the Campuses that are assigned in the UI
-                foreach ( int campusId in cpCampuses.SelectedCampusIds )
-                {
-                    ContentChannelCampus contentChannelCampus = contentChannel.ContentChannelCampuses.FirstOrDefault( a => a.CampusId.Equals( campusId ) );
-                    if ( contentChannelCampus == null )
-                    {
-                        contentChannelCampus = new ContentChannelCampus();
-                        contentChannel.ContentChannelCampuses.Add( contentChannelCampus );
-                    }
-
-                    contentChannelCampus.CampusId = campusId;
-                }
-
-                rockContext.SaveChanges();
-            } );
-
-
-            var qryParams = new Dictionary<string, string>();
-            qryParams["contentChannelId"] = contentChannel.Id.ToString();
-            NavigateToPage( RockPage.Guid, qryParams );
+            this.HideSecondaryBlocks( editable );
         }
 
         #endregion
 
-        #region Internal Methods
 
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            // Controls on Main Campaign Panel
-            GroupService groupService = new GroupService( new RockContext() );
-            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES ) ) ).OrderBy( a => a.Name ).ToList();
-            groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
-            ddlEventGroup.DataSource = groups;
-            ddlEventGroup.DataBind();
-        }
-
-        /// <summary>
-        /// Loads the campus picker.
-        /// </summary>
-        private void LoadCampusPicker()
-        {
-            CampusService campusService = new CampusService( new RockContext() );
-
-            cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            cpCampuses.Visible = cpCampuses.AvailableCampusIds.Count > 0;
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="contentChannelId">The marketing campaign identifier.</param>
-        public void ShowDetail( int contentChannelId )
-        {
-            ContentChannel contentChannel = null;
-
-            if ( !contentChannelId.Equals( 0 ) )
-            {
-                ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
-                contentChannel = contentChannelService.Queryable( "ContactPersonAlias.Person" )
-                    .FirstOrDefault( c => c.Id == contentChannelId );
-            }
-
-            if (contentChannel == null)
-            {
-                contentChannel = new ContentChannel { Id = 0 };
-                contentChannel.ContentItems = new List<ContentItem>();
-                contentChannel.ContentChannelAudiences = new List<ContentChannelAudience>();
-                contentChannel.ContentChannelCampuses = new List<ContentChannelCampus>();
-            }
-
-            hfContentChannelId.Value = contentChannel.Id.ToString();
-
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentChannel.FriendlyTypeName );
-            }
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                ShowReadonlyDetails( contentChannel );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                if ( contentChannel.Id > 0 )
-                {
-                    ShowReadonlyDetails( contentChannel );
-                }
-                else
-                {
-                    ShowEditDetails( contentChannel );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Shows the edit details.
-        /// </summary>
-        /// <param name="contentChannel">The marketing campaign.</param>
-        private void ShowEditDetails( ContentChannel contentChannel )
-        {
-            if ( contentChannel.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( ContentChannel.FriendlyTypeName ).FormatAsHtmlTitle();
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( ContentChannel.FriendlyTypeName ).FormatAsHtmlTitle();
-            }
-
-            SetEditMode( true );
-
-            tbTitle.Text = contentChannel.Title;
-            tbContactEmail.Text = contentChannel.ContactEmail;
-            tbContactFullName.Text = contentChannel.ContactFullName;
-            tbContactPhoneNumber.Text = contentChannel.ContactPhoneNumber;
-
-            LoadDropDowns();
-            if ( contentChannel.ContactPersonAlias != null )
-            {
-                ppContactPerson.SetValue( contentChannel.ContactPersonAlias.Person );
-            }
-            else
-            {
-                ppContactPerson.SetValue( null );
-            }
-
-            ddlEventGroup.SetValue( contentChannel.EventGroupId );
-
-            cpCampuses.SelectedCampusIds = contentChannel.ContentChannelCampuses.Select( a => a.CampusId ).ToList();
-
-            ContentChannelAudiencesState = new ViewStateList<ContentChannelAudience>();
-            foreach ( var item in contentChannel.ContentChannelAudiences.ToList() )
-            {
-                ContentChannelAudiencesState.Add( new ContentChannelAudience { Id = item.Id, IsPrimary = item.IsPrimary, AudienceTypeValueId = item.AudienceTypeValueId } );
-            }
-
-            BindContentChannelAudiencesGrid();
-        }
-
-        /// <summary>
-        /// Shows the readonly details.
-        /// </summary>
-        /// <param name="contentChannel">The marketing campaign.</param>
-        private void ShowReadonlyDetails( ContentChannel contentChannel )
-        {
-            SetEditMode( false );
-
-            // set title.text value even though it is hidden so that Ad Edit can get the title of the campaign
-            tbTitle.Text = contentChannel.Title;
-
-            string contactInfo = string.Format( "{0}<br>{1}<br>{2}", contentChannel.ContactFullName, contentChannel.ContactEmail, contentChannel.ContactPhoneNumber );
-            contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", string.Empty ) ) ? None.TextHtml : contactInfo;
-
-
-            string eventGroupHtml = null;
-            /* 
-             * -- Hide until we implement Marketing Events
-            
-            string eventPageGuid = this.GetAttributeValue( "EventPage" );
-            
-            if ( contentChannel.EventGroup != null )
-            {
-                eventGroupHtml = contentChannel.EventGroup.Name;
-
-                if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
-                {
-                    var page = new PageService( new RockContext() ).Get( new Guid( eventPageGuid ) );
-
-                    Dictionary<string, string> queryString = new Dictionary<string, string>();
-                    queryString.Add( "groupId", contentChannel.EventGroupId.ToString() );
-                    string eventGroupUrl = new PageReference( page.Id, 0, queryString ).BuildUrl();
-                    eventGroupHtml = string.Format( "<a href='{0}'>{1}</a>", eventGroupUrl, contentChannel.EventGroup.Name );
-                }
-            }
-            */
-            
-
-            string primaryAudiences = contentChannel.ContentChannelAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
-            primaryAudiences = contentChannel.ContentChannelAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
-
-            string secondaryAudiences = contentChannel.ContentChannelAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
-            secondaryAudiences = contentChannel.ContentChannelAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
-
-            lCampaignTitle.Text = contentChannel.Title.FormatAsHtmlTitle();
-
-            DescriptionList descriptionListCol1 = new DescriptionList()
-                .Add("Contact", contactInfo);
-
-            if (eventGroupHtml != null)
-            {
-                descriptionListCol1.Add("Linked Event", eventGroupHtml);
-            }
-
-            lDetailsCol1.Text = descriptionListCol1.Html;
-
-            DescriptionList descriptionListCol2 = new DescriptionList()
-                .Add("Primary Audience", primaryAudiences)
-                .Add("Secondary Audience", secondaryAudiences);
-
-            lDetailsCol2.Text = descriptionListCol2.Html;
-
-            lCampusLabels.Text = string.Empty;
-            foreach (var campus in contentChannel.ContentChannelCampuses.Select(a => a.Campus.Name).OrderBy(a => a).ToList())
-            {
-                lCampusLabels.Text += "<span class='label label-campus'>" + campus + "</span> ";
-            }
-        }
-
-        /// <summary>
-        /// Handles the SelectPerson event of the ppContactPerson control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ppContactPerson_SelectPerson( object sender, EventArgs e )
-        {
-            Person contactPerson = new PersonService( new RockContext() ).Get( ppContactPerson.PersonId ?? 0 );
-            if ( contactPerson != null )
-            {
-                tbContactEmail.Text = contactPerson.Email;
-                tbContactFullName.Text = contactPerson.FullName;
-                PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                tbContactPhoneNumber.Text = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
-            }
-        }
-
-        #endregion
-
-        #region ContentChannelAudience Grid and Picker
-
-        /// <summary>
-        /// Handles the Add event of the gContentChannelAudiencesPrimary control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentChannelAudiencesPrimary_Add( object sender, EventArgs e )
-        {
-            gContentChannelAudiencesAdd( true );
-        }
-
-        /// <summary>
-        /// Handles the Add event of the gContentChannelAudiencesSecondary control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentChannelAudiencesSecondary_Add( object sender, EventArgs e )
-        {
-            gContentChannelAudiencesAdd( false );
-        }
-
-        /// <summary>
-        /// Gs the marketing campaign audiences add.
-        /// </summary>
-        /// <param name="primaryAudience">if set to <c>true</c> [is primary].</param>
-        private void gContentChannelAudiencesAdd( bool primaryAudience )
-        {
-            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
-
-            // populate dropdown with all ContentChannelAudiences that aren't already ContentChannelAudiences
-            var guid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid();
-            var existingAudiences = ContentChannelAudiencesState.Select( s => s.AudienceTypeValueId ).ToList();
-            var qry = definedValueService.GetByDefinedTypeGuid( guid )
-                .Where( v => !existingAudiences.Contains( v.Id ) );
-
-            List<DefinedValue> list = qry.ToList();
-            if ( list.Count == 0 )
-            {
-                list.Add( new DefinedValue { Id = None.Id, Value = None.Text } );
-                btnAddContentChannelAudience.Enabled = false;
-                btnAddContentChannelAudience.CssClass = "btn btn-primary disabled";
-            }
-            else
-            {
-                btnAddContentChannelAudience.Enabled = true;
-                btnAddContentChannelAudience.CssClass = "btn btn-primary";
-            }
-
-            ddlContentChannelAudiences.DataSource = list;
-            ddlContentChannelAudiences.DataBind();
-            hfContentChannelAudienceIsPrimary.Value = primaryAudience.ToTrueFalse();
-            pnlContentChannelAudiencePicker.Visible = true;
-            pnlDetails.Visible = false;
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gContentChannelAudiences control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentChannelAudiences_Delete( object sender, RowEventArgs e )
-        {
-            int contentChannelAudienceId = (int)e.RowKeyValue;
-            ContentChannelAudiencesState.RemoveEntity( contentChannelAudienceId );
-            BindContentChannelAudiencesGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gContentChannelAudiences control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentChannelAudiences_GridRebind( object sender, EventArgs e )
-        {
-            BindContentChannelAudiencesGrid();
-        }
-
-        /// <summary>
-        /// Binds the marketing campaign audiences grid.
-        /// </summary>
-        private void BindContentChannelAudiencesGrid()
-        {
-            gContentChannelAudiencesPrimary.DataSource = ContentChannelAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => DefinedValueCache.Read(a.AudienceTypeValueId).Value ).ToList();
-            gContentChannelAudiencesPrimary.DataBind();
-
-            gContentChannelAudiencesSecondary.DataSource = ContentChannelAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => DefinedValueCache.Read( a.AudienceTypeValueId ).Value ).ToList();
-            gContentChannelAudiencesSecondary.DataBind();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnAddContentChannelAudience control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnAddContentChannelAudience_Click( object sender, EventArgs e )
-        {
-            int audienceTypeValueId = int.Parse( ddlContentChannelAudiences.SelectedValue );
-            ContentChannelAudience contentChannelAudience = new ContentChannelAudience();
-            contentChannelAudience.AudienceTypeValueId = audienceTypeValueId;
-            contentChannelAudience.IsPrimary = hfContentChannelAudienceIsPrimary.Value.AsBoolean();
-
-            ContentChannelAudiencesState.Add( contentChannelAudience.Clone() as ContentChannelAudience );
-
-            pnlContentChannelAudiencePicker.Visible = false;
-            pnlDetails.Visible = true;
-
-            BindContentChannelAudiencesGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelAddContentChannelAudience control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancelAddContentChannelAudience_Click( object sender, EventArgs e )
-        {
-            pnlContentChannelAudiencePicker.Visible = false;
-            pnlDetails.Visible = true;
-        }
-
-        #endregion
-    }
+}
 }

@@ -16,29 +16,32 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
+using System.ComponentModel;
+using Rock.Security;
+using Newtonsoft.Json;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Content - Item Detail" )]
-    [Category( "CMS" )]
-    [Description( "Displays the details for a content item." )]
-
-    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve items." )]
-    
+    [DisplayName("Content Item Detail")]
+    [Category("CMS")]
+    [Description("Displays the details for a content item.")]
     public partial class ContentItemDetail : RockBlock, IDetailBlock
     {
+
         #region Control Methods
 
         /// <summary>
@@ -48,6 +51,10 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -60,358 +67,373 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentItemId" ).AsInteger(), PageParameter( "contentChannelId" ).AsIntegerOrNull() );
+                ShowDetail( PageParameter( "contentItemId" ).AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull() );
             }
             else
             {
-                LoadAdAttributes( new ContentItem(), true, false );
-            }
-
-            // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
-            if ( !IsUserAuthorized( "Approve" ) )
-            {
-                // change approval status to pending if any values are changed
-                string onchangeScript = string.Format( @"
-                    $('#{0}').removeClass('alert-success alert-danger').addClass('alert-info');
-                    $('#{0}').text('Pending Approval');
-                    $('#{1}').val('1');
-                    $('#{2}').val('');
-                    $('#{3}').hide();", lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
-
-                // catch changes from any HtmlEditors (special case)
-                var htmlEditors = phAttributes.ControlsOfTypeRecursive<Rock.Web.UI.Controls.HtmlEditor>();
-                foreach ( var htmlEditor in htmlEditors )
+                if ( pnlEditDetails.Visible )
                 {
-                    htmlEditor.OnChangeScript = onchangeScript;
+                    var rockContext = new RockContext();
+                    ContentItem item;
+                    int? itemId = PageParameter( "contentItemId" ).AsIntegerOrNull();
+                    if ( itemId.HasValue && itemId.Value > 0 )
+                    {
+                        item = new ContentItemService( rockContext ).Get( itemId.Value );
+                    }
+                    else
+                    {
+                        item = new ContentItem { Id = 0, ContentChannelId = PageParameter("contentChannelId").AsInteger() };
+                    }
+                    item.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( item, phAttributes, false );
+
                 }
-
-                // catch changes from any other inputs in the detail panel
-                string otherInputsChangeScript = string.Format( @"$('#{0} :input').on('change', function () {{", upDetail.ClientID ) + Environment.NewLine;
-                otherInputsChangeScript += onchangeScript + Environment.NewLine;
-                otherInputsChangeScript += "});";
-
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "approval-status-script_" + this.ClientID, "Sys.Application.add_load(function () {" + otherInputsChangeScript + " });", true );
             }
         }
 
+        /// <summary>
+        /// Gets the bread crumbs.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? contentItemId = PageParameter( pageReference, "contentItemId" ).AsIntegerOrNull();
+            if ( contentItemId != null )
+            {
+                ContentItem contentItem = new ContentItemService( new RockContext() ).Get( contentItemId.Value );
+                if ( contentItem != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( contentItem.Title, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Content Item", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
+        }
         #endregion
 
         #region Events
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlContentType control.
+        /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlContentType_SelectedIndexChanged( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ContentItem contentItem = new ContentItem();
-
-            LoadAdAttributes( contentItem, false, false );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, contentItem );
-
-            SetApprovalValues( ContentItemStatus.PendingApproval, null );
-
-            LoadAdAttributes( contentItem, true, true );
+            ShowEditDetails( GetContentItem( hfContentItemId.Value.AsInteger() ) );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void lbSave_Click( object sender, EventArgs e )
         {
-            int contentItemId = int.Parse( hfContentItemId.Value );
-
             var rockContext = new RockContext();
+            ContentItem contentItem = null;
+
             ContentItemService contentItemService = new ContentItemService( rockContext );
 
-            ContentItem contentItem;
-            if ( contentItemId.Equals( 0 ) )
+            int contentItemId = hfContentItemId.Value.AsInteger();
+             
+            if ( contentItemId == 0 )
             {
-                contentItem = new ContentItem { Id = 0 };
-                contentItem.ContentChannelId = hfContentChannelId.ValueAsInt();
+                var contentChannel = new ContentChannelService(rockContext).Get( hfContentChannelId.Value.AsInteger() );
+                if ( contentChannel != null )
+                {
+                    contentItem = new ContentItem
+                    {
+                        ContentChannel = contentChannel,
+                        ContentChannelId = contentChannel.Id,
+                        ContentType = contentChannel.ContentType,
+                        ContentTypeId = contentChannel.ContentType.Id
+                    };
+                    contentItemService.Add( contentItem );
+                }
             }
             else
             {
                 contentItem = contentItemService.Get( contentItemId );
             }
 
-            if ( string.IsNullOrWhiteSpace( ddlContentType.SelectedValue ) )
+            if ( contentItem != null )
             {
-                ddlContentType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlContentType.Label ) );
-                return;
-            }
+                contentItem.Title = tbTitle.Text;
+                contentItem.Content = ceContent.Text;
+                contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
+                contentItem.ExpireDateTime = dtpExpire.SelectedDateTime;
+                contentItem.Permalink = tbPermalink.Text;
 
-            contentItem.ContentChannelId = int.Parse( hfContentChannelId.Value );
-            contentItem.ContentTypeId = int.Parse( ddlContentType.SelectedValue );
-            contentItem.Priority = tbPriority.Text.AsInteger();
-            contentItem.ContentItemStatus = (ContentItemStatus)int.Parse( hfApprovalStatus.Value );
-            if ( !string.IsNullOrWhiteSpace( hfApprovalStatusPersonId.Value ) )
-            {
-                contentItem.ContentChannelStatusPersonId = int.Parse( hfApprovalStatusPersonId.Value );
-            }
-            else
-            {
-                contentItem.ContentChannelStatusPersonId = null;
-            }
+                contentItem.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, contentItem );
 
-            if (drpDateRange.Visible)
-            {
-                contentItem.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
-                contentItem.EndDate = drpDateRange.UpperValue ?? DateTime.MaxValue;
-            }
-
-            if (dpSingleDate.Visible)
-            {
-                contentItem.StartDate = dpSingleDate.SelectedDate ?? DateTime.MinValue;
-                contentItem.EndDate = contentItem.StartDate;
-            }
-
-            contentItem.Url = tbUrl.Text;
-
-            LoadAdAttributes( contentItem, false, false );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, contentItem );
-
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !contentItem.IsValid )
-            {
-                return;
-            }
-
-            rockContext.WrapTransaction( () =>
-            {
-                if ( contentItem.Id.Equals( 0 ) )
+                if ( !Page.IsValid || !contentItem.IsValid )
                 {
-                    contentItemService.Add( contentItem );
+                    // Controls will render the error messages                    
+                    return;
                 }
 
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    contentItem.SaveAttributeValues( rockContext );
+                } );
 
-                contentItem.SaveAttributeValues( rockContext );
-            } );
+                ShowReadonlyDetails( GetContentItem( contentItem.Id ) );
+            }
 
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["contentChannelId"] = hfContentChannelId.Value;
-            NavigateToParentPage( qryString );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the lbCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void lbCancel_Click( object sender, EventArgs e )
         {
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["contentChannelId"] = hfContentChannelId.Value;
-            NavigateToParentPage( qryString );
+            int contentItemId = hfContentItemId.ValueAsInt();
+            if ( contentItemId != 0 )
+            {
+                ShowReadonlyDetails( GetContentItem( contentItemId ) );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbApprove control.
+        /// Handles the BlockUpdated event of the control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbApprove_Click( object sender, EventArgs e )
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            SetApprovalValues( ContentItemStatus.Approved, CurrentPerson );
+            int contentItemId = hfContentItemId.ValueAsInt();
+            if ( contentItemId != 0 )
+            {
+                ShowReadonlyDetails( GetContentItem( contentItemId ) );
+            }
         }
 
-        /// <summary>
-        /// Handles the Click event of the lbDeny control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDeny_Click( object sender, EventArgs e )
-        {
-            SetApprovalValues( ContentItemStatus.Denied, CurrentPerson );
-        }
+        #endregion
+
+        #region Internal Methods
 
         /// <summary>
-        /// Loads the drop downs.
+        /// Gets the type of the content.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="contentItemId">The content type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private ContentItem GetContentItem( int contentItemId, RockContext rockContext = null )
         {
-            ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
-            var adtypes = contentTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-            ddlContentType.DataSource = adtypes;
-            ddlContentType.DataBind();
+            rockContext = rockContext ?? new RockContext();
+            var contentItem = new ContentItemService( rockContext )
+                .Queryable( "ContentChannel,ContentType" )
+                .Where( t => t.Id == contentItemId )
+                .FirstOrDefault();
+            return contentItem;
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
+        /// <param name="contentItemId">The marketing campaign ad type identifier.</param>
         public void ShowDetail( int contentItemId )
         {
             ShowDetail( contentItemId, null );
         }
 
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad identifier.</param>
-        /// <param name="contentChannelId">The marketing campaign id.</param>
         public void ShowDetail( int contentItemId, int? contentChannelId )
         {
-            pnlDetails.Visible = false;
-
             ContentItem contentItem = null;
 
-            lbApprove.Visible = IsUserAuthorized( "Approve" );
-            lbDeny.Visible = IsUserAuthorized( "Approve" );
+            bool editAllowed = true;
 
             var rockContext = new RockContext();
 
             if ( !contentItemId.Equals( 0 ) )
             {
-                contentItem = new ContentItemService( rockContext ).Get( contentItemId );
+                contentItem = GetContentItem( contentItemId );
+                if ( contentItem != null )
+                {
+                    editAllowed = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
             }
 
             if ( contentItem == null && contentChannelId.HasValue )
             {
-                contentItem = new ContentItem { Id = 0, ContentItemStatus = ContentItemStatus.PendingApproval };
-                contentItem.ContentChannelId = contentChannelId.Value;
-                contentItem.ContentChannel = new ContentChannelService( rockContext ).Get( contentItem.ContentChannelId );
-            }
-
-            if ( contentItem == null )
-            {
-                return;
-            }
-
-            contentItem.LoadAttributes();
-
-            pnlDetails.Visible = true;
-            hfContentItemId.Value = contentItem.Id.ToString();
-            hfContentChannelId.Value = contentItem.ContentChannelId.ToString();
-
-            if ( contentItem.Id.Equals( 0 ) )
-            {
-                lActionTitle.Text = ActionTitle.Add( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Edit( "Marketing Ad for " + contentItem.ContentChannel.Title ).FormatAsHtmlTitle();
-            }
-
-            LoadDropDowns();
-            ddlContentType.SetValue( contentItem.ContentTypeId );
-            tbPriority.Text = contentItem.Priority.ToString();
-
-            SetApprovalValues( contentItem.ContentItemStatus, new PersonService( rockContext ).Get( contentItem.ContentChannelStatusPersonId ?? 0 ) );
-
-            if ( contentItemId.Equals( 0 ) )
-            {
-                drpDateRange.LowerValue = null;
-                drpDateRange.UpperValue = null;
-                dpSingleDate.SelectedDate = null;
-            }
-            else
-            {
-                drpDateRange.LowerValue = contentItem.StartDate;
-                drpDateRange.UpperValue = contentItem.EndDate;
-                dpSingleDate.SelectedDate = contentItem.StartDate;
-            }
-
-            tbUrl.Text = contentItem.Url;
-
-            LoadAdAttributes( contentItem, true, true );
-
-            pnlDetails.Visible = true;
-        }
-
-
-        /// <summary>
-        /// Sets the approval values.
-        /// </summary>
-        /// <param name="status">The status.</param>
-        /// <param name="person">The person.</param>
-        private void SetApprovalValues( ContentItemStatus status, Person person )
-        {
-            string cssClass = string.Empty;
-
-            switch ( status )
-            {
-                case ContentItemStatus.Approved: cssClass = "label label-success";
-                    break;
-                case ContentItemStatus.Denied: cssClass = "label label-danger";
-                    break;
-                default: cssClass = "label label-info";
-                    break;
-            }
-
-            lblApprovalStatus.Text = string.Format( "<span class='{0}'>{1}</span>", cssClass, status.ConvertToString() );
-
-            hfApprovalStatus.Value = status.ConvertToInt().ToString();
-            lblApprovalStatusPerson.Visible = person != null;
-            if ( person != null )
-            {
-                lblApprovalStatusPerson.Text = "by " + person.FullName;
-                hfApprovalStatusPersonId.Value = person.Id.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Loads the attribute controls.
-        /// </summary>
-        /// <param name="contentItem">The marketing campaign ad.</param>
-        /// <param name="createControls">if set to <c>true</c> [create controls].</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        private void LoadAdAttributes( Rock.Attribute.IHasAttributes contentItem, bool createControls, bool setValues )
-        {
-            if ( string.IsNullOrWhiteSpace( ddlContentType.SelectedValue ) )
-            {
-                return;
-            }
-
-            int marketingAdTypeId = int.Parse( ddlContentType.SelectedValue );
-
-            ContentType contentType = new ContentTypeService( new RockContext() ).Get( marketingAdTypeId );
-            drpDateRange.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
-            dpSingleDate.Visible = contentType.DateRangeType.Equals( DateRangeTypeEnum.SingleDate );
-
-            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
-
-            contentItem.Attributes = contentItem.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            contentItem.AttributeValues = contentItem.AttributeValues ?? new Dictionary<string, AttributeValue>();
-            foreach ( var attribute in attributesForAdType )
-            {
-                contentItem.Attributes.AddOrReplace( attribute.Key, attribute );
-
-                if ( !contentItem.AttributeValues.ContainsKey( attribute.Key ) ||
-                    contentItem.AttributeValues[attribute.Key] == null )
+                var contentChannel = new ContentChannelService(rockContext).Get( contentChannelId.Value );
+                if (contentChannel != null)
                 {
-                    contentItem.AttributeValues.AddOrReplace( attribute.Key, new AttributeValue { Value = attribute.DefaultValue } );
+                    contentItem = new ContentItem { 
+                        Id = 0, 
+                        ContentChannel = contentChannel,
+                        ContentChannelId = contentChannel.Id,
+                        ContentType = contentChannel.ContentType,
+                        ContentTypeId = contentChannel.ContentType.Id
+                    };
                 }
             }
 
-            if ( createControls )
+            if ( contentItem != null )
             {
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, setValues );
+                hfContentItemId.Value = contentItem.Id.ToString();
+                hfContentChannelId.Value = contentItem.ContentChannelId.ToString();
+
+                bool readOnly = false;
+                nbEditModeMessage.Text = string.Empty;
+
+                if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentItem.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    lbEdit.Visible = false;
+                    ShowReadonlyDetails( contentItem );
+                }
+                else
+                {
+                    lbEdit.Visible = true;
+                    if ( contentItem.Id > 0 )
+                    {
+                        ShowReadonlyDetails( contentItem );
+                    }
+                    else
+                    {
+                        ShowEditDetails( contentItem );
+                    }
+                }
+
+                lbSave.Visible = !readOnly;
+            }
+
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="contentItem">Type of the content.</param>
+        private void ShowReadonlyDetails( ContentItem contentItem )
+        {
+            SetEditMode( false );
+
+            if ( contentItem != null )
+            {
+                hfContentItemId.SetValue( contentItem.Id );
+
+                SetHeadingInfo( contentItem, contentItem.Title );
+                SetEditMode( false );
+
+                lContent.Text = contentItem.Content;
+
+                var descriptionList = new DescriptionList()
+                    .Add( "Start", contentItem.StartDateTime.ToShortDateString() + " " + contentItem.StartDateTime.ToShortTimeString() );
+                
+                if (contentItem.ExpireDateTime.HasValue)
+                {
+                    descriptionList.Add( "Expire", contentItem.ExpireDateTime.Value.ToShortDateString() + " " +
+                        contentItem.ExpireDateTime.Value.ToShortTimeString() );
+                }
+                descriptionList.Add( "Permalink", contentItem.Permalink );
+                lDetails.Text = descriptionList.Html;
+
+                var attributeList = new DescriptionList();
+                contentItem.LoadAttributes();
+                foreach ( var attribute in contentItem.Attributes
+                    .Where( a => a.Value.IsGridColumn )
+                    .OrderBy( a => a.Value.Order )
+                    .Select( a => a.Value ) )
+                {
+                    if ( contentItem.AttributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        string value = attribute.FieldType.Field.FormatValue( null,
+                            contentItem.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
+                        attributeList.Add( attribute.Name, value );
+                    }
+                }
+                lAttributes.Text = attributeList.Html;
+
             }
         }
 
         /// <summary>
-        /// Gets the type of the attributes for ad.
+        /// Shows the edit details.
         /// </summary>
-        /// <param name="marketingAdTypeId">The marketing ad type id.</param>
-        /// <returns></returns>
-        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
+        /// <param name="contentItem">Type of the content.</param>
+        protected void ShowEditDetails( ContentItem contentItem )
         {
-            ContentItem temp = new ContentItem();
-            temp.ContentTypeId = marketingAdTypeId;
-            temp.LoadAttributes();
-            return temp.Attributes.Values.ToList();
+            if ( contentItem != null )
+            {
+                hfContentItemId.Value = contentItem.Id.ToString();
+                string title = contentItem.Id > 0 ?
+                    ActionTitle.Edit( ContentItem.FriendlyTypeName ) :
+                    ActionTitle.Add( ContentItem.FriendlyTypeName );
+
+                SetHeadingInfo( contentItem, title );
+
+                SetEditMode( true );
+
+                tbTitle.Text = contentItem.Title;
+                ceContent.Text = contentItem.Content;
+                dtpStart.SelectedDateTime = contentItem.StartDateTime;
+                dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
+                tbPermalink.Text = contentItem.Permalink;
+
+                contentItem.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true );
+            }
+        }
+
+        /// <summary>
+        /// Sets the heading information.
+        /// </summary>
+        /// <param name="contentItem">Type of the content.</param>
+        /// <param name="title">The title.</param>
+        private void SetHeadingInfo( ContentItem contentItem, string title )
+        {
+            string cssIcon = contentItem.ContentChannel.IconCssClass;
+            if (string.IsNullOrWhiteSpace(cssIcon))
+            {
+                cssIcon = "fa fa-certificate";
+            }
+            lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
+            lTitle.Text = title.FormatAsHtmlTitle();
+            hlContentChannel.Text = contentItem.ContentChannel.Name;
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewSummary.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         #endregion
-    }
+
+
+}
 }

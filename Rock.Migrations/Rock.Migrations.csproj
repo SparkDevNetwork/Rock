@@ -65,6 +65,10 @@
     <Compile Include="Migrations\201409162240173_AttributeValuesAsGuids.Designer.cs">
       <DependentUpon>201409162240173_AttributeValuesAsGuids.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409171912277_ContentItem.cs" />
+    <Compile Include="Migrations\201409171912277_ContentItem.Designer.cs">
+      <DependentUpon>201409171912277_ContentItem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
@@ -1213,6 +1217,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409162240173_AttributeValuesAsGuids.resx">
       <DependentUpon>201409162240173_AttributeValuesAsGuids.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409171912277_ContentItem.resx">
+      <DependentUpon>201409171912277_ContentItem.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>

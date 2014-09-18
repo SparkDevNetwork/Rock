@@ -15,31 +15,37 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
+using Rock.Web.Cache;
+using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content - Item List")]
+    [DisplayName("Content Item List")]
     [Category("CMS")]
     [Description("Lists content items.")]
+
     [LinkedPage("Detail Page")]
     public partial class ContentItemList : RockBlock, ISecondaryBlock
     {
+        #region Fields
+
+        private int? _contentChannelId = null;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -50,18 +56,31 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
+            _contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
 
-            gContentItems.DataKeyNames = new string[] { "Id" };
-            gContentItems.Actions.AddClick += gContentItems_Add;
-            gContentItems.GridRebind += gContentItems_GridRebind;
-            gContentItems.EmptyDataText = Server.HtmlEncode( None.Text );
-
-            // Block Security on Ads grid (RockPage takes care of View)
+            // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+
+            gContentItems.DataKeyNames = new string[] { "id" };
             gContentItems.Actions.ShowAdd = canAddEditDelete;
             gContentItems.IsDeleteEnabled = canAddEditDelete;
+            gContentItems.Actions.AddClick += gContentItems_Add;
+            gContentItems.GridRebind += gContentItems_GridRebind;
+
+            AddAttributeColumns();
+
+            var securityField = new SecurityField();
+            gContentItems.Columns.Add( securityField );
+            securityField.TitleField = "Title";
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
+
+            var deleteField = new DeleteField();
+            gContentItems.Columns.Add( deleteField );
+            deleteField.Click += gContentItems_Delete;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -70,119 +89,24 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                BindFilter();
+                if (_contentChannelId.HasValue)
+                {
+                    var contentChannel = new ContentChannelService( new RockContext() ).Get( _contentChannelId.Value );
+                    if (contentChannel != null)
+                    {
+                        lContentChannel.Text = contentChannel.Name;
+                    }
+                }
                 BindGrid();
             }
-        }
 
+            base.OnLoad( e );
+        }
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Handles the ApplyFilterClick event of the rFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void rFilter_ApplyFilterClick( object sender, EventArgs e )
-        {
-            rFilter.SaveUserPreference( "Content Type", ddlContentType.SelectedValue );
-            
-            rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
-            
-            rFilter.SaveUserPreference( "Date Range", string.Format( "{0},{1}",
-                pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty,
-                pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty ) );
-
-            rFilter.SaveUserPreference( "Priority Range", string.Format( "{0},{1}", 
-                pPriorityRange.LowerValue, 
-                pPriorityRange.UpperValue ) );
-
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Rs the filter_ display filter value.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
-        {
-            switch ( e.Key )
-            {
-                case "Content Type":
-                    {
-                        var contentType = new ContentTypeService( new RockContext() ).Get( e.Value.AsInteger() );
-                        if ( contentType != null )
-                        {
-                            e.Value = contentType.Name;
-                        }
-                        else
-                        {
-                            e.Value = string.Empty;
-                        }
-
-                        break;
-                    }
-
-                case "Status":
-                    {
-                        int approvalStatusValue = e.Value.AsIntegerOrNull() ?? Rock.Constants.All.Id;
-                        if ( approvalStatusValue != Rock.Constants.All.Id )
-                        {
-                            e.Value = e.Value.ConvertToEnum<ContentItemStatus>().ConvertToString();
-                        }
-                        else
-                        {
-                            e.Value = string.Empty;
-                        }
-
-                        break;
-                    }
-
-                case "Date Range":
-                case "Priority Range":
-                    {
-                        string[] values = e.Value.Split( new char[] { ',' }, StringSplitOptions.None );
-                        if ( values.Length == 2 )
-                        {
-                            if ( string.IsNullOrWhiteSpace( values[0] ) && string.IsNullOrWhiteSpace( values[1] ) )
-                            {
-                                e.Value = Rock.Constants.All.Text;
-                            }
-                            else if ( string.IsNullOrWhiteSpace( values[0] ) )
-                            {
-                                e.Value = "less than " + values[1];
-                            }
-                            else if ( string.IsNullOrWhiteSpace( values[1] ) )
-                            {
-                                e.Value = "greater than " + values[0];
-                            }
-                            else
-                            {
-                                e.Value = string.Format( "{0} to {1}", values[0], values[1] );
-                            }
-                        }
-                        else
-                        {
-                            e.Value = string.Empty;
-                        }
-
-                        break;
-                    }
-
-                default:
-                    {
-                        e.Value = string.Empty;
-                        break;
-                    }
-
-            }
-        }
 
         /// <summary>
         /// Handles the Add event of the gContentItems control.
@@ -191,7 +115,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentItems_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", 0 );
+            NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", _contentChannelId );
         }
 
         /// <summary>
@@ -214,7 +138,8 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             ContentItemService contentItemService = new ContentItemService( rockContext );
 
-            ContentItem contentItem = contentItemService.Get( e.RowKeyId );
+            ContentItem contentItem = contentItemService.Get( (int)e.RowKeyValue );
+
             if ( contentItem != null )
             {
                 string errorMessage;
@@ -236,166 +161,118 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentItems_GridRebind( object sender, EventArgs e )
+        private void gContentItems_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BindGrid();
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// Binds the filter.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page
         /// </summary>
-        private void BindFilter()
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
         {
-            ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
-            var contentTypeList = contentTypeService.Queryable().Select( a => new { a.Id, a.Name } ).OrderBy( a => a.Name ).ToList();
-            foreach ( var contentType in contentTypeList )
-            {
-                ddlContentType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
-            }
-            ddlContentType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            ddlContentType.SetValue( rFilter.GetUserPreference( "Content Type" ) );
-
-            ddlStatus.BindToEnum<ContentItemStatus>( true );
-            ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
-
-            string dateRangeValues = rFilter.GetUserPreference( "Date Range" );
-            if ( !string.IsNullOrWhiteSpace( dateRangeValues ) )
-            {
-                string[] upperLowerValues = dateRangeValues.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( upperLowerValues.Length == 2 )
-                {
-                    string lowerValue = upperLowerValues[0];
-                    if ( !string.IsNullOrWhiteSpace( lowerValue ) )
-                    {
-                        pDateRange.LowerValue = DateTime.Parse( lowerValue );
-                    }
-                    string upperValue = upperLowerValues[1];
-                    if ( !string.IsNullOrWhiteSpace( upperValue ) )
-                    {
-                        pDateRange.UpperValue = DateTime.Parse( upperValue );
-                    }
-                }
-            }
-
-            string priorityRangeValues = rFilter.GetUserPreference( "Priority Range" );
-            if ( !string.IsNullOrWhiteSpace( priorityRangeValues ) )
-            {
-                string[] upperLowerValues = priorityRangeValues.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( upperLowerValues.Length == 2 )
-                {
-                    pPriorityRange.LowerValue = upperLowerValues[0].AsIntegerOrNull();
-                    pPriorityRange.UpperValue = upperLowerValues[1].AsIntegerOrNull();
-                }
-            }
-
+            pnlContent.Visible = visible;
         }
 
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gContentItems.Columns.OfType<AttributeField>().ToList() )
+            {
+                gContentItems.Columns.Remove( column );
+            }
+
+            if ( _contentChannelId.HasValue )
+            {
+                // Add attribute columns
+                int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
+                string qualifier = _contentChannelId.Value.ToString();
+                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gContentItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gContentItems.Columns.Add( boundField );
+                    }
+                }
+            }
+        }
+        
         /// <summary>
-        /// Binds the marketing campaign ads grid.
+        /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            ContentItemService contentItemService = new ContentItemService( new RockContext() );
-            var qry = contentItemService.Queryable( "ContentType" );
-
-            // Ad Type
-            int? contentTypeId = ddlContentType.SelectedValueAsInt();
-            if ( contentTypeId.HasValue )
+            if ( _contentChannelId.HasValue )
             {
-                qry = qry.Where( a => a.ContentTypeId == contentTypeId.Value );
-            }
+                ContentItemService contentItemService = new ContentItemService( new RockContext() );
+                SortProperty sortProperty = gContentItems.SortProperty;
+                var contentItems = contentItemService.Queryable()
+                    .Where( c => c.ContentChannelId == _contentChannelId.Value );
 
-            // Status
-            var status = ddlStatus.SelectedValueAsEnumOrNull<ContentItemStatus>();
-            if ( status.HasValue )
-            {
-                qry = qry.Where( a => a.Status == status.Value );
-            }
-
-            // Date Range
-            if ( pDateRange.LowerValue.HasValue )
-            {
-                DateTime startDate = pDateRange.LowerValue.Value.Date;
-                qry = qry.Where( a => (
-                    ( a.ExpireDateTime.HasValue && a.ExpireDateTime >= startDate ) ||
-                    ( !a.ExpireDateTime.HasValue && a.StartDateTime >= startDate )
-                ) );
-            }
-            if ( pDateRange.UpperValue.HasValue )
-            {
-                // add a whole day to the selected endDate since users will expect to see all the stuff that happened 
-                // on the endDate up until the very end of that day.
-
-                // calculate the query endDate before including it in the qry statement to avoid Linq error
-                var endDate = pDateRange.UpperValue.Value.AddDays( 1 );
-                qry = qry.Where( a => a.StartDateTime < endDate );
-            }
-
-            // Priority Range
-            if ( pPriorityRange.LowerValue.HasValue )
-            {
-                int lowerValue = (int)pPriorityRange.LowerValue.Value;
-                qry = qry.Where( a => a.Priority >= lowerValue );
-            }
-            if ( pPriorityRange.UpperValue.HasValue )
-            {
-                int upperValue = (int)pPriorityRange.UpperValue.Value;
-                qry = qry.Where( a => a.Priority <= upperValue );
-            }
-
-            SortProperty sortProperty = gContentItems.SortProperty;
-
-            if ( sortProperty != null )
-            {
-                if ( sortProperty.Equals( "Approver" ) )
+                if ( sortProperty != null )
                 {
-                    qry = qry.OrderBy( a => a.ApprovedByPersonAlias.Person.LastName )
-                        .ThenBy( a => a.ApprovedByPersonAlias.Person.NickName )
-                        .ThenByDescending( a => a.StartDateTime )
-                        .ThenBy( a => a.Priority )
-                        .ThenBy( a => a.Title )
-                        .ThenBy( a => a.ContentType.Name );
+                    gContentItems.DataSource = contentItems.Sort( sortProperty ).ToList();
                 }
                 else
                 {
-                    qry = qry.Sort( sortProperty );
+                    gContentItems.DataSource = contentItems.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
-            }
-            else
-            {
-                qry = qry.OrderByDescending( a => a.StartDateTime )
-                    .ThenBy( a => a.Priority )
-                    .ThenBy( a => a.Title )
-                    .ThenBy( a => a.ContentType.Name );
-            }
 
-            gContentItems.DataSource = qry.Select( i => new
-            {
-                i.Id,
-                i.Title,
-                ContentType = i.ContentType.Name,
-                i.StartDateTime,
-                i.ExpireDateTime,
-                i.Priority,
-                i.Status,
-                Approver = ( i.ApprovedByPersonAlias != null && i.ApprovedByPersonAlias.Person != null ) ?
-                    i.ApprovedByPersonAlias.Person.FullName : ""
-            } ).ToList();
-
-            gContentItems.DataBind();
+                gContentItems.DataBind();
+            }
         }
 
-        /// <summary>
-        /// Sets the dimmed.
-        /// </summary>
-        /// <param name="visible">if set to <c>true</c> [dimmed].</param>
-        public void SetVisible( bool visible )
+
+        protected string DisplayStatus (object status)
         {
-            pnlContentItems.Visible = visible;
+            var contentItemStatus = (ContentItemStatus)status;
+
+            string labelType = "warning";
+            if ( contentItemStatus == ContentItemStatus.Approved )
+            {
+                labelType = "success";
+            }
+            else if ( contentItemStatus == ContentItemStatus.Denied )
+            {
+                labelType = "danger";
+            }
+
+            return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, contentItemStatus.ConvertToString() );
         }
 
         #endregion
