@@ -362,7 +362,7 @@ namespace Rock.Web.UI.Controls
                     l.Text = selectField.HeaderText;
                     cell.Controls.Add( l );
 
-                    if ( selectField.SelectionMode == SelectionMode.Multiple )
+                    if ( selectField.SelectionMode == SelectionMode.Multiple && selectField.ShowHeader )
                     {
                         string colIndex = selectField.ColumnIndex.ToString();
                         CheckBox cb = new CheckBox();
