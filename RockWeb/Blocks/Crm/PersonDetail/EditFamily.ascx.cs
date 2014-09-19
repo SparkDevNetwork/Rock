@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lvMembers.ItemDataBound += lvMembers_ItemDataBound;
             lvMembers.ItemCommand += lvMembers_ItemCommand;
 
-            modalAddPerson.SaveButtonText = "Ok";
+            modalAddPerson.SaveButtonText = "Save";
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
             modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveTab.ClientID );
 
@@ -400,7 +400,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ppPerson.SetValue( null );
 
             tbNewPersonFirstName.Text = string.Empty;
-            tbNewPersonLastName.Text = string.Empty;
+
+            // default the last name of the new family member to the lastname of the existing adults in the family (if all the adults have the same last name)
+            var lastNames = FamilyMembers.Where( a => a.RoleGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.LastName ).Distinct().ToList();
+            if ( lastNames.Count == 1 )
+            {
+                tbNewPersonLastName.Text = lastNames[0];
+            }
+            else
+            {
+                tbNewPersonLastName.Text = string.Empty;
+            }
+
+            
             ddlNewPersonGender.SelectedIndex = 0;
             dpNewPersonBirthDate.SelectedDate = null;
             rblNewPersonRole.SelectedIndex = 0;
