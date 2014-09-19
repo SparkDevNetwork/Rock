@@ -2678,6 +2678,7 @@ table.attribute-grid tr th:nth-child(3) {
     13. Deceased / Inactive Styles
     14. Bulk Update
     15. Photo Upload
+    16. Duplicate Pages
 */
 .personprofile {
   margin-top: -15px;
@@ -3266,6 +3267,11 @@ tr.inactive td {
   white-space: nowrap;
   width: 150px;
   overflow: hidden;
+}
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover > td {
+  background-color: #b4bcc2;
+  color: #7b8a8b;
 }
 /*
     Used to manage styles for specific blocks.
