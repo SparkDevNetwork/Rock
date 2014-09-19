@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The form action.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string FormAction { get; set; }
 
