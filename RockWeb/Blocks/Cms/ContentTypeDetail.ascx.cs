@@ -252,7 +252,9 @@ namespace RockWeb.Blocks.Cms
                 } );
 
                 // Redirect so that channel list on same page rebuilds the attribute columns correctly
-                Response.Redirect( RockPage.PageReference.BuildUrl(), false);
+                var pageReference = RockPage.PageReference;
+                pageReference.Parameters.AddOrReplace( "contentTypeId", contentType.Id.ToString() );
+                Response.Redirect( pageReference.BuildUrl(), false );
             }
 
         }

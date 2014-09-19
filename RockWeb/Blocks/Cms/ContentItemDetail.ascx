@@ -36,7 +36,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:CodeEditor ID="ceContent" runat="server" Height="400" EditorMode="Html" EditorTheme="Rock"  />
+                            <Rock:CodeEditor ID="ceContent" runat="server" Label="Content" Height="400" EditorMode="Html" EditorTheme="Rock"  />
                         </div>
                     </div>
 
