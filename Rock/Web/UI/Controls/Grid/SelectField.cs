@@ -368,6 +368,7 @@ namespace Rock.Web.UI.Controls
                         CheckBox cb = new CheckBox();
                         cb.ID = "cbSelectHead_" + colIndex;
                         cb.AddCssClass( "select-all" );
+                        cell.AddCssClass( "grid-select-field" );
                         cell.Controls.Add( cb );
                     }
                 }
