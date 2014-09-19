@@ -16,6 +16,7 @@
     13. Deceased / Inactive Styles
     14. Bulk Update
     15. Photo Upload
+    16. Duplicate Pages
 */
 
 // 1. Page Styles
@@ -827,7 +828,7 @@ tr.inactive {
 
 }
 
-// 13. Photo Requests
+// 15. Photo Requests
 // -------------------------
 .photoupload-photo {
     
@@ -843,4 +844,15 @@ tr.inactive {
         }
     }
 
+}
+
+// 16. Duplicate Pages
+// -------------------------
+
+.grid-table tbody tr.duplicate-source {
+    td,
+    &:hover > td {
+        background-color: @gray-light;
+        color: @gray-dark;
+    }
 }
