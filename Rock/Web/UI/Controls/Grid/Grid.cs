@@ -921,6 +921,8 @@ namespace Rock.Web.UI.Controls
             {
                 if ( e.Row.DataItem != null )
                 {
+                    e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
+
                     if ( this.DataKeys != null && this.DataKeys.Count > 0 )
                     {
                         object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
@@ -928,7 +930,6 @@ namespace Rock.Web.UI.Controls
                         {
                             string key = dataKey.ToString();
                             e.Row.Attributes.Add( "datakey", key );
-                            e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
                         }
                     }
 
