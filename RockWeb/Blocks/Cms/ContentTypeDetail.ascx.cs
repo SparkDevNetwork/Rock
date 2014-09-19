@@ -188,17 +188,6 @@ namespace RockWeb.Blocks.Cms
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbEdit_Click( object sender, EventArgs e )
-        {
-            ShowEditDetails( GetContentType( hfContentTypeId.Value.AsInteger() ) );
-        }
-
-
-        /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -251,10 +240,7 @@ namespace RockWeb.Blocks.Cms
 
                 } );
 
-                // Redirect so that channel list on same page rebuilds the attribute columns correctly
-                var pageReference = RockPage.PageReference;
-                pageReference.Parameters.AddOrReplace( "contentTypeId", contentType.Id.ToString() );
-                Response.Redirect( pageReference.BuildUrl(), false );
+                NavigateToParentPage();
             }
 
         }
@@ -266,15 +252,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            int contentTypeId = hfContentTypeId.ValueAsInt();
-            if ( contentTypeId != 0 )
-            {
-                ShowDetail( contentTypeId );
-            }
-            else
-            {
-                NavigateToParentPage();
-            }
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -287,7 +265,7 @@ namespace RockWeb.Blocks.Cms
             int contentTypeId = hfContentTypeId.ValueAsInt();
             if ( contentTypeId != 0 )
             {
-                ShowReadonlyDetails( GetContentType( contentTypeId ) );
+                ShowDetail( contentTypeId );
             }
         }
 
@@ -602,14 +580,6 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            ddlDateRangeType.BindToEnum<DateRangeTypeEnum>();
-        }
-
-        /// <summary>
         /// Gets the type of the content.
         /// </summary>
         /// <param name="contentTypeId">The content type identifier.</param>
@@ -631,36 +601,28 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentTypeId">The marketing campaign ad type identifier.</param>
         public void ShowDetail( int contentTypeId )
         {
-            ContentType contentType = null;
-
-            bool editAllowed = true;
-
             var rockContext = new RockContext();
+            ContentType contentType = null;
 
             if ( !contentTypeId.Equals( 0 ) )
             {
                 contentType = GetContentType( contentTypeId );
-                if ( contentType != null )
-                {
-                    editAllowed = contentType.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
             }
-
-            if ( contentType == null)
+            if ( contentType == null )
             {
                 contentType = new ContentType { Id = 0 };
             }
 
+            string title = contentType.Id > 0 ?
+                ActionTitle.Edit( ContentType.FriendlyTypeName ) :
+                ActionTitle.Add( ContentType.FriendlyTypeName );
+            lTitle.Text = title.FormatAsHtmlTitle();
+
             hfContentTypeId.Value = contentType.Id.ToString();
 
-            bool readOnly = false;
-            nbEditModeMessage.Text = string.Empty;
-
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentType.FriendlyTypeName );
-            }
+            tbName.Text = contentType.Name;
+            ddlDateRangeType.BindToEnum<DateRangeTypeEnum>();
+            ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
 
             // load attribute data 
             ChannelAttributesState = new List<Attribute>();
@@ -676,101 +638,15 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
+            BindChannelAttributesGrid();
 
             attributeService.GetByEntityTypeId( new ContentItem().TypeId ).AsQueryable()
-                .Where( a => 
-                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) && 
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
-
-            if ( readOnly )
-            {
-                lbEdit.Visible = false;
-                ShowReadonlyDetails( contentType );
-            }
-            else
-            {
-                lbEdit.Visible = true;
-                if ( contentType.Id > 0 )
-                {
-                    ShowReadonlyDetails( contentType );
-                }
-                else
-                {
-                    ShowEditDetails( contentType );
-                }
-            }
-
-            lbSave.Visible = !readOnly;
-
-        }
-
-        /// <summary>
-        /// Shows the readonly details.
-        /// </summary>
-        /// <param name="contentType">Type of the content.</param>
-        private void ShowReadonlyDetails( ContentType contentType )
-        {
-            SetEditMode( false );
-
-            if ( contentType != null )
-            {
-                hfContentTypeId.SetValue( contentType.Id );
-
-                SetHeadingInfo( contentType, contentType.Name );
-
-                lDetails.Text = new DescriptionList()
-                    .Add( "Date Range Type", contentType.DateRangeType.ConvertToString())
-                    .Html;
-
-                var channelAttributesList = new List<string>();
-                foreach ( var attribute in ChannelAttributesState.OrderBy( a => a.Order ) )
-                {
-                    var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-                    channelAttributesList.Add( string.Format( "{0} ({1})", attribute.Name, ( fieldType != null ? fieldType.Name : "?" ) ) );
-                }
-
-                var itemAttributesList = new List<string>();
-                foreach ( var attribute in ItemAttributesState.OrderBy( a => a.Order ) )
-                {
-                    var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-                    itemAttributesList.Add( string.Format( "{0} ({1})", attribute.Name, ( fieldType != null ? fieldType.Name : "?" ) ) );
-                }
-
-                lAttributeDetails.Text = new DescriptionList()
-                    .Add( "Channel Attributes", channelAttributesList.AsDelimited( "<br/>" ) )
-                    .Add( "Item Attributes", itemAttributesList.AsDelimited( "<br/>" ) )
-                    .Html;
-            }
-        }
-
-        /// <summary>
-        /// Shows the edit details.
-        /// </summary>
-        /// <param name="contentType">Type of the content.</param>
-        protected void ShowEditDetails( ContentType contentType )
-        {
-            if ( contentType != null )
-            {
-                hfContentTypeId.Value = contentType.Id.ToString();
-                string title = contentType.Id > 0 ?
-                    ActionTitle.Edit( ContentType.FriendlyTypeName ) :
-                    ActionTitle.Add( ContentType.FriendlyTypeName );
-
-
-                SetHeadingInfo( contentType, title );
-
-                SetEditMode( true );
-
-                LoadDropDowns();
-
-                tbName.Text = contentType.Name;
-                ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
-
-                BindChannelAttributesGrid();
-                BindItemAttributesGrid();
-            }
+            BindItemAttributesGrid();
         }
 
         /// <summary>
@@ -805,28 +681,6 @@ namespace RockWeb.Blocks.Cms
             {
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
-        }
-
-        /// <summary>
-        /// Sets the heading information.
-        /// </summary>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="title">The title.</param>
-        private void SetHeadingInfo( ContentType contentType, string title )
-        {
-            lTitle.Text = title.FormatAsHtmlTitle();
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewSummary.Visible = !editable;
-
-            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>

@@ -61,13 +61,6 @@ namespace RockWeb.Blocks.Cms
             gContentType.GridRebind += gContentType_GridRebind;
             gContentType.Actions.ShowAdd = canAddEditDelete;
             gContentType.IsDeleteEnabled = canAddEditDelete;
-
-            SecurityField securityField = gContentType.Columns.OfType<SecurityField>().FirstOrDefault();
-            if ( securityField != null )
-            {
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentType ) ).Id;
-            }
-
         }
 
         /// <summary>
@@ -166,26 +159,27 @@ namespace RockWeb.Blocks.Cms
         {
             ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
             SortProperty sortProperty = gContentType.SortProperty;
-            var qry = contentTypeService.Queryable( "Channels" );
 
-            List<ContentType> types = null;
+            var types = contentTypeService.Queryable( "Channels" )
+                .Select( t => new
+                {
+                    t.Id,
+                    t.Name,
+                    t.IsSystem,
+                    Channels = t.Channels.Count()
+                } )
+                .ToList();
+           
             if ( sortProperty != null )
             {
-                types = qry.Sort( sortProperty ).ToList();
+                types = types.AsQueryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                types = qry.OrderBy( p => p.Name ).ToList();
+                types = types.OrderBy( p => p.Name ).ToList();
             }
 
-            gContentType.DataSource = types.Select( t => new
-            {
-                t.Id,
-                t.Name,
-                t.IsSystem,
-                Channels = t.Channels.Count()
-            } )
-            .ToList();
+            gContentType.DataSource = types;
             gContentType.DataBind();
         }
 

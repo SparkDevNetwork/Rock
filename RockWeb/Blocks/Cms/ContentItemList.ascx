@@ -18,12 +18,9 @@
                     <Rock:Grid ID="gContentItems" runat="server" EmptyDataText="No Items Found" RowItemText="Item" AllowSorting="true" OnRowSelected="gContentItems_Edit">
                         <Columns>
                             <asp:BoundField DataField="Title" HeaderText="Item" SortExpression="Title" />
-                            <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                             <Rock:DateTimeField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                            <asp:TemplateField HeaderText="Status" SortExpression="Status">
-                                <ItemTemplate><%# DisplayStatus( Eval("Status") ) %></ItemTemplate>
-                            </asp:TemplateField>
+                            <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
                 </div>

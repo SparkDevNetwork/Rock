@@ -27,6 +27,7 @@ using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
 using System.Collections.Generic;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -43,7 +44,7 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         private int? _contentChannelId = null;
-
+        private int _contentTypeId = 0;
         #endregion
 
         #region Control Methods
@@ -57,6 +58,14 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             _contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+            var contentChannel = new ContentChannelService( new RockContext() ).Get( _contentChannelId.Value );
+            if ( contentChannel != null )
+            {
+                gContentItems.Columns[1].HeaderText = contentChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange ? "Start" : "Date";
+                gContentItems.Columns[2].Visible = contentChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
+                lContentChannel.Text = contentChannel.Name;
+                _contentTypeId = contentChannel.ContentTypeId;
+            }
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
@@ -68,6 +77,13 @@ namespace RockWeb.Blocks.Cms
             gContentItems.GridRebind += gContentItems_GridRebind;
 
             AddAttributeColumns();
+
+            var statusField = new BoundField();
+            gContentItems.Columns.Add( statusField );
+            statusField.DataField = "Status";
+            statusField.HeaderText = "Status";
+            statusField.SortExpression = "Status";
+            statusField.HtmlEncode = false;
 
             var securityField = new SecurityField();
             gContentItems.Columns.Add( securityField );
@@ -91,14 +107,6 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                if (_contentChannelId.HasValue)
-                {
-                    var contentChannel = new ContentChannelService( new RockContext() ).Get( _contentChannelId.Value );
-                    if (contentChannel != null)
-                    {
-                        lContentChannel.Text = contentChannel.Name;
-                    }
-                }
                 BindGrid();
             }
 
@@ -197,37 +205,34 @@ namespace RockWeb.Blocks.Cms
                 gContentItems.Columns.Remove( column );
             }
 
-            if ( _contentChannelId.HasValue )
+            // Add attribute columns
+            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
+            string qualifier = _contentTypeId.ToString();
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn &&
+                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifier ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
             {
-                // Add attribute columns
-                int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
-                string qualifier = _contentChannelId.Value.ToString();
-                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifier ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = gContentItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
                 {
-                    string dataFieldExpression = attribute.Key;
-                    bool columnExists = gContentItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                    if ( !columnExists )
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.HeaderText = attribute.Name;
+                    boundField.SortExpression = string.Empty;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
                     {
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = dataFieldExpression;
-                        boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
-
-                        gContentItems.Columns.Add( boundField );
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                     }
+
+                    gContentItems.Columns.Add( boundField );
                 }
             }
         }
@@ -244,25 +249,46 @@ namespace RockWeb.Blocks.Cms
                 var contentItems = contentItemService.Queryable()
                     .Where( c => c.ContentChannelId == _contentChannelId.Value );
 
+                // TODO: Checking security of every item will take longer and longer as more items are added.  
+                // Eventually we should implement server-side paging so that we only need to check security for
+                // the items on the current page
+
+                var items = new List<ContentItem>();
+                foreach ( var item in contentItems.ToList())
+                {
+                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ))
+                    {
+                        items.Add(item);
+                    }
+                }
+
                 if ( sortProperty != null )
                 {
-                    gContentItems.DataSource = contentItems.Sort( sortProperty ).ToList();
+                    items = items.AsQueryable().Sort( sortProperty ).ToList();
                 }
                 else
                 {
-                    gContentItems.DataSource = contentItems.OrderByDescending( p => p.StartDateTime ).ToList();
+                    items = items.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
 
+                gContentItems.DataSource = items.Select( i => new
+                {
+                    i.Id,
+                    i.Guid,
+                    i.Title,
+                    i.StartDateTime,
+                    i.ExpireDateTime,
+                    i.Priority,
+                    Status = DisplayStatus( i.Status )
+                } ).ToList();
                 gContentItems.DataBind();
             }
         }
 
 
-        protected string DisplayStatus (object status)
+        protected string DisplayStatus (ContentItemStatus contentItemStatus)
         {
-            var contentItemStatus = (ContentItemStatus)status;
-
-            string labelType = "warning";
+            string labelType = "default";
             if ( contentItemStatus == ContentItemStatus.Approved )
             {
                 labelType = "success";

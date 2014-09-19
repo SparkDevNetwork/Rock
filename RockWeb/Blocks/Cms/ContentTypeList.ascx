@@ -16,9 +16,7 @@
                     <Rock:Grid ID="gContentType" runat="server" AllowSorting="true" OnRowSelected="gContentType_Edit">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Channels" HeaderText="Channels" SortExpression="Channels" ItemStyle-HorizontalAlign="Right" />
-                            <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                            <Rock:SecurityField TitleField="Name" />
+                            <Rock:BadgeField InfoMin="1" DataField="Channels" HeaderText="Channels" SortExpression="Channels" />
                             <Rock:DeleteField OnClick="gContentType_Delete" />
                         </Columns>
                     </Rock:Grid>

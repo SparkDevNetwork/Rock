@@ -197,6 +197,11 @@ namespace Rock.Constants
             return string.Format( "<strong>Note</strong> Because this {0} is used by Rock, editing is restricted.", itemFriendlyName.ToLower() );
         }
 
+        public static string NotAuthorizedToView( string itemFriendlyName )
+        {
+            return string.Format( "<strong>Note</strong> You are not authorized to view this {0}.", itemFriendlyName.ToLower() );
+        }
+
         /// <summary>
         /// Returns a message in the format: ""
         /// </summary>

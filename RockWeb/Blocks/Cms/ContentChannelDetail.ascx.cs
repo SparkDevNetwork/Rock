@@ -30,6 +30,7 @@ using System.ComponentModel;
 using Rock.Security;
 using Newtonsoft.Json;
 using Rock.Web;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -73,9 +74,11 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
+            maContentTypeWarning.Hide();
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentChannelId" ).AsInteger(), PageParameter("contentTypeId").AsIntegerOrNull() );
+                ShowDetail( PageParameter( "contentChannelId" ).AsInteger() );
             }
             else
             {
@@ -92,6 +95,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         channel = new ContentChannel { Id = 0, ContentTypeId = PageParameter("contentTypeId").AsInteger() };
                     }
+
                     channel.LoadAttributes();
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false );
@@ -144,6 +148,36 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlContentType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlContentType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ContentChannel channel = null;
+
+            int contentChannelId = hfContentChannelId.ValueAsInt();
+            if ( contentChannelId != 0 )
+            {
+                channel = GetContentChannel( hfContentChannelId.ValueAsInt() );
+                if (channel != null && 
+                    channel.ContentTypeId.ToString() != ddlContentType.SelectedValue && 
+                    channel.Items.Any() )
+                {
+                    maContentTypeWarning.Show( "Changing the content type will result in all of this channel\\'s items losing any data that is specific to the original content type!", ModalAlertType.Warning );
+                }
+            }
+
+            if (channel == null)
+            {
+                channel = new ContentChannel();
+            }
+
+            AddAttributeControls( channel );
+
+        }
+        
+        /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -159,7 +193,7 @@ namespace RockWeb.Blocks.Cms
              
             if ( contentChannelId == 0 )
             {
-                contentChannel = new ContentChannel { ContentTypeId = hfContentTypeId.ValueAsInt() };
+                contentChannel = new ContentChannel { Id = 0 };
                 contentChannelService.Add( contentChannel );
             }
             else
@@ -171,6 +205,7 @@ namespace RockWeb.Blocks.Cms
             {
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
+                contentChannel.ContentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
                 contentChannel.RequiresApproval = cbRequireApproval.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
@@ -191,6 +226,18 @@ namespace RockWeb.Blocks.Cms
                 {
                     rockContext.SaveChanges();
                     contentChannel.SaveAttributeValues( rockContext );
+
+                    foreach( var item in new ContentItemService( rockContext )
+                        .Queryable()
+                        .Where( i => 
+                            i.ContentChannelId == contentChannel.Id &&
+                            i.ContentTypeId != contentChannel.ContentTypeId 
+                        ))
+                    {
+                        item.ContentTypeId = contentChannel.ContentTypeId;
+                    }
+
+                    rockContext.SaveChanges();
                 } );
 
                 var pageReference = RockPage.PageReference;
@@ -258,14 +305,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentChannelId">The marketing campaign ad type identifier.</param>
         public void ShowDetail( int contentChannelId )
         {
-            ShowDetail( contentChannelId, null );
-        }
-
-        public void ShowDetail( int contentChannelId, int? contentTypeId )
-        {
             ContentChannel contentChannel = null;
 
-            bool editAllowed = true;
+            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
             var rockContext = new RockContext();
 
@@ -274,27 +316,18 @@ namespace RockWeb.Blocks.Cms
                 contentChannel = GetContentChannel( contentChannelId );
                 if ( contentChannel != null )
                 {
-                    editAllowed = contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    editAllowed = editAllowed || contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
             }
 
-            if ( contentChannel == null && contentTypeId.HasValue )
+            if ( contentChannel == null )
             {
-                var contentType = new ContentTypeService(rockContext).Get( contentTypeId.Value );
-                if (contentType != null)
-                {
-                    contentChannel = new ContentChannel { 
-                        Id = 0, 
-                        ContentType = contentType,
-                        ContentTypeId = contentType.Id
-                    };
-                }
+                contentChannel = new ContentChannel { Id = 0 };
             }
 
-            if ( contentChannel != null )
+            if ( contentChannel != null && contentChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 hfContentChannelId.Value = contentChannel.Id.ToString();
-                hfContentTypeId.Value = contentChannel.ContentTypeId.ToString();
 
                 bool readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
@@ -324,6 +357,12 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 lbSave.Visible = !readOnly;
+            }
+            else
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                pnlEditDetails.Visible = false;
+                fieldsetViewSummary.Visible = false;
             }
 
         }
@@ -389,8 +428,11 @@ namespace RockWeb.Blocks.Cms
 
                 SetEditMode( true );
 
+                LoadDropdowns();
+
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
+                ddlContentType.SetValue( contentChannel.ContentTypeId );
                 tbIconCssClass.Text = contentChannel.IconCssClass;
                 cbRequireApproval.Checked = contentChannel.RequiresApproval;
                 cbEnableRss.Checked = contentChannel.EnableRss;
@@ -400,10 +442,20 @@ namespace RockWeb.Blocks.Cms
                 tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
 
-                contentChannel.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );
+                AddAttributeControls( contentChannel );
             }
+        }
+
+        /// <summary>
+        /// Adds the attribute controls.
+        /// </summary>
+        /// <param name="contentChannel">The content channel.</param>
+        private void AddAttributeControls( ContentChannel contentChannel )
+        {
+            contentChannel.ContentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
+            contentChannel.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );
         }
 
         /// <summary>
@@ -420,7 +472,7 @@ namespace RockWeb.Blocks.Cms
             }
             lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
             lTitle.Text = title.FormatAsHtmlTitle();
-            hlContentType.Text = contentChannel.ContentType.Name;
+            hlContentType.Text = contentChannel.ContentType != null ? contentChannel.ContentType.Name : string.Empty;
         }
 
         /// <summary>
@@ -435,8 +487,17 @@ namespace RockWeb.Blocks.Cms
             this.HideSecondaryBlocks( editable );
         }
 
+        /// <summary>
+        /// Loads the dropdowns.
+        /// </summary>
+        private void LoadDropdowns()
+        {
+            ddlContentType.Items.Clear();
+            foreach ( var contentType in new ContentTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
+            {
+                ddlContentType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
+            }
+        }
         #endregion
-
-
 }
 }
