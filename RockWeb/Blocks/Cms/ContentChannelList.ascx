@@ -7,22 +7,29 @@
             
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bullhorn"></i> 
-                    <asp:Literal ID="lContentType" runat="server" /> Channels
+                    <i class="fa fa-bullhorn"></i> Content Channels
                 </h1>
             </div>
             
             <div class="panel-body">
                 <div class="grid grid-panel">
+
+                    <Rock:GridFilter ID="gfFilter" runat="server">
+                        <Rock:RockDropDownList ID="ddlContentType" runat="server" Label="Content Type" />
+                    </Rock:GridFilter>
+
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
                     <Rock:Grid ID="gContentChannels" runat="server" EmptyDataText="No Channels Found" RowItemText="Channel" AllowSorting="true" TooltipField="Description" OnRowSelected="gContentChannels_Edit">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Channel" SortExpression="Name" />
-                            <asp:BoundField DataField="TotalItems" HeaderText="Total Items" SortExpression="TotalItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                            <asp:BoundField DataField="ActiveItems" HeaderText="Active Items" SortExpression="ActiveItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                            <Rock:DateField DataField="ItemLastCreated" HeaderText="Last Item Added" SortExpression="ItemLastCreated" />
-                            <Rock:BoolField DataField="EnableRss" HeaderText="RSS Enabled" SortExpression="EnableRss" />
-                            <asp:BoundField DataField="ChannelUrl" HeaderText="Url" SortExpression="ChannelUrl" />
+                            <asp:BoundField DataField="ContentType" HeaderText="Content Type" SortExpression="ContentType" />
+                            <asp:HyperLinkField DataNavigateUrlFields="ChannelUrl" DataNavigateUrlFormatString="{0}" DataTextField="ChannelUrl" SortExpression="ChannelUrl" HeaderText="Channel Url" />
+                            <Rock:BadgeField InfoMin="1" DataField="TotalItems" HeaderText="Total Items" SortExpression="TotalItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:BadgeField InfoMin="1" DataField="ActiveItems" HeaderText="Active Items" SortExpression="ActiveItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:DateField DataField="ItemLastCreated" HeaderText="Last Item Created" SortExpression="ItemLastCreated" FormatAsElapsedTime="true" />
+                            <Rock:SecurityField TitleField="Name" />
+                            <Rock:DeleteField OnClick="gContentChannels_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

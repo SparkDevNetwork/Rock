@@ -15,16 +15,17 @@
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
             </div>
 
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div id="pnlEditDetails" runat="server">
-
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:Panel ID="pnlEditDetails" runat="server">
 
                     <div class="row">
                         <div class="col-md-6">
@@ -44,7 +45,6 @@
                         <div class="col-md-6">
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
                             <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
-                            <Rock:DataTextBox ID="tbPermalink" runat="server" Label="Permalink" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Permalink" />
                         </div>
                         <div class="col-md-6">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
@@ -56,28 +56,7 @@
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
 
-                </div>
-
-                <fieldset id="fieldsetViewSummary" runat="server" >
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    <p class="description">
-                        <asp:Literal ID="lContent" runat="server"></asp:Literal>
-                    </p>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <asp:Literal ID="lDetails" runat="server" />
-                        </div>
-                        <div class="col-md-6">
-                            <asp:Literal ID="lAttributes" runat="server" />
-                        </div>
-                    </div>
-
-                    <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                    </div>
-
-                </fieldset>
+                </asp:Panel>
 
             </div>
 

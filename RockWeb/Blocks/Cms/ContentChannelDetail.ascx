@@ -6,7 +6,6 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
             <asp:HiddenField ID="hfContentChannelId" runat="server" />
-            <asp:HiddenField ID="hfContentTypeId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -24,7 +23,9 @@
 
                 <div id="pnlEditDetails" runat="server">
 
+                    <Rock:ModalAlert ID="maContentTypeWarning" runat="server" />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -43,10 +44,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
+                            <Rock:RockDropDownList ID="ddlContentType" runat="server" Label="Content Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentType_SelectedIndexChanged" />
+                            <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Item's Require Approval" Text="Yes" />
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Item's Require Approval" Text="Yes" />
                             <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
                             <div id="divRss" runat="server" class="js-content-channel-rss"> 
                                 <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />
@@ -65,7 +67,6 @@
                 </div>
 
                 <fieldset id="fieldsetViewSummary" runat="server" >
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <p class="description">
                         <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
                     </p>

@@ -141,6 +141,22 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<ContentItem> Items { get; set; }
 
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.Add( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
+                return supportedActions;
+            }
+        }
+
         #endregion
 
         #region Constructors

@@ -27,24 +27,20 @@ using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
 using System.Collections.Generic;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Channel List")]
-    [Category("CMS")]
-    [Description("Lists content channels.")]
+    [DisplayName( "Content Channel List" )]
+    [Category( "CMS" )]
+    [Description( "Lists content channels." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class ContentChannelList : RockBlock, ISecondaryBlock
     {
-        #region Fields
-
-        private int? _contentTypeId = null;
-
-        #endregion
 
         #region Control Methods
 
@@ -56,7 +52,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            _contentTypeId = PageParameter( "contentTypeId" ).AsIntegerOrNull();
+            gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
+            gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
@@ -67,16 +64,11 @@ namespace RockWeb.Blocks.Cms
             gContentChannels.Actions.AddClick += gContentChannels_Add;
             gContentChannels.GridRebind += gContentChannels_GridRebind;
 
-            AddAttributeColumns();
-
-            var securityField = new SecurityField();
-            gContentChannels.Columns.Add( securityField );
-            securityField.TitleField = "Name";
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
-
-            var deleteField = new DeleteField();
-            gContentChannels.Columns.Add( deleteField );
-            deleteField.Click += gContentChannels_Delete;
+            var securityField = gContentChannels.Columns.OfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
+            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -91,22 +83,57 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                if (_contentTypeId.HasValue)
-                {
-                    var contentType = new ContentTypeService( new RockContext() ).Get( _contentTypeId.Value );
-                    if (contentType != null)
-                    {
-                        lContentType.Text = contentType.Name;
-                    }
-                }
+                BindFilter();
                 BindGrid();
             }
 
             base.OnLoad( e );
         }
+
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Gfs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Content Type":
+                    {
+                        int? contentTypeId = e.Value.AsIntegerOrNull();
+                        if ( contentTypeId.HasValue )
+                        {
+                            var contentType = new ContentTypeService( new RockContext() ).Get( contentTypeId.Value );
+                            if ( contentType != null )
+                            {
+                                e.Value = contentType.Name;
+                            }
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gfFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfFilter.SaveUserPreference( "Content Type", ddlContentType.SelectedValue );
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Add event of the gContentChannels control.
@@ -115,7 +142,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentChannelId", 0, "contentTypeId", _contentTypeId );
+            NavigateToLinkedPage( "DetailPage", "contentChannelId", 0 );
         }
 
         /// <summary>
@@ -189,94 +216,76 @@ namespace RockWeb.Blocks.Cms
             pnlContent.Visible = visible;
         }
 
-        protected void AddAttributeColumns()
+        private void BindFilter()
         {
-            // Remove attribute columns
-            foreach ( var column in gContentChannels.Columns.OfType<AttributeField>().ToList() )
+            int? contentTypeId = gfFilter.GetUserPreference( "Content Type" ).AsIntegerOrNull();
+            ddlContentType.Items.Clear();
+            ddlContentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var contentType in new ContentTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
             {
-                gContentChannels.Columns.Remove( column );
-            }
-
-            if ( _contentTypeId.HasValue )
-            {
-                // Add attribute columns
-                int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
-                string qualifier = _contentTypeId.Value.ToString();
-                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifier ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
-                {
-                    string dataFieldExpression = attribute.Key;
-                    bool columnExists = gContentChannels.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                    if ( !columnExists )
-                    {
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = dataFieldExpression;
-                        boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
-
-                        gContentChannels.Columns.Add( boundField );
-                    }
-                }
+                var li = new ListItem( contentType.Name, contentType.Id.ToString() );
+                li.Selected = contentTypeId.HasValue && contentType.Id == contentTypeId.Value;
+                ddlContentType.Items.Add( li );
             }
         }
-        
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            if ( _contentTypeId.HasValue )
+            ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
+            SortProperty sortProperty = gContentChannels.SortProperty;
+            var qry = contentChannelService.Queryable( "ContentType,Items" );
+
+            int? contentTypeId = gfFilter.GetUserPreference( "Content Type" ).AsIntegerOrNull();
+            if ( contentTypeId.HasValue )
             {
-                ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
-                SortProperty sortProperty = gContentChannels.SortProperty;
-                var channels = contentChannelService.Queryable( "Items" )
-                    .Where( c => c.ContentTypeId == _contentTypeId.Value )
-                    .ToList();
-
-                gContentChannels.ObjectList = new Dictionary<string, object>();
-                channels.ForEach( c => gContentChannels.ObjectList.Add( c.Id.ToString(), c ) );
-
-                var now = RockDateTime.Now;
-                var items = channels.Select( c => new
-                {
-                    c.Id,
-                    c.Name,
-                    c.EnableRss,
-                    c.ChannelUrl,
-                    ItemLastCreated = c.Items.Max( i => i.CreatedDateTime ),
-                    TotalItems = c.Items.Count(),
-                    ActiveItems = c.Items
-                        .Where( i =>
-                            ( i.StartDateTime.CompareTo( now ) < 0 ) &&
-                            ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 ) &&
-                            ( i.ApprovedByPersonAliasId.HasValue || !c.RequiresApproval )
-                        ).Count()
-                } ).AsQueryable();
-
-                if ( sortProperty != null )
-                {
-                    gContentChannels.DataSource = items.Sort( sortProperty ).ToList();
-                }
-                else
-                {
-                    gContentChannels.DataSource = items.OrderBy( p => p.Name ).ToList();
-                }
-
-                gContentChannels.DataBind();
+                qry = qry.Where( c => c.ContentTypeId == contentTypeId.Value );
             }
+
+            gContentChannels.ObjectList = new Dictionary<string, object>();
+
+            var channels = new List<ContentChannel>();
+            foreach ( var channel in qry.ToList() )
+            {
+                if ( channel.IsAuthorized(Rock.Security.Authorization.VIEW, CurrentPerson))
+                {
+                    channels.Add( channel );
+                    gContentChannels.ObjectList.Add( channel.Id.ToString(), channel );
+                }
+            }
+
+            var now = RockDateTime.Now;
+            var items = channels.Select( c => new
+            {
+                c.Id,
+                c.Name,
+                ContentType = c.ContentType.Name,
+                c.EnableRss,
+                c.ChannelUrl,
+                ItemLastCreated = c.Items.Max( i => i.CreatedDateTime ),
+                TotalItems = c.Items.Count(),
+                ActiveItems = c.Items
+                    .Where( i =>
+                        ( i.StartDateTime.CompareTo( now ) < 0 ) &&
+                        ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 ) &&
+                        ( i.ApprovedByPersonAliasId.HasValue || !c.RequiresApproval )
+                    ).Count()
+            } ).AsQueryable();
+
+            if ( sortProperty != null )
+            {
+                gContentChannels.DataSource = items.Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                gContentChannels.DataSource = items.OrderBy( p => p.Name ).ToList();
+            }
+
+            gContentChannels.DataBind();
         }
+
 
         #endregion
     }

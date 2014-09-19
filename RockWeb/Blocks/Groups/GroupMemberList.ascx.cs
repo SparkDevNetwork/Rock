@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Groups
                         groupMembers = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                     }
 
-                    // Since we're not binding to actual workflow list, but are using AttributeField columns,
+                    // Since we're not binding to actual group member list, but are using AttributeField columns,
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
