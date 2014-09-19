@@ -2676,6 +2676,7 @@ table.attribute-grid tr th:nth-child(3) {
     13. Deceased / Inactive Styles
     14. Bulk Update
     15. Photo Upload
+    16. Duplicate Pages
 */
 .personprofile {
   margin-top: -15px;
@@ -3264,6 +3265,11 @@ tr.inactive td {
   white-space: nowrap;
   width: 150px;
   overflow: hidden;
+}
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover > td {
+  background-color: #f3f3f4;
+  color: #333333;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4436,6 +4442,9 @@ pre {
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
 }
+.panel.panel-widget .panel-heading {
+  background-color: #efefef;
+}
 .tag-letterlist a {
   color: #ee7624;
 }
@@ -4463,6 +4472,12 @@ pre {
 /*#endregion */
 /*#region  
 // 4. Rock Overrides         */
+.person-image {
+  border-radius: 4px;
+}
+.tt-suggestion p:hover {
+  background-color: #eaf7fc;
+}
 .smartsearch {
   margin: 12px 4%;
   border: 0;

@@ -211,11 +211,17 @@ namespace RockWeb.Blocks.Crm
                 var person = e.Row.DataItem.GetPropertyValue( "DuplicatePerson" );
                 bool isComparePerson = (bool)e.Row.DataItem.GetPropertyValue( "IsComparePerson" );
 
-                // If this is the main person for the compare, select them, but then hide the checkbox.  
-                var cell = e.Row.Cells[gList.Columns.OfType<SelectField>().First().ColumnIndex];
+                // If this is the main person for the compare, select them, but then hide the checkbox. 
+                var row = e.Row;
+                var cell = row.Cells[gList.Columns.OfType<SelectField>().First().ColumnIndex];
                 var selectBox = cell.Controls[0] as CheckBox;
                 selectBox.Visible = isComparePerson;
                 selectBox.Checked = !isComparePerson;
+
+                if ( !isComparePerson )
+                {
+                    row.AddCssClass( "duplicate-source" );
+                }
 
                 // If this is the main person for the compare, hide the "not duplicate" button
                 LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );

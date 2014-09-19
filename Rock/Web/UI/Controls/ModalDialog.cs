@@ -46,6 +46,15 @@ namespace Rock.Web.UI.Controls
         private Literal _scrollEndLiteral;
 
         private Panel _footerPanel;
+        
+        public HtmlAnchor ServerSaveLink
+        {
+            get
+            {
+                return _serverSaveLink;
+            }
+        }
+
         private HtmlAnchor _serverSaveLink;
         private HtmlAnchor _saveLink;
         private HtmlAnchor _cancelLink;
