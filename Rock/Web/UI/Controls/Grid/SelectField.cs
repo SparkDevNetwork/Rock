@@ -170,10 +170,12 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
+            base.Initialize( sortingEnabled, control );
+
             this.HeaderTemplate = new SelectFieldHeaderTemplate();
             this.ItemTemplate = new SelectFieldTemplate();
             var grid = control as Grid;
-            if (grid != null)
+            if ( grid != null )
             {
                 ColumnIndex = grid.Columns.IndexOf( this );
             }
@@ -185,8 +187,7 @@ namespace Rock.Web.UI.Controls
 ", ColumnIndex );
             ScriptManager.RegisterStartupScript( control, control.GetType(), "select-all-" + ColumnIndex.ToString(), script, true );
 
-
-            return base.Initialize( sortingEnabled, control );
+            return false;
         }
 
         #endregion
