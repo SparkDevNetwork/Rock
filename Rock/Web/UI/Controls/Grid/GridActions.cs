@@ -268,7 +268,7 @@ namespace Rock.Web.UI.Controls
             _lbBulkUpdate.PreRender += lb_PreRender;
             Controls.Add( _lbBulkUpdate );
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
-            iBulkUpdate.Attributes.Add( "class", "fa fa-reply-all" );
+            iBulkUpdate.Attributes.Add( "class", "fa fa-truck" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
             
             // controls for excel export

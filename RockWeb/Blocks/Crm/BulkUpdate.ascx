@@ -8,7 +8,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-reply-all"></i> Update Individuals</h1>
+                <h1 class="panel-title"><i class="fa fa-truck"></i> Update Individuals</h1>
             </div>
 
             <div class="panel-body">
