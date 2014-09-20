@@ -20,9 +20,9 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -111,7 +111,7 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 Guid campusGuid = selectionValues[0].AsGuid();
-                var campus = new CampusService( new RockContext() ).Get( campusGuid );
+                var campus = CampusCache.Read( campusGuid );
                 if ( campus != null )
                 {
                     result = "Campus: " + campus.Name;
@@ -131,7 +131,7 @@ function() {
             campusPicker.ID = filterControl.ID + "_0";
             campusPicker.Label = "Campus";
             campusPicker.CssClass = "js-campus-picker";
-            campusPicker.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            campusPicker.Campuses = CampusCache.All();
 
             filterControl.Controls.Add( campusPicker );
 
@@ -159,14 +159,16 @@ function() {
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
-            var campus = new CampusService( new RockContext() ).Get( campusId ?? 0 );
-            var value1 = string.Empty;
-            if ( campus != null )
+            if ( campusId.HasValue )
             {
-                value1 = campus.Guid.ToString();
+                var campus = CampusCache.Read( campusId.Value );
+                if ( campus != null )
+                {
+                    return campus.Guid.ToString();
+                }
             }
 
-            return value1;
+            return string.Empty;
         }
 
         /// <summary>
@@ -181,7 +183,7 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 var campusPicker = controls[0] as CampusPicker;
-                var selectedCampus = new CampusService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var selectedCampus = CampusCache.Read( selectionValues[0].AsGuid() );
                 if ( selectedCampus != null )
                 {
                     campusPicker.SelectedCampusId = selectedCampus.Id;
@@ -208,8 +210,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                Campus campus = new CampusService( rockContext ).Get( selectionValues[0].AsGuid() );
-
+                var campus = CampusCache.Read( selectionValues[0].AsGuid() );
                 if ( campus == null )
                 {
                     return null;

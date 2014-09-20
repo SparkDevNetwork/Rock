@@ -120,8 +120,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
             nbWarning.Visible = false;
 
             var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
-            var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-            if (campus == null)
+            var campusContext = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            CampusCache campus = null;
+            if (campusContext != null)
+            {
+                campus = CampusCache.Read( campusContext );
+            }
+            else
             {
                 campus = GetDefaultCampus();
             }
@@ -130,7 +135,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 if ( campus.Id.ToString() != CurrentCampusId )
                 {
-                    NavData = GetNavigationData( CampusCache.Read(campus) );
+                    NavData = GetNavigationData( campus );
                     CurrentCampusId = campus.Id.ToString();
 
                     if (Page.IsPostBack)
@@ -476,9 +481,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
-        private Campus GetDefaultCampus()
+        private CampusCache GetDefaultCampus()
         {
-            return new CampusService(new RockContext()).Queryable().OrderBy( a => a.Name ).FirstOrDefault();
+            return CampusCache.All().FirstOrDefault();
         }
 
         private string BuildCurrentPath(int? groupTypeId, int? locationId, int? groupId)

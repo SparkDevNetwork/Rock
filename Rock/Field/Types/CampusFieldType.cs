@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -43,7 +44,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var campus = new CampusService( new RockContext() ).Get( value.AsGuid() );
+                var campus = CampusCache.Read( value.AsGuid() );
                 if ( campus != null )
                 {
                     formattedValue = campus.Name;
@@ -65,8 +66,7 @@ namespace Rock.Field.Types
         {
             var campusPicker = new CampusPicker { ID = id };
 
-            CampusService campusService = new CampusService( new RockContext() );
-            var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            var campusList = CampusCache.All();
 
             if ( campusList.Any() )
             {
@@ -93,7 +93,7 @@ namespace Rock.Field.Types
                 int? campusId = campusPicker.SelectedCampusId;
                 if (campusId.HasValue)
                 {
-                    var campus = new CampusService( new RockContext() ).Get( campusId.Value );
+                    var campus = CampusCache.Read( campusId.Value );
                     if (campus != null )
                     {
                         return campus.Guid.ToString();
@@ -120,8 +120,8 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var campus = new CampusService( new RockContext() ).Get( guid );
-                campusPicker.SetValue( campus );
+                var campus = CampusCache.Read( guid );
+                campusPicker.SetValue( campus == null ? "0" : campus.Id.ToString() );
             }
         }
 
@@ -134,7 +134,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new CampusService( new RockContext() ).Get( guid );
+            var item = CampusCache.Read( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -146,7 +146,11 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new CampusService( new RockContext() ).Get( id ?? 0 );
+            CampusCache item = null;
+            if ( id.HasValue )
+            {
+                item = CampusCache.Read( id.Value );
+            }
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

@@ -1036,11 +1036,9 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void LoadDropDowns()
         {
-            CampusService campusService = new CampusService( new RockContext() );
-            List<Campus> campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
-            ddlCampus.DataSource = campuses;
+            ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
+            ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
         }
 
         /// <summary>
