@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Finance
             }
             ddlStatus.SetValue( statusFilter );
 
-            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );

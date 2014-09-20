@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            var campusi = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = CampusCache.All( rockContext );
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
