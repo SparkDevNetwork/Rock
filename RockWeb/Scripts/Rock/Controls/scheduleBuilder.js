@@ -13,14 +13,7 @@
 
             var id = this.id,
                 $modal = $('#' + id).closest('.rock-modal');
-
-            $modal.find('.scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
-
-            $modal.on('mouseenter', function () {
-                // detect mouseenter to make sure scrollbar is recalculated after show
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
-            }
-            );
+            
 
             $modal.find('.schedule-type').click(function () {
                 var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');

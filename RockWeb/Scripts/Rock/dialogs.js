@@ -69,22 +69,37 @@
 
                 // Updates the closest (outer) scroll-container scrollbar (if the control is with a scroll-container)
                 updateModalScrollBar: function (controlId) {
-                    var $container = $('#' + controlId).closest('.scroll-container');
-                    var $dialog = $('div.rock-modal > div.modal-body > div.scroll-container'),
-                    dialogTop,
-                    pickerTop,
-                    amount;
+                    var $control = $('#' + controlId);
+                    var $controlContainer = $control.closest('.scroll-container');
+                    var $pickerMenu = $control.find('.picker-menu');
+                    var $dialogScrollContainer = $controlContainer.first('div.rock-modal > div.modal-body > div.scroll-container')
 
-                    if ($container.is(':visible') && $container.data('tsb')) {
-                        $container.tinyscrollbar_update('relative');
+                    if ($controlContainer.is(':visible') && $controlContainer.data('tsb')) {
 
-                        if ($dialog.length > 0 && $dialog.is(':visible')) {
-                            dialogTop = $dialog.offset().top;
-                            pickerTop = $container.offset().top;
-                            amount = pickerTop - dialogTop;
+                        // update the picker's scrollbar
+                        $controlContainer.tinyscrollbar_update('relative');
 
-                            if (amount > 160) {
-                                $dialog.tinyscrollbar_update('bottom');
+                        if ($dialogScrollContainer.length > 0 && $dialogScrollContainer.is(':visible')) {
+
+                            var dialogBodyTop = $dialogScrollContainer.offset().top;
+                            var dialogBodyHeight = $dialogScrollContainer.outerHeight(true);
+                            var controlTop = $control.offset().top;
+                            var pickerTop = $pickerMenu.offset().top;
+                            var pickerHeight = $pickerMenu.outerHeight(true);
+
+                            var pickerBottom = pickerTop + pickerHeight;
+                            var dialogBodyBottom = dialogBodyTop + dialogBodyHeight;
+
+                            // update the dialog's scrollbar, scrolling to the bottom if the control overflows
+                            if (pickerBottom >= dialogBodyBottom) {
+
+                                // set scrollposition to current position + the overflow amount
+                                var currentScrollPosition = -parseInt($dialogScrollContainer.find('.overview').css('top'));
+                                var scrollAmount = pickerBottom - dialogBodyBottom;
+                                $dialogScrollContainer.tinyscrollbar_update(currentScrollPosition + scrollAmount);
+                            }
+                            else {
+                                $dialogScrollContainer.tinyscrollbar_update('relative');
                             }
                         }
                     }

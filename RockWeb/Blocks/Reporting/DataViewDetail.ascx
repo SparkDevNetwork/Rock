@@ -91,12 +91,5 @@
             </Rock:ModalDialog>
 
         </asp:Panel>
-        <script type="text/javascript">
-            Sys.Application.add_load(function () {
-                $('#preview-modal-scroll-container').mouseenter(function () {
-                    $('#preview-modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
-                });
-            });
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
