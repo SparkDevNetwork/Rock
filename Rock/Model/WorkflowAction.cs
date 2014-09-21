@@ -354,6 +354,9 @@ namespace Rock.Model
                         attributeLiquid.Add( "Key", attribute.Key );
                         attributeLiquid.Add( "Value", formattedValue );
                         attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                        attributeLiquid.Add( "HideLabel", formAttribute.HideLabel );
+                        attributeLiquid.Add( "PreHtml", formAttribute.PreHtml );
+                        attributeLiquid.Add( "PostHtml", formAttribute.PostHtml );
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
                             attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
