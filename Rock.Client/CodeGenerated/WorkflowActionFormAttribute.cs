@@ -49,6 +49,15 @@ namespace Rock.Client
         public bool IsRequired { get; set; }
 
         /// <summary />
+        public bool HideLabel { get; set; }
+
+        /// <summary />
+        public string PreHtml { get; set; }
+
+        /// <summary />
+        public string PostHtml { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

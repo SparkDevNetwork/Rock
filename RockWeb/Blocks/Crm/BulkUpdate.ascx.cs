@@ -232,8 +232,7 @@ namespace RockWeb.Blocks.Crm
             {
                 var rockContext = new RockContext();
 
-                var campusi = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
-                cpCampus.Campuses = campusi;
+                cpCampus.Campuses = CampusCache.All( rockContext );
                 cpCampus.Required = true;
 
                 Individuals = new List<Individual>();

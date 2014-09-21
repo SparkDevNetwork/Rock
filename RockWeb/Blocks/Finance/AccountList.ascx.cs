@@ -19,12 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Finance
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rAccountFilter.DisplayFilterValue += rAccountFilter_DisplayFilterValue;
 
-            var campusList = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusList = CampusCache.All();
             if ( campusList.Count > 0 )
             {
                 ddlCampus.Visible = true;
@@ -180,8 +180,7 @@ namespace RockWeb.Blocks.Finance
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
                     {
-                        var service = new CampusService( new RockContext() );
-                        var campus = service.Get( campusId.Value );
+                        var campus = CampusCache.Read( campusId.Value );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
@@ -265,9 +264,8 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
-            var campusService = new CampusService( new RockContext() );
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( Campus campus in campusService.Queryable() )
+            foreach ( var campus in CampusCache.All() )
             {
                 ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
                 li.Selected = campus.Id.ToString() == rAccountFilter.GetUserPreference( "Campus" );

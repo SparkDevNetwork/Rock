@@ -93,6 +93,9 @@ namespace Rock.Model
             target.IsVisible = source.IsVisible;
             target.IsReadOnly = source.IsReadOnly;
             target.IsRequired = source.IsRequired;
+            target.HideLabel = source.HideLabel;
+            target.PreHtml = source.PreHtml;
+            target.PostHtml = source.PostHtml;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

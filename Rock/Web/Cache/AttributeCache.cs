@@ -333,9 +333,12 @@ namespace Rock.Web.Cache
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = "" )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null )
         {
-            labelText = string.IsNullOrWhiteSpace( labelText ) ? this.Name : labelText;
+            if (labelText == null)
+            {
+                labelText = this.Name;
+            }
 
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( attributeControl != null )

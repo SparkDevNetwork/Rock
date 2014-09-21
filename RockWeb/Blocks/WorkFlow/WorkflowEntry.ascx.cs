@@ -472,12 +472,17 @@ namespace RockWeb.Blocks.WorkFlow
                         value = _workflow.AttributeValues[attribute.Key].Value;
                     }
 
+                    if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
+                    {
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml ) );
+                    }
+
                     if ( formAttribute.IsReadOnly )
                     {
                         var field = attribute.FieldType.Field;
                         string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
 
-                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.HTML.AsGuid() ) )
+                        if ( formAttribute.HideLabel )
                         {
                             phAttributes.Controls.Add( new LiteralControl( formattedValue ) );
                         }
@@ -503,8 +508,15 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired );
+                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired, 
+                            ( formAttribute.HideLabel ? string.Empty : attribute.Name ) );
                     }
+
+                    if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
+                    {
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml ) );
+                    }
+
                 }
             }
 
