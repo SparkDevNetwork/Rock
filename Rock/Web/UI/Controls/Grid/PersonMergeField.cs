@@ -139,11 +139,14 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
+            base.Initialize( sortingEnabled, control );
+
             PersonMergeFieldHeaderTemplate headerTemplate = new PersonMergeFieldHeaderTemplate();
             headerTemplate.LinkButtonClick += HeaderTemplate_LinkButtonClick;
             this.HeaderTemplate = headerTemplate;
             this.ParentGrid = control as Grid;
-            return base.Initialize( sortingEnabled, control );
+
+            return false;
         }
 
         #endregion

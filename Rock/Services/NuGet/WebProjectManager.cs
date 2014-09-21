@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.Web.XmlTransform;
 using NuGet;
+using Rock.Model;
 
 namespace Rock.Services.NuGet
 {
@@ -41,7 +43,7 @@ namespace Rock.Services.NuGet
             string webRepositoryDirectory = GetWebRepositoryDirectory( siteRoot );
             var fileSystem = new PhysicalFileSystem( webRepositoryDirectory );
             var packagePathResolver = new RockPackagePathResolver( fileSystem );
-            _projectManager = new ProjectManager( sourceRepository: PackageRepositoryFactory.Default.CreateRepository( remoteSource ),
+            _projectManager = new RockProjectManager( sourceRepository: PackageRepositoryFactory.Default.CreateRepository( remoteSource ),
                                        pathResolver: packagePathResolver,
                                        localRepository: new LocalPackageRepository( packagePathResolver, fileSystem ),
                                        project: new WebProjectSystem( siteRoot ) );

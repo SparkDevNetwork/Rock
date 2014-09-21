@@ -46,6 +46,15 @@ namespace Rock.Web.UI.Controls
         private Literal _scrollEndLiteral;
 
         private Panel _footerPanel;
+        
+        public HtmlAnchor ServerSaveLink
+        {
+            get
+            {
+                return _serverSaveLink;
+            }
+        }
+
         private HtmlAnchor _serverSaveLink;
         private HtmlAnchor _saveLink;
         private HtmlAnchor _cancelLink;
@@ -332,11 +341,11 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
-            $('#{0} .modal-dialog-scroll-container').tinyscrollbar({{ size: 150, sizethumb: 20 }});
-
-            $('#{0} .modal-dialog-scroll-container').on('mouseenter', function () {{
-                $('#{0} .modal-dialog-scroll-container').tinyscrollbar_update('relative');
-            }});";
+            // use setTimeout so that tinyscrollbar will get initialized after renders
+            setTimeout(function () {{
+                $('#{0} .modal-dialog-scroll-container').tinyscrollbar({{ size: 150, sizethumb: 20 }});
+            }}, 0);
+";
 
             var script = string.Format( scriptFormat, _dialogPanel.ClientID );
 

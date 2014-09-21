@@ -104,21 +104,6 @@ namespace Rock.Model
 
     #region Enumerations
 
-    /// <summary>
-    /// Represents the type of DateRange that is supported.
-    /// </summary>
-    public enum DateRangeTypeEnum : byte
-    {
-        /// <summary>
-        /// Allows a single date.
-        /// </summary>
-        SingleDate = 1,
-
-        /// <summary>
-        /// Allows a date range (start - end date)
-        /// </summary>
-        DateRange = 2
-    }
 
     #endregion
 

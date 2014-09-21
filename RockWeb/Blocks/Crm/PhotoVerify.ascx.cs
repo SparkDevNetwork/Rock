@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Crm
             _bbtnVerify.Click += new EventHandler( bbtnVerify_Click );
             _bbtnVerify.CssClass = "btn btn-primary pull-left";
             gList.Actions.AddCustomActionControl( _bbtnVerify );
+            gList.Actions.ShowExcelExport = false;
         }
 
         /// <summary>

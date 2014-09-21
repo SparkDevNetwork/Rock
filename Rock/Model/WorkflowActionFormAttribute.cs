@@ -91,6 +91,33 @@ namespace Rock.Model
         [DataMember]
         public bool IsRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide label].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide label]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool HideLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        [DataMember]
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        [DataMember]
+        public string PostHtml { get; set; }
+
         #endregion
 
         #region Virtual Properties

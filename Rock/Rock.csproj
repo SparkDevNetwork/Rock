@@ -245,10 +245,22 @@
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentItemService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\ContentChannel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ContentItem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ContentType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
@@ -269,6 +281,7 @@
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />

@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Finance
         {
             ddlAccountType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
 
-            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampus.Campuses = CampusCache.All();
             cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 

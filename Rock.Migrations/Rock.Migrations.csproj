@@ -73,6 +73,14 @@
     <Compile Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.Designer.cs">
       <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409182331403_ContentItem.cs" />
+    <Compile Include="Migrations\201409182331403_ContentItem.Designer.cs">
+      <DependentUpon>201409182331403_ContentItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201409211134010_WorkflowFormFieldText.cs" />
+    <Compile Include="Migrations\201409211134010_WorkflowFormFieldText.Designer.cs">
+      <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>
@@ -1227,6 +1235,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.resx">
       <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409182331403_ContentItem.resx">
+      <DependentUpon>201409182331403_ContentItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409211134010_WorkflowFormFieldText.resx">
+      <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>

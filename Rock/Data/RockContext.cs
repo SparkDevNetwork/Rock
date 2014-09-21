@@ -195,6 +195,30 @@ namespace Rock.Data
         public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the content channels.
+        /// </summary>
+        /// <value>
+        /// The content channels.
+        /// </value>
+        public DbSet<ContentChannel> ContentChannels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content items.
+        /// </summary>
+        /// <value>
+        /// The content items.
+        /// </value>
+        public DbSet<ContentItem> ContentItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content types.
+        /// </summary>
+        /// <value>
+        /// The content types.
+        /// </value>
+        public DbSet<ContentType> ContentTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>
