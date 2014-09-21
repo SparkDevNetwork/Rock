@@ -31,7 +31,13 @@ namespace Rock.Client
     public partial class ContentItem
     {
         /// <summary />
+        public int ContentChannelId { get; set; }
+
+        /// <summary />
         public int ContentTypeId { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary />
         public string Content { get; set; }

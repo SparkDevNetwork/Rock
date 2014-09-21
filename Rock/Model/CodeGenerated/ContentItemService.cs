@@ -87,7 +87,9 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ContentItem target, ContentItem source )
         {
+            target.ContentChannelId = source.ContentChannelId;
             target.ContentTypeId = source.ContentTypeId;
+            target.Title = source.Title;
             target.Content = source.Content;
             target.Priority = source.Priority;
             target.Status = source.Status;

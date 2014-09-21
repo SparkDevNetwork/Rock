@@ -49,7 +49,7 @@ namespace Rock.Client
         public bool AllowCaching { get; set; }
 
         /// <summary />
-        public bool RequiresSecurity { get; set; }
+        public bool RequiresViewSecurity { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

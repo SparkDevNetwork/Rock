@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( ContentChannel item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<ContentItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentItem.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -91,6 +97,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;
+            target.RequiresApproval = source.RequiresApproval;
             target.EnableRss = source.EnableRss;
             target.ChannelUrl = source.ChannelUrl;
             target.ItemUrl = source.ItemUrl;
