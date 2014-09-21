@@ -43,6 +43,9 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public bool RequiresApproval { get; set; }
+
+        /// <summary />
         public bool EnableRss { get; set; }
 
         /// <summary />

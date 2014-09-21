@@ -37,9 +37,6 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public bool RequiresApproval { get; set; }
-
-        /// <summary />
         public int /* DateRangeTypeEnum*/ DateRangeType { get; set; }
 
         /// <summary />
