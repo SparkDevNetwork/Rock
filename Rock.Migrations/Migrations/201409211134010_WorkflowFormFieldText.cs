@@ -32,6 +32,13 @@ namespace Rock.Migrations
             AddColumn("dbo.WorkflowActionFormAttribute", "HideLabel", c => c.Boolean(nullable: false));
             AddColumn("dbo.WorkflowActionFormAttribute", "PreHtml", c => c.String());
             AddColumn("dbo.WorkflowActionFormAttribute", "PostHtml", c => c.String());
+
+            Sql( @"
+  UPDATE [Page]
+  SET [IconCssClass] = 'fa fa-truck'
+  WHERE [Guid] = 'B6BFDE54-0EFA-4499-847D-BE1259F83535'
+" );
+
         }
         
         /// <summary>
