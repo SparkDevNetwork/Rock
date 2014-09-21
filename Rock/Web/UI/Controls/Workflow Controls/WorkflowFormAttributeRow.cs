@@ -38,6 +38,11 @@ namespace Rock.Web.UI.Controls
         private CheckBox _cbVisible;
         private CheckBox _cbEditable;
         private CheckBox _cbRequired;
+        private CheckBox _cbHideLabel;
+        private CheckBox _cbPreHtml;
+        private CheckBox _cbPostHtml;
+        private CodeEditor _cePreHtml;
+        private CodeEditor _cePostHtml;
 
         /// <summary>
         /// Gets or sets the attribute unique identifier.
@@ -156,6 +161,82 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [hide label].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbHideLabel.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbHideLabel.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cePreHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cePreHtml.Text = value;
+                _cbPreHtml.Checked = !string.IsNullOrWhiteSpace( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cePostHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cePostHtml.Text = value;
+                _cbPostHtml.Checked = !string.IsNullOrWhiteSpace( value );
+            }
+        }
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+    $('input.js-form-attribute-show-pre-html').change(function(){
+        $(this).closest('td').find('div.js-form-attribute-pre-html').slideToggle();
+    });
+    $('input.js-form-attribute-show-post-html').change(function(){
+        $(this).closest('td').find('div.js-form-attribute-post-html').slideToggle();
+    });
+";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "wf-attribute-row-html", script, true );
+        }
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -177,6 +258,34 @@ namespace Rock.Web.UI.Controls
             _cbRequired = new CheckBox();
             _cbRequired.ID = this.ID + "_cbRequired";
             Controls.Add( _cbRequired );
+
+            _cbHideLabel = new CheckBox();
+            _cbHideLabel.ID = this.ID + "_cbHideLabel";
+            Controls.Add( _cbHideLabel );
+
+            _cbPreHtml = new CheckBox();
+            _cbPreHtml.ID = this.ID + "_cbPreHtml";
+            _cbPreHtml.AddCssClass( "js-form-attribute-show-pre-html" );
+            Controls.Add( _cbPreHtml );
+
+            _cbPostHtml = new CheckBox();
+            _cbPostHtml.ID = this.ID + "_cbPostHtml";
+            _cbPostHtml.AddCssClass( "js-form-attribute-show-post-html" );
+            Controls.Add( _cbPostHtml );
+
+            _cePreHtml = new CodeEditor();
+            _cePreHtml.ID = this.ID + "_cePreHtml";
+            _cePreHtml.EditorMode = CodeEditorMode.Html;
+            _cePreHtml.EditorTheme = CodeEditorTheme.Rock;
+            _cePreHtml.EditorHeight = "100";
+            Controls.Add( _cePreHtml );
+
+            _cePostHtml = new CodeEditor();
+            _cePostHtml.ID = this.ID + "_cePostHtml";
+            _cePostHtml.EditorMode = CodeEditorMode.Html;
+            _cePostHtml.EditorTheme = CodeEditorTheme.Rock;
+            _cePostHtml.EditorHeight = "100";
+            Controls.Add( _cePostHtml );
         }
 
         /// <summary>
@@ -204,25 +313,78 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();      // Td
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-pre-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPreHtml.Checked ? "block" : "none" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cePreHtml.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( AttributeName );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbHideLabel.RenderControl( writer );
                 writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbPreHtml.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbPostHtml.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();      // row
+
+                writer.RenderEndTag();      // col-xs-9
+
+                writer.RenderEndTag();      // row
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-post-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPostHtml.Checked ? "block" : "none" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cePostHtml.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();      // Td
+
+                writer.RenderEndTag();      // Tr
             }
         }
     }
