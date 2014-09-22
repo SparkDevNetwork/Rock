@@ -72,11 +72,6 @@ namespace RockWeb.Blocks.CheckIn
                 confirmExit.Enabled = true;
             }
 
-            if ( hfLocationPickerVisible.Value.AsBoolean() )
-            {
-                mdLocationPicker.Show();
-            }
-
             // handle sort events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
@@ -544,6 +539,10 @@ namespace RockWeb.Blocks.CheckIn
             var binaryFileService = new BinaryFileService( new RockContext() );
 
             ddlCheckinLabel.Items.Clear();
+            ddlCheckinLabel.AutoPostBack = false;
+            ddlCheckinLabel.Required = true;
+            ddlCheckinLabel.Items.Add( new ListItem() );
+            
             var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) && a.IsTemporary == false ).OrderBy( a => a.FileName ).ToList();
 
             foreach ( var item in list )
@@ -555,11 +554,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            // only enable the Add button if there are labels that can be added
-            btnAddCheckinLabel.Enabled = ddlCheckinLabel.Items.Count > 0;
-
-            pnlCheckinLabelPicker.Visible = true;
-            pnlDetails.Visible = false;
+            mdAddCheckinLabel.Show();
         }
 
         /// <summary>
@@ -603,22 +598,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
-
-            pnlCheckinLabelPicker.Visible = false;
-            pnlDetails.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelAddCheckinLabel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelAddCheckinLabel_Click( object sender, EventArgs e )
-        {
-            var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
-            groupTypeEditor.Expanded = true;
-
-            pnlCheckinLabelPicker.Visible = false;
+            
             pnlDetails.Visible = true;
         }
 
@@ -639,8 +619,7 @@ namespace RockWeb.Blocks.CheckIn
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
             checkinGroupEditor.Expanded = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
-
-            hfLocationPickerVisible.Value = true.ToString();
+            
             mdLocationPicker.Show();
         }
 
@@ -693,7 +672,6 @@ namespace RockWeb.Blocks.CheckIn
             checkinGroupEditor.Expanded = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
-            hfLocationPickerVisible.Value = false.ToString();
             mdLocationPicker.Hide();
         }
 
