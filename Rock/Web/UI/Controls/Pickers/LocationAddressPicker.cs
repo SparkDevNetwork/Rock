@@ -389,7 +389,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect.Click += _btnSelect_Click;
             _pnlPickerActions.Controls.Add( _btnSelect );
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
-            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
+            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); Rock.dialogs.updateModalScrollBar('{2}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID, this.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
         }
 
@@ -400,7 +400,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Enabled )
             {
-                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
+                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); Rock.dialogs.updateModalScrollBar('{2}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID, this.ClientID );
                 _btnPickerLabel.HRef = "#";
             }
             else
@@ -453,8 +453,24 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+
+            RegisterJavaScript();
+            
             _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = ShowDropDown ? "block" : "none";
             this.Render( writer );
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            string script = string.Format( @"
+setTimeout(function () {{
+  Rock.dialogs.updateModalScrollBar('{0}');
+}}, 0);", this.ClientID );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "location_address_picker-script_" + this.ID, script, true );
         }
     }
 }
