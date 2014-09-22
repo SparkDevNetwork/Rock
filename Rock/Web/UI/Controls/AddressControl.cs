@@ -690,7 +690,12 @@ namespace Rock.Web.UI.Controls
 
         private void BindCountries()
         {
+            string currentValue = _ddlCountry.SelectedValue;
+
             _ddlCountry.Items.Clear();
+            _ddlCountry.SelectedIndex = -1;
+            _ddlCountry.SelectedValue = null;
+            _ddlCountry.ClearSelection();
 
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
             var countryValues = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
@@ -719,6 +724,11 @@ namespace Rock.Web.UI.Controls
 
             bool? showCountry = GlobalAttributesCache.Read().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
             _ddlCountry.Visible = showCountry.HasValue && showCountry.Value;
+
+            if ( !string.IsNullOrWhiteSpace( currentValue ) )
+            {
+                _ddlCountry.SetValue( currentValue );
+            }
         }
 
         private void BindStates( string country )
