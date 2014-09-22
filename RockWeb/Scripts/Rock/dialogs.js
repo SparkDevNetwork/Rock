@@ -83,12 +83,19 @@
 
                             var dialogBodyTop = $dialogScrollContainer.offset().top;
                             var dialogBodyHeight = $dialogScrollContainer.outerHeight(true);
-                            var controlTop = $control.offset().top;
-                            var pickerTop = $pickerMenu.offset().top;
-                            var pickerHeight = $pickerMenu.outerHeight(true);
-
-                            var pickerBottom = pickerTop + pickerHeight;
                             var dialogBodyBottom = dialogBodyTop + dialogBodyHeight;
+
+                            var pickerBottom = 0;
+                            if ($pickerMenu.length > 0) {
+                                var pickerTop = $pickerMenu.offset().top;
+                                var pickerHeight = $pickerMenu.outerHeight(true);
+                                pickerBottom = pickerTop + pickerHeight;
+                            }
+                            else
+                            {
+                                // shouldn't happen, but just in case the picker menu can't be found
+                                pickerBottom = 0;
+                            }
 
                             // update the dialog's scrollbar, scrolling to the bottom if the control overflows
                             if (pickerBottom >= dialogBodyBottom) {
