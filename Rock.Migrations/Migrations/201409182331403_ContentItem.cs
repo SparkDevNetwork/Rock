@@ -121,9 +121,9 @@ namespace Rock.Migrations
 
             RockMigrationHelper.AddPage( "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Types", "", "37E3D602-5D7D-4818-BCAA-C67EBB301E55", "fa fa-lightbulb-o" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "37E3D602-5D7D-4818-BCAA-C67EBB301E55", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Type Detail", "", "91EAB2A2-4D44-4701-9ABE-37AE3E7A1B8F", "fa fa-lightbulb-o" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Channels", "", "8ADCE4B2-8E95-4FA3-89C4-06A883E8145E", "fa fa-bullhorn" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "8ADCE4B2-8E95-4FA3-89C4-06A883E8145E", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Channel Detail", "", "4AE244F5-A5BF-48CF-B53B-785148EC367D", "fa fa-bullhorn" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "4AE244F5-A5BF-48CF-B53B-785148EC367D", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Item Detail", "", "ABF26679-1051-4F4F-8A67-5958E5BF71F8", "" ); // Site:Rock RMS
-            RockMigrationHelper.AddPage( "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Channels", "", "8ADCE4B2-8E95-4FA3-89C4-06A883E8145E", "fa fa-bullhorn" ); // Site:Rock RMS
 
             Sql( @"
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0
