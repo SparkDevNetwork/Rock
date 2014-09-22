@@ -16,8 +16,9 @@
             <div class="panel-heading rollover-container clearfix">
                 <h3 class="panel-title pull-left"><i class="fa fa-bookmark"></i> Bookmarked Attributes</h3> 
                 <div class="actions rollover-item pull-right">
-                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Attributes" OnClick="lbEdit_Click" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbConfigure" runat="server" CssClass="edit" Text="Select Attributes" OnClick="lbConfigure_Click" CausesValidation="false" ><i class="fa fa-cog"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbOrder" runat="server" CssClass="edit" ToolTip="Order Attributes" OnClick="lbOrder_Click" CausesValidation="false"><i class="fa fa-bars"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" ToolTip="Edit Attributes" OnClick="lbEdit_Click" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbConfigure" runat="server" CssClass="edit" ToolTip="Select Attributes" OnClick="lbConfigure_Click" CausesValidation="false" ><i class="fa fa-cog"></i></asp:LinkButton>
                 </div>
             </div>
 
