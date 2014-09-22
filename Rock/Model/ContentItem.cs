@@ -169,6 +169,21 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return ContentChannel;
+            }
+        }
+
         #endregion
 
         #region Methods
