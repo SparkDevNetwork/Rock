@@ -58,10 +58,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether [edit mode].
+        /// Gets or sets the view mode.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [edit mode]; otherwise, <c>false</c>.
+        /// The view mode.
         /// </value>
         protected string ViewMode
         {
@@ -182,6 +182,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             AttributeList = null;
             BindData();
+            CreateControls( true );
         }
 
         /// <summary>
@@ -217,7 +218,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ViewMode == VIEW_MODE_EDIT )
                 {
-
                     int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
                     var rockContext = new RockContext();
@@ -230,7 +230,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var attribute = AttributeCache.Read( attributeId );
 
                             if ( Person != null &&
-                                ViewMode == VIEW_MODE_EDIT &&
                                 attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
@@ -270,7 +269,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else if ( ViewMode == VIEW_MODE_ORDER && _canAdministrate )
                 {
-                    // Split and delimate again to remove trailing delimiter
+                    // Split and deliminate again to remove trailing delimiter
                     var attributeOrder = hfAttributeOrder.Value.SplitDelimitedValues().ToList().AsDelimited( "|" );
 
                     SetAttributeValue( "AttributeOrder", attributeOrder );
