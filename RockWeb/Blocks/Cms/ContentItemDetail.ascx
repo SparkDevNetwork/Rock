@@ -7,6 +7,8 @@
 
             <asp:HiddenField ID="hfContentItemId" runat="server" />
             <asp:HiddenField ID="hfContentChannelId" runat="server" />
+            <asp:HiddenField ID="hfApprovalStatusPersonAliasId" runat="server" />
+            <asp:HiddenField ID="hfApprovalStatus" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -24,6 +26,15 @@
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                <asp:Panel ID="pnlApproval" runat="server" CssClass="alert alert-action">
+                    <asp:Label ID="lblApprovalStatus" runat="server" />
+                    <asp:Label ID="lblApprovalStatusPerson" runat="server" />
+                    <div class="pull-right">
+                        <asp:LinkButton ID="lbApprove" runat="server" OnClick="lbApprove_Click" CssClass="btn btn-primary btn-xs" Text="Approve" />
+                        <asp:LinkButton ID="lbDeny" runat="server" OnClick="lbDeny_Click" CssClass="btn btn-xs btn-link" Text="Deny" />
+                    </div>
+                </asp:Panel>
 
                 <asp:Panel ID="pnlEditDetails" runat="server">
 

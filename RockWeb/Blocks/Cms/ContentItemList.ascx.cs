@@ -78,13 +78,16 @@ namespace RockWeb.Blocks.Cms
 
             AddAttributeColumns();
 
-            var statusField = new BoundField();
-            gContentItems.Columns.Add( statusField );
-            statusField.DataField = "Status";
-            statusField.HeaderText = "Status";
-            statusField.SortExpression = "Status";
-            statusField.HtmlEncode = false;
-
+            if ( contentChannel.RequiresApproval )
+            {
+                var statusField = new BoundField();
+                gContentItems.Columns.Add( statusField );
+                statusField.DataField = "Status";
+                statusField.HeaderText = "Status";
+                statusField.SortExpression = "Status";
+                statusField.HtmlEncode = false;
+            }
+           
             var securityField = new SecurityField();
             gContentItems.Columns.Add( securityField );
             securityField.TitleField = "Title";

@@ -147,13 +147,29 @@ namespace Rock.Model
         /// <value>
         /// The supported actions.
         /// </value>
+        [NotMapped]
         public override Dictionary<string, string> SupportedActions
         {
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.Add( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
                 return supportedActions;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ContentType;
             }
         }
 
