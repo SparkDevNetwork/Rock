@@ -188,6 +188,65 @@ namespace Rock.Services.NuGet
                 _projectManager.UpdatePackageReference( package.Id, package.Version, updateDependencies: true, allowPrereleaseVersions: false);
             } );
         }
+
+        /// <summary>
+        /// Updates a package reference. Installs the package to the App_Data repository if it does not already exist.
+        /// </summary>
+        /// <returns>Warnings encountered when updating the package.</returns>
+        public IEnumerable<string> UpdatePackageAndBackup( IPackage package, IPackage oldPackage )
+        {
+            return PerformLoggedAction( () =>
+            {
+                Backup( oldPackage );
+
+                try
+                {
+                    _projectManager.UpdatePackageReference( package.Id, package.Version, updateDependencies: true, allowPrereleaseVersions: false );
+                }
+                catch
+                {
+                    Restore( oldPackage );
+                    throw;
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Make a backup of the given package.
+        /// </summary>
+        /// <param name="package"></param>
+        protected void Backup( IPackage package )
+        {
+            var fileName =  string.Format( "{0}.{1}.nupkg", package.Id, package.Version );
+            var backupDirectory = GetWebRepositoryRestoreDirectory( _projectManager.Project.Root );
+            var sourcePackage = Path.Combine( GetWebRepositoryDirectory( _projectManager.Project.Root ), fileName );
+            var targetPackage = Path.Combine( backupDirectory, fileName );
+            if ( File.Exists( targetPackage ) )
+            {
+                File.Delete( targetPackage );
+            }
+
+            Directory.CreateDirectory( backupDirectory );
+            File.Copy( sourcePackage, targetPackage );
+        }
+
+        /// <summary>
+        /// Restore the backup copy of the given package.
+        /// </summary>
+        /// <param name="package"></param>
+        protected void Restore( IPackage package )
+        {
+            var fileName = string.Format( "{0}.{1}.nupkg", package.Id, package.Version );
+            var originalPackage = Path.Combine( GetWebRepositoryDirectory( _projectManager.Project.Root ), fileName );
+            var backupPackage = Path.Combine( GetWebRepositoryRestoreDirectory( _projectManager.Project.Root ), fileName );
+            try
+            {
+                File.Copy( backupPackage, originalPackage );
+                File.Delete( backupPackage );
+            }
+            catch { }
+        }
+
         /// <summary>
         /// Removes a package reference and uninstalls the package
         /// </summary>
@@ -344,6 +403,16 @@ namespace Rock.Services.NuGet
         internal static string GetWebRepositoryDirectory( string siteRoot )
         {
             return Path.Combine( siteRoot, "App_Data", "packages" );
+        }
+
+        /// <summary>
+        /// Gets the location of web repository backup directory.
+        /// </summary>
+        /// <param name="siteRoot"></param>
+        /// <returns></returns>
+        internal static string GetWebRepositoryRestoreDirectory( string siteRoot )
+        {
+            return Path.Combine( siteRoot, "App_Data", "PackageRestore" );
         }
 
         /// <summary>

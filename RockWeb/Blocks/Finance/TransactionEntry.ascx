@@ -165,21 +165,21 @@
                     <div class="panel-body">
                         <asp:PlaceHolder ID="phConfirmationHeader" runat="server"></asp:PlaceHolder>
                         <dl class="dl-horizontal gift-confirmation margin-b-md">
-                            <Rock:TermDescription ID="tdName" runat="server" Term="Name" />
-                            <Rock:TermDescription ID="tdPhone" runat="server" Term="Phone" />
-                            <Rock:TermDescription ID="tdEmail" runat="server" Term="Email" />
-                            <Rock:TermDescription ID="tdAddress" runat="server" Term="Address" />
+                            <Rock:TermDescription ID="tdNameConfirm" runat="server" Term="Name" />
+                            <Rock:TermDescription ID="tdPhoneConfirm" runat="server" Term="Phone" />
+                            <Rock:TermDescription ID="tdEmailConfirm" runat="server" Term="Email" />
+                            <Rock:TermDescription ID="tdAddressConfirm" runat="server" Term="Address" />
                             <Rock:TermDescription runat="server" />
                             <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                                 <ItemTemplate>
-                                    <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
+                                    <Rock:TermDescription ID="tdAmount" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
                                 </ItemTemplate>
                             </asp:Repeater>
-                            <Rock:TermDescription ID="tdTotal" runat="server" Term="Total" />
+                            <Rock:TermDescription ID="tdTotalConfirm" runat="server" Term="Total" />
                             <Rock:TermDescription runat="server" />
-                            <Rock:TermDescription ID="tdPaymentMethod" runat="server" Term="Payment Method" />
-                            <Rock:TermDescription ID="tdAccountNumber" runat="server" Term="Account Number" />
-                            <Rock:TermDescription ID="tdWhen" runat="server" Term="When" />
+                            <Rock:TermDescription ID="tdPaymentMethodConfirm" runat="server" Term="Payment Method" />
+                            <Rock:TermDescription ID="tdAccountNumberConfirm" runat="server" Term="Account Number" />
+                            <Rock:TermDescription ID="tdWhenConfirm" runat="server" Term="When" />
                         </dl>
                 
                         <asp:PlaceHolder ID="phConfirmationFooter" runat="server" />
@@ -203,7 +203,28 @@
                 <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
-                    <Rock:TermDescription ID="tdTransactionCode" runat="server" Term="Confirmation Code" />
+                    <Rock:TermDescription ID="tdTransactionCodeReceipt" runat="server" Term="Confirmation Code" />
+                    <Rock:TermDescription runat="server" />
+                    <Rock:TermDescription ID="tdNameReceipt" runat="server" Term="Name" />
+                    <Rock:TermDescription ID="tdPhoneReceipt" runat="server" Term="Phone" />
+                    <Rock:TermDescription ID="tdEmailReceipt" runat="server" Term="Email" />
+                    <Rock:TermDescription ID="tdAddressReceipt" runat="server" Term="Address" />
+                    <Rock:TermDescription runat="server" />
+                    <asp:Repeater ID="rptAccountListReceipt" runat="server">
+	                    <ItemTemplate>
+		                    <Rock:TermDescription ID="tdAccountAmountReceipt" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
+	                    </ItemTemplate>
+                    </asp:Repeater>
+                    <Rock:TermDescription ID="tdTotalReceipt" runat="server" Term="Total" />
+                    <Rock:TermDescription runat="server" />
+                    <Rock:TermDescription ID="tdPaymentMethodReceipt" runat="server" Term="Payment Method" />
+                    <Rock:TermDescription ID="tdAccountNumberReceipt" runat="server" Term="Account Number" />
+                    <Rock:TermDescription ID="tdWhenReceipt" runat="server" Term="When" />
+                </dl>
+
+
+                <dl class="dl-horizontal gift-confirmation margin-b-md">
+                            
                 </dl>
             </div>
 

@@ -56,7 +56,6 @@ namespace Rock.Services.NuGet
         {
             List<IPackageFile> contentFiles = package.GetContentFiles().ToList();
             Dictionary<string, string> transformedFiles = new Dictionary<string, string>();
-
             string packageRestorePath = Path.Combine( Project.Root, "App_Data", "PackageRestore" );
 
             // go through each *.rock.xdt file and apply the transform first,
@@ -125,7 +124,7 @@ namespace Rock.Services.NuGet
                     }
                     File.Move( item.Key, destFileName );
                 }
-                catch( Exception ex )
+                catch( Exception )
                 {
                     throw new System.IO.IOException( destFileName );
                 }

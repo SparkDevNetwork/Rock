@@ -17,15 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Runtime.Caching;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Data access and service class for <see cref="Rock.Model.HtmlContent"/> entity objects.
     /// </summary>
-    public partial class HtmlContentService 
+    public partial class HtmlContentService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.HtmlContent"/> entity objects by their Approver <see cref="Rock.Model.Person"/>
@@ -37,7 +38,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.ApprovedByPersonAliasId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonAliasId == null ) ) );
         }
-        
+
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.HtmlContent"/> entities by <see cref="Rock.Model.Block"/> (instance).
         /// </summary>
@@ -47,7 +48,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => t.BlockId == blockId );
         }
-        
+
         /// <summary>
         /// Returns a specific <see cref="Rock.Model.HtmlContent"/> by Block, entity value and version
         /// </summary>
@@ -58,7 +59,32 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.HtmlContent"/> that matches the provided criteria. If no match is found, this value will be null. </returns>
         public HtmlContent GetByBlockIdAndEntityValueAndVersion( int blockId, string entityValue, int version )
         {
-            return Queryable().OrderByDescending( o => o.ModifiedDateTime).FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
+            return Queryable().OrderByDescending( o => o.ModifiedDateTime ).FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection containing all versions of <see cref="Rock.Model.HtmlContent"/> for a specific <see cref="Rock.Model.Block"/> and/or EntityContext.
+        /// </summary>
+        /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Block"/>.</param>
+        /// <param name="entityValue">A <see cref="System.String"/> representing the EntityValue. This value is nullable.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> for all versions of the specified <see cref="Rock.Model.Block"/> and/or EntityContext. </returns>
+        public IOrderedQueryable<HtmlContent> GetContent( int blockId, string entityValue )
+        {
+            var content = Queryable( "ModifiedByPersonAlias.Person" );
+
+            // If an entity value is specified, then return content specific to that context, 
+            // otherwise return content for the current block instance
+            if ( !string.IsNullOrEmpty( entityValue ) )
+            {
+                content = content.Where( c => c.EntityValue == entityValue );
+            }
+            else
+            {
+                content = content.Where( c => c.BlockId == blockId );
+            }
+
+            // return the most recently approved item
+            return content.OrderByDescending( c => c.Version );
         }
 
         /// <summary>
@@ -71,41 +97,88 @@ namespace Rock.Model
         {
             // Only consider approved content and content that is not prior to the start date 
             // or past the expire date
-            var content = Queryable( "ApprovedByPersonAlias.Person" ).
-                Where( c => c.IsApproved &&
+            var content = Queryable( "ApprovedByPersonAlias.Person" )
+                .Where( c => c.IsApproved &&
                     ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
                     ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
 
-            // If an entity value is specified, then return content specific to that context, 
+            // If an entity value is specified, then return content specific to that context (entityValue), 
             // otherewise return content for the current block instance
             if ( !string.IsNullOrEmpty( entityValue ) )
+            {
                 content = content.Where( c => c.EntityValue == entityValue );
+            }
             else
+            {
                 content = content.Where( c => c.BlockId == blockId );
+            }
 
             // return the most recently approved item
             return content.OrderByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
         }
 
+        #region HtmlContent Caching Methods
+
         /// <summary>
-        /// Returns an enumerable collection containing all versions of <see cref="Rock.Model.HtmlContent"/> for a specific <see cref="Rock.Model.Block"/> and/or EntityContext.
+        /// Returns the htmlcontent cachekey for a specific blockId or, if specified, a specific entityValue (Entity Context)
         /// </summary>
-        /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Block"/>.</param>
-        /// <param name="entityValue">A <see cref="System.String"/> representing the EntityValue. This value is nullable.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> for all versions of the specified <see cref="Rock.Model.Block"/> and/or EntityContext. </returns>
-        public IOrderedQueryable<HtmlContent> GetContent( int blockId, string entityValue )
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        private static string HtmlContentCacheKey( int blockId, string entityValue )
         {
-            var content = Queryable("ModifiedByPersonAlias.Person");
-
-            // If an entity value is specified, then return content specific to that context, 
-            // otherwise return content for the current block instance
+            // If an entity value is specified, then return content specific to that context (entityValue), 
+            // otherewise return content for the current block instance
+            string cacheKey;
             if ( !string.IsNullOrEmpty( entityValue ) )
-                content = content.Where( c => c.EntityValue == entityValue );
+            {
+                cacheKey = "HtmlContent:" + entityValue;
+            }
             else
-                content = content.Where( c => c.BlockId == blockId );
+            {
+                cacheKey = "HtmlContent:" + blockId.ToString();
+            }
 
-            // return the most recently approved item
-            return content.OrderByDescending( c => c.Version );
+            return cacheKey;
         }
+
+        /// <summary>
+        /// Returns the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        public static string GetCachedContent( int blockId, string entityValue )
+        {
+            ObjectCache cache = RockMemoryCache.Default;
+            string cacheKey = HtmlContentCacheKey( blockId, entityValue );
+            return cache[cacheKey] as string;
+        }
+
+        /// <summary>
+        /// Adds the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <param name="html">The HTML.</param>
+        /// <param name="cacheDuration">Duration of the cache.</param>
+        public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration )
+        {
+            ObjectCache cache = RockMemoryCache.Default;
+            cache.Set( HtmlContentCacheKey( blockId, entityValue ), html, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) } );
+        }
+
+        /// <summary>
+        /// Flushes the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        public static void FlushCachedContent( int blockId, string entityValue )
+        {
+            ObjectCache cache = RockMemoryCache.Default;
+            cache.Remove( HtmlContentCacheKey( blockId, entityValue ) );
+        }
+
+        #endregion
     }
 }

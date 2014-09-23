@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -166,6 +167,7 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
+            htmlEditor.MergeFields.Add( "Campuses" );
             htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
@@ -174,6 +176,7 @@ namespace RockWeb.Blocks.Cms
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
+            ceHtml.MergeFields.Add( "Campuses" );
             ceHtml.MergeFields.Add( "RockVersion" );
 
             var contextObjects = new Dictionary<string, object>();
@@ -249,7 +252,8 @@ namespace RockWeb.Blocks.Cms
                 SaveAttributeValues();
             }
 
-            FlushCacheItem( EntityValue() );
+            HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
+            
             ShowView();
         }
 
@@ -354,7 +358,7 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
 
             // flush cache content 
-            this.FlushCacheItem( entityValue );
+            HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
 
             ShowView();
         }
@@ -549,6 +553,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
+            
+            
             mdEdit.Hide();
             pnlEditModel.Visible = false;
             upnlHtmlContent.Update();
@@ -561,12 +567,14 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            string cachedContent = GetCacheItem( entityValue ) as string;
+            string cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                HtmlContent content = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
+                var rockContext = new RockContext();
+                var htmlContentService = new HtmlContentService( rockContext );
+                HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
 
                 if ( content != null )
                 {
@@ -580,6 +588,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
                             mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            mergeFields.Add( "Campuses", CampusCache.All() );
 
                             var contextObjects = new Dictionary<string, object>();
                             foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
@@ -623,7 +632,7 @@ namespace RockWeb.Blocks.Cms
                 int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
-                    AddCacheItem( entityValue, html, cacheDuration );
+                    HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );
                 }
             }
             else
