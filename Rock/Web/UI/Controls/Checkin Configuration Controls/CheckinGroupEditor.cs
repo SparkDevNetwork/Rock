@@ -366,7 +366,6 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             _hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
             _lblGroupName = new Literal();
-            _lblGroupName.ClientIDMode = ClientIDMode.Static;
             _lblGroupName.ID = this.ID + "_lblGroupName";
 
             _lbDeleteGroup = new LinkButton();
@@ -412,9 +411,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
         {
             _gLocations = new Grid();
 
-            // make the ID static so we can handle Postbacks from the Add and Delete actions
-            _gLocations.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _gLocations.ID = this.ClientID + "_gCheckinLabels";
+            _gLocations.ID = this.ID + "_gCheckinLabels";
 
             _gLocations.DisplayType = GridDisplayType.Light;
             _gLocations.ShowActionRow = true;

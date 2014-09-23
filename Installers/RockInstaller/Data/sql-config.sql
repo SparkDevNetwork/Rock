@@ -117,6 +117,31 @@ ELSE
 				, 'DC864AF7-52F0-44C9-80E7-49B7C524A479'
 			)
 	END
+	
+/* org abbrev */
+SET @attribute_id = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '555306F1-6117-48B9-B184-D48DC1EC445F')
+IF EXISTS(SELECT * FROM  [AttributeValue]  WHERE [AttributeId] =  @attribute_id)
+	BEGIN
+		UPDATE [AttributeValue]
+			SET [Value] = '{OrgName}'
+			WHERE [AttributeId] = @attribute_id
+	END
+ELSE
+	BEGIN
+		INSERT INTO [AttributeValue]
+			(
+				[IsSystem]
+				, [AttributeId]
+				, [Value]
+				, [Guid]
+			)
+			VALUES (
+				0
+				, @attribute_id
+				, '{OrgName}'
+				, 'E342C9D2-DCC5-4EEA-9C12-0E36D7C126B1'
+			)
+	END
 
 /* org phone */
 SET @attribute_id = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '85716596-6AEA-4887-830F-744D22E28A0D')
