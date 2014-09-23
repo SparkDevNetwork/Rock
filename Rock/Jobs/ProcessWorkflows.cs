@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using System.IO;
 
@@ -61,7 +62,8 @@ namespace Rock.Jobs
         {
             var service = new WorkflowService( new RockContext() );
 
-            foreach ( var workflow in service.GetActive() )
+            // Make sure there is a ToList to avoid http://stackoverflow.com/questions/2113498/sqlexception-from-entity-framework-new-transaction-is-not-allowed-because-ther
+            foreach ( var workflow in service.GetActive().ToList() )
             {
                 if ( !workflow.LastProcessedDateTime.HasValue ||
                     RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
