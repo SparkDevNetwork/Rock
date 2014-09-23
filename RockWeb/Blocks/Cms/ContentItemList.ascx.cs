@@ -78,13 +78,16 @@ namespace RockWeb.Blocks.Cms
 
             AddAttributeColumns();
 
-            var statusField = new BoundField();
-            gContentItems.Columns.Add( statusField );
-            statusField.DataField = "Status";
-            statusField.HeaderText = "Status";
-            statusField.SortExpression = "Status";
-            statusField.HtmlEncode = false;
-
+            if ( contentChannel != null && contentChannel.RequiresApproval )
+            {
+                var statusField = new BoundField();
+                gContentItems.Columns.Add( statusField );
+                statusField.DataField = "Status";
+                statusField.HeaderText = "Status";
+                statusField.SortExpression = "Status";
+                statusField.HtmlEncode = false;
+            }
+           
             var securityField = new SecurityField();
             gContentItems.Columns.Add( securityField );
             securityField.TitleField = "Title";
@@ -245,7 +248,6 @@ namespace RockWeb.Blocks.Cms
             if ( _contentChannelId.HasValue )
             {
                 ContentItemService contentItemService = new ContentItemService( new RockContext() );
-                SortProperty sortProperty = gContentItems.SortProperty;
                 var contentItems = contentItemService.Queryable()
                     .Where( c => c.ContentChannelId == _contentChannelId.Value );
 
@@ -262,6 +264,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                SortProperty sortProperty = gContentItems.SortProperty;
                 if ( sortProperty != null )
                 {
                     items = items.AsQueryable().Sort( sortProperty ).ToList();
@@ -270,6 +273,9 @@ namespace RockWeb.Blocks.Cms
                 {
                     items = items.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
+
+                gContentItems.ObjectList = new Dictionary<string, object>();
+                items.ForEach( i => gContentItems.ObjectList.Add( i.Id.ToString(), i ) );
 
                 gContentItems.DataSource = items.Select( i => new
                 {

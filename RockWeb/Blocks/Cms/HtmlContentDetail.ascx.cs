@@ -249,7 +249,8 @@ namespace RockWeb.Blocks.Cms
                 SaveAttributeValues();
             }
 
-            FlushCacheItem( EntityValue() );
+            HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
+            
             ShowView();
         }
 
@@ -354,7 +355,7 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
 
             // flush cache content 
-            this.FlushCacheItem( entityValue );
+            HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
 
             ShowView();
         }
@@ -549,6 +550,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
+            
+            
             mdEdit.Hide();
             pnlEditModel.Visible = false;
             upnlHtmlContent.Update();
@@ -561,12 +564,14 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            string cachedContent = GetCacheItem( entityValue ) as string;
+            string cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                HtmlContent content = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
+                var rockContext = new RockContext();
+                var htmlContentService = new HtmlContentService( rockContext );
+                HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
 
                 if ( content != null )
                 {
@@ -623,7 +628,7 @@ namespace RockWeb.Blocks.Cms
                 int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
-                    AddCacheItem( entityValue, html, cacheDuration );
+                    HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );
                 }
             }
             else

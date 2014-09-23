@@ -313,10 +313,19 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) )
+            if ( this.AttributeValues != null )
             {
-                this.AttributeValues[key].Value = value;
+                if ( this.AttributeValues.ContainsKey( key ) )
+                {
+                    this.AttributeValues[key].Value = value;
+                }
+                else if ( this.Attributes.ContainsKey( key ) )
+                {
+                    var attributeValue = new AttributeValue();
+                    attributeValue.AttributeId = this.Attributes[key].Id;
+                    attributeValue.Value = value;
+                    this.AttributeValues.Add( key, attributeValue );
+                }
             }
         }
 

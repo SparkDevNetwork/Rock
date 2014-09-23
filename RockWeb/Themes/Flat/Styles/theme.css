@@ -2457,14 +2457,14 @@ td.grid-col-actions {
   color: inherit;
   text-decoration: none;
 }
-.workflow-activity.activated-with-workflow > .panel-heading {
+.panel.workflow-activity.activated-with-workflow > .panel-heading {
   background-color: #18bc9c;
   color: #ffffff;
 }
-.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
+.panel.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
   color: #ffffff;
 }
-.workflow-activity .panel-title:before {
+.panel.workflow-activity .panel-title:before {
   content: "\f1b3";
   font-family: FontAwesome;
   font-weight: normal;

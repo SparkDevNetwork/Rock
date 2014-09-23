@@ -161,7 +161,16 @@ namespace Rock.Web
                 return systemSettings;
             }
         }
-       
+
+        /// <summary>
+        /// Flushes this instance.
+        /// </summary>
+        public static void Flush()
+        {
+            ObjectCache cache = RockMemoryCache.Default;
+            cache.Remove( SystemSettings.CacheKey() );
+        }
+
         #endregion
 
     }

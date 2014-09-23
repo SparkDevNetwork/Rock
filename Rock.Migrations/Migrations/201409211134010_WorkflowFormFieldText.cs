@@ -34,9 +34,16 @@ namespace Rock.Migrations
             AddColumn("dbo.WorkflowActionFormAttribute", "PostHtml", c => c.String());
 
             Sql( @"
-  UPDATE [Page]
-  SET [IconCssClass] = 'fa fa-truck'
-  WHERE [Guid] = 'B6BFDE54-0EFA-4499-847D-BE1259F83535'
+    -- Update icon for bulk update page
+    UPDATE [Page] SET [IconCssClass] = 'fa fa-truck'
+    WHERE [Guid] = 'B6BFDE54-0EFA-4499-847D-BE1259F83535'
+
+    -- Fix the qualifier for country attribute on state defined type
+    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '3B234A62-B87D-47CD-A33F-32CC6C840A02' )
+    DECLARE @DefinedTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedType] WHERE [Guid] = 'D7979EA1-44E9-46E2-BF37-DDAF7F741378' )
+    UPDATE [AttributeQualifier] SET [Value] = CAST ( @DefinedTypeId AS varchar )
+    WHERE [AttributeId] = @AttributeId
+    AND [Key] = 'definedtype'
 " );
 
         }
