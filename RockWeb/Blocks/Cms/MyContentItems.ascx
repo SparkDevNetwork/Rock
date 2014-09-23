@@ -8,8 +8,7 @@
                 <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
 
                 <div class="pull-right">
-                    <Rock:Toggle ID="tglRole" CssClass="margin-r-md"  runat="server" OnText="Mine" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
-                    <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active Channels" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Channels" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+                    <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
             </div>
@@ -34,10 +33,16 @@
                 </div>
 
                 <h4><asp:Literal ID="lContentItem" runat="server"></asp:Literal></h4>
+
                 <div class="grid">
+                    <Rock:GridFilter ID="gfFilter" runat="server">
+                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                        <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
+                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
+                    </Rock:GridFilter>               
                     <Rock:Grid ID="gContentItems" runat="server" OnRowSelected="gContentItems_Edit" >
                         <Columns>
-                            <asp:BoundField DataField="Title" HeaderText="Item" SortExpression="Title" />
+                            <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                             <Rock:DateTimeField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
                             <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />

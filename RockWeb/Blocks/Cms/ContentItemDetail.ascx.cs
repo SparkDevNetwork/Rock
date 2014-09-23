@@ -30,6 +30,7 @@ using System.ComponentModel;
 using Rock.Security;
 using Newtonsoft.Json;
 using Rock.Web;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -41,6 +42,14 @@ namespace RockWeb.Blocks.Cms
     [Description("Displays the details for a content item.")]
     public partial class ContentItemDetail : RockBlock, IDetailBlock
     {
+
+        #region Fields
+
+        protected string PendingCss = "btn-default";
+        protected string ApprovedCss = "btn-default";
+        protected string DeniedCss = "btn-default";
+
+        #endregion
 
         #region Control Methods
 
@@ -55,6 +64,30 @@ namespace RockWeb.Blocks.Cms
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            string script = string.Format( @"
+    $('#{0} .btn-toggle').click(function (e) {{
+
+        e.stopImmediatePropagation();
+
+        $(this).find('.btn').removeClass('active');
+        $(e.target).addClass('active');
+
+        $(this).find('a').each(function() {{
+            if ($(this).hasClass('active')) {{
+                $('#{1}').val($(this).attr('data-status'));
+                $(this).removeClass('btn-default');
+                $(this).addClass( $(this).attr('data-active-css') );
+            }} else {{
+                $(this).removeClass( $(this).attr('data-active-css') );
+                $(this).addClass('btn-default');
+            }}
+        }});
+
+    }});
+", pnlStatus.ClientID, hfStatus.ClientID );
+            ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
+
         }
 
         /// <summary>
@@ -121,51 +154,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
-
-        /// <summary>
-        /// Handles the Click event of the lbApprove control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbApprove_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            ContentItem contentItem = GetContentItem( rockContext );
-
-            if ( contentItem != null && contentItem.Id != 0 )
-            {
-                contentItem.Status = ContentItemStatus.Approved;
-                contentItem.ApprovedDateTime = RockDateTime.Now;
-                contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
-
-                rockContext.SaveChanges();
-
-                ShowApproval( contentItem );
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbDeny control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDeny_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            ContentItem contentItem = GetContentItem( rockContext );
-
-            if ( contentItem != null && contentItem.Id != 0 )
-            {
-                contentItem.Status = ContentItemStatus.Denied;
-                contentItem.ApprovedDateTime = RockDateTime.Now;
-                contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
-
-                rockContext.SaveChanges();
-
-                ShowApproval( contentItem );
-            }
-        }
-
         /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
@@ -176,13 +164,30 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             ContentItem contentItem = GetContentItem( rockContext );
 
-            if ( contentItem != null )
+            if ( contentItem != null && contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = ceContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
                 contentItem.ExpireDateTime = dtpExpire.SelectedDateTime;
+
+                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? 1;
+                int oldStatusId = contentItem.Status.ConvertToInt();
+                if ( newStatusID != oldStatusId && contentItem.IsAuthorized(Authorization.APPROVE, CurrentPerson))
+                {
+                    contentItem.Status = hfStatus.Value.ConvertToEnum<ContentItemStatus>( ContentItemStatus.PendingApproval );
+                    if ( contentItem.Status == ContentItemStatus.PendingApproval )
+                    {
+                        contentItem.ApprovedDateTime = null;
+                        contentItem.ApprovedByPersonAliasId = null;
+                    }
+                    else
+                    {
+                        contentItem.ApprovedDateTime = RockDateTime.Now;
+                        contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+                    }
+                }
 
                 contentItem.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributes, contentItem );
@@ -322,20 +327,6 @@ namespace RockWeb.Blocks.Cms
                 lTitle.Text = title.FormatAsHtmlTitle();
 
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
-                hlStatus.Text = contentItem.Status.ConvertToString();
-
-                if ( contentItem.Status == ContentItemStatus.Approved )
-                {
-                    hlStatus.LabelType = LabelType.Success;
-                }
-                else if ( contentItem.Status == ContentItemStatus.Denied )
-                {
-                    hlStatus.LabelType = LabelType.Danger;
-                }
-                else
-                {
-                    hlStatus.LabelType = LabelType.Default;
-                }
 
                 tbTitle.Text = contentItem.Title;
                 ceContent.Text = contentItem.Content;
@@ -353,7 +344,6 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentItem.FriendlyTypeName );
-                pnlApproval.Visible = false;
                 pnlEditDetails.Visible = false;
             }
         }
@@ -361,60 +351,60 @@ namespace RockWeb.Blocks.Cms
         private void ShowApproval( ContentItem contentItem )
         {
             if ( contentItem != null &&
-                contentItem.Id != 0 && 
-                contentItem.ContentChannel != null && 
+                contentItem.ContentChannel != null &&
                 contentItem.ContentChannel.RequiresApproval )
             {
-                pnlApproval.Visible = true;
-                
-                if ( contentItem.Status == ContentItemStatus.Approved )
+
+                var statusDetail = new System.Text.StringBuilder();
+
+                if ( contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
                 {
-                    lblApprovalStatus.CssClass = "label label-success";
-                } else if ( contentItem.Status == ContentItemStatus.Denied )
-                {
-                    lblApprovalStatus.CssClass = "label label-danger";
+                    pnlStatus.Visible = true;
+
+                    PendingCss = contentItem.Status == ContentItemStatus.PendingApproval ? "btn-default active" : "btn-default";
+                    ApprovedCss = contentItem.Status == ContentItemStatus.Approved ? "btn-success active" : "btn-default";
+                    DeniedCss = contentItem.Status == ContentItemStatus.Denied ? "btn-danger active" : "btn-default";
                 }
                 else
                 {
-                    lblApprovalStatus.CssClass = "label label-default";
-                }
-                lblApprovalStatus.Text = contentItem.Status.ConvertToString();
-                hfApprovalStatus.Value = contentItem.Status.ConvertToInt().ToString();
-                if (contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null)
-                {
-                    lblApprovalStatusPerson.Text = "by " + contentItem.ApprovedByPersonAlias.Person.FullName;
-                    hfApprovalStatusPersonAliasId.Value = contentItem.ApprovedByPersonAlias.Id.ToString();
-                }
-                else
-                {
-                    lblApprovalStatusPerson.Text = string.Empty;
-                    hfApprovalStatusPersonAliasId.Value = string.Empty;
+                    pnlStatus.Visible = false;
+
+                    string labelCss = "default";
+                    if ( contentItem.Status == ContentItemStatus.Approved )
+                    {
+                        labelCss = "success";
+                    }
+                    else if ( contentItem.Status == ContentItemStatus.Denied )
+                    {
+                        labelCss = "danger";
+                    }
+                    statusDetail.AppendFormat( "<span class='label label-{0}'>{1}</span> ", labelCss, contentItem.Status.ConvertToString() );
                 }
 
-                bool canApprove = contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson );
-                lbApprove.Visible = canApprove;
-                lbDeny.Visible = canApprove;
-
-                if (!canApprove)
+                if ( contentItem.Status != ContentItemStatus.PendingApproval )
                 {
-                    string script = string.Format( @"
-    $('#{0} :input').on('change', function () {{
-        $('#{1}').removeClass('label-success label-danger').addClass('label-default');
-        $('#{1}').text('Pending Approval');
-        $('#{1}').val('1');
-        $('#{2}').val('');
-        $('#{3}').hide();        
-    }});
-" , pnlEditDetails.ClientID, lblApprovalStatus.ClientID, hfApprovalStatusPersonAliasId.Value, lblApprovalStatusPerson.ClientID );
-                    ScriptManager.RegisterStartupScript( pnlEditDetails, pnlEditDetails.GetType(), "approval-status-script-" + this.BlockId.ToString(), script, true );
-
+                    if ( contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null )
+                    {
+                        statusDetail.AppendFormat( "by {0} ", contentItem.ApprovedByPersonAlias.Person.FullName );
+                    }
+                    if ( contentItem.ApprovedDateTime.HasValue )
+                    {
+                        statusDetail.AppendFormat( "on {0} at {1}", contentItem.ApprovedDateTime.Value.ToShortDateString(),
+                            contentItem.ApprovedDateTime.Value.ToShortTimeString() );
+                    }
                 }
+
+                lStatusDetails.Visible = true;
+                lStatusDetails.Text = statusDetail.ToString();
+
             }
             else
             {
-                pnlApproval.Visible = false;
+                pnlStatus.Visible = false;
+                lStatusDetails.Visible = false;
             }
         }
+
 
         /// <summary>
         /// Returns to parent page.
@@ -427,7 +417,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
 
 }
 }
