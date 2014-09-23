@@ -82,7 +82,7 @@ namespace Rock.Constants
         public const string Text = "";
 
         /// <summary>
-        /// &lt;none&gt;
+        /// returns ""
         /// </summary>
         public const string TextHtml = "";
 
