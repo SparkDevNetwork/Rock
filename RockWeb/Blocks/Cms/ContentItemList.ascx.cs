@@ -70,6 +70,9 @@ namespace RockWeb.Blocks.Cms
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
 
+            gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
+            gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
+
             gContentItems.DataKeyNames = new string[] { "id" };
             gContentItems.Actions.ShowAdd = canAddEditDelete;
             gContentItems.IsDeleteEnabled = canAddEditDelete;
@@ -78,13 +81,16 @@ namespace RockWeb.Blocks.Cms
 
             AddAttributeColumns();
 
-            var statusField = new BoundField();
-            gContentItems.Columns.Add( statusField );
-            statusField.DataField = "Status";
-            statusField.HeaderText = "Status";
-            statusField.SortExpression = "Status";
-            statusField.HtmlEncode = false;
-
+            if ( contentChannel != null && contentChannel.RequiresApproval )
+            {
+                var statusField = new BoundField();
+                gContentItems.Columns.Add( statusField );
+                statusField.DataField = "Status";
+                statusField.HeaderText = "Status";
+                statusField.SortExpression = "Status";
+                statusField.HtmlEncode = false;
+            }
+           
             var securityField = new SecurityField();
             gContentItems.Columns.Add( securityField );
             securityField.TitleField = "Title";
@@ -115,6 +121,57 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Gfs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                case "Status":
+                    {
+                        var status = e.Value.ConvertToEnumOrNull<ContentItemStatus>();
+                        if ( status.HasValue )
+                        {
+                            {
+                                e.Value = status.ConvertToString();
+                            }
+                        }
+                        break;
+                    }
+                case "Title":
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gfFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
+            gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Add event of the gContentItems control.
@@ -236,7 +293,20 @@ namespace RockWeb.Blocks.Cms
                 }
             }
         }
-        
+
+        private void BindFilter()
+        {
+            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+            ddlStatus.BindToEnum<ContentItemStatus>( true );
+            int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
+            if ( statusID.HasValue )
+            {
+                ddlStatus.SetValue( statusID.Value.ToString() );
+            }
+
+            tbTitle.Text = gfFilter.GetUserPreference( "Title" );
+        }
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
@@ -245,9 +315,34 @@ namespace RockWeb.Blocks.Cms
             if ( _contentChannelId.HasValue )
             {
                 ContentItemService contentItemService = new ContentItemService( new RockContext() );
-                SortProperty sortProperty = gContentItems.SortProperty;
                 var contentItems = contentItemService.Queryable()
                     .Where( c => c.ContentChannelId == _contentChannelId.Value );
+
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+                if ( drp.LowerValue.HasValue )
+                {
+                    contentItems = contentItems.Where( i =>
+                        ( i.ExpireDateTime.HasValue && i.ExpireDateTime.Value >= drp.LowerValue.Value ) ||
+                        ( !i.ExpireDateTime.HasValue && i.StartDateTime >= drp.LowerValue.Value ) );
+                }
+                if ( drp.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    contentItems = contentItems.Where( i => i.StartDateTime < upperDate );
+                }
+
+                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentItemStatus>();
+                if ( status.HasValue )
+                {
+                    contentItems = contentItems.Where( i => i.Status == status );
+                }
+
+                string title = gfFilter.GetUserPreference( "Title" );
+                if ( !string.IsNullOrWhiteSpace( title ) )
+                {
+                    contentItems = contentItems.Where( i => i.Title.Contains( title ) );
+                }
 
                 // TODO: Checking security of every item will take longer and longer as more items are added.  
                 // Eventually we should implement server-side paging so that we only need to check security for
@@ -262,6 +357,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                SortProperty sortProperty = gContentItems.SortProperty;
                 if ( sortProperty != null )
                 {
                     items = items.AsQueryable().Sort( sortProperty ).ToList();
@@ -270,6 +366,9 @@ namespace RockWeb.Blocks.Cms
                 {
                     items = items.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
+
+                gContentItems.ObjectList = new Dictionary<string, object>();
+                items.ForEach( i => gContentItems.ObjectList.Add( i.Id.ToString(), i ) );
 
                 gContentItems.DataSource = items.Select( i => new
                 {

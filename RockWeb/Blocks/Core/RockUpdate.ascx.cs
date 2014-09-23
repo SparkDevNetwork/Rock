@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    errors = NuGetService.UpdatePackage( update );
+                    errors = NuGetService.UpdatePackageAndBackup( update, installed );
                 }
 
                 CheckForManualFileMoves( version );
