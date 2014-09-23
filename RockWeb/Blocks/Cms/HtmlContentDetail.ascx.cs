@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -166,6 +167,7 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
+            htmlEditor.MergeFields.Add( "Campuses" );
             htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
@@ -174,6 +176,7 @@ namespace RockWeb.Blocks.Cms
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
+            ceHtml.MergeFields.Add( "Campuses" );
             ceHtml.MergeFields.Add( "RockVersion" );
 
             var contextObjects = new Dictionary<string, object>();
@@ -585,6 +588,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
                             mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            mergeFields.Add( "Campuses", CampusCache.All() );
 
                             var contextObjects = new Dictionary<string, object>();
                             foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
