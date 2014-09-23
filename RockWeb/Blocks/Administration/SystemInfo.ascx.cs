@@ -133,6 +133,9 @@ namespace RockWeb.Blocks.Administration
                 Rock.Web.Cache.LayoutCache.Flush( id );
             }
 
+            Rock.Web.Cache.GlobalAttributesCache.Flush();
+            Rock.Web.SystemSettings.Flush();
+
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }

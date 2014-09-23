@@ -468,14 +468,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( this.Id == 0 )
-                {
-                    return new GlobalDefault();
-                }
-                else
-                {
-                    return new AttributeCache();
-                }
+                return new Rock.Model.Attribute { Id = 0, EntityTypeId = this.EntityTypeId };
             }
         }
 
