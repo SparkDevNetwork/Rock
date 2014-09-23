@@ -10,8 +10,7 @@ ___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode) After 
        need to make the RockWeb project the startup project.
 
 ___ 3. Edit web.config
-         
-        * Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
+
         * Set RunJobsInIISContext = true
         * Turn off debug <compilation debug="false"
 
@@ -29,7 +28,7 @@ ___ 6. Delete the following files from the RockWeb directory
         *.pdb (do a search as there are several files )
         * Settings.StyleCop
 
-___ 7. Zip up the RockWeb directory leaving out the following files:
+___ 7. Zip up the RockWeb directory
 
 
 ___ 8. Rename zip file 'rock-install-latest.zip'
