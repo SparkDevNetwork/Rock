@@ -17,7 +17,6 @@
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
-                    <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
             </div>
 
@@ -27,15 +26,6 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <asp:Panel ID="pnlApproval" runat="server" CssClass="alert alert-action">
-                    <asp:Label ID="lblApprovalStatus" runat="server" />
-                    <asp:Label ID="lblApprovalStatusPerson" runat="server" />
-                    <div class="pull-right">
-                        <asp:LinkButton ID="lbApprove" runat="server" OnClick="lbApprove_Click" CssClass="btn btn-primary btn-xs" Text="Approve" />
-                        <asp:LinkButton ID="lbDeny" runat="server" OnClick="lbDeny_Click" CssClass="btn btn-xs btn-link" Text="Deny" />
-                    </div>
-                </asp:Panel>
-
                 <asp:Panel ID="pnlEditDetails" runat="server">
 
                     <div class="row">
@@ -43,6 +33,20 @@
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Title" />
                         </div>
                         <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Status</label>
+                                <div class="form-control-static">
+                                    <asp:HiddenField ID="hfStatus" runat="server" />
+                                    <asp:Panel ID="pnlStatus" runat="server" CssClass="toggle-container">
+                                        <div class="btn-group btn-toggle">
+                                            <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-default">Pending</a>
+                                            <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
+                                            <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                        </div>
+                                    </asp:Panel>
+                                    <asp:Literal ID="lStatusDetails" runat="server"></asp:Literal>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
