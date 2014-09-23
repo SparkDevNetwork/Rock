@@ -54,6 +54,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
                             <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                         </div>

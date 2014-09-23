@@ -180,6 +180,7 @@ namespace RockWeb.Blocks.Cms
             {
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = ceContent.Text;
+                contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
                 contentItem.ExpireDateTime = dtpExpire.SelectedDateTime;
 
@@ -338,6 +339,7 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
                 ceContent.Text = contentItem.Content;
+                nbPriority.Text = contentItem.Priority.ToString();
                 dtpStart.SelectedDateTime = contentItem.StartDateTime;
 
                 dtpExpire.Visible = contentItem.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
@@ -350,7 +352,7 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentItem.FriendlyTypeName );
                 pnlApproval.Visible = false;
                 pnlEditDetails.Visible = false;
             }
