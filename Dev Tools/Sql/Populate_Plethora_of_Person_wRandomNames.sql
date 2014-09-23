@@ -5794,16 +5794,16 @@ while @personCounter < @maxPerson
 
 		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, NumberFormatted, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
 		VALUES (0, @personId, @phoneNumber, @phoneNumberFormatted, 1, 0, newid(), @homePhone);
-
-        -- add spouse of first member of family
-        set @firstName = 'Spouse';
         
+        -- add spouse as member of family 
         SELECT @genderInt =
 			CASE
 				WHEN @genderInt = 2 THEN 1
 				WHEN @genderInt = 1 THEN 2
 				ELSE 0
 			END
+       
+        SELECT top 1 @firstName = #firstNames.FirstName FROM #firstNames WITH(NOLOCK) WHERE #firstNames.number >= ROUND(rand() * @firstNameCount, 0) and gender = @genderInt
 
         set @email = @firstName + '.' + @lastName + '@nowhere.com';
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);

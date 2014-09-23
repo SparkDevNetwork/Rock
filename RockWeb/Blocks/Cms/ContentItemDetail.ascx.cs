@@ -121,6 +121,51 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
+
+        /// <summary>
+        /// Handles the Click event of the lbApprove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbApprove_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            ContentItem contentItem = GetContentItem( rockContext );
+
+            if ( contentItem != null && contentItem.Id != 0 )
+            {
+                contentItem.Status = ContentItemStatus.Approved;
+                contentItem.ApprovedDateTime = RockDateTime.Now;
+                contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+
+                rockContext.SaveChanges();
+
+                ShowApproval( contentItem );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDeny control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDeny_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            ContentItem contentItem = GetContentItem( rockContext );
+
+            if ( contentItem != null && contentItem.Id != 0 )
+            {
+                contentItem.Status = ContentItemStatus.Denied;
+                contentItem.ApprovedDateTime = RockDateTime.Now;
+                contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+
+                rockContext.SaveChanges();
+
+                ShowApproval( contentItem );
+            }
+        }
+
         /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
@@ -129,38 +174,13 @@ namespace RockWeb.Blocks.Cms
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            ContentItem contentItem = null;
-
-            ContentItemService contentItemService = new ContentItemService( rockContext );
-
-            int contentItemId = hfContentItemId.Value.AsInteger();
-             
-            if ( contentItemId == 0 )
-            {
-                var contentChannel = new ContentChannelService( rockContext ).Get( hfContentChannelId.Value.AsInteger() );
-                if ( contentChannel != null )
-                {
-                    contentItem = new ContentItem
-                    {
-                        ContentChannel = contentChannel,
-                        ContentChannelId = contentChannel.Id,
-                        ContentType = contentChannel.ContentType,
-                        ContentTypeId = contentChannel.ContentType.Id,
-                        Status = ( contentChannel.RequiresApproval ? ContentItemStatus.PendingApproval : ContentItemStatus.Approved ),
-                        ApprovedByPersonAliasId = ( contentChannel.RequiresApproval ? (int?)null : CurrentPersonAliasId )
-                    };
-                    contentItemService.Add( contentItem );
-                }
-            }
-            else
-            {
-                contentItem = contentItemService.Get( contentItemId );
-            }
+            ContentItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null )
             {
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = ceContent.Text;
+                contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
                 contentItem.ExpireDateTime = dtpExpire.SelectedDateTime;
 
@@ -214,13 +234,49 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentItemId">The content type identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private ContentItem GetContentItem( int contentItemId, RockContext rockContext = null )
+        private ContentItem GetContentItem( RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            var contentItem = new ContentItemService( rockContext )
-                .Queryable( "ContentChannel,ContentType" )
-                .Where( t => t.Id == contentItemId )
-                .FirstOrDefault();
+            var contentItemService = new ContentItemService( rockContext );
+            ContentItem contentItem = null;
+
+            int contentItemId = hfContentItemId.Value.AsInteger();
+            if ( contentItemId != 0 )
+            {
+                contentItem = contentItemService
+                    .Queryable( "ContentChannel,ContentType" )
+                    .FirstOrDefault( t => t.Id == contentItemId );
+            }
+
+            if ( contentItem == null)
+            {
+                var contentChannel = new ContentChannelService( rockContext ).Get( hfContentChannelId.Value.AsInteger() );
+                if ( contentChannel != null )
+                {
+                    contentItem = new ContentItem
+                    {
+                        ContentChannel = contentChannel,
+                        ContentChannelId = contentChannel.Id,
+                        ContentType = contentChannel.ContentType,
+                        ContentTypeId = contentChannel.ContentType.Id,
+                        StartDateTime = RockDateTime.Now
+                    };
+
+                    if ( contentChannel.RequiresApproval )
+                    {
+                        contentItem.Status = ContentItemStatus.PendingApproval;
+                    }
+                    else
+                    {
+                        contentItem.Status = ContentItemStatus.Approved;
+                        contentItem.ApprovedDateTime = RockDateTime.Now;
+                        contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+                    }
+
+                    contentItemService.Add( contentItem );
+                }
+            }
+
             return contentItem;
         }
 
@@ -235,35 +291,18 @@ namespace RockWeb.Blocks.Cms
 
         public void ShowDetail( int contentItemId, int? contentChannelId )
         {
-            ContentItem contentItem = null;
-
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
+            hfContentItemId.Value = contentItemId.ToString();
+            hfContentChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
-            var rockContext = new RockContext();
+            ContentItem contentItem = GetContentItem();
 
-            if ( !contentItemId.Equals( 0 ) )
+            if ( contentItem != null &&
+                contentItem.ContentType != null &&
+                contentItem.ContentChannel != null &&
+                ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
             {
-                contentItem = GetContentItem( contentItemId );
-            }
-
-            if ( contentItem == null && contentChannelId.HasValue )
-            {
-                var contentChannel = new ContentChannelService(rockContext).Get( contentChannelId.Value );
-                if (contentChannel != null)
-                {
-                    contentItem = new ContentItem { 
-                        Id = 0, 
-                        StartDateTime = RockDateTime.Now,
-                        ContentChannel = contentChannel,
-                        ContentChannelId = contentChannel.Id,
-                        ContentType = contentChannel.ContentType,
-                        ContentTypeId = contentChannel.ContentType.Id
-                    };
-                }
-            }
-
-            if ( contentItem != null && ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
-            {
+                ShowApproval( contentItem );
 
                 pnlEditDetails.Visible = true;
 
@@ -300,7 +339,11 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
                 ceContent.Text = contentItem.Content;
+                nbPriority.Text = contentItem.Priority.ToString();
                 dtpStart.SelectedDateTime = contentItem.StartDateTime;
+
+                dtpExpire.Visible = contentItem.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
+
                 dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
 
                 contentItem.LoadAttributes();
@@ -309,8 +352,67 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentItem.FriendlyTypeName );
+                pnlApproval.Visible = false;
                 pnlEditDetails.Visible = false;
+            }
+        }
+
+        private void ShowApproval( ContentItem contentItem )
+        {
+            if ( contentItem != null &&
+                contentItem.Id != 0 && 
+                contentItem.ContentChannel != null && 
+                contentItem.ContentChannel.RequiresApproval )
+            {
+                pnlApproval.Visible = true;
+                
+                if ( contentItem.Status == ContentItemStatus.Approved )
+                {
+                    lblApprovalStatus.CssClass = "label label-success";
+                } else if ( contentItem.Status == ContentItemStatus.Denied )
+                {
+                    lblApprovalStatus.CssClass = "label label-danger";
+                }
+                else
+                {
+                    lblApprovalStatus.CssClass = "label label-default";
+                }
+                lblApprovalStatus.Text = contentItem.Status.ConvertToString();
+                hfApprovalStatus.Value = contentItem.Status.ConvertToInt().ToString();
+                if (contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null)
+                {
+                    lblApprovalStatusPerson.Text = "by " + contentItem.ApprovedByPersonAlias.Person.FullName;
+                    hfApprovalStatusPersonAliasId.Value = contentItem.ApprovedByPersonAlias.Id.ToString();
+                }
+                else
+                {
+                    lblApprovalStatusPerson.Text = string.Empty;
+                    hfApprovalStatusPersonAliasId.Value = string.Empty;
+                }
+
+                bool canApprove = contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson );
+                lbApprove.Visible = canApprove;
+                lbDeny.Visible = canApprove;
+
+                if (!canApprove)
+                {
+                    string script = string.Format( @"
+    $('#{0} :input').on('change', function () {{
+        $('#{1}').removeClass('label-success label-danger').addClass('label-default');
+        $('#{1}').text('Pending Approval');
+        $('#{1}').val('1');
+        $('#{2}').val('');
+        $('#{3}').hide();        
+    }});
+" , pnlEditDetails.ClientID, lblApprovalStatus.ClientID, hfApprovalStatusPersonAliasId.Value, lblApprovalStatusPerson.ClientID );
+                    ScriptManager.RegisterStartupScript( pnlEditDetails, pnlEditDetails.GetType(), "approval-status-script-" + this.BlockId.ToString(), script, true );
+
+                }
+            }
+            else
+            {
+                pnlApproval.Visible = false;
             }
         }
 
