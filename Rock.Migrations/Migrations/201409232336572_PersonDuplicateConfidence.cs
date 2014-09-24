@@ -1,3 +1,41 @@
+// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+namespace Rock.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+
+    /// <summary>
+    ///
+    /// </summary>
+    public partial class PersonDuplicateConfidence : Rock.Migrations.RockMigration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            AddColumn( "dbo.PersonDuplicate", "IgnoreUntilScoreChanges", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.PersonDuplicate", "TotalCapacity", c => c.Int() );
+            Sql( @"ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED" );
+            CreateIndex( "dbo.PersonDuplicate", "ConfidenceScore" );
+
+
+            Sql( @"
 /*
 <doc>
 	<summary>
@@ -873,4 +911,172 @@ BEGIN
 
     COMMIT
 END
-GO
+" );
+
+            Sql( @"
+/*
+<doc>
+	<summary>
+ 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+		is given it is looked up.  If the individual is an adult it will return family attendance if it's a child
+		it will return the individual's attendance. If a person is in two families once as a child once as an
+		adult it will pick the first role it finds.
+	</summary>
+
+	<returns>
+		* AttendanceCount
+		* SundaysInMonth
+		* Month
+		* Year
+	</returns>
+	<param name=""PersonId"" datatype=""int"">Person the badge is for</param>
+	<param name=""Role Guid"" datatype=""uniqueidentifier"">The role of the person in the family (optional)</param>
+	<param name=""Reference Date"" datatype=""datetime"">A date in the last month for the badge (optional, default is today)</param>
+	<param name=""Number of Months"" datatype=""int"">Number of months to display (optional, default is 24)</param>
+	<remarks>	
+		Uses the following constants:
+			* Group Type - Family: 790E3215-3B10-442B-AF69-616C0DCB998E
+			* Group Role - Adult: 2639F9A5-2AAE-4E48-A8C3-4FFE86681E42
+			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
+	</remarks>
+	<code>
+		EXEC [dbo].[spCheckin_BadgeAttendance] 2 -- Ted Decker (adult)
+		EXEC [dbo].[spCheckin_BadgeAttendance] 4 -- Noah Decker (child)
+	</code>
+</doc>
+*/
+
+ALTER PROCEDURE [dbo].[spCheckin_BadgeAttendance]
+	@PersonId int 
+	, @RoleGuid uniqueidentifier = null
+	, @ReferenceDate datetime = null
+	, @MonthCount int = 24
+AS
+BEGIN
+	DECLARE @cROLE_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
+	DECLARE @cROLE_CHILD uniqueidentifier = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
+	DECLARE @cGROUP_TYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+	DECLARE @StartDay datetime
+	DECLARE @LastDay datetime
+
+	-- if role (adult/child) is unknown determine it
+	IF (@RoleGuid IS NULL)
+	BEGIN
+		SELECT TOP 1 @RoleGuid =  gtr.[Guid] 
+			FROM [GroupTypeRole] gtr
+				INNER JOIN [GroupMember] gm ON gm.[GroupRoleId] = gtr.[Id]
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
+			WHERE gm.[PersonId] = @PersonId 
+				AND g.[GroupTypeId] = (SELECT [ID] FROM [GroupType] WHERE [Guid] = @cGROUP_TYPE_FAMILY)
+	END
+
+	-- if start date null get today's date
+	IF @ReferenceDate is null
+		SET @ReferenceDate = getdate()
+
+	-- set data boundaries
+	SET @LastDay = dbo.ufnUtility_GetLastDayOfMonth(@ReferenceDate) -- last day is most recent day
+	SET @StartDay = DATEADD(month, (@MonthCount * -1), @LastDay) -- start day is the oldest day
+
+	-- make sure last day is not in future (in case there are errant checkin data)
+	IF (@LastDay > getdate())
+	BEGIN
+		SET @LastDay = getdate()
+	END
+
+	--PRINT 'Last Day: ' + CONVERT(VARCHAR, @LastDay, 101) 
+	--PRINT 'Start Day: ' + CONVERT(VARCHAR, @StartDay, 101) 
+
+    declare @familyMemberPersonIds table (personId int); 
+    declare @groupIds table (groupId int);
+
+    insert into @familyMemberPersonIds SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId);
+    insert into @groupIds SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]();
+
+	-- query for attendance data
+	IF (@RoleGuid = @cROLE_ADULT)
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+						WHERE 
+							[GroupId] IN (select groupId from @groupIds)
+							AND pa.[PersonId] IN (select PersonId from @familyMemberPersonIds) 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+	ELSE
+	BEGIN
+		SELECT 
+			COUNT([Attended]) AS [AttendanceCount]
+			, (SELECT dbo.ufnUtility_GetNumberOfSundaysInMonth(DATEPART(year, [SundayDate]), DATEPART(month, [SundayDate]), 'True' )) AS [SundaysInMonth]
+			, DATEPART(month, [SundayDate]) AS [Month]
+			, DATEPART(year, [SundayDate]) AS [Year]
+		FROM (
+
+			SELECT s.[SundayDate], [Attended]
+				FROM dbo.ufnUtility_GetSundaysBetweenDates(@StartDay, @LastDay) s
+				LEFT OUTER JOIN (	
+						SELECT 
+							DISTINCT dbo.ufnUtility_GetSundayDate(a.[StartDateTime]) AS [AttendedSunday],
+							1 as [Attended]
+						FROM
+							[Attendance] a
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
+						WHERE 
+							[GroupId] IN (select groupId from @groupIds)
+							AND pa.[PersonId] = @PersonId 
+							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+						) a ON [AttendedSunday] = s.[SundayDate]
+
+		) [CheckinDates]
+		GROUP BY DATEPART(month, [SundayDate]), DATEPART(year, [SundayDate])
+		OPTION (MAXRECURSION 1000)
+	END
+
+	
+END
+
+" );
+
+            // Update transaction list add on person profile to link to new scheduled transaction page
+            RockMigrationHelper.AddBlockAttributeValue( "9382B285-3EF6-47F7-94BB-A47C498196A3", "C6D07A89-84C9-412A-A584-E37E59506566", @"b1ca86dc-9890-4d26-8ebd-488044e1b3dd" );
+            Sql( @"
+    UPDATE [Page] SET
+	      [InternalName] = 'Add Transaction'
+	    , [PageTitle] = 'Add Transaction'
+	    , [BrowserTitle] = 'Add Transaction'
+    WHERE [Guid] = 'B1CA86DC-9890-4D26-8EBD-488044E1B3DD'
+" );
+
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            DropIndex( "dbo.PersonDuplicate", new[] { "ConfidenceScore" } );
+            DropColumn( "dbo.PersonDuplicate", "ConfidenceScore" );
+            DropColumn( "dbo.PersonDuplicate", "TotalCapacity" );
+            DropColumn( "dbo.PersonDuplicate", "IgnoreUntilScoreChanges" );
+        }
+    }
+}
