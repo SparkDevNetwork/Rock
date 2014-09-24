@@ -22,9 +22,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a single (or null) Security Role
+    /// Field Attribute to select a single (or null) SecurityRole (Group)
+    /// Stored as Group.Guid
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class SecurityRoleFieldAttribute : FieldAttribute
     {
         /// <summary>
