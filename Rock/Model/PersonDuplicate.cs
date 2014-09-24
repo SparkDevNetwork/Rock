@@ -92,6 +92,27 @@ namespace Rock.Model
         [DataMember]
         public int? Capacity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the total capacity.
+        /// The max possible score if they had values for all matchable items
+        /// </summary>
+        /// <value>
+        /// The total capacity.
+        /// </value>
+        [DataMember]
+        public int? TotalCapacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the match score, which is the Geometric Mean of the "weighted score of things that are matchable"% and "weighted score of things that match"%
+        /// Calculated Field: ALTER TABLE PersonDuplicate ADD MatchScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01)))
+        /// </summary>
+        /// <value>
+        /// The match score.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public decimal? MatchScore { get; set; }
+
         #endregion
 
         #region Virtual Properties
