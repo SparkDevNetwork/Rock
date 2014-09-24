@@ -108,6 +108,29 @@ namespace DotLiquid
         }
 
         /// <summary>
+        /// takes two datetimes and humanizes the difference like '1 day'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string HumanizeTimeSpan( string sStartDate, string sEndDate, int precision =  1)
+        {
+            if ( string.IsNullOrWhiteSpace(sStartDate) || string.IsNullOrWhiteSpace(sEndDate) )
+                return "Two dates must be provided";
+
+            DateTime startDate, endDate;
+
+            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse(sEndDate, out endDate ))
+            {
+                TimeSpan difference = endDate - startDate;
+                return difference.Humanize(precision);
+            }
+            else
+            {
+                return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
         /// returns sentence in 'Title Case'
         /// </summary>
         /// <param name="input"></param>
