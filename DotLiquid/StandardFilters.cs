@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using DotLiquid.Util;
+using Humanizer;
 
 namespace DotLiquid
 {
@@ -47,6 +48,30 @@ namespace DotLiquid
 				? input
 				: input.ToUpper();
 		}
+
+        /// <summary>
+        /// pluralizes string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Pluralize( string input )
+        {
+            return input == null
+                ? input
+                : input.Pluralize();
+        }
+
+        /// <summary>
+        /// singularize string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Singularize( string input )
+        {
+            return input == null
+                ? input
+                : input.Singularize();
+        }
 
 		/// <summary>
 		/// capitalize words in the input sentence
@@ -326,7 +351,7 @@ namespace DotLiquid
 			if (input == null)
 				return null;
 
-            if ( input == "Now" )
+            if ( input.ToString() == "Now" )
             {
                 input = RockDateTime.Now.ToString();
             }
