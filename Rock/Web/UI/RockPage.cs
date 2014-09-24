@@ -440,8 +440,8 @@ namespace Rock.Web.UI
         /// </summary>
         protected override void InitializeCulture()
         {
-            base.UICulture = "auto";
-            base.Culture = "auto";
+            base.UICulture = "Auto";
+            base.Culture = "Auto";
 
             base.InitializeCulture();
         }

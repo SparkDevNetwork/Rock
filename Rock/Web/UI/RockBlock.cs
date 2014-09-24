@@ -741,11 +741,19 @@ namespace Rock.Web.UI
                     }
                 }
 
-                var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );
-                string pageUrl = pageReference.BuildUrl();
-                Response.Redirect( pageUrl, false );
-                Context.ApplicationInstance.CompleteRequest();
+                NavigateToPage( new PageReference( pageCache.Id, routeId, queryString, null ) );
             }
+        }
+
+        /// <summary>
+        /// Navigates to page.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        public void NavigateToPage( PageReference pageReference )
+        {
+            string pageUrl = pageReference.BuildUrl();
+            Response.Redirect( pageUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

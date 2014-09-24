@@ -122,6 +122,20 @@ namespace Rock.Model
             
             // ignoring CommunicationTemplate,SenderPersonAliasId 
             
+            // ignoring ContentChannel,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannel,ModifiedByPersonAliasId 
+            
+            // ignoring ContentItem,ApprovedByPersonAliasId 
+            
+            // ignoring ContentItem,CreatedByPersonAliasId 
+            
+            // ignoring ContentItem,ModifiedByPersonAliasId 
+            
+            // ignoring ContentType,CreatedByPersonAliasId 
+            
+            // ignoring ContentType,ModifiedByPersonAliasId 
+            
             // ignoring DataView,CreatedByPersonAliasId 
             
             // ignoring DataView,ModifiedByPersonAliasId 

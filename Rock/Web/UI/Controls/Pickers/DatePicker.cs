@@ -59,7 +59,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1} }});", this.ClientID, this.StartView.ConvertToInt() );
+            // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
+            var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
+            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
+
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}' }});", 
+                this.ClientID, this.StartView.ConvertToInt(), dateFormat );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 

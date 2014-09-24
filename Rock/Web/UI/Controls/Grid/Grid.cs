@@ -515,7 +515,7 @@ namespace Rock.Web.UI.Controls
             {
                 int pageSize = 50;
                 int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize );
-                if ( pageSize != 50 || pageSize != 500 || pageSize != 5000 )
+                if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
                     pageSize = 50;
                 }
@@ -921,6 +921,8 @@ namespace Rock.Web.UI.Controls
             {
                 if ( e.Row.DataItem != null )
                 {
+                    e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
+
                     if ( this.DataKeys != null && this.DataKeys.Count > 0 )
                     {
                         object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
@@ -928,7 +930,6 @@ namespace Rock.Web.UI.Controls
                         {
                             string key = dataKey.ToString();
                             e.Row.Attributes.Add( "datakey", key );
-                            e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
                         }
                     }
 
@@ -1285,12 +1286,12 @@ namespace Rock.Web.UI.Controls
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
                 IList<PropertyInfo> props = new List<PropertyInfo>();
 
-                var gridDataFields = this.Columns.OfType<BoundField>().Where( a => a.Visible );
+                var gridDataFields = this.Columns.OfType<BoundField>();
 
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name ) && prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + ".")) && prop.GetGetMethod().IsVirtual )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
@@ -1302,7 +1303,16 @@ namespace Rock.Web.UI.Controls
                 // print column headings
                 foreach ( PropertyInfo prop in props )
                 {
-                    worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + "."));
+                    if ( gridDataField != null )
+                    {
+                        worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
+                    }
+                    else
+                    {
+                        worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                    }
+                    
                     columnCounter++;
                 }
 

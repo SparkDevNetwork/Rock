@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -21,6 +22,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -228,6 +231,36 @@ namespace Rock.Model
             set { _categories = value; }
         }
         private ICollection<Category> _categories;
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+	        get 
+	        {
+                int? entityTypeId = this.EntityTypeId;
+                if ( !entityTypeId.HasValue && this.EntityType != null)
+                {
+                    entityTypeId = this.EntityType.Id;
+                }
+
+                if (entityTypeId.HasValue)
+                {
+                    var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                    var type = entityType.GetEntityType();
+                    if ( type != null && ( typeof( ISecured ).IsAssignableFrom( type ) ) )
+                    {
+                        return (ISecured)Activator.CreateInstance( type );
+                    }
+                }
+
+                return base.ParentAuthority;
+	        }
+        }
 
         #endregion
 

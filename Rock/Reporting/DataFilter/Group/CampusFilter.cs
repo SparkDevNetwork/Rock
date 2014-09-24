@@ -20,9 +20,9 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
@@ -117,7 +117,7 @@ function() {
                 int? campusId = GetCampusIdFromSelection( selectionValues );
                 if ( campusId.HasValue )
                 {
-                    var campus = new CampusService( new RockContext() ).Get( campusId.Value );
+                    var campus = CampusCache.Read( campusId.Value );
                     if ( campus != null )
                     {
                         result = string.Format( "Campus: {0}", campus.Name );
@@ -141,7 +141,7 @@ function() {
             CampusPicker campusPicker = new CampusPicker();
             campusPicker.ID = filterControl.ID + "_campusPicker";
             campusPicker.Label = "Campus";
-            campusPicker.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            campusPicker.Campuses = CampusCache.All();
             filterControl.Controls.Add( campusPicker );
 
             return new Control[] { campusPicker };
@@ -168,14 +168,16 @@ function() {
         public override string GetSelection( Type entityType, Control[] controls )
         {
             int? campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
-            Guid? campusGuid = null;
-            var campus = new CampusService( new RockContext() ).Get(campusId ?? 0);
-            if (campus != null)
+            if ( campusId.HasValue )
             {
-                campusGuid = campus.Guid;
+                var campus = CampusCache.Read( campusId.Value );
+                if ( campus != null )
+                {
+                    return campus.Guid.ToString();
+                }
             }
 
-            return campusGuid.ToString();
+            return string.Empty;
         }
 
         /// <summary>
@@ -231,7 +233,7 @@ function() {
             int? campusId = null;
             if ( campusGuid.HasValue )
             {
-                var campus = new CampusService( new RockContext() ).Get( campusGuid.Value );
+                var campus = CampusCache.Read( campusGuid.Value );
                 if ( campus != null )
                 {
                     campusId = campus.Id;

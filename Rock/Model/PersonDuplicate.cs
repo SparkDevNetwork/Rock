@@ -64,6 +64,16 @@ namespace Rock.Model
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [ignore until score changes].
+        /// Setting this to true will hide the personduplicate record until the score changes
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [ignore until score changes]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IgnoreUntilScoreChanges { get; set; }
+
+        /// <summary>
         /// Gets or sets the score.
         /// Calculated in the [spCrm_PersonDuplicateFinder] stored procedure
         /// </summary>
@@ -91,6 +101,28 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? Capacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total capacity.
+        /// The max possible score if they had values for all matchable items
+        /// </summary>
+        /// <value>
+        /// The total capacity.
+        /// </value>
+        [DataMember]
+        public int? TotalCapacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence score, which is the Geometric Mean of the "weighted score of things that are matchable"% and "weighted score of things that match"%
+        /// Calculated Field: ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED
+        /// </summary>
+        /// <value>
+        /// The match score.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Index]
+        public double? ConfidenceScore { get; set; }
 
         #endregion
 

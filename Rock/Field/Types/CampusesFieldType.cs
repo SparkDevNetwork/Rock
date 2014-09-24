@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -37,9 +38,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new CampusService( new RockContext() );
-                var qry = service.Queryable();
-                return qry.OrderBy( a => a.Name ).ToDictionary( k => k.Id.ToString(), v => v.Name );
+                return CampusCache.All().ToDictionary( c => c.Guid.ToString(), c => c.Name );
             }
         }
     }

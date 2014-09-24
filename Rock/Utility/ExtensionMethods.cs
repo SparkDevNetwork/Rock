@@ -1491,13 +1491,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// Try's to set the selected value. If the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( this ListControl listControl, int? value )
         {
             listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="entity">The entity.</param>
+        public static void SetValue( this ListControl listControl, IEntity entity )
+        {
+            listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
         }
 
         /// <summary>
@@ -1609,11 +1619,23 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        public static T SelectedValueAsEnum<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
         {
-            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
+            return listControl.SelectedValue.ConvertToEnum<T>( defaultValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static T? SelectedValueAsEnumOrNull<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
+        {
+            return listControl.SelectedValue.ConvertToEnumOrNull<T>( defaultValue );
+        }
+        
         /// <summary>
         /// Selecteds the value as unique identifier.
         /// </summary>
@@ -1627,7 +1649,7 @@ namespace Rock
             }
             else
             {
-                return listControl.SelectedValue.AsGuid();
+                return listControl.SelectedValue.AsGuidOrNull();
             }
         }
 

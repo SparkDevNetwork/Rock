@@ -24,6 +24,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a MEF component
+    /// Stored as EntityType.Guid
     /// </summary>
     public class ComponentFieldAttribute : FieldAttribute
     {
