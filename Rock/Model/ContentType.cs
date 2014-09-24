@@ -98,6 +98,9 @@ namespace Rock.Model
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentType"/> class.
+        /// </summary>
         public ContentType()
         {
             Channels = new Collection<ContentChannel>();
