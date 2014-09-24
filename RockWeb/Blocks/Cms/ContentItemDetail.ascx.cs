@@ -402,6 +402,7 @@ namespace RockWeb.Blocks.Cms
             {
                 pnlStatus.Visible = false;
                 lStatusDetails.Visible = false;
+                divStatus.Visible = false;
             }
         }
 
