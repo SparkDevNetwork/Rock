@@ -123,6 +123,19 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Gets the person view onclick.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public string GetPersonViewOnClick( int personId )
+        {
+            var url = "/person/" + personId.ToString();
+            
+            // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+            return string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
+        }
+
+        /// <summary>
         /// Gets the campus.
         /// </summary>
         /// <param name="person">The person.</param>

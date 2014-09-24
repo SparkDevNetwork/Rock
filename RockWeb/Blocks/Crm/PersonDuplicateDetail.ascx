@@ -78,6 +78,7 @@
                             </asp:TemplateField>
                             <asp:TemplateField ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
+                                    <a class="btn btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user"></i></a>
                                     <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-ban"></i></asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
@@ -89,6 +90,7 @@
             <script>
                 Sys.Application.add_load(function () {
 
+                    $('.js-view-person').tooltip();
                     $('.js-not-duplicate').tooltip();
 
                     $('.js-not-duplicate').on('click', function (e) {
