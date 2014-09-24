@@ -26,7 +26,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select 0 or more security roles
+    /// Field Type to select a single (or null) SecurityGroup (Group)
+    /// Stored as Group.Guid
     /// </summary>
     public class SecurityRoleFieldType : FieldType
     {
@@ -42,10 +43,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = value;
 
-            int? groupId = value.AsIntegerOrNull();
-            if ( groupId.HasValue )
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( groupId.Value );
+                var group = new GroupService( new RockContext() ).Get( guid.Value );
                 if ( group != null )
                 {
                     formattedValue = group.Name;
