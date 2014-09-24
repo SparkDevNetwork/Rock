@@ -73,6 +73,176 @@ namespace DotLiquid
                 : input.Singularize();
         }
 
+        /// <summary>
+        /// takes computer-readible-formats and makes them human readable
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Humanize( string input )
+        {
+            return input == null
+                ? input
+                : input.Humanize();
+        }
+
+        /// <summary>
+        /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string HumanizeDateTime( string input )
+        {
+            if ( input == null )
+                return input;
+
+            DateTime dateProvided;
+
+            if ( DateTime.TryParse(input.ToString(), out dateProvided ))
+            {
+                return dateProvided.Humanize( false, RockDateTime.Now );
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// returns sentence in 'Title Case'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string TitleCase( string input )
+        {
+            return input == null
+                ? input
+                : input.Titleize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'PascalCase'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string PascalCase( string input )
+        {
+            return input == null
+                ? input
+                : input.Dehumanize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'Sentence case'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string SentenceCase( string input )
+        {
+            return input == null
+                ? input
+                : input.Transform( To.SentenceCase );
+        }
+
+        /// <summary>
+        /// takes 1, 2 and returns 1st, 2nd
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinal( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.Ordinalize();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns one, two
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToWords( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToWords();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns first, second
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinalWords( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToOrdinalWords();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns I, II, IV
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToRomanNumerals( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToRoman();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// formats string to be appropriate for a quantity
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToQuantity( string input, int quantity )
+        {
+            return input == null
+                ? input
+                : input.ToQuantity( quantity );
+        }
+
 		/// <summary>
 		/// capitalize words in the input sentence
 		/// </summary>
