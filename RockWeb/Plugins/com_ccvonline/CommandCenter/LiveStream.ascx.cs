@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_ccvonline.CommandCenter
@@ -59,13 +59,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             int? campusId = GetAttributeValue( "Campus" ).AsIntegerOrNull();
 
             var datasource = new List<string[]>();
-            var rockContext = new RockContext();
-            var campusService = new CampusService( rockContext );
 
-            var theCampuses = campusService.Queryable().ToList();
-            theCampuses.ForEach( c => c.LoadAttributes( rockContext ) );
-
-            var campusStreams = theCampuses
+            var campusStreams = CampusCache.All()
                 .Where( c => 
                     !campusId.HasValue || 
                     c.Id == campusId.Value )

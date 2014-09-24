@@ -206,7 +206,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
         /// </summary>
         private void BindFilter()
         {
-            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 

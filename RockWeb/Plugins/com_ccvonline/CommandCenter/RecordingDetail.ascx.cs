@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using com.ccvonline.CommandCenter.Model;
 using com.ccvonline.CommandCenter.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 {
@@ -45,7 +46,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         {
             base.OnInit( e );
 
-            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( c => c.Name ).ToList();
+            cpCampus.Campuses = CampusCache.All();
             cpCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
         }
 

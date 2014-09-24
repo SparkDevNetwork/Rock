@@ -103,8 +103,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     int campusId = 0;
                     if ( int.TryParse( e.Value, out campusId ) )
                     {
-                        var service = new CampusService( new RockContext() );
-                        var campus = service.Get( campusId );
+                        var campus = Rock.Web.Cache.CampusCache.Read( campusId );
                         if ( campus != null )
                         {
                             e.Value = campus.Name;
@@ -274,7 +273,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         private void BindFilter()
         {
-            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( c => c.Name ).ToList();
+            cpCampus.Campuses = Rock.Web.Cache.CampusCache.All();
             cpCampus.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
             cpCampus.SelectedValue = rFilter.GetUserPreference( "Campus" );
             dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
