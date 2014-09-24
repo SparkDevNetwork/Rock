@@ -56,14 +56,14 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         private List<string[]> GetDatasource()
         {
             string configuredVenue = GetAttributeValue( "Venue" );
-            int? campusId = GetAttributeValue( "Campus" ).AsIntegerOrNull();
+            Guid? campusGuid = GetAttributeValue( "Campus" ).AsGuidOrNull();
 
             var datasource = new List<string[]>();
 
             var campusStreams = CampusCache.All()
-                .Where( c => 
-                    !campusId.HasValue || 
-                    c.Id == campusId.Value )
+                .Where( c =>
+                    !campusGuid.HasValue ||
+                    c.Guid == campusGuid.Value )
                 .Select( c => new
                 {
                     Id = c.Id.ToString(),
