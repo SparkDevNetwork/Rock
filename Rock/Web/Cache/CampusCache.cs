@@ -309,6 +309,8 @@ namespace Rock.Web.Cache
 
                     if ( campus == null )
                     {
+                        campusModel.LoadAttributes( rockContext );
+
                         campus = new CampusCache( campusModel );
                         cache.Set( cacheKey, campus, cachePolicy );
                         cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
