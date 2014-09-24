@@ -169,6 +169,9 @@
         // move the rock application into place
         if ( DirectoryContentsMove( serverPath + @"\rock", serverPath ) )
         {
+            // set permissions (fix for Arvixe)
+            SetInheritPermissions( serverPath, true );
+            
             // delete this page
             File.Delete( serverPath + @"Complete.aspx" );
 
@@ -264,6 +267,63 @@
         }
         
         return true;
+    }
+
+    private void SetInheritPermissions( string sourceDirName, bool isRoot )
+    {
+        string logPath = Path.Combine( serverPath, "InstallLog.txt" );
+
+        if ( isRoot )
+        {
+            File.AppendAllText( logPath, String.Format( "Start: {0}{1}", DateTime.UtcNow.ToString( "yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture ), Environment.NewLine ) );
+        }
+
+        File.AppendAllText( logPath, String.Format( "Method SetInheritPermissions Called On: {0}{1}", sourceDirName, Environment.NewLine ) );
+        
+        try
+        {
+            DirectoryInfo sourceDirectory = new DirectoryInfo( sourceDirName );
+            DirectoryInfo[] sourceChildDirectories = sourceDirectory.GetDirectories();
+            FileInfo[] files = sourceDirectory.GetFiles();
+
+            File.AppendAllText( logPath, String.Format( "Directory Count: {0}{1}", sourceChildDirectories.Count().ToString(), Environment.NewLine ) );
+            File.AppendAllText( logPath, String.Format( "File Count: {0}{1}", files.Count().ToString(), Environment.NewLine ) );
+
+            // set directory permission if not root
+            if ( !isRoot )
+            {
+                File.AppendAllText( logPath, String.Format( "Attempting to set permissions on root directory {0}{1}", sourceDirName, Environment.NewLine ) );
+                var directorySecurity = sourceDirectory.GetAccessControl();
+                directorySecurity.SetAccessRuleProtection( false, false );
+                sourceDirectory.SetAccessControl( directorySecurity );
+            }
+            
+            // process subdirectories
+            foreach ( DirectoryInfo dir in sourceChildDirectories )
+            {
+                File.AppendAllText( logPath, String.Format( "Calling set permissions on {0}{1}", dir.FullName, Environment.NewLine ) );
+                SetInheritPermissions( dir.FullName + @"\", false );
+            }
+            
+            // process files 
+            foreach ( FileInfo file in files )
+            {
+                File.AppendAllText( logPath, String.Format( "Attempting to set permissions on file {0}{1}", file.FullName, Environment.NewLine ) );
+                var fileSecurity = file.GetAccessControl();
+                fileSecurity.SetAccessRuleProtection( false, false );
+                file.SetAccessControl( fileSecurity );
+            }
+
+            if ( isRoot )
+            {
+                File.AppendAllText( logPath, String.Format( "End: {0}{1}", DateTime.UtcNow.ToString( "yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture ), Environment.NewLine ) );
+            }
+            
+        }
+        catch ( Exception ex )
+        {
+            File.AppendAllText( logPath, String.Format( "Error: {0}{1}", ex.Message, Environment.NewLine ) );
+        }
     }
     
     private void LogException(Exception ex)
