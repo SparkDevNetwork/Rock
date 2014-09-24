@@ -41,7 +41,7 @@ namespace Rock.Field
         {
             get { return HorizontalAlign.Left; }
         }
-        
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
