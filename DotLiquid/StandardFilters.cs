@@ -326,6 +326,11 @@ namespace DotLiquid
 			if (input == null)
 				return null;
 
+            if ( input == "Now" )
+            {
+                input = RockDateTime.Now.ToString();
+            }
+
 			if (format.IsNullOrWhiteSpace())
 				return input.ToString();
 
