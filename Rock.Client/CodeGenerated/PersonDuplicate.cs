@@ -40,6 +40,9 @@ namespace Rock.Client
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
         /// <summary />
+        public bool IgnoreUntilScoreChanges { get; set; }
+
+        /// <summary />
         public int? Score { get; set; }
 
         /// <summary />
@@ -47,6 +50,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? Capacity { get; set; }
+
+        /// <summary />
+        public int? TotalCapacity { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
