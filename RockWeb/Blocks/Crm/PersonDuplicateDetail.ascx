@@ -11,6 +11,7 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                    <Rock:NotificationBox ID="nbNoDuplicatesMessage" runat="server" NotificationBoxType="Success" Text="No duplicates found for this person." />
                     <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                         <Columns>
                             <Rock:SelectField ShowHeader="false" />

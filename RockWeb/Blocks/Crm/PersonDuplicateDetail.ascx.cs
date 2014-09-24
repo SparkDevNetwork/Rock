@@ -211,6 +211,8 @@ namespace RockWeb.Blocks.Crm
                     IsComparePerson = false
                 } );
 
+            nbNoDuplicatesMessage.Visible = gridList.Count == 1;
+
             gList.DataSource = gridList;
             gList.DataBind();
         }
