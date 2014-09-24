@@ -6,7 +6,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(1)", "http://localh
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.ccvonline.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|com.ccvonline.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|com.ccvonline.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|com.ccvonline.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.ccvonline.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|com.ccvonline.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|com.ccvonline.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|com.ccvonline.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -35,6 +35,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,6 +72,10 @@ Global
 		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
