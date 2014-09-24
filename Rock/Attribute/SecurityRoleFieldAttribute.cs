@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a single (or null) SecurityRole (Group)
+    /// Field Attribute to select a single (or null) Security Role (Group)
     /// Stored as Group.Guid
     /// </summary>
     public class SecurityRoleFieldAttribute : FieldAttribute

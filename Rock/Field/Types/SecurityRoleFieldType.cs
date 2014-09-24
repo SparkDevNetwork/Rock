@@ -26,7 +26,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) SecurityGroup (Group)
+    /// Field Type to select a single (or null) Security Role (Group)
     /// Stored as Group.Guid
     /// </summary>
     public class SecurityRoleFieldType : FieldType
@@ -55,7 +55,7 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
-        
+
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
@@ -92,7 +92,9 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is ListControl )
+            {
                 return ( (ListControl)control ).SelectedValue;
+            }
 
             return null;
         }
@@ -108,7 +110,9 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 if ( control != null && control is ListControl )
+                {
                     ( (ListControl)control ).SelectedValue = value;
+                }
             }
         }
     }

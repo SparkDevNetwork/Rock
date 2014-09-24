@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     public class ColorFieldType : FieldType
     {
         /// <summary>
-        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
