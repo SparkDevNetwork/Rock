@@ -440,6 +440,30 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+
+            string personParam = PageParameter( "Person" );
+            if (!string.IsNullOrWhiteSpace(personParam))
+            {
+                qryParams.Add( "Person", personParam );
+            }
+
+            string txnParam = PageParameter( "ScheduledTransactionId" );
+            if ( !string.IsNullOrWhiteSpace( txnParam ) )
+            {
+                qryParams.Add( "ScheduledTransactionId", txnParam );
+            }
+
+            NavigateToParentPage( qryParams );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnConfirm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

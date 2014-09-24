@@ -127,6 +127,10 @@ namespace RockWeb.Blocks.Finance
             {
                 DisplayError( "You are not authorized to edit these transactions" );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upTransactions );
+
         }
 
         /// <summary>
@@ -254,6 +258,11 @@ namespace RockWeb.Blocks.Finance
         #endregion Control Methods
 
         #region Events
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the filter display for each saved user value

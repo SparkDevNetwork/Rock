@@ -181,6 +181,7 @@
                 <div id="divActions" runat="server" class="actions">
                     <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrev_Click" Visible="false" />
                     <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link pull-right" OnClick="btnCancel_Click" />
                 </div>
 
                 <asp:HiddenField ID="hfCurrentPage" runat="server" />
