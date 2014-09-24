@@ -75,7 +75,7 @@ ___ 9. Open the SQL file and make the following edits:
             'ON [PRIMARY]'
 
 
-___ 10. Zip the file into a new file named 'sql-latest.sql'
+___ 10. Zip the file into a new file named 'sql-latest.zip'
 
 ___ 11. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
         it will be in source control
