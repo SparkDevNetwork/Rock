@@ -17,9 +17,9 @@
                             <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName, FirstName" />
                             <asp:BoundField DataField="MatchCount" HeaderText="Match Count" SortExpression="MatchCount" ItemStyle-HorizontalAlign="Right" />
 
-                            <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="MaxScorePercent">
+                            <asp:TemplateField HeaderText="Max Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="MaxConfidenceScore">
                                 <ItemTemplate>
-                                    <%# GetMatchColumnHtml((double?)Eval("MaxScorePercent")) %>
+                                    <%# GetConfidenceScoreColumnHtml((double?)Eval("MaxConfidenceScore")) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
 

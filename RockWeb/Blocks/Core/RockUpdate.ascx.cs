@@ -172,13 +172,13 @@ namespace RockWeb.Blocks.Core
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-primary" );
-                        divPanel.AddCssClass( "panel-primary" );
+                        divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-default" );
-                        divPanel.AddCssClass( "panel-default" );
+                        divPanel.AddCssClass( "panel-block" );
                     }
                 }
             }
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    errors = NuGetService.UpdatePackage( update );
+                    errors = NuGetService.UpdatePackageAndBackup( update, installed );
                 }
 
                 CheckForManualFileMoves( version );
@@ -233,13 +233,27 @@ namespace RockWeb.Blocks.Core
                 {
                     RestControllerService.RegisterControllers();
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
                     LogException( ex );
                 }
             }
-            catch ( InvalidOperationException ex )
+            catch ( OutOfMemoryException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
+                LogException( ex );
+            }
+            catch( System.Xml.XmlException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( System.IO.IOException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. We were not able to replace an important file ({1}) after the update. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#unabletoreplacefile'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( Exception ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
                 LogException( ex );

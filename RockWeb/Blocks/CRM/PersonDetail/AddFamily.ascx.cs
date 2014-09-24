@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
             }
 
-            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 

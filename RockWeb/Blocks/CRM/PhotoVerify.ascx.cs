@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Crm
         /// Group that manages the people using the Photo Request system.
         /// </summary>
         private Group _photoRequestGroup = null;
+        BootstrapButton _bbtnVerify = new BootstrapButton();
 
         #endregion
 
@@ -88,6 +89,12 @@ namespace RockWeb.Blocks.Crm
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            _bbtnVerify.Text = "Verify";
+            _bbtnVerify.Click += new EventHandler( bbtnVerify_Click );
+            _bbtnVerify.CssClass = "btn btn-primary pull-left";
+            gList.Actions.AddCustomActionControl( _bbtnVerify );
+            gList.Actions.ShowExcelExport = false;
         }
 
         /// <summary>
@@ -141,26 +148,22 @@ namespace RockWeb.Blocks.Crm
                     if ( groupMember.GroupMemberStatus != GroupMemberStatus.Pending )
                     {
                         var cb = e.Row.FindControl( "cbSelected" ) as CheckBox;
-                        cb.Visible = false;
+                        //cb.Visible = false;
                     }
 
-                    HtmlControl iStatus = e.Row.FindControl( "iStatus" ) as HtmlControl;
+                    Literal lStatus = e.Row.FindControl( "lStatus" ) as Literal;
                     var bStatus = e.Row.FindControl( "bStatus" ) as Badge;
 
                     switch ( groupMember.GroupMemberStatus )
                     {
                         case GroupMemberStatus.Inactive:
-                            iStatus.AddCssClass( "fa fa-lg fa-ban text-danger" );
-                            iStatus.Attributes.Add( "data-original-title", "User has asked to never receive photo requests." );
+                            lStatus.Text = "<span class='label label-danger'>Opted-Out</span>";
                             break;
                         case GroupMemberStatus.Active:
-                            iStatus.AddCssClass( "fa fa-lg fa-check-square-o" );
-                            iStatus.Attributes.Add( "title", string.Format( "Verified on {0} by {1}", groupMember.ModifiedDateTime.Value.ToString( "MM/dd/yy" ), groupMember.ModifiedByPersonAlias.Person.FullName ) );
-
+                            lStatus.Text = "<span class='label label-success'>Verified</span>";
                             break;
                         case GroupMemberStatus.Pending:
-                            iStatus.AddCssClass( "fa fa-lg fa-flag text-warning" );
-                            iStatus.Attributes.Add( "title", "Pending verification." );
+                            lStatus.Text = "<span class='label label-warning'>Pending</span>";
                             break;
                         default:
                             break;
@@ -241,13 +244,15 @@ namespace RockWeb.Blocks.Crm
             Group group = groupService.Get( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
 
             GroupMember groupMember = null;
-            foreach ( GridViewRow row in gList.Rows )
-            {
-                var cb = row.FindControl( "cbSelected" ) as CheckBox;
 
-                if ( cb != null && cb.Checked )
+            var itemsSelected = new List<int>();
+
+            gList.SelectedKeys.ToList().ForEach( i => itemsSelected.Add( i.ToString().AsInteger() ) );
+
+            if ( itemsSelected.Any() )
+            {
+                foreach ( int currentRowsPersonId in itemsSelected )
                 {
-                    int currentRowsPersonId = (int)gList.DataKeys[row.RowIndex].Value;
                     groupMember = group.Members.Where( m => m.PersonId == currentRowsPersonId ).FirstOrDefault();
                     if ( groupMember != null )
                     {
@@ -265,7 +270,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Warning;
-                nbMessage.Text = "No changes were made.";
+                nbMessage.Text = "No photos selected.";
             }
             rockContext.SaveChanges();
             _photoRequestGroup = group;
@@ -295,15 +300,26 @@ namespace RockWeb.Blocks.Crm
             if ( _photoRequestGroup != null )
             {
                 nbConfigError.Visible = false;
-                var members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending || cbShowAll.Checked ).ToList();
+
+                List<GroupMember> members = null;
+
+                if ( cbShowAll.Checked )
+                {
+                    members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending || m.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
+                }
+                else
+                {
+                    members = _photoRequestGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending ).ToList();
+                }
+                
                 gList.DataSource = members;
                 if ( members == null || members.Count == 0 )
                 {
-                    bbtnVerify.Visible = false;
+                    _bbtnVerify.Visible = false;
                 }
                 else if ( members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending ).ToList().Count > 0 )
                 {
-                    bbtnVerify.Visible = true;
+                    _bbtnVerify.Visible = true;
                 }
                 gList.DataBind();
             }

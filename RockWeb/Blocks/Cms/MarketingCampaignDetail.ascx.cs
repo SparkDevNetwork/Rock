@@ -342,9 +342,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadCampusPicker()
         {
-            CampusService campusService = new CampusService( new RockContext() );
-
-            cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampuses.Campuses = CampusCache.All();
             cpCampuses.Visible = cpCampuses.AvailableCampusIds.Count > 0;
         }
 

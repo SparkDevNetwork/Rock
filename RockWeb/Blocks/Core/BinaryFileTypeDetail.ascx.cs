@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = binaryFileType.Description;
             tbIconCssClass.Text = binaryFileType.IconCssClass;
             cbAllowCaching.Checked = binaryFileType.AllowCaching;
-            cbRequiresSecurity.Checked = binaryFileType.RequiresSecurity;
+            cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
 
             if ( binaryFileType.StorageEntityType != null )
             {
@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Core
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
+            bool restrictedEdit = false;
 
             nbEditModeMessage.Text = string.Empty;
             if ( !IsUserAuthorized( Authorization.EDIT ) )
@@ -165,16 +166,21 @@ namespace RockWeb.Blocks.Core
 
             if ( binaryFileType.IsSystem )
             {
+                restrictedEdit = true;
                 nbEditModeMessage.Text = EditModeMessage.System( BinaryFileType.FriendlyTypeName );
             }
 
             phAttributes.Controls.Clear();
             binaryFileType.LoadAttributes();
 
-            if ( readOnly || binaryFileType.IsSystem)
+            if ( readOnly )
             {
                 lActionTitle.Text = ActionTitle.View( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
+            }
+
+            if (readOnly)
+            {
                 Rock.Attribute.Helper.AddDisplayControls( binaryFileType, phAttributes );
             }
             else
@@ -182,19 +188,20 @@ namespace RockWeb.Blocks.Core
                 Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, true );
             }
 
-            tbName.ReadOnly = readOnly || binaryFileType.IsSystem;
-            tbDescription.ReadOnly = readOnly || binaryFileType.IsSystem;
-            tbIconCssClass.ReadOnly = readOnly || binaryFileType.IsSystem;
-            cbAllowCaching.Enabled = !readOnly && !binaryFileType.IsSystem;
-            cbRequiresSecurity.Enabled = !readOnly && !binaryFileType.IsSystem;
-            gBinaryFileAttributes.Enabled = !readOnly && !binaryFileType.IsSystem;
+            // the only thing we'll restrict for restrictedEdit is the Name (plus they won't be able to remove Attributes that are marked as IsSystem
+            tbName.ReadOnly = readOnly || restrictedEdit;
 
-            // allow storagetype to be edited if IsSystem
+            gBinaryFileAttributes.Enabled = !readOnly;
+            gBinaryFileAttributes.Columns.OfType<EditField>().First().Visible = !readOnly;
+            gBinaryFileAttributes.Actions.ShowAdd = !readOnly;
+
+            // allow these to be edited in restricted edit mode if not readonly
+            tbDescription.ReadOnly = readOnly;
+            tbIconCssClass.ReadOnly = readOnly;
+            cbAllowCaching.Enabled = !readOnly;
+            cbRequiresViewSecurity.Enabled = !readOnly;
             cpStorageType.Enabled = !readOnly;
-
-            // allow save to be clicked if IsSystem since some things can be edited
             btnSave.Visible = !readOnly ;
-
         }
 
         #endregion
@@ -218,7 +225,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-
             BinaryFileType binaryFileType;
 
             var rockContext = new RockContext();
@@ -243,7 +249,7 @@ namespace RockWeb.Blocks.Core
             binaryFileType.Description = tbDescription.Text;
             binaryFileType.IconCssClass = tbIconCssClass.Text;
             binaryFileType.AllowCaching = cbAllowCaching.Checked;
-            binaryFileType.RequiresSecurity = cbRequiresSecurity.Checked;
+            binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
 
             if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
             {

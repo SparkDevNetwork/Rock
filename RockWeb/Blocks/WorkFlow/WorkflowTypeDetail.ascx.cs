@@ -686,6 +686,9 @@ namespace RockWeb.Blocks.WorkFlow
                                 formAttribute.IsVisible = editorAttribute.IsVisible;
                                 formAttribute.IsReadOnly = editorAttribute.IsReadOnly;
                                 formAttribute.IsRequired = editorAttribute.IsRequired;
+                                formAttribute.HideLabel = editorAttribute.HideLabel;
+                                formAttribute.PreHtml = editorAttribute.PreHtml;
+                                formAttribute.PostHtml = editorAttribute.PostHtml;
                             }
                         }
                     }
@@ -1524,6 +1527,9 @@ namespace RockWeb.Blocks.WorkFlow
                         formAttribute.IsVisible = false;
                         formAttribute.IsReadOnly = true;
                         formAttribute.IsRequired = false;
+                        formAttribute.HideLabel = false;
+                        formAttribute.PreHtml = string.Empty;
+                        formAttribute.PostHtml = string.Empty;
                         formAttributes.Add( formAttribute );
                     }
                 }

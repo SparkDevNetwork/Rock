@@ -253,6 +253,10 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
             if ( eventArgument == "StatusUpdate" &&
@@ -340,7 +344,7 @@ namespace RockWeb.Blocks.Finance
             }
             ddlStatus.SetValue( statusFilter );
 
-            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
@@ -513,7 +517,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         case BatchStatus.Closed : return "label label-default";
                         case BatchStatus.Open: return "label label-info";
-                        case BatchStatus.Pending: return "label label-warning";
+                        case BatchStatus.Pending: return "label label-default";
                     }
 
                     return string.Empty;
@@ -532,12 +536,7 @@ namespace RockWeb.Blocks.Finance
                             {
                                 if ( UnMatchedTxns )
                                 {
-                                    notes.Append( "<span class='label label-danger'>Unmatched Transactions</span><br/>" );
-                                }
-
-                                if ( ControlAmount != TransactionAmount)
-                                {
-                                    notes.Append( "<span class='label label-warning'>Transaction Total Does Not Match Control Amount</span><br/>" );
+                                    notes.Append( "<span class='label label-warning'>Unmatched Transactions</span><br/>" );
                                 }
 
                                 break;

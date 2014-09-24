@@ -127,6 +127,10 @@ namespace RockWeb.Blocks.Finance
             {
                 DisplayError( "You are not authorized to edit these transactions" );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upTransactions );
+
         }
 
         /// <summary>
@@ -137,33 +141,37 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            bool promptWithFilter = true;
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
                 if ( contextEntity is Person )
                 {
                     _person = contextEntity as Person;
+                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialBatch )
                 {
                     _batch = contextEntity as FinancialBatch;
                     gfTransactions.Visible = false;
+                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialScheduledTransaction )
                 {
                     _scheduledTxn = contextEntity as FinancialScheduledTransaction;
                     gfTransactions.Visible = false;
+                    promptWithFilter = false;
                 }
             }
 
             if ( !Page.IsPostBack )
             {
                 BindFilter();
-                
-                if ( gfTransactions.Visible )
+
+                if ( promptWithFilter && gfTransactions.Visible )
                 {
                     //// NOTE: Special Case for this List Block since there could be a very large number of transactions:
-                    //// If the filter is shown, don't automatically populate the grid. Wait for them to hit apply on the filter
+                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
                     gfTransactions.Show();
                 }
                 else
@@ -250,6 +258,11 @@ namespace RockWeb.Blocks.Finance
         #endregion Control Methods
 
         #region Events
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the filter display for each saved user value

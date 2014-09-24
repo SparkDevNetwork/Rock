@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Crm
             if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == person.Id ).Count() > 0 )
             {
                 //imageEditor.ButtonCssClass = "invisible";
-                imageEditor.ButtonCssClass = "btn btn-default margin-t-sm aspNetDisabled";
+                imageEditor.ButtonCssClass = "btn btn-default btn-sm margin-t-sm aspNetDisabled";
                 imageEditor.ButtonText = "<i class='fa fa-ban'></i> Staff Member";
             }
             

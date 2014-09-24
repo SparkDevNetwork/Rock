@@ -35,29 +35,17 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlCheckinLabelPicker" CssClass="panel panel-block" runat="server" Visible="false">
-            
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Label Picker</h1>
-            </div>
-            <div class="panel-body">
-            
+        <Rock:ModalDialog ID="mdAddCheckinLabel" runat="server" ScrollbarEnabled="false" ValidationGroup="vgAddCheckinLabel" SaveButtonText="Add" OnSaveClick="btnAddCheckinLabel_Click" Title="Select Check-in Label">
+            <Content>
                 <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
-                <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
+                <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" ValidationGroup="vgAddCheckinLabel" />
+            </Content>
+        </Rock:ModalDialog>
 
-                <div class="actions">
-                    <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancelAddCheckinLabel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancelAddCheckinLabel_Click"></asp:LinkButton>
-                </div>
-            </div>
-
-        </asp:Panel>
-
-        <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" ValidationGroup="Location">
+        <Rock:ModalDialog ID="mdLocationPicker" runat="server" ScrollbarEnabled="false" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
-                <asp:HiddenField ID="hfLocationPickerVisible" runat="server" />
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-                <Rock:LocationItemPicker ID="locationPicker" runat="server" Label="Check-in Location" ValidationGroup="Location" />
+                <Rock:LocationItemPicker ID="locationPicker" runat="server" Label="Check-in Location" ValidationGroup="Location" Required="true" />
             </Content>
         </Rock:ModalDialog>
 

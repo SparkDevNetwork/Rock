@@ -56,20 +56,22 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
-            int groupId = GetAttributeValue( "Group" ).AsInteger();
-            if ( groupId == 0 )
+            Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
+            int groupId = 0;
+            
+            if ( groupGuid == Guid.Empty )
             {
                 groupId = PageParameter( "GroupId" ).AsInteger();
             }
 
-            if ( groupId != 0 )
+            if ( !(groupId == 0 && groupGuid == Guid.Empty ))
             {
                 string key = string.Format( "Group:{0}", groupId );
                 _group = RockPage.GetSharedItem( key ) as Group;
                 if ( _group == null )
                 {
                     _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
-                        .Where( g => g.Id == groupId )
+                        .Where( g => g.Id == groupId || g.Guid == groupGuid )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, _group );
                 }
@@ -413,7 +415,7 @@ namespace RockWeb.Blocks.Groups
                         groupMembers = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                     }
 
-                    // Since we're not binding to actual workflow list, but are using AttributeField columns,
+                    // Since we're not binding to actual group member list, but are using AttributeField columns,
                     // we need to save the workflows into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembers.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );

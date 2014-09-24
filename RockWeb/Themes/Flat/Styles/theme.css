@@ -1529,8 +1529,6 @@ fieldset .actions {
 }
 .well-message {
   text-align: center;
-  background-color: #ecf0f1;
-  border: 1px solid #dde4e6;
 }
 .well-message h1 {
   font-size: 38px;
@@ -1538,6 +1536,26 @@ fieldset .actions {
 .well-message i {
   font-size: 84px;
   margin: 12px 0;
+}
+.well-message.well-message-info {
+  background-color: #3498db;
+  color: #ffffff;
+  border-color: #3498db;
+}
+.well-message.well-message-success {
+  background-color: #18bc9c;
+  color: #ffffff;
+  border-color: #18bc9c;
+}
+.well-message.well-message-danger {
+  background-color: #e74c3c;
+  color: #ffffff;
+  border-color: #e74c3c;
+}
+.well-message.well-message-warning {
+  background-color: #f39c12;
+  color: #ffffff;
+  border-color: #f39c12;
 }
 ul.groupmembers {
   list-style: none;
@@ -2057,12 +2075,6 @@ td.grid-col-actions {
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #2c3e50;
-  color: #ffffff;
-  border-color: #ffffff;
-}
-.grid-actions .btn:hover {
-  background-color: #1a242f;
 }
 .table-light thead th {
   background-color: inherit;
@@ -2087,6 +2099,9 @@ td.grid-col-actions {
 .table-padded td,
 .table-padded th {
   padding: 12px !important;
+}
+.grid-select-field {
+  text-align: center;
 }
 .grid-select-field .checkbox,
 .grid-select-field .radio {
@@ -2246,10 +2261,10 @@ td.grid-col-actions {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #98a3ab;
+  border: 1px solid #cfd9db;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #b4bcc2;
+  background-color: #ecf0f1;
   position: relative;
 }
 .panel-note article .date {
@@ -2442,14 +2457,14 @@ td.grid-col-actions {
   color: inherit;
   text-decoration: none;
 }
-.workflow-activity.activated-with-workflow > .panel-heading {
+.panel.workflow-activity.activated-with-workflow > .panel-heading {
   background-color: #18bc9c;
   color: #ffffff;
 }
-.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
+.panel.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
   color: #ffffff;
 }
-.workflow-activity .panel-title:before {
+.panel.workflow-activity .panel-title:before {
   content: "\f1b3";
   font-family: FontAwesome;
   font-weight: normal;
@@ -2476,13 +2491,30 @@ td.grid-col-actions {
   margin-bottom: 12px;
 }
 .panel-group .panel-workflowitem {
+  border-color: #dde4e6;
   margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem > .panel-heading {
+  color: #2c3e50;
+  background-color: #ecf0f1;
+  border-color: #dde4e6;
+}
+.panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #dde4e6;
+}
+.panel-group .panel-workflowitem > .panel-heading .badge {
+  color: #ecf0f1;
+  background-color: #2c3e50;
+}
+.panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #dde4e6;
 }
 .panel-group .panel-workflowitem:hover {
   background-color: #fff;
 }
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
+  background-color: #ecf0f1;
 }
 .panel-group .panel-workflowitem .panel-heading a {
   display: block;
@@ -2623,6 +2655,11 @@ table.attribute-grid tr th:nth-child(3) {
   cursor: pointer;
   border: 2px solid #18bc9c;
 }
+.transaction-matching .progress {
+  width: 30%;
+  float: left;
+  margin-bottom: 0;
+}
 /*
     Used to manage styles related to the person details page
     
@@ -2641,6 +2678,7 @@ table.attribute-grid tr th:nth-child(3) {
     13. Deceased / Inactive Styles
     14. Bulk Update
     15. Photo Upload
+    16. Duplicate Pages
 */
 .personprofile {
   margin-top: -15px;
@@ -3230,6 +3268,11 @@ tr.inactive td {
   width: 150px;
   overflow: hidden;
 }
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover > td {
+  background-color: #b4bcc2;
+  color: #7b8a8b;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -3283,6 +3326,20 @@ iframe.email-body {
 */
 .workflow-entry-panel > h1:first-of-type {
   margin-top: 0;
+}
+/*
+    Used to manage styles for specific blocks.
+
+    1. Prayer Session
+    2. 
+
+*/
+.prayer-session .panel-note {
+  border: 0;
+  box-shadow: none;
+}
+.prayer-session .panel-note > .panel-body {
+  padding: 0;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3864,6 +3921,9 @@ a.help {
 .panel .panel-heading .panel-title small {
   opacity: .5;
 }
+.panel .panel-heading .checkbox {
+  margin: 0;
+}
 .panel .panel-heading .panel-labels {
   float: right;
 }
@@ -3979,25 +4039,21 @@ a.help {
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #dde4e6;
 }
-.panel-block .panel-heading {
+.panel-block > .panel-heading {
   background-color: #ecf0f1;
-  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
-            float: right;
-            margin-top: 2px;
-        }*/
 }
-.panel-block .panel-heading:before,
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:before,
+.panel-block > .panel-heading:after {
   content: " ";
   display: table;
 }
-.panel-block .panel-heading:after {
+.panel-block > .panel-heading:after {
   clear: both;
 }
-.panel-block .panel-heading .panel-title {
+.panel-block > .panel-heading .panel-title {
   float: left;
 }
-.panel-block .panel-heading .panel-title i {
+.panel-block > .panel-heading .panel-title i {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {

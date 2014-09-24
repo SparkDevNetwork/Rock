@@ -137,9 +137,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadDropDowns()
         {
-            var rockContext = new RockContext();
-
-            cpCampuses.Campuses = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampuses.Campuses = CampusCache.All();
         }
 
         /// <summary>

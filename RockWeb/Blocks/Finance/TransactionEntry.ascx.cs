@@ -324,17 +324,18 @@ namespace RockWeb.Blocks.Finance
                 // Display Options
                 btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
 
-                bool display = false;
+                bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
 
-                bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
-                txtEmail.Visible = display;
-                txtEmail.Required = display;
-                tdEmail.Visible = display;
+                txtEmail.Visible = displayEmail;
+                txtEmail.Required = displayEmail;
+                tdEmailConfirm.Visible = displayEmail;
+                tdEmailReceipt.Visible = displayEmail;
 
-                bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
-                pnbPhone.Visible = display;
-                pnbPhone.Required = display;
-                tdPhone.Visible = display;
+                bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                pnbPhone.Visible = displayPhone;
+                pnbPhone.Required = displayPhone;
+                tdPhoneConfirm.Visible = displayPhone;
+                tdPhoneReceipt.Visible = displayPhone;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
 
@@ -1173,19 +1174,19 @@ namespace RockWeb.Blocks.Finance
                 paymentInfo.LastName = txtLastName.Text;
             }
 
-            tdName.Description = paymentInfo.FullName;
-            tdPhone.Description = paymentInfo.Phone;
-            tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+            tdNameConfirm.Description = paymentInfo.FullName;
+            tdPhoneConfirm.Description = paymentInfo.Phone;
+            tdEmailConfirm.Description = paymentInfo.Email;
+            tdAddressConfirm.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
 
-            tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalConfirm.Description = paymentInfo.Amount.ToString( "C" );
 
-            tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.MaskedNumber;
-            tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
+            tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue.Description;
+            tdAccountNumberConfirm.Description = paymentInfo.MaskedNumber;
+            tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
         }
@@ -1499,11 +1500,26 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                tdTransactionCode.Description = TransactionCode;
-                tdTransactionCode.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
+                tdTransactionCodeReceipt.Description = TransactionCode;
+                tdTransactionCodeReceipt.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
 
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+
+                tdNameReceipt.Description = paymentInfo.FullName;
+                tdPhoneReceipt.Description = paymentInfo.Phone;
+                tdEmailReceipt.Description = paymentInfo.Email;
+                tdAddressReceipt.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+
+                rptAccountListReceipt.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
+                rptAccountListReceipt.DataBind();
+
+                tdTotalReceipt.Description = paymentInfo.Amount.ToString( "C" );
+
+                tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
+                tdAccountNumberReceipt.Description = paymentInfo.MaskedNumber;
+                tdWhenReceipt.Description = schedule != null ? schedule.ToString() : "Today";
+
 
                 // If there was a transaction code returned and this was not already created from a previous saved account,
                 // show the option to save the account.
@@ -1526,6 +1542,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 pnlDupWarning.Visible = true;
+                divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
             }
@@ -1629,7 +1646,7 @@ namespace RockWeb.Blocks.Finance
                     var mm = curr.getMonth()+1;
                     var yy = curr.getFullYear();
                     $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('datepicker').update();
                 }}
             }};
         }});
