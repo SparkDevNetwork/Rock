@@ -3681,5 +3681,146 @@ INSERT INTO [dbo].[Auth]
         }
 
         #endregion
+
+        #region Reports
+
+        /// <summary>
+        /// Adds a report.
+        /// </summary>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="dataViewGuid">The data view unique identifier.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The report.Guid</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        public void AddReport(string categoryGuid, string dataViewGuid, string entityTypeGuid, string name, string description, string guid, int? fetchTop = null )
+        {
+            Migration.Sql( string.Format(@"
+                DECLARE @CategoryId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [Category]
+                        WHERE [Guid] = '{0}'
+                        )
+                    ,@DataViewId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [DataView]
+                        WHERE [Guid] = '{1}'
+                        )
+                    ,@EntityTypeId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [EntityType]
+                        WHERE [Guid] = '{2}'
+                        ) 
+
+                INSERT INTO [Report] (
+                    [IsSystem]
+                    ,[Name]
+                    ,[Description]
+                    ,[CategoryId]
+                    ,[EntityTypeId]
+                    ,[DataViewId]
+                    ,[Guid]
+                    ,[FetchTop]
+                    )
+                VALUES (
+                    0
+                    ,'{3}'
+                    ,'{4}'
+                    ,@CategoryId
+                    ,@EntityTypeId
+                    ,@DataViewId
+                    ,'{5}'
+                    ,{6}
+                    )",
+                      categoryGuid, // {0}
+                      dataViewGuid, // {1}
+                      entityTypeGuid, // {2}
+                      name, // {3}
+                      description, // {4}
+                      guid, // {5}
+                      fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
+                      )
+                      ) ;
+
+        }
+
+        /// <summary>
+        /// Deletes the report 
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteReport( string guid )
+        {
+            Migration.Sql( string.Format( "DELETE FROM [Report] where [Guid] = '{0}'", guid ) );
+        }
+
+        /// <summary>
+        /// Adds a report field to a report
+        /// </summary>
+        /// <param name="reportGuid">The report unique identifier.</param>
+        /// <param name="reportFieldType">Type of the report field.</param>
+        /// <param name="showInGrid">if set to <c>true</c> [show in grid].</param>
+        /// <param name="dataSelectComponentEntityTypeGuid">The data select component entity type unique identifier.</param>
+        /// <param name="selection">The selection.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="columnHeaderText">The column header text.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddReportField(string reportGuid, Rock.Model.ReportFieldType reportFieldType, bool showInGrid, 
+            string dataSelectComponentEntityTypeGuid, string selection, int order, string columnHeaderText, string guid  )
+        {
+            Migration.Sql( string.Format( @"
+            DECLARE @ReportId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [Report]
+                        WHERE [Guid] = '{0}'
+                        )
+                   ,@DataSelectComponentEntityTypeId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [EntityType]
+                        WHERE [Guid] = '{3}'
+                        ) 
+
+            INSERT INTO [dbo].[ReportField] (
+                [ReportId]
+                ,[ReportFieldType]
+                ,[ShowInGrid]
+                ,[DataSelectComponentEntityTypeId]
+                ,[Selection]
+                ,[Order]
+                ,[ColumnHeaderText]        
+                ,[Guid]
+                )
+            VALUES (
+                @ReportId
+                ,{1}
+                ,{2}
+                ,@DataSelectComponentEntityTypeId
+                ,'{4}'
+                ,{5}
+                ,'{6}'
+                ,'{7}'
+                )
+            ",
+              reportGuid, // {0}
+              reportFieldType.ConvertToInt(), // {1}
+              showInGrid.Bit(), // {2}
+              dataSelectComponentEntityTypeGuid, // {3}
+              selection.Replace("'", "''"), // {4}
+              order, // {5}
+              columnHeaderText, // {6}
+              guid // {7}
+              ));
+        }
+
+        /// <summary>
+        /// Deletes the report field.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteReportField(string guid)
+        {
+            Migration.Sql( string.Format( "DELETE FROM [ReportField] where [Guid] = '{0}'", guid ) );
+        }
+
+        #endregion
     }
 }
