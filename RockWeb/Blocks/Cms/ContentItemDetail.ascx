@@ -33,7 +33,7 @@
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Title" />
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group" id="divStatus" runat="server">
                                 <label class="control-label">Status</label>
                                 <div class="form-control-static">
                                     <asp:HiddenField ID="hfStatus" runat="server" />
