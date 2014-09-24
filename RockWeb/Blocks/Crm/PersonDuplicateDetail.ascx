@@ -14,9 +14,9 @@
                     <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                         <Columns>
                             <Rock:SelectField ShowHeader="false" />
-                            <asp:TemplateField HeaderText="Score" ItemStyle-HorizontalAlign="Right" SortExpression="Score">
+                            <asp:TemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore">
                                 <ItemTemplate>
-                                    <%# GetMatchColumnHtml((double?)Eval("Score")) %>
+                                    <%# GetConfidenceScoreColumnHtml((double?)Eval("ConfidenceScore")) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
 
@@ -59,7 +59,7 @@
                                     </ul>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="PhoneNumbers">
+                            <asp:TemplateField HeaderText="Phone Numbers">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptrPhoneNumbers" runat="server" DataSource='<%# GetPhoneNumbers(Eval("DuplicatePerson") as Rock.Model.Person) %>'>

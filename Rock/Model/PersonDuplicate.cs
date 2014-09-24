@@ -122,7 +122,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Index]
-        public decimal? ConfidenceScore { get; set; }
+        public double? ConfidenceScore { get; set; }
 
         #endregion
 
