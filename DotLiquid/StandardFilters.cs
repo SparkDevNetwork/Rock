@@ -108,7 +108,7 @@ namespace DotLiquid
         }
 
         /// <summary>
-        /// takes two datetimes and humanizes the difference like '1 day'
+        /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -116,6 +116,11 @@ namespace DotLiquid
         {
             if ( string.IsNullOrWhiteSpace(sStartDate) || string.IsNullOrWhiteSpace(sEndDate) )
                 return "Two dates must be provided";
+
+            if ( sEndDate == "Now" )
+            {
+                sEndDate = RockDateTime.Now.ToString();
+            }
 
             DateTime startDate, endDate;
 
@@ -127,6 +132,52 @@ namespace DotLiquid
             else
             {
                 return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
+        /// takes two datetimes and returns the difference in the unit you provide
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static Int64? DateDiff( string sStartDate, string sEndDate, string unit )
+        {
+            if ( string.IsNullOrWhiteSpace( sStartDate ) || string.IsNullOrWhiteSpace( sEndDate ) )
+                return null;
+
+            if ( sEndDate == "Now" )
+            {
+                sEndDate = RockDateTime.Now.ToString();
+            }
+
+            if ( sStartDate == "Now" )
+            {
+                sStartDate = RockDateTime.Now.ToString();
+            }
+
+            DateTime startDate, endDate;
+
+            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse( sEndDate, out endDate ) )
+            {
+                TimeSpan difference = endDate - startDate;
+
+                switch ( unit )
+                {
+                    case "D":
+                        return (Int64)difference.TotalDays;
+                    case "H":
+                        return (Int64)difference.TotalHours;
+                    case "M":
+                        return (Int64)difference.TotalMinutes;
+                    case "S":
+                        return (Int64)difference.TotalSeconds;
+                    default:
+                        return null;
+                }
+            }
+            else
+            {
+                return null;
             }
         }
 
