@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.0-30225")]
-    public sealed partial class PersonDuplicateTotalCapacity : IMigrationMetadata
+    public sealed partial class PersonDuplicateConfidence : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PersonDuplicateTotalCapacity));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(PersonDuplicateConfidence));
         
         string IMigrationMetadata.Id
         {
-            get { return "201409221701545_PersonDuplicateTotalCapacity"; }
+            get { return "201409232336572_PersonDuplicateConfidence"; }
         }
         
         string IMigrationMetadata.Source
