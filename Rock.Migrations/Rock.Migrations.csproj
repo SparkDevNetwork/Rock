@@ -78,9 +78,9 @@
     <Compile Include="Migrations\201409211134010_WorkflowFormFieldText.Designer.cs">
       <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409232336572_PersonDuplicateConfidence.cs" />
-    <Compile Include="Migrations\201409232336572_PersonDuplicateConfidence.Designer.cs">
-      <DependentUpon>201409232336572_PersonDuplicateConfidence.cs</DependentUpon>
+    <Compile Include="Migrations\201409241226361_PersonDuplicateConfidence.cs" />
+    <Compile Include="Migrations\201409241226361_PersonDuplicateConfidence.Designer.cs">
+      <DependentUpon>201409241226361_PersonDuplicateConfidence.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.Designer.cs">
@@ -1247,8 +1247,8 @@
     <EmbeddedResource Include="Migrations\201409211134010_WorkflowFormFieldText.resx">
       <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409232336572_PersonDuplicateConfidence.resx">
-      <DependentUpon>201409232336572_PersonDuplicateConfidence.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201409241226361_PersonDuplicateConfidence.resx">
+      <DependentUpon>201409241226361_PersonDuplicateConfidence.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
       <DependentUpon>201408261602488_TransactionImageOrder.cs</DependentUpon>

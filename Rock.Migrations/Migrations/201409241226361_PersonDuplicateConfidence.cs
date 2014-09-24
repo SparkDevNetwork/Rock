@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-
+    
     /// <summary>
     ///
     /// </summary>
@@ -29,11 +29,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn( "dbo.PersonDuplicate", "IgnoreUntilScoreChanges", c => c.Boolean( nullable: false ) );
-            AddColumn( "dbo.PersonDuplicate", "TotalCapacity", c => c.Int() );
+            AddColumn("dbo.PersonDuplicate", "IgnoreUntilScoreChanges", c => c.Boolean(nullable: false));
+            AddColumn("dbo.PersonDuplicate", "TotalCapacity", c => c.Int());
             Sql( @"ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED" );
             CreateIndex( "dbo.PersonDuplicate", "ConfidenceScore" );
-
 
             Sql( @"
 /*
@@ -1066,17 +1065,21 @@ END
     WHERE [Guid] = 'B1CA86DC-9890-4D26-8EBD-488044E1B3DD'
 " );
 
-        }
+            // Give staff and staff-like users access to edit person entity type
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.Person", 0, "Edit", true, "2C112948-FF4C-46E7-981A-0257681EADF4", 0, "10200730-ABAE-4368-A16C-D10F4E64B9D1" );
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.Person", 1, "Edit", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", 0, "361EE78F-AFEA-486A-AF6D-363A3E19B028" );
 
+        }
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropIndex( "dbo.PersonDuplicate", new[] { "ConfidenceScore" } );
-            DropColumn( "dbo.PersonDuplicate", "ConfidenceScore" );
-            DropColumn( "dbo.PersonDuplicate", "TotalCapacity" );
-            DropColumn( "dbo.PersonDuplicate", "IgnoreUntilScoreChanges" );
+            DropIndex("dbo.PersonDuplicate", new[] { "ConfidenceScore" });
+            DropColumn("dbo.PersonDuplicate", "ConfidenceScore");
+            DropColumn("dbo.PersonDuplicate", "TotalCapacity");
+            DropColumn("dbo.PersonDuplicate", "IgnoreUntilScoreChanges");
         }
     }
 }
