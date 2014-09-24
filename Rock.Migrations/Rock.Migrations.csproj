@@ -50,36 +50,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201409142128150_AddPhotoRequestGroupPage.cs" />
-    <Compile Include="Migrations\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409151758555_PageContextUniqueIndex.cs" />
-    <Compile Include="Migrations\201409151758555_PageContextUniqueIndex.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409151758555_PageContextUniqueIndex.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409151758555_PageContextUniqueIndex.Designer.cs">
       <DependentUpon>201409151758555_PageContextUniqueIndex.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409162240173_AttributeValuesAsGuids.cs" />
-    <Compile Include="Migrations\201409162240173_AttributeValuesAsGuids.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409162240173_AttributeValuesAsGuids.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409162240173_AttributeValuesAsGuids.Designer.cs">
       <DependentUpon>201409162240173_AttributeValuesAsGuids.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409171938301_UpdateWorkflowEmails.cs" />
-    <Compile Include="Migrations\201409171938301_UpdateWorkflowEmails.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409171938301_UpdateWorkflowEmails.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409171938301_UpdateWorkflowEmails.Designer.cs">
       <DependentUpon>201409171938301_UpdateWorkflowEmails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.cs" />
-    <Compile Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409172043518_BinaryFileTypeViewSecurity.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409172043518_BinaryFileTypeViewSecurity.Designer.cs">
       <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409182331403_ContentItem.cs" />
-    <Compile Include="Migrations\201409182331403_ContentItem.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409182331403_ContentItem.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409182331403_ContentItem.Designer.cs">
       <DependentUpon>201409182331403_ContentItem.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409211134010_WorkflowFormFieldText.cs" />
-    <Compile Include="Migrations\201409211134010_WorkflowFormFieldText.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409211134010_WorkflowFormFieldText.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409211134010_WorkflowFormFieldText.Designer.cs">
       <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409241226361_PersonDuplicateConfidence.cs" />
-    <Compile Include="Migrations\201409241226361_PersonDuplicateConfidence.Designer.cs">
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409241226361_PersonDuplicateConfidence.cs" />
+    <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409241226361_PersonDuplicateConfidence.Designer.cs">
       <DependentUpon>201409241226361_PersonDuplicateConfidence.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.cs" />
@@ -1226,28 +1226,28 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201409142128150_AddPhotoRequestGroupPage.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.resx">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409151758555_PageContextUniqueIndex.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409151758555_PageContextUniqueIndex.resx">
       <DependentUpon>201409151758555_PageContextUniqueIndex.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409162240173_AttributeValuesAsGuids.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409162240173_AttributeValuesAsGuids.resx">
       <DependentUpon>201409162240173_AttributeValuesAsGuids.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409171938301_UpdateWorkflowEmails.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409171938301_UpdateWorkflowEmails.resx">
       <DependentUpon>201409171938301_UpdateWorkflowEmails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409172043518_BinaryFileTypeViewSecurity.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409172043518_BinaryFileTypeViewSecurity.resx">
       <DependentUpon>201409172043518_BinaryFileTypeViewSecurity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409182331403_ContentItem.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409182331403_ContentItem.resx">
       <DependentUpon>201409182331403_ContentItem.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409211134010_WorkflowFormFieldText.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409211134010_WorkflowFormFieldText.resx">
       <DependentUpon>201409211134010_WorkflowFormFieldText.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409241226361_PersonDuplicateConfidence.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409241226361_PersonDuplicateConfidence.resx">
       <DependentUpon>201409241226361_PersonDuplicateConfidence.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.13\201408261602488_TransactionImageOrder.resx">
