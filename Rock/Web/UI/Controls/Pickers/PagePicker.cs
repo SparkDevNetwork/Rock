@@ -128,7 +128,9 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
-                    $('#page-route-picker_{3}').toggle();
+                    $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(function () {{
+                        Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
+                    }});
                 }});
 
                 $('#{1}').click(function () {{
@@ -443,9 +445,8 @@ namespace Rock.Web.UI.Controls
 
                     _btnShowPageRoutePicker.RenderControl( writer );
 
-                    writer.Write( "<div class='picker'>" );
-                    writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker-menu picker dropdown-menu'>", this.ClientID ) );
-
+                    writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker'>", this.ClientID ) );
+                    writer.Write( @"<div class='picker-menu picker dropdown-menu js-page-route-picker-menu'>" );
 
                     _rblSelectPageRoute.RenderControl( writer );
 
