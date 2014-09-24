@@ -60,7 +60,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             var datasource = new List<string[]>();
 
-            var campusStreams = CampusCache.All()
+            var campuses = CampusCache.All();
+            var campusStreams = campuses
                 .Where( c =>
                     !campusGuid.HasValue ||
                     c.Guid == campusGuid.Value )
