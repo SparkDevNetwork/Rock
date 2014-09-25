@@ -170,7 +170,7 @@ namespace Rock.Reporting
                 AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ) );
             }
 
-            int index = 0;
+            int index = 1;
             var sortedEntityFields = new List<EntityField>();
             foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
             {
