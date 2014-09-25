@@ -135,14 +135,13 @@ namespace Rock.Reporting.DataFilter
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
-                            switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                            var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                            if ( itemValues != null )
                             {
-                                case SystemGuid.FieldType.SINGLE_SELECT:
-                                    //TODO get attribute values qualifier to populate cbl
-                                    break;
-                                case SystemGuid.FieldType.MULTI_SELECT:
-                                    //TODO get attribute values qualifier to populate cbl
-                                    break;
+                                foreach ( var listItem in itemValues.Value.GetListItems() )
+                                {
+                                    cblMultiSelect.Items.Add( listItem );
+                                }
                             }
                         }
                     }
@@ -169,6 +168,16 @@ namespace Rock.Reporting.DataFilter
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
+                            var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                            if ( itemValues != null )
+                            {
+                                foreach ( var listItem in itemValues.Value.GetListItems() )
+                                {
+                                    ddlSingleSelect.Items.Add( listItem );
+                                }
+                            }
+                            
+                            
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                             {
                                 case SystemGuid.FieldType.BOOLEAN:
@@ -356,27 +365,29 @@ namespace Rock.Reporting.DataFilter
 
                 writer.RenderEndTag();  // row
 
+                string entityFieldTitleJS = System.Web.HttpUtility.JavaScriptStringEncode( entityField.Title );
+
                 string clientFormatSelection = string.Empty;
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
                     case SystemGuid.FieldType.DATE:
-                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DECIMAL:
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
-                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.MULTI_SELECT:
-                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityField.Title );
+                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DAY_OF_WEEK:
                     case SystemGuid.FieldType.SINGLE_SELECT:
-                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityFieldTitleJS );
                         break;
                 }
 
@@ -605,7 +616,14 @@ namespace Rock.Reporting.DataFilter
             var attributeValues = service.Queryable().Where( v =>
                 v.Attribute.Guid == property.AttributeGuid &&
                 v.EntityId.HasValue &&
-                v.Value != string.Empty ).ToList();
+                v.Value != string.Empty )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.EntityId,
+                    a.Value
+                } );
+
 
             switch ( property.FilterFieldType )
             {
