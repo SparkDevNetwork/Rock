@@ -244,8 +244,11 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 Guid? guid = value.AsGuidOrNull();
-                var category = new CategoryService( new RockContext() ).Get( guid.Value );
-                picker.SetValue( category );
+                if ( guid != null )
+                {
+                    var category = new CategoryService( new RockContext() ).Get( guid.Value );
+                    picker.SetValue( category );
+                }
             }
         }
 
