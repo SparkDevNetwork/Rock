@@ -406,12 +406,19 @@ namespace RockWeb.Blocks.Reporting
                 report.ReportFields.Add( reportField );
             }
 
-            if ( report.Id.Equals( 0 ) )
+            var adding = report.Id.Equals( 0 );
+            if ( adding  )
             {
                 service.Add( report );
             }
 
             rockContext.SaveChanges();
+
+            if ( adding )
+            {
+                // add ADMINISTRATE to the person who added the report 
+                Rock.Security.Authorization.AllowPerson( report, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();

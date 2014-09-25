@@ -205,7 +205,9 @@ $(document).ready(function() {
                 return;
             }
 
-            if ( dataView.Id.Equals( 0 ) )
+
+            var adding = dataView.Id.Equals( 0 );
+            if ( adding  )
             {
                 service.Add( dataView );
             }
@@ -219,6 +221,12 @@ $(document).ready(function() {
             }
 
             rockContext.SaveChanges();
+
+            if ( adding )
+            {
+                // add ADMINISTRATE to the person who added the dataView 
+                Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();

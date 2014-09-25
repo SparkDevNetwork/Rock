@@ -351,6 +351,8 @@ namespace RockWeb.Blocks.Groups
 
             int groupId = int.Parse( hfGroupId.Value );
 
+            
+
             if ( groupId == 0 )
             {
                 group = new Group();
@@ -435,11 +437,19 @@ namespace RockWeb.Blocks.Groups
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
-                if ( group.Id.Equals( 0 ) )
+                var adding = group.Id.Equals( 0 );
+                if ( adding )
                 {
                     groupService.Add( group );
                 }
+
                 rockContext.SaveChanges();
+
+                if (adding)
+                {
+                    // add ADMINISTRATE to the person who added the group 
+                    Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+                }
 
                 group.SaveAttributeValues( rockContext );
 
