@@ -124,16 +124,9 @@ namespace Rock.Field.Types
 
                 else
                 {
-                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    foreach ( var listItem in listSource.GetListItems() )
                     {
-                        var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                        if ( keyValueArray.Length > 0 )
-                        {
-                            ListItem li = new ListItem();
-                            li.Value = keyValueArray[0];
-                            li.Text = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
-                            editControl.Items.Add( li );
-                        }
+                        editControl.Items.Add( listItem );
                     }
                 }
 

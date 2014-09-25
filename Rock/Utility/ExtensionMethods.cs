@@ -236,6 +236,29 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a List of ListItems that contains the values/text in this string that are formatted as either 'value1,value2,value3,...' or 'value1^text1,value2^text2,value3^text3,...'
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static List<ListItem> GetListItems( this string str )
+        {
+            var result = new List<ListItem>();
+            foreach ( string keyvalue in str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( keyValueArray.Length > 0 )
+                {
+                    var listItem = new ListItem();
+                    listItem.Value = keyValueArray[0].Trim();
+                    listItem.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
+                    result.Add( listItem );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
         /// from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace
         /// </summary>
