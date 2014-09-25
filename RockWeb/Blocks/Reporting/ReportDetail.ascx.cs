@@ -909,34 +909,37 @@ namespace RockWeb.Blocks.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
-                            selectedAttributes.Add( columnIndex, attribute );
-
-                            BoundField boundField;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                            if ( attribute != null )
                             {
-                                boundField = new BoolField();
+                                selectedAttributes.Add( columnIndex, attribute );
+
+                                BoundField boundField;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                                {
+                                    boundField = new BoolField();
+                                }
+                                else
+                                {
+                                    boundField = new BoundField();
+                                }
+
+                                boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
+                                boundField.SortExpression = null;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                {
+                                    boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                                }
+
+                                boundField.Visible = reportField.ShowInGrid;
+
+                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
+                                gReport.Columns.Add( boundField );
                             }
-                            else
-                            {
-                                boundField = new BoundField();
-                            }
-
-                            boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-                            boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
-                            boundField.SortExpression = null;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
-                            {
-                                boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
-                                boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                            }
-
-                            boundField.Visible = reportField.ShowInGrid;
-
-                            // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
-                            gReport.Columns.Add( boundField );
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
