@@ -101,7 +101,7 @@ namespace Rock.Field.Types
             ddl.Help = "The Defined Type to select values from.";
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
+            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
