@@ -233,11 +233,11 @@ namespace RockWeb.Blocks.Finance
                 txn = txnService.Get( txnId.Value );
             }
 
-            if ( txn == null && batchId.HasValue )
+            if ( txn == null )
             {
                 txn = new FinancialTransaction();
                 txnService.Add( txn );
-                txn.BatchId = batchId.Value;
+                txn.BatchId = batchId;
             }
 
             if ( txn != null )

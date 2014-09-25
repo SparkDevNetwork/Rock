@@ -90,9 +90,11 @@ namespace Rock.Model
             target.PersonAliasId = source.PersonAliasId;
             target.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
             target.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
+            target.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
             target.Score = source.Score;
             target.ScoreDetail = source.ScoreDetail;
             target.Capacity = source.Capacity;
+            target.TotalCapacity = source.TotalCapacity;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

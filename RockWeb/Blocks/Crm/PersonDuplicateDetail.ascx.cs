@@ -37,13 +37,11 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Duplicate Detail" )]
     [Category( "CRM" )]
     [Description( "Shows records that are possible duplicates of the selected person" )]
-    [DecimalField( "Match Percent High", "The minimum percent score required to be considered a likely match", true, 80.00 )]
-    [DecimalField( "Match Percent Low", "The max percent score required to be considered an unlikely match", true, 40.00 )]
+    [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00 )]
+    [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 40.00 )]
     public partial class PersonDuplicateDetail : RockBlock
     {
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -91,19 +89,19 @@ namespace RockWeb.Blocks.Crm
         #region Methods
 
         /// <summary>
-        /// Gets the match HTML.
+        /// Gets the Confidence Score HTML include bootstrap label
         /// </summary>
-        /// <param name="percent">The percent.</param>
+        /// <param name="confidenceScore">The confidence score.</param>
         /// <returns></returns>
-        public string GetMatchColumnHtml( double? percent )
+        public string GetConfidenceScoreColumnHtml( double? confidenceScore )
         {
             string css;
 
-            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
+            if ( confidenceScore >= this.GetAttributeValue( "ConfidenceScoreHigh" ).AsDoubleOrNull() )
             {
                 css = "label label-success";
             }
-            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
+            else if ( confidenceScore <= this.GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull() )
             {
                 css = "label label-default";
             }
@@ -112,14 +110,27 @@ namespace RockWeb.Blocks.Crm
                 css = "label label-warning";
             }
 
-            if ( percent.HasValue )
+            if ( confidenceScore.HasValue )
             {
-                return string.Format( "<span class='{0}'>{1}</span>", css, ( percent.Value / 100 ).ToString( "P" ) );
+                return string.Format( "<span class='{0}'>{1}</span>", css, ( confidenceScore.Value / 100 ).ToString( "P" ) );
             }
             else
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the person view onclick.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public string GetPersonViewOnClick( int personId )
+        {
+            var url = "/person/" + personId.ToString();
+
+            // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+            return string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
         }
 
         /// <summary>
@@ -164,20 +175,27 @@ namespace RockWeb.Blocks.Crm
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
             //// select person duplicate records
-            //// list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            //// list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
             var qry = personDuplicateService.Queryable()
-                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate )
+                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate && !a.IgnoreUntilScoreChanges )
                 .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId )
                 .Select( s => new
                 {
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = s.Id,
                     DuplicatePerson = s.DuplicatePersonAlias.Person,
-                    Score = s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null,
+                    s.ConfidenceScore,
                     IsComparePerson = true
                 } );
 
-            qry = qry.OrderByDescending( a => a.Score ).ThenBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+            double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
+            if ( confidenceScoreLow.HasValue )
+            {
+                qry = qry.Where( a => a.ConfidenceScore >= confidenceScoreLow );
+            }
+
+            qry = qry.OrderByDescending( a => a.ConfidenceScore ).ThenBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+
             var gridList = qry.ToList();
 
             // put the person we are comparing the duplicates to at the top of the list
@@ -189,9 +207,11 @@ namespace RockWeb.Blocks.Crm
                     PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = 0,
                     DuplicatePerson = person,
-                    Score = (double?)null,
+                    ConfidenceScore = (double?)null,
                     IsComparePerson = false
                 } );
+
+            nbNoDuplicatesMessage.Visible = gridList.Count == 1;
 
             gList.DataSource = gridList;
             gList.DataBind();
@@ -226,6 +246,10 @@ namespace RockWeb.Blocks.Crm
                 // If this is the main person for the compare, hide the "not duplicate" button
                 LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
                 btnNotDuplicate.Visible = isComparePerson;
+
+                // If this is the main person for the compare, hide the "ignore duplicate" button
+                LinkButton btnIgnoreDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnIgnoreDuplicate" );
+                btnIgnoreDuplicate.Visible = isComparePerson;
             }
         }
 
@@ -241,6 +265,23 @@ namespace RockWeb.Blocks.Crm
             int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
             var personDuplicate = personDuplicateService.Get( personDuplicateId );
             personDuplicateService.Delete( personDuplicate );
+            rockContext.SaveChanges();
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnIgnoreDuplicate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnIgnoreDuplicate_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+            int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
+            var personDuplicate = personDuplicateService.Get( personDuplicateId );
+            personDuplicate.IgnoreUntilScoreChanges = true;
             rockContext.SaveChanges();
 
             BindGrid();

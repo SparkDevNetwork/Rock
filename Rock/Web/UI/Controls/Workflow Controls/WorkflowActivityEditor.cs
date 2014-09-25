@@ -250,6 +250,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         /// Sets the workflow activity.
         /// </summary>
         /// <param name="activity">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         public void SetWorkflowActivity( WorkflowActivity activity, RockContext rockContext, bool setValues = false )
         {

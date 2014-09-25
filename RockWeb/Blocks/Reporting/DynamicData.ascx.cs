@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Reporting
                     bf = new BoolField();
                 }
 
-                if ( dataTableColumn.DataType == typeof( DateTime ) )
+                else if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
                     bf = new DateField();
 
@@ -425,6 +425,10 @@ namespace RockWeb.Blocks.Reporting
                             }
                         }
                     }
+                }
+                else
+                {
+                    bf.HtmlEncode = false;
                 }
 
                 bf.DataField = dataTableColumn.ColumnName;

@@ -70,5 +70,15 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.GroupMember entity.
         /// </summary>
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Person entity
+        /// </summary>
+        public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
+
+        /// <summary>
+        /// The LiquidSelect DataSelect field for Reporting
+        /// </summary>
+        public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";
     }
 }

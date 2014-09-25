@@ -84,22 +84,12 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( pnlEditDetails.Visible )
                 {
-                    var rockContext = new RockContext();
-                    ContentChannel channel;
-                    int? channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
-                    if ( channelId.HasValue && channelId.Value > 0 )
-                    {
-                        channel = new ContentChannelService( rockContext ).Get( channelId.Value );
-                    }
-                    else
-                    {
-                        channel = new ContentChannel { Id = 0, ContentTypeId = PageParameter("contentTypeId").AsInteger() };
-                    }
-
+                    var channel = new ContentChannel();
+                    channel.Id = hfContentChannelId.Value.AsInteger();
+                    channel.ContentTypeId = hfContentTypeId.Value.AsInteger();
                     channel.LoadAttributes();
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false );
-
                 }
             }
         }
@@ -452,7 +442,10 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentChannel">The content channel.</param>
         private void AddAttributeControls( ContentChannel contentChannel )
         {
-            contentChannel.ContentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
+            int contentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
+            hfContentTypeId.Value = contentTypeId.ToString();
+
+            contentChannel.ContentTypeId = contentTypeId;
             contentChannel.LoadAttributes();
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );

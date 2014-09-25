@@ -101,7 +101,7 @@ namespace Rock.Field.Types
             ddl.Help = "The Defined Type to select values from.";
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
+            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>

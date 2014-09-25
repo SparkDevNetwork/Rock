@@ -422,6 +422,11 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
+                        if ( activity.Attributes == null)
+                        {
+                            activity.LoadAttributes( rockContext );
+                        }
+
                         return activity.Process( rockContext, entity, out errorMessages );
                     }
                 }

@@ -169,7 +169,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -244,8 +244,11 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 Guid? guid = value.AsGuidOrNull();
-                var category = new CategoryService( new RockContext() ).Get( guid.Value );
-                picker.SetValue( category );
+                if ( guid != null )
+                {
+                    var category = new CategoryService( new RockContext() ).Get( guid.Value );
+                    picker.SetValue( category );
+                }
             }
         }
 

@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Finance
         });
     });
 ";
-            ScriptManager.RegisterStartupScript( lbCancel, lbCancel.GetType(), "update-txn-status", script, true );
+            ScriptManager.RegisterStartupScript( lbCancelSchedule, lbCancelSchedule.GetType(), "update-txn-status", script, true );
         }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -159,11 +159,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Click event of the lbCancel control.
+        /// Handles the Click event of the lbCancelSchedule control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
+        protected void lbCancelSchedule_Click( object sender, EventArgs e )
         {
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
@@ -190,11 +190,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Click event of the lbReactivate control.
+        /// Handles the Click event of the lbReactivateSchedule control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbReactivate_Click( object sender, EventArgs e )
+        protected void lbReactivateSchedule_Click( object sender, EventArgs e )
         {
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
@@ -218,6 +218,16 @@ namespace RockWeb.Blocks.Finance
                     ShowView( txn );
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToParentPage();
         }
 
         #endregion
@@ -291,8 +301,8 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 rptrNotes.DataBind();
 
-                lbCancel.Visible = txn.IsActive;
-                lbReactivate.Visible = !txn.IsActive;
+                lbCancelSchedule.Visible = txn.IsActive;
+                lbReactivateSchedule.Visible = !txn.IsActive;
             }
         }
 
