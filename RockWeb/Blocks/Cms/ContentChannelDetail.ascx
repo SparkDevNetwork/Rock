@@ -6,6 +6,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
             <asp:HiddenField ID="hfContentChannelId" runat="server" />
+            <asp:HiddenField ID="hfContentTypeId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -45,7 +46,7 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
                             <Rock:RockDropDownList ID="ddlContentType" runat="server" Label="Content Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentType_SelectedIndexChanged" />
-                            <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Item's Require Approval" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                         <div class="col-md-6">

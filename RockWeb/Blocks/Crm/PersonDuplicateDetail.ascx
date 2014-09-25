@@ -11,12 +11,13 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                    <Rock:NotificationBox ID="nbNoDuplicatesMessage" runat="server" NotificationBoxType="Success" Text="No duplicates found for this person." />
                     <Rock:Grid ID="gList" runat="server" AllowSorting="True" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId">
                         <Columns>
                             <Rock:SelectField ShowHeader="false" />
-                            <asp:TemplateField HeaderText="Score" ItemStyle-HorizontalAlign="Right" SortExpression="Score">
+                            <asp:TemplateField HeaderText="Confidence" ItemStyle-HorizontalAlign="Right" SortExpression="ConfidenceScore">
                                 <ItemTemplate>
-                                    <%# GetMatchColumnHtml((double?)Eval("Score")) %>
+                                    <%# GetConfidenceScoreColumnHtml((double?)Eval("ConfidenceScore")) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
 
@@ -59,7 +60,7 @@
                                     </ul>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="PhoneNumbers">
+                            <asp:TemplateField HeaderText="Phone Numbers">
                                 <ItemTemplate>
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptrPhoneNumbers" runat="server" DataSource='<%# GetPhoneNumbers(Eval("DuplicatePerson") as Rock.Model.Person) %>'>
@@ -78,7 +79,9 @@
                             </asp:TemplateField>
                             <asp:TemplateField ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
+                                    <a class="btn btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user"></i></a>
                                     <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-ban"></i></asp:LinkButton>
+                                    <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-bell-slash"></i></asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>
                         </Columns>
@@ -89,7 +92,9 @@
             <script>
                 Sys.Application.add_load(function () {
 
+                    $('.js-view-person').tooltip();
                     $('.js-not-duplicate').tooltip();
+                    $('.js-ignore-duplicate').tooltip();
 
                     $('.js-not-duplicate').on('click', function (e) {
                         // make sure the element that triggered this event isn't disabled
@@ -100,6 +105,28 @@
                         e.preventDefault();
 
                         Rock.dialogs.confirm("Are you sure this is not a duplicate?", function (result) {
+                            if (result) {
+                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
+
+                                // need to do unescape because firefox might put %20 instead of spaces
+                                postbackJs = unescape(postbackJs);
+
+                                // Careful!
+                                eval(postbackJs);
+                            }
+                        })
+                    });
+
+
+                    $('.js-ignore-duplicate').on('click', function (e) {
+                        // make sure the element that triggered this event isn't disabled
+                        if (e.currentTarget && e.currentTarget.disabled) {
+                            return false;
+                        }
+
+                        e.preventDefault();
+
+                        Rock.dialogs.confirm("This will ignore this potential duplicate until the score changes.  Are you sure you want to ignore this as a duplicate?", function (result) {
                             if (result) {
                                 var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
 

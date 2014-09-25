@@ -16,11 +16,11 @@
 	</code>
 </doc>
 */
-CREATE PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
     SET NOCOUNT ON
-    
+
     BEGIN TRANSACTION
 
     -- prevent stored proc from running simultaneously since we are using #temp tables
@@ -47,12 +47,14 @@ BEGIN
         ,@cScoreWeightPartialName INT = 1
         ,@cScoreWeightFullFirstName INT = 3 /**/
         ,@cScoreWeightFullLastName INT = 3 /**/
-        ,@cScoreWeightPhoneNumber INT = 2
+        ,@cScoreWeightCellPhoneNumber INT = 4
+        ,@cScoreWeightNonCellPhoneNumber INT = 2
         ,@cScoreWeightAddress INT = 2
         ,@cScoreWeightBirthdate INT = 3 /**/
         ,@cScoreWeightGender INT = 1 /**/
         ,@cScoreWeightCampus INT = 1 /**/
         ,@cScoreWeightMaritalStatus INT = 1 /**/
+    DECLARE @TotalCapacity INT = @cScoreWeightEmail + @cScoreWeightPartialName + @cScoreWeightFullFirstName + @cScoreWeightFullLastName + @cScoreWeightCellPhoneNumber + @cScoreWeightNonCellPhoneNumber + @cScoreWeightAddress + @cScoreWeightBirthdate + @cScoreWeightGender + @cScoreWeightCampus + @cScoreWeightMaritalStatus
     --
     -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
@@ -304,6 +306,18 @@ BEGIN
             ,[GroupRoleId]
         ) a
 
+    -- get the original ConfidenceScore of the IgnoreUntilScoreChanges records so that we can un-ignore the ones that have a changed score
+    DECLARE @IgnoreUntilScoreChangesTable TABLE (
+        Id INT
+        ,ConfidenceScore float
+        );
+
+    INSERT INTO @IgnoreUntilScoreChangesTable
+    SELECT [Id]
+        ,[ConfidenceScore]
+    FROM [PersonDuplicate]
+    WHERE [IgnoreUntilScoreChanges] = 1;
+
     /* 
     Reset Scores for everybody. (We want to preserve each record's [IsConfirmedAsNotDuplicate] value)
     */
@@ -402,9 +416,11 @@ BEGIN
 
     --  Update PersonDuplicate table with results of phonenumber match for each number type. 
     --  For example, if both the Cell and Home phone match, that should be a higher score 
-    DECLARE @NumberTypeValueId INT
+    DECLARE @PhoneNumberTypeValueId INT
+    DECLARE @PhoneNumberTypeScore INT
+    DECLARE @PhoneNumberTypeText VARCHAR(50)
 
-    DECLARE numberTypeCursor CURSOR FAST_FORWARD
+    DECLARE phoneNumberTypeCursor CURSOR FAST_FORWARD
     FOR
     SELECT [Id]
     FROM [DefinedValue]
@@ -414,15 +430,26 @@ BEGIN
             )
     ORDER BY [Id]
 
-    OPEN numberTypeCursor
+    OPEN phoneNumberTypeCursor
 
     FETCH NEXT
-    FROM numberTypeCursor
-    INTO @NumberTypeValueId
+    FROM phoneNumberTypeCursor
+    INTO @PhoneNumberTypeValueId
 
     -- loop thru each of the phone number types (home, cell)
     WHILE @@FETCH_STATUS = 0
     BEGIN
+        IF (@PhoneNumberTypeValueId = @cCELL_PHONENUMBER_DEFINEDVALUE_ID)
+        BEGIN
+            SET @PhoneNumberTypeScore = @cScoreWeightCellPhoneNumber
+            SET @PhoneNumberTypeText = '|CellPhone'
+        END
+        ELSE
+        BEGIN
+            SET @PhoneNumberTypeScore = @cScoreWeightNonCellPhoneNumber
+            SET @PhoneNumberTypeText = '|Phone'
+        END
+
         MERGE [PersonDuplicate] AS TARGET
         USING (
             SELECT [e1].[PersonAliasId] [PersonAliasId]
@@ -440,15 +467,15 @@ BEGIN
                 AND [e1].[Gender] = [e2].[Gender]
                 AND [e1].[Id] != [e2].[Id]
                 AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
-            WHERE [e1].[NumberTypeValueId] = @NumberTypeValueId
+            WHERE [e1].[NumberTypeValueId] = @PhoneNumberTypeValueId
             ) AS source(PersonAliasId, DuplicatePersonAliasId, Number, Extension, CountryCode, NumberTypeValueId, Gender)
             ON (target.PersonAliasId = source.PersonAliasId)
                 AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
         WHEN MATCHED
             THEN
                 UPDATE
-                SET [Score] = [Score] + @cScoreWeightPhoneNumber
-                    ,[ScoreDetail] += '|Phone'
+                SET [Score] = [Score] + @PhoneNumberTypeScore
+                    ,[ScoreDetail] += @PhoneNumberTypeText
                     ,[ModifiedDateTime] = @processDateTime
         WHEN NOT MATCHED
             THEN
@@ -465,8 +492,8 @@ BEGIN
                 VALUES (
                     source.PersonAliasId
                     ,source.DuplicatePersonAliasId
-                    ,@cScoreWeightPhoneNumber
-                    ,'|Phone'
+                    ,@PhoneNumberTypeScore
+                    ,@PhoneNumberTypeText
                     ,0
                     ,@processDateTime
                     ,@processDateTime
@@ -474,13 +501,13 @@ BEGIN
                     );
 
         FETCH NEXT
-        FROM numberTypeCursor
-        INTO @NumberTypeValueId
+        FROM phoneNumberTypeCursor
+        INTO @PhoneNumberTypeValueId
     END
 
-    CLOSE numberTypeCursor
+    CLOSE phoneNumberTypeCursor
 
-    DEALLOCATE numberTypeCursor
+    DEALLOCATE phoneNumberTypeCursor
 
     -- Update PersonDuplicate table with results of address (location) match
     MERGE [PersonDuplicate] AS TARGET
@@ -588,7 +615,7 @@ BEGIN
     ---- NOTE Phone Capacity is higher if BOTH Home and Cell Phone are available
     -- increment capacity values for Home Phone
     UPDATE [PersonDuplicate]
-    SET [Capacity] += @cScoreWeightPhoneNumber
+    SET [Capacity] += @cScoreWeightNonCellPhoneNumber
     FROM PersonDuplicate pd
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
@@ -601,7 +628,7 @@ BEGIN
 
     -- increment capacity values for Cell Phone
     UPDATE [PersonDuplicate]
-    SET [Capacity] += @cScoreWeightPhoneNumber
+    SET [Capacity] += @cScoreWeightCellPhoneNumber
     FROM PersonDuplicate pd
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
@@ -822,6 +849,16 @@ BEGIN
         FROM [PersonDuplicate]
         WHERE [ModifiedDateTime] < @processDateTime
     END
+
+    UPDATE [PersonDuplicate]
+    SET [TotalCapacity] = @TotalCapacity;
+
+    UPDATE [PersonDuplicate]
+    set IgnoreUntilScoreChanges = 0
+    from [PersonDuplicate] [pd]
+    join @IgnoreUntilScoreChangesTable [g]
+    on pd.Id = g.id
+    where pd.ConfidenceScore != g.ConfidenceScore; 
 
     /*
     Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)

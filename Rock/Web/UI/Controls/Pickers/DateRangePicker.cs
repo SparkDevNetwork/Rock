@@ -176,9 +176,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavaScript()
         {
+            // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
+            var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
+            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
+
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
-$('#{0}').datepicker().on('changeDate', function (ev) {{
+$('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
 
     // if the startdate is later than the enddate, change the end date to be startdate+1
     if (ev.date.valueOf() > $('#{1}').data('datepicker').date.valueOf()) {{
@@ -195,13 +200,13 @@ $('#{0}').datepicker().on('changeDate', function (ev) {{
     $('#{1}')[0].focus();
 }});
 
-$('#{1}').datepicker().on('changeDate', function (ev) {{
+$('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
     // close the enddate picker immediately after selecting an end date
     $('#{1}').data('datepicker').hide();
 }});
 
 ";
-            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
+            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID, dateFormat );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 

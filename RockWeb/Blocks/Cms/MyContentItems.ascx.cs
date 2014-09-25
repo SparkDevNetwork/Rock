@@ -51,7 +51,6 @@ namespace RockWeb.Blocks.Cms
         #region Properties
 
         protected bool? StatusFilter { get; set; }
-        protected bool? RoleFilter { get; set; }
         protected int? SelectedChannelId { get; set; }
 
         #endregion
@@ -67,7 +66,6 @@ namespace RockWeb.Blocks.Cms
             base.LoadViewState( savedState );
 
             StatusFilter = ViewState["StatusFilter"] as bool?;
-            RoleFilter = ViewState["RoleFilter"] as bool?;
             SelectedChannelId = ViewState["SelectedChannelId"] as int?;
 
             GetData();
@@ -78,6 +76,9 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             rptChannels.ItemCommand += rptChannels_ItemCommand;
+
+            gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
+            gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
             gContentItems.DataKeyNames = new string[] { "id" };
             gContentItems.Actions.ShowAdd = true;
@@ -97,6 +98,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
+                BindFilter();
+
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
                 GetData();
             }
@@ -111,7 +114,6 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["StatusFilter"] = StatusFilter;
-            ViewState["RoleFilter"] = RoleFilter;
             ViewState["SelectedChannelId"] = SelectedChannelId;
             return base.SaveViewState();
         }
@@ -137,8 +139,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tgl_CheckedChanged( object sender, EventArgs e )
         {
-            StatusFilter = tglDisplay.Checked;
-            RoleFilter = tglRole.Checked;
+            StatusFilter = tglStatus.Checked;
             GetData();
         }
 
@@ -158,6 +159,62 @@ namespace RockWeb.Blocks.Cms
             GetData();
         }
 
+        /// <summary>
+        /// Gfs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                case "Status":
+                    {
+                        var status = e.Value.ConvertToEnumOrNull<ContentItemStatus>();
+                        if (status.HasValue)
+                        {
+                            {
+                                e.Value = status.ConvertToString();
+                            }
+                        }
+                        break;
+                    }
+                case "Title":
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gfFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
+            gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+
+            GetData();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gContentItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void gContentItems_Add( object sender, EventArgs e )
         {
             if ( SelectedChannelId.HasValue )
@@ -196,6 +253,19 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
+        private void BindFilter()
+        {
+            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+            ddlStatus.BindToEnum<ContentItemStatus>( true );
+            int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
+            if (statusID.HasValue)
+            {
+                ddlStatus.SetValue(statusID.Value.ToString());
+            }
+
+            tbTitle.Text = gfFilter.GetUserPreference( "Title" );
+        }
+
         private void GetData()
         {
             var rockContext = new RockContext();
@@ -204,7 +274,7 @@ namespace RockWeb.Blocks.Cms
             int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
 
             // Get all of the content channels
-            var allChannels = new ContentChannelService( rockContext ).Queryable()
+            var allChannels = new ContentChannelService( rockContext ).Queryable( "ContentType" )
                 .OrderBy( w => w.Name )
                 .ToList();
 
@@ -218,14 +288,11 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            // Get the item counts for each channel
-            var itemCountQry = itemService.Queryable()
-                .Where( i => channelCounts.Keys.Contains( i.ContentChannelId ));
-            if ( RoleFilter.HasValue && RoleFilter.Value )
-            {
-                itemCountQry = itemCountQry.Where( w => w.CreatedByPersonAlias.PersonId == personId );
-            }
-            itemCountQry
+            // Get the pending item counts for each channel
+            itemService.Queryable()
+                .Where( i => 
+                    channelCounts.Keys.Contains( i.ContentChannelId ) &&
+                    i.Status == ContentItemStatus.PendingApproval )
                 .GroupBy( i => i.ContentChannelId )
                 .Select( i => new {
                     Id = i.Key,
@@ -272,6 +339,11 @@ namespace RockWeb.Blocks.Cms
                     gContentItems.Columns.Remove( statusColumn );
                 }
 
+                gContentItems.Columns[1].HeaderText = selectedChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange ? "Start" : "Date";
+                gContentItems.Columns[2].Visible = selectedChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
+
+                AddAttributeColumns( selectedChannel );
+
                 if ( selectedChannel.RequiresApproval )
                 {
                     var statusField = new BoundField();
@@ -282,13 +354,38 @@ namespace RockWeb.Blocks.Cms
                     statusField.HtmlEncode = false;
                 }
 
-                AddAttributeColumns( selectedChannel );
-
                 var itemQry = itemService.Queryable()
                     .Where( i => i.ContentChannelId == selectedChannel.Id );
-                if ( RoleFilter.HasValue && RoleFilter.Value )
+
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+                if ( drp.LowerValue.HasValue )
                 {
-                    itemQry = itemQry.Where( w => w.CreatedByPersonAlias.PersonId == personId );
+                    if ( selectedChannel.ContentType.DateRangeType == DateRangeTypeEnum.SingleDate )
+                    {
+                        itemQry = itemQry.Where( i => i.StartDateTime >= drp.LowerValue.Value );
+                    }
+                    else
+                    {
+                        itemQry = itemQry.Where( i => i.ExpireDateTime.HasValue && i.ExpireDateTime.Value >= drp.LowerValue.Value );
+                    }
+                }
+                if ( drp.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    itemQry = itemQry.Where( i => i.StartDateTime < upperDate );
+                }
+
+                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentItemStatus>();
+                if ( status.HasValue )
+                {
+                    itemQry = itemQry.Where( i => i.Status == status );
+                }
+
+                string title = gfFilter.GetUserPreference( "Title" );
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    itemQry = itemQry.Where( i => i.Title.Contains( title ) );
                 }
 
                 var items = new List<ContentItem>();
@@ -324,12 +421,15 @@ namespace RockWeb.Blocks.Cms
                     Status = DisplayStatus( i.Status )
                 } ).ToList();
                 gContentItems.DataBind();
+
+                gfFilter.Visible = true;
                 gContentItems.Visible = true;
 
                 lContentItem.Text = selectedChannel.Name + " Items";
             }
             else
             {
+                gfFilter.Visible = false;
                 gContentItems.Visible = false;
             }
 

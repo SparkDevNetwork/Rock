@@ -55,8 +55,9 @@
 
                 <div class="actions margin-t-md">
                     <asp:LinkButton ID="lbUpdate" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbUpdate_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel Schedule" CssClass="btn btn-link js-cancel-txn" CausesValidation="false" OnClick="lbCancel_Click" Visible="false" />
-                    <asp:LinkButton ID="lbReactivate" runat="server" Text="Reactivate Schedule" CssClass="btn btn-link js-reactivate-txn" CausesValidation="false" OnClick="lbReactivate_Click" Visible="false"/>
+                    <asp:LinkButton ID="lbCancelSchedule" runat="server" Text="Cancel Schedule" CssClass="btn btn-danger js-cancel-txn" CausesValidation="false" OnClick="lbCancelSchedule_Click" Visible="false" />
+                    <asp:LinkButton ID="lbReactivateSchedule" runat="server" Text="Reactivate Schedule" CssClass="btn btn-success js-reactivate-txn" CausesValidation="false" OnClick="lbReactivateSchedule_Click" Visible="false"/>
+                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" />
                 </div>
 
                 <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />
