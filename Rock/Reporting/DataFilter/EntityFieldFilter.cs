@@ -18,13 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -635,6 +635,7 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
+                            // TODO, Make this work (it'll get a NotSupported)
                             DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                             switch ( comparisonType )
                             {
@@ -668,6 +669,7 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
+                        // TODO, Make this work (it'll get a NotSupported)
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
@@ -706,6 +708,7 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
+                        // TODO, Make this work (it'll get a NotSupported)
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
@@ -744,26 +747,27 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        string compareValue = values[1];
 
                         switch ( comparisonType )
                         {
                             case ComparisonType.Contains:
                             case ComparisonType.DoesNotContain:
-                                ids = attributeValues.Where( v => v.Value.ToUpper().Contains( values[1].ToUpper() ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.Contains( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EqualTo:
                             case ComparisonType.NotEqualTo:
-                                ids = attributeValues.Where( v => v.Value.Equals( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.Equals( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.IsBlank:
                             case ComparisonType.IsNotBlank:
                                 ids = attributeValues.Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.StartsWith:
-                                ids = attributeValues.Where( v => v.Value.StartsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.StartsWith( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EndsWith:
-                                ids = attributeValues.Where( v => v.Value.EndsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.EndsWith( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                         }
                     }
@@ -775,7 +779,8 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 1 )
                     {
-                        ids = attributeValues.Where( v => v.Value == values[0] ).Select( v => v.EntityId.Value );
+                        string compareValue = values[0];
+                        ids = attributeValues.Where( v => v.Value == compareValue ).Select( v => v.EntityId.Value );
                     }
 
                     break;
