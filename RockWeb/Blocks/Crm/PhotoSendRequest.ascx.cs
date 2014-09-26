@@ -306,7 +306,6 @@ namespace RockWeb.Blocks.Crm
         {
             PersonService personService = new PersonService( new RockContext() );
 
-            var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
             var photoRequestGroup = Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid();
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
