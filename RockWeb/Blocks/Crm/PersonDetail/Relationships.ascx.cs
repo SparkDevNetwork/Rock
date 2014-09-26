@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
                             }
 
-                            lGroupName.Text = group.Name;
+                            lGroupName.Text = group.Name.Pluralize();
 
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
