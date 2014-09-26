@@ -637,20 +637,20 @@ $(document).ready(function() {
                 }
             }
 
+            if ( errorMessages.Any() )
+            {
+                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
+            }
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
+            }
+
             if ( grid.DataSource != null )
             {
                 grid.ExportFilename = dataView.Name;
-                if ( errorMessages.Any() )
-                {
-                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
-                }
-
-                if ( dataView.EntityTypeId.HasValue )
-                {
-                    grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
-                }
-
                 grid.DataBind();
                 return true;
             }
