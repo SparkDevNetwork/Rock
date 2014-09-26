@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     scheduleSummary.Add("CurrencyType", schedule.CurrencyTypeValue.Value);
-                    scheduleSummary.Add("CreditCardType", schedule.CreditCardTypeValue.Value);
+                    scheduleSummary.Add( "CreditCardType", (schedule.CreditCardTypeValue == null) ? "" : schedule.CreditCardTypeValue.Value );
                     scheduleSummary.Add("UrlEncryptedKey", schedule.UrlEncodedKey);
                     scheduleSummary.Add("Frequency",  schedule.TransactionFrequencyValue.Value);
                     scheduleSummary.Add("FrequencyDescription", schedule.TransactionFrequencyValue.Description);
