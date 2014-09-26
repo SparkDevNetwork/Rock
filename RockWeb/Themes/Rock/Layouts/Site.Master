@@ -119,13 +119,7 @@
                                 <Rock:Zone Name="Footer" runat="server" />
                             </div>
                             <div class="col-md-4">
-                                <p class="text-center" style="color: #808080">
-                                    <i class="fa fa-star"></i>Rock Beta <i class="fa fa-star"></i>
-                                    <br />
-                                    <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a>
-                                    / <a href="http://www.rockrms.com/Rock/Ask/Using" target="_blank">Ask Questions</a>
-                                    / <a href="http://www.rockrms.com/Rock/Ideas" target="_blank">Ideas</a>
-                                </p>
+                                
                             </div>
                         </div>
 
