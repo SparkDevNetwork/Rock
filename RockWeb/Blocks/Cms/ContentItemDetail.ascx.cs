@@ -170,7 +170,8 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Content = ceContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
-                contentItem.ExpireDateTime = dtpExpire.SelectedDateTime;
+                contentItem.ExpireDateTime = ( contentItem.ContentType.DateRangeType == DateRangeTypeEnum.DateRange ) ?
+                    dtpExpire.SelectedDateTime : null;
 
                 int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? 1;
                 int oldStatusId = contentItem.Status.ConvertToInt();

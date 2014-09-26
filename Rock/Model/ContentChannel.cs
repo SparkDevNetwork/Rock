@@ -138,7 +138,6 @@ namespace Rock.Model
         /// <value>
         /// The items.
         /// </value>
-        [DataMember]
         public virtual ICollection<ContentItem> Items { get; set; }
 
         /// <summary>
@@ -217,31 +216,6 @@ namespace Rock.Model
         {
             this.HasRequired( c => c.ContentType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentTypeId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the status of a Marketing Campaign Card
-    /// </summary>
-    public enum ContentChannelStatus : byte
-    {
-        /// <summary>
-        /// The <see cref="ContentChannel"/> is pending approval.
-        /// </summary>
-        PendingApproval = 1,
-
-        /// <summary>
-        /// The <see cref="ContentChannel"/> has been approved.
-        /// </summary>
-        Approved = 2,
-
-        /// <summary>
-        /// The <see cref="ContentChannel"/> was denied.
-        /// </summary>
-        Denied = 3
     }
 
     #endregion

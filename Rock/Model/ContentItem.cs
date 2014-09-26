@@ -166,7 +166,6 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
-        [DataMember]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
@@ -215,7 +214,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the status of a Marketing Campaign Card
     /// </summary>
-    public enum ContentItemStatus : byte
+    public enum ContentItemStatus
     {
         /// <summary>
         /// The <see cref="ContentItem"/> is pending approval.
