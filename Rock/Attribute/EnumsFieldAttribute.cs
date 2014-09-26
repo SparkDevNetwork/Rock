@@ -19,15 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using Rock;
-
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting radio button options from an enum.
+    /// Field Attribute for selecting checkbox options from an enum.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
-    public class EnumFieldAttribute : FieldAttribute
+    public class EnumsFieldAttribute : FieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
@@ -40,8 +38,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EnumFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
+        public EnumsFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
         {
             var list = new List<string>();
             foreach ( var value in Enum.GetValues( enumSourceType ) )
@@ -51,7 +49,6 @@ namespace Rock.Attribute
             
             var listSource = string.Join( ",", list );
             FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
         }
     }
 }

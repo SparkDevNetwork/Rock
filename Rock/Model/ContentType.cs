@@ -74,7 +74,6 @@ namespace Rock.Model
         /// <value>
         /// The channels.
         /// </value>
-        [DataMember]
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the type of DateRange that is supported.
     /// </summary>
-    public enum DateRangeTypeEnum : byte
+    public enum DateRangeTypeEnum
     {
         /// <summary>
         /// Allows a single date.

@@ -1997,6 +1997,13 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="SortProperty"/> class.
         /// </summary>
+        public SortProperty()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SortProperty"/> class.
+        /// </summary>
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
         public SortProperty( GridViewSortEventArgs e )
         {

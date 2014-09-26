@@ -467,46 +467,6 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
-        /// Gets or sets the marketing campaigns.
-        /// </summary>
-        /// <value>
-        /// The marketing campaigns.
-        /// </value>
-        public DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ads.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ads.
-        /// </value>
-        public DbSet<MarketingCampaignAd> MarketingCampaignAds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ad types.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ad types.
-        /// </value>
-        public DbSet<MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign audiences.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign audiences.
-        /// </value>
-        public DbSet<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign campuses.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign campuses.
-        /// </value>
-        public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
-
-        /// <summary>
         /// Gets or sets the metaphones.
         /// </summary>
         /// <value>

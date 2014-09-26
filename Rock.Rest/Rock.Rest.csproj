@@ -193,11 +193,6 @@
     <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LocationsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAdsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAdTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAudiencesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignCampusController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageContextsController.cs" />

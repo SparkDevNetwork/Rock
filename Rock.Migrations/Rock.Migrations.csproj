@@ -50,6 +50,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\201409251820069_RemoveAds.cs" />
+    <Compile Include="Migrations\201409251820069_RemoveAds.Designer.cs">
+      <DependentUpon>201409251820069_RemoveAds.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
@@ -1226,6 +1230,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201409251820069_RemoveAds.resx">
+      <DependentUpon>201409251820069_RemoveAds.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.resx">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
     </EmbeddedResource>
