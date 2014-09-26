@@ -198,11 +198,23 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string PascalCase( string input )
+        public static string ToPascal( string input )
         {
             return input == null
                 ? input
                 : input.Dehumanize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'PascalCase'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToCssClass( string input )
+        {
+            return input == null
+                ? input
+                : input.ToLower().Replace( " ", "-" );
         }
 
         /// <summary>
