@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Cms
                             var settingFilters = GetAttributeValue( "Filters" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                             foreach ( string filter in settingFilters )
                             {
-                                var filterParts = filter.Split( new char[] { ',' } );
+                                var filterParts = filter.Split( new char[] { '^' } );
                                 if ( filterParts.Length == 2 )
                                 {
                                     filters.AddOrReplace( filterParts[0], filterParts[1] );
@@ -415,31 +415,31 @@ namespace RockWeb.Blocks.Cms
                         //    }
                         //}     
 
-                        var sortProperty = new SortProperty();
-                        sortProperty.Direction = SortDirection.Ascending;
-                        sortProperty.Property = "Status DESC";
+                        //var sortProperty = new SortProperty();
+                        //sortProperty.Direction = SortDirection.Ascending;
+                        //sortProperty.Property = "Status DESC";
 
-                        var dynamicItems = new List<dynamic>();
-                        foreach ( var item in items )
-                        {
-                            dynamic dynItem = new ExpandoObject();
-                            dynItem.Id = item.Id;
-                            dynItem.Guid = item.Guid;
-                            dynItem.Title = item.Title;
-                            dynItem.Priority = item.Priority;
-                            dynItem.Status = item.Status;
-                            dynItem.ApprovedByPersonAliasId = item.ApprovedByPersonAliasId;
-                            dynItem.ApprovedDateTime = item.ApprovedDateTime;
-                            dynItem.StartDateTime = item.StartDateTime;
-                            dynItem.ExpireDateTime = item.ExpireDateTime;
+                        //var dynamicItems = new List<dynamic>();
+                        //foreach ( var item in items )
+                        //{
+                        //    dynamic dynItem = new ExpandoObject();
+                        //    dynItem.Id = item.Id;
+                        //    dynItem.Guid = item.Guid;
+                        //    dynItem.Title = item.Title;
+                        //    dynItem.Priority = item.Priority;
+                        //    dynItem.Status = item.Status;
+                        //    dynItem.ApprovedByPersonAliasId = item.ApprovedByPersonAliasId;
+                        //    dynItem.ApprovedDateTime = item.ApprovedDateTime;
+                        //    dynItem.StartDateTime = item.StartDateTime;
+                        //    dynItem.ExpireDateTime = item.ExpireDateTime;
 
-                            foreach ( var attributeValue in item.AttributeValues )
-                            {
-                                ( (Dictionary<string, object>)dynItem ).Add( attributeValue.Key, attributeValue.Value.Value );
-                            }
+                        //    foreach ( var attributeValue in item.AttributeValues )
+                        //    {
+                        //        ( (Dictionary<string, object>)dynItem ).Add( attributeValue.Key, attributeValue.Value.Value );
+                        //    }
 
-                            dynamicItems.Add( dynItem );
-                        }
+                        //    dynamicItems.Add( dynItem );
+                        //}
 
                         //var orderedItems = new List<ContentItem>();
                         //foreach ( var item in dynamicItems.AsQueryable().Sort(sortProperty) )
