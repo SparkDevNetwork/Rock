@@ -83,19 +83,24 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
+
+                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
+
                     <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
+
+                        <div>
+                            <strong>Below is a summary of the new toys you have to play with...</strong>
+                            <div class="text-left">
+                                <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
+                             </div>
+                        </div>
                     </div>
-
-                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
-
-                    <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..."/>
 
                     <div class="text-center padding-b-md"><Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-primary" OnClick="bbtnRestart_Click"></Rock:BootstrapButton></div>
 
-                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>Note</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">

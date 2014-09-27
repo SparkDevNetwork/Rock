@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Core
                     else
                     {
                         lbInstall.Enabled = false;
-                        lbInstall.Text = "pending required install";
+                        lbInstall.Text = "Pending Update";
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
@@ -323,21 +323,26 @@ namespace RockWeb.Blocks.Core
 
                     verifiedPackages.Add( package );
 
-                    if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
-                    {
-                        var requiredVersion = ExtractRequiredVersionFromTags( package );
-                        // if that required version is greater than our currently installed version
-                        // then we can't have any of the prior packages in the verifiedPackages list
-                        // so we clear it out and keep processing.
-                        if ( requiredVersion > _installedVersion )
-                        {
-                            nbMoreUpdatesAvailable.Visible = true;
-                            //verifiedPackages.Clear();
-                        }
-                    }
+                    //if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
+                    //{
+                    //    var requiredVersion = ExtractRequiredVersionFromTags( package );
+                    //    // if that required version is greater than our currently installed version
+                    //    // then we can't have any of the prior packages in the verifiedPackages list
+                    //    // so we clear it out and keep processing.
+                    //    if ( requiredVersion > _installedVersion )
+                    //    {
+                            
+                    //        verifiedPackages.Clear();
+                    //    }
+                    //}
                 }
+
                 _availablePackages = verifiedPackages;
                 _numberOfAvailablePackages = verifiedPackages.Count;
+                if ( _numberOfAvailablePackages > 1 )
+                {
+                    nbMoreUpdatesAvailable.Visible = true;
+                }
             }
             catch ( InvalidOperationException ex )
             {
