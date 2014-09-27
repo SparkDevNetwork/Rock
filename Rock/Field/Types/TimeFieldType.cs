@@ -79,7 +79,8 @@ namespace Rock.Field.Types
                 var tp = control as TimePicker;
                 if ( tp != null && tp.SelectedTime.HasValue )
                 {
-                    return tp.SelectedTime.Value.ToString();
+                    // serialize the time using culture-insensitive "constant" fromat
+                    return tp.SelectedTime.Value.ToString("c");
                 }
             }
 
