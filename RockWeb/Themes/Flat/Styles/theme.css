@@ -2843,6 +2843,7 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-badge .badge-group .badge {
   background-color: inherit;
   padding: 3px 7px 0;
+  display: inline-block;
 }
 .personprofilebar-badge .badge-group .badge-debug {
   text-align: left;

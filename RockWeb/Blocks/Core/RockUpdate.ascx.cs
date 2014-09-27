@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+        private int _numberOfAvailablePackages = 0;
 
         #endregion
 
@@ -167,8 +168,8 @@ namespace RockWeb.Blocks.Core
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the first item in the list is the primary
-                    if ( e.Item.ItemIndex == 0 )
+                    // Only the last item in the list is the primary
+                    if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-primary" );
@@ -176,7 +177,8 @@ namespace RockWeb.Blocks.Core
                     }
                     else
                     {
-                        lbInstall.Enabled = true;
+                        lbInstall.Enabled = false;
+                        lbInstall.Text = "pending required install";
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
@@ -193,6 +195,16 @@ namespace RockWeb.Blocks.Core
         {
             string version = e.CommandArgument.ToString();
             Update( version );
+        }
+
+        /// <summary>
+        /// Simply reload the page in order to cause a restart.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void bbtnRestart_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
@@ -320,11 +332,12 @@ namespace RockWeb.Blocks.Core
                         if ( requiredVersion > _installedVersion )
                         {
                             nbMoreUpdatesAvailable.Visible = true;
-                            verifiedPackages.Clear();
+                            //verifiedPackages.Clear();
                         }
                     }
                 }
                 _availablePackages = verifiedPackages;
+                _numberOfAvailablePackages = verifiedPackages.Count;
             }
             catch ( InvalidOperationException ex )
             {
@@ -679,7 +692,7 @@ namespace RockWeb.Blocks.Core
             }
         }
         #endregion
-    }
+}
 
     [Serializable]
     public class EnvData

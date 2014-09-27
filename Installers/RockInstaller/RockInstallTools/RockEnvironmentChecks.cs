@@ -271,7 +271,7 @@ namespace RockInstallTools
             DatabaseConnectionResult dbConnectResult = new DatabaseConnectionResult();
 
             // check password for characters that are not supported in a connection string
-            Match match = Regex.Match( dbPassword, @"[,;*!@?(){}\[\]]", RegexOptions.IgnoreCase );
+            Match match = Regex.Match( dbPassword, @"[,;(){}\[\]]", RegexOptions.IgnoreCase );
             if ( match.Success ) 
             {
                 // we have an illegal character
