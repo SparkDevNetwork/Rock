@@ -621,7 +621,9 @@ namespace Rock.Reporting.DataFilter
                 {
                     a.Id,
                     a.EntityId,
-                    a.Value
+                    a.Value,
+                    a.ValueAsDateTime,
+                    a.ValueAsNumeric
                 } );
 
 
@@ -635,25 +637,25 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            // TODO, Make this work (it'll get a NotSupported)
                             DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
                                 case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) == 0 ).Select( v => v.EntityId.Value );
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime == dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime > dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime >= dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime < dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime <= dateValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -669,29 +671,36 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        // TODO, Make this work (it'll get a NotSupported)
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            TimeSpan timeValue = values[1].AsTimeSpan() ?? TimeSpan.MinValue;
+                            // convert the timespan to a time on 01-01-1900 to match how ValueAsDateTime returns Time values
+                            DateTime timeValue = new DateTime( 1900, 1, 1 );
+                            var timeSpan = values[1].AsTimeSpan();
+                            if (timeSpan.HasValue)
+                            {
+                                timeValue = timeValue.Add( timeSpan.Value );
+                            }
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
-                                case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) == 0 ).Select( v => v.EntityId.Value );
+                                case ComparisonType.NotEqualTo: 
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime == timeValue).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime > timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime >= timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime < timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime <= timeValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -708,29 +717,29 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 2 )
                     {
-                        // TODO, Make this work (it'll get a NotSupported)
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            double numericValue = values[1].AsDoubleOrNull() ?? int.MinValue;
+                            decimal numericValue = values[1].AsDecimalOrNull() ?? decimal.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
                                 case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) == 0 ).Select( v => v.EntityId.Value );
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric == numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric > numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric >= numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric < numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric <= numericValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -753,14 +762,17 @@ namespace Rock.Reporting.DataFilter
                         {
                             case ComparisonType.Contains:
                             case ComparisonType.DoesNotContain:
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
                                 ids = attributeValues.Where( v => v.Value.Contains( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EqualTo:
                             case ComparisonType.NotEqualTo:
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
                                 ids = attributeValues.Where( v => v.Value.Equals( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.IsBlank:
                             case ComparisonType.IsNotBlank:
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
                                 ids = attributeValues.Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.StartsWith:
