@@ -458,6 +458,21 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is business.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        private bool IsBusiness
+        {
+            get
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Read(SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()).Id;
+                return this.RecordTypeValueId.HasValue && this.RecordTypeValueId == recordTypeValueIdBusiness;
+            }
+        }
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -470,7 +485,13 @@ namespace Rock.Model
         {
             get
             {
+                if (this.IsBusiness)
+                {
+                    return LastName;
+                }
+
                 var fullName = new StringBuilder();
+
                 fullName.Append( LastName );
 
                 if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
@@ -493,6 +514,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+                
                 var fullName = new StringBuilder();
 
                 fullName.AppendFormat( "{0} {1}", FirstName, LastName );
@@ -516,6 +542,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+                
                 var fullName = new StringBuilder();
                 fullName.Append( LastName );
 
@@ -1311,6 +1342,7 @@ namespace Rock.Model
             Gender gender = Gender.Male;
             string altText = string.Empty;
             int? age = null;
+            Guid? recordTypeValueGuid = null;
 
             if ( person != null )
             {
@@ -1318,9 +1350,10 @@ namespace Rock.Model
                 gender = person.Gender;
                 altText = person.FullName;
                 age = person.Age;
+                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? DefinedValueCache.Read(person.RecordTypeValueId.Value).Guid : (Guid?)null;
             }
 
-            return Person.GetPhotoImageTag( photoId, age, gender, maxWidth, maxHeight, altText, className );
+            return Person.GetPhotoImageTag( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, altText, className );
         }
         
         /// <summary>
@@ -1335,7 +1368,23 @@ namespace Rock.Model
         /// <returns>An html img tag (string) of the requested photo.</returns>
         public static string GetPhotoImageTag( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return Person.GetPhotoImageTag( photoId, null, gender, maxWidth, maxHeight, altText, className );
+            return Person.GetPhotoImageTag( photoId, null, gender, null, maxWidth, maxHeight, altText, className );
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="altText">The alt text.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public static string GetPhotoImageTag(int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            return Person.GetPhotoImageTag( photoId, age, gender, null, maxWidth, maxHeight, altText, className );
         }
 
         /// <summary>
@@ -1344,6 +1393,7 @@ namespace Rock.Model
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="age">The age.</param>
         /// <param name="gender">The gender to use if the photoId is null.</param>
+        /// <param name="RecordTypeValueId">The record type value identifier.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
@@ -1351,7 +1401,7 @@ namespace Rock.Model
         /// <returns>
         /// An html img tag (string) of the requested photo.
         /// </returns>
-        public static string GetPhotoImageTag(int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
             var photoUrl = new StringBuilder();
             
@@ -1379,7 +1429,11 @@ namespace Rock.Model
             }
             else
             {
-                if ( age.HasValue && age.Value < 18 )
+                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    photoUrl.Append( "/Assets/Images/business-no-photo.svg?" );
+                }
+                else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
                     if ( gender == Model.Gender.Female )

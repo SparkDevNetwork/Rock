@@ -33,7 +33,7 @@
                     <div class="row">
 
                         <div class="col-md-6">
-                            <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Person" />
+                            <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Person" IncludeBusinesses="true" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" />
                             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />

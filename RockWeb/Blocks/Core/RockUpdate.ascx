@@ -20,7 +20,9 @@
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
                         <i class="fa fa-anchor"></i>
-                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing.</p>
+                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing or
+                           check out the <a href="http://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
+                        </p>
                     </div>
                 </asp:Panel>
 
@@ -89,7 +91,9 @@
 
                     <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
 
-                    <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
+                    <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..."/>
+
+                    <div class="text-center padding-b-md"><Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-primary" OnClick="bbtnRestart_Click"></Rock:BootstrapButton></div>
 
                     <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>Note</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>

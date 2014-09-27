@@ -15,12 +15,14 @@
                 restUrl = this.restUrl,
                 defaultText = this.defaultText;
 
+            var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
+
             // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
             // Might be a good opportunity to break the dependency on jQueryUI.
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
-                        url: restUrl + request.term + "/true",
+                        url: restUrl + request.term + "/true/" + includeBusinesses,
                         dataType: 'json'
                     });
 

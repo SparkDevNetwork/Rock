@@ -332,6 +332,7 @@ namespace Rock.Model
             }
             else
             {
+                // no spaces, no commas
                 reversed = true;
                 singleName = fullName.Trim();
             }
@@ -355,11 +356,15 @@ namespace Rock.Model
             }
             else
             {
+                int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                
                 return Queryable( includeDeceased, includeBusinesses )
                     .Where( p =>
-                        p.LastName.StartsWith( lastName ) &&
+                        ( includeBusinesses &&  p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith(fullName) )
+                        ||
+                        (p.LastName.StartsWith( lastName ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
-                        p.NickName.StartsWith( firstName ) ) );
+                        p.NickName.StartsWith( firstName ) )) );
             }
         }
 

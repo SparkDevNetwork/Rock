@@ -388,12 +388,12 @@ namespace Rock.Web.UI.Controls
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( "Pre-Html" );
+                    writer.Write( "Pre-HTML" );
                     writer.RenderEndTag();
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( "Post-Html" );
+                    writer.Write( "Post-HTML" );
                     writer.RenderEndTag();
 
                     writer.RenderEndTag();      // row

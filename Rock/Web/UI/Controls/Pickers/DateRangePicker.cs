@@ -252,20 +252,20 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
         {
             RegisterJavaScript();
 
-            writer.AddAttribute( "id", this.ClientID);
-            foreach (var styleKey in this.Style.Keys)
+            writer.AddAttribute( "id", this.ClientID );
+            foreach ( var styleKey in this.Style.Keys )
             {
                 string styleName = (string)styleKey;
                 writer.AddStyleAttribute( styleName, this.Style[styleName] );
             }
-            
-            if (!string.IsNullOrEmpty(this.CssClass))
+
+            if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
                 writer.AddAttribute( "class", this.CssClass );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -364,12 +364,12 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
         }
 
         /// <summary>
-        /// Gets or sets the lower and upper values by specifying a comma-delimted lower and upper date
+        /// Gets or sets the lower and upper values by specifying a comma-delimted lower and upper date in ISO 8601 format
         /// </summary>
         /// <value>
         /// The delimited values.
         /// </value>
-        public string DelimitedValues 
+        public string DelimitedValues
         {
             get
             {
@@ -379,7 +379,10 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
                 }
                 else
                 {
-                    return string.Format( "{0:d},{1:d}", this.LowerValue, this.UpperValue );
+                    // serialize the date using ISO 8601 standard
+                    return string.Format( "{0},{1}",
+                        this.LowerValue.HasValue ? this.LowerValue.Value.ToString( "o" ) : null,
+                        this.UpperValue.HasValue ? this.UpperValue.Value.ToString( "o" ) : null );
                 }
             }
             set
@@ -389,25 +392,8 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
                     string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
                     if ( valuePair.Length == 2 )
                     {
-                        DateTime result;
-
-                        if ( DateTime.TryParse( valuePair[0], out result ) )
-                        {
-                            this.LowerValue = result;
-                        }
-                        else
-                        {
-                            this.LowerValue = null;
-                        }
-
-                        if ( DateTime.TryParse( valuePair[1], out result ) )
-                        {
-                            this.UpperValue = result;
-                        }
-                        else
-                        {
-                            this.UpperValue = null;
-                        }
+                        this.LowerValue = valuePair[0].AsDateTime();
+                        this.UpperValue = valuePair[1].AsDateTime();
                     }
                     else
                     {
@@ -424,16 +410,16 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
         }
 
         /// <summary>
-        /// Formats the delimited values.
+        /// Formats the delimited values for display purposes
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string FormatDelimitedValues( string value )
         {
-            if ( !string.IsNullOrWhiteSpace(value) && value.Contains(",") )
+            if ( !string.IsNullOrWhiteSpace( value ) && value.Contains( "," ) )
             {
                 var dates = value.Split( ',' );
-                if (dates.Length == 2)
+                if ( dates.Length == 2 )
                 {
                     return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() ).ToString( "d" );
                 }
