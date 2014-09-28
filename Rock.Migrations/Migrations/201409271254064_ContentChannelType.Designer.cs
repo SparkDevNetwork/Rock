@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.0-30225")]
-    public sealed partial class RemoveAds : IMigrationMetadata
+    public sealed partial class ContentChannelType : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(RemoveAds));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ContentChannelType));
         
         string IMigrationMetadata.Id
         {
-            get { return "201409251820069_RemoveAds"; }
+            get { return "201409271254064_ContentChannelType"; }
         }
         
         string IMigrationMetadata.Source

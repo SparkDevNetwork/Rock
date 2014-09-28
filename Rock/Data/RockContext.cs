@@ -203,20 +203,20 @@ namespace Rock.Data
         public DbSet<ContentChannel> ContentChannels { get; set; }
 
         /// <summary>
-        /// Gets or sets the content items.
+        /// Gets or sets the content channel items.
         /// </summary>
         /// <value>
-        /// The content items.
+        /// The content channel items.
         /// </value>
-        public DbSet<ContentItem> ContentItems { get; set; }
+        public DbSet<ContentChannelItem> ContentChannelItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the content types.
+        /// Gets or sets the content channel types.
         /// </summary>
         /// <value>
-        /// The content types.
+        /// The content channel types.
         /// </value>
-        public DbSet<ContentType> ContentTypes { get; set; }
+        public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the data views.

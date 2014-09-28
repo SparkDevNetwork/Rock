@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentDynamic.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentDynamic" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelDynamic.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelDynamic" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>

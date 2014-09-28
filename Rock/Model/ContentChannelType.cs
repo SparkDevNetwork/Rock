@@ -25,11 +25,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Type of <see cref="Rock.Model.ContentType"/>.
+    /// Represents a Type of <see cref="Rock.Model.ContentChannelType"/>.
     /// </summary>
-    [Table( "ContentType" )]
+    [Table( "ContentChannelType" )]
     [DataContract]
-    public partial class ContentType : Model<ContentType>
+    public partial class ContentChannelType : Model<ContentChannelType>
     {
 
         #region Entity Properties
@@ -55,14 +55,14 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets an <see cref="DateRangeTypeEnum"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
+        /// Gets or sets an <see cref="ContentChannelDateType"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DateRangeTypeEnum"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
+        /// A <see cref="Rock.Model.ContentChannelDateType"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
         /// will be supported; when <c>DateRangeTypeEnum.DateRange</c> a date range will be supported.
         /// </value>
         [DataMember]
-        public DateRangeTypeEnum DateRangeType { get; set; }
+        public ContentChannelDateType DateRangeType { get; set; }
 
         #endregion
 
@@ -98,9 +98,9 @@ namespace Rock.Model
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentType"/> class.
+        /// Initializes a new instance of the <see cref="ContentChannelType"/> class.
         /// </summary>
-        public ContentType()
+        public ContentChannelType()
         {
             Channels = new Collection<ContentChannel>();
         }
@@ -128,7 +128,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class ContentTypeConfiguration : EntityTypeConfiguration<ContentType>
+    public partial class ContentTypeConfiguration : EntityTypeConfiguration<ContentChannelType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentTypeConfiguration" /> class.
@@ -145,7 +145,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the type of DateRange that is supported.
     /// </summary>
-    public enum DateRangeTypeEnum
+    public enum ContentChannelDateType
     {
         /// <summary>
         /// Allows a single date.

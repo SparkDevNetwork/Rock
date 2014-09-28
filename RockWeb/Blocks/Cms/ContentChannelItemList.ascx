@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentItemList.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentItemList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemList.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -23,7 +23,7 @@
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-                    <Rock:Grid ID="gContentItems" runat="server" EmptyDataText="No Items Found" RowItemText="Item" AllowSorting="true" OnRowSelected="gContentItems_Edit">
+                    <Rock:Grid ID="gItems" runat="server" EmptyDataText="No Items Found" RowItemText="Item" AllowSorting="true" OnRowSelected="gItems_Edit">
                         <Columns>
                             <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />

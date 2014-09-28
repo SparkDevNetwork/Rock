@@ -30,13 +30,13 @@ namespace Rock.Model
     /// <summary>
     /// ContentType Service class
     /// </summary>
-    public partial class ContentTypeService : Service<ContentType>
+    public partial class ContentChannelTypeService : Service<ContentChannelType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentTypeService"/> class
+        /// Initializes a new instance of the <see cref="ContentChannelTypeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ContentTypeService(RockContext context) : base(context)
+        public ContentChannelTypeService(RockContext context) : base(context)
         {
         }
 
@@ -48,19 +48,19 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ContentType item, out string errorMessage )
+        public bool CanDelete( ContentChannelType item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ContentTypeId == item.Id ) )
+            if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ContentChannelTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentType.FriendlyTypeName, ContentChannel.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannelType.FriendlyTypeName, ContentChannel.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<ContentItem>( Context ).Queryable().Any( a => a.ContentTypeId == item.Id ) )
+            if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentType.FriendlyTypeName, ContentItem.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannelType.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -78,15 +78,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ContentType Clone( this ContentType source, bool deepCopy )
+        public static ContentChannelType Clone( this ContentChannelType source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ContentType;
+                return source.Clone() as ContentChannelType;
             }
             else
             {
-                var target = new ContentType();
+                var target = new ContentChannelType();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
@@ -97,7 +97,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ContentType target, ContentType source )
+        public static void CopyPropertiesFrom( this ContentChannelType target, ContentChannelType source )
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

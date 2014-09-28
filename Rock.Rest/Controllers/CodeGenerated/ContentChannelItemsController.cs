@@ -28,8 +28,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ContentItems REST API
     /// </summary>
-    public partial class ContentItemsController : Rock.Rest.ApiController<Rock.Model.ContentItem>
+    public partial class ContentChannelItemsController : Rock.Rest.ApiController<Rock.Model.ContentChannelItem>
     {
-        public ContentItemsController() : base( new Rock.Model.ContentItemService( new Rock.Data.RockContext() ) ) { } 
+        public ContentChannelItemsController() : base( new Rock.Model.ContentChannelItemService( new Rock.Data.RockContext() ) ) { } 
     }
 }

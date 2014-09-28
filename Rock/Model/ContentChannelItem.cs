@@ -27,9 +27,9 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "ContentItem")]
+    [Table( "ContentChannelItem")]
     [DataContract]
-    public partial class ContentItem : Model<ContentItem>
+    public partial class ContentChannelItem : Model<ContentChannelItem>
     {
 
         #region Entity Properties
@@ -44,13 +44,13 @@ namespace Rock.Model
         public int ContentChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the content type identifier.
+        /// Gets or sets the content channel type identifier.
         /// </summary>
         /// <value>
-        /// The content type identifier.
+        /// The content channel type identifier.
         /// </value>
         [DataMember]
-        public int ContentTypeId { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the title.
@@ -81,14 +81,14 @@ namespace Rock.Model
         public int Priority { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.ContentItemStatus"/> (status) of this ContentItem.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItemStatus"/> (status) of this ContentItem.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is 
+        /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is 
         /// awaiting approval; when <c>ContentItemStatus.Approved</c> the item has been approved by the approver, when <c>ContentItemStatus.Denied</c> the item has been denied by the approver.
         /// </value>
         [DataMember]
-        public ContentItemStatus Status { get; set; }
+        public ContentChannelItemStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this Ad, this value will be null.
@@ -152,13 +152,13 @@ namespace Rock.Model
         public virtual ContentChannel ContentChannel { get; set; }
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.ContentType"/> of this ad.
+        /// Gets or sets the type of the content channel.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.ContentType"/> of this Ad.
+        /// The type of the content channel.
         /// </value>
         [DataMember]
-        public virtual ContentType ContentType { get; set; }
+        public virtual ContentChannelType ContentChannelType { get; set; }
 
         /// <summary>
         /// Gets or sets the approved by person alias.
@@ -195,7 +195,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class ContentItemConfiguration : EntityTypeConfiguration<ContentItem>
+    public partial class ContentItemConfiguration : EntityTypeConfiguration<ContentChannelItem>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentItemConfiguration" /> class.
@@ -203,7 +203,7 @@ namespace Rock.Model
         public ContentItemConfiguration()
         {
             this.HasRequired( i => i.ContentChannel ).WithMany( c => c.Items ).HasForeignKey( i => i.ContentChannelId ).WillCascadeOnDelete( false );
-            this.HasRequired( i => i.ContentType ).WithMany().HasForeignKey( i => i.ContentTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.ContentChannelType ).WithMany().HasForeignKey( i => i.ContentChannelTypeId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -214,20 +214,20 @@ namespace Rock.Model
     /// <summary>
     /// Represents the status of a Marketing Campaign Card
     /// </summary>
-    public enum ContentItemStatus
+    public enum ContentChannelItemStatus
     {
         /// <summary>
-        /// The <see cref="ContentItem"/> is pending approval.
+        /// The <see cref="ContentChannelItem"/> is pending approval.
         /// </summary>
         PendingApproval = 1,
 
         /// <summary>
-        /// The <see cref="ContentItem"/> has been approved.
+        /// The <see cref="ContentChannelItem"/> has been approved.
         /// </summary>
         Approved = 2,
 
         /// <summary>
-        /// The <see cref="ContentItem"/> was denied.
+        /// The <see cref="ContentChannelItem"/> was denied.
         /// </summary>
         Denied = 3
     }
