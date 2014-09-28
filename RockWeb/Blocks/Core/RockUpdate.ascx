@@ -63,13 +63,10 @@
                                             </div>
                                             <div class="col-md-10">
                                                 <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
+
                                                 <div class="releasenotes">
-                                                    <div class="releasenotes-heading margin-v-md">
-                                                        <strong>
-                                                            <asp:Label ID="lblReleaseNotes" runat="server" Text="Release Notes" />
-                                                            <i class="fa fa-caret-right"></i>
-                                                        </strong>
-                                                    </div>
+                                                    <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
+
                                                     <div class="releasenotes-body" style="display: none">
                                                         <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
                                                     </div>
@@ -91,15 +88,13 @@
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
 
-                        <div>
+                        <div class="text-left margin-t-md">
                             <strong>Below is a summary of the new toys you have to play with...</strong>
-                            <div class="text-left">
                                 <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
-                             </div>
                         </div>
-                    </div>
 
-                    <div class="text-center padding-b-md"><Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-primary" OnClick="bbtnRestart_Click"></Rock:BootstrapButton></div>
+                        <Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-success" OnClick="bbtnRestart_Click"></Rock:BootstrapButton>
+                    </div>
 
                 </asp:Panel>
 
@@ -122,9 +117,9 @@
 
 <script>
     $(function () {
-        $(".releasenotes-heading").on("click", function (event) {
+        $(".js-releasenote").on("click", function (event) {
             var $top = $(event.target).closest(".releasenotes");
-            $top.find("i").toggleClass("fa-caret-right").toggleClass("fa-caret-down");
+            $top.find("i").toggleClass("fa-caret-up").toggleClass("fa-caret-down");
             $top.find(".releasenotes-body").slideToggle(500);
         });
     });
