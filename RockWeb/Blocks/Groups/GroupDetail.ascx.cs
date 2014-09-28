@@ -1481,14 +1481,15 @@ namespace RockWeb.Blocks.Groups
             gLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();
 
             gLocations.DataSource = GroupLocationsState
-                .OrderBy( gl => gl.GroupLocationTypeValue.Order )
                 .Select( gl => new
                 {
                     gl.Guid,
                     gl.Location,
-                    Type = gl.GroupLocationTypeValue.Value,
-                    Schedules = gl.Schedules.Select( s => s.Name).ToList().AsDelimited(", ")
+                    Type = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : "",
+                    Order = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Order : 0,
+                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.Name).ToList().AsDelimited(", ") : ""
                 } )
+                .OrderBy( i => i.Order)
                 .ToList();
             gLocations.DataBind();
         }
