@@ -23,26 +23,26 @@ using Rock.Extension;
 namespace Rock.Communication
 {
     /// <summary>
-    /// MEF Container class for Communication Channel Componenets
+    /// MEF Container class for Communication Medium Componenets
     /// </summary>
-    public class ChannelContainer : Container<ChannelComponent, IComponentData>
+    public class MediumContainer : Container<MediumComponent, IComponentData>
     {
-        private static ChannelContainer instance;
+        private static MediumContainer instance;
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
-        public static ChannelContainer Instance
+        public static MediumContainer Instance
         {
             get
             {
                 if ( instance == null )
-                    instance = new ChannelContainer();
+                    instance = new MediumContainer();
                 return instance;
             }
         }
 
-        private ChannelContainer()
+        private MediumContainer()
         {
             Refresh();
         }
@@ -52,7 +52,7 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
-        public static ChannelComponent GetComponent( string entityTypeName )
+        public static MediumComponent GetComponent( string entityTypeName )
         {
             foreach ( var serviceEntry in Instance.Components )
             {
@@ -68,8 +68,8 @@ namespace Rock.Communication
 
         // MEF Import Definition
 #pragma warning disable
-        [ImportMany( typeof( ChannelComponent ) )]
-        protected override IEnumerable<Lazy<ChannelComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( MediumComponent ) )]
+        protected override IEnumerable<Lazy<MediumComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
     }
 }

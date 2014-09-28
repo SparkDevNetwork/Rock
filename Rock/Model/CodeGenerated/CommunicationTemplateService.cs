@@ -91,8 +91,8 @@ namespace Rock.Model
             target.Description = source.Description;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.Subject = source.Subject;
-            target.ChannelEntityTypeId = source.ChannelEntityTypeId;
-            target.ChannelDataJson = source.ChannelDataJson;
+            target.MediumEntityTypeId = source.MediumEntityTypeId;
+            target.MediumDataJson = source.MediumDataJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

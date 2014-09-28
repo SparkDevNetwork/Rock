@@ -10,7 +10,7 @@
             <div class="panel-body">
 
                 <asp:HiddenField ID="hfCommunicationTemplateId" runat="server" />
-                <asp:HiddenField ID="hfChannelId" runat="server" />
+                <asp:HiddenField ID="hfMediumId" runat="server" />
 
                 <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -28,10 +28,10 @@
 
                 <div class="nav navbar nav-pagelist">
                     <ul class="nav nav-pills">
-                        <asp:Repeater ID="rptChannels" runat="server">
+                        <asp:Repeater ID="rptMediums" runat="server">
                             <ItemTemplate>
-                                <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
-                                    <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click" CausesValidation="false">
+                                <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
+                                    <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>

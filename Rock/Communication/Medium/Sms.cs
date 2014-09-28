@@ -25,15 +25,15 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
-namespace Rock.Communication.Channel
+namespace Rock.Communication.Medium
 {
     /// <summary>
     /// An SMS communication
     /// </summary>
     [Description( "An SMS communication" )]
-    [Export( typeof( ChannelComponent ) )]
+    [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "SMS" )]
-    public class Sms : ChannelComponent
+    public class Sms : MediumComponent
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
         
@@ -43,7 +43,7 @@ namespace Rock.Communication.Channel
         /// <value>
         /// The control path.
         /// </value>
-        public override ChannelControl Control
+        public override MediumControl Control
         {
             get { return new Rock.Web.UI.Controls.Communication.Sms(); }
         }
@@ -82,7 +82,7 @@ namespace Rock.Communication.Channel
                 }
             }
 
-            string message = communication.GetChannelDataValue( "Message" );
+            string message = communication.GetMediumDataValue( "Message" );
             return message.ResolveMergeFields( mergeValues );
         }
 
@@ -95,22 +95,22 @@ namespace Rock.Communication.Channel
         {
             StringBuilder sb = new StringBuilder();
 
-            AppendChannelData( communication, sb, "FromValue" );
-            AppendChannelData( communication, sb, "Message" );
+            AppendMediumData( communication, sb, "FromValue" );
+            AppendMediumData( communication, sb, "Message" );
 
             return sb.ToString();
         }
 
-        private void AppendChannelData( Model.Communication communication, StringBuilder sb, string key )
+        private void AppendMediumData( Model.Communication communication, StringBuilder sb, string key )
         {
-            string value = communication.GetChannelDataValue( key );
+            string value = communication.GetMediumDataValue( key );
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                AppendChannelData( sb, key, value );
+                AppendMediumData( sb, key, value );
             }
         }
 
-        private void AppendChannelData( StringBuilder sb, string key, string value )
+        private void AppendMediumData( StringBuilder sb, string key, string value )
         {
             sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
                 key.SplitCase(), value );
@@ -198,7 +198,7 @@ namespace Rock.Communication.Channel
 
             if ( fromPerson != null && toPersonId != -1 )
             {
-                if ( toPersonId == fromPerson.Id ) // message from the channel recipient
+                if ( toPersonId == fromPerson.Id ) // message from the medium recipient
                 {
                     // look for response code in the message
                     Match match = Regex.Match( message, @"@\d{3}" );
@@ -214,14 +214,14 @@ namespace Rock.Communication.Channel
                         {
                             CreateCommunication( fromPerson.Id, fromPerson.FullName, recipient.Communication.SenderPersonAliasId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
                         }
-                        else // send a warning message back to the channel recipient
+                        else // send a warning message back to the medium recipient
                         {
                             string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
                             CreateCommunication( fromPerson.Id, fromPerson.FullName, fromPerson.Id, warningMessage, transportPhone, "", rockContext );
                         }
                     }
                 }
-                else // response from someone other than the channel recipient
+                else // response from someone other than the medium recipient
                 {
                     string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
@@ -257,10 +257,10 @@ namespace Rock.Communication.Channel
             communication.SenderPersonAliasId = fromPersonAliasId;
             communication.Subject = string.Format( "From: {0}", fromPersonName );
 
-            communication.SetChannelDataValue( "Message", message );
-            communication.SetChannelDataValue( "FromValue", transportPhone );
+            communication.SetMediumDataValue( "Message", message );
+            communication.SetMediumDataValue( "FromValue", transportPhone );
 
-            communication.ChannelEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id;
+            communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id;
 
             var recipient = new Rock.Model.CommunicationRecipient();
             recipient.Status = CommunicationRecipientStatus.Pending;

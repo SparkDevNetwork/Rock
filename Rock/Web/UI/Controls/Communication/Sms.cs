@@ -28,9 +28,9 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
-    /// SMS Communication Channel control
+    /// SMS Communication Medium control
     /// </summary>
-    public class Sms : ChannelControl
+    public class Sms : MediumControl
     {
         #region UI Controls
 
@@ -44,12 +44,12 @@ namespace Rock.Web.UI.Controls.Communication
         #region Properties
 
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        public override Dictionary<string, string> ChannelData
+        public override Dictionary<string, string> MediumData
         {
             get
             {

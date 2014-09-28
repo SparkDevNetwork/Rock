@@ -25,10 +25,10 @@ using Rock.Web.UI.Controls.Communication;
 namespace Rock.Communication
 {
     /// <summary>
-    /// Base class for components communication channels (i.e. email, sms, twitter, etc) 
+    /// Base class for components communication mediums (i.e. email, sms, twitter, etc) 
     /// </summary>
     [ComponentField( "Rock.Communication.TransportContainer, Rock", "", "", false, "", "", 1 )]
-    public abstract class ChannelComponent : Component
+    public abstract class MediumComponent : Component
     {
         /// <summary>
         /// Gets the control path.
@@ -36,7 +36,7 @@ namespace Rock.Communication
         /// <value>
         /// The control path.
         /// </value>
-        public abstract ChannelControl Control { get; }
+        public abstract MediumControl Control { get; }
 
         /// <summary>
         /// Gets the transport.
@@ -66,9 +66,9 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelComponent" /> class.
+        /// Initializes a new instance of the <see cref="MediumComponent" /> class.
         /// </summary>
-        public ChannelComponent()
+        public MediumComponent()
         {
             this.LoadAttributes();
         }
