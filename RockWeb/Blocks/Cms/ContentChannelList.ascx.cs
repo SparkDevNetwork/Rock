@@ -103,12 +103,12 @@ namespace RockWeb.Blocks.Cms
         {
             switch ( e.Key )
             {
-                case "Content Type":
+                case "Type":
                     {
-                        int? contentTypeId = e.Value.AsIntegerOrNull();
-                        if ( contentTypeId.HasValue )
+                        int? typeId = e.Value.AsIntegerOrNull();
+                        if ( typeId.HasValue )
                         {
-                            var contentType = new ContentTypeService( new RockContext() ).Get( contentTypeId.Value );
+                            var contentType = new ContentChannelTypeService( new RockContext() ).Get( typeId.Value );
                             if ( contentType != null )
                             {
                                 e.Value = contentType.Name;
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( "Content Type", ddlContentType.SelectedValue );
+            gfFilter.SaveUserPreference( "Type", ddlType.SelectedValue );
             BindGrid();
         }
 
@@ -218,14 +218,14 @@ namespace RockWeb.Blocks.Cms
 
         private void BindFilter()
         {
-            int? contentTypeId = gfFilter.GetUserPreference( "Content Type" ).AsIntegerOrNull();
-            ddlContentType.Items.Clear();
-            ddlContentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var contentType in new ContentTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
+            int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
+            ddlType.Items.Clear();
+            ddlType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var contentType in new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
             {
                 var li = new ListItem( contentType.Name, contentType.Id.ToString() );
-                li.Selected = contentTypeId.HasValue && contentType.Id == contentTypeId.Value;
-                ddlContentType.Items.Add( li );
+                li.Selected = typeId.HasValue && contentType.Id == typeId.Value;
+                ddlType.Items.Add( li );
             }
         }
 
@@ -236,12 +236,12 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannelService contentChannelService = new ContentChannelService( new RockContext() );
             SortProperty sortProperty = gContentChannels.SortProperty;
-            var qry = contentChannelService.Queryable( "ContentType,Items" );
+            var qry = contentChannelService.Queryable( "ContentChannelType,Items" );
 
-            int? contentTypeId = gfFilter.GetUserPreference( "Content Type" ).AsIntegerOrNull();
-            if ( contentTypeId.HasValue )
+            int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
+            if ( typeId.HasValue )
             {
-                qry = qry.Where( c => c.ContentTypeId == contentTypeId.Value );
+                qry = qry.Where( c => c.ContentChannelTypeId == typeId.Value );
             }
 
             gContentChannels.ObjectList = new Dictionary<string, object>();
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Cms
             {
                 c.Id,
                 c.Name,
-                ContentType = c.ContentType.Name,
+                ContentChannelType = c.ContentChannelType.Name,
                 c.EnableRss,
                 c.ChannelUrl,
                 ItemLastCreated = c.Items.Max( i => i.CreatedDateTime ),

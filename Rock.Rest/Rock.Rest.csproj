@@ -114,8 +114,8 @@
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ContentItemsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ContentTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />

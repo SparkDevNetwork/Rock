@@ -37,10 +37,10 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Item Detail")]
+    [DisplayName("Content Channel Item Detail")]
     [Category("CMS")]
-    [Description("Displays the details for a content item.")]
-    public partial class ContentItemDetail : RockBlock, IDetailBlock
+    [Description("Displays the details for a content channel item.")]
+    public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
 
         #region Fields
@@ -105,15 +105,15 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 var rockContext = new RockContext();
-                ContentItem item;
+                ContentChannelItem item;
                 int? itemId = PageParameter( "contentItemId" ).AsIntegerOrNull();
                 if ( itemId.HasValue && itemId.Value > 0 )
                 {
-                    item = new ContentItemService( rockContext ).Get( itemId.Value );
+                    item = new ContentChannelItemService( rockContext ).Get( itemId.Value );
                 }
                 else
                 {
-                    item = new ContentItem { Id = 0, ContentChannelId = PageParameter("contentChannelId").AsInteger() };
+                    item = new ContentChannelItem { Id = 0, ContentChannelId = PageParameter("contentChannelId").AsInteger() };
                 }
                 item.LoadAttributes();
                 phAttributes.Controls.Clear();
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Cms
             int? contentItemId = PageParameter( pageReference, "contentItemId" ).AsIntegerOrNull();
             if ( contentItemId != null )
             {
-                ContentItem contentItem = new ContentItemService( new RockContext() ).Get( contentItemId.Value );
+                ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId.Value );
                 if ( contentItem != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( contentItem.Title, pageReference ) );
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Cms
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            ContentItem contentItem = GetContentItem( rockContext );
+            ContentChannelItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null && contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
@@ -170,15 +170,15 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Content = ceContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
-                contentItem.ExpireDateTime = ( contentItem.ContentType.DateRangeType == DateRangeTypeEnum.DateRange ) ?
+                contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
                     dtpExpire.SelectedDateTime : null;
 
                 int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? 1;
                 int oldStatusId = contentItem.Status.ConvertToInt();
                 if ( newStatusID != oldStatusId && contentItem.IsAuthorized(Authorization.APPROVE, CurrentPerson))
                 {
-                    contentItem.Status = hfStatus.Value.ConvertToEnum<ContentItemStatus>( ContentItemStatus.PendingApproval );
-                    if ( contentItem.Status == ContentItemStatus.PendingApproval )
+                    contentItem.Status = hfStatus.Value.ConvertToEnum<ContentChannelItemStatus>( ContentChannelItemStatus.PendingApproval );
+                    if ( contentItem.Status == ContentChannelItemStatus.PendingApproval )
                     {
                         contentItem.ApprovedDateTime = null;
                         contentItem.ApprovedByPersonAliasId = null;
@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( hfContentItemId.ValueAsInt() );
+            ShowDetail( hfId.ValueAsInt() );
         }
 
         #endregion
@@ -240,41 +240,41 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentItemId">The content type identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private ContentItem GetContentItem( RockContext rockContext = null )
+        private ContentChannelItem GetContentItem( RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            var contentItemService = new ContentItemService( rockContext );
-            ContentItem contentItem = null;
+            var contentItemService = new ContentChannelItemService( rockContext );
+            ContentChannelItem contentItem = null;
 
-            int contentItemId = hfContentItemId.Value.AsInteger();
+            int contentItemId = hfId.Value.AsInteger();
             if ( contentItemId != 0 )
             {
                 contentItem = contentItemService
-                    .Queryable( "ContentChannel,ContentType" )
+                    .Queryable( "ContentChannel,ContentChannelType" )
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
             if ( contentItem == null)
             {
-                var contentChannel = new ContentChannelService( rockContext ).Get( hfContentChannelId.Value.AsInteger() );
+                var contentChannel = new ContentChannelService( rockContext ).Get( hfChannelId.Value.AsInteger() );
                 if ( contentChannel != null )
                 {
-                    contentItem = new ContentItem
+                    contentItem = new ContentChannelItem
                     {
                         ContentChannel = contentChannel,
                         ContentChannelId = contentChannel.Id,
-                        ContentType = contentChannel.ContentType,
-                        ContentTypeId = contentChannel.ContentType.Id,
+                        ContentChannelType = contentChannel.ContentChannelType,
+                        ContentChannelTypeId = contentChannel.ContentChannelType.Id,
                         StartDateTime = RockDateTime.Now
                     };
 
                     if ( contentChannel.RequiresApproval )
                     {
-                        contentItem.Status = ContentItemStatus.PendingApproval;
+                        contentItem.Status = ContentChannelItemStatus.PendingApproval;
                     }
                     else
                     {
-                        contentItem.Status = ContentItemStatus.Approved;
+                        contentItem.Status = ContentChannelItemStatus.Approved;
                         contentItem.ApprovedDateTime = RockDateTime.Now;
                         contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
                     }
@@ -298,13 +298,13 @@ namespace RockWeb.Blocks.Cms
         public void ShowDetail( int contentItemId, int? contentChannelId )
         {
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
-            hfContentItemId.Value = contentItemId.ToString();
-            hfContentChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
+            hfId.Value = contentItemId.ToString();
+            hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
-            ContentItem contentItem = GetContentItem();
+            ContentChannelItem contentItem = GetContentItem();
 
             if ( contentItem != null &&
-                contentItem.ContentType != null &&
+                contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
                 ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
             {
@@ -312,8 +312,8 @@ namespace RockWeb.Blocks.Cms
 
                 pnlEditDetails.Visible = true;
 
-                hfContentItemId.Value = contentItem.Id.ToString();
-                hfContentChannelId.Value = contentItem.ContentChannelId.ToString();
+                hfId.Value = contentItem.Id.ToString();
+                hfChannelId.Value = contentItem.ContentChannelId.ToString();
 
                 string cssIcon = contentItem.ContentChannel.IconCssClass;
                 if ( string.IsNullOrWhiteSpace( cssIcon ) )
@@ -323,8 +323,8 @@ namespace RockWeb.Blocks.Cms
                 lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
                 string title = contentItem.Id > 0 ?
-                    ActionTitle.Edit( ContentItem.FriendlyTypeName ) :
-                    ActionTitle.Add( ContentItem.FriendlyTypeName );
+                    ActionTitle.Edit( ContentChannelItem.FriendlyTypeName ) :
+                    ActionTitle.Add( ContentChannelItem.FriendlyTypeName );
                 lTitle.Text = title.FormatAsHtmlTitle();
 
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Cms
                 nbPriority.Text = contentItem.Priority.ToString();
                 dtpStart.SelectedDateTime = contentItem.StartDateTime;
 
-                dtpExpire.Visible = contentItem.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
+                dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
 
                 dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
 
@@ -344,12 +344,12 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentItem.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentChannelItem.FriendlyTypeName );
                 pnlEditDetails.Visible = false;
             }
         }
 
-        private void ShowApproval( ContentItem contentItem )
+        private void ShowApproval( ContentChannelItem contentItem )
         {
             if ( contentItem != null &&
                 contentItem.ContentChannel != null &&
@@ -362,27 +362,27 @@ namespace RockWeb.Blocks.Cms
                 {
                     pnlStatus.Visible = true;
 
-                    PendingCss = contentItem.Status == ContentItemStatus.PendingApproval ? "btn-default active" : "btn-default";
-                    ApprovedCss = contentItem.Status == ContentItemStatus.Approved ? "btn-success active" : "btn-default";
-                    DeniedCss = contentItem.Status == ContentItemStatus.Denied ? "btn-danger active" : "btn-default";
+                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-default active" : "btn-default";
+                    ApprovedCss = contentItem.Status == ContentChannelItemStatus.Approved ? "btn-success active" : "btn-default";
+                    DeniedCss = contentItem.Status == ContentChannelItemStatus.Denied ? "btn-danger active" : "btn-default";
                 }
                 else
                 {
                     pnlStatus.Visible = false;
 
                     string labelCss = "default";
-                    if ( contentItem.Status == ContentItemStatus.Approved )
+                    if ( contentItem.Status == ContentChannelItemStatus.Approved )
                     {
                         labelCss = "success";
                     }
-                    else if ( contentItem.Status == ContentItemStatus.Denied )
+                    else if ( contentItem.Status == ContentChannelItemStatus.Denied )
                     {
                         labelCss = "danger";
                     }
                     statusDetail.AppendFormat( "<span class='label label-{0}'>{1}</span> ", labelCss, contentItem.Status.ConvertToString() );
                 }
 
-                if ( contentItem.Status != ContentItemStatus.PendingApproval )
+                if ( contentItem.Status != ContentChannelItemStatus.PendingApproval )
                 {
                     if ( contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null )
                     {
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Cms
         private void ReturnToParentPage()
         {
             var qryParams = new Dictionary<string,string>();
-            qryParams.Add( "contentChannelId", hfContentChannelId.Value );
+            qryParams.Add( "contentChannelId", hfChannelId.Value );
             NavigateToParentPage( qryParams );
         }
 

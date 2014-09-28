@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentTypeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelTypeDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -10,7 +10,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
-            <asp:HiddenField ID="hfContentTypeId" runat="server" />
+            <asp:HiddenField ID="hfId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -26,7 +26,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ContentType, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ContentChannelType, Rock" PropertyName="Name" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />

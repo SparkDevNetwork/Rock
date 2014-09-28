@@ -249,8 +249,8 @@
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
-    <Compile Include="Model\CodeGenerated\ContentItemService.cs" />
-    <Compile Include="Model\CodeGenerated\ContentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
@@ -258,10 +258,10 @@
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\ContentItem.cs">
+    <Compile Include="Model\ContentChannelItem.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\ContentType.cs">
+    <Compile Include="Model\ContentChannelType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\EntitySetItemService.Partial.cs" />

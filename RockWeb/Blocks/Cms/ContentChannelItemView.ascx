@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyContentItems.ascx.cs" Inherits="RockWeb.Blocks.Cms.MyContentItems" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemView.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemView" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -32,7 +32,7 @@
                     </ul>
                 </div>
 
-                <h4><asp:Literal ID="lContentItem" runat="server"></asp:Literal></h4>
+                <h4><asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h4>
 
                 <div class="grid">
                     <Rock:GridFilter ID="gfFilter" runat="server">
@@ -40,7 +40,7 @@
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                         <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
                     </Rock:GridFilter>               
-                    <Rock:Grid ID="gContentItems" runat="server" OnRowSelected="gContentItems_Edit" >
+                    <Rock:Grid ID="gContentChannelItems" runat="server" OnRowSelected="gContentChannelItems_Edit" >
                         <Columns>
                             <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />

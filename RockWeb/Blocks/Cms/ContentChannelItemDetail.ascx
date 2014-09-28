@@ -1,12 +1,12 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentItemDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemDetail" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
-            <asp:HiddenField ID="hfContentItemId" runat="server" />
-            <asp:HiddenField ID="hfContentChannelId" runat="server" />
+            <asp:HiddenField ID="hfId" runat="server" />
+            <asp:HiddenField ID="hfChannelId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatusPersonAliasId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatus" runat="server" />
 
@@ -30,7 +30,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentItem, Rock" PropertyName="Title" />
+                        <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" />
                         </div>
                         <div class="col-md-6">
                             <div class="form-group" id="divStatus" runat="server">

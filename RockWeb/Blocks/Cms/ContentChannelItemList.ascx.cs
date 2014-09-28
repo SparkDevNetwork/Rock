@@ -34,17 +34,17 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Item List")]
+    [DisplayName("Content Channel Item List")]
     [Category("CMS")]
-    [Description("Lists content items.")]
+    [Description("Lists content channel items.")]
 
     [LinkedPage("Detail Page")]
-    public partial class ContentItemList : RockBlock, ISecondaryBlock
+    public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
         #region Fields
 
-        private int? _contentChannelId = null;
-        private int _contentTypeId = 0;
+        private int? _channelId = null;
+        private int _typeId = 0;
         #endregion
 
         #region Control Methods
@@ -57,14 +57,14 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            _contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
-            var contentChannel = new ContentChannelService( new RockContext() ).Get( _contentChannelId.Value );
+            _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+            var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
             if ( contentChannel != null )
             {
-                gContentItems.Columns[1].HeaderText = contentChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange ? "Start" : "Date";
-                gContentItems.Columns[2].Visible = contentChannel.ContentType.DateRangeType == DateRangeTypeEnum.DateRange;
+                gItems.Columns[1].HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
                 lContentChannel.Text = contentChannel.Name;
-                _contentTypeId = contentChannel.ContentTypeId;
+                _typeId = contentChannel.ContentChannelTypeId;
             }
 
             // Block Security and special attributes (RockPage takes care of View)
@@ -73,18 +73,18 @@ namespace RockWeb.Blocks.Cms
             gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
             gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
-            gContentItems.DataKeyNames = new string[] { "id" };
-            gContentItems.Actions.ShowAdd = canAddEditDelete;
-            gContentItems.IsDeleteEnabled = canAddEditDelete;
-            gContentItems.Actions.AddClick += gContentItems_Add;
-            gContentItems.GridRebind += gContentItems_GridRebind;
+            gItems.DataKeyNames = new string[] { "id" };
+            gItems.Actions.ShowAdd = canAddEditDelete;
+            gItems.IsDeleteEnabled = canAddEditDelete;
+            gItems.Actions.AddClick += gItems_Add;
+            gItems.GridRebind += gItems_GridRebind;
 
             AddAttributeColumns();
 
             if ( contentChannel != null && contentChannel.RequiresApproval )
             {
                 var statusField = new BoundField();
-                gContentItems.Columns.Add( statusField );
+                gItems.Columns.Add( statusField );
                 statusField.DataField = "Status";
                 statusField.HeaderText = "Status";
                 statusField.SortExpression = "Status";
@@ -92,13 +92,13 @@ namespace RockWeb.Blocks.Cms
             }
            
             var securityField = new SecurityField();
-            gContentItems.Columns.Add( securityField );
+            gItems.Columns.Add( securityField );
             securityField.TitleField = "Title";
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
 
             var deleteField = new DeleteField();
-            gContentItems.Columns.Add( deleteField );
-            deleteField.Click += gContentItems_Delete;
+            gItems.Columns.Add( deleteField );
+            deleteField.Click += gItems_Delete;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 case "Status":
                     {
-                        var status = e.Value.ConvertToEnumOrNull<ContentItemStatus>();
+                        var status = e.Value.ConvertToEnumOrNull<ContentChannelItemStatus>();
                         if ( status.HasValue )
                         {
                             {
@@ -174,36 +174,36 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the Add event of the gContentItems control.
+        /// Handles the Add event of the gItems control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentItems_Add( object sender, EventArgs e )
+        protected void gItems_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", _contentChannelId );
+            NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", _channelId );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gContentItems control.
+        /// Handles the Edit event of the gItems control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentItems_Edit( object sender, RowEventArgs e )
+        protected void gItems_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "contentItemId", e.RowKeyId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gContentItems control.
+        /// Handles the Delete event of the gItems control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentItems_Delete( object sender, RowEventArgs e )
+        protected void gItems_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            ContentItemService contentItemService = new ContentItemService( rockContext );
+            ContentChannelItemService contentItemService = new ContentChannelItemService( rockContext );
 
-            ContentItem contentItem = contentItemService.Get( (int)e.RowKeyValue );
+            ContentChannelItem contentItem = contentItemService.Get( (int)e.RowKeyValue );
 
             if ( contentItem != null )
             {
@@ -222,11 +222,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gContentItems control.
+        /// Handles the GridRebind event of the gItems control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gContentItems_GridRebind( object sender, EventArgs e )
+        private void gItems_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -257,25 +257,25 @@ namespace RockWeb.Blocks.Cms
         protected void AddAttributeColumns()
         {
             // Remove attribute columns
-            foreach ( var column in gContentItems.Columns.OfType<AttributeField>().ToList() )
+            foreach ( var column in gItems.Columns.OfType<AttributeField>().ToList() )
             {
-                gContentItems.Columns.Remove( column );
+                gItems.Columns.Remove( column );
             }
 
             // Add attribute columns
-            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentItem ) ).Id;
-            string qualifier = _contentTypeId.ToString();
+            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            string qualifier = _typeId.ToString();
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
                     a.IsGridColumn &&
-                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifier ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
                 string dataFieldExpression = attribute.Key;
-                bool columnExists = gContentItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                bool columnExists = gItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
                 if ( !columnExists )
                 {
                     AttributeField boundField = new AttributeField();
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Cms
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                     }
 
-                    gContentItems.Columns.Add( boundField );
+                    gItems.Columns.Add( boundField );
                 }
             }
         }
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
-            ddlStatus.BindToEnum<ContentItemStatus>( true );
+            ddlStatus.BindToEnum<ContentChannelItemStatus>( true );
             int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
             if ( statusID.HasValue )
             {
@@ -312,11 +312,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            if ( _contentChannelId.HasValue )
+            if ( _channelId.HasValue )
             {
-                ContentItemService contentItemService = new ContentItemService( new RockContext() );
+                ContentChannelItemService contentItemService = new ContentChannelItemService( new RockContext() );
                 var contentItems = contentItemService.Queryable()
-                    .Where( c => c.ContentChannelId == _contentChannelId.Value );
+                    .Where( c => c.ContentChannelId == _channelId.Value );
 
                 var drp = new DateRangePicker();
                 drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Cms
                     contentItems = contentItems.Where( i => i.StartDateTime < upperDate );
                 }
 
-                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentItemStatus>();
+                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
                 if ( status.HasValue )
                 {
                     contentItems = contentItems.Where( i => i.Status == status );
@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Cms
                 // Eventually we should implement server-side paging so that we only need to check security for
                 // the items on the current page
 
-                var items = new List<ContentItem>();
+                var items = new List<ContentChannelItem>();
                 foreach ( var item in contentItems.ToList())
                 {
                     if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ))
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                SortProperty sortProperty = gContentItems.SortProperty;
+                SortProperty sortProperty = gItems.SortProperty;
                 if ( sortProperty != null )
                 {
                     items = items.AsQueryable().Sort( sortProperty ).ToList();
@@ -367,10 +367,10 @@ namespace RockWeb.Blocks.Cms
                     items = items.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
 
-                gContentItems.ObjectList = new Dictionary<string, object>();
-                items.ForEach( i => gContentItems.ObjectList.Add( i.Id.ToString(), i ) );
+                gItems.ObjectList = new Dictionary<string, object>();
+                items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gContentItems.DataSource = items.Select( i => new
+                gItems.DataSource = items.Select( i => new
                 {
                     i.Id,
                     i.Guid,
@@ -380,19 +380,19 @@ namespace RockWeb.Blocks.Cms
                     i.Priority,
                     Status = DisplayStatus( i.Status )
                 } ).ToList();
-                gContentItems.DataBind();
+                gItems.DataBind();
             }
         }
 
 
-        protected string DisplayStatus (ContentItemStatus contentItemStatus)
+        protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)
         {
             string labelType = "default";
-            if ( contentItemStatus == ContentItemStatus.Approved )
+            if ( contentItemStatus == ContentChannelItemStatus.Approved )
             {
                 labelType = "success";
             }
-            else if ( contentItemStatus == ContentItemStatus.Denied )
+            else if ( contentItemStatus == ContentChannelItemStatus.Denied )
             {
                 labelType = "danger";
             }

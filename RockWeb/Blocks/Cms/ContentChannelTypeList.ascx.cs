@@ -33,12 +33,12 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Type List")]
+    [DisplayName("Content Channel Type List")]
     [Category("CMS")]
-    [Description("Lists content types in the system.")]
+    [Description("Lists content channel types in the system.")]
 
     [LinkedPage("Detail Page")]
-    public partial class ContentTypeList : RockBlock
+    public partial class ContentChannelTypeList : RockBlock
     {
         #region Control Methods
 
@@ -56,11 +56,11 @@ namespace RockWeb.Blocks.Cms
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
 
-            gContentType.DataKeyNames = new string[] { "id" };
-            gContentType.Actions.AddClick += gContentType_Add;
-            gContentType.GridRebind += gContentType_GridRebind;
-            gContentType.Actions.ShowAdd = canAddEditDelete;
-            gContentType.IsDeleteEnabled = canAddEditDelete;
+            gContentChannelType.DataKeyNames = new string[] { "id" };
+            gContentChannelType.Actions.AddClick += gContentChannelType_Add;
+            gContentChannelType.GridRebind += gContentChannelType_GridRebind;
+            gContentChannelType.Actions.ShowAdd = canAddEditDelete;
+            gContentChannelType.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -92,35 +92,35 @@ namespace RockWeb.Blocks.Cms
         }
         
         /// <summary>
-        /// Handles the Add event of the gContentType control.
+        /// Handles the Add event of the gContentChannelType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gContentType_Add( object sender, EventArgs e )
+        protected void gContentChannelType_Add( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "contentTypeId", 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gContentType control.
+        /// Handles the Edit event of the gContentChannelType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentType_Edit( object sender, RowEventArgs e )
+        protected void gContentChannelType_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "contentTypeId", e.RowKeyId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gContentType control.
+        /// Handles the Delete event of the gContentChannelType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gContentType_Delete( object sender, RowEventArgs e )
+        protected void gContentChannelType_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            ContentTypeService contentTypeService = new ContentTypeService( rockContext );
-            ContentType contentType = contentTypeService.Get( (int)e.RowKeyValue );
+            ContentChannelTypeService contentTypeService = new ContentChannelTypeService( rockContext );
+            ContentChannelType contentType = contentTypeService.Get( (int)e.RowKeyValue );
 
             if ( contentType != null )
             {
@@ -139,11 +139,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gContentType control.
+        /// Handles the GridRebind event of the gContentChannelType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gContentType_GridRebind( object sender, EventArgs e )
+        private void gContentChannelType_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -157,8 +157,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            ContentTypeService contentTypeService = new ContentTypeService( new RockContext() );
-            SortProperty sortProperty = gContentType.SortProperty;
+            ContentChannelTypeService contentTypeService = new ContentChannelTypeService( new RockContext() );
+            SortProperty sortProperty = gContentChannelType.SortProperty;
 
             var types = contentTypeService.Queryable( "Channels" )
                 .Select( t => new
@@ -179,8 +179,8 @@ namespace RockWeb.Blocks.Cms
                 types = types.OrderBy( p => p.Name ).ToList();
             }
 
-            gContentType.DataSource = types;
-            gContentType.DataBind();
+            gContentChannelType.DataSource = types;
+            gContentChannelType.DataBind();
         }
 
         #endregion

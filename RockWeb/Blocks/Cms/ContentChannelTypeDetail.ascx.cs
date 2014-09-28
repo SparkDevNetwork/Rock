@@ -36,10 +36,10 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Type Detail")]
+    [DisplayName("Content Channel Type Detail")]
     [Category("CMS")]
-    [Description("Displays the details for a content type.")]
-    public partial class ContentTypeDetail : RockBlock, IDetailBlock
+    [Description("Displays the details for a content channel type.")]
+    public partial class ContentChannelTypeDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "typeId" ).AsInteger() );
             }
             else
             {
@@ -163,10 +163,10 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? contentTypeId = PageParameter( pageReference, "contentTypeId" ).AsIntegerOrNull();
+            int? contentTypeId = PageParameter( pageReference, "typeId" ).AsIntegerOrNull();
             if ( contentTypeId != null )
             {
-                ContentType contentType = new ContentTypeService( new RockContext() ).Get( contentTypeId.Value );
+                ContentChannelType contentType = new ContentChannelTypeService( new RockContext() ).Get( contentTypeId.Value );
                 if ( contentType != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( contentType.Name, pageReference ) );
@@ -195,15 +195,15 @@ namespace RockWeb.Blocks.Cms
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            ContentType contentType;
+            ContentChannelType contentType;
 
-            ContentTypeService contentTypeService = new ContentTypeService( rockContext );
+            ContentChannelTypeService contentTypeService = new ContentChannelTypeService( rockContext );
 
-            int contentTypeId = int.Parse( hfContentTypeId.Value );
+            int contentTypeId = int.Parse( hfId.Value );
 
             if ( contentTypeId == 0 )
             {
-                contentType = new ContentType();
+                contentType = new ContentChannelType();
                 contentTypeService.Add( contentType );
             }
             else
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentType != null )
             {
                 contentType.Name = tbName.Text;
-                contentType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
+                contentType.DateRangeType = (ContentChannelDateType)int.Parse( ddlDateRangeType.SelectedValue );
 
                 if ( !Page.IsValid || !contentType.IsValid )
                 {
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Cms
                     SaveAttributes( contentType.Id, entityTypeId, ChannelAttributesState, rockContext );
 
                     // Save the Item Attributes
-                    entityTypeId = EntityTypeCache.Read( typeof( ContentItem ) ).Id;
+                    entityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
                     SaveAttributes( contentType.Id, entityTypeId, ItemAttributesState, rockContext );
 
                 } );
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            int contentTypeId = hfContentTypeId.ValueAsInt();
+            int contentTypeId = hfId.ValueAsInt();
             if ( contentTypeId != 0 )
             {
                 ShowDetail( contentTypeId );
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Cms
 
             edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
 
-            edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentItem ) );
+            edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
             ShowDialog( "ItemAttributes", true );
         }
@@ -585,10 +585,10 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentTypeId">The content type identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private ContentType GetContentType( int contentTypeId, RockContext rockContext = null )
+        private ContentChannelType GetContentChannelType( int contentTypeId, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            var contentType = new ContentTypeService( rockContext )
+            var contentType = new ContentChannelTypeService( rockContext )
                 .Queryable()
                 .Where( t => t.Id == contentTypeId )
                 .FirstOrDefault();
@@ -602,26 +602,26 @@ namespace RockWeb.Blocks.Cms
         public void ShowDetail( int contentTypeId )
         {
             var rockContext = new RockContext();
-            ContentType contentType = null;
+            ContentChannelType contentType = null;
 
             if ( !contentTypeId.Equals( 0 ) )
             {
-                contentType = GetContentType( contentTypeId );
+                contentType = GetContentChannelType( contentTypeId );
             }
             if ( contentType == null )
             {
-                contentType = new ContentType { Id = 0 };
+                contentType = new ContentChannelType { Id = 0 };
             }
 
             string title = contentType.Id > 0 ?
-                ActionTitle.Edit( ContentType.FriendlyTypeName ) :
-                ActionTitle.Add( ContentType.FriendlyTypeName );
+                ActionTitle.Edit( ContentChannelType.FriendlyTypeName ) :
+                ActionTitle.Add( ContentChannelType.FriendlyTypeName );
             lTitle.Text = title.FormatAsHtmlTitle();
 
-            hfContentTypeId.Value = contentType.Id.ToString();
+            hfId.Value = contentType.Id.ToString();
 
             tbName.Text = contentType.Name;
-            ddlDateRangeType.BindToEnum<DateRangeTypeEnum>();
+            ddlDateRangeType.BindToEnum<ContentChannelDateType>();
             ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
 
             // load attribute data 
@@ -634,15 +634,15 @@ namespace RockWeb.Blocks.Cms
 
             attributeService.GetByEntityTypeId( new ContentChannel().TypeId ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
             BindChannelAttributesGrid();
 
-            attributeService.GetByEntityTypeId( new ContentItem().TypeId ).AsQueryable()
+            attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
@@ -658,7 +658,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="rockContext">The rock context.</param>
         private void SaveAttributes( int contentTypeId, int entityTypeId, List<Attribute> attributes, RockContext rockContext )
         {
-            string qualifierColumn = "ContentTypeId";
+            string qualifierColumn = "ContentChannelTypeId";
             string qualifierValue = contentTypeId.ToString();
 
             AttributeService attributeService = new AttributeService( rockContext );

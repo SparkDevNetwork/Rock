@@ -44,12 +44,12 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// Block to display content items, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
-    [DisplayName( "Content" )]
+    [DisplayName( "Content Channel Dynamic" )]
     [Category( "CMS" )]
-    [Description( "Block to display content channel items." )]
+    [Description( "Block to display dynamic content channel items." )]
 
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "", 0 )]
-    [EnumsField( "Status", "Include items with the following status.", typeof( ContentItemStatus ), false, "2", "", 1 )]
+    [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "", 1 )]
     [MemoField( "Filters", "The filters to use when quering items.", false, "", "", 2 )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "Priority^ASC|Expire^DESC|Start^DESC", "", 3 )]
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "", 5 )]
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Cms
 ", "", 8 )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "", 9 )]
 
-    public partial class ContentDynamic : RockBlock
+    public partial class ContentChannelDynamic : RockBlock
     {
         #region Fields
 
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Cms
             ddlChannel.DataBind();
             ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
 
-            cblStatus.BindToEnum<ContentItemStatus>();
+            cblStatus.BindToEnum<ContentChannelItemStatus>();
             foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
             {
                 var li = cblStatus.Items.FindByValue( status );
@@ -310,26 +310,26 @@ namespace RockWeb.Blocks.Cms
             return template;
         }
 
-        private List<ContentItem> GetContent()
+        private List<ContentChannelItem> GetContent()
         {
-            var items = GetCacheItem( contentCacheKey ) as List<ContentItem>;
+            var items = GetCacheItem( contentCacheKey ) as List<ContentChannelItem>;
 
             if ( items == null )
             {
-                items = new List<ContentItem>();
+                items = new List<ContentChannelItem>();
 
                 Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
                 {
                     var rockContext = new RockContext();
-                    var service = new ContentItemService( rockContext );
+                    var service = new ContentChannelItemService( rockContext );
 
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
                         // Create query that gets items of this channel type and that are active
                         var now = RockDateTime.Now;
-                        var qry = service.Queryable( "ContentChannel,ContentType" )
+                        var qry = service.Queryable( "ContentChannel,ContentChannelType" )
                             .Where( i =>
                                 i.ContentChannelId == contentChannel.Id &&
                                 i.StartDateTime.CompareTo( now ) <= 0 &&
@@ -337,10 +337,10 @@ namespace RockWeb.Blocks.Cms
                             );
 
                         // Check for the configured status and limit query to those
-                        var statuses = new List<ContentItemStatus>();
+                        var statuses = new List<ContentChannelItemStatus>();
                         foreach ( string statusVal in GetAttributeValue( "Status" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
-                            var status = statusVal.ConvertToEnumOrNull<ContentItemStatus>();
+                            var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
                             if ( status != null )
                             {
                                 statuses.Add( status.Value );
@@ -355,11 +355,11 @@ namespace RockWeb.Blocks.Cms
 
                         // Create a generic item and load it's attributes so that we can tell what 
                         // attributes exist for items of this channel/content type
-                        var genericItem = new ContentItem
+                        var genericItem = new ContentChannelItem
                         {
                             Id = 0,
                             ContentChannelId = contentChannel.Id,
-                            ContentTypeId = contentChannel.ContentTypeId
+                            ContentChannelTypeId = contentChannel.ContentChannelTypeId
                         };
                         genericItem.LoadAttributes();
 
@@ -481,8 +481,8 @@ namespace RockWeb.Blocks.Cms
                 var channel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                 if ( channel != null )
                 {
-                    var channelItem = new ContentItem();
-                    channelItem.ContentTypeId = channel.ContentTypeId;
+                    var channelItem = new ContentChannelItem();
+                    channelItem.ContentChannelTypeId = channel.ContentChannelTypeId;
                     channelItem.LoadAttributes( rockContext );
 
                     foreach ( var attribute in channelItem.Attributes.Select( a => a.Value ) )
@@ -599,7 +599,7 @@ namespace RockWeb.Blocks.Cms
             /// </summary>
             /// <param name="allItems">All items.</param>
             /// <returns></returns>
-            public List<ContentItem> GetCurrentPageItems( List<ContentItem> allItems )
+            public List<ContentChannelItem> GetCurrentPageItems( List<ContentChannelItem> allItems )
             {
                 if ( PageSize > 0 )
                 {

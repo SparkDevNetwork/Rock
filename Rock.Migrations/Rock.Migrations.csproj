@@ -54,6 +54,10 @@
     <Compile Include="Migrations\201409270041079_AttributeValueAsDateTime.Designer.cs">
       <DependentUpon>201409270041079_AttributeValueAsDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409271254064_ContentChannelType.cs" />
+    <Compile Include="Migrations\201409271254064_ContentChannelType.Designer.cs">
+      <DependentUpon>201409271254064_ContentChannelType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
@@ -1232,6 +1236,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201409270041079_AttributeValueAsDateTime.resx">
       <DependentUpon>201409270041079_AttributeValueAsDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409271254064_ContentChannelType.resx">
+      <DependentUpon>201409271254064_ContentChannelType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.resx">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>

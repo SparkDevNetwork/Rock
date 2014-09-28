@@ -28,8 +28,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ContentTypes REST API
     /// </summary>
-    public partial class ContentTypesController : Rock.Rest.ApiController<Rock.Model.ContentType>
+    public partial class ContentChannelTypesController : Rock.Rest.ApiController<Rock.Model.ContentChannelType>
     {
-        public ContentTypesController() : base( new Rock.Model.ContentTypeService( new Rock.Data.RockContext() ) ) { } 
+        public ContentChannelTypesController() : base( new Rock.Model.ContentChannelTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
