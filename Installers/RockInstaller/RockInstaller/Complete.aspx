@@ -160,6 +160,9 @@
 
     private void CleanUpInstall()
     {
+        // wait for a few ms to keep app from recycling before the page is flushed
+        System.Threading.Thread.Sleep( 300 );
+        
         // remove installer files
         File.Delete( serverPath + @"Start.aspx" );
         File.Delete( serverPath + @"Install.aspx" );
