@@ -172,13 +172,13 @@ namespace RockWeb.Blocks.Core
                     if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
                     {
                         lbInstall.Enabled = true;
-                        lbInstall.AddCssClass( "btn-primary" );
+                        lbInstall.AddCssClass( "btn-info" );
                         divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
                         lbInstall.Enabled = false;
-                        lbInstall.Text = "Pending Update";
+                        lbInstall.Text = "Pending";
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
