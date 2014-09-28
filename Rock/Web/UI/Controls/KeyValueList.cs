@@ -47,6 +47,18 @@ namespace Rock.Web.UI.Controls
             set { ViewState["KeyPrompt"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the custom keys.
+        /// </summary>
+        /// <value>
+        /// The custom keys.
+        /// </value>
+        public Dictionary<string, string> CustomKeys
+        {
+            get { return ViewState["CustomKeys"] as Dictionary<string, string>; }
+            set { ViewState["CustomKeys"] = value; }
+        }
+
         #endregion
 
         /// <summary>
@@ -76,32 +88,45 @@ namespace Rock.Web.UI.Controls
             _hfValue.RenderControl( writer );
             writer.WriteLine();
 
-            StringBuilder valueHtml = new StringBuilder();
-            valueHtml.AppendFormat( @"<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""{0}""></input> ", KeyPrompt);
-            if ( values != null )
+            StringBuilder html = new StringBuilder();
+            html.Append( @"<div class=""controls controls-row form-control-group"">");
+            if ( CustomKeys != null && CustomKeys.Any() )
             {
-                valueHtml.Append( @"<select class=""key-value-value form-control input-width-lg js-key-value-input""><option value=""""></option>" );
-                foreach ( var value in values )
+                html.Append( @"<select class=""key-value-key form-control input-width-md js-key-value-input"">" );
+                foreach ( var key in CustomKeys )
                 {
-                    valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", value.Key, value.Value );
+                    html.AppendFormat( @"<option value=""{0}"">{1}</option>", key.Key, key.Value );
                 }
-                valueHtml.Append( @"</select>" );
+                html.Append( @"</select>" );
             }
             else
             {
-                valueHtml.AppendFormat( @"<input class=""key-value-value input-width-lg form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+                html.AppendFormat( @"<input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""{0}""></input> ", KeyPrompt );
             }
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>" );
+
+            if ( values != null )
+            {
+                html.Append( @"<select class=""key-value-value form-control input-width-md js-key-value-input""><option value=""""></option>" );
+                foreach ( var value in values )
+                {
+                    html.AppendFormat( @"<option value=""{0}"">{1}</option>", value.Key, value.Value );
+                }
+                html.Append( @"</select>" );
+            }
+            else
+            {
+                html.AppendFormat( @"<input class=""key-value-value input-width-md form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+            }
+            html.Append( @"<a href=""#"" class=""btn btn-sm btn-danger key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-html" );
-            hfValueHtml.Value = valueHtml.ToString();
+            hfValueHtml.Value = html.ToString();
             hfValueHtml.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-rows" );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
-
 
             string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
@@ -112,13 +137,32 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.WriteLine();
 
-                // Write Name
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-md js-key-value-input" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
-                writer.AddAttribute( "placeholder", KeyPrompt );
-                writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                writer.RenderEndTag();
+                // Write Key
+                if ( CustomKeys != null && CustomKeys.Any() )
+                {
+                    DropDownList ddl = new DropDownList();
+                    ddl.AddCssClass( "key-value-key form-control input-width-md js-key-value-input" );
+                    ddl.DataTextField = "Value";
+                    ddl.DataValueField = "Key";
+                    ddl.DataSource = CustomKeys;
+                    ddl.DataBind();
+                    if ( nameAndValue.Length >= 1 )
+                    {
+                        ddl.SelectedValue = nameAndValue[0];
+                    }
+                    ddl.RenderControl( writer );
+                }
+                else
+                {
+                    // Write Name
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-md js-key-value-input" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
+                    writer.AddAttribute( "placeholder", KeyPrompt );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
+                    writer.RenderEndTag();
+                }
+
                 writer.Write( " " );
                 writer.WriteLine();
 
@@ -126,7 +170,7 @@ namespace Rock.Web.UI.Controls
                 if ( values != null )
                 {
                     DropDownList ddl = new DropDownList();
-                    ddl.AddCssClass( "key-value-value form-control input-width-lg js-key-value-input" );
+                    ddl.AddCssClass( "key-value-value form-control input-width-md js-key-value-input" );
                     ddl.DataTextField = "Value";
                     ddl.DataValueField = "Key";
                     ddl.DataSource = values;
@@ -140,10 +184,10 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-value form-control input-width-lg js-key-value-input" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-value form-control input-width-md js-key-value-input" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                    writer.AddAttribute( "placeholder", ValuePrompt );
                     writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 2 ? nameAndValue[1] : string.Empty );
+                    writer.AddAttribute( "placeholder", ValuePrompt );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
                 }

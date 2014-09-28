@@ -52,9 +52,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<ContentItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
+            if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentItem.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -93,7 +93,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ContentChannel target, ContentChannel source )
         {
-            target.ContentTypeId = source.ContentTypeId;
+            target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.Name = source.Name;
             target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;

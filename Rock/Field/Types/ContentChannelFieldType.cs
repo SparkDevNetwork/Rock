@@ -27,10 +27,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Types
-    /// Stored as DefinedType.Guid
+    /// Field Type used to display a dropdown list of Content Channels
+    /// Stored as ContentChannel.Guid
     /// </summary>
-    public class DefinedTypeFieldType : FieldType
+    public class ContentChannelFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -47,10 +47,10 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var definedType = new DefinedTypeService( new RockContext() ).Get( guid.Value );
-                if (definedType != null)
+                var contentChannel = new ContentChannelService( new RockContext() ).Get( guid.Value );
+                if (contentChannel != null)
                 { 
-                    formattedValue = definedType.Name;
+                    formattedValue = contentChannel.Name;
                 }
             }
 
@@ -70,12 +70,12 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Name );
-            if ( definedTypes.Any() )
+            var contentChannels = new ContentChannelService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            if ( contentChannels.Any() )
             {
-                foreach ( var definedType in definedTypes )
+                foreach ( var contentChannel in contentChannels )
                 {
-                    editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString().ToUpper() ) );
+                    editControl.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString().ToUpper() ) );
                 }
 
                 return editControl;
@@ -95,7 +95,7 @@ namespace Rock.Field.Types
             var picker = control as DropDownList;
             if (picker != null)
             {
-                // picker has value as DefinedType.Guid
+                // picker has value as ContentChannel.Guid
                 return picker.SelectedValue;
             }
 

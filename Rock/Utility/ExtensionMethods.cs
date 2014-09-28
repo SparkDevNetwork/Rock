@@ -111,6 +111,11 @@ namespace Rock
                 return liquidObject;
             }
 
+            if ( liquidObject is Drop )
+            {
+                return ( (ILiquidizable)liquidObject ).ToLiquid();
+            }
+
             if ( liquidObject is ILiquidizable )
             {
                 return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();

@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Group Service class
+    /// ContentItem Service class
     /// </summary>
-    public partial class GroupService : Service<Group>
+    public partial class ContentChannelItemService : Service<ContentChannelItem>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupService"/> class
+        /// Initializes a new instance of the <see cref="ContentChannelItemService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public GroupService(RockContext context) : base(context)
+        public ContentChannelItemService(RockContext context) : base(context)
         {
         }
 
@@ -48,27 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Group item, out string errorMessage )
+        public bool CanDelete( ContentChannelItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -76,45 +58,46 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class GroupExtensionMethods
+    public static partial class ContentItemExtensionMethods
     {
         /// <summary>
-        /// Clones this Group object to a new Group object
+        /// Clones this ContentItem object to a new ContentItem object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Group Clone( this Group source, bool deepCopy )
+        public static ContentChannelItem Clone( this ContentChannelItem source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Group;
+                return source.Clone() as ContentChannelItem;
             }
             else
             {
-                var target = new Group();
+                var target = new ContentChannelItem();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Group object to this Group object
+        /// Copies the properties from another ContentItem object to this ContentItem object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Group target, Group source )
+        public static void CopyPropertiesFrom( this ContentChannelItem target, ContentChannelItem source )
         {
-            target.IsSystem = source.IsSystem;
-            target.ParentGroupId = source.ParentGroupId;
-            target.GroupTypeId = source.GroupTypeId;
-            target.CampusId = source.CampusId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.IsSecurityRole = source.IsSecurityRole;
-            target.IsActive = source.IsActive;
-            target.Order = source.Order;
-            target.AllowGuests = source.AllowGuests;
+            target.ContentChannelId = source.ContentChannelId;
+            target.ContentChannelTypeId = source.ContentChannelTypeId;
+            target.Title = source.Title;
+            target.Content = source.Content;
+            target.Priority = source.Priority;
+            target.Status = source.Status;
+            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            target.ApprovedDateTime = source.ApprovedDateTime;
+            target.StartDateTime = source.StartDateTime;
+            target.ExpireDateTime = source.ExpireDateTime;
+            target.Permalink = source.Permalink;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
