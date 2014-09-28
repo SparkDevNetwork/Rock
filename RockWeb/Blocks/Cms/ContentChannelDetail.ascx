@@ -5,8 +5,8 @@
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
-            <asp:HiddenField ID="hfContentChannelId" runat="server" />
-            <asp:HiddenField ID="hfContentTypeId" runat="server" />
+            <asp:HiddenField ID="hfId" runat="server" />
+            <asp:HiddenField ID="hfTypeId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -14,7 +14,7 @@
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlContentType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
                 </div>
             </div>
 
@@ -24,7 +24,7 @@
 
                 <div id="pnlEditDetails" runat="server">
 
-                    <Rock:ModalAlert ID="maContentTypeWarning" runat="server" />
+                    <Rock:ModalAlert ID="maContentChannelWarning" runat="server" />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -45,7 +45,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
-                            <Rock:RockDropDownList ID="ddlContentType" runat="server" Label="Content Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentType_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlType" runat="server" Label="Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlType_SelectedIndexChanged" />
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>

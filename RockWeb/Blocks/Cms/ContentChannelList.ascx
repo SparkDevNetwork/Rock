@@ -15,7 +15,7 @@
                 <div class="grid grid-panel">
 
                     <Rock:GridFilter ID="gfFilter" runat="server">
-                        <Rock:RockDropDownList ID="ddlContentType" runat="server" Label="Content Type" />
+                        <Rock:RockDropDownList ID="ddlType" runat="server" Label="Type" />
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
@@ -23,7 +23,7 @@
                     <Rock:Grid ID="gContentChannels" runat="server" EmptyDataText="No Channels Found" RowItemText="Channel" AllowSorting="true" TooltipField="Description" OnRowSelected="gContentChannels_Edit">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Channel" SortExpression="Name" />
-                            <asp:BoundField DataField="ContentType" HeaderText="Content Type" SortExpression="ContentType" />
+                            <asp:BoundField DataField="ContentChannelType" HeaderText="Type" SortExpression="ContentChannelType" />
                             <asp:HyperLinkField DataNavigateUrlFields="ChannelUrl" DataNavigateUrlFormatString="{0}" DataTextField="ChannelUrl" SortExpression="ChannelUrl" HeaderText="Channel Url" />
                             <Rock:BadgeField InfoMin="1" DataField="TotalItems" HeaderText="Total Items" SortExpression="TotalItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                             <Rock:BadgeField InfoMin="1" DataField="ActiveItems" HeaderText="Active Items" SortExpression="ActiveItems" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
