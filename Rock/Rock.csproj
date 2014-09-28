@@ -498,10 +498,10 @@
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskDevice.cs" />
-    <Compile Include="Communication\ChannelComponent.cs" />
-    <Compile Include="Communication\Channel\Sms.cs" />
-    <Compile Include="Communication\Channel\Email.cs" />
-    <Compile Include="Communication\ChannelContainer.cs" />
+    <Compile Include="Communication\MediumComponent.cs" />
+    <Compile Include="Communication\Medium\Sms.cs" />
+    <Compile Include="Communication\Medium\Email.cs" />
+    <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />

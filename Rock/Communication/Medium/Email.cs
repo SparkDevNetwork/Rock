@@ -27,13 +27,13 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Web.UI.Controls.Communication;
 
-namespace Rock.Communication.Channel
+namespace Rock.Communication.Medium
 {
     /// <summary>
     /// An email communication
     /// </summary>
     [Description( "An email communication" )]
-    [Export( typeof( ChannelComponent ) )]
+    [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
     [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
@@ -48,7 +48,7 @@ by your email client.
 You can view an online version of this email here: 
 {{ GlobalAttribute.PublicApplicationRoot }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
 ", "", 3 )]
-    public class Email : ChannelComponent
+    public class Email : MediumComponent
     {
         /// <summary>
         /// Gets the control path.
@@ -56,7 +56,7 @@ You can view an online version of this email here:
         /// <value>
         /// The control path.
         /// </value>
-        public override ChannelControl Control
+        public override MediumControl Control
         {
             get { return new Rock.Web.UI.Controls.Communication.Email(); }
         }
@@ -99,12 +99,12 @@ You can view an online version of this email here:
             }
 
             // Body
-            string htmlContent = communication.GetChannelDataValue( "HtmlMessage" );
+            string htmlContent = communication.GetMediumDataValue( "HtmlMessage" );
             sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeValues ) );
 
             // Attachments
             StringBuilder sbAttachments = new StringBuilder();
-            string attachmentIds = communication.GetChannelDataValue( "Attachments" );
+            string attachmentIds = communication.GetMediumDataValue( "Attachments" );
             if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
             {
                 sbContent.Append( "<br/><br/>" );
@@ -141,21 +141,21 @@ You can view an online version of this email here:
             sb.AppendLine("<div class='row'>");
             sb.AppendLine( "<div class='col-md-6'>" );
 
-            AppendChannelData( communication, sb, "FromName" );
-            AppendChannelData( communication, sb, "FromAddress" );
-            AppendChannelData( communication, sb, "ReplyTo" );
-            AppendChannelData( communication, sb, "Subject" );
+            AppendMediumData( communication, sb, "FromName" );
+            AppendMediumData( communication, sb, "FromAddress" );
+            AppendMediumData( communication, sb, "ReplyTo" );
+            AppendMediumData( communication, sb, "Subject" );
 
             sb.AppendLine( "</div>" );
             sb.AppendLine( "<div class='col-md-6'>" );
-            AppendAttachmentData( sb, communication.GetChannelDataValue( "Attachments" ) );
+            AppendAttachmentData( sb, communication.GetMediumDataValue( "Attachments" ) );
             sb.AppendLine( "</div>" );
             sb.AppendLine( "</div>" );
 
-            string value = communication.GetChannelDataValue( "HtmlMessage" );
+            string value = communication.GetMediumDataValue( "HtmlMessage" );
             if (!string.IsNullOrWhiteSpace(value))
             {
-                AppendChannelData( sb, "HtmlMessage", string.Format( @"
+                AppendMediumData( sb, "HtmlMessage", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
                         <script id='email-body' type='text/template'>{0}</script>
                         <script type='text/javascript'>
@@ -167,17 +167,17 @@ You can view an online version of this email here:
                     ", value ) );
             }
 
-            AppendChannelData( communication, sb, "TextMessage" );
+            AppendMediumData( communication, sb, "TextMessage" );
 
             return sb.ToString();
         }
 
-        private void AppendChannelData(Model.Communication communication, StringBuilder sb, string key)
+        private void AppendMediumData(Model.Communication communication, StringBuilder sb, string key)
         {
-            string value = communication.GetChannelDataValue( key );
+            string value = communication.GetMediumDataValue( key );
             if (!string.IsNullOrWhiteSpace(value))
             {
-                AppendChannelData( sb, key, value );
+                AppendMediumData( sb, key, value );
             }
         }
 
@@ -209,11 +209,11 @@ You can view an online version of this email here:
                 }
                 sbAttachments.Append( "</ul>" );
 
-                AppendChannelData( sb, "Attachments", sbAttachments.ToString() );
+                AppendMediumData( sb, "Attachments", sbAttachments.ToString() );
             }
         }
 
-        private void AppendChannelData( StringBuilder sb, string key, string value )
+        private void AppendMediumData( StringBuilder sb, string key, string value )
         {
             sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
                 key.SplitCase(), value );
@@ -273,14 +273,14 @@ You can view an online version of this email here:
                     string unsubscribeHtml = GetAttributeValue( "UnsubscribeHTML" );
                     if ( !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
                     {
-                        communication.SetChannelDataValue( "UnsubscribeHTML", unsubscribeHtml );
+                        communication.SetMediumDataValue( "UnsubscribeHTML", unsubscribeHtml );
                     }
                 }
 
                 string defaultPlainText = GetAttributeValue( "DefaultPlainText" );
                 if ( !string.IsNullOrWhiteSpace( defaultPlainText ) )
                 {
-                    communication.SetChannelDataValue( "DefaultPlainText", defaultPlainText );
+                    communication.SetMediumDataValue( "DefaultPlainText", defaultPlainText );
                 }
 
                 rockContext.SaveChanges();
@@ -300,11 +300,11 @@ You can view an online version of this email here:
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
             Dictionary<string, object> mergeObjects )
         {
-            string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
+            string htmlBody = communication.GetMediumDataValue( "HtmlMessage" );
             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
             {
                 // Get the unsubscribe content and add a merge field for it
-                string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects );
+                string unsubscribeHtml = communication.GetMediumDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects );
                 if (mergeObjects.ContainsKey( "UnsubscribeOption"))
                 {
                     mergeObjects.Add( "UnsubscribeOption", unsubscribeHtml );
@@ -351,8 +351,8 @@ You can view an online version of this email here:
             Dictionary<string, object> mergeObjects )
         {
 
-            string defaultPlainText = communication.GetChannelDataValue( "DefaultPlainText" );
-            string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
+            string defaultPlainText = communication.GetMediumDataValue( "DefaultPlainText" );
+            string plainTextBody = communication.GetMediumDataValue( "TextMessage" );
 
             if ( string.IsNullOrWhiteSpace( plainTextBody ) && !string.IsNullOrWhiteSpace(defaultPlainText))
             {

@@ -59,13 +59,13 @@ namespace Rock.Communication
         public abstract void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot );
 
         /// <summary>
-        /// Sends the specified channel data to the specified list of recipients.
+        /// Sends the specified medium data to the specified list of recipients.
         /// </summary>
-        /// <param name="channelData">The channel data.</param>
+        /// <param name="mediumData">The medium data.</param>
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public abstract void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot);
+        public abstract void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot);
     }
    
 }

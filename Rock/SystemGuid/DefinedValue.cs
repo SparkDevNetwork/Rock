@@ -23,12 +23,12 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region Communication Channel Type
+        #region Communication Medium Type
 
         /// <summary>
         /// Email communication
         /// </summary>
-        public const string COMMUNICATION_CHANNEL_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
+        public const string COMMUNICATION_MEDIUM_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
 
         #endregion
 
