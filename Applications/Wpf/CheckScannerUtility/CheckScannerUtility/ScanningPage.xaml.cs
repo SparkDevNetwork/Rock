@@ -289,9 +289,6 @@ namespace Rock.Apps.CheckScannerUtility
                 batchPage.ScannedDocList.Enqueue( scannedDoc );
             }
 
-            // clear out the scanned doc history of scanned checks on this page since we are cancelling
-            this.ClearScannedDocHistory();
-
             this.NavigationService.Navigate( batchPage );
         }
 
@@ -336,6 +333,7 @@ namespace Rock.Apps.CheckScannerUtility
                 lblBack.Visibility = Visibility.Hidden;
             }
 
+            this.ClearScannedDocHistory();
             lblSomeBadScans.Visibility = Visibility.Collapsed;
             ExpectingMagTekBackScan = false;
 
