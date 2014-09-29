@@ -105,19 +105,11 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 var rockContext = new RockContext();
-                ContentChannelItem item;
-                int? itemId = PageParameter( "contentItemId" ).AsIntegerOrNull();
-                if ( itemId.HasValue && itemId.Value > 0 )
-                {
-                    item = new ContentChannelItemService( rockContext ).Get( itemId.Value );
-                }
-                else
-                {
-                    item = new ContentChannelItem { Id = 0, ContentChannelId = PageParameter("contentChannelId").AsInteger() };
-                }
+                ContentChannelItem item = GetContentItem();
                 item.LoadAttributes();
+
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false );
+                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup );
             }
         }
 
@@ -340,7 +332,7 @@ namespace RockWeb.Blocks.Cms
 
                 contentItem.LoadAttributes();
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true, BlockValidationGroup );
             }
             else
             {

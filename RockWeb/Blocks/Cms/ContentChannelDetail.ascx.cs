@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Cms
                     channel.ContentChannelTypeId = hfTypeId.Value.AsInteger();
                     channel.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false );
+                    Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false, BlockValidationGroup );
                 }
             }
         }
