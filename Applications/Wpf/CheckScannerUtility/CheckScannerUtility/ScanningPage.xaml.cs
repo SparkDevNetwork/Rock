@@ -289,6 +289,9 @@ namespace Rock.Apps.CheckScannerUtility
                 batchPage.ScannedDocList.Enqueue( scannedDoc );
             }
 
+            // clear out the scanned doc history of scanned checks on this page since we are cancelling
+            this.ClearScannedDocHistory();
+
             this.NavigationService.Navigate( batchPage );
         }
 
