@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var adding = report.Id.Equals( 0 );
-            if ( adding  )
+            if ( adding )
             {
                 service.Add( report );
             }
@@ -501,8 +501,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
-                .GetEntities()
-                .Where( a => a.IsAuthorized(Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext))
+                .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
         }
 
@@ -592,9 +591,9 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                foreach ( var item in listItems.OrderByDescending( a => (a.Attributes["optiongroup"] == "Common")).ThenBy( a => a.Text ).ToArray() )
+                foreach ( var item in listItems.OrderByDescending( a => ( a.Attributes["optiongroup"] == "Common" ) ).ThenBy( a => a.Text ).ToArray() )
                 {
-                    ddlFields.Items.Add(item);
+                    ddlFields.Items.Add( item );
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -836,7 +835,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var rockContext = new RockContext();
 
-                if ( !report.IsAuthorized(Authorization.VIEW, this.CurrentPerson, rockContext))
+                if ( !report.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
                 {
                     gReport.Visible = false;
                     return;

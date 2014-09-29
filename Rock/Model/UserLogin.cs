@@ -66,6 +66,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the password. 
         /// </value>
         [MaxLength( 128 )]
+        [HideFromReporting]
         public string Password { get; set; }
         
         /// <summary>
@@ -171,6 +172,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [HideFromReporting]
         public string ApiKey { get; set; }
         
         /// <summary>
