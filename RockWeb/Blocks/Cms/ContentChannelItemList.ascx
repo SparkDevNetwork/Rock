@@ -7,7 +7,7 @@
             
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bullhorn"></i> 
+                    <asp:Literal ID="lIcon" runat="server" />
                     <asp:Literal ID="lContentChannel" runat="server" /> Items
                 </h1>
             </div>

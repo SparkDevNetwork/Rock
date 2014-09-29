@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+            string cssIcon = "fa fa-bullhorn";
             var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
             if ( contentChannel != null )
             {
@@ -65,7 +66,14 @@ namespace RockWeb.Blocks.Cms
                 gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
                 lContentChannel.Text = contentChannel.Name;
                 _typeId = contentChannel.ContentChannelTypeId;
+
+                if ( !string.IsNullOrWhiteSpace( contentChannel.IconCssClass ) )
+                {
+                    cssIcon = contentChannel.IconCssClass;
+                }
             }
+
+            lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
