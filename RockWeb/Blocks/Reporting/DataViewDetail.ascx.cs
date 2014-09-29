@@ -205,9 +205,8 @@ $(document).ready(function() {
                 return;
             }
 
-
             var adding = dataView.Id.Equals( 0 );
-            if ( adding  )
+            if ( adding )
             {
                 service.Add( dataView );
             }
@@ -316,8 +315,7 @@ $(document).ready(function() {
         {
             var rockContext = new RockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
-                .GetEntities()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
         }
 
@@ -377,6 +375,7 @@ $(document).ready(function() {
             if ( dataView == null )
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                dataView.Name = string.Empty;
             }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )

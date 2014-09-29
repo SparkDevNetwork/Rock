@@ -19,9 +19,9 @@ using System;
 namespace Rock.Data
 {
     /// <summary>
-    /// Custom attribute used to decorate model properties that should be not be pickable for report fields
+    /// Custom attribute used to decorate model properties (or entire model) that should be not be pickable for report fields
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property )]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class )]
     public class HideFromReportingAttribute : System.Attribute
     {
     }

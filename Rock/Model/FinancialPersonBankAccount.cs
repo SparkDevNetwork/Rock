@@ -56,6 +56,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 128 )]
+        [HideFromReporting]
         public string AccountNumberSecured { get; set; }
 
         /// <summary>
