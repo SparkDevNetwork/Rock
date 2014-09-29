@@ -10,7 +10,7 @@
     </asp:Panel>
 
     <%-- Edit Panel --%>
-    <asp:Panel ID="pnlEdit" runat="server" Visible="false">
+    <asp:Panel ID="pnlEdit" CssClass="well margin-t-md" runat="server" Visible="false">
 
         <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
 
