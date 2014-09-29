@@ -26,42 +26,42 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Communication
+    /// Simple Client Model for ContentChannelItem
     /// </summary>
-    public partial class Communication
+    public partial class ContentChannelItem
     {
         /// <summary />
-        public int? SenderPersonAliasId { get; set; }
+        public int ContentChannelId { get; set; }
 
         /// <summary />
-        public string Subject { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary />
-        public bool IsBulkCommunication { get; set; }
+        public string Title { get; set; }
 
         /// <summary />
-        public DateTime? FutureSendDateTime { get; set; }
+        public string Content { get; set; }
 
         /// <summary />
-        public int /* CommunicationStatus*/ Status { get; set; }
+        public int Priority { get; set; }
 
         /// <summary />
-        public int? ReviewerPersonAliasId { get; set; }
+        public int /* ContentChannelItemStatus*/ Status { get; set; }
 
         /// <summary />
-        public DateTime? ReviewedDateTime { get; set; }
+        public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
-        public string ReviewerNote { get; set; }
+        public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary />
-        public int? MediumEntityTypeId { get; set; }
+        public DateTime StartDateTime { get; set; }
 
         /// <summary />
-        public string MediumDataJson { get; set; }
+        public DateTime? ExpireDateTime { get; set; }
 
         /// <summary />
-        public string AdditionalMergeFieldsJson { get; set; }
+        public string Permalink { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

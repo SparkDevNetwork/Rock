@@ -28,7 +28,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ContentType Service class
+    /// ContentChannelType Service class
     /// </summary>
     public partial class ContentChannelTypeService : Service<ContentChannelType>
     {
@@ -70,10 +70,10 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ContentTypeExtensionMethods
+    public static partial class ContentChannelTypeExtensionMethods
     {
         /// <summary>
-        /// Clones this ContentType object to a new ContentType object
+        /// Clones this ContentChannelType object to a new ContentChannelType object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -93,7 +93,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another ContentType object to this ContentType object
+        /// Copies the properties from another ContentChannelType object to this ContentChannelType object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>

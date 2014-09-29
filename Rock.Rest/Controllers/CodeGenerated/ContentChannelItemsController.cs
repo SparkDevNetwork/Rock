@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// ContentItems REST API
+    /// ContentChannelItems REST API
     /// </summary>
     public partial class ContentChannelItemsController : Rock.Rest.ApiController<Rock.Model.ContentChannelItem>
     {
