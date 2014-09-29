@@ -121,10 +121,6 @@ namespace Rock.Migrations
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Detail Page Page: Item Detail, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21", @"" );
 
-
-
-
-
             Sql( @"
 -- Update Content Channel Type page title
 UPDATE [Page] SET
@@ -152,14 +148,14 @@ WHERE [Id] = @AudienceDefinedTypeId
 
 -- Create channel types
 INSERT INTO [ContentChannelType] ( [IsSystem], [Name], [DateRangeType], [Guid] ) VALUES 
-	( 0, 'Web Ads', 2, '7D2FAE46-16C6-47B5-93E6-B647BA182D3A' ),
+	( 0, 'Website Ads', 2, '7D2FAE46-16C6-47B5-93E6-B647BA182D3A' ),
 	( 0, 'Bulletin', 1, '206CFC34-1C86-46F5-A1EA-6D71B25A8D33' )  
 
 -- Add the Web Ads Channel
 DECLARE @WebAdsTypeId int = ( SELECT TOP 1 [Id] FROM [ContentChannelType] WHERE [Guid] = '7D2FAE46-16C6-47B5-93E6-B647BA182D3A' )
 DECLARE @AdminPersonAliasId int = ( SELECT TOP 1 [Id] FROM [PersonAlias] ORDER BY [Id] )
 INSERT INTO [ContentChannel] ( [ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl] ,[TimeToLive], [Guid] )
-VALUES ( @WebAdsTypeId, 'External Website Ads', 'Ads that should be promoted on the external website.', '', 1, 0, '', '', 0, '8E213BB1-9E6F-40C1-B468-B3F8A60D5D24' )
+VALUES ( @WebAdsTypeId, 'External Website Ads', 'Ads that should be promoted on the external website.', 'fa fa-laptop', 1, 0, '', '', 0, '8E213BB1-9E6F-40C1-B468-B3F8A60D5D24' )
 DECLARE @WebAdsChannelId int = SCOPE_IDENTITY()
 
 -- Add the Web Ads items
