@@ -38,7 +38,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL, 0, Rock.Security.Authorization.EDIT, true, null, Rock.Model.SpecialRole.AllUsers, "33E28A2C-7DD6-44B0-AA21-47194CEA6540" );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE, 0, Rock.Security.Authorization.EDIT, true, null, Rock.Model.SpecialRole.AllUsers, "4E36C69E-86E4-4ADB-A3BC-35FFE79130BE" );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.LOCATION_IMAGE, 0, Rock.Security.Authorization.EDIT, true, null, Rock.Model.SpecialRole.AllUsers, "7719D542-26AE-405B-A0D7-6CBC960432D9" );
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.MARKETING_CAMPAIGN_AD_IMAGE, 0, Rock.Security.Authorization.EDIT, true, null, Rock.Model.SpecialRole.AllUsers, "DBD25052-0ED1-4DC1-8327-42CEBFEC83AD" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.CONTENT_CHANNEL_ITEM_IMAGE, 0, Rock.Security.Authorization.EDIT, true, null, Rock.Model.SpecialRole.AllUsers, "DBD25052-0ED1-4DC1-8327-42CEBFEC83AD" );
 
             // Grant Edit to 'Finance Administrators and Finance Users' for CONTRIBUTION_IMAGE (Rock Admins already have it because of GlobalDefault)
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS, Rock.Model.SpecialRole.None, "B1E38251-E0EA-482F-B706-6A8D996726F1" );
