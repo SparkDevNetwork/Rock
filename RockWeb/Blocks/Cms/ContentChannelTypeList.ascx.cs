@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannelType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "typeId", 0 );
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gContentChannelType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "typeId", e.RowKeyId );
         }
 
         /// <summary>

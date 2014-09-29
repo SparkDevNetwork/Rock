@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Cms
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "", 0 )]
     [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "", 1 )]
     [MemoField( "Filters", "The filters to use when quering items.", false, "", "", 2 )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "Priority^ASC|Expire^DESC|Start^DESC", "", 3 )]
+    //[TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "Priority^ASC|Expire^DESC|Start^DESC", "", 3 )]
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "", 5 )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 6 )]
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 7 )]
@@ -327,70 +327,79 @@ namespace RockWeb.Blocks.Cms
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
-                        // Create query that gets items of this channel type and that are active
-                        var now = RockDateTime.Now;
-                        var qry = service.Queryable( "ContentChannel,ContentChannelType" )
-                            .Where( i =>
-                                i.ContentChannelId == contentChannel.Id &&
-                                i.StartDateTime.CompareTo( now ) <= 0 &&
-                                ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 )
-                            );
+                        var qry = service.Queryable( "ContentChannel,ContentChannelType" );
 
-                        // Check for the configured status and limit query to those
-                        var statuses = new List<ContentChannelItemStatus>();
-                        foreach ( string statusVal in GetAttributeValue( "Status" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
+                        if ( itemId.HasValue )
                         {
-                            var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                            if ( status != null )
-                            {
-                                statuses.Add( status.Value );
-                            }
+                            qry = qry.Where( i => i.Id == itemId.Value );
                         }
-                        if ( statuses.Any() )
+                        else
                         {
-                            qry = qry.Where( i => statuses.Contains( i.Status ) );
-                        }
+                            // Create query that gets items of this channel type and that are active
+                            var now = RockDateTime.Now;
+                            qry = qry.Where( i =>
+                                    i.ContentChannelId == contentChannel.Id &&
+                                    i.StartDateTime.CompareTo( now ) <= 0 &&
+                                    ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 )
+                                );
 
-                        var filters = new Dictionary<string, string>();
-
-                        // Create a generic item and load it's attributes so that we can tell what 
-                        // attributes exist for items of this channel/content type
-                        var genericItem = new ContentChannelItem
-                        {
-                            Id = 0,
-                            ContentChannelId = contentChannel.Id,
-                            ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                        };
-                        genericItem.LoadAttributes();
-
-                        // If attributes exist for items of this channel/content type, look for filters
-                        if ( genericItem.Attributes != null && genericItem.Attributes.Any() )
-                        {
-                            // First check query string parameters for any attribute value
-                            foreach ( var pageParameter in PageParameters() )
+                            // Check for the configured status and limit query to those
+                            var statuses = new List<ContentChannelItemStatus>();
+                            foreach ( string statusVal in GetAttributeValue( "Status" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                if ( genericItem.Attributes.ContainsKey( pageParameter.Key ) )
+                                var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                                if ( status != null )
                                 {
-                                    filters.Add( pageParameter.Key, pageParameter.Value.ToString() );
+                                    statuses.Add( status.Value );
+                                }
+                            }
+                            if ( statuses.Any() )
+                            {
+                                qry = qry.Where( i => statuses.Contains( i.Status ) );
+                            }
+
+                            var filters = new Dictionary<string, string>();
+
+                            // Create a generic item and load it's attributes so that we can tell what 
+                            // attributes exist for items of this channel/content type
+                            var genericItem = new ContentChannelItem
+                            {
+                                Id = 0,
+                                ContentChannelId = contentChannel.Id,
+                                ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                            };
+                            genericItem.LoadAttributes();
+
+                            // If attributes exist for items of this channel/content type, look for filters
+                            if ( genericItem.Attributes != null && genericItem.Attributes.Any() )
+                            {
+                                // First check query string parameters for any attribute value
+                                foreach ( var pageParameter in PageParameters() )
+                                {
+                                    if ( genericItem.Attributes.ContainsKey( pageParameter.Key ) )
+                                    {
+                                        filters.Add( pageParameter.Key, pageParameter.Value.ToString() );
+                                    }
+                                }
+
+                                // Then check the block settings (replacing any querystring values)
+                                var settingFilters = GetAttributeValue( "Filters" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                foreach ( string filter in settingFilters )
+                                {
+                                    var filterParts = filter.Split( new char[] { '^' } );
+                                    if ( filterParts.Length == 2 )
+                                    {
+                                        filters.AddOrReplace( filterParts[0], filterParts[1] );
+                                    }
                                 }
                             }
 
-                            // Then check the block settings (replacing any querystring values)
-                            var settingFilters = GetAttributeValue( "Filters" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( string filter in settingFilters )
+                            // Update qry to limit it to any attribute filters
+                            foreach ( var filter in filters )
                             {
-                                var filterParts = filter.Split( new char[] { '^' } );
-                                if ( filterParts.Length == 2 )
-                                {
-                                    filters.AddOrReplace( filterParts[0], filterParts[1] );
-                                }
+                                qry = qry.WhereAttributeValue( rockContext, filter.Key, filter.Value );
                             }
-                        }
-
-                        // Update qry to limit it to any attribute filters
-                        foreach ( var filter in filters )
-                        {
-                            qry = qry.WhereAttributeValue( rockContext, filter.Key, filter.Value );
                         }
 
                         // All filtering has been added, now run query and then check security and load attributes
@@ -402,6 +411,12 @@ namespace RockWeb.Blocks.Cms
                                 items.Add( item );
                             }
                         }
+
+                        return items
+                            .OrderBy( i => i.Priority )
+                            .ThenByDescending( i => i.ExpireDateTime )
+                            .ThenByDescending( i => i.StartDateTime )
+                            .ToList();
 
                         //var sortColumns = new List<string>();
                         //var orderSettings = GetAttributeValue("Order").Split( new char[] { '|'}, StringSplitOptions.RemoveEmptyEntries);
@@ -494,6 +509,9 @@ namespace RockWeb.Blocks.Cms
             }
 
             kvlFilter.Visible = kvlFilter.CustomKeys.Any();
+
+            // Hide ordering for now.
+            kvlOrder.Visible = false;
         }
 
         #endregion
@@ -537,7 +555,8 @@ namespace RockWeb.Blocks.Cms
             public int PreviousPage 
             { 
                 get 
-                { 
+                {
+                    CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
                     return ( CurrentPage > 1 ) ? CurrentPage - 1 : -1; 
                 }
             }
@@ -552,6 +571,7 @@ namespace RockWeb.Blocks.Cms
             { 
                 get 
                 {
+                    CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
                     return ( CurrentPage < TotalPages ) ? CurrentPage + 1 : -1;
                 }
             }
@@ -603,6 +623,7 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( PageSize > 0 )
                 {
+                    CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
                     return allItems.Skip( ( CurrentPage - 1 ) * PageSize ).Take( PageSize ).ToList();
                 }
 
