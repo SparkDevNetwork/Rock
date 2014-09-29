@@ -416,7 +416,8 @@ namespace RockWeb.Blocks.Reporting
 
             if ( adding )
             {
-                // add ADMINISTRATE to the person who added the report 
+                // add EDIT and ADMINISTRATE to the person who added the report 
+                Rock.Security.Authorization.AllowPerson( report, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( report, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
             }
 
@@ -698,7 +699,8 @@ namespace RockWeb.Blocks.Reporting
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            if ( !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
+            // can't edit an existing report if not authorized for that report
+            if ( report.Id != 0  && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
