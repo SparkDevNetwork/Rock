@@ -826,6 +826,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 familyMemberService.Add( groupMember );
                                 rockContext.SaveChanges();
+
+                                // Every person should have an alias record with same id.  If it's missing, create it
+                                if ( !groupMember.Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
+                                {
+                                    var groupMemberPerson = personService.Get( groupMember.Person.Id );
+                                    if ( groupMemberPerson != null )
+                                    {
+                                        groupMemberPerson.Aliases.Add( new PersonAlias { AliasPersonId = groupMemberPerson.Id, AliasPersonGuid = groupMemberPerson.Guid } );
+                                        rockContext.SaveChanges();
+                                    }
+                                }
+
                                 familyMember.Id = groupMember.Person.Id;
                             }
 
