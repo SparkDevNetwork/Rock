@@ -32,12 +32,12 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ContentChannelItem", "BF12AE64-21FB-433B-A8A4-E40E8C426DDA", true, true );
 
             RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "25A501FC-E269-40B8-9904-E20FA7A1ADB6", @"0" ); // Count
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21",@"56f1dc05-3d7d-49b6-9a30-5cf271c687f4"); // Detail Page
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","72F4232B-8D2A-4823-B9F1-ED68F182C1A4",@"False"); // Enable Debug
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","773BEFDD-EEBA-486C-98E6-AFD0D4156E22",@"60"); // Cache Duration
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE",@"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24"); // Channel
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B",@"2"); // Status
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8",@"
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21", @"56f1dc05-3d7d-49b6-9a30-5cf271c687f4" ); // Detail Page
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "72F4232B-8D2A-4823-B9F1-ED68F182C1A4", @"False" ); // Enable Debug
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "773BEFDD-EEBA-486C-98E6-AFD0D4156E22", @"60" ); // Cache Duration
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE", @"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24" ); // Channel
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B", @"2" ); // Status
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8", @"
 <div id=""announcement-rotator"" class=""carousel slide"" data-ride=""carousel"">
     <!-- Wrapper for slides -->
     <div class=""carousel-inner"">
@@ -61,25 +61,25 @@ namespace Rock.Migrations
     </a>
     
 </div>
-"); // Template
-            RockMigrationHelper.AddBlockAttributeValue("095027CB-9114-4CD5-ABE8-1E8882422DCF","0FC5F418-FF53-4881-BB00-B67D23C5B4EC",@"PrimaryAudience^B364CDEE-F000-4965-AE67-0C80DDA365DC|"); // Filters
+" ); // Template
+            RockMigrationHelper.AddBlockAttributeValue( "095027CB-9114-4CD5-ABE8-1E8882422DCF", "0FC5F418-FF53-4881-BB00-B67D23C5B4EC", @"PrimaryAudience^B364CDEE-F000-4965-AE67-0C80DDA365DC|" ); // Filters
 
             // Add Block to Page: External Homepage, Site: External Website
             RockMigrationHelper.AddBlock( "85F25819-E948-4960-9DDF-00F54D32444E", "", "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "Content Channel Items", "SubFeature", "", "", 0, "2E0FFD29-B4AF-4A5E-B528-667168762ABC" );
             // Attrib Value for Block:Content Channel Items, Attribute:Count Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","25A501FC-E269-40B8-9904-E20FA7A1ADB6",@"3");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "25A501FC-E269-40B8-9904-E20FA7A1ADB6", @"3" );
             // Attrib Value for Block:Content Channel Items, Attribute:Detail Page Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21",@"56f1dc05-3d7d-49b6-9a30-5cf271c687f4");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21", @"56f1dc05-3d7d-49b6-9a30-5cf271c687f4" );
             // Attrib Value for Block:Content Channel Items, Attribute:Enable Debug Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","72F4232B-8D2A-4823-B9F1-ED68F182C1A4",@"False");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "72F4232B-8D2A-4823-B9F1-ED68F182C1A4", @"False" );
             // Attrib Value for Block:Content Channel Items, Attribute:Cache Duration Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","773BEFDD-EEBA-486C-98E6-AFD0D4156E22",@"60");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "773BEFDD-EEBA-486C-98E6-AFD0D4156E22", @"60" );
             // Attrib Value for Block:Content Channel Items, Attribute:Channel Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE",@"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE", @"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24" );
             // Attrib Value for Block:Content Channel Items, Attribute:Status Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B",@"2");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B", @"2" );
             // Attrib Value for Block:Content Channel Items, Attribute:Template Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8",@"
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8", @"
 <div class=""row announcement-list"">
     {% for item in Items %}
         <div class=""col-md-4 col-sm-6 announcement"">
@@ -94,33 +94,33 @@ namespace Rock.Migrations
             <div class=""row announcement-list"">
         {% endif -%}
     {% endfor -%}
-</div>");
+</div>" );
             // Attrib Value for Block:Content Channel Items, Attribute:Filters Page: External Homepage, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("2E0FFD29-B4AF-4A5E-B528-667168762ABC","0FC5F418-FF53-4881-BB00-B67D23C5B4EC",@"PrimaryAudience^57B2A23F-3B0C-43A8-9F45-332120DCD0EE|");
+            RockMigrationHelper.AddBlockAttributeValue( "2E0FFD29-B4AF-4A5E-B528-667168762ABC", "0FC5F418-FF53-4881-BB00-B67D23C5B4EC", @"PrimaryAudience^57B2A23F-3B0C-43A8-9F45-332120DCD0EE|" );
 
             // Add Block to Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlock( "56F1DC05-3D7D-49B6-9A30-5CF271C687F4", "", "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "Content Channel Dynamic", "Main", "", "", 0, "7173AA95-15AF-49C5-933D-004717A3FF3C" ); 
+            RockMigrationHelper.AddBlock( "56F1DC05-3D7D-49B6-9A30-5CF271C687F4", "", "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "Content Channel Dynamic", "Main", "", "", 0, "7173AA95-15AF-49C5-933D-004717A3FF3C" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Filters Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","0FC5F418-FF53-4881-BB00-B67D23C5B4EC",@"");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "0FC5F418-FF53-4881-BB00-B67D23C5B4EC", @"" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Status Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B",@"2");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "DA1DEE5D-BCEF-4AA4-A9D9-EFD4DD64462B", @"2" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Template Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8",@"
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8", @"
 {% for item in Items %}
     <img src=""/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}"" class=""title-image""><h1>{{ item.Title }}</h1>{{ item.Content }}
 {% endfor -%}
-");
+" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Channel Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE",@"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "34EACB0F-DBC4-4F18-85C9-0D3EDFDF46BE", @"8e213bb1-9e6f-40c1-b468-b3f8a60d5d24" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Enable Debug Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","72F4232B-8D2A-4823-B9F1-ED68F182C1A4",@"False");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "72F4232B-8D2A-4823-B9F1-ED68F182C1A4", @"False" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Cache Duration Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","773BEFDD-EEBA-486C-98E6-AFD0D4156E22",@"0");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "773BEFDD-EEBA-486C-98E6-AFD0D4156E22", @"0" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Count Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","25A501FC-E269-40B8-9904-E20FA7A1ADB6",@"1");
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "25A501FC-E269-40B8-9904-E20FA7A1ADB6", @"1" );
             // Attrib Value for Block:Content Channel Dynamic, Attribute:Detail Page Page: Item Detail, Site: External Website
-            RockMigrationHelper.AddBlockAttributeValue("7173AA95-15AF-49C5-933D-004717A3FF3C","2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21",@"");
-			
+            RockMigrationHelper.AddBlockAttributeValue( "7173AA95-15AF-49C5-933D-004717A3FF3C", "2D7E6F55-B25E-4EA2-8F7E-F7E138E39E21", @"" );
+
 
 
 
@@ -325,7 +325,7 @@ VALUES
 
 " );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

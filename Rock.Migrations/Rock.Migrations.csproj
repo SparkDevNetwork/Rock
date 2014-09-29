@@ -66,6 +66,10 @@
     <Compile Include="Migrations\201409291710432_EntityTypeAuthFinancial.Designer.cs">
       <DependentUpon>201409291710432_EntityTypeAuthFinancial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201409292011419_ContentData.cs" />
+    <Compile Include="Migrations\201409292011419_ContentData.Designer.cs">
+      <DependentUpon>201409292011419_ContentData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
@@ -1253,6 +1257,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201409291710432_EntityTypeAuthFinancial.resx">
       <DependentUpon>201409291710432_EntityTypeAuthFinancial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201409292011419_ContentData.resx">
+      <DependentUpon>201409292011419_ContentData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.resx">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>
