@@ -138,10 +138,10 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
+                    SendStatictics( version );
                 }
 
                 lRockVersion.Text = "";
-                SendStatictics( version );
             }
             catch ( Exception ex )
             {
