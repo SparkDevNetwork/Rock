@@ -223,7 +223,8 @@ $(document).ready(function() {
 
             if ( adding )
             {
-                // add ADMINISTRATE to the person who added the dataView 
+                // add EDIT and ADMINISTRATE to the person who added the dataView
+                Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
             }
 
