@@ -47,8 +47,8 @@
         <p><strong>Rock Version: </strong>
             <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
 
-        <p><strong>Server Culture Setting: </strong>
-            <asp:Literal ID="lServerCulture" runat="server"></asp:Literal></p>
+        <p><strong>Client Culture Setting: </strong>
+            <asp:Literal ID="lClientCulture" runat="server"></asp:Literal></p>
         
         <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
 
