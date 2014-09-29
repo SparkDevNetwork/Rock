@@ -47,8 +47,8 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
-                name: "TagsByEntity",
-                routeTemplate: "api/tags/{entityTypeId}/{ownerid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                name: "TagsByEntityName",
+                routeTemplate: "api/tags/{entityTypeId}/{ownerid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "tags",
@@ -75,8 +75,9 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
+            string tagName = WebUtility.UrlDecode( name );
             var tag = ( (TagService)Service )
-                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == name );
+                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == tagName );
 
             if ( tag != null )
                 return tag;
