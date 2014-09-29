@@ -436,6 +436,18 @@ namespace Rock.Migrations
                 null,
                 Rock.Model.SpecialRole.AllUsers.ConvertToInt(),
                 "2B105BA2-5129-4570-AC43-0A4A25C840F1" );
+
+            // update new location of checkscanner installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/checkscanner/1.1.0/checkscanner.exe' where [Guid] = '82960DBD-2EAA-47DF-B9AC-86F7A2FCA180'" );
+            
+            // update new location of jobscheduler installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/jobscheduler/1.1.0/jobscheduler.exe' where [Guid] = '7FBC4397-6BFD-451D-A6B9-83D7B7265641'" );
+
+            // update new location of statementgenerator installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.1.0/statementgenerator.exe' where [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'" );
+
+            // update new location of checkinclient installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/windowscheckin/1.1.0/checkinclient.exe' where [Guid] = '7ADC1B5B-D374-4B77-9DE1-4D788B572A10'" );
         }
         
         /// <summary>
