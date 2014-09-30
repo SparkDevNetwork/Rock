@@ -1393,7 +1393,7 @@ namespace Rock.Model
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="age">The age.</param>
         /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="RecordTypeValueId">The record type value identifier.</param>
+        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
