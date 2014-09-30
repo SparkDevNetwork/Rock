@@ -29,6 +29,41 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Update the schema for all stored procedures and functions to be 'dbo'
+            Sql( @"
+    DECLARE 
+	    @SchemaName varchar(max),
+	    @ObjectName varchar(max),
+	    @Sql varchar(max)
+
+    DECLARE schema_cursor CURSOR FOR
+	    SELECT S.[Name], O.[Name]
+	    FROM sys.all_objects O
+	    INNER JOIN sys.schemas S ON S.[schema_id] = O.[schema_id]
+	    WHERE O.[Type] IN ( 'FN', 'P', 'TF')
+	    AND S.[name] NOT IN ('sys','dbo')
+
+    OPEN schema_cursor 
+    FETCH NEXT FROM schema_cursor INTO @SchemaName, @ObjectName
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+	
+	    BEGIN TRY
+		    SELECT @SQL = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaName  + '].[' + @ObjectName + ']'
+		    EXEC (@SQL)
+        END TRY
+        BEGIN CATCH
+        END CATCH
+    
+	    FETCH NEXT FROM schema_cursor INTO @SchemaName, @ObjectName
+
+    END
+
+    CLOSE schema_cursor
+    DEALLOCATE schema_cursor
+
+" );
 
             #region Add Activated by Activity property
 
