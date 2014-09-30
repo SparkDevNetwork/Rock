@@ -201,41 +201,41 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             if ( recipients.Any() )
             {
-                var channelData = new Dictionary<string, string>();
+                var mediumData = new Dictionary<string, string>();
 
                 if ( !string.IsNullOrWhiteSpace( tbEmailFrom.Text ) )
                 {
-                    channelData.Add( "From", tbEmailFrom.Text );                   
+                    mediumData.Add( "From", tbEmailFrom.Text );                   
                 }
                 else
                 {
-                    channelData.Add( "From", orgFrom );
+                    mediumData.Add( "From", orgFrom );
                 }
 
-                channelData.Add( "Subject", "Command Center Recording" );
+                mediumData.Add( "Subject", "Command Center Recording" );
 
                 string videoLink = "<a href='" + tbLink.Text + "'>Video Clip</a>";
 
                 if ( !string.IsNullOrWhiteSpace( tbEmailMessage.Text ) )
                 {
-                    channelData.Add( "Body", "<html><body><p>" + tbEmailMessage.Text + "</p><p>"+ videoLink + "</p></body></html>" );
+                    mediumData.Add( "Body", "<html><body><p>" + tbEmailMessage.Text + "</p><p>"+ videoLink + "</p></body></html>" );
                 }
                 else
                 {
-                    channelData.Add( "Body", "<html><body><p>" + videoLink + "</p></body></html>" );
+                    mediumData.Add( "Body", "<html><body><p>" + videoLink + "</p></body></html>" );
                 }
 
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );               
-                if ( channelEntity != null )
+                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );               
+                if ( mediumEntity != null )
                 {
-                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                    if ( channel != null && channel.IsActive )
+                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                    if ( medium != null && medium.IsActive )
                     {
-                        var transport = channel.Transport;
+                        var transport = medium.Transport;
                         if ( transport != null && transport.IsActive )
                         {
                             var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
-                            transport.Send( channelData, recipients, appRoot, string.Empty );
+                            transport.Send( mediumData, recipients, appRoot, string.Empty );
                         }
                     }
                 }

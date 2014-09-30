@@ -1,9 +1,15 @@
-+ Update the DatePicker and DateRangePicker controls to display dates in the format of the current culture (Fixes #527)
-+ Add the option to configure the order of person attributes for each category on person profile page (Fixes #424).
-+ Fix issue with address country not defaulting to the organization's country (Fixes #529)
-+ Fix the "Country" attribute of the "State" defined type to use the correct defined type (Fixes #528).
-+ Add options to workflow form attributes to allow hiding the label and/or specifing pre/post Html content to be rendered before or afer the field when displaying form to user.
-+ Several updates to the RockUpdate system to make it more resilient.
-+ Enable default RequestValidation for form values ( all other content type was already being validated ) and update the HTMLEditor and CodeEditor controls to HTML-encode their content prior to posting back to server ( Fixes #532 ).
-+ Fix grid page size so that a user's selection is remembered across pages and login sessions
-+ Add ability to select all visible rows at once when grid has a selection column ( includes Person Search Results, Photo Verification, Financial Batch List and Financial Transaction List )
++ Fixed tags to allow special characters (Fixes: #548) reference http://stackoverflow.com/questions/24688639/wcf-rejecting-request-with-400-bad-request-when-their-is-a-colon-in-the-url-da
++ Update code generation
++ Updated the communication 'Channel' to communication 'Medium' to avoid confusion with Content Channels.
++ Merge branch 'feature-dt-content' into develop
++ The Rock Updater now requires the oldest update package be installed first and each must be installed one at a time. It also provides a convenient Restart button after a successful update.
++ DataFilters now work on DateTime, Time, Numeric Attributes
++ Modified the CheckScannerUtility build process to support file paths that contain spaces.
++ Single-Select Attributes can now be used as a Filter in Dataviews ( fixes #539)
+- fix issue that would cause a Javascript error in DataViews if an Attribute Name had special chars
+- fix issue in DataViews that would cause a SQL error if a large number of records matched an Attribute Filter
++ The person who created a group, dataview, or report can now administrate it
++ Update the Dynamic Data block so that it does not HTML encode any content returned by the selected query.
++ Merge branch 'release-1.0.14-ccv' into develop
++ Fixes for CCV
+<br/><h4><span title="This application needs to be updated. - Updated Check Scanner Installer" class="label label-warning">Check Scanner] - Updated Check Scanner Installer</span></h4>

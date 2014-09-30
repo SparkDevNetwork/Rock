@@ -12,7 +12,7 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfPledges" runat="server">
-                        <Rock:PersonPicker ID="ppFilterPerson" runat="server" Label="Filter by person"/>
+                        <Rock:PersonPicker ID="ppFilterPerson" runat="server" Label="Filter by person" IncludeBusinesses="true"/>
                         <Rock:AccountPicker ID="apFilterAccount" runat="server" Label="Filter by account" AllowMultiSelect="True"/>
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                     </Rock:GridFilter>

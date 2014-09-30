@@ -39,7 +39,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "TaggedItemsByEntity",
-                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "taggeditems",
@@ -179,7 +179,7 @@ namespace Rock.Rest.Controllers
                     ( i.Tag.EntityTypeId == entityTypeId ) &&
                     ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == string.Empty || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
                     ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == string.Empty || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( i.Tag.OwnerPersonAlias != null && i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
+                    ( i.Tag.OwnerPersonAlias == null || i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
                     ( i.Tag.Name == name ) &&
                     ( i.EntityGuid.Equals( entityGuid ) ) );
 

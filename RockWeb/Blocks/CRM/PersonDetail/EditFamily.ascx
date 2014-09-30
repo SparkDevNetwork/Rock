@@ -175,6 +175,14 @@
                             </div>
                         </div>
                         <div class="row">
+                            
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonConnectionStatus" runat="server" Label="Connection Status" Required="true" ValidationGroup="AddPerson"/>
+                                </fieldset>
+                            </div>
                             <div class="col-md-4">
                                 <fieldset>
                                     <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
@@ -203,12 +211,19 @@
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', false);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', false);
+                                enableRequiredField('<%=rblNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', false);
                             }
                             else {
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', false)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', true);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', true);
+                                enableRequiredField('<%=rblNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', true);
                             }
+
+                            // update the scrollbar since our validation box could show
+                            setTimeout(function () {
+                                Rock.dialogs.updateModalScrollBar('<%=valSummaryAddPerson.ClientID%>');
+                            });
                         })
 
                         $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {

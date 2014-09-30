@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,11 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
+using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rockweb.Blocks.Crm
 {
@@ -29,130 +29,15 @@ namespace Rockweb.Blocks.Crm
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
-        /// <summary>
-        /// Creates a RadioButton for display on the test form.
-        /// </summary>
-        /// <param name="questionNumber">The question number that this response is associated with. Valied values = 01-30.</param>
-        /// <param name="responseNumber">The response number of this particular response (zero-based). Valid values = 0-3.</param>
-        /// <param name="MorL">Is this the "m"ost RadioButton, or the "l"east RadioButton?</param>
-        /// <returns></returns>
-        private RadioButton createRadioButton(string questionNumber, string responseNumber, string MorL)
+        protected override void OnInit( EventArgs e )
         {
-            string rbID = questionNumber + responseNumber + MorL.ToLower();
-            string rbGroupName = "q" + questionNumber + MorL.ToLower();
-            RadioButton radioButton = new RadioButton();
-            radioButton.ID = rbID;
-            radioButton.Attributes.Add("onClick", "moveOn('" + questionNumber + "');");
-            radioButton.GroupName = rbGroupName;
+            base.OnInit( e );
+            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( CurrentPerson );
 
-            return radioButton;
-        }
-
-        /// <summary>
-        /// Recursively finds a particular RadioButton in the passed-in container.
-        /// </summary>
-        /// <param name="container">The container to begin the search in.</param>
-        /// <param name="name">The name of the RadioButton to find.</param>
-        /// <returns>The found RadioButton or null.</returns>
-        private RadioButton findRadioButton(Control container, string name)
-        {
-            if (container.ID == name)
-                return container as RadioButton;
-
-            foreach (Control control in container.Controls)
-            {
-                Control foundControl = findRadioButton(control, name);
-                if (foundControl != null)
-                    return foundControl as RadioButton;
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Inserts a TableRow into the Question Table.
-        /// </summary>
-        /// <param name="response">The question response to add.</param>
-        private void buildRadioButtonTableRow(DiscService.ResponseItem response)
-        {
-            TableRow tr = new TableRow();
-            TableCell tc = new TableCell();
-            tc.Text = response.ResponseText;
-            tr.Cells.Add(tc);
-            tc = new TableCell();
-            RadioButton rb = createRadioButton(response.QuestionNumber, response.ResponseNumber, "m");
-            tc.Controls.Add(rb);
-            tr.Cells.Add(tc);
-            tc = new TableCell();
-            rb = createRadioButton(response.QuestionNumber, response.ResponseNumber, "l");
-            tc.Controls.Add(rb);
-            tr.Cells.Add(tc);
-            tblQuestions.Rows.Add(tr);
-        }
-
-        /// <summary>
-        /// Builds a table with the questions listed.
-        /// </summary>
-        private void buildQuestionTable()
-        {
-            List<DiscService.ResponseItem> responses = DiscService.GetResponses();
-
-            TableRow tr = new TableRow();
-            TableCell tc = new TableCell();
-
-            foreach (DiscService.ResponseItem response in responses)
-            {
-                // If we are processing the first response in each question, build a question header
-                if (response.ResponseNumber == "1")
-                {
-                    tr = new TableRow();
-                    tc = new TableCell();
-                    tc.ColumnSpan = 3;
-                    tc.Text = "Question " + response.QuestionNumber;
-                    tc.BackColor = System.Drawing.Color.LightGray;
-                    tr.Cells.Add(tc);
-                    tc.ID = "q" + response.QuestionNumber;
-                    tblQuestions.Rows.Add(tr);
-
-                    tr = new TableRow();
-                    tc = new TableCell();
-                    tc.Text = "";
-                    tr.Cells.Add(tc);
-                    tc = new TableCell();
-                    tc.Text = "MOST";
-                    tr.Cells.Add(tc);
-                    tc = new TableCell();
-                    tc.Text = "LEAST";
-                    tr.Cells.Add(tc);
-                    tblQuestions.Rows.Add(tr);
-                }
-
-                buildRadioButtonTableRow(response);
-            }
-        }
-
-        protected void Page_Load(object sender, EventArgs e)
-        {
-            //Checks if RockPage IsPostBack (making the assumption that the PostBack is because the
-            //  'Score Test' button was clicked.
-            //Tell Javascript that the page is posted back or not.
-            // See:  http://stackoverflow.com/questions/59719/how-can-i-check-for-ispostback-in-javascript
-            string script = IsPostBack ? "var isScored = true;" : "var isScored = false;";
-            Page.ClientScript.RegisterStartupScript(GetType(), "IsScored", script, true);
-
-            //Add reference to my JS file
-            RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
-
-            //Yup, build question table
-            buildQuestionTable();
-
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults(CurrentPerson);
-
-            if (savedScores.LastSaveDate > DateTime.MinValue)
+            if ( savedScores.LastSaveDate > DateTime.MinValue )
             {
                 //build last results table
-                lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString("MM/dd/yyyy");
+                lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString( "MM/dd/yyyy" );
 
                 lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
                 lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
@@ -165,41 +50,131 @@ namespace Rockweb.Blocks.Crm
                 lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
             }
 
-            if (IsPostBack)
+            BindRepeater();
+        }
+
+        private void BindRepeater()
+        {
+            String[,] questionData = DiscService.GetResponsesByQuestion();
+            var dataSet = new DataSet();
+            var dataTable = dataSet.Tables.Add();
+            var iRow = questionData.GetLongLength( 0 );
+            var iCol = questionData.GetLongLength( 1 );
+
+            dataTable.Columns.Add( "r1" ); //Response 1
+            dataTable.Columns.Add( "r2" ); //Response 2
+            dataTable.Columns.Add( "r3" ); //Response 3
+            dataTable.Columns.Add( "r4" ); //Response 4
+            dataTable.Columns.Add( "ms" ); //Most Scores
+            dataTable.Columns.Add( "ls" ); //Least Scores
+
+            //Row
+            for ( var r = 0; r < iRow; r++ )
+            {
+                var row = dataTable.Rows.Add();
+                //Column
+                for ( var c = 0; c < iCol; c++ )
+                {
+                    row[c] = questionData[r, c];
+                }
+            }
+
+            rQuestions.DataSource = dataSet.Tables[0];
+            rQuestions.DataBind();
+        }
+
+        protected void Page_Load( object sender, EventArgs e )
+        {
+            // 20140926 - Don't think my .js is doing anything any longer
+            //
+            //Checks if RockPage IsPostBack (making the assumption that the PostBack is because the
+            //  'Score Test' button was clicked.
+            //Tell Javascript that the page is posted back or not.
+            // See:  http://stackoverflow.com/questions/59719/how-can-i-check-for-ispostback-in-javascript
+            string script = IsPostBack ? "var isScored = true;" : "var isScored = false;";
+            Page.ClientScript.RegisterStartupScript( GetType(), "IsScored", script, true );
+
+            //Add reference to my JS file
+            RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
+
+            if ( IsPostBack )
+            {
                 btnSaveResults.Enabled = true;
+            }
             else
+            {
                 btnSaveResults.Enabled = false;
+            }
         }
 
         /// <summary>
-        /// Gets checked RadioButtons, scores test, and displays results.
+        /// Scores test, and displays results.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void btnScoreTest_Click(object sender, EventArgs e)
+        protected void btnScoreTest_Click( object sender, EventArgs e )
         {
-            List<DiscService.ResponseItem> responses = DiscService.GetResponses();
-            List<string> selectedResponseIDs = new List<string>();
+            int moreN = 0;
+            int moreD = 0;
+            int moreI = 0;
+            int moreS = 0;
+            int moreC = 0;
+            int lessN = 0;
+            int lessD = 0;
+            int lessI = 0;
+            int lessS = 0;
+            int lessC = 0;
 
-            // Collect selected responses into a string array.
-            // All we need is the selected RadioButton's ID (which we set to the ResponseID + ("l" or "m") for each responses record).
-            //   Examples: "012m", "130l"
-            // We now know the selected response and whether it was 'm'ost or 'l'east.
-            foreach (DiscService.ResponseItem response in responses)
+            foreach ( RepeaterItem rItem in rQuestions.Items )
             {
-                string rbID = response.ResponseID + "m";
-                RadioButton rb = findRadioButton(this, rbID);
-                if (rb.Checked)
-                    selectedResponseIDs.Add(rb.ID);
+                RockRadioButtonList blMore = rItem.FindControl( "rblMore" ) as RockRadioButtonList;
+                RockRadioButtonList blLess = rItem.FindControl( "rblLess" ) as RockRadioButtonList;
 
-                rbID = response.ResponseID + "l";
-                rb = findRadioButton(this, rbID);
-                if (rb.Checked)
-                    selectedResponseIDs.Add(rb.ID);
+                switch ( blMore.SelectedValue )
+                {
+                    case "N":
+                        moreN++;
+                        break;
+                    case "D":
+                        moreD++;
+                        break;
+                    case "I":
+                        moreI++;
+                        break;
+                    case "S":
+                        moreS++;
+                        break;
+                    case "C":
+                        moreC++;
+                        break;
+                    default:
+                        break;
+                }
+
+                switch ( blLess.SelectedValue )
+                {
+                    case "N":
+                        lessN++;
+                        break;
+                    case "D":
+                        lessD++;
+                        break;
+                    case "I":
+                        lessI++;
+                        break;
+                    case "S":
+                        lessS++;
+                        break;
+                    case "C":
+                        lessC++;
+                        break;
+                    default:
+                        break;
+                }
             }
 
             // Score the responses and return the results
-            DiscService.AssessmentResults results = DiscService.Score(selectedResponseIDs);
+            DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
 
             //Display results out to user
             lblABd.Text = results.AdaptiveBehaviorD.ToString();
@@ -213,7 +188,7 @@ namespace Rockweb.Blocks.Crm
             lblNBc.Text = results.NaturalBehaviorC.ToString();
         }
 
-        protected void btnSaveResults_Click(object sender, EventArgs e)
+        protected void btnSaveResults_Click( object sender, EventArgs e )
         {
             DiscService.SaveAssessmentResults(
                 CurrentPerson,
@@ -226,6 +201,54 @@ namespace Rockweb.Blocks.Crm
                 lblNBs.Text,
                 lblNBc.Text
             );
+        }
+
+        protected void rQuestions_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                RockRadioButtonList blMore = e.Item.FindControl( "rblMore" ) as RockRadioButtonList;
+
+                ListItem m1 = new ListItem();
+                ListItem m2 = new ListItem();
+                ListItem m3 = new ListItem();
+                ListItem m4 = new ListItem();
+
+                m1.Text = "&nbsp;";
+                m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
+                m2.Text = "&nbsp;";
+                m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
+                m3.Text = "&nbsp;";
+                m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
+                m4.Text = "&nbsp;";
+                m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
+
+                blMore.Items.Add( m1 );
+                blMore.Items.Add( m2 );
+                blMore.Items.Add( m3 );
+                blMore.Items.Add( m4 );
+
+                RockRadioButtonList blLess = e.Item.FindControl( "rblLess" ) as RockRadioButtonList;
+
+                ListItem l1 = new ListItem();
+                ListItem l2 = new ListItem();
+                ListItem l3 = new ListItem();
+                ListItem l4 = new ListItem();
+
+                l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
+                l1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
+                l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
+                l2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
+                l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
+                l3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
+                l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
+                l4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
+
+                blLess.Items.Add( l1 );
+                blLess.Items.Add( l2 );
+                blLess.Items.Add( l3 );
+                blLess.Items.Add( l4 );
+            }
         }
     }
 }

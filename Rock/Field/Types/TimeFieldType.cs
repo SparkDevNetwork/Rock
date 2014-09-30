@@ -53,7 +53,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -79,7 +79,8 @@ namespace Rock.Field.Types
                 var tp = control as TimePicker;
                 if ( tp != null && tp.SelectedTime.HasValue )
                 {
-                    return tp.SelectedTime.Value.ToString();
+                    // serialize the time using culture-insensitive "constant" fromat
+                    return tp.SelectedTime.Value.ToString("c");
                 }
             }
 

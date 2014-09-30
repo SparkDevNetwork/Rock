@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [ComponentsField( "Rock.Communication.ChannelContainer, Rock", "Channels", "The Channels that should be available to user to send through (If none are selected, all active channels will be available).", false, "", "", 0  )]
-    [CommunicationTemplateField("Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same channel as the communication.)", false, "", "", 1)]
+    [ComponentsField( "Rock.Communication.MediumContainer, Rock", "Mediums", "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).", false, "", "", 0  )]
+    [CommunicationTemplateField("Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)", false, "", "", 1)]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 2 )]
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 3  )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 4 )]
@@ -63,15 +63,15 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets or sets the channel entity type id.
+        /// Gets or sets the medium entity type id.
         /// </summary>
         /// <value>
-        /// The channel entity type id.
+        /// The medium entity type id.
         /// </value>
-        protected int? ChannelEntityTypeId
+        protected int? MediumEntityTypeId
         {
-            get { return ViewState["ChannelEntityTypeId"] as int?; }
-            set { ViewState["ChannelEntityTypeId"] = value; }
+            get { return ViewState["MediumEntityTypeId"] as int?; }
+            set { ViewState["MediumEntityTypeId"] = value; }
         }
 
         /// <summary>
@@ -109,25 +109,25 @@ namespace RockWeb.Blocks.Communication
         }
             
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        protected Dictionary<string, string> ChannelData
+        protected Dictionary<string, string> MediumData
         {
             get 
             {
-                var channelData = ViewState["ChannelData"] as Dictionary<string, string>;
-                if ( channelData == null )
+                var mediumData = ViewState["MediumData"] as Dictionary<string, string>;
+                if ( mediumData == null )
                 {
-                    channelData = new Dictionary<string, string>();
-                    ViewState["ChannelData"] = channelData;
+                    mediumData = new Dictionary<string, string>();
+                    ViewState["MediumData"] = mediumData;
                 }
-                return channelData;
+                return mediumData;
             }
 
-            set { ViewState["ChannelData"] = value; }
+            set { ViewState["MediumData"] = value; }
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( Page.IsPostBack )
             {
-                LoadChannelControl( false );
+                LoadMediumControl( false );
             }
             else
             {
@@ -243,23 +243,23 @@ namespace RockWeb.Blocks.Communication
         }
         
         /// <summary>
-        /// Handles the Click event of the lbChannel control.
+        /// Handles the Click event of the lbMedium control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbChannel_Click( object sender, EventArgs e )
+        protected void lbMedium_Click( object sender, EventArgs e )
         {
-            GetChannelData();
+            GetMediumData();
             var linkButton = sender as LinkButton;
             if ( linkButton != null )
             {
-                int channelId = int.MinValue;
-                if ( int.TryParse( linkButton.CommandArgument, out channelId ) )
+                int mediumId = int.MinValue;
+                if ( int.TryParse( linkButton.CommandArgument, out mediumId ) )
                 {
-                    ChannelEntityTypeId = channelId;
-                    BindChannels();
+                    MediumEntityTypeId = mediumId;
+                    BindMediums();
 
-                    LoadChannelControl( true );
+                    LoadMediumControl( true );
                     LoadTemplates();
                 }
             }
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Communication
                         }
                         else
                         {
-                            if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
+                            if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id )
                             {
                                 if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                                 {
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Communication
                                         if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                         {
                                             textClass = "js-no-bulk-email";
-                                            var channelData = ChannelData;
+                                            var mediumData = MediumData;
                                             if ( cbBulk.Checked )
                                             {
                                                 // This is a bulk email and user does not want bulk emails
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Communication
                                     }
                                 }
                             }
-                            else if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
+                            else if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id )
                             {
                                 if ( !recipient.HasSmsNumber )
                                 {
@@ -431,8 +431,8 @@ namespace RockWeb.Blocks.Communication
                     testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
                     testCommunication.Subject = communication.Subject;
                     testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
-                    testCommunication.ChannelEntityTypeId = communication.ChannelEntityTypeId;
-                    testCommunication.ChannelDataJson = communication.ChannelDataJson;
+                    testCommunication.MediumEntityTypeId = communication.MediumEntityTypeId;
+                    testCommunication.MediumDataJson = communication.MediumDataJson;
                     testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
 
                     testCommunication.FutureSendDateTime = null;
@@ -455,10 +455,10 @@ namespace RockWeb.Blocks.Communication
                     communicationService.Add( testCommunication );
                     rockContext.SaveChanges();
 
-                    var channel = testCommunication.Channel;
-                    if ( channel != null )
+                    var medium = testCommunication.Medium;
+                    if ( medium != null )
                     {
-                        channel.Send( testCommunication );
+                        medium.Send( testCommunication );
                     }
 
                     communicationService.Delete( testCommunication );
@@ -590,11 +590,11 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            ChannelEntityTypeId = communication.ChannelEntityTypeId;
-            BindChannels();
+            MediumEntityTypeId = communication.MediumEntityTypeId;
+            BindMediums();
 
-            ChannelData = communication.ChannelData;
-            ChannelData.Add( "Subject", communication.Subject );
+            MediumData = communication.MediumData;
+            MediumData.Add( "Subject", communication.Subject );
 
             if (communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace(GetAttributeValue("DefaultTemplate")))
             {
@@ -608,7 +608,7 @@ namespace RockWeb.Blocks.Communication
                     template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
                 }
 
-                if (template != null && template.ChannelEntityTypeId == ChannelEntityTypeId)
+                if (template != null && template.MediumEntityTypeId == MediumEntityTypeId)
                 {
                     foreach(ListItem item in ddlTemplate.Items)
                     {
@@ -627,7 +627,7 @@ namespace RockWeb.Blocks.Communication
 
             cbBulk.Checked = communication.IsBulkCommunication;
 
-            ChannelControl control = LoadChannelControl( true );
+            MediumControl control = LoadMediumControl( true );
             if ( control != null && CurrentPerson != null )
             {
                 control.InitializeFromSender( CurrentPerson );
@@ -640,36 +640,36 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Binds the channels.
+        /// Binds the mediums.
         /// </summary>
-        private void BindChannels()
+        private void BindMediums()
         {
             var selectedGuids = new List<Guid>();
-            GetAttributeValue( "Channels" ).SplitDelimitedValues()
+            GetAttributeValue( "Mediums" ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
 
-            var channels = new Dictionary<int, string>();
-            foreach ( var item in ChannelContainer.Instance.Components.Values )
+            var mediums = new Dictionary<int, string>();
+            foreach ( var item in MediumContainer.Instance.Components.Values )
             {
                 if ( item.Value.IsActive &&
                     ( !selectedGuids.Any() || selectedGuids.Contains( item.Value.EntityType.Guid ) ) )
                 {
                     var entityType = item.Value.EntityType;
-                    channels.Add( entityType.Id, item.Metadata.ComponentName );
-                    if ( !ChannelEntityTypeId.HasValue )
+                    mediums.Add( entityType.Id, item.Metadata.ComponentName );
+                    if ( !MediumEntityTypeId.HasValue )
                     {
-                        ChannelEntityTypeId = entityType.Id;
+                        MediumEntityTypeId = entityType.Id;
                     }
                 }
             }
 
             LoadTemplates();
 
-            divChannels.Visible = channels.Count() > 1;
+            divMediums.Visible = mediums.Count() > 1;
 
-            rptChannels.DataSource = channels;
-            rptChannels.DataBind();
+            rptMediums.DataSource = mediums;
+            rptMediums.DataBind();
         }
 
         private void LoadTemplates()
@@ -681,10 +681,10 @@ namespace RockWeb.Blocks.Communication
             ddlTemplate.Items.Clear();
             ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
-            if (ChannelEntityTypeId.HasValue)
+            if (MediumEntityTypeId.HasValue)
             {
                 foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable()
-                    .Where( t => t.ChannelEntityTypeId == ChannelEntityTypeId.Value )
+                    .Where( t => t.MediumEntityTypeId == MediumEntityTypeId.Value )
                     .OrderBy( t => t.Name ) )
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -740,9 +740,9 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Shows the channel.
+        /// Shows the medium.
         /// </summary>
-        private ChannelControl LoadChannelControl(bool setData)
+        private MediumControl LoadMediumControl(bool setData)
         {
             if ( setData )
             {
@@ -750,25 +750,25 @@ namespace RockWeb.Blocks.Communication
             }
 
             // The component to load control for
-            ChannelComponent component = null;
-            string channelName = string.Empty;
+            MediumComponent component = null;
+            string mediumName = string.Empty;
 
-            // Get the current channel type
+            // Get the current medium type
             EntityTypeCache entityType = null;
-            if ( ChannelEntityTypeId.HasValue )
+            if ( MediumEntityTypeId.HasValue )
             {
-                entityType = EntityTypeCache.Read( ChannelEntityTypeId.Value );
+                entityType = EntityTypeCache.Read( MediumEntityTypeId.Value );
             }
 
-            foreach ( var serviceEntry in ChannelContainer.Instance.Components )
+            foreach ( var serviceEntry in MediumContainer.Instance.Components )
             {
-                var channelComponent = serviceEntry.Value;
+                var mediumComponent = serviceEntry.Value;
     
                 // Default to first component
                 if ( component == null )
                 {
-                    component = channelComponent.Value;
-                    channelName = channelComponent.Metadata.ComponentName + " ";
+                    component = mediumComponent.Value;
+                    mediumName = mediumComponent.Metadata.ComponentName + " ";
                 }
 
                 // If invalid entity type, exit (and use first component found)
@@ -776,34 +776,34 @@ namespace RockWeb.Blocks.Communication
                 {
                     break;
                 }
-                else if ( entityType.Id == channelComponent.Value.EntityType.Id )
+                else if ( entityType.Id == mediumComponent.Value.EntityType.Id )
                 {
-                    component = channelComponent.Value;
-                    channelName = channelComponent.Metadata.ComponentName + " ";
+                    component = mediumComponent.Value;
+                    mediumName = mediumComponent.Metadata.ComponentName + " ";
                     break;
                 }
             }
 
             if (component != null)
             {
-                var channelControl = component.Control;
-                channelControl.ID = "commControl";
-                channelControl.IsTemplate = false;
-                channelControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
-                channelControl.ValidationGroup = btnSubmit.ValidationGroup;
-                phContent.Controls.Add( channelControl );
+                var mediumControl = component.Control;
+                mediumControl.ID = "commControl";
+                mediumControl.IsTemplate = false;
+                mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
+                mediumControl.ValidationGroup = btnSubmit.ValidationGroup;
+                phContent.Controls.Add( mediumControl );
 
                 if ( setData  )
                 {
-                    channelControl.ChannelData = ChannelData;
+                    mediumControl.MediumData = MediumData;
                 }
                 
-                // Set the channel in case it wasn't already set or the previous component type was not found
-                ChannelEntityTypeId = component.EntityType.Id;
+                // Set the medium in case it wasn't already set or the previous component type was not found
+                MediumEntityTypeId = component.EntityType.Id;
 
                 if (component.Transport == null || !component.Transport.IsActive)
                 {
-                    nbInvalidTransport.Text = string.Format( "The {0}channel does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.", channelName );
+                    nbInvalidTransport.Text = string.Format( "The {0}medium does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.", mediumName );
                     nbInvalidTransport.Visible = true;
                 }
                 else
@@ -811,29 +811,29 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
-                return channelControl;
+                return mediumControl;
             }
 
            return null;
         }
 
         /// <summary>
-        /// Gets the channel data.
+        /// Gets the medium data.
         /// </summary>
-        private void GetChannelData()
+        private void GetMediumData()
         {
-            if ( phContent.Controls.Count == 1 && phContent.Controls[0] is ChannelControl )
+            if ( phContent.Controls.Count == 1 && phContent.Controls[0] is MediumControl )
             {
-                var channelData = ( (ChannelControl)phContent.Controls[0] ).ChannelData;
-                foreach ( var dataItem in channelData )
+                var mediumData = ( (MediumControl)phContent.Controls[0] ).MediumData;
+                foreach ( var dataItem in mediumData )
                 {
-                    if ( ChannelData.ContainsKey( dataItem.Key ) )
+                    if ( MediumData.ContainsKey( dataItem.Key ) )
                     {
-                        ChannelData[dataItem.Key] = dataItem.Value;
+                        MediumData[dataItem.Key] = dataItem.Value;
                     }
                     else
                     {
-                        ChannelData.Add( dataItem.Key, dataItem.Value );
+                        MediumData.Add( dataItem.Key, dataItem.Value );
                     }
                 }
             }
@@ -844,30 +844,30 @@ namespace RockWeb.Blocks.Communication
             var template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
             if ( template != null )
             {
-                var channelData = template.ChannelData;
-                if ( !channelData.ContainsKey( "Subject" ) )
+                var mediumData = template.MediumData;
+                if ( !mediumData.ContainsKey( "Subject" ) )
                 {
-                    channelData.Add( "Subject", template.Subject );
+                    mediumData.Add( "Subject", template.Subject );
                 }
 
-                foreach ( var dataItem in channelData )
+                foreach ( var dataItem in mediumData )
                 {
                     if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
                     {
-                        if ( ChannelData.ContainsKey( dataItem.Key ) )
+                        if ( MediumData.ContainsKey( dataItem.Key ) )
                         {
-                            ChannelData[dataItem.Key] = dataItem.Value;
+                            MediumData[dataItem.Key] = dataItem.Value;
                         }
                         else
                         {
-                            ChannelData.Add( dataItem.Key, dataItem.Value );
+                            MediumData.Add( dataItem.Key, dataItem.Value );
                         }
                     }
                 }
 
                 if ( loadControl )
                 {
-                    LoadChannelControl( true );
+                    LoadMediumControl( true );
                 }
             }
         }
@@ -963,21 +963,21 @@ namespace RockWeb.Blocks.Communication
 
             communication.IsBulkCommunication = cbBulk.Checked;
 
-            communication.ChannelEntityTypeId = ChannelEntityTypeId;
-            communication.ChannelData.Clear();
-            GetChannelData();
-            foreach ( var keyVal in ChannelData )
+            communication.MediumEntityTypeId = MediumEntityTypeId;
+            communication.MediumData.Clear();
+            GetMediumData();
+            foreach ( var keyVal in MediumData )
             {
                 if ( !string.IsNullOrEmpty( keyVal.Value ) )
                 {
-                    communication.ChannelData.Add( keyVal.Key, keyVal.Value );
+                    communication.MediumData.Add( keyVal.Key, keyVal.Value );
                 }
             }
 
-            if ( communication.ChannelData.ContainsKey( "Subject" ) )
+            if ( communication.MediumData.ContainsKey( "Subject" ) )
             {
-                communication.Subject = communication.ChannelData["Subject"];
-                communication.ChannelData.Remove( "Subject" );
+                communication.Subject = communication.MediumData["Subject"];
+                communication.MediumData.Remove( "Subject" );
             }
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;

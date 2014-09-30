@@ -113,7 +113,7 @@ namespace Rock.Model
         public int? TotalCapacity { get; set; }
 
         /// <summary>
-        /// Gets or sets the confidence score, which is the Geometric Mean of the "weighted score of things that are matchable"% and "weighted score of things that match"%
+        /// Gets the confidence score, which is the Geometric Mean of the "weighted score of things that are matchable"% and "weighted score of things that match"%
         /// Calculated Field: ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED
         /// </summary>
         /// <value>
@@ -122,7 +122,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Index]
-        public double? ConfidenceScore { get; set; }
+        public double? ConfidenceScore { get; private set; }
 
         #endregion
 

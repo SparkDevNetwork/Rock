@@ -29,7 +29,8 @@ namespace Rock.Web.UI.Controls
     public class UrlLinkBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
-        
+        private readonly string _regex = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=,]*)?";
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -72,7 +73,7 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            _regexValidator.ValidationExpression = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?";
+            _regexValidator.ValidationExpression = _regex;
             _regexValidator.ErrorMessage = "The link provided is not valid";
             Controls.Add( _regexValidator );
         }
@@ -104,7 +105,7 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderDataValidator( writer );
 
-            _regexValidator.ValidationExpression = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?";
+            _regexValidator.ValidationExpression = _regex;
             _regexValidator.ErrorMessage = "The link provided is not valid";
 
             _regexValidator.ValidationGroup = this.ValidationGroup;

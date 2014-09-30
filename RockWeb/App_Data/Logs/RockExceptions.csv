@@ -7,3 +7,5 @@
 7/26/2014 7:56:24 PM,System.Data.Entity.Core.ProviderIncompatibleException,"The provider did not return a ProviderManifestToken string."
 7/26/2014 7:56:24 PM,System.Data.SqlClient.SqlException,"A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)"
 7/26/2014 7:56:24 PM,System.ComponentModel.Win32Exception,"The system cannot find the file specified"
+9/30/2014 7:26:56 AM,System.Web.HttpUnhandledException,"Exception of type 'System.Web.HttpUnhandledException' was thrown."
+9/30/2014 7:26:56 AM,System.Data.SqlClient.SqlException,"A transport-level error has occurred when receiving results from the server. (provider: Session Provider, error: 19 - Physical connection is not usable)"

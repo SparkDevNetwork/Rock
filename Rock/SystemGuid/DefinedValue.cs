@@ -23,12 +23,12 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region Communication Channel Type
+        #region Communication Medium Type
 
         /// <summary>
         /// Email communication
         /// </summary>
-        public const string COMMUNICATION_CHANNEL_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
+        public const string COMMUNICATION_MEDIUM_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
 
         #endregion
 
@@ -268,6 +268,11 @@ namespace Rock.SystemGuid
         /// Marital Status of Single
         /// </summary>
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
+
+        /// <summary>
+        /// Marital Status of Unknown
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_UNKNOWN = "D9CFD343-6A56-45F6-9E26-3269BA4FBC02";
 
         #endregion
 

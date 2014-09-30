@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Channel", cpChannel.SelectedValue );
+            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
             if ( _canEdit )
             {
                 rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Channel":
+                case "Medium":
                     {
                         var entity = EntityTypeCache.Read( e.Value.AsGuid() );
                         if ( entity != null )
@@ -211,9 +211,9 @@ namespace RockWeb.Blocks.Communication
 
         private void BindFilter()
         {
-            if ( cpChannel.Items[0].Value != string.Empty )
+            if ( cpMedium.Items[0].Value != string.Empty )
             {
-                cpChannel.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             }
 
             if ( !Page.IsPostBack )
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Communication
                     rFilter.SaveUserPreference( "Created By", string.Empty );
                 }
 
-                cpChannel.SelectedValue = rFilter.GetUserPreference( "Channel" );
+                cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
 
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
@@ -241,15 +241,15 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             var communications = new CommunicationTemplateService( new RockContext() )
-                .Queryable( "ChannelEntityType,CreatedByPersonAlias.Person" );
+                .Queryable( "MediumEntityType,CreatedByPersonAlias.Person" );
 
             Guid entityTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
+            if ( Guid.TryParse( rFilter.GetUserPreference( "Medium" ), out entityTypeGuid ) )
             {
                 communications = communications
                     .Where( c =>
-                        c.ChannelEntityType != null &&
-                        c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
+                        c.MediumEntityType != null &&
+                        c.MediumEntityType.Guid.Equals( entityTypeGuid ) );
             }
 
             if ( _canEdit )
