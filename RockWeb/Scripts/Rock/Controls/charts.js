@@ -177,7 +177,7 @@
                 var toolTipId = 'tooltip_' + plotContainerId;
                 var chartContainer = '#' + plotContainerId;
 
-                $("<div id=" + toolTipId + " class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>").css({
+                $("<div id=" + toolTipId + " class='tooltip top'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>").css({
                     position: 'absolute',
                     display: 'none',
                 }).appendTo('body');
@@ -215,7 +215,7 @@
                                 tooltipText += item.series.label;
                             }
 
-                            var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+                            var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '';
 
                             tooltipText += ': ' + pointValue;
 
@@ -225,8 +225,23 @@
                         }
 
                         $toolTip.find('.tooltip-inner').html(tooltipText);
-                        var tipTop = pos.pageY - ($toolTip.height() / 2);
-                        $toolTip.css({ top: tipTop, left: pos.pageX + 5, opacity: 1 });
+                        
+                        var tipTop = pos.pageY - $toolTip.height() - 10;
+
+                        var windowWidth = $(window).width();
+                        var tooltipWidth = $toolTip.width();
+                        var tipLeft = pos.pageX - ( tooltipWidth / 2);
+                        if (tipLeft + tooltipWidth + 10 >= windowWidth) {
+                            tipLeft = tipLeft - (tooltipWidth / 2);
+                            $toolTip.removeClass("top");
+                            $toolTip.addClass("left");
+                        }
+                        else {
+                            $toolTip.removeClass("left");
+                            $toolTip.addClass("top");
+                        }
+
+                        $toolTip.css({ top: tipTop, left: tipLeft, opacity: 1 });
                         $toolTip.show();
                     }
                     else {
