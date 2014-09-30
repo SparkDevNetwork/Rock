@@ -220,6 +220,7 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.GroupLocation", "GroupMemberPersonAliasId", "dbo.PersonAlias", "Id", cascadeDelete: true );
             AddForeignKey( "dbo.Tag", "OwnerPersonAliasId", "dbo.PersonAlias", "Id" );
 
+            Sql( "sp_changeobjectowner 'spCheckin_BadgeAttendance', 'dbo'" );
             Sql( @"
 /*
 <doc>
@@ -356,6 +357,7 @@ BEGIN
 END
 " );
 
+            Sql( "sp_changeobjectowner 'spCheckin_WeeksAttendedInDuration', 'dbo'" );
             Sql( @"
     -- create stored proc for attendance duration
     /*
@@ -401,6 +403,7 @@ END
     END
 " );
 
+            Sql( "sp_changeobjectowner 'spCrm_PersonMerge', 'dbo'" );
             Sql( @"
 	/*
 	<doc>
@@ -677,10 +680,12 @@ END
 	END
 " );
 
+            Sql( "sp_changeobjectowner 'spPersonMerge', 'dbo'" );
             Sql( @"
     DROP PROCEDURE [dbo].[spPersonMerge]
 " );
 
+            Sql( "sp_changeobjectowner 'spFinance_ContributionStatementQuery', 'dbo'" );
             Sql( @"
 	/*
 	<doc>
