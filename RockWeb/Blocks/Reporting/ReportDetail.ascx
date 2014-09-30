@@ -128,13 +128,21 @@
                     }
                 });
 
+                function htmlEncode(value) {
+                    // from http://stackoverflow.com/questions/1219860/html-encoding-in-javascript-jquery
+                    // create a in-memory div, set it's inner text(which jQuery automatically encodes)
+                    // then grab the encoded contents back out.  The div never exists on the page.
+                    return $('<div/>').text(value).html();
+                }
+
+
                 // javascript to set the widget panel title based on the defined column header text when collapsed
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
                     if ($(this).find('.fa-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
 
                         // set hidden value of title
-                        $(this).find('.js-header-title-hidden').val(title);
+                        $(this).find('.js-header-title-hidden').val(htmlEncode(title));
 
                         // set displayed text of title
                         $(this).find('.js-header-title').text(title);
