@@ -64,7 +64,7 @@ namespace Rock.Model
             {"expresses feelings","often stands out","monitors details","satisfied with circumstances","IDCS","IDCS"}
         };
 
-#pragma warning disable 1591
+        //#pragma warning disable 1591
         /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
@@ -74,13 +74,37 @@ namespace Rock.Model
             /// AdaptiveBehaviorS
             /// </summary>
             public int AdaptiveBehaviorS;
+            /// <summary>
+            /// AdaptiveBehaviorC
+            /// </summary>
             public int AdaptiveBehaviorC;
+            /// <summary>
+            /// AdaptiveBehaviorI
+            /// </summary>
             public int AdaptiveBehaviorI;
+            /// <summary>
+            /// AdaptiveBehaviorD
+            /// </summary>
             public int AdaptiveBehaviorD;
+            /// <summary>
+            /// NaturalBehaviorS
+            /// </summary>
             public int NaturalBehaviorS;
+            /// <summary>
+            /// NaturalBehaviorC
+            /// </summary>
             public int NaturalBehaviorC;
+            /// <summary>
+            /// NaturalBehaviorI
+            /// </summary>
             public int NaturalBehaviorI;
+            /// <summary>
+            /// NaturalBehaviorD
+            /// </summary>
             public int NaturalBehaviorD;
+            /// <summary>
+            /// LastSaveDate
+            /// </summary>
             public DateTime LastSaveDate;
         }
 
@@ -90,29 +114,73 @@ namespace Rock.Model
         /// </summary>
         public struct ResponseItem
         {
+            /// <summary>
+            /// QuestionNumber
+            /// </summary>
             public string QuestionNumber;
+            /// <summary>
+            /// ResponseNumber
+            /// </summary>
             public string ResponseNumber;
+            /// <summary>
+            /// ResponseID
+            /// </summary>
             public string ResponseID;
+            /// <summary>
+            /// ResponseText
+            /// </summary>
             public string ResponseText;
+            /// <summary>
+            /// MostScore
+            /// </summary>
             public string MostScore;
+            /// <summary>
+            /// LeastScore
+            /// </summary>
             public string LeastScore;
         }
 
         public static class AttributeKeys
         {
+            /// <summary>
+            /// AdaptiveD
+            /// </summary>
             public const string AdaptiveD = "AdaptiveD";
+            /// <summary>
+            /// AdaptiveI
+            /// </summary>
             public const string AdaptiveI = "AdaptiveI";
+            /// <summary>
+            /// AdaptiveS
+            /// </summary>
             public const string AdaptiveS = "AdaptiveS";
+            /// <summary>
+            /// AdaptiveC
+            /// </summary>
             public const string AdaptiveC = "AdaptiveC";
+            /// <summary>
+            /// NaturalD
+            /// </summary>
             public const string NaturalD = "NaturalD";
+            /// <summary>
+            /// NaturalI
+            /// </summary>
             public const string NaturalI = "NaturalI";
+            /// <summary>
+            /// NaturalS
+            /// </summary>
             public const string NaturalS = "NaturalS";
+            /// <summary>
+            /// NaturalC
+            /// </summary>
             public const string NaturalC = "NaturalC";
-
+            /// <summary>
+            /// LastSaveDate
+            /// </summary>
             public const string LastSaveDate = "LastSaveDate";
         }
 
-#pragma warning restore 1591
+        //#pragma warning restore 1591
 
         /// <summary>
         /// Returns the datasource.  Each row is a question,
@@ -276,7 +344,7 @@ namespace Rock.Model
         /// <summary>
         /// Saves Assessment results to a Person's PersonProperties
         /// </summary>
-        /// <param name="person"></param>
+        /// <param name="person">The person taking the test</param>
         /// <param name="ABd">Adaptive Behavior D</param>
         /// <param name="ABi">Adaptive Behavior I</param>
         /// <param name="ABs">Adaptive Behavior S</param>
