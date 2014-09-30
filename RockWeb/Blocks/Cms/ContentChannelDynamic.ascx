@@ -23,6 +23,8 @@
                     help="The channel to display items from." />
             </div>
             <div class="col-md-7">
+                <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
+                    Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
             </div>
         </div>
 
@@ -35,21 +37,21 @@
 
         <div class="row">
             <div class="col-md-5">
-                <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
-                    Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
-                <Rock:NumberBox ID="nbCount" runat="server" Label="Number of Items"
-                    help="The maximum number of items to display per page." />
-                <Rock:NumberBox ID="nbCacheDuration" runat="server" Label="Cache Duration"
-                    help="The number of seconds to cache the content for." />
+                <Rock:NumberBox ID="nbCount" runat="server" Label="Items per Page"
+                    help="The maximum number of items to display per page (use '0' for no maximum)." />
             </div>
             <div class="col-md-7">
-                <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal"
-                    help="Include items with the following status." />
-                <Rock:KeyValueList ID="kvlFilter" runat="server" Label="Attribute Filters"  KeyPrompt="Field" ValuePrompt="Equal To" 
-                    help="The field values to filter items by."/>
-                <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By"  KeyPrompt="Field" ValuePrompt="Direction" 
-                    help="The field value and direction that items should be ordered by."/>
+                <Rock:NumberBox ID="nbCacheDuration" runat="server" Label="Cache Duration"
+                    help="The number of seconds to cache the content for (use '0' for no caching)." />
             </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">
+                Filter
+            </label>
+            <asp:HiddenField ID="hfDataFilterId" runat="server" />
+            <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
         </div>
 
         <div class="actions">
