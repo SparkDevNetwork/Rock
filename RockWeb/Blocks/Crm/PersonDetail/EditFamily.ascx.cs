@@ -132,6 +132,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ), true );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            rblNewPersonConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
 
             lvMembers.DataKeyNames = new string[] { "Index" };
             lvMembers.ItemDataBound += lvMembers_ItemDataBound;
@@ -194,7 +195,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
                 {
-                    if (hfActiveTab.Value == "Existing")
+                    if ( hfActiveTab.Value == "Existing" )
                     {
                         liNewPerson.RemoveCssClass( "active" );
                         divNewPerson.RemoveCssClass( "active" );
@@ -233,7 +234,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     cpCampus.SelectedCampusId = _family.CampusId;
 
                     // If all family members have the same record status, display that value
-                    if (_family.Members.Select( m => m.Person.RecordStatusValueId).Distinct().Count() == 1)
+                    if ( _family.Members.Select( m => m.Person.RecordStatusValueId ).Distinct().Count() == 1 )
                     {
                         ddlRecordStatus.SetValue( _family.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
                     }
@@ -412,7 +413,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 tbNewPersonLastName.Text = string.Empty;
             }
 
-            
+
             ddlNewPersonGender.SelectedIndex = 0;
             dpNewPersonBirthDate.SelectedDate = null;
             rblNewPersonRole.SelectedIndex = 0;
@@ -476,6 +477,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMember.LastName = tbNewPersonLastName.Text;
                 familyMember.Gender = ddlNewPersonGender.SelectedValueAsEnum<Gender>();
                 familyMember.BirthDate = dpNewPersonBirthDate.SelectedDate;
+
+                familyMember.ConnectionStatusValueId = rblNewPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
                 var role = familyRoles.Where( r => r.Id == ( rblNewPersonRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
                 if ( role != null )
                 {
@@ -521,7 +524,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     if ( familyAddress.LocationTypeId == homeLocType.Id )
                     {
-                        if (familyAddress.IsLocation)
+                        if ( familyAddress.IsLocation )
                         {
                             familyAddress.IsLocation = false;
                             setLocation = true;
@@ -532,8 +535,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                FamilyAddresses.Add( new FamilyAddress { 
-                    LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Value, LocationIsDirty = true, State = DefaultState, IsMailing = true, IsLocation = setLocation } );
+                FamilyAddresses.Add( new FamilyAddress
+                {
+                    LocationTypeId = homeLocType.Id,
+                    LocationTypeName = homeLocType.Value,
+                    LocationIsDirty = true,
+                    State = DefaultState,
+                    IsMailing = true,
+                    IsLocation = setLocation
+                } );
 
                 gLocations.EditIndex = FamilyAddresses.Count - 1;
 
@@ -640,7 +650,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // If setting this location to be a map location, unselect all the other loctions
                 if ( !familyAddress.IsLocation && cbLocation.Checked )
                 {
-                    foreach(var otherAddress in FamilyAddresses)
+                    foreach ( var otherAddress in FamilyAddresses )
                     {
                         otherAddress.IsLocation = false;
                     }
@@ -789,6 +799,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                 person.BirthDate = familyMember.BirthDate;
                                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
+
+                                person.ConnectionStatusValueId = familyMember.ConnectionStatusValueId;
+                                History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
+
+                                person.IsEmailActive = false;
+                                History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
+
+                                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
+
+                                person.MaritalStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_UNKNOWN.AsGuid() ).Id;
+                                History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
 
                                 if ( !isChild )
                                 {
@@ -1124,13 +1146,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void BindLocations()
         {
-            int homeLocationTypeId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()).Id;
+            int homeLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
             // If there are not any addresses with a Map Location, set the first home location to be a mapped location
             if ( !FamilyAddresses.Any( l => l.IsLocation == true ) )
             {
                 var firstHomeAddress = FamilyAddresses.Where( l => l.LocationTypeId == homeLocationTypeId ).FirstOrDefault();
-                if (firstHomeAddress != null)
+                if ( firstHomeAddress != null )
                 {
                     firstHomeAddress.IsLocation = true;
                 }
@@ -1190,6 +1212,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public Guid RoleGuid { get; set; }
         public string RoleName { get; set; }
         public int? PhotoId { get; set; }
+        public int? ConnectionStatusValueId { get; set; }
 
         public int? Age
         {
