@@ -40,7 +40,6 @@ namespace RockWeb
         private XmlTextWriter rss;
 
         private int rssItemLimit = 10;
-        private bool includeUnapproved = false;
 
         public void ProcessRequest( HttpContext context )
         {
