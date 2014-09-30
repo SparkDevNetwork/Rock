@@ -197,7 +197,7 @@ function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
     var seriesLabel = item.series.label;
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
@@ -213,7 +213,7 @@ function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
     var seriesLabel = item.series.label;
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
@@ -228,7 +228,7 @@ function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
     var seriesLabel = item.series.label;
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
