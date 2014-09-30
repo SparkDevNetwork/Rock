@@ -98,6 +98,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             {
                                                 attendance = rockContext.Attendances.Create();
                                                 attendance.LocationId = location.Location.Id;
+                                                attendance.CampusId = location.CampuId;
                                                 attendance.ScheduleId = schedule.Schedule.Id;
                                                 attendance.GroupId = group.Group.Id;
                                                 attendance.PersonAlias = primaryAlias;

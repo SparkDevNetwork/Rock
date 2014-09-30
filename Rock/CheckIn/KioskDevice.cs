@@ -148,6 +148,17 @@ namespace Rock.CheckIn
             {
                 var rockContext = new RockContext();
 
+                var campusLocations = new Dictionary<int, int>();
+                Rock.Web.Cache.CampusCache.All()
+                    .Where( c => c.LocationId.HasValue )
+                    .Select( c => new
+                    {
+                        CampusId = c.Id,
+                        LocationId = c.LocationId.Value
+                    } )
+                    .ToList()
+                    .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
+
                 var deviceModel = new DeviceService( rockContext )
                     .Queryable( "Locations" )
                     .Where( d => d.Id == id )
@@ -158,7 +169,7 @@ namespace Rock.CheckIn
                     device = new KioskDevice( deviceModel );
                     foreach ( Location location in deviceModel.Locations )
                     {
-                        LoadKioskLocations( device, location, rockContext );
+                        LoadKioskLocations( device, location, campusLocations, rockContext );
                     }
 
                     var cachePolicy = new CacheItemPolicy();
@@ -187,8 +198,32 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskDevice">The kiosk device.</param>
         /// <param name="location">The location.</param>
+        /// <param name="campusLocations">The campus locations.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, RockContext rockContext )
+        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, Dictionary<int, int> campusLocations, RockContext rockContext )
+        {
+            int campusId = 0;
+            var parentLocation = location;
+            while ( campusId == 0 && parentLocation != null )
+            {
+                campusId = campusLocations
+                    .Where( c => c.Value == parentLocation.Id )
+                    .Select( c => c.Key )
+                    .FirstOrDefault();
+                parentLocation = parentLocation.ParentLocation;
+            }
+
+            LoadKioskLocations( kioskDevice, location, ( campusId > 0 ? campusId : (int?)null ), rockContext );
+        }
+
+        /// <summary>
+        /// Loads the kiosk locations.
+        /// </summary>
+        /// <param name="kioskDevice">The kiosk device.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, int? campusId, RockContext rockContext )
         {
             var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var groupLocation in groupLocationService.GetActiveByLocation( location.Id ) )
@@ -196,6 +231,7 @@ namespace Rock.CheckIn
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
                 var kioskLocation = new KioskLocation( location );
+                kioskLocation.CampusId = campusId;
 
                 // Populate each kioskLocation with it's schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
@@ -249,7 +285,7 @@ namespace Rock.CheckIn
 
             foreach ( var childLocation in location.ChildLocations )
             {
-                LoadKioskLocations( kioskDevice, childLocation, rockContext );
+                LoadKioskLocations( kioskDevice, childLocation, campusId, rockContext );
             }
         }
 
