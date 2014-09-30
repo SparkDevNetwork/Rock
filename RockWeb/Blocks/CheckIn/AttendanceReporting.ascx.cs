@@ -240,7 +240,11 @@ function(item) {
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
-            dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            if ( cpCampuses.SelectedCampusIds.Any() )
+            {
+                dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            }
+
             dataSourceParams.AddOrReplace( "groupIds", GetSelectedGroupIds().AsDelimited( "," ) );
 
             SaveSettingsToUserPreferences();
