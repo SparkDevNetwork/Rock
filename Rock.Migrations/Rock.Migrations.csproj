@@ -50,8 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201409301455533_ValueAsDateTimeFix.cs" />
-    <Compile Include="Migrations\201409301455533_ValueAsDateTimeFix.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.Designer.cs">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409270041079_AttributeValueAsDateTime.cs" />
@@ -1254,7 +1254,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201409301455533_ValueAsDateTimeFix.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.resx">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409270041079_AttributeValueAsDateTime.resx">

@@ -81,7 +81,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a double
-        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) < 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
+        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) &lt; 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
         /// </summary>
         /// <value>
         /// The match score.
@@ -92,7 +92,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a DateTime 
-        /// Calculated Field: alter table AttributeValue add ValueAsDateTime as case when (len(value) < 50 and ISDATE( value) = 1) then convert(datetime, value) else null end
+        /// Calculated Field: alter table AttributeValue add ValueAsDateTime as case when (len(value) &lt; 50 and ISDATE( value) = 1) then convert(datetime, value) else null end
         /// </summary>
         /// <value>
         /// The match score.
