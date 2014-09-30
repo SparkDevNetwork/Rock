@@ -65,8 +65,12 @@
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
+                <div style="display: none" class="alert alert-danger" id="divError">
+                    Please answer all questions before scoring.
+                </div>
+                <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
             </div>
-            <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" />
+
         </div>
         <div id="results" class="tab-pane">
             <div class="row">
