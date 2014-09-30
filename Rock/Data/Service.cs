@@ -177,24 +177,7 @@ namespace Rock.Data
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
         {
-            var queryable = this.Queryable();
-            if ( parameterExpression != null && whereExpression != null )
-            {
-                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
-                queryable = queryable.Where( lambda );
-            }
-
-            if ( sortProperty != null )
-            {
-                queryable = queryable.Sort( sortProperty );
-            }
-
-            if ( fetchTop.HasValue )
-            {
-                queryable = queryable.Take( fetchTop.Value );
-            }
-
-            return queryable;
+            return this.Queryable().Where( parameterExpression, whereExpression, sortProperty, fetchTop );
         }
 
         /// <summary>
