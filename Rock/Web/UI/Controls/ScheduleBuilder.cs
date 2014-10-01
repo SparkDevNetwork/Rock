@@ -1151,27 +1151,21 @@ END:VCALENDAR
             _cbWeeklyMonday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyMonday.ID = "cbWeeklyMonday_" + this.ClientID;
             _cbWeeklyMonday.Text = "Mon";
-            _cbWeeklyMonday.CssClass = "checkbox-inline";
             _cbWeeklyTuesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyTuesday.ID = "cbWeeklyTuesday_" + this.ClientID;
             _cbWeeklyTuesday.Text = "Tue";
-            _cbWeeklyTuesday.CssClass = "checkbox-inline";
             _cbWeeklyWednesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyWednesday.ID = "cbWeeklyWednesday_" + this.ClientID;
             _cbWeeklyWednesday.Text = "Wed";
-            _cbWeeklyWednesday.CssClass = "checkbox-inline";
             _cbWeeklyThursday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyThursday.ID = "cbWeeklyThursday_" + this.ClientID;
             _cbWeeklyThursday.Text = "Thu";
-            _cbWeeklyThursday.CssClass = "checkbox-inline";
             _cbWeeklyFriday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyFriday.ID = "cbWeeklyFriday_" + this.ClientID;
             _cbWeeklyFriday.Text = "Fri";
-            _cbWeeklyFriday.CssClass = "checkbox-inline";
             _cbWeeklySaturday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklySaturday.ID = "cbWeeklySaturday_" + this.ClientID;
             _cbWeeklySaturday.Text = "Sat";
-            _cbWeeklySaturday.CssClass = "checkbox-inline";
 
             // monthly
             _radMonthlyDayX.ClientIDMode = ClientIDMode.Static;
@@ -1434,21 +1428,22 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryXDays.Text = "Every";
             _radDailyEveryXDays.RenderControl( writer );
-            writer.Write( "<span>Every </span>" );
+            _tbDailyEveryXDays.AddCssClass( "margin-l-sm" );
             _tbDailyEveryXDays.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryWeekday.Text = "Every weekday";
             _radDailyEveryWeekday.RenderControl( writer );
-            writer.Write( "<span>Every weekday</span>" );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryWeekendDay.Text = "Every weekend day";
             _radDailyEveryWeekendDay.RenderControl( writer );
-            writer.Write( "<span>Every weekend day</span>" );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -1502,8 +1497,9 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radMonthlyDayX.Text = "Day";
             _radMonthlyDayX.RenderControl( writer );
-            writer.Write( "<span>Day </span>" );
+            _tbMonthlyDayX.AddCssClass( "margin-l-sm" );
             _tbMonthlyDayX.RenderControl( writer );
             writer.Write( "<span> of every </span>" );
             _tbMonthlyXMonths.RenderControl( writer );
@@ -1512,8 +1508,9 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radMonthlyNth.Text = "The";
             _radMonthlyNth.RenderControl( writer );
-            writer.Write( "<span>The </span>" );
+            _ddlMonthlyNth.AddCssClass( "margin-l-sm" );
             _ddlMonthlyNth.RenderControl( writer );
             writer.Write( "<span> </span>" );
             _ddlMonthlyDayName.RenderControl( writer );
@@ -1534,21 +1531,23 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByNone.Text = "No End";
             _radEndByNone.RenderControl( writer );
-            writer.Write( "<span>No End</span>" );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByDate.Text = "End by ";
             _radEndByDate.RenderControl( writer );
-            writer.Write( "<span>End by </span>" );
+            _dpEndBy.AddCssClass( "margin-l-sm" );
             _dpEndBy.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByOccurrenceCount.Text = "End after ";
             _radEndByOccurrenceCount.RenderControl( writer );
-            writer.Write( "<span>End after </span>" );
+            _tbEndByOccurrenceCount.AddCssClass( "margin-l-sm" );
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
 
