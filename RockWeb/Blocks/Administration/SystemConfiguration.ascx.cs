@@ -153,8 +153,8 @@ namespace RockWeb.Blocks.Administration
             {
                 ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
             }
-            string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
-            ddTimeZone.SelectedValue = orgTimeZoneSetting;
+            
+            ddTimeZone.SelectedValue = RockDateTime.OrgTimeZoneInfo.Id;
         }
 
         /// <summary>
