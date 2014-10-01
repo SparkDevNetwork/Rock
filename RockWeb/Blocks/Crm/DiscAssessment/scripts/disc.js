@@ -1,6 +1,29 @@
 ﻿var numberOfQuestionsAnswered = 0,
 	isScored = false;
 
+function checkAndMoveToNext($pRow, partialSelector) {
+    var $checkedItem = $pRow.find('input[type=radio][id*="' + partialSelector + '"]:checked');
+    //If both RBLs have a selected item
+    if ($checkedItem.length > 0) {
+        var $nextPanel = $pRow.closest(".panel-default").next();
+        //alert($nextPanel.html());
+        if ($nextPanel.length > 0) {
+            $("body").animate({ scrollTop: $nextPanel.offset().top - 20 }, 250);
+        }
+    }
+}
+
+function isComplete() {
+    var $completedQuestions = $('#questions input[type=radio]:checked');
+    if ($completedQuestions.length < 60) {
+        $('[id$="divError"]').fadeIn();
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
 $(document).ready(function () {
     "use strict";
     // $('[id$="btnScoreTest"]').attr('disabled', 'disabled');
@@ -24,5 +47,9 @@ $(document).ready(function () {
         if ($correspondingItem) {
             $correspondingItem.removeAttr('checked');
         }
+
+        $('[id$="divError"]').fadeOut();
+
+        checkAndMoveToNext($parentRow, moreOrLess);
     });
 });
