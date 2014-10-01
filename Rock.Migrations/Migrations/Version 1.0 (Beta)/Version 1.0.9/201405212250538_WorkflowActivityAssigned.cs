@@ -36,14 +36,14 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.WorkflowActivity", "AssignedGroupId", "dbo.Group", "Id" );
             AddForeignKey( "dbo.WorkflowActivity", "AssignedPersonAliasId", "dbo.PersonAlias", "Id" );
 
-            RockMigrationHelper.AddDefinedType( "Global", "CSS Classes", "Contain common css class definitions", "407A3A73-A3EF-4970-B856-2A33F62AC72E", @"" );
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Global", "CSS Classes", "Contain common css class definitions", "407A3A73-A3EF-4970-B856-2A33F62AC72E", @"" );
             RockMigrationHelper.AddDefinedTypeAttribute( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "9C204CD0-1233-41C5-818A-C5DA439445AA", "CSS Class", "CSSClass", "The css class", 28, "", "6FF59F53-28EA-4BFE-AFE1-A459CC588495" );
             RockMigrationHelper.AddDefinedValue_pre20140819( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Primary Button", "", "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"btn btn-primary" );
             RockMigrationHelper.AddDefinedValue_pre20140819( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Red Button", "", "FDEB8E6C-70C3-4033-B307-7D0DEE1AC29D", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FDEB8E6C-70C3-4033-B307-7D0DEE1AC29D", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"btn btn-danger" );
 
-            RockMigrationHelper.AddDefinedType( "Location", "Countries", "Defines how addresses are displayed and formatted for each country", "D7979EA1-44E9-46E2-BF37-DDAF7F741378", @"" );
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Location", "Countries", "Defines how addresses are displayed and formatted for each country", "D7979EA1-44E9-46E2-BF37-DDAF7F741378", @"" );
             RockMigrationHelper.AddDefinedTypeAttribute( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Abbreviation", "Abbreviation", "The abbreviation for the country", 0, "", "DA46DC37-5398-4520-B6A5-6E57C9C46F7A" );
             RockMigrationHelper.AddDefinedTypeAttribute( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Postal Code Label", "PostalCodeLabel", "The label to use for the Postal Code (Zip) field", 2, "Zip", "7D785A5D-53CA-4FEC-BC88-DFBD7439B547" );
             RockMigrationHelper.AddDefinedTypeAttribute( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "9C204CD0-1233-41C5-818A-C5DA439445AA", "State Label", "StateLabel", "The label to use for the 'state' field", 1, "State", "A4E00B14-8CFF-4719-A43F-462851C7BBEF" );

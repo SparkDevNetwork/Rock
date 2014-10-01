@@ -50,25 +50,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201409270041079_AttributeValueAsDateTime.cs" />
-    <Compile Include="Migrations\201409270041079_AttributeValueAsDateTime.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.Designer.cs">
+      <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409270041079_AttributeValueAsDateTime.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409270041079_AttributeValueAsDateTime.Designer.cs">
       <DependentUpon>201409270041079_AttributeValueAsDateTime.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409271254064_ContentChannelType.cs" />
-    <Compile Include="Migrations\201409271254064_ContentChannelType.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409271254064_ContentChannelType.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409271254064_ContentChannelType.Designer.cs">
       <DependentUpon>201409271254064_ContentChannelType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409281237340_CommunicationMedium.cs" />
-    <Compile Include="Migrations\201409281237340_CommunicationMedium.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409281237340_CommunicationMedium.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409281237340_CommunicationMedium.Designer.cs">
       <DependentUpon>201409281237340_CommunicationMedium.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409291710432_EntityTypeAuthFinancial.cs" />
-    <Compile Include="Migrations\201409291710432_EntityTypeAuthFinancial.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409291710432_EntityTypeAuthFinancial.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409291710432_EntityTypeAuthFinancial.Designer.cs">
       <DependentUpon>201409291710432_EntityTypeAuthFinancial.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201409292011419_ContentData.cs" />
-    <Compile Include="Migrations\201409292011419_ContentData.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409292011419_ContentData.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409292011419_ContentData.Designer.cs">
       <DependentUpon>201409292011419_ContentData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301132124_AddDiscPersonAttribs.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301132124_AddDiscPersonAttribs.Designer.cs">
+      <DependentUpon>201409301132124_AddDiscPersonAttribs.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.cs" />
     <Compile Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.Designer.cs">
@@ -1246,20 +1254,26 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201409270041079_AttributeValueAsDateTime.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.resx">
+      <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409270041079_AttributeValueAsDateTime.resx">
       <DependentUpon>201409270041079_AttributeValueAsDateTime.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409271254064_ContentChannelType.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409271254064_ContentChannelType.resx">
       <DependentUpon>201409271254064_ContentChannelType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409281237340_CommunicationMedium.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409281237340_CommunicationMedium.resx">
       <DependentUpon>201409281237340_CommunicationMedium.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409291710432_EntityTypeAuthFinancial.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409291710432_EntityTypeAuthFinancial.resx">
       <DependentUpon>201409291710432_EntityTypeAuthFinancial.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201409292011419_ContentData.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409292011419_ContentData.resx">
       <DependentUpon>201409292011419_ContentData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301132124_AddDiscPersonAttribs.resx">
+      <DependentUpon>201409301132124_AddDiscPersonAttribs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0 %28Beta%29\Version 1.0.14\201409142128150_AddPhotoRequestGroupPage.resx">
       <DependentUpon>201409142128150_AddPhotoRequestGroupPage.cs</DependentUpon>

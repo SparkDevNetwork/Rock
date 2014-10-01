@@ -36,7 +36,7 @@
                     <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
-                        Also, be patient when updating. It take anywhere from a few seconds
+                        Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
 
                     <div class="row margin-b-md">
