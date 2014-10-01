@@ -264,7 +264,19 @@ namespace Rock.Reporting.DataFilter
                         }
                         else
                         {
-                            selectedTexts = selectedValues.ToList();
+                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                            if ( attribute != null )
+                            {
+                                var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                                if ( itemValues != null )
+                                {
+                                    selectedTexts = itemValues.Value.GetListItems().Where( a => selectedValues.ToList().Contains( a.Value ) ).Select( s => s.Text ).ToList();
+                                }
+                            }
+                            else
+                            {
+                                selectedTexts = selectedValues.ToList();
+                            }
                         }
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
@@ -608,7 +620,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField property, List<string> values )
         {
-            IEnumerable<int> ids = null;
+            IQueryable<int> ids = null;
 
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
@@ -801,8 +813,18 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 1 )
                     {
-                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
-                        ids = attributeValues.Where( v => selectedValues.Contains( v.Value ) ).Select( v => v.EntityId.Value );
+                        List<string> compareValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
+                        foreach (var compareValue in compareValues)
+                        {
+                            if (ids == null)
+                            {
+                                ids = attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value );
+                            }
+                            else
+                            {
+                                ids = ids.Union(attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value ));
+                            }
+                        }
                     }
 
                     break;
