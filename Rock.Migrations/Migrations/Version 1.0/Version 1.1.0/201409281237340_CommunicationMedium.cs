@@ -30,6 +30,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+    DELETE [EntityType]
+    WHERE [Name] LIKE 'Rock.Communication.Medium.%'
     UPDATE [EntityType] SET 
           [Name] = REPLACE( [Name], 'Channel', 'Medium' )
         , [AssemblyName] = REPLACE( [AssemblyName], 'Channel', 'Medium' )
