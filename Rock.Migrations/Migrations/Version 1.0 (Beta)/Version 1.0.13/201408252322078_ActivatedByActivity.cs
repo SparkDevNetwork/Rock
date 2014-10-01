@@ -75,7 +75,7 @@ namespace Rock.Migrations
 
             #region Convert Safe Sender Domains to Defined Type
 
-            RockMigrationHelper.AddDefinedType( "Communication", "Safe Sender Domains", @"
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Communication", "Safe Sender Domains", @"
 Are the domains that can be used to send emails.  If an Email communication is created with a From Address that is not from 
 one of these domains, the Organization Email global attribute value will be used instead for the From Address and the original 
 value will be used as the Reply To address.  This is to help reduce the likelihood of communications being rejected by the 

@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedType( "Global", "Chart Styles", "Defines a listing of various chart styles to be used as configuration for blocks that render charts", "FC684FD7-FE68-493F-AF38-1656FBF67E6B", @"Chart styles are defined with a JSON object. Click the ''Show/Hide Fields'' button below to view an example with all the available chart style fields.
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Global", "Chart Styles", "Defines a listing of various chart styles to be used as configuration for blocks that render charts", "FC684FD7-FE68-493F-AF38-1656FBF67E6B", @"Chart styles are defined with a JSON object. Click the ''Show/Hide Fields'' button below to view an example with all the available chart style fields.
 
 <p>
     <a data-toggle=""collapse""  href=""#collapseFields"" class=''btn btn-action btn-xs''>Show/Hide  Fields</a>
