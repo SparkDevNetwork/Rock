@@ -99,7 +99,7 @@ Please confirm the information below. Once you have confirmed that the informati
 
             RockMigrationHelper.AddBlockAttributeValue( "32A7BA7B-968E-4BFD-BEA3-042CF863D751", "78622434-4B4E-42E4-B044-21AEDD315186", "f1c3bbd3-ee91-4ddd-8880-1542ebcd8041" );
 
-            RockMigrationHelper.UpdateSystemEmail( "Finance", "Pledge Confirmation", "", "", "", "", "", "Thank you for your commitment", @"
+            RockMigrationHelper.UpdateSystemEmail_pre201409101843015( "Finance", "Pledge Confirmation", "", "", "", "", "", "Thank you for your commitment", @"
 {{ GlobalAttribute.EmailHeader }}
 
 {{ Person.FirstName }},<br/><br/>
