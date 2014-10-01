@@ -81,7 +81,8 @@ namespace Rock.Web.UI.Controls
                 values = CustomValues;
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list " + this.CssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
