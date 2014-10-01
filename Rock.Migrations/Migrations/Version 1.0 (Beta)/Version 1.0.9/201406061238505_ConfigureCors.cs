@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedType( "Global", "REST CORS Domains (Advanced)", @"
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Global", "REST CORS Domains (Advanced)", @"
 Lists the external domains that are authorized to access the REST API through ""cross-origin resource sharing"" (CORS).", "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8", @"
 When a browser encounters a script that originated from another domain trying to access the Rock REST API, the browser will query Rock (using CORS) to check 
 if that request should be allowed. By default Rock will deny access to the API through this type of cross-site request. To override this behavior, add the domains that

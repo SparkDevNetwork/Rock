@@ -160,7 +160,7 @@ INSERT INTO [BinaryFileType]
     UPDATE [DefinedValue] SET [Order] = 2 WHERE [Id] = @DefinedValueID
 " );
 
-            RockMigrationHelper.UpdateSystemEmail( "Workflow", "Workflow Form Notification", "", "", "", "", "", "{{ Workflow.WorkflowType.Name }}: {{ Workflow.Name }}", @"
+            RockMigrationHelper.UpdateSystemEmail_pre201409101843015( "Workflow", "Workflow Form Notification", "", "", "", "", "", "{{ Workflow.WorkflowType.Name }}: {{ Workflow.Name }}", @"
 {{ GlobalAttribute.EmailHeader }}
 
 <p>{{ Person.FirstName }},</p>
