@@ -97,13 +97,15 @@ namespace Rock.Model
                 batch.Guid = Guid.NewGuid();
                 batch.Name = batchName;
                 batch.Status = BatchStatus.Open;
-                batch.BatchStartDateTime = transactionDate.Date.Add( batchTimeOffset );
-                if ( batch.BatchStartDateTime > transactionDate )
-                {
-                    batch.BatchStartDateTime.Value.AddDays( -1 );
-                }
 
-                batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
+                var batchStartDateTime = transactionDate.Date.Add( batchTimeOffset );
+                if ( batchStartDateTime > transactionDate )
+                {
+                    batchStartDateTime = batchStartDateTime.AddDays( -1 );
+                }
+                batch.BatchStartDateTime = batchStartDateTime;
+                batch.BatchEndDateTime = batchStartDateTime.AddDays( 1 );
+
                 batch.ControlAmount = 0;
                 Add( batch );
             }

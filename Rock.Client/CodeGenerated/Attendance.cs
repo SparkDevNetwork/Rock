@@ -43,7 +43,7 @@ namespace Rock.Client
         public int? GroupId { get; set; }
 
         /// <summary />
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
         public int? DeviceId { get; set; }

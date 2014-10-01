@@ -526,7 +526,7 @@
 					    </div>
 							
 					    <div class="form-group">
-						    <label class="control-label" for="inputEmail">Relay Email Username (optional) * if server requires authenication</label>
+						    <label class="control-label" for="inputEmail">Relay Email Username (optional) * if server requires authentication</label>
 						    <asp:TextBox ID="txtEmailUsername" runat="server" Text="" CssClass="form-control"></asp:TextBox>
 					    </div>
 							

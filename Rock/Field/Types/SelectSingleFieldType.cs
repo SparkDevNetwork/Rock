@@ -133,7 +133,8 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    editControl = new RockDropDownList { ID = id }; 
+                    editControl = new RockDropDownList { ID = id };
+                    editControl.Items.Add( new ListItem() );
                 }
 
                 if ( configurationValues.ContainsKey( "values" ) )

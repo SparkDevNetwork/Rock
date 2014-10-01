@@ -64,27 +64,30 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
+    Please confirm the information below. Once you have confirmed that the information is 
+    accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 13 )]
 
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to transfer the amount above from my account. I acknowledge that I may
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
+    By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
+    to transfer the amount above from my account. I acknowledge that I may
+    update the transaction information at any time by returning to this website. Please 
+    call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
-achieve our mission.  We are so grateful for your commitment.
+    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+    achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 15 )]
 
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
@@ -321,17 +324,18 @@ achieve our mission.  We are so grateful for your commitment.
                 // Display Options
                 btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
 
-                bool display = false;
+                bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
 
-                bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
-                txtEmail.Visible = display;
-                txtEmail.Required = display;
-                tdEmail.Visible = display;
+                txtEmail.Visible = displayEmail;
+                txtEmail.Required = displayEmail;
+                tdEmailConfirm.Visible = displayEmail;
+                tdEmailReceipt.Visible = displayEmail;
 
-                bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
-                pnbPhone.Visible = display;
-                pnbPhone.Required = display;
-                tdPhone.Visible = display;
+                bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                pnbPhone.Visible = displayPhone;
+                pnbPhone.Required = displayPhone;
+                tdPhoneConfirm.Visible = displayPhone;
+                tdPhoneReceipt.Visible = displayPhone;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
 
@@ -691,36 +695,36 @@ achieve our mission.  We are so grateful for your commitment.
 
                 string errorMessage = string.Empty;
 
-                Person authorizedPerson = null;
+                PersonAlias authorizedPersonAlias = null;
                 string referenceNumber = string.Empty;
                 int? currencyTypeValueId = hfPaymentTab.Value == "ACH" ? achCurrencyType.Id : ccCurrencyType.Id;
 
                 if ( string.IsNullOrWhiteSpace( ScheduleId ) )
                 {
                     var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
-                    if ( transaction != null )
+                    if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                     {
-                        authorizedPerson = transaction.AuthorizedPerson;
+                        authorizedPersonAlias = transaction.AuthorizedPersonAlias;
                         referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
                     }
                 }
                 else
                 {
                     var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( ScheduleId );
-                    if ( scheduledTransaction != null )
+                    if ( scheduledTransaction != null  )
                     {
-                        authorizedPerson = scheduledTransaction.AuthorizedPerson;
+                        authorizedPersonAlias = scheduledTransaction.AuthorizedPersonAlias;
                         referenceNumber = gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
                     }
                 }
 
-                if ( authorizedPerson != null )
+                if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null )
                 {
                     if ( phCreateLogin.Visible )
                     {
                         var user = UserLoginService.Create(
                             rockContext,
-                            authorizedPerson,
+                            authorizedPersonAlias.Person,
                             Rock.Model.AuthenticationServiceType.Internal,
                             EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                             txtUserName.Text,
@@ -730,13 +734,13 @@ achieve our mission.  We are so grateful for your commitment.
                         var mergeObjects = new Dictionary<string, object>();
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                        var personDictionary = authorizedPerson.ToDictionary();
+                        var personDictionary = authorizedPersonAlias.Person.ToDictionary();
                         mergeObjects.Add( "Person", personDictionary );
 
                         mergeObjects.Add( "User", user.ToDictionary() );
 
-                        var recipients = new Dictionary<string, Dictionary<string, object>>();
-                        recipients.Add( authorizedPerson.Email, mergeObjects );
+                        var recipients = new List<Rock.Communication.RecipientData>();
+                        recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
 
                         Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
@@ -752,29 +756,32 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        var savedAccount = new FinancialPersonSavedAccount();
-                        savedAccount.PersonId = authorizedPerson.Id;
-                        savedAccount.ReferenceNumber = referenceNumber;
-                        savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
-                        savedAccount.TransactionCode = TransactionCode;
-                        savedAccount.GatewayEntityTypeId = gateway.TypeId;
-                        savedAccount.CurrencyTypeValueId = currencyTypeValueId;
-                        savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
+                        if ( authorizedPersonAlias != null )
+                        {
+                            var savedAccount = new FinancialPersonSavedAccount();
+                            savedAccount.PersonAliasId = authorizedPersonAlias.Id;
+                            savedAccount.ReferenceNumber = referenceNumber;
+                            savedAccount.Name = txtSaveAccount.Text;
+                            savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
+                            savedAccount.TransactionCode = TransactionCode;
+                            savedAccount.GatewayEntityTypeId = gateway.TypeId;
+                            savedAccount.CurrencyTypeValueId = currencyTypeValueId;
+                            savedAccount.CreditCardTypeValueId = CreditCardTypeValueId;
 
-                        var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
-                        savedAccountService.Add( savedAccount );
-                        rockContext.SaveChanges();
+                            var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
+                            savedAccountService.Add( savedAccount );
+                            rockContext.SaveChanges();
 
-                        cbSaveAccount.Visible = false;
-                        txtSaveAccount.Visible = false;
-                        phCreateLogin.Visible = false;
-                        divSaveActions.Visible = false;
+                            cbSaveAccount.Visible = false;
+                            txtSaveAccount.Visible = false;
+                            phCreateLogin.Visible = false;
+                            divSaveActions.Visible = false;
 
-                        nbSaveAccount.Title = "Success";
-                        nbSaveAccount.Text = "The account has been saved for future use";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
-                        nbSaveAccount.Visible = true;
+                            nbSaveAccount.Title = "Success";
+                            nbSaveAccount.Text = "The account has been saved for future use";
+                            nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                            nbSaveAccount.Visible = true;
+                        }
                     }
                 }
                 else
@@ -1167,19 +1174,19 @@ achieve our mission.  We are so grateful for your commitment.
                 paymentInfo.LastName = txtLastName.Text;
             }
 
-            tdName.Description = paymentInfo.FullName;
-            tdPhone.Description = paymentInfo.Phone;
-            tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+            tdNameConfirm.Description = paymentInfo.FullName;
+            tdPhoneConfirm.Description = paymentInfo.Phone;
+            tdEmailConfirm.Description = paymentInfo.Email;
+            tdAddressConfirm.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
 
-            tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalConfirm.Description = paymentInfo.Amount.ToString( "C" );
 
-            tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.MaskedNumber;
-            tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
+            tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue.Description;
+            tdAccountNumberConfirm.Description = paymentInfo.MaskedNumber;
+            tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
         }
@@ -1359,6 +1366,12 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
+                if ( !person.PrimaryAliasId.HasValue)
+                {
+                    errorMessage = "There was a problem creating the person's primary alias";
+                    return false;
+                }
+
                 PaymentInfo paymentInfo = GetPaymentInfo();
                 if ( paymentInfo == null )
                 {
@@ -1382,10 +1395,10 @@ achieve our mission.  We are so grateful for your commitment.
                     schedule.PersonId = person.Id;
 
                     var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
-                    if ( scheduledTransaction != null )
+                    if ( scheduledTransaction != null  )
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
-                        scheduledTransaction.AuthorizedPersonId = person.Id;
+                        scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
                         scheduledTransaction.GatewayEntityTypeId = EntityTypeCache.Read( gateway.TypeGuid ).Id;
                         scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
                         scheduledTransaction.CreditCardTypeValueId = CreditCardTypeValueId;
@@ -1443,7 +1456,7 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( transaction != null )
                     {
                         transaction.TransactionDateTime = RockDateTime.Now;
-                        transaction.AuthorizedPersonId = person.Id;
+                        transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
                         transaction.GatewayEntityTypeId = gateway.TypeId;
                         transaction.TransactionTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) ).Id;
                         transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
@@ -1487,11 +1500,26 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
 
-                tdTransactionCode.Description = TransactionCode;
-                tdTransactionCode.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
+                tdTransactionCodeReceipt.Description = TransactionCode;
+                tdTransactionCodeReceipt.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
 
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+
+                tdNameReceipt.Description = paymentInfo.FullName;
+                tdPhoneReceipt.Description = paymentInfo.Phone;
+                tdEmailReceipt.Description = paymentInfo.Email;
+                tdAddressReceipt.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+
+                rptAccountListReceipt.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
+                rptAccountListReceipt.DataBind();
+
+                tdTotalReceipt.Description = paymentInfo.Amount.ToString( "C" );
+
+                tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
+                tdAccountNumberReceipt.Description = paymentInfo.MaskedNumber;
+                tdWhenReceipt.Description = schedule != null ? schedule.ToString() : "Today";
+
 
                 // If there was a transaction code returned and this was not already created from a previous saved account,
                 // show the option to save the account.
@@ -1514,6 +1542,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 pnlDupWarning.Visible = true;
+                divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
             }
@@ -1617,7 +1646,7 @@ achieve our mission.  We are so grateful for your commitment.
                     var mm = curr.getMonth()+1;
                     var yy = curr.getFullYear();
                     $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('datepicker').update();
                 }}
             }};
         }});

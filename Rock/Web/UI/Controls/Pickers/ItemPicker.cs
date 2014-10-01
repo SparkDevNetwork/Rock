@@ -143,8 +143,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -501,6 +507,7 @@ namespace Rock.Web.UI.Controls
             _hfItemId = new HiddenFieldWithClass();
             _hfItemId.ID = this.ID + "_hfItemId";
             _hfItemId.CssClass = "js-item-id-value";
+            _hfItemId.Value = "0";
 
             _hfInitialItemParentIds = new HiddenFieldWithClass();
             _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";

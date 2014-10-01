@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The form action.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string FormAction { get; set; }
 
@@ -346,23 +346,23 @@ namespace Rock.Model
                             value = Activity.GetAttributeValue( attribute.Key );
                         }
 
-                        if ( !string.IsNullOrWhiteSpace( value ) )
+                        var field = attribute.FieldType.Field;
+
+                        string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+                        var attributeLiquid = new Dictionary<string, object>();
+                        attributeLiquid.Add( "Name", attribute.Name );
+                        attributeLiquid.Add( "Key", attribute.Key );
+                        attributeLiquid.Add( "Value", formattedValue );
+                        attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                        attributeLiquid.Add( "HideLabel", formAttribute.HideLabel );
+                        attributeLiquid.Add( "PreHtml", formAttribute.PreHtml );
+                        attributeLiquid.Add( "PostHtml", formAttribute.PostHtml );
+                        if ( field is Rock.Field.ILinkableFieldType )
                         {
-                            var field = attribute.FieldType.Field;
-
-                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
-                            var attributeLiquid = new Dictionary<string, object>();
-                            attributeLiquid.Add( "Name", attribute.Name );
-                            attributeLiquid.Add( "Key", attribute.Key );
-                            attributeLiquid.Add( "Value", formattedValue );
-                            attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
-                            if ( field is Rock.Field.ILinkableFieldType )
-                            {
-                                attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
-                            }
-
-                            attributeList.Add( attributeLiquid );
+                            attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
                         }
+
+                        attributeList.Add( attributeLiquid );
                     }
                 }
             }

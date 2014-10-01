@@ -133,8 +133,8 @@ namespace RockWeb.Blocks.Cms
             string campuses = GetAttributeValue( "Campuses" );
             if ( !string.IsNullOrWhiteSpace( campuses ) )
             {
-                List<int> idlist = campuses.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => idlist.Contains( x.CampusId ) ) );
+                var guidList = campuses.SplitDelimitedValues().AsGuidList();
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => guidList.Contains( x.Campus.Guid ) ) );
             }
 
             // Ad Types
@@ -243,8 +243,8 @@ namespace RockWeb.Blocks.Cms
                 foreach ( var item in marketingCampaignAd.Attributes )
                 {
                     AttributeCache attribute = item.Value;
-                    List<AttributeValue> attributeValues = marketingCampaignAd.AttributeValues[attribute.Key];
-                    foreach ( AttributeValue attributeValue in attributeValues )
+                    var attributeValue = marketingCampaignAd.AttributeValues[attribute.Key];
+                    if ( attributeValue != null )
                     {
                         string valueHtml = string.Empty;
 
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Cms
 
             string cacheKey = CacheKey();
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             Template template = cache[cacheKey] as Template;
 
             if ( template != null )

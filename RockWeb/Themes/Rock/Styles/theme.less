@@ -136,14 +136,12 @@ pre {
 // 3. Bootstrap Overrides    */
 // ------------------------- 
 
+
 // panel tweaks
-
-
 .panel {
     border-radius: 0;
     border-top-width: 0;
-    border-color: darken(@gray-lighter, 10%);
-    border-top: 3px solid @accent-color;
+    border-top-width: 3px;
 
     .panel-heading {
         padding: 6px 10px;
@@ -167,12 +165,11 @@ pre {
             background-color: @brand-primary;
         }
     }
-}
 
-.well {
-    &.well-message {
-        background-color: @accent-blue-light;
-        border-color: darken(@accent-blue-light, 5%);
+    &.panel-widget {
+        .panel-heading {
+            background-color: @gray-lighter;
+        }
     }
 }
 
@@ -218,6 +215,21 @@ pre {
 /*#region  
 // 4. Rock Overrides         */
 // -------------------------
+
+.person-image {
+    border-radius: 4px;
+}
+
+// type ahead styles
+.tt-suggestion {
+ 
+  p {
+
+      &:hover {
+          background-color: @accent-blue-light;
+      }
+  }
+}
 
 .smartsearch {
     margin: 12px 4%;
@@ -294,11 +306,19 @@ pre {
                 transition: background-color 200ms linear;
 
                 &:hover {
-                    background-color: @accent-blue;
+                    background-color: lighten(@accent-blue, 2%);
                     border-color: darken(@accent-blue, 5%);
                     color: #fff;
                 }
 
+            }
+
+            &.active {
+                a {
+                    background-color: @accent-blue;
+                    border-color: darken(@accent-blue, 5%);
+                    color: #fff;
+                }
             }
         }
     }

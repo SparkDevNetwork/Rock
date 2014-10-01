@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Displays a list of prayer comments for the configured top-level group category." )]
 
     [LinkedPage( "Detail Page", Order = 0 ),]
-    [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests comments under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
+    [CategoryField( "Category Selection", "A top level category. Only prayer requests comments under this category will be shown.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "PrayerRequestCategory" )]
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -49,9 +49,9 @@ namespace RockWeb.Blocks.Prayer
         private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
 
         /// <summary>
-        /// The block instance configured group category id.  This causes only comments for the appropriate root/group-level category to be seen.
+        /// The block instance configured group category guid.  This causes only comments for the appropriate root/group-level category to be seen.
         /// </summary>
-        private int _blockInstanceGroupCategoryId = -1;
+        private Guid? _blockInstancePrayerRequestCategoryGuid = null;
 
         /// <summary>
         /// The PrayerRequest entity type id.  This causes only comments/categories that are appropriate to the PrayerRequest entity to be listed.
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            _blockInstanceGroupCategoryId = GetAttributeValue( "GroupCategoryId" ).AsInteger();
+            _blockInstancePrayerRequestCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
             _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
@@ -261,6 +261,7 @@ namespace RockWeb.Blocks.Prayer
 
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, "Prayer Comment" );
+
             // TODO log exception if noteType is null
 
             var noteService = new NoteService( rockContext );
@@ -268,11 +269,22 @@ namespace RockWeb.Blocks.Prayer
 
             SortProperty sortProperty = gPrayerComments.SortProperty;
 
-            // TODO: filter out comments that do not belong to the configured "category" grouping.
-            //if ( _blockInstanceGroupCategoryId != All.Id )
-            //{
-            //    prayerComments = prayerComments.Where( c => c.CategoryId == _blockInstanceGroupCategoryId );
-            //}
+            if ( _blockInstancePrayerRequestCategoryGuid.HasValue )
+            {
+                // if filtered by category, only show comments for prayer requests in that category or any of its decendent categories
+                var categoryService = new CategoryService( rockContext );
+
+                if ( _blockInstancePrayerRequestCategoryGuid.HasValue )
+                {
+                    var categories = new CategoryService( rockContext ).GetAllDescendents( _blockInstancePrayerRequestCategoryGuid.Value ).Select( a => a.Id ).ToList();
+
+                    var prayerRequestQry = new PrayerRequestService( rockContext ).Queryable().Where( a => a.CategoryId.HasValue &&
+                        ( a.Category.Guid == _blockInstancePrayerRequestCategoryGuid.Value || categories.Contains( a.CategoryId.Value ) ) )
+                        .Select( a => a.Id );
+
+                    prayerComments = prayerComments.Where( a => a.EntityId.HasValue && prayerRequestQry.Contains( a.EntityId.Value ) );
+                }
+            }
 
             // Filter by Date Range
             if ( drpDateRange.LowerValue.HasValue )

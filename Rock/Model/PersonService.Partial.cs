@@ -739,9 +739,9 @@ namespace Rock.Model
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
-        /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting. </param>
-        /// <param name="values">A list of <see cref="System.String"/> values representing the value of the preference setting.</param>
-        public static void SaveUserPreference( Person person, string key, List<string> values )
+        /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
+        /// <param name="value">The value.</param>
+        public static void SaveUserPreference( Person person, string key, string value )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -774,22 +774,26 @@ namespace Rock.Model
             }
 
             var attributeValueService = new Model.AttributeValueService( rockContext );
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
 
-            // Delete existing values
-            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id ).ToList();
-            foreach ( var attributeValue in attributeValues )
+            if ( string.IsNullOrWhiteSpace( value ) )
             {
-                attributeValueService.Delete( attributeValue );
+                // Delete existing value if no existing value
+                if ( attributeValue != null )
+                {
+                    attributeValueService.Delete( attributeValue );
+                }
             }
-
-            // Save new values
-            foreach ( var value in values.Where( v => !string.IsNullOrWhiteSpace( v ) ) )
-            {  
-                var attributeValue = new Model.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = person.Id;
+            else
+            {
+                if ( attributeValue == null )
+                {
+                    attributeValue = new Model.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = person.Id;
+                    attributeValueService.Add( attributeValue );
+                }
                 attributeValue.Value = value;
-                attributeValueService.Add( attributeValue );
             }
 
             rockContext.SaveChanges();
@@ -801,7 +805,7 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the preference value for.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key name of the preference setting.</param>
         /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
-        public static List<string> GetUserPreference( Person person, string key )
+        public static string GetUserPreference( Person person, string key )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -812,9 +816,11 @@ namespace Rock.Model
             if (attribute != null)
             {
                 var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
-                if (attributeValues != null && attributeValues.Count() > 0)
-                    return attributeValues.Select( v => v.Value).ToList();
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
+                if ( attributeValue != null )
+                {
+                    return attributeValue.Value;
+                }
             }
 
             return null;
@@ -825,11 +831,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the user preference settings for.</param>
         /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
-        public static Dictionary<string, List<string>> GetUserPreferences( Person person )
+        public static Dictionary<string, string> GetUserPreferences( Person person )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var values = new Dictionary<string, List<string>>();
+            var values = new Dictionary<string, string>();
 
             var rockContext = new Rock.Data.RockContext();
             foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
@@ -839,9 +845,7 @@ namespace Rock.Model
                     v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
             {
-                if (!values.Keys.Contains(attributeValue.Attribute.Key))
-                    values.Add(attributeValue.Attribute.Key, new List<string>());
-                values[attributeValue.Attribute.Key].Add(attributeValue.Value);
+                values.Add(attributeValue.Attribute.Key, attributeValue.Value);
             }
 
             return values;

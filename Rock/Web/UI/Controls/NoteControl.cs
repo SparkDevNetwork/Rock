@@ -372,9 +372,9 @@ namespace Rock.Web.UI.Controls
                     if ( SourceType != null &&
                     SourceType.AttributeValues != null &&
                     SourceType.AttributeValues.ContainsKey( "IconClass" ) &&
-                    SourceType.AttributeValues["IconClass"].Count == 1 )
+                    SourceType.AttributeValues["IconClass"] != null )
                     {
-                        return SourceType.AttributeValues["IconClass"][0].Value;
+                        return SourceType.AttributeValues["IconClass"].Value;
                     }
                 }
 

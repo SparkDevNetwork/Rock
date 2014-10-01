@@ -108,11 +108,12 @@
 
     <script type="text/javascript">
         Sys.Application.add_load(function () {
-            $('#modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
 
-            $('.scroll-container').on('mouseenter', function () {
-                $('.scroll-container').tinyscrollbar_update('relative');
-            });
+            // use setTimeout so that tinyscrollbar will get initialized after renders
+            setTimeout(function () {
+                $('#modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
+            }, 0);
+
         });
     </script>
 </body>

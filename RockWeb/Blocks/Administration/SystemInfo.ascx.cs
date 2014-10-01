@@ -133,6 +133,9 @@ namespace RockWeb.Blocks.Administration
                 Rock.Web.Cache.LayoutCache.Flush( id );
             }
 
+            Rock.Web.Cache.GlobalAttributesCache.Flush();
+            Rock.Web.SystemSettings.Flush();
+
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }
@@ -173,7 +176,7 @@ namespace RockWeb.Blocks.Administration
 
         private string GetCacheInfo()
         {
-            var cache = MemoryCache.Default;
+            var cache = Rock.Web.Cache.RockMemoryCache.Default;
 
             //StringBuilder sbItems = new StringBuilder();
             Dictionary<string, int> cacheSize = new Dictionary<string, int>();

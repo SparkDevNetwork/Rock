@@ -354,6 +354,11 @@ namespace Rock.Model
         /// </summary>
         public virtual void MarkComplete()
         {
+            foreach( var activity in this.Activities)
+            {
+                activity.MarkComplete();
+            }
+
             CompletedDateTime = RockDateTime.Now;
             Status = "Completed";
             AddLogEntry( "Completed" );

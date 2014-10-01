@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             var groupTypeCheckIns = attendanceService.Queryable()
                                 .Where( a =>
-                                    a.PersonId == person.Person.Id &&
+                                    a.PersonAlias.PersonId == person.Person.Id &&
                                     a.Group.GroupTypeId == groupType.GroupType.Id &&
                                     a.StartDateTime >= sixMonthsAgo )
                                 .ToList();

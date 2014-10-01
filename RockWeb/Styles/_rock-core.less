@@ -29,9 +29,11 @@
 @import "_blocks-core.less";
 @import "_blocks-groups.less";
 @import "_blocks-finance.less";
-@import "_blocks-persondetails.less";
+@import "_blocks-crm.less";
 @import "_blocks-communication.less";
 @import "_blocks-checkinadmin.less";
+@import "_blocks-workflow.less";
+@import "_blocks-prayer.less";
 
 @import "_page-specific.less";
 
@@ -130,6 +132,14 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+.btn-tabled {
+    a {
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
 .nav-pills {
     //margin: 10px 0; -- commented out JME 2/10/2014 to see impact
 }
@@ -201,6 +211,10 @@ a.help {
             }
         }
 
+        .checkbox {
+            margin: 0;
+        }
+
         .panel-labels {
             float: right;
         }
@@ -216,10 +230,6 @@ a.help {
 
     .panel-body {
         border-radius: 0 0 4px 4px;
-
-        /*.well {
-            background-color: @accent-color;
-        }*/
     }
 }
 
@@ -247,6 +257,7 @@ a.help {
 }
 
 .panel-info {
+        
     .panel-body {
         background-color: @body-bg;
     }
@@ -298,7 +309,7 @@ a.help {
 
     border-top-color: @panel-top-border-color;
 
-    .panel-heading {
+    > .panel-heading {
         background-color: @gray-lighter;
         .clearfix();
 
@@ -309,11 +320,6 @@ a.help {
                 color: #6a6a6a;
             }
         }
-
-        /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
-            float: right;
-            margin-top: 2px;
-        }*/
     }
 
     .panel-body {
@@ -526,5 +532,3 @@ h6.condensed {
 div.aspNetDisabled {
     opacity: 0.5;
 }
-
-

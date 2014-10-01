@@ -281,9 +281,9 @@ namespace Rock.Model
                             string newValue = string.Empty;
                             if ( newValues != null &&
                                 newValues.ContainsKey( attributeCache.Key ) &&
-                                newValues[attributeCache.Key].Count > 0 )
+                                newValues[attributeCache.Key] != null )
                             {
-                                newValue = newValues[attributeCache.Key][0].Value ?? string.Empty;
+                                newValue = newValues[attributeCache.Key].Value ?? string.Empty;
                             }
 
                             if ( !oldValue.Equals( newValue ) )

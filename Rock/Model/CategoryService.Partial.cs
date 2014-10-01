@@ -37,7 +37,7 @@ namespace Rock.Model
         public IQueryable<Category> Get( int? ParentId, int? entityTypeId )
         {
             var query = Queryable()
-                .Where( c => (c.ParentCategoryId ?? 0) == (ParentId ?? 0) );
+                .Where( c => ( c.ParentCategoryId ?? 0 ) == ( ParentId ?? 0 ) );
 
             if ( entityTypeId.HasValue )
             {
@@ -75,9 +75,43 @@ namespace Rock.Model
         public IQueryable<Category> GetByEntityTypeId( int? entityTypeId )
         {
             return Queryable()
-                .Where( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ))
-                .OrderBy( t => t.Order)
-                .ThenBy( t => t.Name);
+                .Where( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ) )
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Category">Category</see> that are descendants of a <see cref="Rock.Model.Category" />
+        /// </summary>
+        /// <param name="parentCategoryId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Category" /></param>
+        /// <returns>
+        /// A collection of <see cref="Rock.Model.Category" /> entities that are descendants of the provided parent <see cref="Rock.Model.Category" />.
+        /// </returns>
+        public IEnumerable<Category> GetAllDescendents( int parentCategoryId )
+        {
+            return ExecuteQuery(
+                @"
+                with CTE as (
+                select * from [Category] where [ParentCategoryId]={0}
+                union all
+                select [a].* from [Category] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentCategoryId]
+                )
+                select * from CTE
+                ", parentCategoryId );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Category">Category</see> that are descendants of a <see cref="Rock.Model.Category" />
+        /// </summary>
+        /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
+        /// <returns>
+        /// A collection of <see cref="Rock.Model.Category" /> entities that are descendants of the provided parent <see cref="Rock.Model.Category" />.
+        /// </returns>
+        public IEnumerable<Category> GetAllDescendents( Guid parentCategoryGuid )
+        {
+            var parentCategory = this.Get( parentCategoryGuid );
+            return GetAllDescendents( parentCategory != null ? parentCategory.Id : 0 );
         }
 
         /// <summary>
@@ -147,7 +181,7 @@ namespace Rock.Model
             return items;
         }
 
-     }
+    }
 
     /// <summary>
     /// Helper class used to return navigation tree of selected categories
@@ -174,7 +208,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="CategoryNavigationItem"/> class.
         /// </summary>
         /// <param name="category">The category.</param>
-        public CategoryNavigationItem ( Category category)
+        public CategoryNavigationItem( Category category )
         {
             Category = category;
         }

@@ -36,25 +36,25 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "List of person records that have possible duplicates" )]
 
-    [DecimalField( "Match Percent High", "The minimum percent score required to be considered a likely match", true, 80.00 )]
-    [DecimalField( "Match Percent Low", "The max percent score required to be considered an unlikely match", true, 40.00 )]
+    [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00 )]
+    [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 60.00 )]
     [LinkedPage( "Detail Page" )]
     public partial class PersonDuplicateList : RockBlock
     {
         /// <summary>
-        /// Gets the match HTML.
+        /// Gets the Confidence Score HTML include bootstrap label
         /// </summary>
-        /// <param name="percent">The percent.</param>
+        /// <param name="confidenceScore">The confidence score.</param>
         /// <returns></returns>
-        public string GetMatchColumnHtml( double? percent )
+        public string GetConfidenceScoreColumnHtml( double? confidenceScore )
         {
             string css;
 
-            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
+            if ( confidenceScore >= this.GetAttributeValue( "ConfidenceScoreHigh" ).AsDoubleOrNull() )
             {
                 css = "label label-success";
             }
-            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
+            else if ( confidenceScore <= this.GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull() )
             {
                 css = "label label-default";
             }
@@ -63,9 +63,9 @@ namespace RockWeb.Blocks.Crm
                 css = "label label-warning";
             }
 
-            if ( percent.HasValue )
+            if ( confidenceScore.HasValue )
             {
-                return string.Format( "<span class='{0}'>{1}</span>", css, ( percent.Value / 100 ).ToString( "P" ) );
+                return string.Format( "<span class='{0}'>{1}</span>", css, ( confidenceScore.Value / 100 ).ToString( "P" ) );
             }
             else
             {
@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Crm
             // list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
             var personDuplicateQry = personDuplicateService.Queryable()
                 .Where( a => !a.IsConfirmedAsNotDuplicate )
+                .Where( a => !a.IgnoreUntilScoreChanges )
                 .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
 
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
@@ -152,15 +153,15 @@ namespace RockWeb.Blocks.Crm
                 LastName = a.Key.LastName,
                 FirstName = a.Key.FirstName,
                 MatchCount = a.Count(),
-                MaxScorePercent = a.Max( s => s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null ),
+                MaxConfidenceScore = a.Max( s => s.ConfidenceScore ),
                 PersonModifiedDateTime = a.Key.ModifiedDateTime,
                 CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
             } );
 
-            double? matchPercentLow = GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull();
-            if ( matchPercentLow.HasValue )
+            double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
+            if ( confidenceScoreLow.HasValue )
             {
-                qry = qry.Where( a => a.MaxScorePercent >= matchPercentLow );
+                qry = qry.Where( a => a.MaxConfidenceScore.HasValue && a.MaxConfidenceScore >= confidenceScoreLow );
             }
 
 
@@ -171,7 +172,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                qry = qry.OrderByDescending( a => a.MaxScorePercent ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
+                qry = qry.OrderByDescending( a => a.MaxConfidenceScore ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
             }
 
             gList.DataSource = qry.ToList();

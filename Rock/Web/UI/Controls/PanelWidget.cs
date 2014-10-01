@@ -54,13 +54,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _hfTitle.Value;
+                return ViewState["Title"] as string ?? string.Empty;
             }
+
             set
             {
-                EnsureChildControls();
-                _hfTitle.Value = value;
+                ViewState["Title"] = value;
             }
         }
 
@@ -207,6 +206,26 @@ $('.js-stop-immediate-propagation').click(function (event) {
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            // ReportDetail block may have set a new title based on a report column selected.  When this happens,
+            // Update the title, and clear hidden field
+            if ( Page.IsPostBack )
+            {
+                if ( !string.IsNullOrWhiteSpace( _hfTitle.Value ) )
+                {
+                    Title = _hfTitle.Value;
+                    _hfTitle.Value = string.Empty;
+                }
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -274,7 +293,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Hidden Field to track Title
+                // Hidden Field to track title change client-side
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
                 _hfTitle.RenderControl( writer );
 
@@ -299,8 +318,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                     writer.Write( " " );
                 }
 
-                // also write out the value of the hidden field as the title
-                writer.Write( _hfTitle.Value );
+                writer.Write( Title );
 
                 writer.RenderEndTag();
 

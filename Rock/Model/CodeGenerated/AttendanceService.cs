@@ -91,7 +91,7 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.ScheduleId = source.ScheduleId;
             target.GroupId = source.GroupId;
-            target.PersonId = source.PersonId;
+            target.PersonAliasId = source.PersonAliasId;
             target.DeviceId = source.DeviceId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.AttendanceCodeId = source.AttendanceCodeId;

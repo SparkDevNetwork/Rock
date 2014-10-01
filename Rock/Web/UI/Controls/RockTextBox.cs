@@ -84,10 +84,22 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "false" ),
         Description( "Is the value required?" )
         ]
-        public bool Required
+        public virtual bool Required
         {
             get { return ViewState["Required"] as bool? ?? false; }
             set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the Required indicator when Required=true
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayRequiredIndicator
+        {
+            get { return ViewState["DisplayRequiredIndicator"] as bool? ?? true; }
+            set { ViewState["DisplayRequiredIndicator"] = value; }
         }
 
         /// <summary>

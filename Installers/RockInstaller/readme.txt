@@ -10,34 +10,35 @@ ___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode) After 
        need to make the RockWeb project the startup project.
 
 ___ 3. Edit web.config
-         
-        * Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
+
         * Set RunJobsInIISContext = true
         * Turn off debug <compilation debug="false"
 
-___ 4. Copy the Rock.x.y.z.nupkg file from
+___ 4. Delete all the files out of ~/App_Data/packages
+
+___ 5. Copy the Rock.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.  Remove any earlier versions of the Rock.*.nupkg file.
        
-___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
+___ 6. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.
        
-___ 6. Delete the following files from the RockWeb directory
+___ 7. Delete the following files from the RockWeb directory
 
        * .gitignore (do a search as there are files in several directory)
         *.pdb (do a search as there are several files )
         * Settings.StyleCop
 
-___ 7. Zip up the RockWeb directory leaving out the following files:
+___ 8. Zip up the RockWeb directory
 
 
-___ 8. Rename zip file 'rock-install-latest.zip'
+___ 9. Rename zip file 'rock-install-latest.zip'
 
-___ 9. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
+___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
        will be in source control
 
-___ 10. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
+___ 11. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
         Note the <version> label is the installer version not the Rock version. This should not
         be incremented except when the installer scripts get updated.
 
@@ -69,8 +70,12 @@ ___ 9. Open the SQL file and make the following edits:
               GO
               ALTER DATABASE [RockRMS_NewDbName] SET  READ_WRITE 
               GO
+         * Remove the following strings from the file in the order below:
+            'TEXTIMAGE_ON [PRIMARY]'
+            'ON [PRIMARY]'
 
-___ 10. Zip the file into a new file named 'sql-latest.sql'
+
+___ 10. Zip the file into a new file named 'sql-latest.zip'
 
 ___ 11. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
         it will be in source control

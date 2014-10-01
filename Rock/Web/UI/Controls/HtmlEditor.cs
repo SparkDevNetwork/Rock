@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -427,30 +428,6 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
-var toolbar_RockCustomConfigLight =
-	[
-        ['Source'],
-        ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
-        ['Format'], 
-        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
-	];
-
-var toolbar_RockCustomConfigFull =
-	[
-        ['Source'],
-        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
-        ['Find', 'Replace', '-', 'Scayt'],
-        ['Link', 'Unlink', 'Anchor'],
-        ['Styles', 'Format'],
-        '/',
-        ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
-        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'], 
-        ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-        ['-', 'Table'],
-        ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
-	];	
-
-
 // In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
 if (CKEDITOR.instances.{0}) {{
     try
@@ -466,9 +443,10 @@ if (CKEDITOR.instances.{0}) {{
 CKEDITOR.replace('{0}', {{ 
     {11}
     allowedContent: true,
-    toolbar: toolbar_RockCustomConfig{1},
+    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{1},
     removeButtons: '',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    htmlEncodeOutput: true,
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
     rockFileBrowserOptions: {{ 
@@ -485,6 +463,9 @@ CKEDITOR.replace('{0}', {{
             {4}
         }},
         instanceReady: function (e) {{
+
+            CKEDITOR.instances.{0}.updateElement();
+
             // update the underlying TextElement when there is a change event in SOURCE mode
             $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
@@ -571,6 +552,24 @@ CKEDITOR.replace('{0}', {{
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
             base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Processes the postback data for the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        /// <param name="postDataKey">The index within the posted collection that references the content to load.</param>
+        /// <param name="postCollection">The collection posted to the server.</param>
+        /// <returns>
+        /// true if the posted content is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
+        {
+            if ( base.LoadPostData( postDataKey, postCollection ) )
+            {
+                base.Text = HttpUtility.HtmlDecode( base.Text );
+                return true;
+            }
+            return false;
         }
     }
 }

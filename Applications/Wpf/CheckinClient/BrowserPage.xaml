@@ -13,7 +13,7 @@
         <Grid x:Name="frmWebBrowser">
             <WebBrowser x:Name="wbMain" Source="http://ccv13-m003-pc:6229/checkin" />
 
-            <Popup x:Name="puOverlay" AllowsTransparency="True" PlacementTarget="{Binding ElementName=wbMain}" Opacity="0.5" Placement="Top" VerticalOffset="100">
+            <Popup x:Name="puOverlay" AllowsTransparency="True" PlacementTarget="{Binding ElementName=wbMain}" Opacity="0.5" Placement="Left" HorizontalOffset="100">
                 <RepeatButton x:Name="btnClose" Interval="10" Delay="10" Width="100" Height="100" Click="btnClose_Click" Opacity="0.01"></RepeatButton>
             </Popup>
         </Grid>

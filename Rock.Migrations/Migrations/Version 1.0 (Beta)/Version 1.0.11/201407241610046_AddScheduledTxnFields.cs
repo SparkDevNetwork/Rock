@@ -104,7 +104,7 @@ Please confirm the information below. Once you have confirmed that the informati
 
 {{ Person.FirstName }},<br/><br/>
 
-Thank you for your commitment to our {{ Account.Name }} fund. Your financial gifts help us to continue to reach our mission.
+Thank you for your commitment to our {{ Account.Name }} account. Your financial gifts help us to continue to reach our mission.
 
 Commitment Amount: ${{ FinancialPledge.TotalAmount }}
 

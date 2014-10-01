@@ -51,56 +51,6 @@ namespace Rock.Model
         public bool CanDelete( Person item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Communication,ReviewerPersonId 
-            
-            // ignoring Communication,SenderPersonId 
- 
-            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<HtmlContent>( Context ).Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.ContactPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
-                return false;
-            }  
-            
-            // ignoring PrayerRequest,ApprovedByPersonId 
-            
-            // ignoring PrayerRequest,RequestedByPersonId 
- 
-            if ( new Service<Tag>( Context ).Queryable().Any( a => a.OwnerId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Tag.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

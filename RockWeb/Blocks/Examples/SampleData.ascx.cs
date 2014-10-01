@@ -34,6 +34,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.Globalization;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -132,6 +133,11 @@ namespace RockWeb.Blocks.Examples
         /// Holds a cached copy of the Id for each person Guid
         /// </summary>
         private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
+        /// Holds a cached copy of the attribute Id for each person Guid
+        /// </summary>
+        private Dictionary<Guid, int> _peopleAliasDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
         /// Holds a cache of the person object
@@ -706,6 +712,7 @@ namespace RockWeb.Blocks.Examples
             var allFamilies = rockContext.Groups;
 
             List<Group> allGroups = new List<Group>();
+            var attendanceData = new Dictionary<Guid, List<Attendance>>();
 
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
@@ -726,7 +733,7 @@ namespace RockWeb.Blocks.Examples
                 // add their attendance data
                 if ( fabricateAttendance )
                 {
-                    AddFamilyAttendance( family, elemFamily, rockContext );
+                    AddFamilyAttendance( family, elemFamily, rockContext, attendanceData );
                 }
 
                 allGroups.Add( family );
@@ -754,7 +761,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
                     {
-                        var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
+                        var newValue = gm.Person.AttributeValues[attributeCache.Key];
                         if ( newValue != null )
                         {
                             newValue.EntityId = gm.Person.Id;
@@ -777,9 +784,40 @@ namespace RockWeb.Blocks.Examples
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
             }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
+
+            // Put the person alias ids into the people alias dictionary for later use.
+            PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            foreach ( var personAlias in personAliasService.Queryable( "Person" )
+                .Where( a =>
+                    _peopleDictionary.Keys.Contains( a.Person.Guid ) &&
+                    a.PersonId == a.AliasPersonId ) )
+            { 
+                _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
+            }
 
             _stopwatch.Stop();
             _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+
+            // Now that person aliases have been saved, save the attendance records
+            var attendanceService = new AttendanceService( rockContext );
+            var attendanceGuids = attendanceData.Select( a => a.Key ).ToList();
+            foreach ( var aliasKeyValue in _peopleAliasDictionary
+                .Where( a => attendanceGuids.Contains( a.Key )) )
+            {
+                foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
+                {
+                    attendance.PersonAliasId = aliasKeyValue.Value;
+                    attendanceService.Add( attendance );
+                }
+            }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
+
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added attendance records<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
         }
 
@@ -860,7 +898,7 @@ namespace RockWeb.Blocks.Examples
                     // Set the group location's GroupMemberPersonId if given (required?)
                     if ( elemGroup.Attribute( "meetsAtHomeOfPerson" ) != null )
                     {
-                        groupLocation.GroupMemberPersonId = _peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
+                        groupLocation.GroupMemberPersonAliasId = _peopleAliasDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
                     }
 
                     group.GroupLocations.Add( groupLocation );
@@ -1027,13 +1065,13 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         // delete communication recipient
-                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonId == person.Id ) )
+                        foreach ( var recipient in communicationRecipientService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id ) )
                         {
                             communicationRecipientService.Delete( recipient );
                         }
 
                         // delete communication
-                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonId == person.Id ) )
+                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
                         {
                             communicationService.Delete( communication );
                         }
@@ -1141,15 +1179,12 @@ namespace RockWeb.Blocks.Examples
             if ( group.AttributeValues != null )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
-                foreach ( KeyValuePair<string, List<AttributeValue>> entry in group.AttributeValues )
+                foreach ( var entry in group.AttributeValues )
                 {
-                    foreach ( AttributeValue value in entry.Value )
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( entry.Value.AttributeId, group.Id );
+                    if ( attributeValue != null )
                     {
-                        var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( value.AttributeId, group.Id ).ToList();
-                        foreach ( var attributeValue in attributeValues )
-                        {
-                            attributeValueService.Delete( attributeValue );
-                        }
+                        attributeValueService.Delete( attributeValue );
                     }
                 }
             }
@@ -1196,7 +1231,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="family">The family.</param>
         /// <param name="elemFamily">The elem family.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void AddFamilyAttendance( Group family, XElement elemFamily, RockContext rockContext )
+        /// <param name="attendanceData">The attendance data.</param>
+        private void AddFamilyAttendance( Group family, XElement elemFamily, RockContext rockContext, Dictionary<Guid, List<Attendance>> attendanceData )
         {
             // return from here if there's not startingAttendance date
             if ( elemFamily.Attribute( "startingAttendance" ) == null )
@@ -1205,7 +1241,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             // get some variables we'll need to create the attendance records
-            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value.Trim() );
+            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value.Trim(), new CultureInfo( "en-US" ) );
             DateTime endDate = RockDateTime.Now;
 
             // If the XML specifies an endingAttendance date use it, otherwise use endingAttendanceWeeksAgo
@@ -1267,7 +1303,7 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
-            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId );
+            CreateAttendance( family.Members, startingDate, endDate, pctAttendance, pctAttendedRegularService, scheduleId, altScheduleId, attendanceData );
         }
 
         /// <summary>
@@ -1277,14 +1313,16 @@ namespace RockWeb.Blocks.Examples
         /// between the scheduleId and altScheduleId based on the percentage (pctAttendedRegularService)
         /// given.
         /// </summary>
-        /// <param name="familyMembers"></param>
+        /// <param name="familyMembers">The family members.</param>
         /// <param name="startingDate">The first date of attendance</param>
         /// <param name="endDate">The end date of attendance</param>
-        /// <param name="pctAttendance"></param>
-        /// <param name="pctAttendedRegularService"></param>
-        /// <param name="scheduleId"></param>
-        /// <param name="altScheduleId"></param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
+        /// <param name="pctAttendance">The PCT attendance.</param>
+        /// <param name="pctAttendedRegularService">The PCT attended regular service.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="altScheduleId">The alt schedule identifier.</param>
+        /// <param name="attendanceData">The attendance data.</param>
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, 
+            int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData )
         {
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
@@ -1339,7 +1377,6 @@ namespace RockWeb.Blocks.Examples
                         GroupId = item.GroupId,
                         LocationId = item.LocationId,
                         DeviceId = _kioskDeviceId,
-                        PersonId = member.PersonId,
                         AttendanceCode = attendanceCode,
                         StartDateTime = checkinDateTime,
                         EndDateTime = null,
@@ -1347,7 +1384,11 @@ namespace RockWeb.Blocks.Examples
                         CampusId = 1
                     };
 
-                    member.Person.Attendances.Add( attendance );
+                    if ( !attendanceData.Keys.Contains( member.Person.Guid ))
+                    {
+                        attendanceData.Add( member.Person.Guid, new List<Attendance>());
+                    }
+                    attendanceData[member.Person.Guid].Add( attendance);
                 }
             }
         }
@@ -1407,7 +1448,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
-                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
+                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     if ( personElem.Attribute( "grade" ) != null )
@@ -1416,7 +1457,7 @@ namespace RockWeb.Blocks.Examples
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
                     {
-                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim() );
+                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     // Now, if their age was given we'll change the given birth year to make them
@@ -1624,7 +1665,7 @@ namespace RockWeb.Blocks.Examples
                 Caption = string.Empty,
                 CreatedByPersonAliasId = createdByPersonAliasId,
                 Text = noteText,
-                CreatedDateTime = DateTime.Parse( noteDate ?? RockDateTime.Now.ToString() )
+                CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
             };
 
             noteService.Add( note );

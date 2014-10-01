@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Prayer
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
     [LinkedPage( "Detail Page", Order = 0 )]
-    [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
@@ -263,8 +262,7 @@ namespace RockWeb.Blocks.Prayer
                     }
                     else
                     {
-                        var service = new CategoryService( new RockContext() );
-                        var category = service.Get( categoryId );
+                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
                         if ( category != null )
                         {
                             e.Value = category.Name;
@@ -464,7 +462,7 @@ namespace RockWeb.Blocks.Prayer
                     else
                     {
                         prayerRequest.IsApproved = true;
-                        prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
+                        prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                         prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
 
                         // reset the flag count only to zero ONLY if it had a value previously.

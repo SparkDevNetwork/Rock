@@ -15,7 +15,7 @@
             <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
 
             <div>
-                <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview" >
+                <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
                     <div class="scrollbar">
                         <div class="track">
                             <div class="thumb">
@@ -116,20 +116,16 @@
     <%-- Files and Modals --%>
     <asp:UpdatePanel ID="upnlFiles" runat="server">
         <ContentTemplate>
-            <Rock:ModalDialog runat="server" ID="mdError">
-                <Content>
-                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" />
-                </Content>
-            </Rock:ModalDialog>
+            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" Dismissable="true" />
 
-            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder">
+            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false">
                 <Content>
                     <Rock:RockTextBox runat="server" ID="tbOrigFolderName" Label="Folder Name" ReadOnly="true" />
-                    <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder" />
+                    <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder"  />
                 </Content>
             </Rock:ModalDialog>
 
-            <Rock:ModalDialog runat="server" Title="Create Folder" ID="mdCreateFolder" OnSaveClick="mdCreateFolder_SaveClick" ValidationGroup="vgCreateFolder">
+            <Rock:ModalDialog runat="server" Title="Create Folder" ID="mdCreateFolder" OnSaveClick="mdCreateFolder_SaveClick" ValidationGroup="vgCreateFolder" ScrollbarEnabled="false">
                 <Content>
                     <Rock:RockTextBox runat="server" ID="tbNewFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgCreateFolder" />
                 </Content>

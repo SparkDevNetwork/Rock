@@ -529,6 +529,7 @@ namespace Rock.Data
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="idParameter">The id parameter.</param>
+        [Obsolete("Use UpdatePageContext")]
         public void AddPageContext( string pageGuid, string entity, string idParameter )
         {
             Migration.Sql( string.Format( @"
@@ -542,6 +543,47 @@ namespace Rock.Data
                     1, @PageId, '{1}', '{2}', newid())
 ", pageGuid, entity, idParameter ) );
 
+        }
+
+        /// <summary>
+        /// Adds or Updates PageContext to the given page, entity, idParameter
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="entity">The entity value.</param>
+        /// <param name="idParameter">The idparameter value.</param>
+        /// <param name="guid">The unique identifier for the PageContext record.</param>
+        public void UpdatePageContext( string pageGuid, string entity, string idParameter, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                DECLARE @PageContextId int
+                SET @PageContextId = (SELECT TOP 1 [Id] FROM [PageContext] WHERE [PageId] = @PageId and [Entity] = '{1}' and [IdParameter] = '{2}')
+                IF @PageContextId IS NULL
+                BEGIN
+                    INSERT INTO [PageContext] (
+                        [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
+                    VALUES(
+                        1, @PageId, '{1}', '{2}', '{3}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [PageContext] set [Guid] = '{3}' where [Id] = @PageContextId
+                END
+
+", pageGuid, entity, idParameter, guid ) );
+
+        }
+
+        /// <summary>
+        /// Deletes the page context.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeletePageContext( string guid )
+        {
+            Migration.Sql( string.Format( @"DELETE FROM [PageContext] WHERE [Guid] = '{0}'", guid ) );
         }
 
         #endregion
@@ -617,10 +659,10 @@ namespace Rock.Data
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,2,NEWID())
+                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,2,NEWID())
 " );
             Migration.Sql( sb.ToString() );
         }
@@ -1180,6 +1222,7 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         private void EnsureEntityTypeExists( string entityTypeName )
         {
+            // NOTE: If it doesn't exist, add it assuming that IsEntity=True and IsSecured=True.  The framework will correct it if those assumptions are incorrect
             Migration.Sql( string.Format( @"
                 if not exists (
                 select id from EntityType where name = '{0}')
@@ -1187,14 +1230,20 @@ namespace Rock.Data
                 INSERT INTO [EntityType]
                            ([Name]
                            ,[FriendlyName]
+                           ,[IsEntity]
+                           ,[IsSecured]  
+                           ,[IsCommon]  
                            ,[Guid])
                      VALUES
                            ('{0}'
                            ,null
+                           ,{1} 
+                           ,{2} 
+                           ,0 
                            ,newid()
                            )
                 end"
-                , entityTypeName )
+                , entityTypeName, 1, 1 )
             );
         }
 
@@ -1214,9 +1263,9 @@ namespace Rock.Data
 
                 IF NOT EXISTS(Select * FROM [AttributeValue] WHERE [Guid] = '{3}')
                     INSERT INTO [AttributeValue] (
-                        [IsSystem],[AttributeId],[EntityId],[Order],[Value],[Guid])
+                        [IsSystem],[AttributeId],[EntityId],[Value],[Guid])
                     VALUES(
-                        1,@AttributeId,{1},0,'{2}','{3}')
+                        1,@AttributeId,{1},'{2}','{3}')
 ",
                     attributeGuid,
                     entityId,
@@ -1316,11 +1365,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@BlockId,
-                    0,@TheValue,
+                    @TheValue,
                     NEWID())
 ",
                     blockGuid,
@@ -1660,11 +1709,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     definedValueGuid,
@@ -1707,11 +1756,11 @@ namespace Rock.Data
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{3}',
+                    '{3}',
                     NEWID())
 ",
                     definedTypeGuid,
@@ -1797,7 +1846,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1807,11 +1855,61 @@ INSERT INTO [dbo].[Auth]
            ,'{1}'
            ,'A'
            ,0
-           ,null
            ,@groupId
            ,'{3}')
 ";
             Migration.Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
+        }
+
+        /// <summary>
+        /// Adds the security auth record for the given entity type and group.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForEntityType( string entityTypeName, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,0
+           ,{2}
+           ,'{3}'
+           ,'{4}'
+           ,{5}
+           ,@groupId
+           ,'{6}')
+";
+            Migration.Sql( string.Format( sql, 
+                groupGuid ?? Guid.Empty.ToString(), // {0}
+                entityTypeName, // {1}
+                order, // {2}
+                action, // {3}
+                ( allow ? "A" : "D" ), // {4} 
+                specialRole, // {5} 
+                authGuid // {6}
+                ) );
         }
 
         /// <summary>
@@ -1867,7 +1965,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1877,7 +1974,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -1937,7 +2033,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1947,7 +2042,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -1987,7 +2081,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -1997,7 +2090,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -2057,7 +2149,6 @@ INSERT INTO [dbo].[Auth]
            ,[Action]
            ,[AllowOrDeny]
            ,[SpecialRole]
-           ,[PersonId]
            ,[GroupId]
            ,[Guid])
      VALUES
@@ -2067,7 +2158,6 @@ INSERT INTO [dbo].[Auth]
            ,'{3}'
            ,'{7}'
            ,{4}
-           ,null
            ,@groupId
            ,'{5}')
 ";
@@ -2771,11 +2861,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@PersonBadgeId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     personBadgeGuid,
@@ -2888,6 +2978,7 @@ INSERT INTO [dbo].[Auth]
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},
@@ -3327,11 +3418,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@ActionTypeId,
-                    0,'{2}',
+                    '{2}',
                     NEWID())
 ",
                     actionTypeGuid,
@@ -3366,22 +3457,22 @@ INSERT INTO [dbo].[Auth]
                     BEGIN
                         INSERT INTO [AttributeValue] (
                             [IsSystem],[AttributeId],[EntityId],
-                            [Order],[Value],
+                            [Value],
                             [Guid])
                         VALUES(
                             1,@AttributeId,@ActionTypeId,
-                            0,'{2}',
+                            '{2}',
                             NEWID())                    
                     END
                     ELSE
                     BEGIN
                         INSERT INTO [AttributeValue] (
                             [IsSystem],[AttributeId],[EntityId],
-                            [Order],[Value],
+                            [Value],
                             [Guid])
                         SELECT TOP 1
                             1,@AttributeId,@ActionTypeId,
-                            0,CONVERT(nvarchar(50), [Guid]),
+                            CONVERT(nvarchar(50), [Guid]),
                             NEWID()
                         FROM [PersonAlias]
                         ORDER BY [Id]       
@@ -3574,11 +3665,11 @@ INSERT INTO [dbo].[Auth]
 
                 INSERT INTO [AttributeValue] (
                     [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
+                    [Value],
                     [Guid])
                 VALUES(
                     1,@AttributeId,@DefinedValueId,
-                    0,'{3}',
+                    '{3}',
                     NEWID())
 ",
                     definedTypeGuid,

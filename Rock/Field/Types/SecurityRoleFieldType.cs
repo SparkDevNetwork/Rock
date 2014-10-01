@@ -66,6 +66,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             var roles = new GroupService( new RockContext() ).Queryable().Where(g => g.IsSecurityRole).OrderBy( t => t.Name );
             if ( roles.Any() )

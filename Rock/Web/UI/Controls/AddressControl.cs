@@ -403,7 +403,7 @@ namespace Rock.Web.UI.Controls
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PhoneNumberBox"/> class.
+        /// Initializes a new instance of the <see cref="AddressControl"/> class.
         /// </summary>
         public AddressControl()
             : base()
@@ -690,7 +690,12 @@ namespace Rock.Web.UI.Controls
 
         private void BindCountries()
         {
+            string currentValue = _ddlCountry.SelectedValue;
+
             _ddlCountry.Items.Clear();
+            _ddlCountry.SelectedIndex = -1;
+            _ddlCountry.SelectedValue = null;
+            _ddlCountry.ClearSelection();
 
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
             var countryValues = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
@@ -719,6 +724,11 @@ namespace Rock.Web.UI.Controls
 
             bool? showCountry = GlobalAttributesCache.Read().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
             _ddlCountry.Visible = showCountry.HasValue && showCountry.Value;
+
+            if ( !string.IsNullOrWhiteSpace( currentValue ) )
+            {
+                _ddlCountry.SetValue( currentValue );
+            }
         }
 
         private void BindStates( string country )
@@ -736,12 +746,11 @@ namespace Rock.Web.UI.Controls
                 .Where( v =>
                     (
                         v.AttributeValues.ContainsKey( "Country" ) &&
-                        v.AttributeValues["Country"].Any() &&
-                        v.AttributeValues["Country"][0].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase ) 
+                        v.AttributeValues["Country"] != null &&
+                        v.AttributeValues["Country"].Value.Equals( countryGuid, StringComparison.OrdinalIgnoreCase ) 
                     ) ||
                     (
-                        ( !v.AttributeValues.ContainsKey( "Country" ) || 
-                        !v.AttributeValues["Country"].Any() ) &&
+                        ( !v.AttributeValues.ContainsKey( "Country" ) || v.AttributeValues["Country"] == null ) &&
                         v.Attributes.ContainsKey("Country") &&
                         v.Attributes["Country"].DefaultValue.Equals( countryGuid, StringComparison.OrdinalIgnoreCase)
                     ) )

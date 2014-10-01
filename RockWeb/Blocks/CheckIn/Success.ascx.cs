@@ -49,6 +49,9 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
             RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
+
+            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
         }
 
         /// <summary>
@@ -109,7 +112,7 @@ namespace RockWeb.Blocks.CheckIn
 
                                         foreach ( var label in printFromServer )
                                         {
-                                            var labelCache = KioskLabel.Read( label.FileId );
+                                            var labelCache = KioskLabel.Read( label.FileGuid );
                                             if ( labelCache != null )
                                             {
                                                 if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )

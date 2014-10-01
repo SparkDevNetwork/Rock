@@ -46,6 +46,7 @@ namespace Rock.Data
         /// The created date time.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
@@ -328,15 +329,14 @@ namespace Rock.Data
         public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
-        /// associated with the attribute and object instance
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -350,40 +350,45 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key.
+        /// Gets the value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public string GetAttributeValue( string key )
         {
             if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+                this.AttributeValues.ContainsKey( key ) )
             {
-                return this.AttributeValues[key][0].Value;
+                return this.AttributeValues[key].Value;
             }
+
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
+            {
+                return this.Attributes[key].DefaultValue;
+            }
+
             return null;
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// Gets the value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+            string value = GetAttributeValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+                return value.SplitDelimitedValues().ToList();
             }
 
             return new List<string>();
         }
 
         /// <summary>
-        /// Sets the first value of an attribute key in memory.  Note, this will not persist value to database
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
@@ -392,11 +397,7 @@ namespace Rock.Data
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
             {
-                if ( this.AttributeValues[key].Count == 0 )
-                {
-                    this.AttributeValues[key].Add( new AttributeValue() );
-                }
-                this.AttributeValues[key][0].Value = value;
+                this.AttributeValues[key].Value = value;
             }
         }
 

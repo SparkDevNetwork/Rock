@@ -303,7 +303,7 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\\"" );
         }
 
         /// <summary>
@@ -694,6 +694,21 @@ namespace Rock
             return str.Replace( Environment.NewLine, "<br/>" ).Replace( "\x0A", "<br/>" );
         }
 
+        /// <summary>
+        /// Converts the HTML br to cr lf.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ConvertBrToCrLf( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Replace( "<br/>", Environment.NewLine ).Replace( "<br>", Environment.NewLine );
+        }
+        
         /// <summary>
         /// HTML Encodes the string
         /// </summary>
@@ -1476,13 +1491,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// Try's to set the selected value. If the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( this ListControl listControl, int? value )
         {
             listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="entity">The entity.</param>
+        public static void SetValue( this ListControl listControl, IEntity entity )
+        {
+            listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
         }
 
         /// <summary>
@@ -1594,11 +1619,23 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        public static T SelectedValueAsEnum<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
         {
-            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
+            return listControl.SelectedValue.ConvertToEnum<T>( defaultValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static T? SelectedValueAsEnumOrNull<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
+        {
+            return listControl.SelectedValue.ConvertToEnumOrNull<T>( defaultValue );
+        }
+        
         /// <summary>
         /// Selecteds the value as unique identifier.
         /// </summary>
@@ -1612,7 +1649,7 @@ namespace Rock
             }
             else
             {
-                return listControl.SelectedValue.AsGuid();
+                return listControl.SelectedValue.AsGuidOrNull();
             }
         }
 
@@ -1737,6 +1774,26 @@ namespace Rock
             foreach ( T item in items )
                 strings.Add( item.ToString() );
             return String.Join( delimiter, strings.ToArray() );
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<Guid> AsGuidList( this IEnumerable<string> items)
+        {
+            return items.Select( a => a.AsGuidOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<int> AsIntegerList( this IEnumerable<string> items )
+        {
+            return items.Select( a => a.AsIntegerOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
         }
 
         /// <summary>

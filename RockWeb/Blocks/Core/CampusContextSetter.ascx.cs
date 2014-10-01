@@ -65,9 +65,7 @@ namespace RockWeb.Blocks.Core
             var defaultCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
             lCurrentSelection.Text = defaultCampus != null ? defaultCampus.ToString() : "Select Campus";
 
-            rptCampuses.DataSource  = new CampusService( new RockContext() ).Queryable()
-                .OrderBy( a => a.Name )
-                .ToList()
+            rptCampuses.DataSource = CampusCache.All()
                 .Select( a => new { a.Name, a.Id } )
                 .ToList();
             rptCampuses.DataBind();

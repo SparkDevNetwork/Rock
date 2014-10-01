@@ -30,7 +30,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.FinancialPersonSavedAccount">Saved Accounts</see> belonging to the specified <see cref="Rock.Model.Person"/>.</returns>
         public IQueryable<FinancialPersonSavedAccount> GetByPersonId(int personId)
         {
-            return this.Queryable().Where( a => a.PersonId == personId );
+            return this.Queryable().Where( a => a.PersonAlias.PersonId == personId );
         }
     }
 }

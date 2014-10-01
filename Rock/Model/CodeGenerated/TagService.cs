@@ -94,7 +94,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Description = source.Description;
             target.Order = source.Order;
-            target.OwnerId = source.OwnerId;
+            target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

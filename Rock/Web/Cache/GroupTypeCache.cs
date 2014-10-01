@@ -431,7 +431,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = GroupTypeCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             GroupTypeCache groupType = cache[cacheKey] as GroupTypeCache;
 
             if ( groupType == null )
@@ -471,7 +471,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GroupTypeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             GroupTypeCache groupType = null;
@@ -508,7 +508,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = GroupTypeCache.CacheKey( groupTypeModel.Id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             GroupTypeCache groupType = cache[cacheKey] as GroupTypeCache;
 
             if ( groupType != null )
@@ -532,7 +532,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( GroupTypeCache.CacheKey( id ) );
         }
 

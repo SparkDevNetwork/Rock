@@ -433,7 +433,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void ProcessActionRequest()
         {
-            string action = PageParameter( "action" );
+            string action = PageParameter( "Command" );
             if ( !string.IsNullOrWhiteSpace( action ) )
             {
                 CompleteFormAction( action );
@@ -467,36 +467,56 @@ namespace RockWeb.Blocks.WorkFlow
                     var attribute = AttributeCache.Read( formAttribute.AttributeId );
 
                     string value = attribute.DefaultValue;
-                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key].Any() )
+                    if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                     {
-                        value = _workflow.AttributeValues[attribute.Key][0].Value;
+                        value = _workflow.AttributeValues[attribute.Key].Value;
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
+                    {
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml ) );
                     }
 
                     if ( formAttribute.IsReadOnly )
                     {
-                        RockLiteral lAttribute = new RockLiteral();
-                        lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
-                        lAttribute.Label = formAttribute.Attribute.Name;
-
                         var field = attribute.FieldType.Field;
                         string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
-                        if ( field is Rock.Field.ILinkableFieldType )
+
+                        if ( formAttribute.HideLabel )
                         {
-                            string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
-                            url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
-                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            phAttributes.Controls.Add( new LiteralControl( formattedValue ) );
                         }
                         else
                         {
-                            lAttribute.Text = formattedValue;
-                        }
+                            RockLiteral lAttribute = new RockLiteral();
+                            lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
+                            lAttribute.Label = attribute.Name;
 
-                        phAttributes.Controls.Add( lAttribute );
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
+                                lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                            }
+                            else
+                            {
+                                lAttribute.Text = formattedValue;
+                            }
+
+                            phAttributes.Controls.Add( lAttribute );
+                        }
                     }
                     else
                     {
-                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired );
+                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired, 
+                            ( formAttribute.HideLabel ? string.Empty : attribute.Name ) );
                     }
+
+                    if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
+                    {
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml ) );
+                    }
+
                 }
             }
 
@@ -618,6 +638,11 @@ namespace RockWeb.Blocks.WorkFlow
                 _action.FormAction = formAction;
                 _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
 
+                if (_action.ActionType.IsActivityCompletedOnSuccess)
+                {
+                    _action.Activity.MarkComplete();
+                }
+
                 if ( _actionType.WorkflowForm.ActionAttributeGuid.HasValue )
                 {
                     var attribute = AttributeCache.Read( _actionType.WorkflowForm.ActionAttributeGuid.Value );
@@ -683,13 +708,13 @@ namespace RockWeb.Blocks.WorkFlow
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() && _activity.Id != previousActionId )
+                    if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActionId ) );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
                     }
                 }
                 else
