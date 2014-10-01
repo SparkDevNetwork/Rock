@@ -72,23 +72,23 @@ namespace Rock.CheckIn
         /// <summary>
         /// Caches the key.
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        private static string CacheKey( int id )
+        private static string CacheKey( Guid guid )
         {
-            return string.Format( "Rock:CheckIn:KioskLabel:{0}", id );
+            return string.Format( "Rock:CheckIn:KioskLabel:{0}", guid );
         }
 
         /// <summary>
-        /// Reads the specified label by id.
+        /// Reads the specified label by guid.
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        public static KioskLabel Read( int id )
+        public static KioskLabel Read( Guid guid )
         {
-            string cacheKey = KioskLabel.CacheKey( id );
+            string cacheKey = KioskLabel.CacheKey( guid );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             KioskLabel label = cache[cacheKey] as KioskLabel;
 
             if ( label != null )
@@ -97,7 +97,7 @@ namespace Rock.CheckIn
             }
             else
             {
-                var file = new BinaryFileService( new RockContext() ).Get( id );
+                var file = new BinaryFileService( new RockContext() ).Get( guid );
                 if ( file != null )
                 {
                     label = new KioskLabel();
@@ -148,13 +148,13 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Flushes the specified id.
+        /// Flushes the specified guid.
         /// </summary>
-        /// <param name="id">The id.</param>
-        public static void Flush( int id )
+        /// <param name="guid">The unique identifier.</param>
+        public static void Flush( Guid guid)
         {
-            ObjectCache cache = MemoryCache.Default;
-            cache.Remove( KioskLabel.CacheKey( id ) );
+            ObjectCache cache = RockMemoryCache.Default;
+            cache.Remove( KioskLabel.CacheKey( guid ) );
         }
 
         #endregion

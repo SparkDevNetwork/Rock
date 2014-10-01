@@ -162,7 +162,8 @@ namespace RockWeb.Blocks.Prayer
                 hfPrayerIndex.Value = index.ToString();
                 var rockContext = new RockContext();
                 PrayerRequestService service = new PrayerRequestService( rockContext );
-                PrayerRequest request = service.Get( prayerRequestIds[index] );
+                int prayerRequestId = prayerRequestIds[index];
+                PrayerRequest request = service.Queryable( "RequestedByPersonAlias.Person" ).FirstOrDefault( p => p.Id == prayerRequestId );
                 ShowPrayerRequest( request, rockContext );
             }
             else
@@ -390,7 +391,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowPrayerRequest( PrayerRequest prayerRequest, RockContext rockContext )
         {
             pnlPrayer.Visible = true;
-            pPrayerAnswer.Visible = false;
+            divPrayerAnswer.Visible = false;
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
@@ -404,14 +405,14 @@ namespace RockWeb.Blocks.Prayer
             // Show their answer if there is one on the request.
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Answer ) )
             {
-                pPrayerAnswer.Visible = true;
+                divPrayerAnswer.Visible = true;
                 lPrayerAnswerText.Text = prayerRequest.Answer.EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
             // put the request's id in the hidden field in case it needs to be flagged.
             hfIdValue.SetValue( prayerRequest.Id );
 
-            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPerson, 50, 50 );
+            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50 );
 
             notesComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )

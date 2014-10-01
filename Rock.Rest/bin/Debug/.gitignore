@@ -3,3 +3,5 @@
 /Rock.Rest.pdb
 /Rock.dll
 /Rock.pdb
+*.pdb
+*.dll

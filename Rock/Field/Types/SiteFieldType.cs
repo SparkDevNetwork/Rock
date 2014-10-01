@@ -40,6 +40,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             SiteService siteService = new SiteService( new RockContext() );
             var siteList = siteService.Queryable().OrderBy( a => a.Name ).ToList();

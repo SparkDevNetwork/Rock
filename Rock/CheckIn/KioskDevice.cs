@@ -128,7 +128,7 @@ namespace Rock.CheckIn
         {
             string cacheKey = KioskDevice.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             KioskDevice device = cache[cacheKey] as KioskDevice;
 
             // If the kioskdevice is currently inactive, but has a next active time prior to now, force a refresh
@@ -178,7 +178,7 @@ namespace Rock.CheckIn
         /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             cache.Remove( KioskDevice.CacheKey( id ) );
         }
 

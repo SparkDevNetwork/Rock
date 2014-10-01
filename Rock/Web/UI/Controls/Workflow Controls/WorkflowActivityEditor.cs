@@ -250,8 +250,9 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         /// Sets the workflow activity.
         /// </summary>
         /// <param name="activity">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        public void SetWorkflowActivity( WorkflowActivity activity, bool setValues = false )
+        public void SetWorkflowActivity( WorkflowActivity activity, RockContext rockContext, bool setValues = false )
         {
             EnsureChildControls();
 
@@ -278,22 +279,34 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
 
             _cbActivityIsComplete.Checked = activity.CompletedDateTime.HasValue;
 
-            if (activity.AssignedPersonAlias != null && activity.AssignedPersonAlias.Person != null)
+            if ( activity.AssignedPersonAliasId.HasValue )
             {
-                _ppAssignedToPerson.SetValue( activity.AssignedPersonAlias.Person );
-                _lAssignedToPerson.Text = activity.AssignedPersonAlias.Person.FullName;
-            }
-            else if ( activity.AssignedGroup != null)
-            {
-                if (activity.AssignedGroup.IsSecurityRole )
+                var person =  new PersonAliasService( rockContext).Queryable()
+                    .Where( a => a.Id == activity.AssignedPersonAliasId.Value )
+                    .Select( a => a.Person )
+                    .FirstOrDefault();
+                if ( person != null )
                 {
-                    _ddlAssignedToRole.SetValue( activity.AssignedGroup.Id );
-                    _lAssignedToRole.Text = activity.AssignedGroup.Name;
+                    _ppAssignedToPerson.SetValue( person );
+                    _lAssignedToPerson.Text = person.FullName;
                 }
-                else
+            }
+
+            if ( activity.AssignedGroupId.HasValue )
+            {
+                var group = new GroupService( rockContext ).Get( activity.AssignedGroupId.Value );
+                if ( group != null )
                 {
-                    _gpAssignedToGroup.SetValue( activity.AssignedGroup );
-                    _lAssignedToGroup.Text = activity.AssignedGroup.Name;
+                    if ( group.IsSecurityRole )
+                    {
+                        _ddlAssignedToRole.SetValue( group.Id );
+                        _lAssignedToRole.Text = group.Name;
+                    }
+                    else
+                    {
+                        _gpAssignedToGroup.SetValue( group );
+                        _lAssignedToGroup.Text = group.Name;
+                    }
                 }
             }
 

@@ -36,6 +36,9 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();

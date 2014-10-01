@@ -233,15 +233,15 @@ namespace RockWeb.Blocks.Cms
             List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
             marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValue>>();
+            marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, AttributeValue>();
             foreach ( var attribute in attributesForAdType )
             {
-                marketingCampaignAd.Attributes[attribute.Key] = attribute;
-                if ( marketingCampaignAd.AttributeValues.Count( v => v.Key.Equals( attribute.Key ) ) == 0 )
+                marketingCampaignAd.Attributes.AddOrReplace( attribute.Key, attribute );
+
+                if ( !marketingCampaignAd.AttributeValues.ContainsKey( attribute.Key ) ||
+                    marketingCampaignAd.AttributeValues[attribute.Key] == null )
                 {
-                    List<AttributeValue> attributeValues = new List<AttributeValue>();
-                    attributeValues.Add( new AttributeValue { Value = attribute.DefaultValue } );
-                    marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
+                    marketingCampaignAd.AttributeValues.AddOrReplace( attribute.Key, new AttributeValue { Value = attribute.DefaultValue } );
                 }
             }
 

@@ -355,8 +355,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
             mergeObjects.Add( "User", userLogin.ToDictionary() );
 
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
-            recipients.Add( userLogin.Person.Email, mergeObjects );
+            var recipients = new List<RecipientData>();
+            recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );
 
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
         }

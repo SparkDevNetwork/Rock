@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -159,6 +160,28 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.FriendlyName;
+        }
+
+        /// <summary>
+        /// Determines whether person is authorized for the EntityType
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null )
+        {
+            if ( this.IsSecured )
+            {
+                var entityType = System.Activator.CreateInstance( EntityTypeCache.Read( this ).GetEntityType() );
+                if ( entityType is Rock.Security.ISecured )
+                {
+                    Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entityType;
+                    return iSecured.IsAuthorized( action, person, rockContext );
+                }
+            }
+
+            return true;
         }
 
         #endregion

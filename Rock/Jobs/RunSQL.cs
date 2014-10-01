@@ -32,6 +32,7 @@ namespace Rock.Jobs
     /// Job to run quick SQL queries on a schedule
     /// </summary>
     [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds).", false, 180, "General", 1, "CommandTimeout")]
     [DisallowConcurrentExecution]
     public class RunSQL : IJob
     {
@@ -59,14 +60,16 @@ namespace Rock.Jobs
 
             // run a SQL query to do something
             string query = dataMap.GetString( "SQLQuery" );
+            int? commandTimeout = dataMap.GetString( "CommandTimeout").AsIntegerOrNull();
             try
             {
-                int rows = DbService.ExecuteCommand( query );
+                int rows = DbService.ExecuteCommand( query, System.Data.CommandType.Text, null, commandTimeout );
             }
             catch ( System.Exception ex )
             {
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
+                throw ex;
             }
         }
 

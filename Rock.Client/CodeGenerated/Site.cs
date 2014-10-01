@@ -31,24 +31,6 @@ namespace Rock.Client
     public partial class Site
     {
         /// <summary />
-        public int? DefaultPageRouteId { get; set; }
-
-        /// <summary />
-        public int? LoginPageRouteId { get; set; }
-
-        /// <summary />
-        public int? PageNotFoundPageRouteId { get; set; }
-
-        /// <summary />
-        public int? RegistrationPageRouteId { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -64,13 +46,25 @@ namespace Rock.Client
         public int? DefaultPageId { get; set; }
 
         /// <summary />
+        public int? DefaultPageRouteId { get; set; }
+
+        /// <summary />
         public int? LoginPageId { get; set; }
+
+        /// <summary />
+        public int? LoginPageRouteId { get; set; }
 
         /// <summary />
         public int? RegistrationPageId { get; set; }
 
         /// <summary />
+        public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary />
         public int? PageNotFoundPageId { get; set; }
+
+        /// <summary />
+        public int? PageNotFoundPageRouteId { get; set; }
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -89,6 +83,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

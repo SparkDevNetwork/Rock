@@ -11,22 +11,22 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfSettings" runat="server">
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="false" EntityTypeName="Rock.Model.History" />
                         <Rock:PersonPicker ID="ppWhoFilter" runat="server" Label="Who" />
                         <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary Contains" />
-                        <Rock:RockDropDownList ID="ddlCategory" runat="server" Label="Category" />
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change">
                         <Columns>
+                            <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                             <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
-                            <asp:TemplateField HeaderText="Changed" SortExpression="Summary">
+                            <asp:TemplateField HeaderText="Did" SortExpression="Summary">
                                 <ItemTemplate><%# FormatSummary( (int)Eval("EntityTypeId"), (int)Eval( "EntityId" ), Eval( "Summary" ).ToString() ) %></ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="What">
-                                <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityTypeId" ), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
+                                <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
                             </asp:TemplateField>
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />
-                            <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                         </Columns>
                     </Rock:Grid>
                 </div>

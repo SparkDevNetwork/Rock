@@ -94,13 +94,13 @@ namespace Rock.Model
         public bool AllowCaching { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [requires security].
+        /// Gets or sets a value indicating whether security should be checked when displaying files of this type
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [requires security]; otherwise, <c>false</c>.
+        /// <c>true</c> if [requires view security]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RequiresSecurity { get; set; }
+        public bool RequiresViewSecurity { get; set; }
 
         #endregion
 

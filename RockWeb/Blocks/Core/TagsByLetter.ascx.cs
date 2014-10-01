@@ -129,7 +129,12 @@ namespace RockWeb.Blocks.Core
             // get tags
             var qry = new TagService( new RockContext() )
                 .Queryable()
-                .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
+                .Where(t => 
+                    t.EntityTypeId == entityId &&
+                    (
+                        ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
+                        ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
+                    ) )
                 .Select(t => new
                 {
                     Id = t.Id,
@@ -147,13 +152,30 @@ namespace RockWeb.Blocks.Core
                 tagAlphabit.Add(c, new List<TagSummary>());
             }
 
+            tagAlphabit.Add('#', new List<TagSummary>());
+            tagAlphabit.Add( '*', new List<TagSummary>() );
+
             // load tags
             var tags = qry.ToList();
 
             foreach ( var tag in tags )
             {
                 var tagSummary = new TagSummary { Id = tag.Id, Name = tag.Name, Count = tag.Count };
-                tagAlphabit[(char)tag.Name.Substring(0, 1).ToUpper()[0]].Add(tagSummary);
+                char key = (char)tag.Name.Substring( 0, 1 ).ToUpper()[0];
+
+                if ( Char.IsNumber( key ) )
+                {
+                    key = '#';
+                }
+                else
+                {
+                    if ( !Char.IsLetter( key ) )
+                    {
+                        key = '*';
+                    }
+                }
+
+                tagAlphabit[key].Add(tagSummary);
             }
 
             // display tags

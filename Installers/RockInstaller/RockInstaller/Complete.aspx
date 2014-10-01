@@ -134,11 +134,7 @@
             if ( !isDebug )
             {
                 // process the bin folder
-                System.Threading.Thread cleanup = new System.Threading.Thread( delegate()
-                {
-                    CleanUpInstall();
-                } );
-
+                System.Threading.Thread cleanup = new System.Threading.Thread( new System.Threading.ThreadStart( CleanUpInstall ) );
                 cleanup.IsBackground = true;
                 cleanup.Start();
             }
@@ -171,19 +167,23 @@
         DeleteDirectory( serverPath + @"\bin" );
 
         // move the rock application into place
-        DirectoryContentsMove( serverPath + @"\rock", serverPath );
-        
-        // delete this page
-        File.Delete( serverPath + @"Complete.aspx" );
+        if ( DirectoryContentsMove( serverPath + @"\rock", serverPath ) )
+        {
+            // set permissions (fix for Arvixe)
+            SetInheritPermissions( serverPath, true );
+            
+            // delete this page
+            File.Delete( serverPath + @"Complete.aspx" );
 
-        // delete a web.config if it already exists in the root, this is not the rock one
-        File.Copy( serverPath + @"\webconfig.xml", serverPath + @"\web.config", true );
+            // delete a web.config if it already exists in the root, this is not the rock one
+            File.Copy( serverPath + @"\webconfig.xml", serverPath + @"\web.config", true );
 
-        // delete web config template
-        File.Delete( serverPath + @"\webconfig.xml" );
-        
-        // delete rock install directory
-        Directory.Delete( serverPath + @"\rock", true );
+            // delete web config template
+            File.Delete( serverPath + @"\webconfig.xml" );
+
+            // delete rock install directory
+            Directory.Delete( serverPath + @"\rock", true );
+        }
     }
 
     private void DeleteDirectory( string target_dir )
@@ -205,57 +205,137 @@
         Directory.Delete( target_dir, false );
     }
 
-    private void DirectoryContentsMove( string sourceDirName, string destDirName )
+    private bool DirectoryContentsMove( string sourceDirName, string destDirName )
     {
         // this will move the contents of a folder into the contents of another
         // if a folder already exists in the directory with the same name it
         // will be deleted. ONLY USE THIS IF THIS USE CASE WORKS FOR YOU!!!
-        
-        DirectoryInfo sourceDirectory = new DirectoryInfo( sourceDirName );
-        DirectoryInfo[] sourceChildDirectories = sourceDirectory.GetDirectories();
 
-        // If the source directory does not exist, throw an exception.
-        if ( !sourceDirectory.Exists )
+        try
         {
-            throw new DirectoryNotFoundException(
-                "Source directory does not exist or could not be found: "
-                + sourceDirName );
-        }
+            DirectoryInfo sourceDirectory = new DirectoryInfo( sourceDirName );
+            DirectoryInfo[] sourceChildDirectories = sourceDirectory.GetDirectories();
 
-        // If the destination directory does not exist, create it.
-        if ( !Directory.Exists( destDirName ) )
-        {
-            Directory.CreateDirectory( destDirName );
-        }
-
-        // move child directories
-        System.Threading.Tasks.Parallel.ForEach( sourceChildDirectories, d =>
-        {
-            string destChildDirectory = Path.Combine( destDirName, d.Name );
-            if ( Directory.Exists( destChildDirectory ) )
+            // If the source directory does not exist, throw an exception.
+            if ( !sourceDirectory.Exists )
             {
-                DeleteDirectory( destChildDirectory );
-            }
-            d.MoveTo( destChildDirectory );
-        } );
-        
-        // move child files
-        FileInfo[] files = sourceDirectory.GetFiles();
-
-        System.Threading.Tasks.Parallel.ForEach( files, f =>
-        {
-            // Create the path to the new copy of the file.
-            string temppath = Path.Combine( destDirName, f.Name );
-
-            // check if file exists in dest if so delete
-            if ( File.Exists( temppath ) )
-            {
-                File.Delete( temppath );
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName );
             }
 
-            // move the file.
-            f.MoveTo( temppath );
-        } );
+            // If the destination directory does not exist, create it.
+            if ( !Directory.Exists( destDirName ) )
+            {
+                Directory.CreateDirectory( destDirName );
+            }
+
+            // move child directories
+            foreach ( DirectoryInfo dir in sourceChildDirectories )
+            {
+                string destChildDirectory = Path.Combine( destDirName, dir.Name );
+                if ( Directory.Exists( destChildDirectory ) )
+                {
+                    DeleteDirectory( destChildDirectory );
+                }
+                dir.MoveTo( destChildDirectory );
+            }
+
+            // move child files
+            FileInfo[] files = sourceDirectory.GetFiles();
+
+            foreach ( FileInfo file in files )
+            {
+                // Create the path to the new copy of the file.
+                string temppath = Path.Combine( destDirName, file.Name );
+
+                // check if file exists in dest if so delete
+                if ( File.Exists( temppath ) )
+                {
+                    File.Delete( temppath );
+                }
+
+                // move the file.
+                file.MoveTo( temppath );
+            }
+        }
+        
+        catch (Exception ex)
+        {
+            LogException( ex );
+            return false;
+        }
+        
+        return true;
+    }
+
+    private void SetInheritPermissions( string sourceDirName, bool isRoot )
+    {
+        string logPath = Path.Combine( serverPath, "InstallLog.txt" );
+
+        if ( isRoot )
+        {
+            File.AppendAllText( logPath, String.Format( "Start: {0}{1}", DateTime.UtcNow.ToString( "yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture ), Environment.NewLine ) );
+        }
+
+        File.AppendAllText( logPath, String.Format( "Method SetInheritPermissions Called On: {0}{1}", sourceDirName, Environment.NewLine ) );
+        
+        try
+        {
+            DirectoryInfo sourceDirectory = new DirectoryInfo( sourceDirName );
+            DirectoryInfo[] sourceChildDirectories = sourceDirectory.GetDirectories();
+            FileInfo[] files = sourceDirectory.GetFiles();
+
+            File.AppendAllText( logPath, String.Format( "Directory Count: {0}{1}", sourceChildDirectories.Count().ToString(), Environment.NewLine ) );
+            File.AppendAllText( logPath, String.Format( "File Count: {0}{1}", files.Count().ToString(), Environment.NewLine ) );
+
+            // set directory permission if not root
+            if ( !isRoot )
+            {
+                File.AppendAllText( logPath, String.Format( "Attempting to set permissions on root directory {0}{1}", sourceDirName, Environment.NewLine ) );
+                var directorySecurity = sourceDirectory.GetAccessControl();
+                directorySecurity.SetAccessRuleProtection( false, false );
+                sourceDirectory.SetAccessControl( directorySecurity );
+            }
+            
+            // process subdirectories
+            foreach ( DirectoryInfo dir in sourceChildDirectories )
+            {
+                File.AppendAllText( logPath, String.Format( "Calling set permissions on {0}{1}", dir.FullName, Environment.NewLine ) );
+                SetInheritPermissions( dir.FullName + @"\", false );
+            }
+            
+            // process files 
+            foreach ( FileInfo file in files )
+            {
+                File.AppendAllText( logPath, String.Format( "Attempting to set permissions on file {0}{1}", file.FullName, Environment.NewLine ) );
+                var fileSecurity = file.GetAccessControl();
+                fileSecurity.SetAccessRuleProtection( false, false );
+                file.SetAccessControl( fileSecurity );
+            }
+
+            if ( isRoot )
+            {
+                File.AppendAllText( logPath, String.Format( "End: {0}{1}", DateTime.UtcNow.ToString( "yyyy-MM-dd HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture ), Environment.NewLine ) );
+            }
+            
+        }
+        catch ( Exception ex )
+        {
+            File.AppendAllText( logPath, String.Format( "Error: {0}{1}", ex.Message, Environment.NewLine ) );
+        }
+    }
+    
+    private void LogException(Exception ex)
+    {
+        string directory = AppDomain.CurrentDomain.BaseDirectory;
+        string filePath = Path.Combine( directory, "InstallExceptions.csv" );
+        string when = DateTime.Now.ToString();
+        while ( ex != null )
+        {
+            File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", when, ex.GetType(), ex.Message ) );
+            ex = ex.InnerException;
+        }
     }
 
 </script>

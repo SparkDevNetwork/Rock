@@ -40,7 +40,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public string Name { get; set; }

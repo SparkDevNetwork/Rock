@@ -20,14 +20,16 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Types
+    /// Stored as DefinedType.Guid
     /// </summary>
-    [Serializable]
     public class DefinedTypeFieldType : FieldType
     {
         /// <summary>
@@ -42,10 +44,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            Guid guid = Guid.Empty;
-            if (Guid.TryParse(value, out guid))
+            Guid? guid = value.AsGuidOrNull();
+            if (guid.HasValue)
             {
-                var definedType = new Model.DefinedTypeService( new RockContext() ).Get( guid );
+                var definedType = new DefinedTypeService( new RockContext() ).Get( guid.Value );
                 if (definedType != null)
                 { 
                     formattedValue = definedType.Name;
@@ -66,14 +68,16 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
-            var definedTypes = new Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
+            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )
                 {
                     editControl.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString().ToUpper() ) );
                 }
+
                 return editControl;
             }
 
@@ -88,8 +92,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
+            var picker = control as DropDownList;
+            if (picker != null)
+            {
+                // picker has value as DefinedType.Guid
+                return picker.SelectedValue;
+            }
 
             return null;
         }
@@ -102,12 +110,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            var picker = control as DropDownList;
+            if ( picker != null )
             {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value.ToUpper();
+                picker.SelectedValue = value.ToUpper();
             }
         }
-
     }
 }

@@ -52,8 +52,9 @@
 
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().toggle();
-                exports.personPickers[controlId].updateScrollbar();
+                $('#' + controlId).find('.picker-menu').first().slideToggle(function () {
+                    exports.personPickers[controlId].updateScrollbar();
+                });
             });
 
             $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
@@ -132,10 +133,8 @@
         };
 
         PersonPicker.prototype.updateScrollbar = function () {
-            var $modalcontainer = $('#modal-scroll-container');
-            if ($modalcontainer.length) {
-                $modalcontainer.tinyscrollbar_update('relative');
-            }
+            // update the outer modal scrollbar
+            Rock.dialogs.updateModalScrollBar(this.controlId);
         }
 
         PersonPicker.prototype.initialize = function () {

@@ -150,18 +150,18 @@ namespace RockWeb.Blocks.Cms
                     if ( htmlContent.IsApproved )
                     {
                         htmlContent.IsApproved = false;
-                        htmlContent.ApprovedByPersonId = null;
+                        htmlContent.ApprovedByPersonAliasId = null;
                         htmlContent.ApprovedDateTime = null;
                     }
                     else
                     {
                         htmlContent.IsApproved = true;
-                        htmlContent.ApprovedByPersonId = CurrentPersonId;
+                        htmlContent.ApprovedByPersonAliasId = CurrentPersonAliasId;
                         htmlContent.ApprovedDateTime = RockDateTime.Now;
                     }
 
                     rockContext.SaveChanges();
-                    FlushSharedBlock( htmlContent.BlockId );
+                    HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
                 }
 
                 BindGrid();
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
 
             var htmlContentService = new HtmlContentService( rockContext );
-            var htmlContent = htmlContentService.Queryable();
+            var htmlContent = htmlContentService.Queryable( "ApprovedByPersonAlias.Person" );
 
             string pageName = "";
             string siteName = "";
@@ -266,8 +266,11 @@ namespace RockWeb.Blocks.Cms
                     htmlApprovalClass.Content = content.Content;
                     htmlApprovalClass.Id = content.Id;
                     htmlApprovalClass.IsApproved = content.IsApproved;
-                    htmlApprovalClass.ApprovedByPerson = content.ApprovedByPerson;
-                    htmlApprovalClass.ApprovedByPersonId = content.ApprovedByPersonId;
+                    if ( content.ApprovedByPersonAlias != null )
+                    {
+                        htmlApprovalClass.ApprovedByPerson = content.ApprovedByPersonAlias.Person;
+                        htmlApprovalClass.ApprovedByPersonId = content.ApprovedByPersonAlias.PersonId;
+                    }
                     htmlApprovalClass.ApprovedDateTime = content.ApprovedDateTime;
 
                     htmlList.Add( htmlApprovalClass );

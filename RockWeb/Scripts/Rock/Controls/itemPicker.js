@@ -117,7 +117,7 @@
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
-                    $hfItemIds.val('');
+                    $hfItemIds.val('0');
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected
@@ -130,28 +130,14 @@
             },
             updateScrollbar: function () {
                 // first, update this control's scrollbar, then the modal's
-                var $container = $('#' + this.options.controlId).find('.scroll-container'),
-                    $dialog = $('div.rock-modal > div.modal-body > div.scroll-container'),
-                    dialogTop,
-                    pickerTop,
-                    amount;
+                var $container = $('#' + this.options.controlId).find('.scroll-container')
 
                 if ($container.is(':visible')) {
                     $container.tinyscrollbar_update('relative');
 
-                    if ($dialog.length > 0 && $dialog.is(':visible')) {
-                        dialogTop = $dialog.offset().top;
-                        pickerTop = $container.offset().top;
-                        amount = pickerTop - dialogTop;
-
-                        if (amount > 160) {
-                            $dialog.tinyscrollbar_update('bottom');
-                        }
-                    }
+                    // update the outer modal scrollbar
+                    Rock.dialogs.updateModalScrollBar(this.options.controlId);
                 }
-
-                // update the outer modal scrollbar
-                Rock.dialogs.updateModalScrollBar(this.options.controlId);
             }
         };
 

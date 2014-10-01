@@ -126,7 +126,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var ddl = ComparisonControl( StringFilterComparisonTypes );
+            var ddl = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
             ddl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddl );
 
@@ -196,177 +196,13 @@ namespace Rock.Reporting
 
         #region Protected Methods
 
-        /// <summary>
-        /// Gets the comparison expression.
-        /// </summary>
-        /// <param name="comparisonType">Type of the comparison.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        protected Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value )
-        {
-            if ( comparisonType == ComparisonType.Contains )
-            {
-                return Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
-            }
-
-            if ( comparisonType == ComparisonType.DoesNotContain )
-            {
-                return Expression.Not( Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value ) );
-            }
-
-            if ( comparisonType == ComparisonType.EndsWith )
-            {
-                return Expression.Call( property, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
-            }
-
-            if ( comparisonType == ComparisonType.EqualTo )
-            {
-                return Expression.Equal( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.GreaterThan )
-            {
-                return Expression.GreaterThan( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-            {
-                return Expression.GreaterThanOrEqual( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.IsBlank )
-            {
-                if ( property.Type == typeof( string ) )
-                {
-                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                    Expression emtpyString = Expression.Constant( string.Empty );
-                    return Expression.Or( Expression.Equal( trimmed, value ), Expression.Equal( property, Expression.Constant( null, property.Type ) ) );
-                }
-                else
-                {
-                    return Expression.Equal( property, Expression.Constant( null, property.Type ) );
-                }
-            }
-
-            if ( comparisonType == ComparisonType.IsNotBlank )
-            {
-                if ( property.Type == typeof( string ) )
-                {
-                    Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                    Expression emtpyString = Expression.Constant( string.Empty );
-                    return Expression.NotEqual( trimmed, value );
-                }
-                else
-                {
-                    return Expression.NotEqual( property, Expression.Constant( null, property.Type ) );
-                }
-            }
-
-            if ( comparisonType == ComparisonType.LessThan )
-            {
-                return Expression.LessThan( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.LessThanOrEqualTo )
-            {
-                return Expression.LessThanOrEqual( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.NotEqualTo )
-            {
-                return Expression.NotEqual( property, value );
-            }
-
-            if ( comparisonType == ComparisonType.StartsWith )
-            {
-                return Expression.Call( property, typeof( string ).GetMethod( "StartsWith", new Type[] { typeof( string ) } ), value );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a dropdownlist of the supported comparison types
-        /// </summary>
-        /// <param name="supportedComparisonTypes">The supported comparison types.</param>
-        /// <returns></returns>
-        protected RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
-        {
-            var ddl = new RockDropDownList();
-            foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
-            {
-                if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )
-                {
-                    ddl.Items.Add( new ListItem( comparisonType.ConvertToString(), comparisonType.ConvertToInt().ToString() ) );
-                }
-            }
-
-            return ddl;
-        }
+        
 
         #endregion
 
         #region Static Properties
 
-        /// <summary>
-        /// Gets the comparison types typically used for string fields
-        /// </summary>
-        public static ComparisonType StringFilterComparisonTypes
-        {
-            get
-            {
-                return
-                    ComparisonType.Contains |
-                    ComparisonType.DoesNotContain |
-                    ComparisonType.EqualTo |
-                    ComparisonType.IsBlank |
-                    ComparisonType.IsNotBlank |
-                    ComparisonType.NotEqualTo |
-                    ComparisonType.StartsWith |
-                    ComparisonType.EndsWith;
-            }
-        }
-
-        /// <summary>
-        /// Gets the comparison types typically used for numeric fields
-        /// </summary>
-        public static ComparisonType NumericFilterComparisonTypes
-        {
-            get
-            {
-                return
-                    ComparisonType.EqualTo |
-                    ComparisonType.IsBlank |
-                    ComparisonType.IsNotBlank |
-                    ComparisonType.NotEqualTo |
-                    ComparisonType.GreaterThan |
-                    ComparisonType.GreaterThanOrEqualTo |
-                    ComparisonType.LessThan |
-                    ComparisonType.LessThanOrEqualTo;
-            }
-        }
-
-        /// <summary>
-        /// Gets the date filter comparison types.
-        /// </summary>
-        /// <value>
-        /// The date filter comparison types.
-        /// </value>
-        public static ComparisonType DateFilterComparisonTypes
-        {
-            get
-            {
-                return
-                    ComparisonType.EqualTo |
-                    ComparisonType.IsBlank |
-                    ComparisonType.IsNotBlank |
-                    ComparisonType.GreaterThan |
-                    ComparisonType.GreaterThanOrEqualTo |
-                    ComparisonType.LessThan |
-                    ComparisonType.LessThanOrEqualTo;
-            }
-        }
+        
 
         /// <summary>
         /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown

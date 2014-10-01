@@ -103,7 +103,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
-            List<int> metricIds = metricIdList.SplitDelimitedValues().Select(a=> a.AsInteger()).ToList();
+            List<int> metricIds = metricIdList.SplitDelimitedValues().AsIntegerList();
             var qry = Get().Where( a => metricIds.Contains( a.MetricId ) );
             if ( metricValueType.HasValue )
             {

@@ -78,7 +78,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who attended/checked in.
         /// </value>
         [DataMember]
-        public int? PersonId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Device"/> that was used (the device where the person checked in from).
@@ -197,12 +197,12 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who was the attendee.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who was the attendee.
+        /// The person alias.
         /// </value>
-        public virtual Person Person { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
@@ -254,7 +254,7 @@ namespace Rock.Model
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append( Person != null ? Person.ToStringSafe() + " " : "" );
+            sb.Append( ( PersonAlias != null && PersonAlias.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
             sb.Append( DidAttend ? "attended " : "did not attend " );
             sb.Append( Group != null ? Group.ToStringSafe() + " " : "" );
             sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
@@ -288,7 +288,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
-            this.HasOptional( a => a.Person ).WithMany( p => p.Attendances ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Device ).WithMany().HasForeignKey( d => d.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.SearchTypeValue ).WithMany().HasForeignKey( v => v.SearchTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );

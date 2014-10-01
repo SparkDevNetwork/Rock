@@ -93,7 +93,7 @@ namespace Rock.Model
             target.Action = source.Action;
             target.AllowOrDeny = source.AllowOrDeny;
             target.SpecialRole = source.SpecialRole;
-            target.PersonId = source.PersonId;
+            target.PersonAliasId = source.PersonAliasId;
             target.GroupId = source.GroupId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

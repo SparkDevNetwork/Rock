@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="error.aspx.cs" Inherits="error" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Error.aspx.cs" Inherits="RockWeb.Error" %>
 
 <!DOCTYPE html>
 
@@ -60,7 +60,7 @@
                             </div>
                         </asp:Panel>
                         
-                        <asp:Panel ID="pnlException" runat="server" Visible="false">
+                        <asp:Panel ID="pnlException" runat="server" Visible="true">
                             <div class="error-wrap">
                                 <h1>That Wasn't Supposed To Happen... </h1>
                             

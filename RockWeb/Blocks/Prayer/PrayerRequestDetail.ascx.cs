@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -76,8 +77,10 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            PrayerRequestService service = new PrayerRequestService( new RockContext() );
-            PrayerRequest item = service.Get( hfPrayerRequestId.ValueAsInt() );
+            int prayerRequestId = hfPrayerRequestId.ValueAsInt();
+            PrayerRequest item = new PrayerRequestService( new RockContext() )
+                .Queryable( "RequestedByPersonAlias.Person,ApprovedByPersonAlias.Person" )
+                .FirstOrDefault( p => p.Id == prayerRequestId );
             ShowEditDetails( item );
         }
 
@@ -115,7 +118,9 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerId != 0 )
             {
-                prayerRequest = new PrayerRequestService( new RockContext() ).Get( prayerId );
+                prayerRequest = new PrayerRequestService( new RockContext() )
+                    .Queryable( "RequestedByPersonAlias.Person,ApprovedByPersonAlias.Person" )
+                    .FirstOrDefault( p => p.Id == prayerId );
             }
 
             if ( prayerRequest == null )
@@ -274,10 +279,13 @@ namespace RockWeb.Blocks.Prayer
             cbApproved.Enabled = IsUserAuthorized( "Approve" );
             cbApproved.Checked = prayerRequest.IsApproved ?? false;
 
-            if ( person != null && ( prayerRequest.IsApproved ?? false ) && prayerRequest.ApprovedByPersonId.HasValue )
+            if ( person != null && 
+                (prayerRequest.IsApproved ?? false ) && 
+                prayerRequest.ApprovedByPersonAlias != null &&
+                prayerRequest.ApprovedByPersonAlias.Person != null )
             {
                 lblApprovedByPerson.Visible = true;
-                lblApprovedByPerson.Text = string.Format( "approved by {0}", prayerRequest.ApprovedByPerson.FullName );
+                lblApprovedByPerson.Text = string.Format( "approved by {0}", prayerRequest.ApprovedByPersonAlias.Person.FullName );
             }
             else
             {
@@ -311,7 +319,7 @@ namespace RockWeb.Blocks.Prayer
             // If changing from NOT-approved to approved, record who and when
             if ( !( prayerRequest.IsApproved ?? false ) && cbApproved.Checked )
             {
-                prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
+                prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
 
                 // reset the flag count only to zero ONLY if it had a value previously.

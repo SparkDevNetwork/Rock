@@ -42,14 +42,14 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable( "Group,Schedule" )
+            return Queryable( "Group,Schedule,PersonAlias.Person" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&
                     a.LocationId == locationId &&
                     a.ScheduleId == scheduleId &&
                     a.GroupId == groupId &&
-                    a.PersonId == personId )
+                    a.PersonAlias.PersonId == personId )
                 .FirstOrDefault();
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable( "Group,Schedule" )
+            return Queryable( "Group,Schedule,PersonAlias.Person" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&
@@ -99,13 +99,13 @@ namespace Rock.Model
 
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
-                var groupIdList = groupIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                var groupIdList = groupIds.Split( ',' ).AsIntegerList();
                 qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
             {
-                var campusIdList = campusIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                var campusIdList = campusIds.Split( ',' ).AsIntegerList();
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 

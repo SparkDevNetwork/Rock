@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a single (or null) Group
+    /// Stored as Group.Guid
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupFieldAttribute : FieldAttribute
     {
         /// <summary>
@@ -33,12 +29,12 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultGroupId">The default group id.</param>
+        /// <param name="defaultGroupGuid">The default group unique identifier.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public GroupFieldAttribute( string name, string description = "", bool required = true, int defaultGroupId = int.MinValue, string category = "", int order = 0, string key = null )
-            : base( name, description, required, ( defaultGroupId == int.MinValue ? "" : defaultGroupId.ToString() ), category, order, key, typeof( Rock.Field.Types.GroupFieldType ).FullName )
+        public GroupFieldAttribute( string name, string description = "", bool required = true, string defaultGroupGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultGroupGuid, category, order, key, typeof( Rock.Field.Types.GroupFieldType ).FullName )
         {
         }
     }

@@ -171,7 +171,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = DefinedValueCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             DefinedValueCache definedValue = cache[cacheKey] as DefinedValueCache;
 
             if ( definedValue == null )
@@ -217,7 +217,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             DefinedValueCache definedValue = null;
@@ -253,7 +253,7 @@ namespace Rock.Web.Cache
         public static DefinedValueCache Read( DefinedValue definedValueModel, RockContext rockContext = null )
         {
             string cacheKey = DefinedValueCache.CacheKey( definedValueModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             DefinedValueCache definedValue = cache[cacheKey] as DefinedValueCache;
 
             if ( definedValue != null )
@@ -278,7 +278,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( DefinedValueCache.CacheKey( id ) );
         }
 

@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Finance
         });
     });
 ";
-            ScriptManager.RegisterStartupScript( lbCancel, lbCancel.GetType(), "update-txn-status", script, true );
+            ScriptManager.RegisterStartupScript( lbCancelSchedule, lbCancelSchedule.GetType(), "update-txn-status", script, true );
         }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -120,11 +120,11 @@ namespace RockWeb.Blocks.Finance
         protected void lbUpdate_Click( object sender, EventArgs e )
         {
             var txn = GetScheduledTransaction();
-            if ( txn != null && txn.AuthorizedPerson != null )
+            if ( txn != null && txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null )
             {
                 var parms = new Dictionary<string, string>();
                 parms.Add( "ScheduledTransactionId", txn.Id.ToString() );
-                parms.Add( "Person", txn.AuthorizedPerson.UrlEncodedKey );
+                parms.Add( "Person", txn.AuthorizedPersonAlias.Person.UrlEncodedKey );
                 NavigateToLinkedPage( "UpdatePage", parms );
             }
         }
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var rockContext = new RockContext();
                 var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Get( txnId.Value );
+                var txn = txnService.Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( t => t.Id == txnId.Value );
                 if ( txn != null )
                 {
                     string errorMessage = string.Empty;
@@ -159,18 +159,18 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Click event of the lbCancel control.
+        /// Handles the Click event of the lbCancelSchedule control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
+        protected void lbCancelSchedule_Click( object sender, EventArgs e )
         {
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
                 var rockContext = new RockContext();
                 var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Get( txnId.Value );
+                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
                 if ( txn != null )
                 {
                     string errorMessage = string.Empty;
@@ -190,18 +190,18 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Click event of the lbReactivate control.
+        /// Handles the Click event of the lbReactivateSchedule control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbReactivate_Click( object sender, EventArgs e )
+        protected void lbReactivateSchedule_Click( object sender, EventArgs e )
         {
             int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
                 var rockContext = new RockContext();
                 var txnService = new FinancialScheduledTransactionService( rockContext );
-                var txn = txnService.Get( txnId.Value );
+                var txn = txnService.Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( t => t.Id == txnId.Value );
                 if ( txn != null )
                 {
                     string errorMessage = string.Empty;
@@ -218,6 +218,16 @@ namespace RockWeb.Blocks.Finance
                     ShowView( txn );
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToParentPage();
         }
 
         #endregion
@@ -238,7 +248,8 @@ namespace RockWeb.Blocks.Finance
                 string rockUrlRoot = ResolveRockUrl( "/" );
 
                 var detailsLeft = new DescriptionList()
-                    .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty );
+                    .Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
+                        txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty );
 
                 var detailsRight = new DescriptionList()
                     .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
@@ -290,8 +301,8 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 rptrNotes.DataBind();
 
-                lbCancel.Visible = txn.IsActive;
-                lbReactivate.Visible = !txn.IsActive;
+                lbCancelSchedule.Visible = txn.IsActive;
+                lbReactivateSchedule.Visible = !txn.IsActive;
             }
         }
 

@@ -164,7 +164,7 @@ namespace Rock.Web.Cache
         {
             string cacheKey = PersonBadgeCache.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             PersonBadgeCache personBadge = cache[cacheKey] as PersonBadgeCache;
 
             if ( personBadge == null )
@@ -194,7 +194,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static PersonBadgeCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             PersonBadgeCache personBadge = null;
@@ -230,7 +230,7 @@ namespace Rock.Web.Cache
         public static PersonBadgeCache Read( PersonBadge personBadgeModel )
         {
             string cacheKey = PersonBadgeCache.CacheKey( personBadgeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             PersonBadgeCache personBadge = cache[cacheKey] as PersonBadgeCache;
 
             if ( personBadge != null )
@@ -254,7 +254,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( PersonBadgeCache.CacheKey( id ) );
         }
 

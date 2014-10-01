@@ -122,6 +122,7 @@ namespace Rock.Rest.Controllers
             if ( model.IsValid )
             {
                 model.Order = ((BlockService)Service).GetMaxOrder( model );
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else

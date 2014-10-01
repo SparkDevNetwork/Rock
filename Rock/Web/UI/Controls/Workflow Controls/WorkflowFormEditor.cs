@@ -88,6 +88,9 @@ namespace Rock.Web.UI.Controls
                     formAttribute.IsVisible = row.IsVisible;
                     formAttribute.IsReadOnly = !row.IsEditable;
                     formAttribute.IsRequired = row.IsRequired;
+                    formAttribute.HideLabel = row.HideLabel;
+                    formAttribute.PreHtml = row.PreHtml;
+                    formAttribute.PostHtml = row.PostHtml;
                     form.FormAttributes.Add( formAttribute );
                 }
 
@@ -131,6 +134,9 @@ namespace Rock.Web.UI.Controls
                     row.IsVisible = formAttribute.IsVisible;
                     row.IsEditable = !formAttribute.IsReadOnly;
                     row.IsRequired = formAttribute.IsRequired;
+                    row.HideLabel = formAttribute.HideLabel;
+                    row.PreHtml = formAttribute.PreHtml;
+                    row.PostHtml = formAttribute.PostHtml;
                     Controls.Add( row );
                 }
 
@@ -228,9 +234,15 @@ namespace Rock.Web.UI.Controls
             _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
             Controls.Add( _ddlNotificationSystemEmail );
 
-            _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
-                .Where( e => e.Category == "Workflow" ).OrderBy( e => e.Title ).ToList();
-            _ddlNotificationSystemEmail.DataBind();
+            Guid? systemEmails = Rock.SystemGuid.Category.SYSTEM_EMAIL_WORKFLOW.AsGuid();
+            if ( systemEmails.HasValue )
+            {
+                _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
+                    .Where( e => e.Category.Guid.Equals( systemEmails.Value ) )
+                    .OrderBy( e => e.Title )
+                    .ToList();
+                _ddlNotificationSystemEmail.DataBind();
+            }
             _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
 
             _cbIncludeActions = new RockCheckBox();
@@ -339,26 +351,61 @@ namespace Rock.Web.UI.Controls
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Th );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( "Field" );
                     writer.RenderEndTag();
 
-                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( "Visible" );
                     writer.RenderEndTag();
 
-                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( "Editable" );
                     writer.RenderEndTag();
 
-                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( "Required" );
                     writer.RenderEndTag();
 
-                    writer.RenderEndTag();  // tr
-                    writer.RenderEndTag();  // thead
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.Write( "Hide Label" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.Write( "Pre-Html" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.Write( "Post-Html" );
+                    writer.RenderEndTag();
+
+                    writer.RenderEndTag();      // row
+
+                    writer.RenderEndTag();      // col-xs-9
+
+                    writer.RenderEndTag();      // row
+
+                    writer.RenderEndTag();      // th
+
+                    writer.RenderEndTag();      // tr
+                    writer.RenderEndTag();      // thead
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-formfield-list" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
@@ -368,11 +415,11 @@ namespace Rock.Web.UI.Controls
                         row.RenderControl( writer );
                     }
 
-                    writer.RenderEndTag();  // tbody
+                    writer.RenderEndTag();      // tbody
 
-                    writer.RenderEndTag();  // table
+                    writer.RenderEndTag();      // table
 
-                    writer.RenderEndTag();  // Div.form-group
+                    writer.RenderEndTag();      // Div.form-group
                 }
 
                 _ceFooterText.ValidationGroup = ValidationGroup;

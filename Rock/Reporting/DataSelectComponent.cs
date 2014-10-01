@@ -108,6 +108,20 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Gets the sort expression to apply to the GridField (For example "LastName, NickName")
+        /// </summary>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public virtual string SortExpression
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the title.
         /// </summary>
         /// <value>

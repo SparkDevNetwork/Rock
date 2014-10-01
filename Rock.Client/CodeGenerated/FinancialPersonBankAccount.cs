@@ -31,7 +31,7 @@ namespace Rock.Client
     public partial class FinancialPersonBankAccount
     {
         /// <summary />
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public string AccountNumberSecured { get; set; }

@@ -87,8 +87,12 @@ namespace Rock.Financial
             errorMessage = string.Empty;
 
             var scheduledTransaction = new FinancialScheduledTransaction();
+            scheduledTransaction.IsActive = true;
+            scheduledTransaction.StartDate = schedule.StartDate;
+            scheduledTransaction.NextPaymentDate = schedule.StartDate;
             scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
             scheduledTransaction.GatewayScheduleId = "P" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
+            scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
             return scheduledTransaction;
         }
 
@@ -100,6 +104,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            transaction.IsActive = true;
             errorMessage = string.Empty;
             return true;
         }
@@ -125,6 +130,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            transaction.IsActive = false;
             errorMessage = string.Empty;
             return true;
         }
@@ -137,6 +143,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            transaction.LastStatusUpdateDateTime = RockDateTime.Now;
             errorMessage = string.Empty;
             return true;
         }

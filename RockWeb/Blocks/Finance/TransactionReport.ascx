@@ -30,20 +30,12 @@
                 </asp:Panel>
 
                 <div class="grid">
-                    <Rock:Grid ID="gTransactions" runat="server" OnRowDataBound="gTransactions_RowDataBound">
+                    <Rock:Grid ID="gTransactions" runat="server" >
                         <Columns>
-                            <asp:BoundField DataField="TransactionDateTime" DataFormatString="{0:d}" HeaderText="Date" SortExpression="TransactionDateTime" />
-                            <asp:TemplateField HeaderText="Currency Type" >
-                                <ItemTemplate>
-                                    <asp:Literal ID="lCurrencyType" runat="server" />
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Summary" >
-                                <ItemTemplate>
-                                    <asp:Literal ID="lSummaryText" runat="server" />
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="TotalAmount" DataFormatString="{0:C}" HeaderText="Amount" SortExpression="TotalAmount" />
+                            <asp:BoundField DataField="TransactionDateTime" DataFormatString="{0:d}" HeaderText="Date" />
+                            <asp:BoundField DataField="CurrencyType" HeaderText="Currency Type" HtmlEncode="false" />
+                            <asp:BoundField DataField="Summary" HeaderText="Summary" HtmlEncode="false" />
+                            <asp:BoundField DataField="TotalAmount" DataFormatString="{0:C}" HeaderText="Amount" />
                         </Columns>
                     </Rock:Grid>
                 </div>

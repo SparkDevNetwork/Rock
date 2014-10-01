@@ -197,7 +197,7 @@ namespace Rock.Rest.Controllers
             if ( personId.HasValue )
             {
                 // get transactions for a specific person
-                qry = qry.Where( a => a.AuthorizedPersonId == personId.Value );
+                qry = qry.Where( a => a.AuthorizedPersonAlias.PersonId == personId.Value );
             }
             else
             {
@@ -205,7 +205,7 @@ namespace Rock.Rest.Controllers
                 GroupMemberService groupMemberService = new GroupMemberService( (RockContext)Service.Context );
                 var personIdList = groupMemberService.GetByGroupId( groupId ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.PersonId ).ToList();
 
-                qry = qry.Where( a => personIdList.Contains( a.AuthorizedPersonId.Value ) );
+                qry = qry.Where( a => personIdList.Contains( a.AuthorizedPersonAlias.PersonId ) );
             }
 
             if ( options.AccountIds != null )

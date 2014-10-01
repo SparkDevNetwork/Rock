@@ -10,146 +10,53 @@
       Loaded="Page_Loaded"
       Style="{StaticResource pageBackgroundLogin}"
       KeyDown="Page_KeyDown">
-
-    <Grid Margin="0,0,0,0">
-        <Grid.Background>
-            <DrawingBrush TileMode="Tile"
-                          AlignmentX="Left"
-                          AlignmentY="Top"
-                          Viewport="5,5,5,5"
-                          ViewboxUnits="Absolute"
-                          ViewportUnits="Absolute">
-                <DrawingBrush.Viewbox>
-                    <Rect Width="5"
-                          Height="5" />
-                </DrawingBrush.Viewbox>
-                <DrawingBrush.Drawing>
-                    <GeometryDrawing>
-                        <GeometryDrawing.Pen>
-                            <Pen Thickness="1"
-                                 Brush="#FF404040">
-                            </Pen>
-                        </GeometryDrawing.Pen>
-                        <GeometryDrawing.Brush>
-                            <SolidColorBrush Color="Beige" />
-                        </GeometryDrawing.Brush>
-                        <GeometryDrawing.Geometry>
-                            <GeometryGroup FillRule="Nonzero">
-                                <PathGeometry FillRule="Nonzero"
-                                              Figures="M0,5L5,0z M6,4L4,6z M-1,1L1,-1z">
-                                </PathGeometry>
-                            </GeometryGroup>
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                </DrawingBrush.Drawing>
-            </DrawingBrush>
-        </Grid.Background>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="550" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="50" />
-            <RowDefinition Height="300" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="36" />
+            <RowDefinition />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <StackPanel Background="Black" VerticalAlignment="Stretch" Grid.ColumnSpan="3"/>
+        <StackPanel Grid.Column="1" Grid.Row="1">
 
-        <!-- Logo and Title Grid -->
-        <Grid Grid.Column="1"
-              Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="60" />
-            </Grid.RowDefinitions>
+            <!-- Logo  -->
+            <Frame 
+                Grid.Column="0"
+                Grid.Row="0"
+                Source="images/rock-logo-sm.xaml"
+                HorizontalAlignment="Center"
+                Margin="0,40,0,0" >
+            </Frame>
 
-            <Frame Grid.Column="0"
-                   Grid.Row="0"
-                   Source="images/rock-logo.xaml"
-                   Margin="0,0,0,20" />
-            <Label Grid.Column="1"
-                   Grid.Row="0"
-                   Style="{StaticResource labelStyleTitle}">
-                Check Scanner
-            </Label>
-        </Grid>
+            <Label Style="{StaticResource labelStylePanelTitle}" FontSize="21" HorizontalAlignment="Left" Content="Login" />
 
-        <!-- Login Panel -->
-        <Border Grid.Column="1"
-                Grid.Row="2"
-                BorderThickness="1,1,1,1"
-                CornerRadius="4,4,4,4"
-                Padding="14,4,14,0">
-            <Border.Background>
-                <ImageBrush ImageSource="./images/light-texture.png"
-                            Viewport="0,0,256,256"
-                            ViewportUnits="Absolute"
-                            TileMode="Tile"></ImageBrush>
-            </Border.Background>
-            <Grid Grid.Column="1"
-                  Grid.Row="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
-                    <RowDefinition />
-                    <RowDefinition Height="60" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Row="0"
-                        Grid.Column="0"
-                        BorderThickness="0,0,0,1"
-                        BorderBrush="#e5e5e5">
-                    <Label Style="{StaticResource labelStyleLegend}">
-                        Login
-                    </Label>
-                </Border>
-                <Frame 
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Source="images/check-scanner.xaml"
-                    Opacity="0.2"
-                    />
-                <StackPanel Grid.Row="1"
-                            Grid.Column="0"
-                            VerticalAlignment="Center">
-                    <Label Name="lblRockUrl"
-                           Style="{StaticResource labelStyle}">Rock URL</Label>
-                    <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxStyleUrl}" Width="210" />
-                    <Label Style="{StaticResource labelStyle}">Username</Label>
-                    <TextBox Name="txtUsername"
-                             Style="{StaticResource textboxStyle}"
-                             KeyDown="HideLoginWarning" />
-                    <Label Style="{StaticResource labelStyle}">Password</Label>
-                    <PasswordBox Name="txtPassword"
-                                 Style="{StaticResource textboxStyle}"
-                                 KeyDown="HideLoginWarning" />
-                </StackPanel>
+            <Label Name="lblRockUrl" Style="{StaticResource labelStyleBold}" Content="Rock URL" />
+            <TextBox Name="txtRockUrl" Style="{StaticResource textboxStyleUrl}" HorizontalAlignment="Stretch" Width="Auto" />
 
-                <Label Name="lblLoginWarning" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"
-                           Style="{StaticResource labelStyleAlert}"
-                           Content="Invalid Login"
-                           MaxHeight="150" />
+            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0" Content="Username" />
+            <TextBox Name="txtUsername" Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto" KeyDown="HideLoginWarning" />
 
-                <Border Grid.Row="2"
-                        Grid.Column="0"
-                        BorderThickness="0,1,0,0"
-                        BorderBrush="#e5e5e5">
+            <Label Style="{StaticResource labelStyleBold}" Margin="0,10,0,0" Content="Password" />
+            <PasswordBox Name="txtPassword" Style="{StaticResource textboxStyle}" HorizontalAlignment="Stretch" Width="Auto" KeyDown="HideLoginWarning" />
 
-                    <Button Name="btnLogin"
-                            Click="btnLogin_Click"
-                            HorizontalAlignment="Left"
-                            Style="{StaticResource buttonStylePrimary}">Login</Button>
-                </Border>
-            </Grid>
-        </Border>
+            <Button Name="btnLogin"
+                    Click="btnLogin_Click"
+                    HorizontalAlignment="Left"
+                    Margin="2,10,0,0"
+                    Style="{StaticResource buttonStylePrimary}" Content="Login" />
 
+            <Label Name="lblLoginWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="Sorry, we couldn't find an account matching that username/password."
+                   MaxHeight="150" />
+
+        </StackPanel>
+        
+        <!-- Check Scanner Logo -->
+        <Frame Grid.Column="2" Grid.Row="1" VerticalAlignment="Bottom" Source="images/check-scanner.xaml" Opacity="0.2" />
     </Grid>
 </Page>

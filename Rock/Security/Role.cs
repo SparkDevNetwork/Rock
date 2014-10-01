@@ -81,7 +81,7 @@ namespace Rock.Security
         {
             string cacheKey = Role.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             Role role = cache[cacheKey] as Role;
 
             if ( role != null )
@@ -140,7 +140,7 @@ namespace Rock.Security
         /// <param name="id">The id.</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             cache.Remove( Role.CacheKey( id ) );
         }
 

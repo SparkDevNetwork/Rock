@@ -127,8 +127,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -181,6 +187,7 @@ namespace Rock.Web.UI.Controls
         public FileUploader()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileTypeGuid = new HiddenField();
@@ -464,6 +471,7 @@ namespace Rock.Web.UI.Controls
 
             Controls.Add( _hfBinaryFileId );
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
+            _hfBinaryFileId.Value = "0";
 
             Controls.Add( _hfBinaryFileTypeGuid );
             _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
@@ -484,6 +492,10 @@ namespace Rock.Web.UI.Controls
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
             _fileUpload.ID = this.ID + "_fu";
+
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfBinaryFileId.ID;
+            RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
         }
 
         /// <summary>

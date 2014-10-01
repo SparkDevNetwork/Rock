@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Link" )]
     [Category( "Groups" )]
     [Description( "Block adds or updates a person into the configured group with the configured status and role, and sets group member attribute values that are given as name-value pairs in the querystring." )]
-    [GroupField("Group", "The group this block will be adding or updating people into.", true, int.MinValue )]
+    [GroupField("Group", "The group this block will be adding or updating people into.", true )]
     [EnumField( "Group Member Status", "The group member status you want to set for the person.", typeof(GroupMemberStatus), true, "2" )]
     [CodeEditorField( "Success Message", "The text (HTML) to display when a person is successfully added to the group.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"<h1>You're in!</h1>
 <p>You have been added to the group.</p>" )]
@@ -57,10 +57,10 @@ namespace RockWeb.Blocks.Groups
 
             try
             {
-                string groupValue = GetAttributeValue( "Group" );
+                var groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
                 string personKey = PageParameter( "Person" );
 
-                if ( string.IsNullOrWhiteSpace( groupValue ) )
+                if ( !groupGuid.HasValue )
                 {
                     ShowConfigError( "The 'Group' configuration for this block has not been set." );
                 }
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         GroupService groupService = new GroupService( rockContext );
-                        Group group = groupService.Get( groupValue.AsInteger() );
+                        Group group = groupService.Get( groupGuid.Value );
                         if ( group == null )
                         {
                             ShowConfigError( "The 'Group' configuration for this block is incorrect." );

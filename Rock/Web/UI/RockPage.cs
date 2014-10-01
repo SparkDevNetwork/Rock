@@ -237,7 +237,7 @@ namespace Rock.Web.UI
                     }
                 }
 
-                if ( _CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                if ( _CurrentUser != null && _CurrentUser.Person != null && _currentPerson == null )
                 {
                     CurrentPerson = _CurrentUser.Person;
                 }
@@ -275,15 +275,15 @@ namespace Rock.Web.UI
         {
             get
             {
-                if ( _CurrentPerson != null )
+                if ( _currentPerson != null )
                 {
-                    return _CurrentPerson;
+                    return _currentPerson;
                 }
 
-                if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                if ( _currentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
                 {
-                    _CurrentPerson = Context.Items["CurrentPerson"] as Person;
-                    return _CurrentPerson;
+                    _currentPerson = Context.Items["CurrentPerson"] as Person;
+                    return _currentPerson;
                 }
 
                 return null;
@@ -292,33 +292,17 @@ namespace Rock.Web.UI
             private set
             {
                 Context.Items.Remove( "CurrentPerson" );
-                _CurrentPerson = value;
 
-                if ( _CurrentPerson != null )
+                _currentPerson = value;
+                if ( _currentPerson != null )
                 {
                     Context.Items.Add( "CurrentPerson", value );
                 }
-            }
-        }
-        private Person _CurrentPerson;
 
-        /// <summary>
-        /// Gets the current person alias.
-        /// </summary>
-        /// <value>
-        /// The current person alias.
-        /// </value>
-        public PersonAlias CurrentPersonAlias
-        {
-            get
-            {
-                if ( _CurrentPerson != null )
-                {
-                    return _CurrentPerson.PrimaryAlias;
-                }
-                return null;
+                _currentPersonAlias = null;
             }
         }
+        private Person _currentPerson;
 
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
@@ -334,6 +318,53 @@ namespace Rock.Web.UI
                 if ( CurrentPerson != null )
                 {
                     return CurrentPerson.Id;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <value>
+        /// The current person alias.
+        /// </value>
+        public PersonAlias CurrentPersonAlias
+        {
+            get
+            {
+                if (_currentPersonAlias != null)
+                {
+                    return _currentPersonAlias;
+                }
+
+                if ( _currentPerson != null )
+                {
+                    _currentPersonAlias = _currentPerson.PrimaryAlias;
+                    return _currentPersonAlias;
+                }
+
+                return null;
+            }
+        }
+        private PersonAlias _currentPersonAlias = null;
+
+        /// <summary>
+        /// Gets the current person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The current person alias identifier.
+        /// </value>
+        public int? CurrentPersonAliasId
+        {
+            get
+            {
+                if ( CurrentPersonAlias != null )
+                {
+                    return CurrentPersonAlias.Id;
                 }
                 else
                 {
@@ -409,8 +440,8 @@ namespace Rock.Web.UI
         /// </summary>
         protected override void InitializeCulture()
         {
-            base.UICulture = "auto";
-            base.Culture = "auto";
+            base.UICulture = "Auto";
+            base.Culture = "Auto";
 
             base.InitializeCulture();
         }
@@ -523,7 +554,7 @@ namespace Rock.Web.UI
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
                 Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.Person impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
@@ -612,7 +643,7 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/error.aspx?type=security", false );
+                        Response.Redirect( "~/Error.aspx?type=security", false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
                 }
@@ -659,7 +690,7 @@ namespace Rock.Web.UI
 
                     // Cache object used for block output caching
                     Page.Trace.Warn( "Getting memory cache" );
-                    ObjectCache cache = MemoryCache.Default;
+                    ObjectCache cache = RockMemoryCache.Default;
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
@@ -1188,7 +1219,7 @@ namespace Rock.Web.UI
                 string scriptTemplate = Application["GoogleAnalyticsScript"] as string;
                 if ( scriptTemplate == null )
                 {
-                    string scriptFile = MapPath( "~/App_Data/GoogleAnalytics.txt" );
+                    string scriptFile = MapPath( "~/Assets/Misc/GoogleAnalytics.txt" );
                     if ( File.Exists( scriptFile ) )
                     {
                         scriptTemplate = File.ReadAllText( scriptFile );
@@ -2093,8 +2124,10 @@ namespace Rock.Web.UI
         {
             var values = SessionUserPreferences();
             if ( values.ContainsKey( key ) )
-                foreach ( string value in SessionUserPreferences()[key] )
-                    return value;
+            {
+                return values[key];
+            }
+
             return string.Empty;
         }
 
@@ -2113,14 +2146,7 @@ namespace Rock.Web.UI
             var values = SessionUserPreferences();
             foreach ( var key in values.Where( v => v.Key.StartsWith( keyPrefix ) ) )
             {
-                string firstValue = string.Empty;
-                foreach ( string value in key.Value )
-                {
-                    firstValue = value;
-                    break;
-                }
-
-                selectedValues.Add( key.Key, firstValue );
+                selectedValues.Add( key.Key, key.Value );
             }
 
             return selectedValues;
@@ -2134,22 +2160,19 @@ namespace Rock.Web.UI
         /// <param name="value">A <see cref="System.String"/> representing the preference value.</param>
         public void SetUserPreference( string key, string value )
         {
-            var newValues = new List<string>();
-            newValues.Add( value );
-
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
             {
-                sessionValues[key] = newValues;
+                sessionValues[key] = value;
             }
             else
             {
-                sessionValues.Add( key, newValues );
+                sessionValues.Add( key, value );
             }
 
             if ( CurrentPerson != null )
             {
-                PersonService.SaveUserPreference( CurrentPerson, key, newValues );
+                PersonService.SaveUserPreference( CurrentPerson, key, value );
             }
         }
 
@@ -2160,18 +2183,18 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
-        private Dictionary<string, List<string>> SessionUserPreferences()
+        private Dictionary<string, string> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );
 
-            var userPreferences = Session[sessionKey] as Dictionary<string, List<string>>;
+            var userPreferences = Session[sessionKey] as Dictionary<string, string>;
             if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
                     userPreferences = PersonService.GetUserPreferences( CurrentPerson );
                 else
-                    userPreferences = new Dictionary<string, List<string>>();
+                    userPreferences = new Dictionary<string, string>();
 
                 Session[sessionKey] = userPreferences;
             }
