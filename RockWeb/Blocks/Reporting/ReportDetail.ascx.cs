@@ -150,8 +150,8 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnPreRender( EventArgs e )
         {
             // rebuild the CustomKeys list based on the current field titles
-            kvSortFields.CustomKeys = new Dictionary<string,string>();
-            foreach( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>())
+            kvSortFields.CustomKeys = new Dictionary<string, string>();
+            foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
                 Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
                 kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
@@ -425,12 +425,12 @@ namespace RockWeb.Blocks.Reporting
             }
 
             int sortOrder = 0;
-            foreach (var itemPair in kvSortFields.Value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Split('^')))
+            foreach ( var itemPair in kvSortFields.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
             {
                 var reportFieldGuid = itemPair[0].AsGuidOrNull();
                 var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
                 var reportField = report.ReportFields.FirstOrDefault( a => a.Guid == reportFieldGuid );
-                if (reportField != null)
+                if ( reportField != null )
                 {
                     reportField.SortOrder = sortOrder++;
                     reportField.SortDirection = sortDirection;
@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Reporting
             authorizationMessage = string.Empty;
 
             // can't edit an existing report if not authorized for that report
-            if ( report.Id != 0  && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
+            if ( report.Id != 0 && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
@@ -811,7 +811,7 @@ namespace RockWeb.Blocks.Reporting
             kvSortFields.CustomValues.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
             kvSortFields.CustomValues.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
 
-            kvSortFields.Value = report.ReportFields.Where(a => a.SortOrder.HasValue).OrderBy( a => a.SortOrder.Value ).Select(a=> string.Format("{0}^{1}", a.Guid, a.SortDirection.ConvertToInt())).ToList().AsDelimited("|");
+            kvSortFields.Value = report.ReportFields.Where( a => a.SortOrder.HasValue ).OrderBy( a => a.SortOrder.Value ).Select( a => string.Format( "{0}^{1}", a.Guid, a.SortDirection.ConvertToInt() ) ).ToList().AsDelimited( "|" );
 
             foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
             {
@@ -1059,7 +1059,7 @@ namespace RockWeb.Blocks.Reporting
                                 var sortField = reportFieldSortExpressions[reportField.Guid];
                                 if ( !string.IsNullOrWhiteSpace( sortField ) )
                                 {
-                                    sortColumns.Add( sortField, reportField.SortDirection);
+                                    sortColumns.Add( sortField, reportField.SortDirection );
                                 }
                             }
                         }

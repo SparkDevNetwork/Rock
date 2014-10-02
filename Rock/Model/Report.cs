@@ -270,6 +270,7 @@ namespace Rock.Model
                         var qry = getResult as IQueryable<IEntity>;
                         var qryExpression = qry.Expression;
 
+                        // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
                         string orderByMethod = "OrderBy";
                         if ( sortProperty != null )
                         {

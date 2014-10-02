@@ -1987,7 +1987,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the property name
+        /// Gets or sets the Column(s) specification for Sorting.
+        /// Specify multiple columns as "column1, column2, column3".
+        /// To sort DESC append column(s) with a " desc", for example: "column1 desc, column2, column3 desc"
         /// </summary>
         /// <value>
         /// The property.
