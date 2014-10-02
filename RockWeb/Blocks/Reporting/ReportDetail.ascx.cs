@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Reporting
             foreach (var itemPair in kvSortFields.Value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Split('^')))
             {
                 var reportFieldGuid = itemPair[0].AsGuidOrNull();
-                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Descending );
+                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
                 var reportField = report.ReportFields.FirstOrDefault( a => a.Guid == reportFieldGuid );
                 if (reportField != null)
                 {
@@ -916,6 +916,8 @@ namespace RockWeb.Blocks.Reporting
                     columnIndex++;
                 }
 
+                var reportFieldSortExpressions = new Dictionary<Guid, string>();
+
                 foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
                 {
                     columnIndex++;
@@ -938,7 +940,8 @@ namespace RockWeb.Blocks.Reporting
 
                             boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                             boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
-                            boundField.SortExpression = entityField.Name;
+                            boundField.SortExpression = boundField.DataField;
+                            reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
                             boundField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( boundField );
                         }
@@ -966,7 +969,8 @@ namespace RockWeb.Blocks.Reporting
 
                                 boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
                                 boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
-                                boundField.SortExpression = null;
+                                boundField.SortExpression = boundField.DataField;
+                                reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
 
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
                                     attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
@@ -994,10 +998,15 @@ namespace RockWeb.Blocks.Reporting
                             if ( columnField is BoundField )
                             {
                                 ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
+                                columnField.SortExpression = ( columnField as BoundField ).DataField;
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            columnField.SortExpression = selectComponent.SortExpression;
+                            if ( columnField.SortExpression != null )
+                            {
+                                reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
+                            }
+
                             columnField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( columnField );
                         }
@@ -1038,7 +1047,31 @@ namespace RockWeb.Blocks.Reporting
                     gReport.Visible = true;
                     gReport.ExportFilename = report.Name;
                     rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
-                    gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                    SortProperty sortProperty = gReport.SortProperty;
+                    if ( sortProperty == null )
+                    {
+                        var reportSort = new SortProperty();
+                        var sortColumns = new Dictionary<string, SortDirection>();
+                        foreach ( var reportField in report.ReportFields.Where( a => a.SortOrder.HasValue ).OrderBy( a => a.SortOrder.Value ) )
+                        {
+                            if ( reportFieldSortExpressions.ContainsKey( reportField.Guid ) )
+                            {
+                                var sortField = reportFieldSortExpressions[reportField.Guid];
+                                if ( !string.IsNullOrWhiteSpace( sortField ) )
+                                {
+                                    sortColumns.Add( sortField, reportField.SortDirection);
+                                }
+                            }
+                        }
+
+                        if ( sortColumns.Any() )
+                        {
+                            reportSort.Property = sortColumns.Select( a => a.Key + ( a.Value == SortDirection.Descending ? " desc" : string.Empty ) ).ToList().AsDelimited( "," );
+                            sortProperty = reportSort;
+                        }
+                    }
+
+                    gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, out errors );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
