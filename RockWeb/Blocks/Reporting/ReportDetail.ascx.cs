@@ -143,6 +143,21 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            // rebuild the CustomKeys list based on the current field titles
+            kvSortFields.CustomKeys = new Dictionary<string,string>();
+            foreach( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>())
+            {
+                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+                kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+            }
+        }
+
         #endregion
 
         #region Events
@@ -179,6 +194,7 @@ namespace RockWeb.Blocks.Reporting
             string fieldSelection = string.Empty;
             ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, FieldSelection = fieldSelection } );
             AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, new RockContext(), true, new ReportField { ShowInGrid = true } );
+            kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), "(untitled)" );
         }
 
         /// <summary>
@@ -353,7 +369,7 @@ namespace RockWeb.Blocks.Reporting
             report.ReportFields.Clear();
 
             var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
-            int displayOrder = 0;
+            int columnOrder = 0;
             foreach ( var panelWidget in allPanelWidgets )
             {
                 string ddlFieldsId = panelWidget.ID + "_ddlFields";
@@ -385,7 +401,7 @@ namespace RockWeb.Blocks.Reporting
                 RockTextBox columnHeaderTextTextBox = phReportFields.ControlsOfTypeRecursive<RockTextBox>().First( a => a.ID == columnHeaderTextTextBoxId );
                 reportField.ColumnHeaderText = columnHeaderTextTextBox.Text;
 
-                reportField.Order = displayOrder++;
+                reportField.ColumnOrder = columnOrder++;
 
                 if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -403,7 +419,22 @@ namespace RockWeb.Blocks.Reporting
                     reportField.Selection = fieldSelection;
                 }
 
+                reportField.Guid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+
                 report.ReportFields.Add( reportField );
+            }
+
+            int sortOrder = 0;
+            foreach (var itemPair in kvSortFields.Value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Split('^')))
+            {
+                var reportFieldGuid = itemPair[0].AsGuidOrNull();
+                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Descending );
+                var reportField = report.ReportFields.FirstOrDefault( a => a.Guid == reportFieldGuid );
+                if (reportField != null)
+                {
+                    reportField.SortOrder = sortOrder++;
+                    reportField.SortDirection = sortDirection;
+                }
             }
 
             var adding = report.Id.Equals( 0 );
@@ -775,8 +806,16 @@ namespace RockWeb.Blocks.Reporting
             ReportFieldsDictionary = new List<ReportFieldInfo>();
             RockContext rockContext = new RockContext();
 
-            foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+            kvSortFields.CustomKeys = new Dictionary<string, string>();
+            kvSortFields.CustomValues = new Dictionary<string, string>();
+            kvSortFields.CustomValues.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
+            kvSortFields.CustomValues.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
+
+            kvSortFields.Value = report.ReportFields.Where(a => a.SortOrder.HasValue).OrderBy( a => a.SortOrder.Value ).Select(a=> string.Format("{0}^{1}", a.Guid, a.SortDirection.ConvertToInt())).ToList().AsDelimited("|");
+
+            foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
             {
+                kvSortFields.CustomKeys.Add( reportField.Guid.ToString(), reportField.ColumnHeaderText );
                 string fieldSelection;
                 if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -877,7 +916,7 @@ namespace RockWeb.Blocks.Reporting
                     columnIndex++;
                 }
 
-                foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+                foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
                 {
                     columnIndex++;
                     if ( reportField.ReportFieldType == ReportFieldType.Property )
@@ -1057,6 +1096,12 @@ namespace RockWeb.Blocks.Reporting
             panelWidget.DeleteClick += FieldsPanelWidget_DeleteClick;
             panelWidget.ShowReorderIcon = true;
             panelWidget.Expanded = showExpanded;
+
+            HiddenFieldWithClass hfReportFieldGuid = new HiddenFieldWithClass();
+            hfReportFieldGuid.CssClass = "js-report-field-guid";
+            hfReportFieldGuid.ID = panelWidget.ID + "_hfReportFieldGuid";
+            hfReportFieldGuid.Value = reportFieldGuid.ToString();
+            panelWidget.Controls.Add( hfReportFieldGuid );
 
             Label lbFields = new Label();
             lbFields.Text = "Field Type";

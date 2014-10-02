@@ -34,6 +34,9 @@
                             <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Data View" Required="false" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />
+                        </div>
                     </div>
 
                     <div class="row">
@@ -140,12 +143,24 @@
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
                     if ($(this).find('.fa-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
+                        var reportFieldGuid = $(this).closest('section').find('.js-report-field-guid').val();
 
                         // set hidden value of title
                         $(this).find('.js-header-title-hidden').val(htmlEncode(title));
 
                         // set displayed text of title
                         $(this).find('.js-header-title').text(title);
+                        
+                        // update displayed sorting field names to match updated title
+                        var $kvSortFields = $('#<%=kvSortFields.ClientID %>');
+                        $kvSortFields.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
+
+                        // update the HTML for when the next sorting field is added
+                        var valueHtml = $kvSortFields.find('.js-value-html').val();
+                        var $fakeDiv = $('<div/>').append(valueHtml);
+                        $fakeDiv.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        var updatedValueHtml = $fakeDiv.html();
+                        $kvSortFields.find('.js-value-html').val(updatedValueHtml);
                     }
                 })
 

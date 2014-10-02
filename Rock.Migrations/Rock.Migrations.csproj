@@ -50,6 +50,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\201410012345399_ReportSort.cs" />
+    <Compile Include="Migrations\201410012345399_ReportSort.Designer.cs">
+      <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.Designer.cs">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
@@ -1254,6 +1258,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201410012345399_ReportSort.resx">
+      <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.resx">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
     </EmbeddedResource>
