@@ -145,6 +145,12 @@ namespace RockWeb.Blocks.Crm
                 .Where( a => !a.IgnoreUntilScoreChanges )
                 .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
 
+            double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
+            if (confidenceScoreLow.HasValue)
+            {
+                personDuplicateQry = personDuplicateQry.Where( a => a.ConfidenceScore > confidenceScoreLow );
+            }
+
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
 
             var qry = groupByQry.Select( a => new
@@ -157,12 +163,6 @@ namespace RockWeb.Blocks.Crm
                 PersonModifiedDateTime = a.Key.ModifiedDateTime,
                 CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
             } );
-
-            double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
-            if ( confidenceScoreLow.HasValue )
-            {
-                qry = qry.Where( a => a.MaxConfidenceScore.HasValue && a.MaxConfidenceScore >= confidenceScoreLow );
-            }
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )
