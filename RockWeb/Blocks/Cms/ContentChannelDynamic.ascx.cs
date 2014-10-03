@@ -539,6 +539,9 @@ $(document).ready(function() {
             return items;
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
         public void ShowEdit()
         {
             int? filterId = hfDataFilterId.Value.AsIntegerOrNull();
@@ -634,6 +637,13 @@ $(document).ready(function() {
             }
         }
 
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( ContentChannel channel, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
             HackEntityFields( channel, rockContext );
@@ -645,6 +655,13 @@ $(document).ready(function() {
             }
         }
 
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
             if ( filter.ExpressionType == FilterExpressionType.Filter )
