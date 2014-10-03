@@ -1892,13 +1892,9 @@ dl:not(.dl-horizontal) dd {
   margin: 4px 8px 0 -2px;
   color: #8c8c8c;
 }
-/*.date-range-picker,
-.number-range-editor {
-    span.to {
-        float: left;
-        margin: 8px 12px 0 0;
-    }
-}*/
+.rock-check-box .checkbox {
+  margin-top: 0;
+}
 .validation-error {
   color: #d9534f;
   font-weight: 300;
@@ -2114,6 +2110,10 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+}
+.grid-select-field .checkbox label,
+.grid-select-field .radio label {
+  padding: 0;
 }
 .table > tbody > tr > th,
 .table > tbody > tr > td {
