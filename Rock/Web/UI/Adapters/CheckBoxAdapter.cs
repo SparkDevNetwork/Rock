@@ -17,6 +17,7 @@
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI.Adapters
 {
@@ -52,11 +53,20 @@ namespace Rock.Web.UI.Adapters
             {
                 writer.WriteLine();
 
-                bool hasText = !string.IsNullOrWhiteSpace( cb.Text );
-                if ( hasText )
+                // always render the label tag for the checkbox, even if the checkbox doesn't have text
+                bool renderCheckboxLabel = true;
+                if ( renderCheckboxLabel )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    if ( cb is RockCheckBox )
+                    {
+                        if ( ( cb as RockCheckBox ).DisplayInline )
+                        {
+                            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox-inline" );
+                        }
+                    }
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 }
@@ -80,25 +90,27 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( key, cb.InputAttributes[key] );
                 }
 
-                if (cb.AutoPostBack)
+                if ( cb.AutoPostBack )
                 {
-                    PostBackOptions postBackOption = new PostBackOptions(cb, string.Empty);
-                    if (cb.CausesValidation && this.Page.GetValidators(cb.ValidationGroup).Count > 0)
+                    PostBackOptions postBackOption = new PostBackOptions( cb, string.Empty );
+                    if ( cb.CausesValidation && this.Page.GetValidators( cb.ValidationGroup ).Count > 0 )
                     {
                         postBackOption.PerformValidation = true;
                         postBackOption.ValidationGroup = cb.ValidationGroup;
                     }
-                    if (this.Page.Form != null)
+
+                    if ( this.Page.Form != null )
                     {
                         postBackOption.AutoPostBack = true;
                     }
-                    writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                if ( hasText )
+                if ( renderCheckboxLabel )
                 {
                     writer.Write( cb.Text );
 
@@ -106,18 +118,18 @@ namespace Rock.Web.UI.Adapters
                 }
 
                 var rockCb = cb as Rock.Web.UI.Controls.RockCheckBox;
-                if (rockCb != null)
+                if ( rockCb != null )
                 {
-                    bool renderLabel = ( !string.IsNullOrEmpty( rockCb.Label ) );
-                    bool renderHelp = ( rockCb.HelpBlock != null && !string.IsNullOrWhiteSpace( rockCb.Help ) );
+                    bool renderRockLabel = !string.IsNullOrEmpty( rockCb.Label );
+                    bool renderRockHelp = rockCb.HelpBlock != null && !string.IsNullOrWhiteSpace( rockCb.Help );
 
-                    if (!renderLabel && renderHelp)
+                    if ( !renderRockLabel && renderRockHelp )
                     {
                         rockCb.HelpBlock.RenderControl( writer );
                     }
                 }
 
-                if ( hasText )
+                if ( renderCheckboxLabel )
                 {
                     writer.RenderEndTag();      // Div
                 }

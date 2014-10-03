@@ -30,10 +30,10 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private Panel _pnlModeSelection;
-        private RadioButton _radNamed;
-        private RadioButton _radAddress;
-        private RadioButton _radPoint;
-        private RadioButton _radPolygon;
+        private RockRadioButton _radNamed;
+        private RockRadioButton _radAddress;
+        private RockRadioButton _radPoint;
+        private RockRadioButton _radPolygon;
 
         private Panel _pickersPanel;
         private LocationItemPicker _namedPicker;
@@ -339,22 +339,22 @@ namespace Rock.Web.UI.Controls
             _hfCurrentPickerMode.ID = this.ID + "_hfCurrentPickerMode";
             this.Controls.Add( _hfCurrentPickerMode );
 
-            _radNamed = new RadioButton { ID = "radNamed" };
+            _radNamed = new RockRadioButton { ID = "radNamed" };
             _radNamed.Text = "Location";
             _radNamed.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radNamed );
 
-            _radAddress = new RadioButton { ID = "radAddress" };
+            _radAddress = new RockRadioButton { ID = "radAddress" };
             _radAddress.Text = "Address";
             _radAddress.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radAddress );
 
-            _radPoint = new RadioButton { ID = "radPoint" };
+            _radPoint = new RockRadioButton { ID = "radPoint" };
             _radPoint.Text = "Point";
             _radPoint.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radPoint );
 
-            _radPolygon = new RadioButton { ID = "radPolygon" };
+            _radPolygon = new RockRadioButton { ID = "radPolygon" };
             _radPolygon.Text = "Geo-fence";
             _radPolygon.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radPolygon );

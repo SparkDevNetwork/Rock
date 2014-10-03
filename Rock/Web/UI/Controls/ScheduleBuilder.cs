@@ -411,13 +411,13 @@ namespace Rock.Web.UI.Controls
         private NumberBox _tbDurationHours;
         private NumberBox _tbDurationMinutes;
 
-        private RadioButton _radOneTime;
-        private RadioButton _radRecurring;
+        private RockRadioButton _radOneTime;
+        private RockRadioButton _radRecurring;
 
-        private RadioButton _radSpecificDates;
-        private RadioButton _radDaily;
-        private RadioButton _radWeekly;
-        private RadioButton _radMonthly;
+        private RockRadioButton _radSpecificDates;
+        private RockRadioButton _radDaily;
+        private RockRadioButton _radWeekly;
+        private RockRadioButton _radMonthly;
 
         private HiddenField _hfSpecificDateListValues;
 
@@ -425,10 +425,10 @@ namespace Rock.Web.UI.Controls
         private DatePicker _dpSpecificDate;
 
         // daily recurrence
-        private RadioButton _radDailyEveryXDays;
+        private RockRadioButton _radDailyEveryXDays;
         private NumberBox _tbDailyEveryXDays;
-        private RadioButton _radDailyEveryWeekday;
-        private RadioButton _radDailyEveryWeekendDay;
+        private RockRadioButton _radDailyEveryWeekday;
+        private RockRadioButton _radDailyEveryWeekendDay;
 
         // weekly recurrence
         private NumberBox _tbWeeklyEveryX;
@@ -441,18 +441,18 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbWeeklySaturday;
 
         // monthly
-        private RadioButton _radMonthlyDayX;
+        private RockRadioButton _radMonthlyDayX;
         private NumberBox _tbMonthlyDayX;
         private NumberBox _tbMonthlyXMonths;
-        private RadioButton _radMonthlyNth;
+        private RockRadioButton _radMonthlyNth;
         private RockDropDownList _ddlMonthlyNth;
         private RockDropDownList _ddlMonthlyDayName;
 
         // end date
-        private RadioButton _radEndByNone;
-        private RadioButton _radEndByDate;
+        private RockRadioButton _radEndByNone;
+        private RockRadioButton _radEndByDate;
         private DatePicker _dpEndBy;
-        private RadioButton _radEndByOccurrenceCount;
+        private RockRadioButton _radEndByOccurrenceCount;
         private NumberBox _tbEndByOccurrenceCount;
 
         // exclusions
@@ -479,13 +479,13 @@ END:VCALENDAR
             _tbDurationHours = new NumberBox();
             _tbDurationMinutes = new NumberBox();
 
-            _radOneTime = new RadioButton();
-            _radRecurring = new RadioButton();
+            _radOneTime = new RockRadioButton();
+            _radRecurring = new RockRadioButton();
 
-            _radSpecificDates = new RadioButton();
-            _radDaily = new RadioButton();
-            _radWeekly = new RadioButton();
-            _radMonthly = new RadioButton();
+            _radSpecificDates = new RockRadioButton();
+            _radDaily = new RockRadioButton();
+            _radWeekly = new RockRadioButton();
+            _radMonthly = new RockRadioButton();
 
             // specific date
             _hfSpecificDateListValues = new HiddenField();
@@ -493,10 +493,10 @@ END:VCALENDAR
             _dpSpecificDate = new DatePicker();
 
             // daily
-            _radDailyEveryXDays = new RadioButton();
+            _radDailyEveryXDays = new RockRadioButton();
             _tbDailyEveryXDays = new NumberBox();
-            _radDailyEveryWeekday = new RadioButton();
-            _radDailyEveryWeekendDay = new RadioButton();
+            _radDailyEveryWeekday = new RockRadioButton();
+            _radDailyEveryWeekendDay = new RockRadioButton();
 
             // weekly
             _tbWeeklyEveryX = new NumberBox();
@@ -509,18 +509,18 @@ END:VCALENDAR
             _cbWeeklySaturday = new RockCheckBox();
 
             // monthly
-            _radMonthlyDayX = new RadioButton();
+            _radMonthlyDayX = new RockRadioButton();
             _tbMonthlyDayX = new NumberBox();
             _tbMonthlyXMonths = new NumberBox();
-            _radMonthlyNth = new RadioButton();
+            _radMonthlyNth = new RockRadioButton();
             _ddlMonthlyNth = new RockDropDownList();
             _ddlMonthlyDayName = new RockDropDownList();
 
             // end date
-            _radEndByNone = new RadioButton();
-            _radEndByDate = new RadioButton();
+            _radEndByNone = new RockRadioButton();
+            _radEndByDate = new RockRadioButton();
             _dpEndBy = new DatePicker();
-            _radEndByOccurrenceCount = new RadioButton();
+            _radEndByOccurrenceCount = new RockRadioButton();
             _tbEndByOccurrenceCount = new NumberBox();
 
             // exclusions
@@ -817,7 +817,7 @@ END:VCALENDAR
                 //// We just need one Calendar and one Event
 
                 // set all rad to false to prevent multiple from being true
-                foreach ( var radControl in this.Controls.OfType<RadioButton>().ToList() )
+                foreach ( var radControl in this.Controls.OfType<RockRadioButton>().ToList() )
                 {
                     radControl.Checked = false;
                 }
