@@ -43,7 +43,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", 5, @"3600", "773BEFDD-EEBA-486C-98E6-AFD0D4156E22" );
             RockMigrationHelper.UpdateBlockTypeAttribute( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Debug", "EnableDebug", "", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", 6, @"False", "72F4232B-8D2A-4823-B9F1-ED68F182C1A4" );
             RockMigrationHelper.AddBlockTypeAttribute( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Filter Id", "FilterId", "", "The data filter that is used to filter items", 7, @"0", "618EFBDA-941D-4F60-9AA8-54955B7A03A2" );
-            RockMigrationHelper.UpdateBlockTypeAttribute( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Order", "Order", "", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", 8, @"Priority^ASC|Expire^DESC|Start^DESC", "07ED420E-749C-4938-ADFD-1DDEA6B63014" );
+            RockMigrationHelper.AddBlockTypeAttribute( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Order", "Order", "", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", 8, @"", "07ED420E-749C-4938-ADFD-1DDEA6B63014" );
             RockMigrationHelper.DeleteAttribute( "0FC5F418-FF53-4881-BB00-B67D23C5B4EC" ); // Old filter attribute
 
             Sql( @"

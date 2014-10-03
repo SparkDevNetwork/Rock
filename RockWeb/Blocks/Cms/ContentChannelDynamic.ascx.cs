@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "Advanced", 5 )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "Advanced", 6 )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "Advanced", 7 )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "Priority^ASC|Expire^DESC|Start^DESC", "", 8 )]
+    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "", 8 )]
 
     public partial class ContentChannelDynamic : RockBlock
     {
@@ -218,6 +218,12 @@ $(document).ready(function() {
 
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
 
+            var directions = new Dictionary<string, string>();
+            directions.Add( "ASC", "Ascending" );
+            directions.Add( "DESC", "Descending" );
+            kvlOrder.CustomValues = directions;
+            kvlOrder.Value = GetAttributeValue( "Order" );
+
             pnlView.Visible = false;
             pnlEdit.Visible = true;
 
@@ -276,6 +282,7 @@ $(document).ready(function() {
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
+            SetAttributeValue( "Order", kvlOrder.Value );
             SaveAttributeValues();
 
             FlushCacheItem( CONTENT_CACHE_KEY );
@@ -485,6 +492,25 @@ $(document).ready(function() {
                                 }
                             }
 
+                            SortProperty sortProperty = null;
+
+                            string orderBy = GetAttributeValue( "Order" );
+                            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                            {
+                                var fieldDirection = new List<string>();
+                                foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                                {
+                                    var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                    fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                }
+
+                                sortProperty = new SortProperty();
+                                sortProperty.Direction = SortDirection.Ascending;
+                                sortProperty.Property = fieldDirection.AsDelimited( "," );
+                            }
+
+                            ParameterExpression paramExpression = service.ParameterExpression;
+
                             int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
                             if ( dataFilterId.HasValue )
                             {
@@ -492,21 +518,14 @@ $(document).ready(function() {
                                 var dataFilter = dataFilterService.Get( dataFilterId.Value );
 
                                 var errorMessages = new List<string>();
-                                ParameterExpression paramExpression = service.ParameterExpression;
                                 Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
 
-                                qry = qry.Where( paramExpression, whereExpression );
+                                qry = qry.Where( paramExpression, whereExpression, sortProperty );
+
                             }
                             else
                             {
-                                // Create a default query that approved, active items of this channel type 
-                                var now = RockDateTime.Now;
-                                qry = qry.Where( i =>
-                                        i.Status == ContentChannelItemStatus.Approved &&
-                                        i.ContentChannelId == contentChannel.Id &&
-                                        i.StartDateTime.CompareTo( now ) <= 0 &&
-                                        ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 )
-                                    );
+                                qry = qry.Where( paramExpression, null, sortProperty );
                             }
                         }
 
@@ -572,6 +591,22 @@ $(document).ready(function() {
                     }
 
                     CreateFilterControl( channel, filter, true, rockContext );
+
+                    kvlOrder.CustomKeys = new Dictionary<string, string>();
+                    kvlOrder.CustomKeys.Add( "Title", "Title" );
+                    kvlOrder.CustomKeys.Add( "Priority", "Priority" );
+                    kvlOrder.CustomKeys.Add( "Status", "Status" );
+                    kvlOrder.CustomKeys.Add( "StartDateTime", "Start" );
+                    kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
+
+                    //var channelItem = new ContentChannelItem();
+                    //channelItem.ContentChannelTypeId = channel.ContentChannelTypeId;
+                    //channelItem.LoadAttributes( rockContext );
+
+                    //foreach ( var attribute in channelItem.Attributes.Select( a => a.Value ) )
+                    //{
+                    //    kvlOrder.CustomKeys.Add( "Attribute_" + attribute.Key.ToString(), attribute.Name );
+                    //}
                 }
             }
         }
