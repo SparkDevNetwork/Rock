@@ -1956,8 +1956,11 @@ namespace Rock
             {
                 // use reflection (not ComponentModel) to mirror LINQ
                 PropertyInfo pi = type.GetProperty( prop );
-                expr = Expression.Property( expr, pi );
-                type = pi.PropertyType;
+                if ( pi != null )
+                {
+                    expr = Expression.Property( expr, pi );
+                    type = pi.PropertyType;
+                }
             }
             Type delegateType = typeof( Func<,> ).MakeGenericType( typeof( T ), type );
             LambdaExpression lambda = Expression.Lambda( delegateType, expr, arg );
