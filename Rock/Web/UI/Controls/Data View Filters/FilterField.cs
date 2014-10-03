@@ -206,6 +206,26 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Gets or sets optional key/value filter options.
+        /// </summary>
+        /// <value>
+        /// The filter options.
+        /// </value>
+        public Dictionary<string, object> FilterOptions
+        {
+            get
+            {
+                return ViewState["FilterOptions"] as Dictionary<string, object>;
+            }
+
+            set
+            {
+                ViewState["FilterOptions"] = value;
+                RecreateChildControls();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -276,7 +296,7 @@ $('.filter-item-select').click(function (event) {
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                RockPage page = this.Page as RockPage;
+                component.Options = FilterOptions;
                 filterControls = component.CreateChildControls( FilteredEntityType, this );
             }
             else

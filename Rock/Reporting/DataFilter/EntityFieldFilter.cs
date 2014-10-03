@@ -107,7 +107,20 @@ namespace Rock.Reporting.DataFilter
                     cblMultiSelect.RepeatDirection = RepeatDirection.Horizontal;
                     controls.Add( cblMultiSelect );
 
-                    if ( entityField.FieldKind == FieldKind.Property )
+                    if ( entityField.DefinedTypeGuid.HasValue )
+                    {
+                        // Defined Value Properties
+                        var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
+                        if ( definedType != null )
+                        {
+                            foreach ( var definedValue in definedType.DefinedValues )
+                            {
+                                cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
+                            }
+                        }
+                    }
+
+                    else if ( entityField.FieldKind == FieldKind.Property )
                     {
                         if ( entityField.PropertyType.IsEnum )
                         {
@@ -115,18 +128,6 @@ namespace Rock.Reporting.DataFilter
                             foreach ( var value in Enum.GetValues( entityField.PropertyType ) )
                             {
                                 cblMultiSelect.Items.Add( new ListItem( Enum.GetName( entityField.PropertyType, value ).SplitCase() ) );
-                            }
-                        }
-                        else if ( entityField.DefinedTypeGuid.HasValue )
-                        {
-                            // Defined Value Properties
-                            var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
-                            if ( definedType != null )
-                            {
-                                foreach ( var definedValue in definedType.DefinedValues )
-                                {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
-                                }
                             }
                         }
                     }
@@ -181,9 +182,14 @@ namespace Rock.Reporting.DataFilter
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                             {
                                 case SystemGuid.FieldType.BOOLEAN:
-                                    ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
-                                    ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
-                                    break;
+                                    {
+                                        string trueText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "True";
+                                        string falseText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "False";
+
+                                        ddlSingleSelect.Items.Add( new ListItem( trueText, "True" ) );
+                                        ddlSingleSelect.Items.Add( new ListItem( falseText, "False" ) );
+                                        break;
+                                    }
                             }
                         }
                     }

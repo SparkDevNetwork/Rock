@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -97,6 +98,20 @@ namespace Rock.Field.Types
                 DayOfWeekPicker dayOfWeekPicker = control as DayOfWeekPicker;
                 dayOfWeekPicker.SelectedDayOfWeek = (System.DayOfWeek)( value.AsInteger() );
             }
+        }
+
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
+            return filterConfig;
         }
     }
 }
