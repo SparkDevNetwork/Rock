@@ -55,7 +55,8 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "Advanced", 5 )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "Advanced", 6 )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "Advanced", 7 )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "", 8 )]
+    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "Advanced", 8 )]
+    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "Advanced", 9 )]
 
     public partial class ContentChannelDynamic : RockBlock
     {
@@ -212,6 +213,7 @@ $(document).ready(function() {
             }
 
             cbDebug.Checked = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
             ceQuery.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
@@ -219,10 +221,11 @@ $(document).ready(function() {
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
 
             var directions = new Dictionary<string, string>();
-            directions.Add( "ASC", "Ascending" );
-            directions.Add( "DESC", "Descending" );
+            directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
+            directions.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
             kvlOrder.CustomValues = directions;
             kvlOrder.Value = GetAttributeValue( "Order" );
+            kvlOrder.Required = true;
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
@@ -278,6 +281,7 @@ $(document).ready(function() {
 
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "EnableDebug", cbDebug.Checked.ToString() );
+            SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             SetAttributeValue( "Template", ceQuery.Text );
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
@@ -378,6 +382,25 @@ $(document).ready(function() {
             var currentPageContent = pagination.GetCurrentPageItems( content );
 
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+
+            // Merge content and attribute fields if block is configured to do so.
+            if ( GetAttributeValue( "MergeContent" ).AsBoolean() )
+            {
+                var itemMergeFields = new Dictionary<string, object>();
+                itemMergeFields.Add( "Person", CurrentPerson );
+                globalAttributeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
+
+                foreach ( var item in currentPageContent )
+                {
+                    itemMergeFields.AddOrReplace( "Item", item );
+                    item.Content = item.Content.ResolveMergeFields( itemMergeFields );
+                    foreach( var attributeValue in item.AttributeValues )
+                    {
+                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields );
+                    }
+                }
+            }
+
             var mergeFields = new Dictionary<string, object>();
             if ( CurrentPerson != null )
             {
@@ -521,12 +544,9 @@ $(document).ready(function() {
                                 Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
 
                                 qry = qry.Where( paramExpression, whereExpression, sortProperty );
+                            }
 
-                            }
-                            else
-                            {
-                                qry = qry.Where( paramExpression, null, sortProperty );
-                            }
+
                         }
 
                         // All filtering has been added, now run query and then check security and load attributes
@@ -539,11 +559,8 @@ $(document).ready(function() {
                             }
                         }
 
-                        return items
-                            .OrderBy( i => i.Priority )
-                            .ThenByDescending( i => i.ExpireDateTime )
-                            .ThenByDescending( i => i.StartDateTime )
-                            .ToList();
+                        return items;
+
                     }
                 }
 
