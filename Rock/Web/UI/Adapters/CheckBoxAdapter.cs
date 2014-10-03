@@ -112,7 +112,14 @@ namespace Rock.Web.UI.Adapters
 
                 if ( renderCheckboxLabel )
                 {
-                    writer.Write( cb.Text );
+                    if ( cb.Text.Length > 0 )
+                    {
+                        writer.Write( cb.Text );
+                    }
+                    else
+                    {
+                        writer.Write( "&nbsp;" );
+                    }
 
                     writer.RenderEndTag();      // Label
                 }
