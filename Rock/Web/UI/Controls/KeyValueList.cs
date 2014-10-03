@@ -176,7 +176,6 @@ namespace Rock.Web.UI.Controls
                     ddl.DataValueField = "Key";
                     ddl.DataSource = values;
                     ddl.DataBind();
-                    ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                     if ( nameAndValue.Length >= 2 )
                     {
                         ddl.SelectedValue = nameAndValue[1];

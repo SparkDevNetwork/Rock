@@ -36,13 +36,15 @@
         <div class="row">
             <div class="col-md-5">
                 <Rock:NumberBox ID="nbCount" runat="server" Label="Items per Page"
-                    help="The maximum number of items to display per page (use '0' for no maximum)." />
+                    help="The maximum number of items to display per page (0 means unlimited)." />
                 <Rock:NumberBox ID="nbCacheDuration" runat="server" Label="Cache Duration"
                     help="The number of seconds to cache the content for (use '0' for no caching)." />
             </div>
             <div class="col-md-7">
                 <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
                     Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
+                <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
+                    Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
             </div>
         </div>
 
