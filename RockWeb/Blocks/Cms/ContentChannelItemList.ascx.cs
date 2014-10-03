@@ -62,8 +62,9 @@ namespace RockWeb.Blocks.Cms
             var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
             if ( contentChannel != null )
             {
-                gItems.Columns[1].HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                gItems.Columns[1].HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
                 gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+                gItems.Columns[3].Visible = !contentChannel.ContentChannelType.DisablePriority;
                 lContentChannel.Text = contentChannel.Name;
                 _typeId = contentChannel.ContentChannelTypeId;
 

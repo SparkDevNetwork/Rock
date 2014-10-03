@@ -1842,6 +1842,62 @@ namespace Rock
 
         #region IQueryable extensions
 
+        #region Where
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Where( queryable, parameterExpression, whereExpression, null, null );
+        }
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
+        {
+            return Where( queryable, parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Queries the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                queryable = queryable.Where( lambda );
+            }
+
+            if ( sortProperty != null )
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
+
+            if ( fetchTop.HasValue )
+            {
+                queryable = queryable.Take( fetchTop.Value );
+            }
+
+            return queryable;
+        }
+
+        #endregion
+
         /// <summary>
         /// Orders the list by the name of a property.
         /// </summary>

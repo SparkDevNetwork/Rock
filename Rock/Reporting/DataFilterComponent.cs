@@ -69,6 +69,14 @@ namespace Rock.Reporting
             }
         }
 
+        /// <summary>
+        /// Gets or sets the a dictionary of options that filter may or may not use (depending on filter)
+        /// </summary>
+        /// <value>
+        /// The options.
+        /// </value>
+        public virtual Dictionary<string, object> Options {get; set;}
+
         #endregion
 
         #region Public Methods
