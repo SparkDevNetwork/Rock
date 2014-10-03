@@ -272,7 +272,7 @@ namespace Rock.Web.UI.Controls
                     }
                     else
                     {
-                        cb = new RadioButton();
+                        cb = new RockRadioButton();
                     }
 
                     cb.ID = "cbSelect_" + ColumnIndex.ToString();
@@ -332,7 +332,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( SelectionMode == SelectionMode.Single )
                     {
-                        ( (RadioButton)cb ).GroupName = "cbSelect_" + gridViewRow.RowIndex.ToString();
+                        ( (RockRadioButton)cb ).GroupName = "cbSelect_" + gridViewRow.RowIndex.ToString();
                     }
                 }
             }

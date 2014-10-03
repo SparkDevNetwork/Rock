@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI.Adapters
 {
@@ -53,10 +54,18 @@ namespace Rock.Web.UI.Adapters
             {
                 writer.WriteLine();
 
-                bool hasText = !string.IsNullOrWhiteSpace( rb.Text );
-                if ( hasText )
+                // always render the label tag for the radiobutton, even if the radiobutton doesn't have text
+                bool renderRadioButtonLabel = true;
+                if ( renderRadioButtonLabel )
                 {
-                    writer.AddAttribute( "class", "radio-inline" );
+                    if ( rb is RockRadioButton )
+                    {
+                        if ( ( rb as RockRadioButton ).DisplayInline )
+                        {
+                            writer.AddAttribute( HtmlTextWriterAttribute.Class, "radio-inline" );
+                        }
+                    }
+
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 }
 
@@ -108,7 +117,7 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                if ( hasText )
+                if ( renderRadioButtonLabel )
                 {
                     writer.Write( rb.Text );
                     writer.RenderEndTag();      // Label

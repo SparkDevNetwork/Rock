@@ -555,7 +555,7 @@ namespace Rock.Web.UI.Controls
                             }
                             else
                             {
-                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RadioButton)cb ).GroupName )];
+                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RockRadioButton)cb ).GroupName )];
                                 if ( value == cb.ClientID )
                                 {
                                     col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
