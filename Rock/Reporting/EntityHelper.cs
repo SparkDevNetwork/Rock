@@ -202,59 +202,8 @@ namespace Rock.Reporting
                 propName = attribute.Name + ( i++ ).ToString();
             }
 
-            EntityField entityProperty = null;
-
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-            string fieldTypeUpperGuid = fieldType.Guid.ToString().ToUpper();
-
-            switch ( fieldTypeUpperGuid )
-            {
-                case SystemGuid.FieldType.BOOLEAN:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.DATE:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                    break;
-
-                case SystemGuid.FieldType.TIME:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
-                    break;
-
-                case SystemGuid.FieldType.INTEGER:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                    break;
-
-                case SystemGuid.FieldType.DECIMAL:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
-                    break;
-
-                case SystemGuid.FieldType.DAY_OF_WEEK:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
-                    break;
-
-                case SystemGuid.FieldType.MULTI_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.SINGLE_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.TEXT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                    break;
-            }
-
+            var entityProperty = fieldType.Field.GetFilterConfig( attribute );
             if ( entityProperty != null )
             {
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
@@ -266,6 +215,7 @@ namespace Rock.Reporting
                     }
                 }
 
+                entityProperty.Name = propName;
                 entityFields.Add( entityProperty );
             }
         }
@@ -378,6 +328,13 @@ namespace Rock.Reporting
         ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
         /// </value>
         public bool IsPreviewable { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// </summary>
+        public EntityField()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.

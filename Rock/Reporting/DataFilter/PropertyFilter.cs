@@ -397,7 +397,8 @@ namespace Rock.Reporting.DataFilter
         {
             var groupedControls = new Dictionary<string, List<Control>>();
 
-            foreach ( var property in GetEntityFields( entityType ) )
+            var properties = GetEntityFields( entityType );
+            foreach ( var property in properties )
             {
                 if ( !groupedControls.ContainsKey( property.Name ) )
                 {
