@@ -163,13 +163,13 @@ namespace DotLiquid
 
                 switch ( unit )
                 {
-                    case "D":
+                    case "d":
                         return (Int64)difference.TotalDays;
-                    case "H":
+                    case "h":
                         return (Int64)difference.TotalHours;
-                    case "M":
+                    case "m":
                         return (Int64)difference.TotalMinutes;
-                    case "S":
+                    case "s":
                         return (Int64)difference.TotalSeconds;
                     default:
                         return null;
@@ -614,6 +614,12 @@ namespace DotLiquid
 
 			if (format.IsNullOrWhiteSpace())
 				return input.ToString();
+
+            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
+            if ( format.Length == 1 )
+            {
+                format = " " + format;
+            }
 
 			DateTime date;
 
