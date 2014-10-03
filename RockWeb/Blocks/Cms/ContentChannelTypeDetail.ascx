@@ -30,6 +30,8 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
+                        <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
+                            Help="Should channels of this type disable the use of priorities?" Text="Yes" />
                     </div>
                 </div>
 

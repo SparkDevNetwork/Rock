@@ -138,11 +138,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlType control.
+        /// Handles the SelectedIndexChanged event of the ddlChannelType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlType_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlChannelType_SelectedIndexChanged( object sender, EventArgs e )
         {
             ContentChannel channel = null;
 
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Cms
             {
                 channel = GetContentChannel( hfId.ValueAsInt() );
                 if (channel != null && 
-                    channel.ContentChannelTypeId.ToString() != ddlType.SelectedValue && 
+                    channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue && 
                     channel.Items.Any() )
                 {
                     maContentChannelWarning.Show( "Changing the content type will result in all of this channel\\'s items losing any data that is specific to the original content type!", ModalAlertType.Warning );
@@ -165,6 +165,16 @@ namespace RockWeb.Blocks.Cms
 
             AddAttributeControls( channel );
 
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlContentControlType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlContentControlType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            tbRootImageDirectory.Visible = ddlContentControlType.SelectedValueAsEnumOrNull<ContentControlType>() == ContentControlType.HtmlEditor;
         }
         
         /// <summary>
@@ -195,7 +205,9 @@ namespace RockWeb.Blocks.Cms
             {
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
-                contentChannel.ContentChannelTypeId = ddlType.SelectedValueAsInt() ?? 0;
+                contentChannel.ContentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
+                contentChannel.ContentControlType = ddlContentControlType.SelectedValueAsEnum<ContentControlType>();
+                contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
                 contentChannel.RequiresApproval = cbRequireApproval.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
@@ -422,7 +434,10 @@ namespace RockWeb.Blocks.Cms
 
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
-                ddlType.SetValue( contentChannel.ContentChannelTypeId );
+                ddlChannelType.SetValue( contentChannel.ContentChannelTypeId );
+                ddlContentControlType.SetValue( contentChannel.ContentControlType.ConvertToInt().ToString() );
+                tbRootImageDirectory.Text = contentChannel.RootImageDirectory;
+                tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;
                 tbIconCssClass.Text = contentChannel.IconCssClass;
                 cbRequireApproval.Checked = contentChannel.RequiresApproval;
                 cbEnableRss.Checked = contentChannel.EnableRss;
@@ -442,7 +457,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentChannel">The content channel.</param>
         private void AddAttributeControls( ContentChannel contentChannel )
         {
-            int typeId = ddlType.SelectedValueAsInt() ?? 0;
+            int typeId = ddlChannelType.SelectedValueAsInt() ?? 0;
             hfTypeId.Value = typeId.ToString();
 
             contentChannel.ContentChannelTypeId = typeId;
@@ -485,11 +500,14 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadDropdowns()
         {
-            ddlType.Items.Clear();
+            ddlChannelType.Items.Clear();
             foreach ( var contentType in new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
             {
-                ddlType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
+                ddlChannelType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
             }
+
+            ddlContentControlType.BindToEnum<ContentControlType>();
+
         }
         #endregion
 }

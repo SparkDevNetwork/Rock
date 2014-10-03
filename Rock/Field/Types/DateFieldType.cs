@@ -226,5 +226,17 @@ namespace Rock.Field.Types
             }
         }
 
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.FilterFieldType = SystemGuid.FieldType.DATE;
+            return filterConfig;
+        }
     }
 }
