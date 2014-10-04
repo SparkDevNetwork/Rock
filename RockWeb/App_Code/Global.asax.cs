@@ -448,7 +448,14 @@ namespace RockWeb
                     {
                         using ( SqlConnection con = new SqlConnection( connectionString ) )
                         {
-                            con.Open();
+                            try
+                            {
+                                con.Open();
+                            }
+                            catch ( SqlException ex )
+                            {
+                                throw new Exception( "Could not connect to the SQL database! Please check the 'RockContext' connection string in the web.ConnectionString.config file.", ex );
+                            }
 
                             // Iterate each assembly that contains plugin migrations
                             foreach ( var assemblyMigrations in assemblies )
