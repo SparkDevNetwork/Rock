@@ -58,6 +58,11 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "Advanced", 8 )]
     [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "Advanced", 9 )]
 
+    [BooleanField( "Set Page Title", "Determines the block should set the page title with the channel name or content item.", false, "Advanced", 10 )]
+    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "Advanced", 11 )]
+    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "Advanced", 12 )]
+    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "Advanced", 13 )]
+
     public partial class ContentChannelDynamic : RockBlock
     {
         #region Fields
@@ -214,6 +219,8 @@ $(document).ready(function() {
 
             cbDebug.Checked = GetAttributeValue( "EnableDebug" ).AsBoolean();
             cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
+            cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
+            cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
             ceQuery.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
@@ -287,6 +294,10 @@ $(document).ready(function() {
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
             SetAttributeValue( "Order", kvlOrder.Value );
+            SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
+            SetAttributeValue( "RssAutodiscover", cbSetRssAutodiscover.Checked.ToString() );
+            SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
+            SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
             SaveAttributeValues();
 
             FlushCacheItem( CONTENT_CACHE_KEY );
@@ -442,9 +453,91 @@ $(document).ready(function() {
                 lDebug.Text = string.Empty;
             }
 
+            // set page title
+            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )
+            {               
+                if ( string.IsNullOrWhiteSpace( PageParameter( "Item" ) ) )
+                {
+                    // set title to channel name
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", content.Select( c => c.ContentChannel.Name ).FirstOrDefault(), RockPage.Site.Name );
+                    RockPage.PageTitle = content.Select( c => c.ContentChannel.Name ).FirstOrDefault();
+                    RockPage.Header.Title = String.Format( "{0} | {1}", content.Select( c => c.ContentChannel.Name ).FirstOrDefault(), RockPage.Site.Name );
+                }
+                else
+                {
+                    RockPage.PageTitle = content.Select( c => c.Title ).FirstOrDefault();
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", content.Select( c => c.Title ).FirstOrDefault(), RockPage.Site.Name );
+                    RockPage.Header.Title = String.Format( "{0} | {1}", content.Select( c => c.Title ).FirstOrDefault(), RockPage.Site.Name );
+                }
+            }
+
+            // set rss auto discover link
+            if ( GetAttributeValue( "RssAutodiscover" ).AsBoolean() && content.Count > 0 )
+            {
+                //<link rel="alternate" type="application/rss+xml" title="RSS Feed for petefreitag.com" href="/rss/" />
+                HtmlLink rssLink = new HtmlLink();
+                rssLink.Attributes.Add("type", "application/rss+xml");
+                rssLink.Attributes.Add("rel", "alternate");
+                rssLink.Attributes.Add("title", content.Select(c => c.ContentChannel.Name).FirstOrDefault());
+                rssLink.Attributes.Add( "href", content.Select(c => c.ContentChannel.ChannelUrl).FirstOrDefault() );
+                RockPage.Header.Controls.Add( rssLink );
+            }
+
+            // set description meta tag
+            string metaDescriptionAttributeValue = GetAttributeValue("MetaDescriptionAttribute");
+            if ( !string.IsNullOrWhiteSpace( metaDescriptionAttributeValue ) && content.Count > 0 )
+            {
+                string attributeValue = GetMetaValueFromAttribute(metaDescriptionAttributeValue, content);
+
+                if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                {
+                    // remove default meta description
+                    RockPage.Header.Description = attributeValue.SanitizeHtml( true );
+                }
+            }
+
+            // add meta images
+            string metaImageAttributeValue = GetAttributeValue( "MetaImageAttribute" );
+            if ( !string.IsNullOrWhiteSpace( metaImageAttributeValue ) && content.Count > 0 )
+            {
+                string attributeValue = GetMetaValueFromAttribute( metaImageAttributeValue, content );
+
+                if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                {
+                    HtmlMeta metaDescription = new HtmlMeta();
+                    metaDescription.Name = "og:image";
+                    metaDescription.Content = string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority,  attributeValue );
+                    RockPage.Header.Controls.Add( metaDescription );
+
+                    HtmlLink imageLink = new HtmlLink();
+                    imageLink.Attributes.Add( "rel", "image_src" );
+                    imageLink.Attributes.Add( "href", string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority,  attributeValue )); 
+                    RockPage.Header.Controls.Add( imageLink );
+                }
+            }
+
             var template = GetTemplate();
 
             phContent.Controls.Add( new LiteralControl( template.Render( Hash.FromDictionary( mergeFields ) ) ) );
+        }
+
+        private string GetMetaValueFromAttribute( string input, List<ContentChannelItem> content )
+        {
+            string attributeEntityType = input.Split( '^' )[0].ToString() ?? "C";
+            string attributeKey = input.Split( '^' )[1].ToString() ?? "";
+
+            string attributeValue = string.Empty;
+
+            if ( attributeEntityType == "C" )
+            {
+                attributeValue = content.FirstOrDefault().ContentChannel.AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ToString() ).FirstOrDefault();
+            }
+            else
+            {
+                attributeValue = content.FirstOrDefault().AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ToString() ).FirstOrDefault();
+            }
+
+            return attributeValue;
         }
 
         private Template GetTemplate()
@@ -592,6 +685,8 @@ $(document).ready(function() {
 
                     cblStatus.Visible = channel.RequiresApproval;
 
+                    cbSetRssAutodiscover.Visible = channel.EnableRss;
+
                     var filterService = new DataViewFilterService( rockContext );
                     DataViewFilter filter = null;
 
@@ -616,6 +711,54 @@ $(document).ready(function() {
                     kvlOrder.CustomKeys.Add( "StartDateTime", "Start" );
                     kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
 
+                    // add attributes to the meta description and meta image attribute list
+                    ddlMetaDescriptionAttribute.Items.Clear();
+                    ddlMetaImageAttribute.Items.Clear();
+                    ddlMetaDescriptionAttribute.Items.Add( "" );
+                    ddlMetaImageAttribute.Items.Add( "" );
+
+                    string currentMetaDescriptionAttribute = GetAttributeValue( "MetaDescriptionAttribute" ) ?? string.Empty;
+                    string currentMetaImageAttribute = GetAttributeValue( "MetaImageAttribute" ) ?? string.Empty;
+
+                    // add channel attributes
+                    channel.LoadAttributes();
+                    foreach ( var attribute in channel.Attributes )
+                    {
+                        var field = attribute.Value.FieldType.Field;
+                        string computedKey = "C^" + attribute.Key;
+
+                        ddlMetaDescriptionAttribute.Items.Add( new ListItem( "Channel: " + attribute.Value.ToString(), computedKey ) );
+
+                        if ( field is Rock.Field.Types.ImageFieldType )
+                        {
+                            ddlMetaImageAttribute.Items.Add( new ListItem( "Channel: " + attribute.Value.ToString(), computedKey ) );
+                        }
+                    }
+
+                    // add item attributes
+                    AttributeService attributeService = new AttributeService( rockContext );
+                    var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
+                                            .Where( a =>
+                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                                a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) )
+                                            .ToList();
+                    foreach ( var attribute in itemAttributes )
+                    {
+                        string computedKey = "I^" + attribute.Key;
+                        ddlMetaDescriptionAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+
+                        var field = attribute.FieldType.Name;
+
+                        if ( field == "Image" )
+                        {
+                            ddlMetaImageAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+                        }
+                    }
+
+                    // select attributes
+                    SetListValue( ddlMetaDescriptionAttribute, currentMetaDescriptionAttribute );
+                    SetListValue( ddlMetaImageAttribute, currentMetaImageAttribute );
+
                     //var channelItem = new ContentChannelItem();
                     //channelItem.ContentChannelTypeId = channel.ContentChannelTypeId;
                     //channelItem.LoadAttributes( rockContext );
@@ -625,6 +768,19 @@ $(document).ready(function() {
                     //    kvlOrder.CustomKeys.Add( "Attribute_" + attribute.Key.ToString(), attribute.Name );
                     //}
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets the list value.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="value">The value.</param>
+        private void SetListValue( ListControl listControl, string value )
+        {
+            foreach ( ListItem item in listControl.Items )
+            {
+                item.Selected = (item.Value == value);
             }
         }
 
