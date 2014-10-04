@@ -41,8 +41,8 @@ namespace Rock.Web.UI.Controls
         private CheckBox _cbHideLabel;
         private CheckBox _cbPreHtml;
         private CheckBox _cbPostHtml;
-        private CodeEditor _cePreHtml;
-        private CodeEditor _cePostHtml;
+        private RockTextBox _tbPreHtml;
+        private RockTextBox _tbPostHtml;
 
         /// <summary>
         /// Gets or sets the attribute unique identifier.
@@ -191,12 +191,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cePreHtml.Text;
+                return _tbPreHtml.Text;
             }
             set
             {
                 EnsureChildControls();
-                _cePreHtml.Text = value;
+                _tbPreHtml.Text = value;
                 _cbPreHtml.Checked = !string.IsNullOrWhiteSpace( value );
             }
         }
@@ -212,12 +212,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cePostHtml.Text;
+                return _tbPostHtml.Text;
             }
             set
             {
                 EnsureChildControls();
-                _cePostHtml.Text = value;
+                _tbPostHtml.Text = value;
                 _cbPostHtml.Checked = !string.IsNullOrWhiteSpace( value );
             }
         }
@@ -277,19 +277,17 @@ namespace Rock.Web.UI.Controls
             _cbPostHtml.AddCssClass( "js-form-attribute-show-post-html" );
             Controls.Add( _cbPostHtml );
 
-            _cePreHtml = new CodeEditor();
-            _cePreHtml.ID = this.ID + "_cePreHtml";
-            _cePreHtml.EditorMode = CodeEditorMode.Html;
-            _cePreHtml.EditorTheme = CodeEditorTheme.Rock;
-            _cePreHtml.EditorHeight = "100";
-            Controls.Add( _cePreHtml );
+            _tbPreHtml = new RockTextBox();
+            _tbPreHtml.ID = this.ID + "_tbPreHtml";
+            _tbPreHtml.TextMode = TextBoxMode.MultiLine;
+            _tbPreHtml.Rows = 3;
+            Controls.Add( _tbPreHtml );
 
-            _cePostHtml = new CodeEditor();
-            _cePostHtml.ID = this.ID + "_cePostHtml";
-            _cePostHtml.EditorMode = CodeEditorMode.Html;
-            _cePostHtml.EditorTheme = CodeEditorTheme.Rock;
-            _cePostHtml.EditorHeight = "100";
-            Controls.Add( _cePostHtml );
+            _tbPostHtml = new RockTextBox();
+            _tbPostHtml.ID = this.ID + "_tbPostHtml";
+            _tbPostHtml.TextMode = TextBoxMode.MultiLine;
+            _tbPostHtml.Rows = 3;
+            Controls.Add( _tbPostHtml );
         }
 
         /// <summary>
@@ -323,7 +321,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _cePreHtml.RenderControl( writer );
+                _tbPreHtml.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
                 
@@ -382,7 +380,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _cePostHtml.RenderControl( writer );
+                _tbPostHtml.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
