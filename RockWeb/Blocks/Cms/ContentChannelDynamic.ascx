@@ -34,13 +34,15 @@
         </div>
 
         <div class="row">
-            <div class="col-md-5">
-                <Rock:NumberBox ID="nbCount" runat="server" Label="Items per Page"
+            <div class="col-md-6">
+                <Rock:NumberBox ID="nbCount" runat="server" CssClass="input-width-sm" Label="Items per Page"
                     help="The maximum number of items to display per page (0 means unlimited)." />
-                <Rock:NumberBox ID="nbCacheDuration" runat="server" Label="Cache Duration"
+                <Rock:NumberBox ID="nbCacheDuration" runat="server" CssClass="input-width-sm" Label="Cache Duration"
                     help="The number of seconds to cache the content for (use '0' for no caching)." />
+                <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
+                    Help="When enabled will update the page title with the channel's name unless there is a item id in the query string then it will display the item's title." />
             </div>
-            <div class="col-md-7">
+            <div class="col-md-6">
                 <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
                     Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
                 <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
@@ -56,8 +58,29 @@
             <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
         </div>
 
-        <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By"  KeyPrompt="Field" ValuePrompt="Direction" 
-            help="The field value and direction that items should be ordered by."/>
+
+        <div class="row">
+            <div class="col-md-6">
+                <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By"  KeyPrompt="Field" ValuePrompt="Direction" 
+                    help="The field value and direction that items should be ordered by."/>
+            </div>
+            <div class="col-md-6">
+                <fieldset>
+                    <legend>Social Media Settings</legend>
+                        
+                        <Rock:RockCheckBox ID="cbSetRssAutodiscover" runat="server" Label="Set RSS Autodiscover Link" Text="Yes"
+                                Help="Set's an RSS autodiscover link to the header section of the page." />
+
+                        <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" runat="server" Label="Meta Description Attribute" 
+                                Help="Attribute to use for the page's meta description." />
+
+                        <Rock:RockDropDownList ID="ddlMetaImageAttribute" runat="server" Label="Meta Image Attribute" 
+                                Help="Attribute to use for the page's og:image and image_src meta tags." />
+
+                </fieldset>
+            </div>
+
+        </div>
 
         <div class="actions">
             <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
