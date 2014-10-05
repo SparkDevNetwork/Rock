@@ -1,4 +1,5 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Disc.ascx.cs" Inherits="Rockweb.Blocks.Crm.Disc" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Disc.ascx.cs" Inherits="Rockweb.Blocks.Crm.Disc" ViewStateMode="Enabled" EnableViewState="true" %>
+
 <div id="tabs">
     <ul id="navTabs" class="nav nav-tabs">
         <li class="active"><a data-toggle="tab" href="#instructions">Instructions</a></li>
@@ -35,142 +36,179 @@
             </p>
         </div>
         <div id="questions" class="tab-pane">
-            <p>
-                The questions will auto-advance as you answer them.
-            </p>
-            <asp:Table ID="tblQuestions" runat="server">
-            </asp:Table>
-            <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" OnClick="btnScoreTest_Click" />
+
+            <div class="container">
+                <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
+                    <ItemTemplate>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Question <%# Container.ItemIndex + 1 %>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        MORE
+                                    </div>
+                                    <div class="col-md-4">
+                                        LESS
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <Rock:RockRadioButtonList ID="rblMore" runat="server" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockRadioButtonList ID="rblLess" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+                <div style="display: none" class="alert alert-danger" id="divError">
+                    Please answer all questions before scoring.
+                </div>
+                <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
+            </div>
+
         </div>
         <div id="results" class="tab-pane">
-            <table border="1" cellpadding="1" cellspacing="1" class="table-bordered table-condensed">
-                <thead>
-                    <tr>
-                        <th colspan="2" class="">Adaptive Behavior
-                        </th>
-                        <th colspan="2" class="">Natural Behavior
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="">D:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblABd" Text="" runat="server" />
-                        </td>
-                        <td class="">D:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblNBd" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">I:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblABi" Text="" runat="server" />
-                        </td>
-                        <td class="">I:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblNBi" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">S:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblABs" Text="" runat="server" />
-                        </td>
-                        <td class="">S:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblNBs" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">C:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblABc" Text="" runat="server" />
-                        </td>
-                        <td class="">C:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblNBc" Text="" runat="server" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <asp:Button ID="btnSaveResults" Text="Save Results" runat="server" OnClick="btnSaveResults_Click" />
+            <div class="row">
+                <div class="col-md-3">
+                    <table class="table table-bordered table-condensed table-striped">
+                        <thead>
+                            <tr class="info">
+                                <th colspan="2">Adaptive Behavior
+                                </th>
+                                <th colspan="2">Natural Behavior
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>D:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblABd" Text="" runat="server" />
+                                </td>
+                                <td>D:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblNBd" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>I:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblABi" Text="" runat="server" />
+                                </td>
+                                <td>I:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblNBi" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>S:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblABs" Text="" runat="server" />
+                                </td>
+                                <td>S:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblNBs" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>C:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblABc" Text="" runat="server" />
+                                </td>
+                                <td>C:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblNBc" Text="" runat="server" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <asp:Button ID="btnSaveResults" Text="Save Results" runat="server" CssClass="btn btn-primary" OnClick="btnSaveResults_Click" />
             <hr />
-            <h2 class="">Your Saved DISC Assessment Scores
+            <h2>Your Saved DISC Assessment Scores
             </h2>
-            <div class="">
+            <div>
                 Saved on:
                 <asp:Label ID="lblLastAssessmentDate" Text="" runat="server" />
             </div>
-            <table border="0" cellpadding="1" cellspacing="1" class="table-bordered table-condensed">
-                <thead>
-                    <tr>
-                        <th colspan="2" class="">Adaptive Behavior
-                        </th>
-                        <th colspan="2" class="">Natural Behavior
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="">D:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevABd" Text="" runat="server" />
-                        </td>
-                        <td class="">D:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevNBd" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">I:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevABi" Text="" runat="server" />
-                        </td>
-                        <td class="">I:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevNBi" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">S:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevABs" Text="" runat="server" />
-                        </td>
-                        <td class="">S:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevNBs" Text="" runat="server" />
-                        </td>
-                    </tr>
-                    <tr class="">
-                        <td class="">C:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevABc" Text="" runat="server" />
-                        </td>
-                        <td class="">C:
-                        </td>
-                        <td class="">
-                            <asp:Label ID="lblPrevNBc" Text="" runat="server" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="row">
+                <div class="col-md-3">
+                    <table class="table table-bordered table-condensed table-striped">
+                        <thead>
+                            <tr class="info">
+                                <th colspan="2">Adaptive Behavior
+                                </th>
+                                <th colspan="2">Natural Behavior
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>D:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevABd" Text="" runat="server" />
+                                </td>
+                                <td>D:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevNBd" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>I:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevABi" Text="" runat="server" />
+                                </td>
+                                <td>I:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevNBi" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>S:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevABs" Text="" runat="server" />
+                                </td>
+                                <td>S:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevNBs" Text="" runat="server" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>C:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevABc" Text="" runat="server" />
+                                </td>
+                                <td>C:
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblPrevNBc" Text="" runat="server" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -22,9 +22,9 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
-    /// abstract class for controls used to render a communication channel
+    /// abstract class for controls used to render a communication medium
     /// </summary>
-    public abstract class ChannelControl : CompositeControl
+    public abstract class MediumControl : CompositeControl
     {
         /// <summary>
         /// Gets or sets a value indicating whether the communication is a template.
@@ -39,12 +39,12 @@ namespace Rock.Web.UI.Controls.Communication
         }
     
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        public abstract Dictionary<string, string> ChannelData { get; set; }
+        public abstract Dictionary<string, string> MediumData { get; set; }
 
         /// <summary>
         /// Gets or sets any additional merge fields.

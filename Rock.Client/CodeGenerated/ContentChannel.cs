@@ -31,7 +31,7 @@ namespace Rock.Client
     public partial class ContentChannel
     {
         /// <summary />
-        public int ContentTypeId { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary />
         public string Name { get; set; }

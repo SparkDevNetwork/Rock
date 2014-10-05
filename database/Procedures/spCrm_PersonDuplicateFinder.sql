@@ -851,7 +851,8 @@ BEGIN
     END
 
     UPDATE [PersonDuplicate]
-    SET [TotalCapacity] = @TotalCapacity;
+    SET [TotalCapacity] = @TotalCapacity
+    WHERE [TotalCapacity] != @TotalCapacity
 
     UPDATE [PersonDuplicate]
     set IgnoreUntilScoreChanges = 0

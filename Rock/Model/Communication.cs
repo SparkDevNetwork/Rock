@@ -115,36 +115,36 @@ namespace Rock.Model
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Channel that is being used for this Communication.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Channel that is being used for this Communication. 
+        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication. 
         /// </value>
         [DataMember]
-        public int? ChannelEntityTypeId { get; set; }
+        public int? MediumEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json formatted string containing the Channel specific data.
+        /// Gets or sets a Json formatted string containing the Medium specific data.
         /// </summary>
         /// <value>
-        /// A Json formatted <see cref="System.String"/> that contains any Channel specific data.
+        /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
-        public string ChannelDataJson
+        public string MediumDataJson
         {
             get
             {
-                return ChannelData.ToJson();
+                return MediumData.ToJson();
             }
 
             set
             {
                 if ( string.IsNullOrWhiteSpace( value ) )
                 {
-                    ChannelData = new Dictionary<string, string>();
+                    MediumData = new Dictionary<string, string>();
                 }
                 else
                 {
-                    ChannelData = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
+                    MediumData = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
                 }
             }
         }
@@ -212,39 +212,39 @@ namespace Rock.Model
         private ICollection<CommunicationRecipient> _recipients;
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Channel that is being used by this Communication.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the communications Channel that is being used by this Communication.
+        /// The <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
         /// </value>
         [DataMember]
-        public virtual EntityType ChannelEntityType { get; set; }
+        public virtual EntityType MediumEntityType { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Communication.ChannelComponent"/> for the communication channel that is being used.
+        /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Communication.ChannelComponent"/> for the communication channel that is being used.
+        /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </value>
-        public virtual ChannelComponent Channel
+        public virtual MediumComponent Medium
         {
             get
             {
-                if ( this.ChannelEntityType != null || this.ChannelEntityTypeId.HasValue )
+                if ( this.MediumEntityType != null || this.MediumEntityTypeId.HasValue )
                 {
-                    foreach ( var serviceEntry in ChannelContainer.Instance.Components )
+                    foreach ( var serviceEntry in MediumContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
 
-                        if ( this.ChannelEntityTypeId.HasValue &&
-                            this.ChannelEntityTypeId == component.EntityType.Id )
+                        if ( this.MediumEntityTypeId.HasValue &&
+                            this.MediumEntityTypeId == component.EntityType.Id )
                         {
                             return component;
                         }
 
                         string componentName = component.GetType().FullName;
-                        if ( this.ChannelEntityType != null &&
-                            this.ChannelEntityType.Name == componentName)
+                        if ( this.MediumEntityType != null &&
+                            this.MediumEntityType.Name == componentName)
                         {
                             return component;
                         }
@@ -255,18 +255,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the data used by the selected communication channel.
+        /// Gets or sets the data used by the selected communication medium.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain channel specific data.
+        /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
-        public virtual Dictionary<string, string> ChannelData
+        public virtual Dictionary<string, string> MediumData
         {
-            get { return _channelData; }
-            set { _channelData = value; }
+            get { return _mediumData; }
+            set { _mediumData = value; }
         }
-        private Dictionary<string, string> _channelData = new Dictionary<string, string>();
+        private Dictionary<string, string> _mediumData = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the additional merge field list. When a communication is created
@@ -289,15 +289,15 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a channel data value.
+        /// Returns a medium data value.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        public string GetChannelDataValue( string key )
+        public string GetMediumDataValue( string key )
         {
-            if ( ChannelData.ContainsKey( key ) )
+            if ( MediumData.ContainsKey( key ) )
             {
-                return ChannelData[key];
+                return MediumData[key];
             }
             else
             {
@@ -306,19 +306,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets a channel data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
+        /// Sets a medium data value. If the key exists, the value will be replaced with the new value, otherwise a new key value pair will be added to dictionary.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
-        public void SetChannelDataValue( string key, string value )
+        public void SetMediumDataValue( string key, string value )
         {
-            if ( ChannelData.ContainsKey( key ) )
+            if ( MediumData.ContainsKey( key ) )
             {
-                ChannelData[key] = value;
+                MediumData[key] = value;
             }
             else
             {
-                ChannelData.Add( key, value );
+                MediumData.Add( key, value );
             }
         }
 
@@ -357,7 +357,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationConfiguration()
         {
-            this.HasOptional( c => c.ChannelEntityType ).WithMany().HasForeignKey( c => c.ChannelEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
         }

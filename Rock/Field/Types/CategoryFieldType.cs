@@ -158,7 +158,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var category = CategoryCache.Read( new Guid( value ) );
+                var category = CategoryCache.Read( value.AsGuid() );
                 if ( category != null )
                 {
                     formattedValue = category.Name;

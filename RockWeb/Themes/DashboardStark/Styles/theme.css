@@ -1892,13 +1892,9 @@ dl:not(.dl-horizontal) dd {
   margin: 4px 8px 0 -2px;
   color: #8c8c8c;
 }
-/*.date-range-picker,
-.number-range-editor {
-    span.to {
-        float: left;
-        margin: 8px 12px 0 0;
-    }
-}*/
+.rock-check-box .checkbox {
+  margin-top: 0;
+}
 .validation-error {
   color: #d9534f;
   font-weight: 300;
@@ -2114,6 +2110,10 @@ td.grid-col-actions {
 .grid-select-field .checkbox:last-child,
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
+}
+.grid-select-field .checkbox label,
+.grid-select-field .radio label {
+  padding: 0;
 }
 .table > tbody > tr > th,
 .table > tbody > tr > td {
@@ -2406,7 +2406,7 @@ td.grid-col-actions {
 .recurrence-pattern-specific-date .actions {
   float: left;
   margin-left: 12px;
-  padding-top: 5px;
+  margin-top: 4px;
 }
 .recurrence-pattern-daily .form-control-group {
   min-height: 30px;
@@ -2841,6 +2841,7 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-badge .badge-group .badge {
   background-color: inherit;
   padding: 3px 7px 0;
+  display: inline-block;
 }
 .personprofilebar-badge .badge-group .badge-debug {
   text-align: left;

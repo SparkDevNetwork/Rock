@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -89,6 +91,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
+        [IgnoreLiquid]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -97,12 +100,14 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
+        [IgnoreLiquid]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
+        [IgnoreLiquid]
         public virtual ISecured ParentAuthority
         {
             get
@@ -121,6 +126,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
+        [IgnoreLiquid]
         public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
@@ -227,6 +233,7 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
+        [IgnoreLiquid]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
@@ -241,6 +248,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
+        [IgnoreLiquid]
         public virtual Dictionary<string, string> AttributeValueDefaults
         {
             get { return null; }
@@ -375,7 +383,8 @@ namespace Rock.Web.Cache
             foreach ( var propInfo in entityType.GetProperties() )
             {
                 if ( propInfo.Name != "Attributes" &&
-                    propInfo.Name != "AttributeValues" )
+                    propInfo.Name != "AttributeValues" &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 

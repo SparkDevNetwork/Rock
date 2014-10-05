@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Crm
 
         #region Properties
 
-        Dictionary<string, string> ChannelData = new Dictionary<string, string>();
+        Dictionary<string, string> MediumData = new Dictionary<string, string>();
 
         #endregion
 
@@ -129,8 +129,8 @@ namespace RockWeb.Blocks.Crm
                     testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
                     testCommunication.Subject = communication.Subject;
                     testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
-                    testCommunication.ChannelEntityTypeId = communication.ChannelEntityTypeId;
-                    testCommunication.ChannelDataJson = communication.ChannelDataJson;
+                    testCommunication.MediumEntityTypeId = communication.MediumEntityTypeId;
+                    testCommunication.MediumDataJson = communication.MediumDataJson;
                     testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
 
                     testCommunication.FutureSendDateTime = null;
@@ -153,10 +153,10 @@ namespace RockWeb.Blocks.Crm
                     communicationService.Add( testCommunication );
                     rockContext.SaveChanges();
 
-                    var channel = testCommunication.Channel;
-                    if ( channel != null )
+                    var medium = testCommunication.Medium;
+                    if ( medium != null )
                     {
-                        channel.Send( testCommunication );
+                        medium.Send( testCommunication );
                     }
 
                     communicationService.Delete( testCommunication );
@@ -306,7 +306,6 @@ namespace RockWeb.Blocks.Crm
         {
             PersonService personService = new PersonService( new RockContext() );
 
-            var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
             var photoRequestGroup = Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid();
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
@@ -365,7 +364,7 @@ namespace RockWeb.Blocks.Crm
             communication.SenderPersonAliasId = CurrentPersonAliasId;
             communicationService.Add( communication );
             communication.IsBulkCommunication = true;
-            communication.ChannelEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id;
+            communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
             communication.FutureSendDateTime = null;
 
             // add each person as a recipient to the communication
@@ -382,20 +381,20 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            // add the ChannelData to the communication
-            communication.ChannelData.Clear();
-            foreach ( var keyVal in ChannelData )
+            // add the MediumData to the communication
+            communication.MediumData.Clear();
+            foreach ( var keyVal in MediumData )
             {
                 if ( !string.IsNullOrEmpty( keyVal.Value ) )
                 {
-                    communication.ChannelData.Add( keyVal.Key, keyVal.Value );
+                    communication.MediumData.Add( keyVal.Key, keyVal.Value );
                 }
             }
 
-            if ( communication.ChannelData.ContainsKey( "Subject" ) )
+            if ( communication.MediumData.ContainsKey( "Subject" ) )
             {
-                communication.Subject = communication.ChannelData["Subject"];
-                communication.ChannelData.Remove( "Subject" );
+                communication.Subject = communication.MediumData["Subject"];
+                communication.MediumData.Remove( "Subject" );
             }
 
             return communication;
@@ -415,23 +414,23 @@ namespace RockWeb.Blocks.Crm
             var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "PhotoRequestTemplate" ).AsGuid() );
             if ( template != null )
             {
-                var channelData = template.ChannelData;
-                if ( !channelData.ContainsKey( "Subject" ) )
+                var mediumData = template.MediumData;
+                if ( !mediumData.ContainsKey( "Subject" ) )
                 {
-                    channelData.Add( "Subject", template.Subject );
+                    mediumData.Add( "Subject", template.Subject );
                 }
 
-                foreach ( var dataItem in channelData )
+                foreach ( var dataItem in mediumData )
                 {
                     if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
                     {
-                        if ( ChannelData.ContainsKey( dataItem.Key ) )
+                        if ( MediumData.ContainsKey( dataItem.Key ) )
                         {
-                            ChannelData[dataItem.Key] = dataItem.Value;
+                            MediumData[dataItem.Key] = dataItem.Value;
                         }
                         else
                         {
-                            ChannelData.Add( dataItem.Key, dataItem.Value );
+                            MediumData.Add( dataItem.Key, dataItem.Value );
                         }
                     }
                 }

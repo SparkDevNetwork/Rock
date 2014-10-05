@@ -39,6 +39,15 @@ namespace Rock.CheckIn
         public Location Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the campu identifier.
+        /// </summary>
+        /// <value>
+        /// The campu identifier.
+        /// </value>
+        [DataMember]
+        public int? CampuId { get; set; }
+
+        /// <summary>
         /// Gets or sets the current count.
         /// </summary>
         /// <value>

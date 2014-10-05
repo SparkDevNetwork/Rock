@@ -29,6 +29,41 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Update the schema for all stored procedures and functions to be 'dbo'
+            Sql( @"
+    DECLARE 
+	    @SchemaName varchar(max),
+	    @ObjectName varchar(max),
+	    @Sql varchar(max)
+
+    DECLARE schema_cursor CURSOR FOR
+	    SELECT S.[Name], O.[Name]
+	    FROM sys.all_objects O
+	    INNER JOIN sys.schemas S ON S.[schema_id] = O.[schema_id]
+	    WHERE O.[Type] IN ( 'FN', 'P', 'TF')
+	    AND S.[name] NOT IN ('sys','dbo')
+
+    OPEN schema_cursor 
+    FETCH NEXT FROM schema_cursor INTO @SchemaName, @ObjectName
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+	
+	    BEGIN TRY
+		    SELECT @SQL = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaName  + '].[' + @ObjectName + ']'
+		    EXEC (@SQL)
+        END TRY
+        BEGIN CATCH
+        END CATCH
+    
+	    FETCH NEXT FROM schema_cursor INTO @SchemaName, @ObjectName
+
+    END
+
+    CLOSE schema_cursor
+    DEALLOCATE schema_cursor
+
+" );
 
             #region Add Activated by Activity property
 
@@ -40,7 +75,7 @@ namespace Rock.Migrations
 
             #region Convert Safe Sender Domains to Defined Type
 
-            RockMigrationHelper.AddDefinedType( "Communication", "Safe Sender Domains", @"
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Communication", "Safe Sender Domains", @"
 Are the domains that can be used to send emails.  If an Email communication is created with a From Address that is not from 
 one of these domains, the Organization Email global attribute value will be used instead for the From Address and the original 
 value will be used as the Reply To address.  This is to help reduce the likelihood of communications being rejected by the 

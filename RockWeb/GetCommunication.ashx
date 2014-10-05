@@ -75,11 +75,11 @@ namespace RockWeb
 
                     if ( person != null )
                     {
-                        var channel = communication.Channel;
-                        if ( channel != null )
+                        var medium = communication.Medium;
+                        if ( medium != null )
                         {
                             context.Response.ContentType = "text/html";
-                            context.Response.Write( channel.GetHtmlPreview( communication, person ) );
+                            context.Response.Write( medium.GetHtmlPreview( communication, person ) );
                             return;
                         }
                     }

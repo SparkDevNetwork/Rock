@@ -115,20 +115,6 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// Gets the sort expression to apply to the GridField (For example "LastName, NickName")
-        /// </summary>
-        /// <value>
-        /// The sort expression.
-        /// </value>
-        public override string SortExpression
-        {
-            get
-            {
-                return "LastName,NickName";
-            }
-        }
-
-        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -138,8 +124,9 @@ namespace Rock.Reporting.DataSelect.Person
         public override System.Linq.Expressions.Expression GetExpression( Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
             // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
+            // prepend it with <!--LastName, NickName--> so that Sorting Works as expected
             var personLinkQuery = new PersonService( context ).Queryable()
-                .Select( p => "<a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
+                .Select( p => "<!--" + p.LastName + ", " + p.NickName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
 
             var personLinkExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLinkQuery, entityIdProperty, "p" );
 

@@ -111,6 +111,11 @@ namespace Rock
                 return liquidObject;
             }
 
+            if ( liquidObject is Drop )
+            {
+                return ( (ILiquidizable)liquidObject ).ToLiquid();
+            }
+
             if ( liquidObject is ILiquidizable )
             {
                 return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();
@@ -233,6 +238,29 @@ namespace Rock
 
             char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+        }
+
+        /// <summary>
+        /// Returns a List of ListItems that contains the values/text in this string that are formatted as either 'value1,value2,value3,...' or 'value1^text1,value2^text2,value3^text3,...'
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static List<ListItem> GetListItems( this string str )
+        {
+            var result = new List<ListItem>();
+            foreach ( string keyvalue in str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( keyValueArray.Length > 0 )
+                {
+                    var listItem = new ListItem();
+                    listItem.Value = keyValueArray[0].Trim();
+                    listItem.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
+                    result.Add( listItem );
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1814,6 +1842,62 @@ namespace Rock
 
         #region IQueryable extensions
 
+        #region Where
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Where( queryable, parameterExpression, whereExpression, null, null );
+        }
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
+        {
+            return Where( queryable, parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Queries the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                queryable = queryable.Where( lambda );
+            }
+
+            if ( sortProperty != null )
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
+
+            if ( fetchTop.HasValue )
+            {
+                queryable = queryable.Take( fetchTop.Value );
+            }
+
+            return queryable;
+        }
+
+        #endregion
+
         /// <summary>
         /// Orders the list by the name of a property.
         /// </summary>
@@ -1872,8 +1956,11 @@ namespace Rock
             {
                 // use reflection (not ComponentModel) to mirror LINQ
                 PropertyInfo pi = type.GetProperty( prop );
-                expr = Expression.Property( expr, pi );
-                type = pi.PropertyType;
+                if ( pi != null )
+                {
+                    expr = Expression.Property( expr, pi );
+                    type = pi.PropertyType;
+                }
             }
             Type delegateType = typeof( Func<,> ).MakeGenericType( typeof( T ), type );
             LambdaExpression lambda = Expression.Lambda( delegateType, expr, arg );

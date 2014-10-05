@@ -49,10 +49,10 @@ namespace Rock.Transactions
 
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
-                var channel = communication.Channel;
-                if ( channel != null )
+                var medium = communication.Medium;
+                if ( medium != null )
                 {
-                    channel.Send( communication );
+                    medium.Send( communication );
                 }
             }
         }

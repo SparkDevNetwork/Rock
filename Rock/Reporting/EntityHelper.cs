@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,13 +30,6 @@ namespace Rock.Reporting
     public static class EntityHelper
     {
         /// <summary>
-        /// the list of fields and attributes for the EntityType. 
-        /// ThreadStatic so that the fields don't get refetched more than once per page load, but also don't become stale
-        /// </summary>
-        [ThreadStatic]
-        private static Dictionary<Type, List<EntityField>> _entityFields = null;
-
-        /// <summary>
         /// Gets the entity fields.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -43,21 +37,25 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true )
         {
-            if ( _entityFields == null )
+            List<EntityField> entityFields = null;
+
+            if ( HttpContext.Current != null )
             {
-                _entityFields = new Dictionary<Type, List<EntityField>>();
+                entityFields = HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] as List<EntityField>;
+                if ( entityFields != null )
+                {
+                    return entityFields;
+                }
             }
 
-            if ( _entityFields.ContainsKey( entityType ) && _entityFields[entityType] != null )
+            if ( entityFields == null )
             {
-                return _entityFields[entityType];
+                entityFields = new List<EntityField>();
             }
-
-            var entityFields = new List<EntityField>();
 
             var entityProperties = entityType.GetProperties().ToList();
-            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual 
-                || p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() 
+            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual
+                || p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any()
                 || p.Name == "Order" ).ToList();
 
             // Get Properties
@@ -165,23 +163,28 @@ namespace Rock.Reporting
                 qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
             }
 
-            var attributeList = qryAttributes.ToList();
+            var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
 
-            foreach ( var attribute in attributeList )
+            foreach ( var attributeId in attributeIdList )
             {
-                AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attribute.Id ) );
+                AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attributeId ) );
             }
 
             int index = 1;
-            _entityFields[entityType] = new List<EntityField>();
+            var sortedEntityFields = new List<EntityField>();
             foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
             {
                 entityProperty.Index = index;
                 index += entityProperty.ControlCount;
-                _entityFields[entityType].Add( entityProperty );
+                sortedEntityFields.Add( entityProperty );
             }
 
-            return _entityFields[entityType];
+            if ( HttpContext.Current != null )
+            {
+                HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedEntityFields;
+            }
+
+            return sortedEntityFields;
         }
 
         /// <summary>
@@ -199,59 +202,8 @@ namespace Rock.Reporting
                 propName = attribute.Name + ( i++ ).ToString();
             }
 
-            EntityField entityProperty = null;
-
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-            string fieldTypeUpperGuid = fieldType.Guid.ToString().ToUpper();
-
-            switch ( fieldTypeUpperGuid )
-            {
-                case SystemGuid.FieldType.BOOLEAN:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.DATE:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                    break;
-
-                case SystemGuid.FieldType.TIME:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
-                    break;
-
-                case SystemGuid.FieldType.INTEGER:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                    break;
-
-                case SystemGuid.FieldType.DECIMAL:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
-                    break;
-
-                case SystemGuid.FieldType.DAY_OF_WEEK:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
-                    break;
-
-                case SystemGuid.FieldType.MULTI_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.SINGLE_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.TEXT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                    break;
-            }
-
+            var entityProperty = fieldType.Field.GetFilterConfig( attribute );
             if ( entityProperty != null )
             {
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
@@ -263,6 +215,7 @@ namespace Rock.Reporting
                     }
                 }
 
+                entityProperty.Name = propName;
                 entityFields.Add( entityProperty );
             }
         }
@@ -375,6 +328,13 @@ namespace Rock.Reporting
         ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
         /// </value>
         public bool IsPreviewable { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// </summary>
+        public EntityField()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.

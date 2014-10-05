@@ -61,7 +61,7 @@
                             </Rock:RockRadioButtonList>
 
                             <Rock:RockRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
-                            <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Connection Status" />
+                            <Rock:RockRadioButtonList ID="rblConnectionStatus" runat="server" Label="Connection Status" />
 
                         </fieldset>
 

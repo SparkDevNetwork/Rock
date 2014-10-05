@@ -43,10 +43,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            DateTime dateValue = DateTime.MinValue;
-            if ( DateTime.TryParse( value, out dateValue ) )
+            DateTime? dateValue = value.AsDateTime();
+            if ( dateValue.HasValue )
             {
-                formattedValue = dateValue.ToShortDateString();
+                formattedValue = dateValue.Value.ToShortDateString();
 
                 if ( configurationValues != null &&
                     configurationValues.ContainsKey( "format" ) &&
@@ -54,11 +54,11 @@ namespace Rock.Field.Types
                 {
                     try
                     {
-                        formattedValue = dateValue.ToString( configurationValues["format"].Value );
+                        formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
                     }
                     catch
                     {
-                        formattedValue = dateValue.ToShortDateString();
+                        formattedValue = dateValue.Value.ToShortDateString();
                     }
                 }
 
@@ -196,7 +196,8 @@ namespace Rock.Field.Types
                 var dtp = control as DatePicker;
                 if (dtp != null && dtp.SelectedDate.HasValue)
                 {
-                    return dtp.SelectedDate.Value.ToShortDateString();
+                    // serialize the date using ISO 8601 standard
+                    return dtp.SelectedDate.Value.ToString( "o" );
                 }
             }
 
@@ -211,10 +212,9 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var dt = DateTime.MinValue;
-            if ( DateTime.TryParse( value, out dt ) )
+            var dt = value.AsDateTime();
+            if ( dt.HasValue )
             {
-
                 if ( control != null && control is DatePicker ) 
                 {
                     var dtp = control as DatePicker;
@@ -226,5 +226,17 @@ namespace Rock.Field.Types
             }
         }
 
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.FilterFieldType = SystemGuid.FieldType.DATE;
+            return filterConfig;
+        }
     }
 }
