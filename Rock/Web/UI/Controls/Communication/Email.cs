@@ -25,9 +25,9 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
-    /// Email Communication Channel control
+    /// Email Communication Medium control
     /// </summary>
-    public class Email : ChannelControl
+    public class Email : MediumControl
     {
 
         #region UI Controls
@@ -46,12 +46,12 @@ namespace Rock.Web.UI.Controls.Communication
         #region Properties
 
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        public override Dictionary<string, string> ChannelData
+        public override Dictionary<string, string> MediumData
         {
             get
             {

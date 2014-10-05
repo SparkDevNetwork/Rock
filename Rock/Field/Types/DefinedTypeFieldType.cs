@@ -58,7 +58,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -70,7 +70,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
+            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Name );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )

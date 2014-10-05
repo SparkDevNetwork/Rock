@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+        private int _numberOfAvailablePackages = 0;
 
         #endregion
 
@@ -137,10 +138,10 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
+                    SendStatictics( version );
                 }
 
                 lRockVersion.Text = "";
-                SendStatictics( version );
             }
             catch ( Exception ex )
             {
@@ -167,16 +168,17 @@ namespace RockWeb.Blocks.Core
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the first item in the list is the primary
-                    if ( e.Item.ItemIndex == 0 )
+                    // Only the last item in the list is the primary
+                    if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
                     {
                         lbInstall.Enabled = true;
-                        lbInstall.AddCssClass( "btn-primary" );
+                        lbInstall.AddCssClass( "btn-info" );
                         divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
-                        lbInstall.Enabled = true;
+                        lbInstall.Enabled = false;
+                        lbInstall.Text = "Pending";
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
@@ -193,6 +195,16 @@ namespace RockWeb.Blocks.Core
         {
             string version = e.CommandArgument.ToString();
             Update( version );
+        }
+
+        /// <summary>
+        /// Simply reload the page in order to cause a restart.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void bbtnRestart_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
@@ -311,20 +323,26 @@ namespace RockWeb.Blocks.Core
 
                     verifiedPackages.Add( package );
 
-                    if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
-                    {
-                        var requiredVersion = ExtractRequiredVersionFromTags( package );
-                        // if that required version is greater than our currently installed version
-                        // then we can't have any of the prior packages in the verifiedPackages list
-                        // so we clear it out and keep processing.
-                        if ( requiredVersion > _installedVersion )
-                        {
-                            nbMoreUpdatesAvailable.Visible = true;
-                            verifiedPackages.Clear();
-                        }
-                    }
+                    //if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
+                    //{
+                    //    var requiredVersion = ExtractRequiredVersionFromTags( package );
+                    //    // if that required version is greater than our currently installed version
+                    //    // then we can't have any of the prior packages in the verifiedPackages list
+                    //    // so we clear it out and keep processing.
+                    //    if ( requiredVersion > _installedVersion )
+                    //    {
+                            
+                    //        verifiedPackages.Clear();
+                    //    }
+                    //}
                 }
+
                 _availablePackages = verifiedPackages;
+                _numberOfAvailablePackages = verifiedPackages.Count;
+                if ( _numberOfAvailablePackages > 1 )
+                {
+                    nbMoreUpdatesAvailable.Visible = true;
+                }
             }
             catch ( InvalidOperationException ex )
             {
@@ -679,7 +697,7 @@ namespace RockWeb.Blocks.Core
             }
         }
         #endregion
-    }
+}
 
     [Serializable]
     public class EnvData

@@ -294,6 +294,10 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                if ( _datePicker.SelectedDate == null && _timePicker.SelectedTime == null)
+                {
+                    return null;
+                }
                 return ( _datePicker.SelectedDate ?? RockDateTime.Today ) +
                     ( _timePicker.SelectedTime ?? new TimeSpan( 0 ) );
             }

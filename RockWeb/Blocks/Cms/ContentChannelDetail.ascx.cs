@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnLoad( e );
 
-            maContentTypeWarning.Hide();
+            maContentChannelWarning.Hide();
 
             if ( !Page.IsPostBack )
             {
@@ -84,22 +84,12 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( pnlEditDetails.Visible )
                 {
-                    var rockContext = new RockContext();
-                    ContentChannel channel;
-                    int? channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
-                    if ( channelId.HasValue && channelId.Value > 0 )
-                    {
-                        channel = new ContentChannelService( rockContext ).Get( channelId.Value );
-                    }
-                    else
-                    {
-                        channel = new ContentChannel { Id = 0, ContentTypeId = PageParameter("contentTypeId").AsInteger() };
-                    }
-
+                    var channel = new ContentChannel();
+                    channel.Id = hfId.Value.AsInteger();
+                    channel.ContentChannelTypeId = hfTypeId.Value.AsInteger();
                     channel.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false );
-
+                    Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false, BlockValidationGroup );
                 }
             }
         }
@@ -144,27 +134,27 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetContentChannel( hfContentChannelId.Value.AsInteger() ) );
+            ShowEditDetails( GetContentChannel( hfId.Value.AsInteger() ) );
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlContentType control.
+        /// Handles the SelectedIndexChanged event of the ddlType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlContentType_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlType_SelectedIndexChanged( object sender, EventArgs e )
         {
             ContentChannel channel = null;
 
-            int contentChannelId = hfContentChannelId.ValueAsInt();
+            int contentChannelId = hfId.ValueAsInt();
             if ( contentChannelId != 0 )
             {
-                channel = GetContentChannel( hfContentChannelId.ValueAsInt() );
+                channel = GetContentChannel( hfId.ValueAsInt() );
                 if (channel != null && 
-                    channel.ContentTypeId.ToString() != ddlContentType.SelectedValue && 
+                    channel.ContentChannelTypeId.ToString() != ddlType.SelectedValue && 
                     channel.Items.Any() )
                 {
-                    maContentTypeWarning.Show( "Changing the content type will result in all of this channel\\'s items losing any data that is specific to the original content type!", ModalAlertType.Warning );
+                    maContentChannelWarning.Show( "Changing the content type will result in all of this channel\\'s items losing any data that is specific to the original content type!", ModalAlertType.Warning );
                 }
             }
 
@@ -189,7 +179,7 @@ namespace RockWeb.Blocks.Cms
 
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
 
-            int contentChannelId = hfContentChannelId.Value.AsInteger();
+            int contentChannelId = hfId.Value.AsInteger();
              
             if ( contentChannelId == 0 )
             {
@@ -205,7 +195,7 @@ namespace RockWeb.Blocks.Cms
             {
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
-                contentChannel.ContentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
+                contentChannel.ContentChannelTypeId = ddlType.SelectedValueAsInt() ?? 0;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
                 contentChannel.RequiresApproval = cbRequireApproval.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
@@ -227,14 +217,14 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
                     contentChannel.SaveAttributeValues( rockContext );
 
-                    foreach( var item in new ContentItemService( rockContext )
+                    foreach( var item in new ContentChannelItemService( rockContext )
                         .Queryable()
                         .Where( i => 
                             i.ContentChannelId == contentChannel.Id &&
-                            i.ContentTypeId != contentChannel.ContentTypeId 
+                            i.ContentChannelTypeId != contentChannel.ContentChannelTypeId 
                         ))
                     {
-                        item.ContentTypeId = contentChannel.ContentTypeId;
+                        item.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
                     }
 
                     rockContext.SaveChanges();
@@ -254,7 +244,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            int contentChannelId = hfContentChannelId.ValueAsInt();
+            int contentChannelId = hfId.ValueAsInt();
             if ( contentChannelId != 0 )
             {
                 ShowReadonlyDetails( GetContentChannel( contentChannelId ) );
@@ -272,7 +262,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            int contentChannelId = hfContentChannelId.ValueAsInt();
+            int contentChannelId = hfId.ValueAsInt();
             if ( contentChannelId != 0 )
             {
                 ShowReadonlyDetails( GetContentChannel( contentChannelId ) );
@@ -293,7 +283,7 @@ namespace RockWeb.Blocks.Cms
         {
             rockContext = rockContext ?? new RockContext();
             var contentChannel = new ContentChannelService( rockContext )
-                .Queryable( "ContentType" )
+                .Queryable( "ContentChannelType" )
                 .Where( t => t.Id == contentChannelId )
                 .FirstOrDefault();
             return contentChannel;
@@ -327,7 +317,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentChannel != null && contentChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                hfContentChannelId.Value = contentChannel.Id.ToString();
+                hfId.Value = contentChannel.Id.ToString();
 
                 bool readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
@@ -377,7 +367,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentChannel != null )
             {
-                hfContentChannelId.SetValue( contentChannel.Id );
+                hfId.SetValue( contentChannel.Id );
 
                 SetHeadingInfo( contentChannel, contentChannel.Name );
                 SetEditMode( false );
@@ -419,7 +409,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( contentChannel != null )
             {
-                hfContentChannelId.Value = contentChannel.Id.ToString();
+                hfId.Value = contentChannel.Id.ToString();
                 string title = contentChannel.Id > 0 ?
                     ActionTitle.Edit( ContentChannel.FriendlyTypeName ) :
                     ActionTitle.Add( ContentChannel.FriendlyTypeName );
@@ -432,7 +422,7 @@ namespace RockWeb.Blocks.Cms
 
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
-                ddlContentType.SetValue( contentChannel.ContentTypeId );
+                ddlType.SetValue( contentChannel.ContentChannelTypeId );
                 tbIconCssClass.Text = contentChannel.IconCssClass;
                 cbRequireApproval.Checked = contentChannel.RequiresApproval;
                 cbEnableRss.Checked = contentChannel.EnableRss;
@@ -452,7 +442,10 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentChannel">The content channel.</param>
         private void AddAttributeControls( ContentChannel contentChannel )
         {
-            contentChannel.ContentTypeId = ddlContentType.SelectedValueAsInt() ?? 0;
+            int typeId = ddlType.SelectedValueAsInt() ?? 0;
+            hfTypeId.Value = typeId.ToString();
+
+            contentChannel.ContentChannelTypeId = typeId;
             contentChannel.LoadAttributes();
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );
@@ -472,7 +465,7 @@ namespace RockWeb.Blocks.Cms
             }
             lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
             lTitle.Text = title.FormatAsHtmlTitle();
-            hlContentType.Text = contentChannel.ContentType != null ? contentChannel.ContentType.Name : string.Empty;
+            hlContentChannel.Text = contentChannel.ContentChannelType != null ? contentChannel.ContentChannelType.Name : string.Empty;
         }
 
         /// <summary>
@@ -492,10 +485,10 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadDropdowns()
         {
-            ddlContentType.Items.Clear();
-            foreach ( var contentType in new ContentTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
+            ddlType.Items.Clear();
+            foreach ( var contentType in new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
             {
-                ddlContentType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
+                ddlType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
             }
         }
         #endregion

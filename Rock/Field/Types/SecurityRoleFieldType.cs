@@ -26,7 +26,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select 0 or more security roles
+    /// Field Type to select a single (or null) Security Role (Group)
+    /// Stored as Group.Guid
     /// </summary>
     public class SecurityRoleFieldType : FieldType
     {
@@ -42,10 +43,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = value;
 
-            int? groupId = value.AsIntegerOrNull();
-            if ( groupId.HasValue )
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( groupId.Value );
+                var group = new GroupService( new RockContext() ).Get( guid.Value );
                 if ( group != null )
                 {
                     formattedValue = group.Name;
@@ -54,9 +55,9 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
-        
+
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -91,7 +92,9 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is ListControl )
+            {
                 return ( (ListControl)control ).SelectedValue;
+            }
 
             return null;
         }
@@ -107,7 +110,9 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 if ( control != null && control is ListControl )
+                {
                     ( (ListControl)control ).SelectedValue = value;
+                }
             }
         }
     }

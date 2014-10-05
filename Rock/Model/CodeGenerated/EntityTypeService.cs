@@ -88,13 +88,13 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
+            if ( new Service<Communication>( Context ).Queryable().Any( a => a.MediumEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Communication.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
+            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.MediumEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;

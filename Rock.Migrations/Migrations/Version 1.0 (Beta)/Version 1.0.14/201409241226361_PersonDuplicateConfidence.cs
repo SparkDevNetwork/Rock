@@ -34,6 +34,7 @@ namespace Rock.Migrations
             Sql( @"ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED" );
             CreateIndex( "dbo.PersonDuplicate", "ConfidenceScore" );
 
+            Sql( "sp_changeobjectowner 'spCrm_PersonDuplicateFinder', 'dbo'" );
             Sql( @"
 /*
 <doc>
@@ -912,6 +913,7 @@ BEGIN
 END
 " );
 
+            Sql( "sp_changeobjectowner 'spCheckin_BadgeAttendance', 'dbo'" );
             Sql( @"
 /*
 <doc>

@@ -55,10 +55,10 @@ namespace Rock.Client
         public string ReviewerNote { get; set; }
 
         /// <summary />
-        public int? ChannelEntityTypeId { get; set; }
+        public int? MediumEntityTypeId { get; set; }
 
         /// <summary />
-        public string ChannelDataJson { get; set; }
+        public string MediumDataJson { get; set; }
 
         /// <summary />
         public string AdditionalMergeFieldsJson { get; set; }

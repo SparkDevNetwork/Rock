@@ -169,21 +169,21 @@ namespace Rock.Workflow.Action
             {
                 var mergeFields = GetMergeFields( action );
 
-                var channelData = new Dictionary<string, string>();
-                channelData.Add( "FromValue", fromId.Value.ToString());
-                channelData.Add( "Message", message.ResolveMergeFields( mergeFields ) );
+                var mediumData = new Dictionary<string, string>();
+                mediumData.Add( "FromValue", fromId.Value.ToString());
+                mediumData.Add( "Message", message.ResolveMergeFields( mergeFields ) );
 
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_SMS.AsGuid(), rockContext );
-                if ( channelEntity != null )
+                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), rockContext );
+                if ( mediumEntity != null )
                 {
-                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                    if ( channel != null && channel.IsActive )
+                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                    if ( medium != null && medium.IsActive )
                     {
-                        var transport = channel.Transport;
+                        var transport = medium.Transport;
                         if ( transport != null && transport.IsActive )
                         {
                             var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                            transport.Send( channelData, recipients, appRoot, string.Empty );
+                            transport.Send( mediumData, recipients, appRoot, string.Empty );
                         }
                     }
                 }

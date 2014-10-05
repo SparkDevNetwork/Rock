@@ -20,7 +20,9 @@
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
                         <i class="fa fa-anchor"></i>
-                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing.</p>
+                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing or
+                           check out the <a href="http://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
+                        </p>
                     </div>
                 </asp:Panel>
 
@@ -34,7 +36,7 @@
                     <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
-                        Also, be patient when updating. It take anywhere from a few seconds
+                        Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
 
                     <div class="row margin-b-md">
@@ -61,13 +63,10 @@
                                             </div>
                                             <div class="col-md-10">
                                                 <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
+
                                                 <div class="releasenotes">
-                                                    <div class="releasenotes-heading margin-v-md">
-                                                        <strong>
-                                                            <asp:Label ID="lblReleaseNotes" runat="server" Text="Release Notes" />
-                                                            <i class="fa fa-caret-right"></i>
-                                                        </strong>
-                                                    </div>
+                                                    <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
+
                                                     <div class="releasenotes-body" style="display: none">
                                                         <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
                                                     </div>
@@ -81,17 +80,22 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
+
+                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
+
                     <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
+
+                        <div class="text-left margin-t-md">
+                            <strong>Below is a summary of the new toys you have to play with...</strong>
+                                <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
+                        </div>
+
+                        <Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-success" OnClick="bbtnRestart_Click"></Rock:BootstrapButton>
                     </div>
 
-                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
-
-                    <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Below is a summary of the new toys you have to play with..." />
-
-                    <Rock:NotificationBox ID="nbDbWarning" runat="server" NotificationBoxType="Info" Text="<strong>Note</strong> Any database changes will take effect at the next page load." />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
@@ -113,9 +117,9 @@
 
 <script>
     $(function () {
-        $(".releasenotes-heading").on("click", function (event) {
+        $(".js-releasenote").on("click", function (event) {
             var $top = $(event.target).closest(".releasenotes");
-            $top.find("i").toggleClass("fa-caret-right").toggleClass("fa-caret-down");
+            $top.find("i").toggleClass("fa-caret-up").toggleClass("fa-caret-down");
             $top.find(".releasenotes-body").slideToggle(500);
         });
     });

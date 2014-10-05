@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -79,6 +79,28 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets the Value as a double
+        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) &lt; 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
+        /// </summary>
+        /// <value>
+        /// The match score.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public decimal? ValueAsNumeric { get; set; }
+
+        /// <summary>
+        /// Gets the Value as a DateTime 
+        /// Calculated Field: alter table AttributeValue add ValueAsDateTime as case when (len(value) &lt; 50 and ISDATE( value) = 1) then convert(datetime, value) else null end
+        /// </summary>
+        /// <value>
+        /// The match score.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public DateTime? ValueAsDateTime { get; private set; }
+        
         /// <summary>
         /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
         /// </summary>

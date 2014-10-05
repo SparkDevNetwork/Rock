@@ -37,6 +37,15 @@ namespace Rock.CheckIn
         public Location Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus identifier that the location is associated with
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// The schedules that are currently active
         /// </summary>
         /// <value>

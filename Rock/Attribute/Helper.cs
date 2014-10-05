@@ -670,9 +670,15 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
-            foreach ( var attribute in model.Attributes )
+            if ( model != null && model.Attributes != null && model.AttributeValues != null )
             {
-                SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                foreach ( var attribute in model.Attributes )
+                {
+                    if ( model.AttributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                    }
+                }
             }
         }
 
@@ -688,33 +694,34 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
-            if ( attributeValue == null )
+            if ( model != null && attribute != null )
             {
-                if ( newValue == null )
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
+                if ( attributeValue == null )
                 {
-                    return;
+                    if ( newValue == null )
+                    {
+                        return;
+                    }
+
+                    attributeValue = new Rock.Model.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = model.Id;
+                    attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue = new Rock.Model.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = model.Id;
-                attributeValueService.Add( attributeValue );
+                attributeValue.Value = newValue;
+
+                rockContext.SaveChanges();
+
+                if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
+                {
+                    model.AttributeValues[attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                }
             }
-
-            attributeValue.Value = newValue;
-
-            rockContext.SaveChanges();
-
-            if ( model.AttributeValues != null )
-            {
-                model.AttributeValues[attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
-            }
-
         }
 
         /// <summary>
@@ -729,27 +736,29 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValue( int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId);
-            if (attributeValue == null)
+            if ( attribute != null )
             {
-                if (newValue == null)
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
+                if ( attributeValue == null )
                 {
-                    return;
+                    if ( newValue == null )
+                    {
+                        return;
+                    }
+
+                    attributeValue = new Rock.Model.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = entityId;
+                    attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue = new Rock.Model.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = entityId;
-                attributeValueService.Add(attributeValue);
+                attributeValue.Value = newValue;
+
+                rockContext.SaveChanges();
             }
-
-            attributeValue.Value = newValue;
-
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -759,49 +768,51 @@ namespace Rock.Attribute
         /// <param name="target">The target.</param>
         public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
         {
-            // Copy Attributes
-            if ( source.Attributes != null )
+            if ( source != null && target != null )
             {
-                target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-                foreach ( var item in source.Attributes )
+                // Copy Attributes
+                if ( source.Attributes != null )
                 {
-                    target.Attributes.Add( item.Key, item.Value );
-                }
-            }
-            else
-            {
-                target.Attributes = null;
-            }
-
-            // Copy Attribute Values
-            if ( source.AttributeValues != null )
-            {
-                target.AttributeValues = new Dictionary<string, Model.AttributeValue>();
-                foreach ( var item in source.AttributeValues )
-                {
-                    var value = item.Value;
-                    if ( value != null )
+                    target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                    foreach ( var item in source.Attributes )
                     {
-                        var attributeValue = new Model.AttributeValue();
-                        attributeValue.IsSystem = value.IsSystem;
-                        attributeValue.AttributeId = value.AttributeId;
-                        attributeValue.EntityId = value.EntityId;
-                        attributeValue.Value = value.Value;
-                        attributeValue.Id = value.Id;
-                        attributeValue.Guid = value.Guid;
-                        target.AttributeValues.Add( item.Key, attributeValue );
-                    }
-                    else
-                    {
-                        target.AttributeValues.Add( item.Key, null );
+                        target.Attributes.Add( item.Key, item.Value );
                     }
                 }
-            }
-            else
-            {
-                target.AttributeValues = null;
-            }
+                else
+                {
+                    target.Attributes = null;
+                }
 
+                // Copy Attribute Values
+                if ( source.AttributeValues != null )
+                {
+                    target.AttributeValues = new Dictionary<string, Model.AttributeValue>();
+                    foreach ( var item in source.AttributeValues )
+                    {
+                        var value = item.Value;
+                        if ( value != null )
+                        {
+                            var attributeValue = new Model.AttributeValue();
+                            attributeValue.IsSystem = value.IsSystem;
+                            attributeValue.AttributeId = value.AttributeId;
+                            attributeValue.EntityId = value.EntityId;
+                            attributeValue.Value = value.Value;
+                            attributeValue.Id = value.Id;
+                            attributeValue.Guid = value.Guid;
+                            target.AttributeValues.Add( item.Key, attributeValue );
+                        }
+                        else
+                        {
+                            target.AttributeValues.Add( item.Key, null );
+                        }
+                    }
+                }
+                else
+                {
+                    target.AttributeValues = null;
+                }
+            }
         }
 
         /// <summary>
