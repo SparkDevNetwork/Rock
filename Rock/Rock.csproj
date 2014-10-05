@@ -157,6 +157,8 @@
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
+    <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
@@ -246,8 +249,8 @@
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
-    <Compile Include="Model\CodeGenerated\ContentItemService.cs" />
-    <Compile Include="Model\CodeGenerated\ContentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
@@ -255,10 +258,10 @@
     <Compile Include="Model\ContentChannel.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\ContentItem.cs">
+    <Compile Include="Model\ContentChannelItem.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\ContentType.cs">
+    <Compile Include="Model\ContentChannelType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
@@ -495,10 +498,10 @@
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskDevice.cs" />
-    <Compile Include="Communication\ChannelComponent.cs" />
-    <Compile Include="Communication\Channel\Sms.cs" />
-    <Compile Include="Communication\Channel\Email.cs" />
-    <Compile Include="Communication\ChannelContainer.cs" />
+    <Compile Include="Communication\MediumComponent.cs" />
+    <Compile Include="Communication\Medium\Sms.cs" />
+    <Compile Include="Communication\Medium\Email.cs" />
+    <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
@@ -565,11 +568,6 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignService.cs" />
     <Compile Include="Model\CodeGenerated\NoteService.cs" />
     <Compile Include="Model\CodeGenerated\NoteTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
@@ -596,19 +594,11 @@
     <Compile Include="Model\FinancialTransactionService.Partial.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\DataView.cs" />
     <Compile Include="Model\DataViewFilter.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
-    <Compile Include="Model\MarketingCampaign.cs" />
-    <Compile Include="Model\MarketingCampaignAd.cs" />
-    <Compile Include="Model\MarketingCampaignAdType.cs" />
-    <Compile Include="Model\MarketingCampaignAudience.cs" />
-    <Compile Include="Model\MarketingCampaignCampus.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />

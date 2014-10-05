@@ -54,6 +54,12 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             string updateValue = GetAttributeValue( action, "Value" );
+            Guid? valueGuid = updateValue.AsGuidOrNull();
+            if ( valueGuid.HasValue )
+            {
+                updateValue = action.GetWorklowAttributeValue( valueGuid.Value );
+            }
+
             string personAttribute = GetAttributeValue( action, "PersonAttribute" );
 
             Guid guid = personAttribute.AsGuid();

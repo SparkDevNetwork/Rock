@@ -58,12 +58,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.EventGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );

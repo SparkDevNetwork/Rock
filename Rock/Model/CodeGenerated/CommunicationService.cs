@@ -95,8 +95,8 @@ namespace Rock.Model
             target.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
             target.ReviewedDateTime = source.ReviewedDateTime;
             target.ReviewerNote = source.ReviewerNote;
-            target.ChannelEntityTypeId = source.ChannelEntityTypeId;
-            target.ChannelDataJson = source.ChannelDataJson;
+            target.MediumEntityTypeId = source.MediumEntityTypeId;
+            target.MediumDataJson = source.MediumDataJson;
             target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-            // list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            // list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
             var personDuplicateQry = personDuplicateService.Queryable()
                 .Where( a => !a.IsConfirmedAsNotDuplicate )
                 .Where( a => !a.IgnoreUntilScoreChanges )
@@ -163,7 +163,6 @@ namespace RockWeb.Blocks.Crm
             {
                 qry = qry.Where( a => a.MaxConfidenceScore.HasValue && a.MaxConfidenceScore >= confidenceScoreLow );
             }
-
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )

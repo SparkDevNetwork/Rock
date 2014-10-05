@@ -1418,8 +1418,25 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
                 
+                DECLARE @DefinedTypeEntityTypeId int = ( 
+                    SELECT TOP 1 [Id]
+                    FROM [EntityType] 
+                    WHERE [Name] = 'Rock.Model.DefinedType' )
+
+                DECLARE @CategoryId int = ( 
+                    SELECT TOP 1 [Id] FROM [Category] 
+                    WHERE [EntityTypeId] = @DefinedTypeEntityTypeId 
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @DefinedTypeEntityTypeId IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @DefinedTypeEntityTypeId,'{0}', 0, NEWID() )  
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+                
                 DECLARE @FieldTypeId int
-                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+                SET @FieldTypeId = (SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
 
                 DECLARE @Order int
                 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedType];
@@ -1433,11 +1450,11 @@ namespace Rock.Data
 
                     INSERT INTO [DefinedType] (
                         [IsSystem],[FieldTypeId],[Order],
-                        [Category],[Name],[Description],[HelpText],
+                        [CategoryId],[Name],[Description],[HelpText],
                         [Guid])
                     VALUES(
                         1,@FieldTypeId,@Order,
-                        '{0}','{1}','{2}','{4}',
+                        @CategoryId,'{1}','{2}','{4}',
                         '{3}')
                 END
                 ELSE
@@ -1446,7 +1463,7 @@ namespace Rock.Data
                     UPDATE [DefinedType] SET
                         [IsSystem] = 1,
                         [FieldTypeId] = @FieldTypeId,
-                        [Category] = '{0}',
+                        [CategoryId] = @CategoryId,
                         [Name] = '{1}',
                         [Description] = '{2}',
                         [HelpText] = '{4}'
@@ -2897,19 +2914,36 @@ INSERT INTO [dbo].[Auth]
         {
             Migration.Sql( string.Format( @"
 
+                DECLARE @SystemEmailEntity int = ( 
+                    SELECT TOP 1 [Id] 
+                    FROM [EntityType] 
+                    WHERE [Name] = 'Rock.Model.SystemEmail' )
+
+                DECLARE @CategoryId int = ( 
+                    SELECT TOP 1 [Id] FROM [Category] 
+                    WHERE [EntityTypeId] = @SystemEmailEntity 
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @SystemEmailEntity IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @SystemEmailEntity,'{0}', 0, NEWID() )  
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+
                 DECLARE @Id int
                 SET @Id = (SELECT [Id] FROM [SystemEmail] WHERE [guid] = '{9}')
                 IF @Id IS NULL
                 BEGIN
                     INSERT INTO [SystemEmail] (
-                        [IsSystem],[Category],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid])
+                        [IsSystem],[CategoryId],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid])
                     VALUES(
-                        1,'{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
+                        1, @CategoryId,'{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
                 END
                 ELSE
                 BEGIN
                     UPDATE [SystemEmail] SET 
-                        [Category] = '{0}',
+                        [CategoryId] = @CategoryId,
                         [Title] = '{1}',
                         [From] = '{2}',
                         [FromName] = '{3}',
@@ -3678,6 +3712,258 @@ INSERT INTO [dbo].[Auth]
                     value.Replace( "'", "''" )
                 )
             );
+        }
+
+        /// <summary>
+        /// Adds the defined type_pre201409101843015.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="helpText">The help text.</param>
+        public void AddDefinedType_pre201409101843015( string category, string name, string description, string guid, string helpText = null )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedType];
+
+                IF NOT EXISTS (
+                    SELECT [Id] 
+                    FROM [DefinedType] 
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [DefinedType] (
+                        [IsSystem],[FieldTypeId],[Order],
+                        [Category],[Name],[Description],[HelpText],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@Order,
+                        '{0}','{1}','{2}','{4}',
+                        '{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [DefinedType] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [Category] = '{0}',
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [HelpText] = '{4}'
+                    WHERE [Guid] = '{3}'
+
+                END
+",
+                    category,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    helpText ?? string.Empty
+                    ) );
+        }
+
+        /// <summary>
+        /// Updates the system email_pre201409101843015.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="to">To.</param>
+        /// <param name="cc">The cc.</param>
+        /// <param name="bcc">The BCC.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateSystemEmail_pre201409101843015( string category, string title, string from, string fromName, string to,
+            string cc, string bcc, string subject, string body, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [SystemEmail] WHERE [guid] = '{9}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [SystemEmail] (
+                        [IsSystem],[Category],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid])
+                    VALUES(
+                        1,'{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [SystemEmail] SET 
+                        [Category] = '{0}',
+                        [Title] = '{1}',
+                        [From] = '{2}',
+                        [FromName] = '{3}',
+                        [To] = '{4}',
+                        [Cc] = '{5}',
+                        [Bcc] = '{6}',
+                        [Subject] = '{7}',
+                        [Body] = '{8}'
+                    WHERE [Guid] = '{9}'
+                END
+",
+                    category.Replace( "'", "''" ),
+                    title.Replace( "'", "''" ),
+                    from.Replace( "'", "''" ),
+                    fromName.Replace( "'", "''" ),
+                    to.Replace( "'", "''" ),
+                    cc.Replace( "'", "''" ),
+                    bcc.Replace( "'", "''" ),
+                    subject.Replace( "'", "''" ),
+                    body.Replace( "'", "''" ),
+                    guid ) );
+        }
+
+
+        #endregion
+
+        #region Reports
+
+        /// <summary>
+        /// Adds a report.
+        /// </summary>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="dataViewGuid">The data view unique identifier.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The report.Guid</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        public void AddReport(string categoryGuid, string dataViewGuid, string entityTypeGuid, string name, string description, string guid, int? fetchTop = null )
+        {
+            Migration.Sql( string.Format(@"
+                DECLARE @CategoryId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [Category]
+                        WHERE [Guid] = '{0}'
+                        )
+                    ,@DataViewId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [DataView]
+                        WHERE [Guid] = '{1}'
+                        )
+                    ,@EntityTypeId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [EntityType]
+                        WHERE [Guid] = '{2}'
+                        ) 
+
+                INSERT INTO [Report] (
+                    [IsSystem]
+                    ,[Name]
+                    ,[Description]
+                    ,[CategoryId]
+                    ,[EntityTypeId]
+                    ,[DataViewId]
+                    ,[Guid]
+                    ,[FetchTop]
+                    )
+                VALUES (
+                    0
+                    ,'{3}'
+                    ,'{4}'
+                    ,@CategoryId
+                    ,@EntityTypeId
+                    ,@DataViewId
+                    ,'{5}'
+                    ,{6}
+                    )",
+                      categoryGuid, // {0}
+                      dataViewGuid, // {1}
+                      entityTypeGuid, // {2}
+                      name, // {3}
+                      description, // {4}
+                      guid, // {5}
+                      fetchTop.HasValue ? fetchTop.Value.ToString() : "NULL" // {6}
+                      )
+                      ) ;
+
+        }
+
+        /// <summary>
+        /// Deletes the report 
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteReport( string guid )
+        {
+            Migration.Sql( string.Format( "DELETE FROM [Report] where [Guid] = '{0}'", guid ) );
+        }
+
+        /// <summary>
+        /// Adds a report field to a report
+        /// </summary>
+        /// <param name="reportGuid">The report unique identifier.</param>
+        /// <param name="reportFieldType">Type of the report field.</param>
+        /// <param name="showInGrid">if set to <c>true</c> [show in grid].</param>
+        /// <param name="dataSelectComponentEntityTypeGuid">The data select component entity type unique identifier.</param>
+        /// <param name="selection">The selection.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="columnHeaderText">The column header text.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddReportField(string reportGuid, Rock.Model.ReportFieldType reportFieldType, bool showInGrid, 
+            string dataSelectComponentEntityTypeGuid, string selection, int order, string columnHeaderText, string guid  )
+        {
+            Migration.Sql( string.Format( @"
+            DECLARE @ReportId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [Report]
+                        WHERE [Guid] = '{0}'
+                        )
+                   ,@DataSelectComponentEntityTypeId INT = (
+                        SELECT TOP 1 [Id]
+                        FROM [EntityType]
+                        WHERE [Guid] = '{3}'
+                        ) 
+
+            INSERT INTO [dbo].[ReportField] (
+                [ReportId]
+                ,[ReportFieldType]
+                ,[ShowInGrid]
+                ,[DataSelectComponentEntityTypeId]
+                ,[Selection]
+                ,[Order]
+                ,[ColumnHeaderText]        
+                ,[Guid]
+                )
+            VALUES (
+                @ReportId
+                ,{1}
+                ,{2}
+                ,@DataSelectComponentEntityTypeId
+                ,'{4}'
+                ,{5}
+                ,'{6}'
+                ,'{7}'
+                )
+            ",
+              reportGuid, // {0}
+              reportFieldType.ConvertToInt(), // {1}
+              showInGrid.Bit(), // {2}
+              dataSelectComponentEntityTypeGuid, // {3}
+              selection.Replace("'", "''"), // {4}
+              order, // {5}
+              columnHeaderText, // {6}
+              guid // {7}
+              ));
+        }
+
+        /// <summary>
+        /// Deletes the report field.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteReportField(string guid)
+        {
+            Migration.Sql( string.Format( "DELETE FROM [ReportField] where [Guid] = '{0}'", guid ) );
         }
 
         #endregion

@@ -126,15 +126,15 @@ namespace Rock.Model
             
             // ignoring ContentChannel,ModifiedByPersonAliasId 
             
-            // ignoring ContentItem,ApprovedByPersonAliasId 
+            // ignoring ContentChannelItem,ApprovedByPersonAliasId 
             
-            // ignoring ContentItem,CreatedByPersonAliasId 
+            // ignoring ContentChannelItem,CreatedByPersonAliasId 
             
-            // ignoring ContentItem,ModifiedByPersonAliasId 
+            // ignoring ContentChannelItem,ModifiedByPersonAliasId 
             
-            // ignoring ContentType,CreatedByPersonAliasId 
+            // ignoring ContentChannelType,CreatedByPersonAliasId 
             
-            // ignoring ContentType,ModifiedByPersonAliasId 
+            // ignoring ContentChannelType,ModifiedByPersonAliasId 
             
             // ignoring DataView,CreatedByPersonAliasId 
             
@@ -265,28 +265,6 @@ namespace Rock.Model
             // ignoring Location,CreatedByPersonAliasId 
             
             // ignoring Location,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,ContactPersonAliasId 
-            
-            // ignoring MarketingCampaign,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,ModifiedByPersonAliasId 
             
             // ignoring Metric,AdminPersonAliasId 
             

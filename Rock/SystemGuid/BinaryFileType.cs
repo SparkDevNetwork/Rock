@@ -49,8 +49,8 @@ namespace Rock.SystemGuid
         public const string LOCATION_IMAGE = "DAB74416-3272-4411-BA69-70944B549A4B";
 
         /// <summary>
-        /// The Marketing Campaign Ad Image file type guid
+        /// The Content Channel Item Image file type guid
         /// </summary>
-        public const string MARKETING_CAMPAIGN_AD_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
+        public const string CONTENT_CHANNEL_ITEM_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
     }
 }

@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "Audit" )]
     [DataContract]
+    [HideFromReporting]
     public partial class Audit : Entity<Audit>
     {
 

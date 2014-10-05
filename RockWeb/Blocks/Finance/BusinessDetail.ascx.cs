@@ -126,9 +126,8 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Business Name
-                History.EvaluateChange( changes, "First Name", business.FirstName, tbBusinessName.Text );
-                business.FirstName = tbBusinessName.Text;
-                business.NickName = tbBusinessName.Text;
+                History.EvaluateChange( changes, "Last Name", business.LastName, tbBusinessName.Text );
+                business.LastName = tbBusinessName.Text;
 
                 // Phone Number
                 var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
@@ -220,7 +219,7 @@ namespace RockWeb.Blocks.Finance
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
-                var adultFamilyMember = UpdateGroupMember( business.Id, familyGroupType, business.FirstName + " Business", ddlCampus.SelectedValueAsInt(), adultRoleId, rockContext );
+                var adultFamilyMember = UpdateGroupMember( business.Id, familyGroupType, business.LastName + " Business", ddlCampus.SelectedValueAsInt(), adultRoleId, rockContext );
                 business.GivingGroup = adultFamilyMember.Group;
 
                 // Add/Update Known Relationship Group Type
@@ -240,6 +239,18 @@ namespace RockWeb.Blocks.Finance
                 var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, rockContext );
 
                 rockContext.SaveChanges();
+
+                // Every business should have an alias record with same id.  If it's missing, create it
+                if ( !business.Aliases.Any( a => a.AliasPersonId == business.Id ) )
+                {
+                    // refetch the business to make sure we have an Id
+                    business = personService.Get( business.Id );
+                    if ( business != null )
+                    {
+                        business.Aliases.Add( new PersonAlias { AliasPersonId = business.Id, AliasPersonGuid = business.Guid } );
+                        rockContext.SaveChanges();
+                    }
+                }
 
                 // Location
                 int workLocationTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
@@ -559,7 +570,7 @@ namespace RockWeb.Blocks.Finance
             if ( business != null )
             {
                 lDetailsLeft.Text = new DescriptionList()
-                    .Add( "Business Name", business.FirstName )
+                    .Add( "Business Name", business.LastName )
                     .Add( "Campus", business.GivingGroup.Campus )
                     .Add( "Record Status", business.RecordStatusValue )
                     .Add( "Record Status Reason", business.RecordStatusReasonValue )
@@ -611,7 +622,7 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
 
                 lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
-                tbBusinessName.Text = business.FirstName;
+                tbBusinessName.Text = business.LastName;
 
                 // address
                 Location location = null;

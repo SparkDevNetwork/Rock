@@ -36,13 +36,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the ContentTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentChannel.
+        /// Gets or sets the content channel type identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> that represents the MarketingTypeAdTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentChannel.
+        /// The content channel type identifier.
         /// </value>
         [DataMember]
-        public int ContentTypeId { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -124,13 +124,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.ContentType"/> of this ad.
+        /// Gets or sets the type of the content channel.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.ContentType"/> of this Ad.
+        /// The type of the content channel.
         /// </value>
         [DataMember]
-        public virtual ContentType ContentType { get; set; }
+        public virtual ContentChannelType ContentChannelType { get; set; }
 
         /// <summary>
         /// Gets or sets the items.
@@ -138,8 +138,7 @@ namespace Rock.Model
         /// <value>
         /// The items.
         /// </value>
-        [DataMember]
-        public virtual ICollection<ContentItem> Items { get; set; }
+        public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -169,7 +168,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ContentType;
+                return this.ContentChannelType;
             }
         }
 
@@ -182,7 +181,7 @@ namespace Rock.Model
         /// </summary>
         public ContentChannel()
         {
-            Items = new Collection<ContentItem>();
+            Items = new Collection<ContentChannelItem>();
         }
 
         #endregion
@@ -215,33 +214,8 @@ namespace Rock.Model
         /// </summary>
         public ContentChannelConfiguration()
         {
-            this.HasRequired( c => c.ContentType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the status of a Marketing Campaign Card
-    /// </summary>
-    public enum ContentChannelStatus : byte
-    {
-        /// <summary>
-        /// The <see cref="ContentChannel"/> is pending approval.
-        /// </summary>
-        PendingApproval = 1,
-
-        /// <summary>
-        /// The <see cref="ContentChannel"/> has been approved.
-        /// </summary>
-        Approved = 2,
-
-        /// <summary>
-        /// The <see cref="ContentChannel"/> was denied.
-        /// </summary>
-        Denied = 3
     }
 
     #endregion

@@ -187,7 +187,8 @@ namespace Rock.Model
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            if ( !this.IsAuthorized( dataViewAction, person ) )
+            // can't edit an existing dataview if not authorized for that dataview
+            if ( this.Id != 0 && !this.IsAuthorized( dataViewAction, person ) )
             {
                 isAuthorized = false;
                 authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );

@@ -406,12 +406,20 @@ namespace RockWeb.Blocks.Reporting
                 report.ReportFields.Add( reportField );
             }
 
-            if ( report.Id.Equals( 0 ) )
+            var adding = report.Id.Equals( 0 );
+            if ( adding )
             {
                 service.Add( report );
             }
 
             rockContext.SaveChanges();
+
+            if ( adding )
+            {
+                // add EDIT and ADMINISTRATE to the person who added the report 
+                Rock.Security.Authorization.AllowPerson( report, Authorization.EDIT, this.CurrentPerson, rockContext );
+                Rock.Security.Authorization.AllowPerson( report, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
@@ -494,8 +502,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
-                .GetEntities()
-                .Where( a => a.IsAuthorized(Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext))
+                .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
         }
 
@@ -585,9 +592,9 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                foreach ( var item in listItems.OrderByDescending( a => (a.Attributes["optiongroup"] == "Common")).ThenBy( a => a.Text ).ToArray() )
+                foreach ( var item in listItems.OrderByDescending( a => ( a.Attributes["optiongroup"] == "Common" ) ).ThenBy( a => a.Text ).ToArray() )
                 {
-                    ddlFields.Items.Add(item);
+                    ddlFields.Items.Add( item );
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -692,7 +699,8 @@ namespace RockWeb.Blocks.Reporting
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            if ( !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
+            // can't edit an existing report if not authorized for that report
+            if ( report.Id != 0  && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
@@ -829,7 +837,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var rockContext = new RockContext();
 
-                if ( !report.IsAuthorized(Authorization.VIEW, this.CurrentPerson, rockContext))
+                if ( !report.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
                 {
                     gReport.Visible = false;
                     return;
@@ -902,34 +910,37 @@ namespace RockWeb.Blocks.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
-                            selectedAttributes.Add( columnIndex, attribute );
-
-                            BoundField boundField;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                            if ( attribute != null )
                             {
-                                boundField = new BoolField();
+                                selectedAttributes.Add( columnIndex, attribute );
+
+                                BoundField boundField;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                                {
+                                    boundField = new BoolField();
+                                }
+                                else
+                                {
+                                    boundField = new BoundField();
+                                }
+
+                                boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
+                                boundField.SortExpression = null;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                {
+                                    boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                                }
+
+                                boundField.Visible = reportField.ShowInGrid;
+
+                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
+                                gReport.Columns.Add( boundField );
                             }
-                            else
-                            {
-                                boundField = new BoundField();
-                            }
-
-                            boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-                            boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
-                            boundField.SortExpression = null;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
-                            {
-                                boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
-                                boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                            }
-
-                            boundField.Visible = reportField.ShowInGrid;
-
-                            // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
-                            gReport.Columns.Add( boundField );
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )

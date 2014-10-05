@@ -113,7 +113,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -156,16 +156,9 @@ namespace Rock.Field.Types
 
                     else
                     {
-                        foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        foreach ( var listItem in listSource.GetListItems() )
                         {
-                            var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                            if ( keyValueArray.Length > 0 )
-                            {
-                                ListItem li = new ListItem();
-                                li.Value = keyValueArray[0].Trim();
-                                li.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
-                                editControl.Items.Add( li );
-                            }
+                            editControl.Items.Add( listItem );
                         }
                     }
 
@@ -179,6 +172,8 @@ namespace Rock.Field.Types
             return null;
 
         }
+
+        
 
         /// <summary>
         /// Reads new values entered by the user for the field

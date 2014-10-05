@@ -43,8 +43,6 @@ namespace RockWeb.Blocks.Crm
     {
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -130,7 +128,7 @@ namespace RockWeb.Blocks.Crm
         public string GetPersonViewOnClick( int personId )
         {
             var url = "/person/" + personId.ToString();
-            
+
             // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
             return string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
         }
@@ -177,9 +175,9 @@ namespace RockWeb.Blocks.Crm
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
             //// select person duplicate records
-            //// list duplicates that aren't confirmed as NotDuplicate. Also, don't include records where both the Person and Duplicate are inactive
+            //// list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
             var qry = personDuplicateService.Queryable()
-                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate )
+                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate && !a.IgnoreUntilScoreChanges )
                 .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId )
                 .Select( s => new
                 {
@@ -212,6 +210,8 @@ namespace RockWeb.Blocks.Crm
                     ConfidenceScore = (double?)null,
                     IsComparePerson = false
                 } );
+
+            nbNoDuplicatesMessage.Visible = gridList.Count == 1;
 
             gList.DataSource = gridList;
             gList.DataBind();
@@ -246,6 +246,10 @@ namespace RockWeb.Blocks.Crm
                 // If this is the main person for the compare, hide the "not duplicate" button
                 LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
                 btnNotDuplicate.Visible = isComparePerson;
+
+                // If this is the main person for the compare, hide the "ignore duplicate" button
+                LinkButton btnIgnoreDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnIgnoreDuplicate" );
+                btnIgnoreDuplicate.Visible = isComparePerson;
             }
         }
 
@@ -261,6 +265,23 @@ namespace RockWeb.Blocks.Crm
             int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
             var personDuplicate = personDuplicateService.Get( personDuplicateId );
             personDuplicateService.Delete( personDuplicate );
+            rockContext.SaveChanges();
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnIgnoreDuplicate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnIgnoreDuplicate_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+            int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
+            var personDuplicate = personDuplicateService.Get( personDuplicateId );
+            personDuplicate.IgnoreUntilScoreChanges = true;
             rockContext.SaveChanges();
 
             BindGrid();

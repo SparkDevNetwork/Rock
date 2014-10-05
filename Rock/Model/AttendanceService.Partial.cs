@@ -154,7 +154,7 @@ namespace Rock.Model
                 }
             } );
 
-            IList<AttendanceSummaryData> result = null;
+            List<AttendanceSummaryData> result = null;
 
             if ( graphBy == AttendanceGraphBy.Total )
             {
@@ -203,6 +203,12 @@ namespace Rock.Model
                     SeriesId = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
+            }
+
+            if (result.Count == 1)
+            {
+                var dummyZeroDate = startDate ?? DateTime.MinValue;
+                result.Insert( 0, new AttendanceSummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = result[0].SeriesId, YValue = 0 } );
             }
 
             return result;

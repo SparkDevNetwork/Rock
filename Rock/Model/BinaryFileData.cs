@@ -42,6 +42,7 @@ namespace Rock.Model
         /// A <see cref="System.Byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public byte[] Content { get; set; }
 
         //// ** NOTE:  We need [DataMember] so that REST can GET and POST BinaryFileData. 

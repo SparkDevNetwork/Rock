@@ -430,17 +430,17 @@ namespace RockWeb.Blocks.Communication
 
             pnlOpened.Visible = false;
 
-            lDetails.Text = communication.ChannelDataJson;
-            if ( communication.ChannelEntityTypeId.HasValue )
+            lDetails.Text = communication.MediumDataJson;
+            if ( communication.MediumEntityTypeId.HasValue )
             {
-                var channelEntityType = EntityTypeCache.Read( communication.ChannelEntityTypeId.Value );
-                if (channelEntityType != null)
+                var mediumEntityType = EntityTypeCache.Read( communication.MediumEntityTypeId.Value );
+                if (mediumEntityType != null)
                 {
-                    var channel = ChannelContainer.GetComponent( channelEntityType.Name );
-                    if (channel != null)
+                    var medium = MediumContainer.GetComponent( mediumEntityType.Name );
+                    if (medium != null)
                     {
-                        pnlOpened.Visible = channel.Transport.CanTrackOpens;
-                        lDetails.Text = channel.GetMessageDetails( communication );
+                        pnlOpened.Visible = medium.Transport.CanTrackOpens;
+                        lDetails.Text = medium.GetMessageDetails( communication );
                     }
                 } 
             }
