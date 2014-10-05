@@ -158,9 +158,9 @@ namespace Rock.Jobs
             int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger();
             if ( namesToProcess > 0 )
             {
-                var firstNameQry = personService.Queryable().Select( p => p.FirstName );
-                var nickNameQry = personService.Queryable().Select( p => p.NickName );
-                var lastNameQry = personService.Queryable().Select( p => p.LastName );
+                var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null);
+                var nickNameQry = personService.Queryable().Select( p => p.NickName ).Where( p => p != null );
+                var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
                 var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
 
                 var metaphones = rockContext.Metaphones;

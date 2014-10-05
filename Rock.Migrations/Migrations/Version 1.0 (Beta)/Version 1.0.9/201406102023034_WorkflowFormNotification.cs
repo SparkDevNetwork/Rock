@@ -36,7 +36,7 @@ namespace Rock.Migrations
             AddForeignKey("dbo.WorkflowActionForm", "NotificationSystemEmailId", "dbo.SystemEmail", "Id");
 
             // Add/Update Defined Type for ButtonHTML
-            RockMigrationHelper.AddDefinedType( "Global", "Button HTML", "Contains HTML for common button styles.", "407A3A73-A3EF-4970-B856-2A33F62AC72E", @"" );
+            RockMigrationHelper.AddDefinedType_pre201409101843015( "Global", "Button HTML", "Contains HTML for common button styles.", "407A3A73-A3EF-4970-B856-2A33F62AC72E", @"" );
 
             Sql( @"
     DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '6FF59F53-28EA-4BFE-AFE1-A459CC588495' )
@@ -63,7 +63,7 @@ namespace Rock.Migrations
 
 
             // Create Default System Email for workflow form notifications
-            RockMigrationHelper.UpdateSystemEmail( "Workflow", "Workflow Form Notification", "", "", "", "", "", "{{ Workflow.WorkflowType.Name }}: {{ Workflow.Name }}", @"
+            RockMigrationHelper.UpdateSystemEmail_pre201409101843015( "Workflow", "Workflow Form Notification", "", "", "", "", "", "{{ Workflow.WorkflowType.Name }}: {{ Workflow.Name }}", @"
 {{ GlobalAttribute.EmailHeader }}
 
 <p>{{ Person.FirstName }},</p>

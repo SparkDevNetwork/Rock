@@ -143,6 +143,21 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            // rebuild the CustomKeys list based on the current field titles
+            kvSortFields.CustomKeys = new Dictionary<string, string>();
+            foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
+            {
+                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+                kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+            }
+        }
+
         #endregion
 
         #region Events
@@ -179,6 +194,7 @@ namespace RockWeb.Blocks.Reporting
             string fieldSelection = string.Empty;
             ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, FieldSelection = fieldSelection } );
             AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, new RockContext(), true, new ReportField { ShowInGrid = true } );
+            kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), "(untitled)" );
         }
 
         /// <summary>
@@ -353,7 +369,7 @@ namespace RockWeb.Blocks.Reporting
             report.ReportFields.Clear();
 
             var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
-            int displayOrder = 0;
+            int columnOrder = 0;
             foreach ( var panelWidget in allPanelWidgets )
             {
                 string ddlFieldsId = panelWidget.ID + "_ddlFields";
@@ -385,7 +401,7 @@ namespace RockWeb.Blocks.Reporting
                 RockTextBox columnHeaderTextTextBox = phReportFields.ControlsOfTypeRecursive<RockTextBox>().First( a => a.ID == columnHeaderTextTextBoxId );
                 reportField.ColumnHeaderText = columnHeaderTextTextBox.Text;
 
-                reportField.Order = displayOrder++;
+                reportField.ColumnOrder = columnOrder++;
 
                 if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -403,15 +419,38 @@ namespace RockWeb.Blocks.Reporting
                     reportField.Selection = fieldSelection;
                 }
 
+                reportField.Guid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+
                 report.ReportFields.Add( reportField );
             }
 
-            if ( report.Id.Equals( 0 ) )
+            int sortOrder = 0;
+            foreach ( var itemPair in kvSortFields.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+            {
+                var reportFieldGuid = itemPair[0].AsGuidOrNull();
+                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                var reportField = report.ReportFields.FirstOrDefault( a => a.Guid == reportFieldGuid );
+                if ( reportField != null )
+                {
+                    reportField.SortOrder = sortOrder++;
+                    reportField.SortDirection = sortDirection;
+                }
+            }
+
+            var adding = report.Id.Equals( 0 );
+            if ( adding )
             {
                 service.Add( report );
             }
 
             rockContext.SaveChanges();
+
+            if ( adding )
+            {
+                // add EDIT and ADMINISTRATE to the person who added the report 
+                Rock.Security.Authorization.AllowPerson( report, Authorization.EDIT, this.CurrentPerson, rockContext );
+                Rock.Security.Authorization.AllowPerson( report, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
@@ -494,8 +533,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
-                .GetEntities()
-                .Where( a => a.IsAuthorized(Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext))
+                .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
         }
 
@@ -585,9 +623,9 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                foreach ( var item in listItems.OrderByDescending( a => (a.Attributes["optiongroup"] == "Common")).ThenBy( a => a.Text ).ToArray() )
+                foreach ( var item in listItems.OrderByDescending( a => ( a.Attributes["optiongroup"] == "Common" ) ).ThenBy( a => a.Text ).ToArray() )
                 {
-                    ddlFields.Items.Add(item);
+                    ddlFields.Items.Add( item );
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -692,7 +730,8 @@ namespace RockWeb.Blocks.Reporting
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            if ( !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
+            // can't edit an existing report if not authorized for that report
+            if ( report.Id != 0 && !report.IsAuthorized( reportAction, CurrentPerson, rockContext ) )
             {
                 isAuthorized = false;
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Report.FriendlyTypeName );
@@ -767,8 +806,16 @@ namespace RockWeb.Blocks.Reporting
             ReportFieldsDictionary = new List<ReportFieldInfo>();
             RockContext rockContext = new RockContext();
 
-            foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+            kvSortFields.CustomKeys = new Dictionary<string, string>();
+            kvSortFields.CustomValues = new Dictionary<string, string>();
+            kvSortFields.CustomValues.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
+            kvSortFields.CustomValues.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
+
+            kvSortFields.Value = report.ReportFields.Where( a => a.SortOrder.HasValue ).OrderBy( a => a.SortOrder.Value ).Select( a => string.Format( "{0}^{1}", a.Guid, a.SortDirection.ConvertToInt() ) ).ToList().AsDelimited( "|" );
+
+            foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
             {
+                kvSortFields.CustomKeys.Add( reportField.Guid.ToString(), reportField.ColumnHeaderText );
                 string fieldSelection;
                 if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -829,7 +876,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var rockContext = new RockContext();
 
-                if ( !report.IsAuthorized(Authorization.VIEW, this.CurrentPerson, rockContext))
+                if ( !report.IsAuthorized( Authorization.VIEW, this.CurrentPerson, rockContext ) )
                 {
                     gReport.Visible = false;
                     return;
@@ -869,7 +916,9 @@ namespace RockWeb.Blocks.Reporting
                     columnIndex++;
                 }
 
-                foreach ( var reportField in report.ReportFields.OrderBy( a => a.Order ) )
+                var reportFieldSortExpressions = new Dictionary<Guid, string>();
+
+                foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
                 {
                     columnIndex++;
                     if ( reportField.ReportFieldType == ReportFieldType.Property )
@@ -891,7 +940,8 @@ namespace RockWeb.Blocks.Reporting
 
                             boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                             boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? entityField.Title : reportField.ColumnHeaderText;
-                            boundField.SortExpression = entityField.Name;
+                            boundField.SortExpression = boundField.DataField;
+                            reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
                             boundField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( boundField );
                         }
@@ -902,34 +952,38 @@ namespace RockWeb.Blocks.Reporting
                         if ( attributeGuid.HasValue )
                         {
                             var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
-                            selectedAttributes.Add( columnIndex, attribute );
-
-                            BoundField boundField;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                            if ( attribute != null )
                             {
-                                boundField = new BoolField();
+                                selectedAttributes.Add( columnIndex, attribute );
+
+                                BoundField boundField;
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
+                                {
+                                    boundField = new BoolField();
+                                }
+                                else
+                                {
+                                    boundField = new BoundField();
+                                }
+
+                                boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
+                                boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
+                                boundField.SortExpression = boundField.DataField;
+                                reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
+
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                {
+                                    boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+                                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                                }
+
+                                boundField.Visible = reportField.ShowInGrid;
+
+                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
+                                gReport.Columns.Add( boundField );
                             }
-                            else
-                            {
-                                boundField = new BoundField();
-                            }
-
-                            boundField.DataField = string.Format( "Attribute_{0}_{1}", attribute.Id, columnIndex );
-                            boundField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? attribute.Name : reportField.ColumnHeaderText;
-                            boundField.SortExpression = null;
-
-                            if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
-                            {
-                                boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
-                                boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                            }
-
-                            boundField.Visible = reportField.ShowInGrid;
-
-                            // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
-                            gReport.Columns.Add( boundField );
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
@@ -944,10 +998,15 @@ namespace RockWeb.Blocks.Reporting
                             if ( columnField is BoundField )
                             {
                                 ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
+                                columnField.SortExpression = ( columnField as BoundField ).DataField;
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            columnField.SortExpression = selectComponent.SortExpression;
+                            if ( columnField.SortExpression != null )
+                            {
+                                reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
+                            }
+
                             columnField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( columnField );
                         }
@@ -988,7 +1047,31 @@ namespace RockWeb.Blocks.Reporting
                     gReport.Visible = true;
                     gReport.ExportFilename = report.Name;
                     rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
-                    gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
+                    SortProperty sortProperty = gReport.SortProperty;
+                    if ( sortProperty == null )
+                    {
+                        var reportSort = new SortProperty();
+                        var sortColumns = new Dictionary<string, SortDirection>();
+                        foreach ( var reportField in report.ReportFields.Where( a => a.SortOrder.HasValue ).OrderBy( a => a.SortOrder.Value ) )
+                        {
+                            if ( reportFieldSortExpressions.ContainsKey( reportField.Guid ) )
+                            {
+                                var sortField = reportFieldSortExpressions[reportField.Guid];
+                                if ( !string.IsNullOrWhiteSpace( sortField ) )
+                                {
+                                    sortColumns.Add( sortField, reportField.SortDirection );
+                                }
+                            }
+                        }
+
+                        if ( sortColumns.Any() )
+                        {
+                            reportSort.Property = sortColumns.Select( a => a.Key + ( a.Value == SortDirection.Descending ? " desc" : string.Empty ) ).ToList().AsDelimited( "," );
+                            sortProperty = reportSort;
+                        }
+                    }
+
+                    gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, out errors );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
@@ -1046,6 +1129,12 @@ namespace RockWeb.Blocks.Reporting
             panelWidget.DeleteClick += FieldsPanelWidget_DeleteClick;
             panelWidget.ShowReorderIcon = true;
             panelWidget.Expanded = showExpanded;
+
+            HiddenFieldWithClass hfReportFieldGuid = new HiddenFieldWithClass();
+            hfReportFieldGuid.CssClass = "js-report-field-guid";
+            hfReportFieldGuid.ID = panelWidget.ID + "_hfReportFieldGuid";
+            hfReportFieldGuid.Value = reportFieldGuid.ToString();
+            panelWidget.Controls.Add( hfReportFieldGuid );
 
             Label lbFields = new Label();
             lbFields.Text = "Field Type";

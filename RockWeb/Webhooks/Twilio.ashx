@@ -71,7 +71,7 @@ public class Twilio : IHttpHandler
         {
             string errorMessage = string.Empty;
 
-            new Rock.Communication.Channel.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+            new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
 
             if ( errorMessage != string.Empty )
             {

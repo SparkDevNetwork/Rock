@@ -186,22 +186,22 @@ namespace Rock.Workflow.Action
             var recipients = new List<string>();
             recipients.Add( recipient );
              
-            var channelData = new Dictionary<string, string>();
-            channelData.Add( "From", from.ResolveMergeFields( mergeFields ) );
-            channelData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
-            channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
+            var mediumData = new Dictionary<string, string>();
+            mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
+            mediumData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
+            mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
-            var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid(), rockContext );
-            if ( channelEntity != null )
+            var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
+            if ( mediumEntity != null )
             {
-                var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                if ( channel != null && channel.IsActive )
+                var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                if ( medium != null && medium.IsActive )
                 {
-                    var transport = channel.Transport;
+                    var transport = medium.Transport;
                     if ( transport != null && transport.IsActive )
                     {
                         var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                        transport.Send( channelData, recipients, appRoot, string.Empty );
+                        transport.Send( mediumData, recipients, appRoot, string.Empty );
                     }
                 }
             }

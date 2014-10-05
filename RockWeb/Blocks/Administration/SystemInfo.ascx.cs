@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
 
             // Get Version, database info and executing assembly location
             lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
-            lServerCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
+            lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 

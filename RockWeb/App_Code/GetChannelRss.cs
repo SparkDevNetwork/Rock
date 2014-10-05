@@ -40,7 +40,6 @@ namespace RockWeb
         private XmlTextWriter rss;
 
         private int rssItemLimit = 10;
-        private bool includeUnapproved = false;
 
         public void ProcessRequest( HttpContext context )
         {
@@ -111,9 +110,9 @@ namespace RockWeb
                         }
 
                         // get channel items
-                        ContentItemService contentService = new ContentItemService( rockContext );
+                        ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
                         var content = contentService.Queryable()
-                                        .Where( c => c.ContentChannelId == channel.Id && c.Status == ContentItemStatus.Approved )
+                                        .Where( c => c.ContentChannelId == channel.Id && c.Status == ContentChannelItemStatus.Approved )
                                         .OrderBy( c => c.StartDateTime ).OrderBy(c => c.Id)
                                         .Take( rssItemLimit );
 

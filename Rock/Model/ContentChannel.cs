@@ -36,13 +36,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the ContentTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentChannel.
+        /// Gets or sets the content channel type identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> that represents the MarketingTypeAdTypeId of the <see cref="Rock.Model.ContentType"/> of this ContentChannel.
+        /// The content channel type identifier.
         /// </value>
         [DataMember]
-        public int ContentTypeId { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -98,6 +98,7 @@ namespace Rock.Model
         /// <value>
         /// The channel URL.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string ChannelUrl { get; set; }
 
@@ -107,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The item URL.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string ItemUrl { get; set; }
 
@@ -119,18 +121,37 @@ namespace Rock.Model
         [DataMember]
         public int? TimeToLive { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the control to render when editing content for items of this type.
+        /// </summary>
+        /// <value>
+        /// The type of the item control.
+        /// </value>
+        [DataMember]
+        public ContentControlType ContentControlType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the root image directory to use when the Html control type is used
+        /// </summary>
+        /// <value>
+        /// The image root directory.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string RootImageDirectory { get; set; }
+
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.ContentType"/> of this ad.
+        /// Gets or sets the type of the content channel.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.ContentType"/> of this Ad.
+        /// The type of the content channel.
         /// </value>
         [DataMember]
-        public virtual ContentType ContentType { get; set; }
+        public virtual ContentChannelType ContentChannelType { get; set; }
 
         /// <summary>
         /// Gets or sets the items.
@@ -138,8 +159,7 @@ namespace Rock.Model
         /// <value>
         /// The items.
         /// </value>
-        [DataMember]
-        public virtual ICollection<ContentItem> Items { get; set; }
+        public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -169,7 +189,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ContentType;
+                return this.ContentChannelType;
             }
         }
 
@@ -182,7 +202,7 @@ namespace Rock.Model
         /// </summary>
         public ContentChannel()
         {
-            Items = new Collection<ContentItem>();
+            Items = new Collection<ContentChannelItem>();
         }
 
         #endregion
@@ -215,33 +235,29 @@ namespace Rock.Model
         /// </summary>
         public ContentChannelConfiguration()
         {
-            this.HasRequired( c => c.ContentType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
 
+
     #region Enumerations
 
     /// <summary>
-    /// Represents the status of a Marketing Campaign Card
+    /// Represents the type of editor to use when editing content for channel item
     /// </summary>
-    public enum ContentChannelStatus : byte
+    public enum ContentControlType
     {
         /// <summary>
-        /// The <see cref="ContentChannel"/> is pending approval.
+        /// Code Editor control
         /// </summary>
-        PendingApproval = 1,
+        CodeEditor = 0,
 
         /// <summary>
-        /// The <see cref="ContentChannel"/> has been approved.
+        /// Html Editor control
         /// </summary>
-        Approved = 2,
-
-        /// <summary>
-        /// The <see cref="ContentChannel"/> was denied.
-        /// </summary>
-        Denied = 3
+        HtmlEditor = 1
     }
 
     #endregion

@@ -70,7 +70,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
+            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Name );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )

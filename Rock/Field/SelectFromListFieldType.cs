@@ -29,6 +29,20 @@ namespace Rock.Field.Types
     public abstract class SelectFromListFieldType : FieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+            return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( "," );
+        }
+
+        /// <summary>
         /// Gets the list source.
         /// </summary>
         /// <value>
@@ -47,7 +61,6 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
-            editControl.Items.Add( new ListItem() );
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( ListSource.Any() )

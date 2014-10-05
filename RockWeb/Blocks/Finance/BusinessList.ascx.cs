@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Finance
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
-                queryable = queryable.Where( a => a.FirstName.Contains( businessName ) );
+                queryable = queryable.Where( a => a.LastName.Contains( businessName ) );
             }
 
             var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                gBusinessList.DataSource = queryable.OrderBy( q => q.FirstName ).ToList();
+                gBusinessList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
             }
 
             gBusinessList.DataBind();

@@ -43,10 +43,10 @@ namespace Rock.Client
         public string Subject { get; set; }
 
         /// <summary />
-        public int? ChannelEntityTypeId { get; set; }
+        public int? MediumEntityTypeId { get; set; }
 
         /// <summary />
-        public string ChannelDataJson { get; set; }
+        public string MediumDataJson { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

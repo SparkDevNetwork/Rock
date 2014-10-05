@@ -333,6 +333,7 @@ namespace Rock.Apps.CheckScannerUtility
                 lblBack.Visibility = Visibility.Hidden;
             }
 
+            this.ClearScannedDocHistory();
             lblSomeBadScans.Visibility = Visibility.Collapsed;
             ExpectingMagTekBackScan = false;
 

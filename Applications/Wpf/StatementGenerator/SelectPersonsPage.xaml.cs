@@ -184,7 +184,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( searchValue.Length > 2 )
             {
-                string uriFormat = "api/People/Search?name={0}&includeHtml=true";
+                string uriFormat = "api/People/Search?name={0}&includeHtml=true&includeBusinesses=true";
                 var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode( searchValue ) ), 10000 );
                 if ( searchResult != null )
                 {

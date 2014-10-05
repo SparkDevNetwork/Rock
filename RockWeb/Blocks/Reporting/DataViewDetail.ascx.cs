@@ -205,7 +205,8 @@ $(document).ready(function() {
                 return;
             }
 
-            if ( dataView.Id.Equals( 0 ) )
+            var adding = dataView.Id.Equals( 0 );
+            if ( adding )
             {
                 service.Add( dataView );
             }
@@ -219,6 +220,13 @@ $(document).ready(function() {
             }
 
             rockContext.SaveChanges();
+
+            if ( adding )
+            {
+                // add EDIT and ADMINISTRATE to the person who added the dataView
+                Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
+                Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+            }
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
@@ -308,8 +316,7 @@ $(document).ready(function() {
         {
             var rockContext = new RockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
-                .GetEntities()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson, rockContext ) )
+                .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
         }
 
@@ -369,6 +376,7 @@ $(document).ready(function() {
             if ( dataView == null )
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                dataView.Name = string.Empty;
             }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
@@ -629,20 +637,20 @@ $(document).ready(function() {
                 }
             }
 
+            if ( errorMessages.Any() )
+            {
+                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
+            }
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
+            }
+
             if ( grid.DataSource != null )
             {
                 grid.ExportFilename = dataView.Name;
-                if ( errorMessages.Any() )
-                {
-                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );
-                }
-
-                if ( dataView.EntityTypeId.HasValue )
-                {
-                    grid.RowItemText = EntityTypeCache.Read( dataView.EntityTypeId.Value ).FriendlyName;
-                }
-
                 grid.DataBind();
                 return true;
             }

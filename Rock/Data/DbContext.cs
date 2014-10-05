@@ -280,7 +280,7 @@ namespace Rock.Data
             try
             {
                 var audits = updatedItems.Select( i => i.Audit ).ToList();
-                if ( audits.Any() )
+                if ( audits.Any( a => a.Details.Any() ) )
                 {
                     var transaction = new Rock.Transactions.AuditTransaction();
                     transaction.Audits = audits;

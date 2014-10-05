@@ -42,7 +42,7 @@ namespace Rock.PersonProfile.Badge
     
     [IntegerField("Months To Display", "The number of months to show on the chart (default 24.)", false, 24)]
     [IntegerField("Minimum Bar Height", "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)", false, 2)]
-    [BooleanField("Annimate Bars", "Determine whether bars should annimate when displayed.", true)]
+    [BooleanField("Animate Bars", "Determine whether bars should animate when displayed.", true)]
     public class FamilyAttendance : BadgeComponent
     {
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.PersonProfile.Badge
             
             string annimateClass = string.Empty;
 
-            if (GetAttributeValue(badge, "AnnimateBars") == null || GetAttributeValue(badge, "AnnimateBars").AsBoolean())
+            if (GetAttributeValue(badge, "AnimateBars") == null || GetAttributeValue(badge, "AnimateBars").AsBoolean())
             {
                 annimateClass = " annimate";
             }

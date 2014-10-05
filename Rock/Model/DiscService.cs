@@ -14,9 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+// Test materials (questions, scoring criteria, etc.) used by permission from http://www.gregwiens.com/scid/
+// Question data as of Greg Weins' test v1.1 (2014-09-26)
+//
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.Model
 {
@@ -26,89 +29,58 @@ namespace Rock.Model
     public class DiscService
     {
         /// <summary>
-        /// Raw question data. This data format comes from source disc.js file from Greg Wiens.
+        /// Raw question data.
         /// </summary>
-        private static string[,] questionData = {
-            {"Fearless in conquering a challenge", "Always enjoys having fun", "Free to express true feelings", "Usually at rest with circumstances", "NNNN", "NNNN"},
-            {"Tries to avoid mistakes","Securely fixed in place","Convinces others ","Goes along with the flow","CDIS","CDIN"},
-            {"Liked by others","Systematically thinks through issues","Clearly conveys thoughts","Untroubled by stress","ICDN","NCDS"},
-            {"Enjoys talking","Able to control his/her impulses","Actions can be foreseen by others","Quickly makes decisions","ICSD","ICSD"},
-            {"Willing to take risks","Easily distinguishes differences","People person","Avoids extremes","DCIS","DCIS"},
-            {"Sensitive to the needs of others","Guides the thinking or behavior of others","Humbly acknowledges his/her abilities","Capable of producing a desired result","SINN","SNCD"},
-            {"Full of energy","Tries to avoid mistakes","Takes control of situations","Readily accessible to others","ICDN","ICDS"},
-            {"Has high-spirited energy","Easily focuses his/her attention","Tends not to speak frequently","Fully committed to achieving a goal","ICSD","INSD"},
-            {"Has an extreme care for details","People person","Captivates peoples' attention","Able to give direction","CSID","CSID"},
-            {"Fearless in conquering a challenge","Has the ability to encourage others","Readily follows someone else's lead","Minutely exact","DISN","DISC"},
-            {"Humbly acknowledges abilities","Pays attention to the needs of others","Driven by goals","Sees the glass as half-full","CSDI","CSDI"},
-            {"Drives others forward","Concerned about others' needs above own","Concerned with correct information","Able to take care of yourself","ISCD","ISCD"},
-            {"Forcefully pursues a goal","Shares the feelings of others","Other people love being around him/her","Tries to avoid danger","DSIC","DSIC"},
-            {"Likes to have things a certain way","Readily follows someone else's lead","Establishes new endeavors","Joyfully enjoys life","CSDI","CSDI"},
-            {"Liked by others","Full of thought","Perseveres despite opposition","Does things the traditional way","ICDS","INDS"},
-            {"Thinks through problems analytically","Willing to take risks","Loyal to others","Possesses a magnetic charm ","CDSI","CDSI"},
-            {"Enjoys the company of others","Unmovable in opposition","Able to take care of oneself","Listens more than he/she talks","ISDC","ISDC"},
-            {"Goes along with the flow","Has a one-track mind","Works systematically","Full of energy","SDCI","SNCI"},
-            {"Continues despite difficulties","Shows love freely","Mindful of the needs of others","Prone to worrying","DISN","DISC"},
-            {"Seeks the company of others","Cares deeply about the needs of others","Free from bias","Secure in his/her own abilities","ISND","ISCD"},
-            {"Capable of producing a desired result","Gives freely to others","Clearly conveys meaningful thoughts","Fully committed to achieving a goal","CSID","CSID"},
-            {"Instantly acts without thought","Sees things as they are","Readily accepts leadership roles","Usually at rest with circumstances","ICDS","ICDS"},
-            {"Enjoys time spent with others","Systematically thinks through issues","Does not show weakness or uncertainty","Gives grace when it is undeserved","ICDS","ICDS"},
-            {"Enjoys the company of others","Satisfied with life","Securely fixed in place","Follows directions","ISDC","ISCD"},
-            {"Pushes others to do their best","Thinks through problems analytically","Collaborative team player","Upbeat about life","DCSI","DCSI"},
-            {"Always enjoys having fun","Conforms exactly to a standard","Free to express true feelings","Can be depended on consistently","ICDS","ICDS"},
-            {"Forcefully pursues a goal","Welcoming to others","Holds the attention of others","Carefully assesses risks","DISC","DISC"},
-            {"Courteous of others","Requires others to accomplish tasks correctly","Sees the glass half-full","Concerned with the feelings of others","CDIS","CDIS"},
-            {"Readily follows someone else's lead","Tries to avoid mistakes","Does not show weakness or uncertainty","Minutely exact","NNNN","NNNN"},
-            {"Capable of expressing strong feelings","Prominently stands out","Minutely exact","Satisfied with life","IDCS","IDCS"}
+        private static String[,] questionData = {
+            {"enjoys challenges","enjoys having fun","freely expresses feelings","comfortable with circumstances","NNNN","NNNN"},
+            {"tries to avoid mistakes","not easily moved","convinces others ","goes along with the flow","CDIS","CDIS"},
+            {"liked by others","systematically thinks through issues","quickly shares thoughts","does not like change","ICDS","ICDS"},
+            {"enjoys talking","calculates actions","actions are predictable","makes decisions quickly","ICSD","ICSD"},
+            {"takes risks","sees imperfections","people person","avoids extremes","DCIS","DCIS"},
+            {"sensitive to others","influences others","struggles acknowledging abilities","produces results","SICD","SICD"},
+            {"full of energy","tries to avoid mistakes","takes control","accessible to others","ICDS","ICDS"},
+            {"high-spirited","easily focuses","does not speak up","fully committed to the goal","ICSD","ICSD"},
+            {"pays attention to details","consistent with others","is entertaining","gives direction","CSID","CSID"},
+            {"conquers challenges","encourages others","follows others","minutely exact","DISC","DISC"},
+            {"plays down abilities","listens to others","driven by goals","an optimist","CSDI","CSDI"},
+            {"pushes others forward","concerned for other","concerned for correctness","is self sufficient","ISCD","ISCD"},
+            {"pursues goals","understands other's feelings","people enjoy them","avoids danger","DSIC","DSIC"},
+            {"prefers precision","follows others","starts things","enjoys life fully","CSDI","CSDI"},
+            {"liked by others","thinks things through","perseveres over obstacles","does things the traditional way","ICDS","ICDS"},
+            {"is analytical","takes risks","loyal to others","possesses charm ","CDSI","CDSI"},
+            {"enjoys others","patient listener","takes care of themselves","listens to details","ISDC","ISDC"},
+            {"doesn't challenge others","doggedly pursues","works systematically","high energy","SDCI","SDCI"},
+            {"overcomes difficulties","shows feelings freely","mindful of others","prone to worry","DISC","DISC"},
+            {"enjoys hanging out with people","cares deeply about others","is concerned about the facts","secure in abilities","ISCD","ISCD"},
+            {"does things the right way","is generous","shares inner thoughts","committed to the goal","CSID","CSID"},
+            {"acts without thinking","evaluates objectively","assumes control","comfortable with the status quo","ICDS","ICDS"},
+            {"spends time with others","thinks systematically through issues","displays confidence","gives grace to others","ICDS","ICDS"},
+            {"seeks others","comfortable with the status quo","resistant to opposition","follows instructions precisely","ISDC","ISDC"},
+            {"pushes others to do their best","thinks through problems analytically","collaborative team player","upbeat about life","DCSI","DCSI"},
+            {"enjoys having fun with others","conforms exactly to a standard","expresses opinions freely","is consistent","ICDS","ICDS"},
+            {"forcefully pursues a goal","welcoming to others","considerate of others","carefully assesses risks","DISC","DISC"},
+            {"critical of others","pushes others","optimistic toward others","concerned with others","CDIS","CDIS"},
+            {"readily follows others","tries to avoid mistakes","does not show weakness","enjoys others","NNNN","NNNN"},
+            {"expresses feelings","often stands out","monitors details","satisfied with circumstances","IDCS","IDCS"}
         };
 
+#pragma warning disable 1591
         /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
         public struct AssessmentResults
         {
             /// <summary>
-            /// 
+            /// AdaptiveBehaviorS
             /// </summary>
             public int AdaptiveBehaviorS;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int AdaptiveBehaviorC;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int AdaptiveBehaviorI;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int AdaptiveBehaviorD;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int NaturalBehaviorS;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int NaturalBehaviorC;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int NaturalBehaviorI;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public int NaturalBehaviorD;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public DateTime LastSaveDate;
         }
 
@@ -118,35 +90,38 @@ namespace Rock.Model
         /// </summary>
         public struct ResponseItem
         {
-            /// <summary>
-            /// 
-            /// </summary>
             public string QuestionNumber;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public string ResponseNumber;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public string ResponseID;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public string ResponseText;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public string MostScore;
-
-            /// <summary>
-            /// 
-            /// </summary>
             public string LeastScore;
+        }
+
+        public static class AttributeKeys
+        {
+            public const string AdaptiveD = "AdaptiveD";
+            public const string AdaptiveI = "AdaptiveI";
+            public const string AdaptiveS = "AdaptiveS";
+            public const string AdaptiveC = "AdaptiveC";
+            public const string NaturalD = "NaturalD";
+            public const string NaturalI = "NaturalI";
+            public const string NaturalS = "NaturalS";
+            public const string NaturalC = "NaturalC";
+
+            public const string LastSaveDate = "LastSaveDate";
+        }
+
+#pragma warning restore 1591
+
+        /// <summary>
+        /// Returns the datasource.  Each row is a question,
+        /// comprised of four responses followed by a 'more' and 'less' score.
+        /// </summary>
+        /// <returns></returns>
+        static public String[,] GetResponsesByQuestion()
+        {
+            return questionData;
         }
 
         /// <summary>
@@ -158,18 +133,18 @@ namespace Rock.Model
             List<ResponseItem> responseList = new List<ResponseItem>();
             ResponseItem response = new ResponseItem();
 
-            for (int questionIndex = 0; questionIndex < questionData.GetLength(0); questionIndex++)
+            for ( int questionIndex = 0; questionIndex < questionData.GetLength( 0 ); questionIndex++ )
             {
-                for (int responseIndex = 0; responseIndex < 4; responseIndex++)
+                for ( int responseIndex = 0; responseIndex < 4; responseIndex++ )
                 {
-                    response.QuestionNumber = (questionIndex + 1).ToString("D2");
-                    response.ResponseNumber = (responseIndex + 1).ToString();
+                    response.QuestionNumber = ( questionIndex + 1 ).ToString( "D2" );
+                    response.ResponseNumber = ( responseIndex + 1 ).ToString();
                     response.ResponseID = response.QuestionNumber + response.ResponseNumber; ;
                     response.ResponseText = questionData[questionIndex, responseIndex];
-                    response.MostScore = questionData[questionIndex, 4].Substring(responseIndex, 1);
-                    response.LeastScore = questionData[questionIndex, 5].Substring(responseIndex, 1);
+                    response.MostScore = questionData[questionIndex, 4].Substring( responseIndex, 1 );
+                    response.LeastScore = questionData[questionIndex, 5].Substring( responseIndex, 1 );
 
-                    responseList.Add(response);
+                    responseList.Add( response );
                 }
             }
             return responseList;
@@ -178,12 +153,19 @@ namespace Rock.Model
         /// <summary>
         /// Scores the test.
         /// </summary>
-        /// <param name="selectedResponseIDs">a List of ResponseIDs to be scored.</param>
-        /// <returns>a struct TestResults object with final scores.</returns>
-        static public AssessmentResults Score(List<string> selectedResponseIDs)
+        /// <param name="moreN">The more n.</param>
+        /// <param name="moreD">The more d.</param>
+        /// <param name="moreI">The more i.</param>
+        /// <param name="moreS">The more s.</param>
+        /// <param name="moreC">The more c.</param>
+        /// <param name="lessN">The less n.</param>
+        /// <param name="lessD">The less d.</param>
+        /// <param name="lessI">The less i.</param>
+        /// <param name="lessS">The less s.</param>
+        /// <param name="lessC">The less c.</param>
+        /// <returns>returns a AssessmentResults object</returns>
+        static public AssessmentResults Score( int moreN, int moreD, int moreI, int moreS, int moreC, int lessN, int lessD, int lessI, int lessS, int lessC )
         {
-            List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
-
             // Holds the most and least totals for each Letter attribute
             Dictionary<string, int[]> results = new Dictionary<string, int[]>();
             results["S"] = new int[] { 0, 0 };
@@ -192,23 +174,16 @@ namespace Rock.Model
             results["N"] = new int[] { 0, 0 }; // This is intentionally not used after most/least totalling (foreach loop below). Placebo questions?
             results["D"] = new int[] { 0, 0 };
 
-            foreach (string selectedResponseID in selectedResponseIDs)
-            {
-                string responseID = selectedResponseID.Substring(0, 3);
-                string MorL = selectedResponseID.Substring(3, 1);
-
-                DiscService.ResponseItem selectedResponse = responseList.Find(
-                    delegate(DiscService.ResponseItem responseItem)
-                    {
-                        return responseItem.ResponseID == responseID;
-                    }
-                );
-
-                if (MorL == "m")
-                    results[selectedResponse.MostScore][0]++;
-                else
-                    results[selectedResponse.LeastScore][1]++;
-            }
+            results["S"][0] = moreS;
+            results["S"][1] = lessS;
+            results["C"][0] = moreC;
+            results["C"][1] = lessC;
+            results["I"][0] = moreI;
+            results["I"][1] = lessI;
+            results["N"][0] = moreN;
+            results["N"][1] = lessN;
+            results["D"][0] = moreD;
+            results["D"][1] = lessD;
 
             int nbS = 27 - results["S"][1];
             int nbC = 26 - results["C"][1];
@@ -219,17 +194,17 @@ namespace Rock.Model
             decimal decY = nbS + nbC + nbI + nbD;
 
             AssessmentResults testResults = new AssessmentResults();
-            if (decX > 0 && decY > 0)
+            if ( decX > 0 && decY > 0 )
             {
-                testResults.AdaptiveBehaviorS = Convert.ToInt32((results["S"][0] / decX * 100));
-                testResults.AdaptiveBehaviorC = Convert.ToInt32((results["C"][0] / decX * 100));
-                testResults.AdaptiveBehaviorI = Convert.ToInt32((results["I"][0] / decX * 100));
-                testResults.AdaptiveBehaviorD = Convert.ToInt32((results["D"][0] / decX * 100));
+                testResults.AdaptiveBehaviorS = Convert.ToInt32( ( results["S"][0] / decX * 100 ) );
+                testResults.AdaptiveBehaviorC = Convert.ToInt32( ( results["C"][0] / decX * 100 ) );
+                testResults.AdaptiveBehaviorI = Convert.ToInt32( ( results["I"][0] / decX * 100 ) );
+                testResults.AdaptiveBehaviorD = Convert.ToInt32( ( results["D"][0] / decX * 100 ) );
 
-                testResults.NaturalBehaviorS = Convert.ToInt32((nbS / decY * 100));
-                testResults.NaturalBehaviorC = Convert.ToInt32((nbC / decY * 100));
-                testResults.NaturalBehaviorI = Convert.ToInt32((nbI / decY * 100));
-                testResults.NaturalBehaviorD = Convert.ToInt32((nbD / decY * 100));
+                testResults.NaturalBehaviorS = Convert.ToInt32( ( nbS / decY * 100 ) );
+                testResults.NaturalBehaviorC = Convert.ToInt32( ( nbC / decY * 100 ) );
+                testResults.NaturalBehaviorI = Convert.ToInt32( ( nbI / decY * 100 ) );
+                testResults.NaturalBehaviorD = Convert.ToInt32( ( nbD / decY * 100 ) );
             }
             return testResults;
         }
@@ -240,10 +215,10 @@ namespace Rock.Model
         /// <param name="person"></param>
         /// <param name="attrib"></param>
         /// <returns>The DISC score, if one is saved. Otherwise, returns 0.</returns>
-        private static int AttributeValueLookup(Person person, string attrib)
+        private static int AttributeValueLookup( Person person, string attrib )
         {
             int retVal = 0;
-            bool bCatch = int.TryParse(person.AttributeValues[attrib].Value, out retVal);
+            bool bCatch = int.TryParse( person.AttributeValues[attrib].Value, out retVal );
             return retVal;
         }
 
@@ -252,42 +227,45 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The Person to get the scores for.</param>
         /// <returns>AssessmentResults</returns>
-        static public AssessmentResults LoadSavedAssessmentResults(Person person)
+        static public AssessmentResults LoadSavedAssessmentResults( Person person )
         {
             AssessmentResults savedScores = new AssessmentResults();
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Name );
 
-            foreach (string attrib in discAttributes)
+            person.LoadAttributes();
+
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Key );
+
+            foreach ( string attrib in discAttributes )
             {
-                switch (attrib)
+                switch ( attrib )
                 {
-                    case "AdaptiveD":
-                        savedScores.AdaptiveBehaviorD = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.AdaptiveD:
+                        savedScores.AdaptiveBehaviorD = AttributeValueLookup( person, attrib );
                         break;
-                    case "AdaptiveI":
-                        savedScores.AdaptiveBehaviorI = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.AdaptiveI:
+                        savedScores.AdaptiveBehaviorI = AttributeValueLookup( person, attrib );
                         break;
-                    case "AdaptiveS":
-                        savedScores.AdaptiveBehaviorS = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.AdaptiveS:
+                        savedScores.AdaptiveBehaviorS = AttributeValueLookup( person, attrib );
                         break;
-                    case "AdaptiveC":
-                        savedScores.AdaptiveBehaviorC = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.AdaptiveC:
+                        savedScores.AdaptiveBehaviorC = AttributeValueLookup( person, attrib );
                         break;
-                    case "NaturalD":
-                        savedScores.NaturalBehaviorD = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.NaturalD:
+                        savedScores.NaturalBehaviorD = AttributeValueLookup( person, attrib );
                         break;
-                    case "NaturalI":
-                        savedScores.NaturalBehaviorI = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.NaturalI:
+                        savedScores.NaturalBehaviorI = AttributeValueLookup( person, attrib );
                         break;
-                    case "NaturalS":
-                        savedScores.NaturalBehaviorS = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.NaturalS:
+                        savedScores.NaturalBehaviorS = AttributeValueLookup( person, attrib );
                         break;
-                    case "NaturalC":
-                        savedScores.NaturalBehaviorC = AttributeValueLookup(person, attrib);
+                    case AttributeKeys.NaturalC:
+                        savedScores.NaturalBehaviorC = AttributeValueLookup( person, attrib );
                         break;
-                    case "LastSaveDate":
+                    case AttributeKeys.LastSaveDate:
                         DateTime lastAssessmentDate = DateTime.MinValue;
-                        bool bCatch = DateTime.TryParse(person.AttributeValues[attrib].Value, out lastAssessmentDate);
+                        bool bCatch = DateTime.TryParse( person.AttributeValues[attrib].Value, out lastAssessmentDate );
                         savedScores.LastSaveDate = lastAssessmentDate;
                         break;
                 }
@@ -307,51 +285,47 @@ namespace Rock.Model
         /// <param name="NBi">Natural Behavior I</param>
         /// <param name="NBs">Natural Behavior S</param>
         /// <param name="NBc">Natural Behavior C</param>
-        static public void SaveAssessmentResults(
-            Person person,
-            String ABd,
-            String ABi,
-            String ABs,
-            String ABc,
-            String NBd,
-            String NBi,
-            String NBs,
-            String NBc)
+        static public void SaveAssessmentResults( Person person, String ABd, String ABi, String ABs, String ABc, String NBd, String NBi, String NBs, String NBc )
         {
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Name );
-            foreach (string attrib in discAttributes)
+            person.LoadAttributes();
+
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Key );
+
+            foreach ( string attrib in discAttributes )
             {
-                switch (attrib)
+                switch ( attrib )
                 {
-                    case "AdaptiveD":
-                        Rock.Attribute.Helper.SaveAttributeValue(person, person.Attributes[attrib], ABd );
+                    case AttributeKeys.AdaptiveD:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABd );
                         break;
-                    case "AdaptiveI":
+                    case AttributeKeys.AdaptiveI:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABi );
                         break;
-                    case "AdaptiveS":
+                    case AttributeKeys.AdaptiveS:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABs );
                         break;
-                    case "AdaptiveC":
+                    case AttributeKeys.AdaptiveC:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABc );
                         break;
-                    case "NaturalD":
+                    case AttributeKeys.NaturalD:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBd );
                         break;
-                    case "NaturalI":
+                    case AttributeKeys.NaturalI:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBi );
                         break;
-                    case "NaturalS":
+                    case AttributeKeys.NaturalS:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBs );
                         break;
-                    case "NaturalC":
+                    case AttributeKeys.NaturalC:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc );
                         break;
-                    case "LastSaveDate":
+                    case AttributeKeys.LastSaveDate:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString() );
                         break;
                 }
             }
+
+            person.SaveAttributeValues();
         }
     }
 }

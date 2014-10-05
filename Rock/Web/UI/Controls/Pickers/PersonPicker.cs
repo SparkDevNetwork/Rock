@@ -182,14 +182,37 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private HiddenField _hfPersonId;
-        private HiddenField _hfPersonName;
+        private HiddenFieldWithClass _hfPersonId;
+        private HiddenFieldWithClass _hfPersonName;
+        private HiddenFieldWithClass _hfIncludeBusinesses;
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include businesses].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include businesses]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeBusinesses
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfIncludeBusinesses.Value.AsBooleanOrNull() ?? false;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfIncludeBusinesses.Value = value.Bit().ToString();
+
+            }
+        }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -345,14 +368,21 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            _hfPersonId = new HiddenField();
+            _hfPersonId = new HiddenFieldWithClass();
+            _hfPersonId.CssClass = "js-person-id";
             Controls.Add( _hfPersonId );
             _hfPersonId.ID = "hfPersonId";
             _hfPersonId.Value = "0";
 
-            _hfPersonName = new HiddenField();
+            _hfPersonName = new HiddenFieldWithClass();
+            _hfPersonName.CssClass = "js-person-name";
             Controls.Add( _hfPersonName );
             _hfPersonName.ID = "hfPersonName";
+
+            _hfIncludeBusinesses = new HiddenFieldWithClass();
+            _hfIncludeBusinesses.CssClass = "js-include-businesses";
+            Controls.Add( _hfIncludeBusinesses );
+            _hfIncludeBusinesses.ID = "hfIncludeBusinesses";
 
             _btnSelect = new HtmlAnchor();
             Controls.Add( _btnSelect );
@@ -398,24 +428,27 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            _hfPersonId.RenderControl( writer );
-            _hfPersonName.RenderControl( writer );
-
             if ( this.Enabled )
             {
-                string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select picker-person {2}' > 
+                writer.AddAttribute( "id", this.ClientID );
+                writer.AddAttribute( "class", string.Format( "picker picker-select picker-person {0}", this.CssClass ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _hfPersonId.RenderControl( writer );
+                _hfPersonName.RenderControl( writer );
+                _hfIncludeBusinesses.RenderControl( writer );
+                
+                string pickerLabelHtmlFormat = @"
             <a class='picker-label' href='#'>
                 <i class='fa fa-user'></i>
                 <span id='{0}_selectedPersonLabel'>{1}</span>
                 <b class='fa fa-caret-down pull-right'></b>
             </a>
 ";
-                writer.Write( string.Format( controlHtmlFormatStart, this.ClientID, this.PersonName, this.CssClass ) );
+                writer.Write( string.Format( pickerLabelHtmlFormat, this.ClientID, this.PersonName ) );
 
                 _btnSelectNone.RenderControl( writer );
 
-                string controlHtmlFormatMiddle = @"
+                string pickMenuHtmlFormatStart = @"
           <div class='picker-menu dropdown-menu'>
 
              <h4>Search</h4>
@@ -430,18 +463,18 @@ namespace Rock.Web.UI.Controls
              <div class='picker-actions'>
 ";
 
-                writer.Write( controlHtmlFormatMiddle, this.ClientID, this.PersonName );
+                writer.Write( pickMenuHtmlFormatStart, this.ClientID, this.PersonName );
 
                 _btnSelect.RenderControl( writer );
 
-                string controlHtmlFormatEnd = @"
+                string pickMenuHtmlFormatEnd = @"
             <a class='btn btn-link btn-xs' id='{0}_btnCancel'>Cancel</a>
             </div>
          </div>
-     </div>
 ";
 
-                writer.Write( string.Format( controlHtmlFormatEnd, this.ClientID, this.PersonName ) );
+                writer.Write( string.Format( pickMenuHtmlFormatEnd, this.ClientID, this.PersonName ) );
+                writer.RenderEndTag();
             }
             else
             {

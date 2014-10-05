@@ -20,7 +20,7 @@
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="True"/>
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true"/>
                             <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
             
                             <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
