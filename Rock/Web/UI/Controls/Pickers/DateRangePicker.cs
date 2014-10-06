@@ -176,9 +176,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavaScript()
         {
+            // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
+            var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
+            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
+
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
-$('#{0}').datepicker().on('changeDate', function (ev) {{
+$('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
 
     // if the startdate is later than the enddate, change the end date to be startdate+1
     if (ev.date.valueOf() > $('#{1}').data('datepicker').date.valueOf()) {{
@@ -195,13 +200,13 @@ $('#{0}').datepicker().on('changeDate', function (ev) {{
     $('#{1}')[0].focus();
 }});
 
-$('#{1}').datepicker().on('changeDate', function (ev) {{
+$('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
     // close the enddate picker immediately after selecting an end date
     $('#{1}').data('datepicker').hide();
 }});
 
 ";
-            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
+            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID, dateFormat );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
@@ -247,6 +252,20 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             RegisterJavaScript();
 
+            writer.AddAttribute( "id", this.ClientID );
+            foreach ( var styleKey in this.Style.Keys )
+            {
+                string styleName = (string)styleKey;
+                writer.AddStyleAttribute( styleName, this.Style[styleName] );
+            }
+
+            if ( !string.IsNullOrEmpty( this.CssClass ) )
+            {
+                writer.AddAttribute( "class", this.CssClass );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -254,7 +273,8 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
             writer.Write( "<span class='to'> to </span>" );
             _tbUpperValue.RenderControl( writer );
 
-            writer.RenderEndTag();
+            writer.RenderEndTag(); // form-control-group
+            writer.RenderEndTag(); // id
         }
 
         /// <summary>
@@ -344,12 +364,12 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         }
 
         /// <summary>
-        /// Gets or sets the lower and upper values by specifying a comma-delimted lower and upper date
+        /// Gets or sets the lower and upper values by specifying a comma-delimted lower and upper date in ISO 8601 format
         /// </summary>
         /// <value>
         /// The delimited values.
         /// </value>
-        public string DelimitedValues 
+        public string DelimitedValues
         {
             get
             {
@@ -359,7 +379,10 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
                 }
                 else
                 {
-                    return string.Format( "{0:d},{1:d}", this.LowerValue, this.UpperValue );
+                    // serialize the date using ISO 8601 standard
+                    return string.Format( "{0},{1}",
+                        this.LowerValue.HasValue ? this.LowerValue.Value.ToString( "o" ) : null,
+                        this.UpperValue.HasValue ? this.UpperValue.Value.ToString( "o" ) : null );
                 }
             }
             set
@@ -369,25 +392,8 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
                     string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
                     if ( valuePair.Length == 2 )
                     {
-                        DateTime result;
-
-                        if ( DateTime.TryParse( valuePair[0], out result ) )
-                        {
-                            this.LowerValue = result;
-                        }
-                        else
-                        {
-                            this.LowerValue = null;
-                        }
-
-                        if ( DateTime.TryParse( valuePair[1], out result ) )
-                        {
-                            this.UpperValue = result;
-                        }
-                        else
-                        {
-                            this.UpperValue = null;
-                        }
+                        this.LowerValue = valuePair[0].AsDateTime();
+                        this.UpperValue = valuePair[1].AsDateTime();
                     }
                     else
                     {
@@ -404,44 +410,22 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         }
 
         /// <summary>
-        /// Formats the delimited values.
+        /// Formats the delimited values for display purposes
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string FormatDelimitedValues( string value )
         {
-            try
+            if ( !string.IsNullOrWhiteSpace( value ) && value.Contains( "," ) )
             {
-                if ( value != null )
+                var dates = value.Split( ',' );
+                if ( dates.Length == 2 )
                 {
-                    if ( value.StartsWith( "," ) )
-                    {
-                        string upperValue = DateTime.Parse( value.Substring( 1 ) ).Date.ToShortDateString();
-                        return string.Format( "through {0}", upperValue );
-                    }
-                    else if ( value.EndsWith( "," ) )
-                    {
-                        string lowerValue = DateTime.Parse( value.Substring( 0, value.Length - 1 ) ).Date.ToShortDateString();
-                        return string.Format( "from {0}", lowerValue );
-                    }
-                    else
-                    {
-                        string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                        if ( valuePair.Length == 2 )
-                        {
-                            string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[0] ).Date.ToShortDateString();
-                            string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[1] ).Date.ToShortDateString();
-                            return string.Format( "{0} to {1}", lowerValue, upperValue );
-                        }
-                    }
+                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() ).ToString( "d" );
                 }
+            }
 
-                return null;
-            }
-            catch 
-            {
-                return null;  
-            }
+            return null;
         }
     }
 }

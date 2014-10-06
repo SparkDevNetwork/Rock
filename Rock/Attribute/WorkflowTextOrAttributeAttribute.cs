@@ -32,7 +32,8 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="textLabel">The text label.</param>
+        /// <param name="attributeLabel">The attribute label.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>

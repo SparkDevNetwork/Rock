@@ -14,53 +14,129 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class WorkflowTypePicker : RockDropDownList
+    public class WorkflowTypePicker : ItemPicker
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowTypePicker" /> class.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        public WorkflowTypePicker()
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            this.Items.Clear();
-            this.DataTextField = "Name";
-            this.DataValueField = "Id";
-            this.DataSource = new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name).ToList();
-            this.DataBind();
+            ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
+            this.IconCssClass = "fa fa-cogs";
+            base.OnInit( e );
         }
 
         /// <summary>
-        /// Selects the value as int.
+        /// Sets the value.
         /// </summary>
-        /// <returns></returns>
-        public int? SelectedValueAsInt( bool NoneAsNull = true )
+        /// <param name="workflowType">The Workflow Type.</param>
+        public void SetValue( WorkflowType workflowType )
         {
-            if ( NoneAsNull )
+            if ( workflowType != null )
             {
-                if ( this.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
-                {
-                    return null;
-                }
-            }
+                ItemId = workflowType.Id.ToString();
 
-            if ( string.IsNullOrWhiteSpace( this.SelectedValue ) )
-            {
-                return null;
+                string parentCategoryIds = string.Empty;
+                var parentCategory = workflowType.Category;
+                while ( parentCategory != null )
+                {
+                    parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
+                    parentCategory = parentCategory.ParentCategory;
+                }
+
+                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ItemName = workflowType.Name;
             }
             else
             {
-                return int.Parse( this.SelectedValue );
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
             }
         }
 
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="workflowTypes">The schedules.</param>
+        public void SetValues( IEnumerable<WorkflowType> workflowTypes )
+        {
+            var workflowTypeList = workflowTypes.ToList();
+
+            if ( workflowTypeList.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                var parentCategoryIds = string.Empty;
+
+                foreach ( var workflowType in workflowTypeList )
+                {
+                    if ( workflowType != null )
+                    {
+                        ids.Add( workflowType.Id.ToString() );
+                        names.Add( workflowType.Name );
+                        var parentCategory = workflowType.Category;
+
+                        while ( parentCategory != null )
+                        {
+                            parentCategoryIds += parentCategory.Id.ToString() + ",";
+                            parentCategory = parentCategory.ParentCategory;
+                        }
+                    }
+                }
+
+                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ItemIds = ids;
+                ItemNames = names;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
+        /// Sets the value on select.
+        /// </summary>
+        protected override void SetValueOnSelect()
+        {
+            var workflowType = new WorkflowTypeService( new RockContext() ).Get( int.Parse( ItemId ) );
+            SetValue( workflowType );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        protected override void SetValuesOnSelect()
+        {
+            var workflowTypes = new WorkflowTypeService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            this.SetValues( workflowTypes );
+        }
+
+        /// <summary>
+        /// Gets the item rest URL.
+        /// </summary>
+        /// <value>
+        /// The item rest URL.
+        /// </value>
+        public override string ItemRestUrl
+        {
+            get { return "~/api/Categories/GetChildren/"; }
+        }
     }
 }

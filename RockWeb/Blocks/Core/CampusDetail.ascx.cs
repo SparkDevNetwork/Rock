@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -24,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -45,15 +47,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "campusId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "campusId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "campusId" ).AsInteger() );
             }
             else
             {
@@ -100,7 +94,9 @@ namespace RockWeb.Blocks.Core
         {
             Campus campus;
             var rockContext = new RockContext();
-            CampusService campusService = new CampusService( rockContext );
+            var campusService = new CampusService( rockContext );
+            var locationService = new LocationService( rockContext );
+            var locationCampusValue = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid());
 
             int campusId = int.Parse( hfCampusId.Value );
 
@@ -115,26 +111,61 @@ namespace RockWeb.Blocks.Core
             }
 
             campus.Name = tbCampusName.Text;
-            campus.ShortCode = tbCampusCode.Text;
+            campus.IsActive = cbIsActive.Checked;
+            campus.Description = tbDescription.Text;
+            campus.Url = tbUrl.Text;
+
             campus.PhoneNumber = tbPhoneNumber.Text;
+            if ( campus.Location == null )
+            {
+                var location = locationService.Queryable()
+                    .Where( l =>
+                        l.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) &&
+                        l.LocationTypeValueId == locationCampusValue.Id )
+                    .FirstOrDefault();
+                if (location == null)
+                {
+                    location = new Location();
+                    locationService.Add( location );
+                }
+
+                campus.Location = location;
+            }
+
+            campus.Location.Name = campus.Name;
+            campus.Location.LocationTypeValueId = locationCampusValue.Id;
+
+            string preValue = campus.Location.GetFullStreetAddress();
+            acAddress.GetValues( campus.Location );
+            string postValue = campus.Location.GetFullStreetAddress();
+
+            campus.ShortCode = tbCampusCode.Text;
 
             var personService = new PersonService( rockContext );
             var leaderPerson = personService.Get( ppCampusLeader.SelectedValue ?? 0 );
             campus.LeaderPersonAliasId = leaderPerson != null ? leaderPerson.PrimaryAliasId : null;
 
+            campus.ServiceTimes = kvlServiceTimes.Value;
+
             campus.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, campus );
 
-            if ( !campus.IsValid )
+            if ( !campus.IsValid && campus.Location.IsValid)
             {
                 // Controls will render the error messages
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
                 campus.SaveAttributeValues( rockContext );
+
+                if (preValue != postValue && !string.IsNullOrWhiteSpace(campus.Location.Street1))
+                {
+                    locationService.Verify(campus.Location, true);
+                }
+
             } );
 
             Rock.Web.Cache.CampusCache.Flush( campus.Id );
@@ -145,36 +176,37 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="campusId">The campus identifier.</param>
+        public void ShowDetail( int campusId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "campusId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             // Load depending on Add(0) or Edit
             Campus campus = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+
+            if ( !campusId.Equals( 0 ) )
             {
-                campus = new CampusService( new RockContext() ).Get( itemKeyValue );
+                campus = new CampusService( new RockContext() ).Get( campusId );
                 lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
-            else
+
+            if ( campus == null )
             {
                 campus = new Campus { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add(Campus.FriendlyTypeName).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             hfCampusId.Value = campus.Id.ToString();
             tbCampusName.Text = campus.Name;
-            tbCampusCode.Text = campus.ShortCode;
+            cbIsActive.Checked = !campus.IsActive.HasValue || campus.IsActive.Value;
+            tbDescription.Text = campus.Description;
+            tbUrl.Text = campus.Url;
             tbPhoneNumber.Text = campus.PhoneNumber;
+            acAddress.SetValues( campus.Location );
+
+            tbCampusCode.Text = campus.ShortCode;
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
+            kvlServiceTimes.Value = campus.ServiceTimes;
 
             campus.LoadAttributes();
             phAttributes.Controls.Clear();

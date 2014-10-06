@@ -36,6 +36,9 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -133,7 +136,12 @@ namespace RockWeb.Blocks.CheckIn
 
         private void ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ), "<ul><li>No one in that family is eligible to check-in.</li></ul>" );
+            if ( !ProcessSelection( maWarning, () => 
+                CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ),
+                "<ul><li>Sorry, no one in your family is eligible to check-in at this location.</li></ul>" ) )            
+            {
+                ClearSelection();
+            }
         }
     }
 }

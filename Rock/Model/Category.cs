@@ -122,8 +122,19 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
+        [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string HighlightColor { get; set; }
 
         #endregion
 

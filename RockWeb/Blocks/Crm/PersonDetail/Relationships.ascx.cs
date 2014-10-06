@@ -76,15 +76,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            bool.TryParse( GetAttributeValue( "ShowRole" ), out ShowRole );
-
-            if ( !Page.IsPostBack )
+            if ( Person != null && Person.Id != 0 )
             {
-                BindData();
+                upRelationships.Visible = true;
+
+                bool.TryParse( GetAttributeValue( "ShowRole" ), out ShowRole );
+
+                if ( !Page.IsPostBack )
+                {
+                    BindData();
+                }
+                else
+                {
+                    ShowDialog();
+                }
             }
             else
             {
-                ShowDialog();
+                upRelationships.Visible = false;
             }
         }
 
@@ -254,7 +263,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
                             }
 
-                            lGroupName.Text = group.Name;
+                            lGroupName.Text = group.Name.Pluralize();
 
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 

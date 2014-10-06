@@ -28,8 +28,8 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of binary files of a specific type
+    /// Stored as BinaryFile's Guid
     /// </summary>
-    [Serializable]
     public class BinaryFileFieldType : FieldType
     {
         /// <summary>
@@ -44,14 +44,15 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            int id = int.MinValue;
-            if (Int32.TryParse( value, out id ))
+            Guid? guid = value.AsGuid();
+            if (guid.HasValue)
             {
                 var result = new BinaryFileService( new RockContext() )
                     .Queryable()
+                    .Where( f => f.Guid == guid.Value )
                     .Select( f => new { f.Id, f.FileName } )
-                    .Where( f => f.Id == id )
                     .FirstOrDefault();
+
                 if ( result != null )
                 {
                     formattedValue = result.FileName;
@@ -107,7 +108,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "binaryFileType", new ConfigurationValue( "File Type", "The type of files to list", "" ) );
+            configurationValues.Add( "binaryFileType", new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 &&
                 controls[0] != null && controls[0] is DropDownList )
@@ -132,9 +133,8 @@ namespace Rock.Field.Types
             }
         }
 
-
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -147,11 +147,8 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                int definedTypeId = 0;
-                if ( Int32.TryParse( configurationValues["binaryFileType"].Value, out definedTypeId ) )
-                {
-                    control.BinaryFileTypeId = definedTypeId;
-                }
+                int? definedTypeId = configurationValues["binaryFileType"].Value.AsIntegerOrNull();
+                control.BinaryFileTypeId = definedTypeId;
             }
 
             return control;
@@ -159,16 +156,28 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Reads new values entered by the user for the field
+        /// returns BinaryFile.Guid
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is BinaryFilePicker )
+            var picker = control as BinaryFilePicker;
+            
+            if ( picker != null )
             {
-                return ( (BinaryFilePicker)control ).SelectedValue;
+                int? id = picker.SelectedValue.AsIntegerOrNull();
+                if (id.HasValue)
+                {
+                    var binaryFile = new BinaryFileService( new RockContext() ).Get( id.Value );
+                    if (binaryFile != null)
+                    {
+                        return binaryFile.Guid.ToString();
+                    }
+                }
             }
+
             return null;
         }
 
@@ -180,15 +189,16 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            int binaryFileId = int.MinValue;
-            if ( int.TryParse( value, out binaryFileId ) )
+            var picker = control as BinaryFilePicker;
+            
+            if ( picker != null )
             {
-                if ( control != null && control is BinaryFilePicker )
-                {
-                    ( (BinaryFilePicker)control ).SetValue( binaryFileId.ToString() );
-                }
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var binaryFile = new BinaryFileService( new RockContext() ).Get( guid );
+                picker.SetValue( binaryFile );
             }
         }
-
     }
 }

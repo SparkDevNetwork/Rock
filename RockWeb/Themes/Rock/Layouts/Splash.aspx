@@ -1,5 +1,23 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <!DOCTYPE html> 
+
+<script runat="server">
+    
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+
+        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo-sm.svg") );
+    }    
+    
+</script>
+
 <html>
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
@@ -25,7 +43,9 @@
     <form id="form1" runat="server">
 
         <div id="content">
-            <asp:Image ID="Image1" runat="server" AlternateText="Rock" ImageUrl="<%$ Fingerprint:~/Assets/Images/rock-logo.svg %>" CssClass="pageheader-logo" />
+            <div id="logo">
+                <asp:Literal ID="lLogoSvg" runat="server" />
+            </div>
                 
             <div id="content-box" class="clearfix">
                 <Rock:Zone Name="Main" runat="server" />

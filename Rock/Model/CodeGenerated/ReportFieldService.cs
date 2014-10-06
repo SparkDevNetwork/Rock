@@ -92,7 +92,9 @@ namespace Rock.Model
             target.ShowInGrid = source.ShowInGrid;
             target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
             target.Selection = source.Selection;
-            target.Order = source.Order;
+            target.ColumnOrder = source.ColumnOrder;
+            target.SortOrder = source.SortOrder;
+            target.SortDirection = source.SortDirection;
             target.ColumnHeaderText = source.ColumnHeaderText;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

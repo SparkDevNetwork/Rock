@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     public class ColorFieldType : FieldType
     {
         /// <summary>
-        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -40,7 +40,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var ddl = new RockDropDownList { ID = id }; 
+            var ddl = new RockDropDownList { ID = id };
+            ddl.Items.Add( new ListItem() );
 
             Type colors = typeof( System.Drawing.Color );
             PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );

@@ -177,25 +177,7 @@ namespace Rock.Data
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
         {
-            if ( parameterExpression != null && whereExpression != null )
-            {
-                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
-                var queryable = Queryable().Where( lambda );
-
-                if (sortProperty != null)
-                {
-                    queryable = queryable.Sort( sortProperty );
-                }
-
-                if (fetchTop.HasValue)
-                {
-                    queryable = queryable.Take( fetchTop.Value );
-                }
-
-                return queryable;
-            }
-
-            return this.Queryable();
+            return this.Queryable().Where( parameterExpression, whereExpression, sortProperty, fetchTop );
         }
 
         /// <summary>
@@ -304,7 +286,7 @@ namespace Rock.Data
         /// Attaches the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public virtual void Attach( T item)
+        public virtual void Attach( T item )
         {
             _objectSet.Attach( item );
         }
@@ -321,6 +303,21 @@ namespace Rock.Data
         public virtual void Add( T item )
         {
             _objectSet.Add( item );
+        }
+
+        /// <summary>
+        /// Calls _objectSet.RemoveRange which adds the given collection of items
+        /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <remarks>
+        ///   AddRange still ends up doing an INSERT statement for each item, but it's much faster than doing Add()
+        /// </remarks>
+        /// <returns></returns>
+        public virtual bool AddRange( IEnumerable<T> items )
+        {
+            _objectSet.AddRange( items );
+            return true;
         }
 
         #endregion
@@ -378,9 +375,24 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        public virtual bool Delete (T item )
+        public virtual bool Delete( T item )
         {
             _objectSet.Remove( item );
+            return true;
+        }
+
+        /// <summary>
+        /// Calls _objectSet.RemoveRange which removes the given collection of items
+        /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <remarks>
+        ///   DeleteRange still ends up doing a DELETE statement for each item, but it's much faster than doing Delete()
+        /// </remarks>
+        /// <returns></returns>
+        public virtual bool DeleteRange( IEnumerable<T> items )
+        {
+            _objectSet.RemoveRange( items );
             return true;
         }
 

@@ -26,7 +26,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -34,7 +33,7 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Displays a list of all binary file types." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class BinaryFileTypeList : RockBlock
     {
         #region Control Methods
@@ -58,7 +57,7 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.IsDeleteEnabled = canAddEditDelete;
 
             SecurityField securityField = gBinaryFileType.Columns.OfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.BinaryFileType)).Id;
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.BinaryFileType ) ).Id;
         }
 
         /// <summary>
@@ -148,7 +147,7 @@ namespace RockWeb.Blocks.Administration
             RockContext rockContext = new RockContext();
             BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            
+
             SortProperty sortProperty = gBinaryFileType.SortProperty;
 
             // join so we can both get BinaryFileCount quickly and be able to sort by it (having SQL do all the work)
@@ -165,7 +164,7 @@ namespace RockWeb.Blocks.Administration
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
                           ft.IsSystem,
                           ft.AllowCaching,
-                          ft.RequiresSecurity
+                          RequiresViewSecurity = ft.RequiresViewSecurity
                       };
 
             if ( sortProperty != null )
@@ -180,22 +179,6 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.DataBind();
         }
 
-        /// <summary>
-        /// Handles the RowDataBound event of the gBinaryFileType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gBinaryFileType_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var anonymousObject = e.Row.DataItem;
-                var securityField = gBinaryFileType.Columns.OfType<SecurityField>().First();
-                e.Row.Cells[gBinaryFileType.Columns.IndexOf(securityField)].Style[System.Web.UI.HtmlTextWriterStyle.Visibility] = (bool)anonymousObject.GetPropertyValue("RequiresSecurity") ? "visible" : "hidden";
-            }
-        }
-
         #endregion
-        
-}
+    }
 }

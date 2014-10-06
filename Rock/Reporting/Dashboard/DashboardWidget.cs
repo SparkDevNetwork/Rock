@@ -28,6 +28,7 @@ namespace Rock.Reporting.Dashboard
     [TextField( "Title", "The title of the widget", false, Order = 0 )]
     [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]
     [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4", Order = 2 )]
+    [ContextAware(IsConfigurable=false)]
     public abstract class DashboardWidget : RockBlock
     {
         /// <summary>

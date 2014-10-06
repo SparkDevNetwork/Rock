@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as a List of Metric.Guid|MetricCategory.Guid (MetricCategory.Guid included so we can preserve which category the metric was selected from)
     /// </summary>
     public class MetricCategoriesFieldType : FieldType
     {
@@ -43,19 +43,23 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var guids = value.SplitDelimitedValues();
-                var metricCategories = new MetricCategoryService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-                if ( metricCategories.Any() )
+                var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+
+                var metricGuids = guidPairs.Select( a => a.MetricGuid );
+
+                var metrics = new MetricService( new RockContext() ).Queryable().Where( a => metricGuids.Contains( a.Guid ) );
+                if ( metrics.Any() )
                 {
-                    formattedValue = string.Join( ", ", ( from metricCategory in metricCategories select metricCategory.Name ).ToArray() );
+                    formattedValue = string.Join( ", ", ( from metric in metrics select metric.Title ).ToArray() );
                 }
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
+        
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -80,16 +84,14 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
                 var metricCategories = new MetricCategoryService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
 
                 if ( metricCategories.Any() )
                 {
-                    guids = metricCategories.Select( a => a.Guid ).ToList();
+                    var guidPairList = metricCategories.Select( a => new { MetricGuid = a.Metric.Guid, CategoryGuid = a.Category.Guid } ).ToList();
+                    result = guidPairList.Select( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) ).ToList().AsDelimited( "," );
                 }
-
-                result = string.Join( ",", guids );
             }
 
             return result;
@@ -106,23 +108,29 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 var picker = control as MetricCategoryPicker;
-                var guids = new List<Guid>();
 
                 if ( picker != null )
                 {
-                    var ids = value.Split( new[] { ',' } );
+                    List<MetricCategory> metricCategories = new List<MetricCategory>();
+                    var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
+                    MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
 
-                    foreach ( var id in ids )
+                    foreach (var guidPair in guidPairs)
                     {
-                        Guid guid;
-
-                        if ( Guid.TryParse( id, out guid ) )
+                        // first try to get each metric from the category that it was selected from
+                        var metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid ).FirstOrDefault();
+                        if (metricCategory == null)
                         {
-                            guids.Add( guid );
+                            // if the metric isn't found in the original category, just the first one, ignoring category
+                            metricCategory = metricCategoryService.Queryable().Where( a => a.Metric.Guid == guidPair.MetricGuid ).FirstOrDefault();
+                        }
+
+                        if (metricCategory != null)
+                        {
+                            metricCategories.Add( metricCategory );
                         }
                     }
-
-                    var metricCategories = new MetricCategoryService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
+                    
                     picker.SetValues( metricCategories );
                 }
             }

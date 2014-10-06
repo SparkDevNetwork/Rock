@@ -28,8 +28,8 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of MEF Components of a specific type
+    /// Stored as EntityType.Guid
     /// </summary>
-    [Serializable]
     public class ComponentFieldType : FieldType
     {
         /// <summary>
@@ -122,7 +122,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -133,7 +133,7 @@ namespace Rock.Field.Types
         {
             try
             {
-                ComponentPicker editControl = new ComponentPicker { ID = id }; 
+                ComponentPicker editControl = new ComponentPicker { ID = id };
 
                 if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
                 {
@@ -156,11 +156,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
+            var picker = control as ComponentPicker;
+            if ( picker != null )
             {
-                string value = ( (ListControl)control ).SelectedValue;
-                return value == None.IdValue ? string.Empty : value;
+                // NOTE: ComponentPicker uses the Entity.Guid as the ListItem value
+                var guid = picker.SelectedValue.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    return guid.Value.ToString();
+                }
             }
+
             return null;
         }
 
@@ -172,14 +178,12 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( !string.IsNullOrWhiteSpace( value) && value != None.IdValue )
+            var picker = control as ComponentPicker;
+            if ( picker != null )
             {
-                if ( control != null && control is ListControl )
-                {
-                    ( (ListControl)control ).SelectedValue = value.ToUpper();
-                }
+                Guid guid = value.AsGuid();
+                picker.SelectedValue = guid.ToString().ToUpper();
             }
         }
-
     }
 }

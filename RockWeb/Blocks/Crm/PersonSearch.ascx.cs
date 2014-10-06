@@ -28,6 +28,7 @@ using Rock.Web.UI.Controls;
 using System.Text.RegularExpressions;
 using System.Data.Entity.SqlServer;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -38,6 +39,12 @@ namespace RockWeb.Blocks.Crm
     [LinkedPage("Person Detail Page")]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        private DefinedValueCache _inactiveStatus = null;
+
+        #endregion
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -47,6 +54,7 @@ namespace RockWeb.Blocks.Crm
             gPeople.DataKeyNames = new string[] { "id" };
             gPeople.Actions.ShowAdd = false;
             gPeople.GridRebind += gPeople_GridRebind;
+            gPeople.RowDataBound += gPeople_RowDataBound;
             gPeople.PersonIdField = "Id";
         }
 
@@ -67,6 +75,28 @@ namespace RockWeb.Blocks.Crm
         void gPeople_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
+        }
+
+        void gPeople_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var person = e.Row.DataItem as Person;
+                if ( person != null )
+                {
+                    if (_inactiveStatus != null && 
+                        person.RecordStatusValueId.HasValue && 
+                        person.RecordStatusValueId == _inactiveStatus.Id)
+                    {
+                        e.Row.AddCssClass( "inactive" );
+                    }
+
+                    if ( person.IsDeceased ?? false )
+                    {
+                        e.Row.AddCssClass( "deceased" );
+                    }
+                }
+            }
         }
 
         protected void gPeople_RowSelected( object sender, RowEventArgs e )
@@ -159,6 +189,8 @@ namespace RockWeb.Blocks.Crm
                             nbNotice.Visible = true;
                         }
                     }
+
+                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     gPeople.DataSource = personList;
                     gPeople.DataBind();

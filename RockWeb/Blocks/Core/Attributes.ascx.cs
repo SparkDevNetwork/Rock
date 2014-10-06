@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Core
                     if ( lValue != null )
                     {
                         AttributeValueService attributeValueService = new AttributeValueService( new RockContext() );
-                        var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                        var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
                             lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, attribute.QualifierValues, true );
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Core
 
                     var rockContext = new RockContext();
                     AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                     if ( attributeValue == null )
                     {
                         attributeValue = new Rock.Model.AttributeValue();
@@ -680,7 +680,7 @@ namespace RockWeb.Blocks.Core
                 {
                     mdAttributeValue.Title = attribute.Name + " Value";
 
-                    var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                    var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attributeId, _entityId );
                     string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
                     attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
 

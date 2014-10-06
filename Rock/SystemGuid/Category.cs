@@ -80,5 +80,14 @@ namespace Rock.SystemGuid
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
 
         #endregion
+
+        #region System Email Categories
+
+        /// <summary>
+        /// The System Email Workflow Category guid
+        /// </summary>
+        public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
+
+        #endregion
     }
 }

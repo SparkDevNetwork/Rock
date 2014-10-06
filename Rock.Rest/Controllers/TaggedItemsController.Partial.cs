@@ -39,7 +39,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "TaggedItemsByEntity",
-                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "taggeditems",
@@ -90,6 +90,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
+            SetProxyCreation( true );
+
             var personAlias = GetPersonAlias();
 
             var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
@@ -101,7 +103,7 @@ namespace Rock.Rest.Controllers
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = entityQualifier;
                 tag.EntityTypeQualifierValue = entityQualifierValue;
-                tag.OwnerId = ownerId;
+                tag.OwnerPersonAliasId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).GetPrimaryAliasId( ownerId );
                 tag.Name = name;
                 tagService.Add( tag );
             }
@@ -117,6 +119,7 @@ namespace Rock.Rest.Controllers
                 tag.TaggedItems.Add( taggedItem );
             }
 
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
@@ -162,6 +165,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
+            SetProxyCreation( true );
+
             var personAlias = GetPersonAlias();
 
             if ( name.Contains( '^' ) )
@@ -174,7 +179,7 @@ namespace Rock.Rest.Controllers
                     ( i.Tag.EntityTypeId == entityTypeId ) &&
                     ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == string.Empty || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
                     ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == string.Empty || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( i.Tag.OwnerId == ownerId ) &&
+                    ( i.Tag.OwnerPersonAlias == null || i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
                     ( i.Tag.Name == name ) &&
                     ( i.EntityGuid.Equals( entityGuid ) ) );
 

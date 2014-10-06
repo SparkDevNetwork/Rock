@@ -51,7 +51,76 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// 
+        /// </summary>
+        private const string ENTITY_CONTROL_HELP_TEXT_FORMAT = "entityControlHelpTextFormat";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var tbHelpText = new RockTextBox();
+            controls.Add( tbHelpText );
+            tbHelpText.Label = "Entity Control Help Text Format";
+            tbHelpText.Help = "Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included and a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ENTITY_CONTROL_HELP_TEXT_FORMAT, new ConfigurationValue( "Entity Control Help Text Format", "", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox )
+                {
+                    configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value = ( (RockTextBox)controls[0] ).Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
+                {
+                    ( (RockTextBox)controls[0] ).Text = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -61,6 +130,14 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var entityPicker = new EntityPicker { ID = id };
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( ENTITY_CONTROL_HELP_TEXT_FORMAT ) )
+                {
+                    entityPicker.EntityControlHelpTextFormat = configurationValues[ENTITY_CONTROL_HELP_TEXT_FORMAT].Value;
+                }
+            }
+            
             return entityPicker;
         }
 
@@ -93,7 +170,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string[] values = (value ?? string.Empty).Split( '|' );
+            string[] values = ( value ?? string.Empty ).Split( '|' );
             if ( values.Length == 2 )
             {
                 EntityPicker entityPicker = control as EntityPicker;

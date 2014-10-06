@@ -1,130 +1,183 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="AjaxControlToolkit 7.1213" Category="Package" Bounds="2733.64,55.9599999999999,156.113333333333,25.96" Label="AjaxControlToolkit 7.1213" />
-    <Node Id="AjaxMin 5.8.5172.27710" Category="Package" Bounds="2739.20166666667,111.92,144.99,25.96" Label="AjaxMin 5.8.5172.27710" />
-    <Node Id="Antlr 3.5.0.2" Category="Package" Bounds="830.375,167.88,82.6433333333333,25.96" Label="Antlr 3.5.0.2" />
-    <Node Id="CronExpressionDescriptor 1.9.1" Category="Package" Bounds="2252.675,55.9599999999999,184.043333333334,25.96" Label="CronExpressionDescriptor 1.9.1" />
-    <Node Id="DDay.iCal 1.0.2.575" Category="Package" Bounds="2582.39833333333,55.9599999999999,120.596666666667,25.96" Label="DDay.iCal 1.0.2.575" />
-    <Node Id="EntityFramework 6.1.0" Category="Package" Bounds="1956.59833333333,55.96,136.196666666667,25.96" Label="EntityFramework 6.1.0" />
-    <Node Id="Facebook 6.4.2" Category="Package" Bounds="2123.31666666667,55.96,98.7600000000002,25.96" Label="Facebook 6.4.2" />
     <Node Id="Glimpse 1.8.5" Category="Package" Bounds="974.345,167.88,90.7033333333334,25.96" Label="Glimpse 1.8.5" />
     <Node Id="Glimpse.Ado 1.7.1" Category="Package" Bounds="956.126666666666,111.92,115.14,25.96" Label="Glimpse.Ado 1.7.1" />
     <Node Id="Glimpse.AspNet 1.9.0" Category="Package" Bounds="1101.44166666667,111.92,132.51,25.96" Label="Glimpse.AspNet 1.9.0" />
     <Node Id="Glimpse.EF6 1.6.2" Category="Package" Bounds="651.845,55.9600000000002,111.703333333333,25.96" Label="Glimpse.EF6 1.6.2" />
     <Node Id="Glimpse.WebForms 1.1.0" Category="Package" Bounds="1104.52833333333,55.9600000000002,150.336666666667,25.96" Label="Glimpse.WebForms 1.1.0" />
-    <Node Id="HtmlAgilityPack 1.4.6" Category="Package" Bounds="2576.96666666667,111.92,131.46,25.96" Label="HtmlAgilityPack 1.4.6" />
-    <Node Id="ImageResizer 3.4.3" Category="Package" Bounds="1636.59333333333,55.96,118.206666666667,25.96" Label="ImageResizer 3.4.3" />
-    <Node Id="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Package" Bounds="793.833333333333,55.9600000000002,279.726666666667,25.96" Label="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" />
-    <Node Id="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Package" Bounds="382.465,55.9600000000002,238.463333333333,25.96" Label="Microsoft.AspNet.Web.Optimization 1.1.3" />
-    <Node Id="Microsoft.AspNet.WebApi 5.1.2" Category="Package" Bounds="1421.23666666667,55.96,184.92,25.96" Label="Microsoft.AspNet.WebApi 5.1.2" />
-    <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" Bounds="1676.74833333333,223.84,217.896666666667,25.96" Label="Microsoft.AspNet.WebApi.Client 5.1.2" />
-    <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" Bounds="1542.48166666667,167.88,212.43,25.96" Label="Microsoft.AspNet.WebApi.Core 5.1.2" />
-    <Node Id="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Package" Bounds="1675.06666666667,111.92,221.26,25.96" Label="Microsoft.AspNet.WebApi.OData 5.1.2" />
-    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" Bounds="1407.31166666667,111.92,236.77,25.96" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" />
-    <Node Id="Microsoft.Bcl 1.1.8" Category="Package" Bounds="1884.595,335.76,116.203333333333,25.96" Label="Microsoft.Bcl 1.1.8" />
-    <Node Id="Microsoft.Bcl.Build 1.0.14" Category="Package" Bounds="1777.785,391.72,151.823333333333,25.96" Label="Microsoft.Bcl.Build 1.0.14" />
-    <Node Id="Microsoft.Data.Edm 5.6.1" Category="Package" Bounds="1960.87666666667,279.8,151.64,25.96" Label="Microsoft.Data.Edm 5.6.1" />
-    <Node Id="Microsoft.Data.OData 5.6.1" Category="Package" Bounds="2123.74333333333,223.84,161.906666666667,25.96" Label="Microsoft.Data.OData 5.6.1" />
-    <Node Id="Microsoft.Data.Services.Client 5.6.1" Category="Package" Bounds="2102.93,167.88,203.533333333333,25.96" Label="Microsoft.Data.Services.Client 5.6.1" />
-    <Node Id="Microsoft.Net.Http 2.2.20" Category="Package" Bounds="1777.21166666667,279.8,152.97,25.96" Label="Microsoft.Net.Http 2.2.20" />
-    <Node Id="Microsoft.SqlServer.Types 11.0.1" Category="Package" Bounds="161.783333333333,55.9600000000003,189.826666666667,25.96" Label="Microsoft.SqlServer.Types 11.0.1" />
-    <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" Bounds="397.658333333333,111.92,208.076666666667,25.96" Label="Microsoft.Web.Infrastructure 1.0.0.0" />
-    <Node Id="Microsoft.Web.Xdt 1.0.0" Category="Package" Bounds="1926.585,111.92,146.223333333333,25.96" Label="Microsoft.Web.Xdt 1.0.0" />
-    <Node Id="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package" Bounds="2368.30166666667,167.88,302.79,25.96" Label="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" />
-    <Node Id="Newtonsoft.Json 6.0.3" Category="Package" Bounds="1610.97,279.8,135.453333333333,25.96" Label="Newtonsoft.Json 6.0.3" />
-    <Node Id="NuGet.Core 2.8.1" Category="Package" Bounds="1816.82166666667,55.96,109.75,25.96" Label="NuGet.Core 2.8.1" />
-    <Node Id="RestSharp 104.4.0" Category="Package" Bounds="2103.72333333333,111.92,113.946666666667,25.96" Label="RestSharp 104.4.0" />
-    <Node Id="Rock" Category="Project" Bounds="2147.69666666667,0,50,25.96" Label="Rock" />
-    <Node Id="Rock.Migrations" Category="Project" Bounds="1972.08166666667,0,105.23,25.96" Label="Rock.Migrations" />
-    <Node Id="Rock.Rest" Category="Project" Bounds="1750.23333333333,0,70.9266666666667,25.96" Label="Rock.Rest" />
-    <Node Id="RockWeb" Category="Project" Bounds="852.667342173259,-337.992551167806,70.2533333333333,25.96" Label="RockWeb" UseManualLocation="True" />
-    <Node Id="System.Spatial 5.6.1" Category="Package" Bounds="2142.71166666667,279.8,123.97,25.96" Label="System.Spatial 5.6.1" />
-    <Node Id="Twilio 3.6.11" Category="Package" Bounds="2467.15833333333,55.9599999999999,85.0766666666668,25.96" Label="Twilio 3.6.11" />
-    <Node Id="UAParser 1.0.2.0" Category="Package" Bounds="1284.95,55.9600000000002,105.493333333333,25.96" Label="UAParser 1.0.2.0" />
-    <Node Id="WebActivatorEx 2.0.5" Category="Package" Bounds="0,55.9600000000003,131.393333333333,25.96" Label="WebActivatorEx 2.0.5" />
-    <Node Id="WebGrease 1.6.0" Category="Package" Bounds="817.398333333334,111.92,108.596666666667,25.96" Label="WebGrease 1.6.0" />
-    <Node Id="WindowsAzure.Storage 3.1.0.1" Category="Package" Bounds="2247.77833333333,111.92,179.836666666667,25.96" Label="WindowsAzure.Storage 3.1.0.1" />
-    <Node Id="YamlDotNet 3.0.0" Category="Package" Bounds="1264.34166666667,111.92,112.71,25.96" Label="YamlDotNet 3.0.0" />
+    <Node Id="RockWeb" Label="RockWeb" Category="Project" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="jQuery 1.6.4" Label="jQuery 1.6.4" Category="Package" />
+    <Node Id="Microsoft.AspNet.Cors 5.1.2" Label="Microsoft.AspNet.Cors 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Label="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR 2.0.3" Label="Microsoft.AspNet.SignalR 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.Core 2.0.3" Label="Microsoft.AspNet.SignalR.Core 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.JS 2.0.3" Label="Microsoft.AspNet.SignalR.JS 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Label="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.Web.Optimization 1.1.3" Label="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Cors 5.1.2" Label="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" />
+    <Node Id="Microsoft.Bcl 1.1.8" Label="Microsoft.Bcl 1.1.8" Category="Package" />
+    <Node Id="Microsoft.Bcl.Build 1.0.14" Label="Microsoft.Bcl.Build 1.0.14" Category="Package" />
+    <Node Id="Microsoft.Net.Http 2.2.20" Label="Microsoft.Net.Http 2.2.20" Category="Package" />
+    <Node Id="Microsoft.Owin 2.0.1" Label="Microsoft.Owin 2.0.1" Category="Package" />
+    <Node Id="Microsoft.Owin.Host.SystemWeb 2.0.1" Label="Microsoft.Owin.Host.SystemWeb 2.0.1" Category="Package" />
+    <Node Id="Microsoft.Owin.Security 2.0.1" Label="Microsoft.Owin.Security 2.0.1" Category="Package" />
+    <Node Id="Microsoft.SqlServer.Types 11.0.1" Label="Microsoft.SqlServer.Types 11.0.1" Category="Package" />
+    <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Label="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" />
+    <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
+    <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
+    <Node Id="Owin 1.0" Label="Owin 1.0" Category="Package" />
+    <Node Id="UAParser 1.0.2.0" Label="UAParser 1.0.2.0" Category="Package" />
+    <Node Id="WebActivatorEx 2.0.5" Label="WebActivatorEx 2.0.5" Category="Package" />
+    <Node Id="WebGrease 1.6.0" Label="WebGrease 1.6.0" Category="Package" />
+    <Node Id="YamlDotNet 3.0.0" Label="YamlDotNet 3.0.0" Category="Package" />
+    <Node Id="Rock.Rest" Label="Rock.Rest" Category="Project" />
+    <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.Cors 5.1.2" Label="Microsoft.AspNet.Cors 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Cors 5.1.2" Label="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.OData 5.1.2" Label="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" />
+    <Node Id="Microsoft.Data.Edm 5.6.1" Label="Microsoft.Data.Edm 5.6.1" Category="Package" />
+    <Node Id="Microsoft.Data.OData 5.6.1" Label="Microsoft.Data.OData 5.6.1" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
+    <Node Id="System.Spatial 5.6.1" Label="System.Spatial 5.6.1" Category="Package" />
+    <Node Id="UAParser 1.0.2.0" Label="UAParser 1.0.2.0" Category="Package" />
+    <Node Id="YamlDotNet 3.0.0" Label="YamlDotNet 3.0.0" Category="Package" />
+    <Node Id="Rock.Migrations" Label="Rock.Migrations" Category="Project" />
+    <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
+    <Node Id="Rock" Label="Rock" Category="Project" />
+    <Node Id="AjaxControlToolkit 7.1213" Label="AjaxControlToolkit 7.1213" Category="Package" />
+    <Node Id="AjaxMin 5.8.5172.27710" Label="AjaxMin 5.8.5172.27710" Category="Package" />
+    <Node Id="CronExpressionDescriptor 1.9.1" Label="CronExpressionDescriptor 1.9.1" Category="Package" />
+    <Node Id="DDay.iCal 1.0.2.575" Label="DDay.iCal 1.0.2.575" Category="Package" />
+    <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
+    <Node Id="Facebook 6.4.2" Label="Facebook 6.4.2" Category="Package" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" />
+    <Node Id="Microsoft.Data.Edm 5.6.1" Label="Microsoft.Data.Edm 5.6.1" Category="Package" />
+    <Node Id="Microsoft.Data.OData 5.6.1" Label="Microsoft.Data.OData 5.6.1" Category="Package" />
+    <Node Id="Microsoft.Data.Services.Client 5.6.1" Label="Microsoft.Data.Services.Client 5.6.1" Category="Package" />
+    <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
+    <Node Id="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Label="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
+    <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
+    <Node Id="RestSharp 104.4.0" Label="RestSharp 104.4.0" Category="Package" />
+    <Node Id="System.Spatial 5.6.1" Label="System.Spatial 5.6.1" Category="Package" />
+    <Node Id="Twilio 3.6.11" Label="Twilio 3.6.11" Category="Package" />
+    <Node Id="WindowsAzure.Storage 3.1.0.1" Label="WindowsAzure.Storage 3.1.0.1" Category="Package" />
   </Nodes>
   <Links>
-    <Link Source="AjaxControlToolkit 7.1213" Target="AjaxMin 5.8.5172.27710" Category="Package Dependency" Bounds="2811.69677734375,81.9199981689453,0,21" />
-    <Link Source="AjaxControlToolkit 7.1213" Target="HtmlAgilityPack 1.4.6" Category="Package Dependency" Bounds="2690.44018554688,81.9199981689453,82.056640625,27.1709442138672" />
-    <Link Source="AjaxControlToolkit 7.1213" Target="WindowsAzure.Storage 3.1.0.1" Category="Package Dependency" Bounds="2436.55908203125,79.6943130493164,297.1826171875,34.1802825927734" />
-    <Link Source="Glimpse.Ado 1.7.1" Target="Glimpse 1.8.5" Category="Package Dependency" Bounds="1015.08837890625,137.880004882813,2.257080078125,21.0512847900391" />
-    <Link Source="Glimpse.AspNet 1.9.0" Target="Glimpse 1.8.5" Category="Package Dependency" Bounds="1062.44384765625,137.880004882813,70.924072265625,26.8169555664063" />
-    <Link Source="Glimpse.EF6 1.6.2" Target="Glimpse.Ado 1.7.1" Category="Package Dependency" Bounds="763.539306640625,79.1522750854492,183.783020019531,33.6094665527344" />
-    <Link Source="Glimpse.WebForms 1.1.0" Target="Glimpse.AspNet 1.9.0" Category="Package Dependency" Bounds="1172.3671875,81.9199981689453,4.5460205078125,21.2000579833984" />
-    <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" Bounds="501.696655273438,81.9199981689453,0,21" />
-    <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" Bounds="587.518676757813,81.9199981689453,220.980834960938,33.4218597412109" />
-    <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" Bounds="1516.48010253906,81.9199981689453,4.546142578125,21.2000579833984" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Microsoft.Net.Http 2.2.20" Category="Package Dependency" Bounds="1801.46936035156,249.800003051758,29.5052490234375,24.2810821533203" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" Bounds="1711.49060058594,249.800003051758,49.38720703125,25.8290557861328" />
-    <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" Bounds="1680.47399902344,193.839996337891,65.113525390625,26.5967559814453" />
-    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" Bounds="1785.69665527344,137.880004882813,0,76.9599914550781" />
-    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" Bounds="1688.80578613281,137.880004882813,65.113525390625,26.5967559814453" />
-    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" Bounds="1834.29052734375,137.880004882813,313.1171875,83.6374206542969" />
-    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" Bounds="1554.22668457031,137.880004882813,57.7479248046875,26.2729644775391" />
-    <Link Source="Microsoft.Bcl 1.1.8" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" Bounds="1881.95935058594,361.720001220703,40.0936279296875,25.2094116210938" />
-    <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" Bounds="2084.20336914063,249.800003051758,81.525390625,27.1557769775391" />
-    <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" Bounds="2204.69677734375,249.800003051758,0,20.9999847412109" />
-    <Link Source="Microsoft.Data.Services.Client 5.6.1" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" Bounds="2204.69677734375,193.839996337891,0,21" />
-    <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl 1.1.8" Category="Package Dependency" Bounds="1874.34033203125,305.760009765625,40.0936279296875,25.2093811035156" />
-    <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" Bounds="1853.69665527344,305.760009765625,0,76.9599914550781" />
-    <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" Bounds="1901.38647460938,81.9199981689453,60.3740234375,26.3947982788086" />
-    <Link Source="Rock" Target="AjaxControlToolkit 7.1213" Category="Installed Package" Bounds="2197.69677734375,14.7460136413574,528.28076171875,40.7041931152344" />
-    <Link Source="Rock" Target="CronExpressionDescriptor 1.9.1" Category="Installed Package" Bounds="2197.69677734375,21.1137218475342,98.5458984375,32.061803817749" />
-    <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" Bounds="2197.69677734375,15.5282096862793,376.053955078125,40.8918151855469" />
-    <Link Source="Rock" Target="EntityFramework 6.1.0" Category="Installed Package" Bounds="2067.44384765625,22.4327030181885,80.2529296875,30.344259262085" />
-    <Link Source="Rock" Target="Facebook 6.4.2" Category="Installed Package" Bounds="2172.69677734375,25.9599990844727,0,21" />
-    <Link Source="Rock" Target="ImageResizer 3.4.3" Category="Installed Package" Bounds="1763.60461425781,17.4124298095703,384.092163085938,39.4917488098145" />
-    <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" Bounds="1605.26135253906,18.2336845397949,542.435424804688,36.7492179870605" />
-    <Link Source="Rock" Target="NuGet.Core 2.8.1" Category="Installed Package" Bounds="1935.41198730469,17.6278400421143,212.284790039063,39.4666233062744" />
-    <Link Source="Rock" Target="Twilio 3.6.11" Category="Installed Package" Bounds="2197.69677734375,16.7667465209961,260.629638671875,41.1634292602539" />
-    <Link Source="Rock.Migrations" Target="EntityFramework 6.1.0" Category="Installed Package" Bounds="2024.69665527344,25.9599990844727,0,21" />
-    <Link Source="Rock.Rest" Target="EntityFramework 6.1.0" Category="Installed Package" Bounds="1821.16003417969,21.2834644317627,139.337280273438,32.6247463226318" />
-    <Link Source="Rock.Rest" Target="ImageResizer 3.4.3" Category="Installed Package" Bounds="1724.21533203125,25.9599990844727,40.605712890625,25.2477340698242" />
-    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" Bounds="1585.60278320313,20.2760601043701,164.630493164063,33.8703060150146" />
-    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" Bounds="1785.69665527344,25.9599990844727,0,76.9599990844727" />
-    <Link Source="Rock.Rest" Target="UAParser 1.0.2.0" Category="Installed Package" Bounds="1399.18029785156,16.711446762085,351.052978515625,39.8670139312744" />
-    <Link Source="RockWeb" Target="Glimpse.EF6 1.6.2" Category="Installed Package" Bounds="717.372418268423,-312.032557983398,164.487745672379,359.807324156956" />
-    <Link Source="RockWeb" Target="Glimpse.WebForms 1.1.0" Category="Installed Package" Bounds="897.411682247565,-312.032557983398,267.309261509774,360.761296187044" />
-    <Link Source="RockWeb" Target="ImageResizer 3.4.3" Category="Installed Package" Bounds="914.41293238731,-312.032557983398,746.575394435137,364.047734878081" />
-    <Link Source="RockWeb" Target="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Installed Package" Bounds="889.306441670336,-312.032557983398,41.8361623663532,359.052937205377" />
-    <Link Source="RockWeb" Target="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Installed Package" Bounds="520.717412529649,-312.032557983398,354.355438165033,361.564835677759" />
-    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" Bounds="908.41636979594,-312.032557983398,577.0411800607,363.198215369494" />
-    <Link Source="RockWeb" Target="Microsoft.SqlServer.Types 11.0.1" Category="Installed Package" Bounds="285.124752443182,-312.032557983398,581.875806180612,363.226771227345" />
-    <Link Source="RockWeb" Target="NuGet.Core 2.8.1" Category="Installed Package" Bounds="920.183091198827,-312.044054559903,910.740652979086,364.658478584417" />
-    <Link Source="RockWeb" Target="UAParser 1.0.2.0" Category="Installed Package" Bounds="902.617492059218,-312.032557983398,413.484602403096,362.06336977161" />
-    <Link Source="RockWeb" Target="WebActivatorEx 2.0.5" Category="Installed Package" Bounds="100.899459331129,-312.032557983398,759.808006486433,364.103226902959" />
-    <Link Source="Twilio 3.6.11" Target="RestSharp 104.4.0" Category="Package Dependency" Bounds="2226.5517578125,78.4586791992188,240.606689453125,34.8962326049805" />
-    <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" Bounds="1327.255859375,81.9199981689453,6.4976806640625,21.3885955810547" />
-    <Link Source="WebActivatorEx 2.0.5" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" Bounds="131.334045410156,79.5134582519531,258.366760253906,32.1305770874023" />
-    <Link Source="WebGrease 1.6.0" Target="Antlr 3.5.0.2" Category="Package Dependency" Bounds="871.696655273438,137.880004882813,0,21" />
-    <Link Source="WebGrease 1.6.0" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" Bounds="888.397155761719,137.880004882813,713.598815917969,149.060302734375" />
-    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" Bounds="2245.41918945313,137.880004882813,92.277587890625,82.6102905273438" />
-    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.Services.Client 5.6.1" Category="Package Dependency" Bounds="2243.841796875,137.880004882813,63.00537109375,26.5095977783203" />
-    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package Dependency" Bounds="2379.91186523438,137.880004882813,88.967041015625,27.3549499511719" />
-    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" Bounds="1755.33337402344,137.788146972656,494.708374023438,144.064208984375" />
+    <Link Source="Microsoft.AspNet.SignalR 2.0.3" Target="Microsoft.AspNet.SignalR.JS 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR 2.0.3" Target="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Microsoft.Owin.Security 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.JS 2.0.3" Target="jQuery 1.6.4" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Target="Microsoft.AspNet.SignalR.Core 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Target="Microsoft.Owin.Host.SystemWeb 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Microsoft.Net.Http 2.2.20" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.Cors 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.Bcl 1.1.8" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" />
+    <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl 1.1.8" Category="Package Dependency" />
+    <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Security 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Security 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" />
+    <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" />
+    <Link Source="WebActivatorEx 2.0.5" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
+    <Link Source="WebGrease 1.6.0" Target="Antlr 3.5.0.2" Category="Package Dependency" />
+    <Link Source="WebGrease 1.6.0" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="RockWeb" Target="ImageResizer 3.4.3" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.SignalR 2.0.3" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.SqlServer.Types 11.0.1" Category="Installed Package" />
+    <Link Source="RockWeb" Target="NuGet.Core 2.8.1" Category="Installed Package" />
+    <Link Source="RockWeb" Target="UAParser 1.0.2.0" Category="Installed Package" />
+    <Link Source="RockWeb" Target="WebActivatorEx 2.0.5" Category="Installed Package" />
+    <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.Cors 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" />
+    <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" />
+    <Link Source="Rock.Rest" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="ImageResizer 3.4.3" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="UAParser 1.0.2.0" Category="Installed Package" />
+    <Link Source="Rock.Migrations" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="AjaxControlToolkit 7.1213" Target="AjaxMin 5.8.5172.27710" Category="Package Dependency" />
+    <Link Source="AjaxControlToolkit 7.1213" Target="HtmlAgilityPack 1.4.6" Category="Package Dependency" />
+    <Link Source="AjaxControlToolkit 7.1213" Target="WindowsAzure.Storage 3.1.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.Services.Client 5.6.1" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" />
+    <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" />
+    <Link Source="Twilio 3.6.11" Target="RestSharp 104.4.0" Category="Package Dependency" />
+    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" />
+    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.Services.Client 5.6.1" Category="Package Dependency" />
+    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package Dependency" />
+    <Link Source="Rock" Target="AjaxControlToolkit 7.1213" Category="Installed Package" />
+    <Link Source="Rock" Target="CronExpressionDescriptor 1.9.1" Category="Installed Package" />
+    <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" />
+    <Link Source="Rock" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="Rock" Target="Facebook 6.4.2" Category="Installed Package" />
+    <Link Source="Rock" Target="ImageResizer 3.4.3" Category="Installed Package" />
+    <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="Rock" Target="NuGet.Core 2.8.1" Category="Installed Package" />
+    <Link Source="Rock" Target="Twilio 3.6.11" Category="Installed Package" />
   </Links>
   <Categories>
-    <Category Id="Installed Package" />
-    <Category Id="Package" />
-    <Category Id="Package Dependency" />
     <Category Id="Project" />
+    <Category Id="Package" />
   </Categories>
-  <Properties>
-    <Property Id="Bounds" DataType="System.Windows.Rect" />
-    <Property Id="Expression" DataType="System.String" />
-    <Property Id="GraphDirection" DataType="Microsoft.VisualStudio.Diagrams.Layout.LayoutOrientation" />
-    <Property Id="GroupLabel" DataType="System.String" />
-    <Property Id="IsEnabled" DataType="System.Boolean" />
-    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
-    <Property Id="TargetType" DataType="System.Type" />
-    <Property Id="UseManualLocation" DataType="System.Boolean" />
-    <Property Id="Value" DataType="System.String" />
-    <Property Id="ValueLabel" DataType="System.String" />
-  </Properties>
   <Styles>
     <Style TargetType="Node" GroupLabel="Project" ValueLabel="True">
       <Condition Expression="HasCategory('Project')" />

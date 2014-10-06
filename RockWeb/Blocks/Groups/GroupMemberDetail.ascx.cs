@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -33,6 +34,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
+    [LinkedPage("Person Profile Page", "The person profile page to link to.")]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -45,25 +47,11 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            ClearErrorMessage();
+
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "GroupId" );
-                string groupMemberId = PageParameter( "GroupMemberId" );
-                if ( !string.IsNullOrWhiteSpace( groupMemberId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( groupId ) )
-                    {
-                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ), int.Parse( groupId ) );
-                    }
-                }
-                else
-                {
-                    upDetail.Visible = false;
-                }
+                ShowDetail( PageParameter( "GroupMemberId" ).AsInteger(), PageParameter( "GroupId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -120,8 +108,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            ClearErrorMessage();
-
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
@@ -236,7 +222,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // using WrapTransaction because there are two Saves
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     if ( groupMember.Id.Equals( 0 ) )
                     {
@@ -293,33 +279,40 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupMemberId">The group member identifier.</param>
+        public void ShowDetail( int groupMemberId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( groupMemberId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="groupMemberId">The group member identifier.</param>
         /// <param name="groupId">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? groupId )
+        public void ShowDetail( int groupMemberId, int? groupId )
         {
-            if ( !itemKey.Equals( "GroupMemberId" ) )
-            {
-                return;
-            }
-
             var rockContext = new RockContext();
             GroupMember groupMember = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !groupMemberId.Equals( 0 ) )
             {
-                groupMember = new GroupMemberService( rockContext ).Get( itemKeyValue );
-                groupMember.LoadAttributes();
+                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                if ( groupMember != null )
+                {
+                    groupMember.LoadAttributes();
+
+                    if ( !string.IsNullOrWhiteSpace(GetAttributeValue("PersonProfilePage")) )
+                    {
+                        var personPageParams = new Dictionary<string, string>();
+                        personPageParams.Add( "PersonId", groupMember.Person.Id.ToString() );
+                        var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
+
+                        hlProfilePage.NavigateUrl = personProfilePage;
+                        hlProfilePage.Visible = true;
+                    }
+                    
+                }
             }
             else
             {
@@ -336,8 +329,13 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMember == null )
             {
+                nbErrorMessage.Title = "Invalid Request";
+                nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId or GroupId parameter is required.";
+                pnlEditDetails.Visible = false;
                 return;
             }
+
+            pnlEditDetails.Visible = true;
 
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
@@ -352,7 +350,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                lGroupIconHtml.Text = string.Empty;
+                lGroupIconHtml.Text = "<i class='fa fa-user' ></i>";
             }
 
             if ( groupMember.Id.Equals( 0 ) )
@@ -431,7 +429,7 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupRole.DataBind();
             }
 
-            rblStatus.BindToEnum( typeof( GroupMemberStatus ) );
+            rblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         #endregion

@@ -60,14 +60,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlCategory.Items.Clear();
-            ddlCategory.Items.Add( new ListItem( "", "" ) );
-            var personCategory = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid() );
-            foreach ( var category in personCategory.Categories.OrderBy( c => c.Order ) )
-            {
-                ddlCategory.Items.Add( new ListItem( category.Name, category.Id.ToString() ) );
-            }
-
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
@@ -89,12 +81,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 new PersonService( new RockContext() ).GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
-            }
 
-            if ( !Page.IsPostBack )
-            {
-                BindFilter();
-                BindGrid();
+                if ( !Page.IsPostBack )
+                {
+                    BindFilter();
+                    BindGrid();
+                }
             }
         }
 
@@ -109,7 +101,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Category", ddlCategory.SelectedValue );
+            int? categoryId = cpCategory.SelectedValueAsInt();
+            gfSettings.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
             gfSettings.SaveUserPreference( "Summary Contains", tbSummary.Text );
             int? personId = ppWhoFilter.PersonId;
             gfSettings.SaveUserPreference( "Who", personId.HasValue ? personId.ToString() : string.Empty );
@@ -129,11 +122,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 case "Category":
                     {
-                        int categoryId = int.MinValue;
-                        if ( int.TryParse( e.Value, out categoryId ) )
+                        int? categoryId = e.Value.AsIntegerOrNull();
+                        if ( categoryId.HasValue )
                         {
-                            e.Value = CategoryCache.Read( categoryId ).Name;
+                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            if ( category != null )
+                            {
+                                e.Value = category.Name;
+                            }
                         }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
                         break;
                     }
                 case "Summary Contains":
@@ -185,7 +187,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindFilter()
         {
-            ddlCategory.SetValue( gfSettings.GetUserPreference( "Category" ) );
+            int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+            cpCategory.SetValue( categoryId );
+
             tbSummary.Text = gfSettings.GetUserPreference( "Summary Contains" );
             int personId = int.MinValue;
             if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
@@ -217,10 +221,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         ( h.EntityTypeId == personEntityTypeId && h.EntityId == Person.Id ) ||
                         ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
 
-                int categoryId = int.MinValue;
-                if (int.TryParse(gfSettings.GetUserPreference("Category"), out categoryId))
+                int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+                if ( categoryId.HasValue )
                 {
-                    qry = qry.Where( h => h.CategoryId == categoryId);
+                    qry = qry.Where( a => a.CategoryId == categoryId.Value );
                 }
 
                 string summary = gfSettings.GetUserPreference("Summary Contains");
@@ -279,7 +283,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         histories.Add(history);
                     }
                 }
-                
+
                 gHistory.DataSource = histories.Select( h => new
                 {
                     Id = h.Id,
@@ -325,9 +329,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
-        protected string FormatCaption( int categoryId, string caption, int? relatedEntityTypeId, int? entityId )
+        protected string FormatCaption( int categoryId, string caption, int? entityId )
         {
-            // TODO: add an attribute to the person categories that allows formatting a url
+            var category = CategoryCache.Read( categoryId );
+            if (category != null)
+            {
+                string urlMask = category.GetAttributeValue( "UrlMask" );
+                if (!string.IsNullOrWhiteSpace(urlMask))
+                {
+                    if (urlMask.Contains("{0}"))
+                    {
+                        string id = entityId.HasValue ? entityId.Value.ToString() : "";
+                        urlMask = string.Format( urlMask, id );
+                    }
+                    return string.Format( "<a href='{0}'>{1}</a>", ResolveRockUrl( urlMask ), caption );
+                }
+            }
+
             return caption;
         }
 

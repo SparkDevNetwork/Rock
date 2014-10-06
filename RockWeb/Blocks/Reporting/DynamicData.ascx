@@ -5,13 +5,13 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+            <div class="grid"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
             <asp:PlaceHolder ID="phHtml" runat="server" Visible="false" />
         </asp:Panel>
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
-            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit Html">
+            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Dynamic Data Block">
                 <Content>
 
                     <asp:UpdatePanel runat="server" ID="upnlEdit">

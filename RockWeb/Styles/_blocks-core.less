@@ -11,10 +11,10 @@
 // -------------------------
 .panel-note {
 
-    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
 
     .panel-body {
-        background-color: @body-bg;
+        background-color: #fffs;
     }
 
     .panel-heading {
@@ -31,10 +31,10 @@
 
     article {
         border-radius: @border-radius-base;
-        border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+        border: 1px solid darken(@gray-lighter, @const-border-darken-amt);
         padding: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        background-color: @accent-light-color;
+        background-color: @gray-lighter;
         position: relative;
 
         .date {
@@ -45,7 +45,7 @@
 
         & > i {
             position: absolute;
-            color: darken(@accent-light-color, 10%);
+            color: darken(@gray-light, 10%);
             width: 28px;
             font-size: 28px;
             margin: 0 12px 0 4px;
@@ -197,7 +197,7 @@
     .actions {
         float: left;
         margin-left: 12px;
-        padding-top: 5px;
+        margin-top: 4px;
     }
 }
 
@@ -252,6 +252,11 @@
 
 // 3. Workflow
 // -------------------------
+
+.workflow-section-activities {
+    margin-top: 64px;
+}
+
 .workflow-activities-readonly-header
 {
 	color: #515151;
@@ -266,4 +271,105 @@
 	    text-decoration: none;
     }
 
+}
+
+.panel.workflow-activity { 
+    
+    &.activated-with-workflow {
+        
+       & > .panel-heading {
+            background-color: @state-success-bg;
+            color: @state-success-text;
+           
+            a.btn-link {
+                color: @state-success-text;
+            }
+        }
+    }
+
+    .panel-title:before {
+        content: @fa-var-cubes;
+        font-family: FontAwesome;
+        font-weight: normal;
+        margin-right: 4px;
+    }
+}
+
+.workflow-action {
+    .workflow-action-name:before {
+        content: @fa-var-cube;
+        font-family: FontAwesome;
+        font-weight: normal;
+    }
+
+    .criteria-exists {
+        background-color: @btn-warning-bg;
+        color: @btn-warning-color;
+        border: 1px solid @btn-warning-border;
+    }
+
+    .conditional-run-criteria {
+        margin-top: -15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .form-action-rows .row {
+        margin-bottom: 12px;
+    }
+}
+
+// panel for workflow entry/navigation
+.panel-group {
+    .panel-workflowitem {
+        .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+
+        margin-bottom: 30px;
+
+        &:hover {
+            background-color: #fff;
+        }
+
+        .panel-heading {
+            padding: 30px;
+            background-color: @gray-lighter;
+
+            a {
+                display: block;
+
+                .panel-title {
+                    width: 100%;
+
+                     h3 {
+                        margin: 0;
+
+                        i {
+                            font-size: 35px;
+                            margin-right: 12px;
+                        }
+                    }
+                }
+               
+
+                i.panel-navigation {
+                    margin-top: 8px;
+
+                    &:before {
+                        margin-top: 6px;
+                        font-family: FontAwesome;
+                        content: @fa-var-chevron-up;
+                        font-size: 20px;
+                    }
+                }
+
+                &.collapsed {
+                    i.panel-navigation:before {
+                        content: @fa-var-chevron-down;
+                    }
+                }
+            }
+        }
+    }
 }

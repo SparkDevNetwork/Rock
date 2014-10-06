@@ -27,14 +27,28 @@ namespace Rock.SystemGuid
     public static class Group
     {
         /// <summary>
-        /// Gets the administrator group guid
+        /// Gets the administrator group guid (Rock Administrators)
         /// </summary>
-        public const string  GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
+        public const string GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
 
         /// <summary>
-        /// Gets the staff member group guid
+        /// Gets the staff member group guid (Staff Users)
         /// </summary>
-        public const string  GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
+        public const string GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
 
+        /// <summary>
+        /// Get the photo request application group
+        /// </summary>
+        public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+
+        /// <summary>
+        /// The Finance Administrators Group guid
+        /// </summary>
+        public const string GROUP_FINANCE_ADMINISTRATORS = "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559";
+
+        /// <summary>
+        /// The Finance Users Group guid
+        /// </summary>
+        public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
     }
 }

@@ -53,7 +53,7 @@ namespace Rock.Workflow.Action
             Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
             if ( guid.IsEmpty() )
             {
-                action.AddLogEntry( "Invalid Activity Property" );
+                action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
             }
 
@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action
 
             if ( activityType == null )
             {
-                action.AddLogEntry( "Invalid Activity Property" );
+                action.AddLogEntry( "Invalid Activity Property", true );
                 return false;
             }
 

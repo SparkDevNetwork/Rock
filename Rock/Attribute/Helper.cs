@@ -78,10 +78,13 @@ namespace Rock.Attribute
                 var contextAttribute = (ContextAwareAttribute)customAttribute;
                 if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
-                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                    properties++;
+                    if ( contextAttribute.IsConfigurable )
+                    {
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
 
-                    blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    }
                 }
             }
 
@@ -91,18 +94,16 @@ namespace Rock.Attribute
                 blockProperties.Add( (FieldAttribute)customAttribute );
             }
 
+            rockContext = rockContext ?? new RockContext();
+
             // Create any attributes that need to be created
-            if ( blockProperties.Count > 0 )
+            foreach ( var blockProperty in blockProperties )
             {
-                foreach ( var blockProperty in blockProperties )
-                {
-                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue ) || attributesUpdated;
-                    existingKeys.Add( blockProperty.Key );
-                }
+                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
+                existingKeys.Add( blockProperty.Key );
             }
 
             // Remove any old attributes
-            rockContext = rockContext ?? new RockContext();
             var attributeService = new Model.AttributeService( rockContext );
             foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
             {
@@ -133,6 +134,7 @@ namespace Rock.Attribute
             bool updated = false;
 
             rockContext = rockContext ?? new RockContext();
+
             var attributeService = new AttributeService( rockContext );
             var attributeQualifierService = new AttributeQualifierService( rockContext );
             var fieldTypeService = new FieldTypeService(rockContext);
@@ -251,9 +253,13 @@ namespace Rock.Attribute
 
                 // If this is a new attribute, add it, otherwise remove the exiting one from the cache
                 if ( attribute.Id == 0 )
+                {
                     attributeService.Add( attribute );
+                }
                 else
+                {
                     AttributeCache.Flush( attribute.Id );
+                }
 
                 rockContext.SaveChanges();
 
@@ -275,160 +281,167 @@ namespace Rock.Attribute
         /// </remarks>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
-            Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-
-            Type entityType = entity.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                entityType = entityType.BaseType;
-
-            rockContext = rockContext ?? new RockContext();
-
-            // Check for group type attributes
-            var groupTypeIds = new List<int>();
-            if ( entity is GroupMember || entity is Group || entity is GroupType )
+            if ( entity != null )
             {
-                // Can't use GroupTypeCache here since it loads attributes and would result in a recursive stack overflow situation
-                var groupTypeService = new GroupTypeService( rockContext );
-                GroupType groupType = null;
+                Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
-                if ( entity is GroupMember )
+                Type entityType = entity.GetType();
+                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                    entityType = entityType.BaseType;
+
+                rockContext = rockContext ?? new RockContext();
+
+                // Check for group type attributes
+                var groupTypeIds = new List<int>();
+                if ( entity is GroupMember || entity is Group || entity is GroupType )
                 {
-                    var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext ).Get( ( (GroupMember)entity ).GroupId );
-                    groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
-                }
-                else if ( entity is Group )
-                {
-                    groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
-                }
-                else
-                {
-                    groupType = ( (GroupType)entity );
-                }
+                    // Can't use GroupTypeCache here since it loads attributes and would result in a recursive stack overflow situation
+                    var groupTypeService = new GroupTypeService( rockContext );
+                    GroupType groupType = null;
 
-                while ( groupType != null )
-                {
-                    groupTypeIds.Insert(0, groupType.Id );
-
-                    // Check for inherited group type id's
-                    groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
-                }
-
-            }
-
-            foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
-                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
-
-            Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService( rockContext );
-            Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
-            var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
-            if ( groupTypeIds.Any() )
-            {
-                groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
-            }
-            else
-            {
-                inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
-            }
-
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-            // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
-            foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
-            {
-                // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
-                if ( groupTypeIds.Any() && (
-                        ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                        ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                        ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
-                {
-                    int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                    if ( entity is GroupMember )
                     {
-                        inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                        var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext ).Get( ( (GroupMember)entity ).GroupId );
+                        if ( group != null )
+                        {
+                            groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
+                        }
                     }
-                }
-                    
-                else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
-                    ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
-                    ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
-                    (properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "").ToString() == attribute.EntityTypeQualifierValue ) ) )
-                {
-                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
-                }
-            }
-
-            var allAttributes = new List<Rock.Web.Cache.AttributeCache>();
-
-            foreach ( var attributeGroup in inheritedAttributes )
-            {
-                foreach ( var attribute in attributeGroup.Value )
-                {
-                    allAttributes.Add( attribute );
-                }
-            }
-            foreach ( var attribute in attributes )
-            {
-                allAttributes.Add( attribute );
-            }
-
-            var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
-
-            if ( allAttributes.Any() )
-            {
-                foreach ( var attribute in allAttributes )
-                {
-                    // Add a placeholder for this item's value for each attribute
-                    attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
-                }
-
-                // Read this item's value(s) for each attribute 
-                List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
-                    .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
-                {
-                    attributeValues[attributeValue.Attribute.Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
-                }
-
-                // Look for any attributes that don't have a value and create a default value entry
-                foreach ( var attribute in allAttributes )
-                {
-                    if ( attributeValues[attribute.Key].Count == 0 )
+                    else if ( entity is Group )
                     {
-                        var attributeValue = new Rock.Model.AttributeValue();
-                        attributeValue.AttributeId = attribute.Id;
-                        if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
-                        {
-                            attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
-                        }
-                        else
-                        {
-                            attributeValue.Value = attribute.DefaultValue;
-                        }
-                        attributeValues[attribute.Key].Add( attributeValue );
+                        groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
                     }
                     else
                     {
-                        if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) )
-                        {
-                            foreach ( var value in attributeValues[attribute.Key] )
-                            {
-                                if ( String.IsNullOrWhiteSpace( value.Value ) )
-                                {
-                                    value.Value = attribute.DefaultValue;
-                                }
+                        groupType = ( (GroupType)entity );
+                    }
 
+                    while ( groupType != null )
+                    {
+                        groupTypeIds.Insert( 0, groupType.Id );
+
+                        // Check for inherited group type id's
+                        if ( groupType.InheritedGroupTypeId.HasValue )
+                        {
+                            groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
+                        }
+                        else
+                        {
+                            groupType = null;
+                        }
+                    }
+
+                }
+
+                foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
+                    properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+
+                Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService( rockContext );
+                Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+
+                var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
+                if ( groupTypeIds.Any() )
+                {
+                    groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
+                }
+                else
+                {
+                    inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+                }
+
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+
+                // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
+                int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
+                foreach ( var attribute in attributeService.Queryable().Where( a => a.EntityTypeId == entityTypeId ).Select( a => new { a.Id, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue } ) )
+                {
+                    // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
+                    if ( groupTypeIds.Any() && (
+                            ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                            ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                            ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
+                    {
+                        int groupTypeIdValue = int.MinValue;
+                        if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                        {
+                            inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                        }
+                    }
+
+                    else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
+                        ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
+                        ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
+                        ( properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == attribute.EntityTypeQualifierValue ) ) )
+                    {
+                        attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
+                    }
+                }
+
+                var allAttributes = new List<Rock.Web.Cache.AttributeCache>();
+
+                foreach ( var attributeGroup in inheritedAttributes )
+                {
+                    foreach ( var attribute in attributeGroup.Value )
+                    {
+                        allAttributes.Add( attribute );
+                    }
+                }
+                foreach ( var attribute in attributes )
+                {
+                    allAttributes.Add( attribute );
+                }
+
+                var attributeValues = new Dictionary<string, Rock.Model.AttributeValue>();
+
+                if ( allAttributes.Any() )
+                {
+                    foreach ( var attribute in allAttributes )
+                    {
+                        // Add a placeholder for this item's value for each attribute
+                        attributeValues.Add( attribute.Key, null );
+                    }
+
+                    // Read this item's value(s) for each attribute 
+                    List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
+                    foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
+                        .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                    {
+                        attributeValues[attributeValue.Attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                    }
+
+                    // Look for any attributes that don't have a value and create a default value entry
+                    foreach ( var attribute in allAttributes )
+                    {
+                        if ( attributeValues[attribute.Key] == null )
+                        {
+                            var attributeValue = new Rock.Model.AttributeValue();
+                            attributeValue.AttributeId = attribute.Id;
+                            if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
+                            {
+                                attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
+                            }
+                            else
+                            {
+                                attributeValue.Value = attribute.DefaultValue;
+                            }
+                            attributeValues[attribute.Key] = attributeValue;
+                        }
+                        else
+                        {
+                            if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) &&
+                                String.IsNullOrWhiteSpace( attributeValues[attribute.Key].Value ) )
+                            {
+                                attributeValues[attribute.Key].Value = attribute.DefaultValue;
                             }
                         }
                     }
                 }
+
+                entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                allAttributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
+
+                entity.AttributeValues = attributeValues;
             }
-
-            entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-            allAttributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
-
-            entity.AttributeValues = attributeValues;
         }
 
         /// <summary>
@@ -441,13 +454,18 @@ namespace Rock.Attribute
         /// <returns></returns>
         public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
         {
-            var attributes = entity.Attributes.Select( a => a.Value );
-            if ( !supressOrdering )
+            if ( entity != null )
             {
-                attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+                var attributes = entity.Attributes.Select( a => a.Value );
+                if ( !supressOrdering )
+                {
+                    attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+                }
+
+                return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
             }
 
-            return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
+            return null;
         }
 
         /// <summary>
@@ -652,9 +670,15 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
-            foreach ( var attribute in model.Attributes )
+            if ( model != null && model.Attributes != null && model.AttributeValues != null )
             {
-                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key], rockContext );
+                foreach ( var attribute in model.Attributes )
+                {
+                    if ( model.AttributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                    }
+                }
             }
         }
 
@@ -670,31 +694,34 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
-            if ( attributeValue == null )
+            if ( model != null && attribute != null )
             {
-                if ( newValue == null )
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
+                if ( attributeValue == null )
                 {
-                    return;
+                    if ( newValue == null )
+                    {
+                        return;
+                    }
+
+                    attributeValue = new Rock.Model.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = model.Id;
+                    attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue = new Rock.Model.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = model.Id;
-                attributeValue.Order = 0;
-                attributeValueService.Add( attributeValue );
+                attributeValue.Value = newValue;
+
+                rockContext.SaveChanges();
+
+                if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
+                {
+                    model.AttributeValues[attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                }
             }
-
-            attributeValue.Value = newValue;
-
-            rockContext.SaveChanges();
-
-            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
-
         }
 
         /// <summary>
@@ -709,80 +736,29 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValue( int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
-
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId).FirstOrDefault();
-            if (attributeValue == null)
+            if ( attribute != null )
             {
-                if (newValue == null)
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
+                if ( attributeValue == null )
                 {
-                    return;
-                }
+                    if ( newValue == null )
+                    {
+                        return;
+                    }
 
-                attributeValue = new Rock.Model.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = entityId;
-                attributeValue.Order = 0;
-                attributeValueService.Add(attributeValue);
-            }
-
-            attributeValue.Value = newValue;
-
-            rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Saves an attribute value.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="newValues">The new values.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, RockContext rockContext = null )
-        {
-            rockContext = rockContext ?? new RockContext();
-            var attributeValueService = new Model.AttributeValueService( rockContext );
-
-            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).ToList();
-            int i = 0;
-
-            while ( i < attributeValues.Count || i < newValues.Count )
-            {
-                Rock.Model.AttributeValue attributeValue;
-
-                if ( i < attributeValues.Count )
-                {
-                    attributeValue = attributeValues[i];
-                }
-                else
-                {
                     attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = model.Id;
-                    attributeValue.Order = i;
+                    attributeValue.EntityId = entityId;
                     attributeValueService.Add( attributeValue );
                 }
 
-                if ( i >= newValues.Count )
-                    attributeValueService.Delete( attributeValue );
-                else
-                {
-                    if ( attributeValue.Value != newValues[i].Value )
-                        attributeValue.Value = newValues[i].Value;
-                    newValues[i] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
-                }
+                attributeValue.Value = newValue;
 
-                i++;
+                rockContext.SaveChanges();
             }
-
-            rockContext.SaveChanges();
-
-            model.AttributeValues[attribute.Key] = newValues;
         }
 
         /// <summary>
@@ -792,47 +768,51 @@ namespace Rock.Attribute
         /// <param name="target">The target.</param>
         public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
         {
-            // Copy Attributes
-            if ( source.Attributes != null )
+            if ( source != null && target != null )
             {
-                target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-                foreach ( var item in source.Attributes )
+                // Copy Attributes
+                if ( source.Attributes != null )
                 {
-                    target.Attributes.Add( item.Key, item.Value );
-                }
-            }
-            else
-            {
-                target.Attributes = null;
-            }
-
-            // Copy Attribute Values
-            if ( source.AttributeValues != null )
-            {
-                target.AttributeValues = new Dictionary<string, List<Model.AttributeValue>>();
-                foreach ( var item in source.AttributeValues )
-                {
-                    var list = new List<Model.AttributeValue>();
-                    foreach ( var value in item.Value )
+                    target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                    foreach ( var item in source.Attributes )
                     {
-                        var attributeValue = new Model.AttributeValue();
-                        attributeValue.IsSystem = value.IsSystem;
-                        attributeValue.AttributeId = value.AttributeId;
-                        attributeValue.EntityId = value.EntityId;
-                        attributeValue.Order = value.Order;
-                        attributeValue.Value = value.Value;
-                        attributeValue.Id = value.Id;
-                        attributeValue.Guid = value.Guid;
-                        list.Add( attributeValue );
+                        target.Attributes.Add( item.Key, item.Value );
                     }
-                    target.AttributeValues.Add( item.Key, list );
+                }
+                else
+                {
+                    target.Attributes = null;
+                }
+
+                // Copy Attribute Values
+                if ( source.AttributeValues != null )
+                {
+                    target.AttributeValues = new Dictionary<string, Model.AttributeValue>();
+                    foreach ( var item in source.AttributeValues )
+                    {
+                        var value = item.Value;
+                        if ( value != null )
+                        {
+                            var attributeValue = new Model.AttributeValue();
+                            attributeValue.IsSystem = value.IsSystem;
+                            attributeValue.AttributeId = value.AttributeId;
+                            attributeValue.EntityId = value.EntityId;
+                            attributeValue.Value = value.Value;
+                            attributeValue.Id = value.Id;
+                            attributeValue.Guid = value.Guid;
+                            target.AttributeValues.Add( item.Key, attributeValue );
+                        }
+                        else
+                        {
+                            target.AttributeValues.Add( item.Key, null );
+                        }
+                    }
+                }
+                else
+                {
+                    target.AttributeValues = null;
                 }
             }
-            else
-            {
-                target.AttributeValues = null;
-            }
-
         }
 
         /// <summary>
@@ -902,7 +882,7 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, validationGroup, setValue, true );
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
                 }
             }
         }
@@ -932,16 +912,21 @@ namespace Rock.Attribute
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null )
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
+        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             foreach ( var attributeCategory in attributeCategories )
             {
-                HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+                if ( showHeading )
+                {
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                parentControl.Controls.Add( header );
+                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                    parentControl.Controls.Add( header );
+                }
 
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
@@ -957,9 +942,9 @@ namespace Rock.Attribute
                         HtmlGenericControl dd = new HtmlGenericControl( "dd" );
 
                         string value = attribute.DefaultValue;
-                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key].Any())
+                        if (item.AttributeValues.ContainsKey(attribute.Key) && item.AttributeValues[attribute.Key] != null )
                         {
-                            value = item.AttributeValues[attribute.Key][0].Value;
+                            value = item.AttributeValues[attribute.Key].Value;
                         }
 
                         string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
@@ -996,7 +981,7 @@ namespace Rock.Attribute
                         // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
                         // The AttributeCache.Read method returns null
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = new List<AttributeValue>() { value };
+                        item.AttributeValues[attribute.Key] = value;
                     }
                 }
             }

@@ -45,7 +45,9 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private int? _pageId = null;
-        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+        // Import/Export hidden until we have time to get it working again.
+        //private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings" } ;
 
         #endregion
 
@@ -100,7 +102,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                     {
-                        ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+                        ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
 
                         var blockContexts = new Dictionary<string, string>();
                         foreach ( var block in pageCache.Blocks )

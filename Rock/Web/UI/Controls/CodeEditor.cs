@@ -305,6 +305,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the merge field help.
+        /// </summary>
+        /// <value>
+        /// The merge field help.
+        /// </value>
         public string MergeFieldHelp
         {
             get { return ViewState["MergeFieldHelp"] as string ?? string.Empty; }
@@ -374,16 +380,21 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            int editorHeight = EditorHeight.AsIntegerOrNull() ?? 200;
+            
             // Add merge field help
             if ( MergeFields.Any() )
             {
+                writer.Write( "<div class='codeeditor-header margin-b-md clearfix'>" );
                 _mfpMergeFields.RenderControl( writer );
+                writer.Write( "</div>" );
+
+                editorHeight = editorHeight - 40;
             }
 
             // add editor div
-            string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
+            writer.Write( string.Format( customDiv, editorHeight, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
 
             // write custom css for the code editor
             string customStyle = @"
@@ -415,8 +426,9 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.setShowPrintMargin(false);
 
+                document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                 ce_{0}.getSession().on('change', function(e) {{
-                    document.getElementById('{0}').value = ce_{0}.getValue();
+                    document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                     {3}
                 }});
 ";
@@ -426,6 +438,24 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
+        }
+
+        /// <summary>
+        /// Processes the postback data for the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        /// <param name="postDataKey">The index within the posted collection that references the content to load.</param>
+        /// <param name="postCollection">The collection posted to the server.</param>
+        /// <returns>
+        /// true if the posted content is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, System.Collections.Specialized.NameValueCollection postCollection )
+        {
+            if ( base.LoadPostData( postDataKey, postCollection ) )
+            {
+                base.Text = HttpUtility.HtmlDecode( base.Text );
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

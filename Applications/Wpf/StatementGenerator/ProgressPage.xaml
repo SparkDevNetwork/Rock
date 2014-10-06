@@ -24,9 +24,9 @@
 
         <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="70"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
             </Grid.RowDefinitions>
 
             <Grid Height="Auto" Grid.Row="1" >
@@ -59,17 +59,17 @@
                 </StackPanel>
                 
             </Grid>
-            <Button x:Name="btnBack"
+            <Button x:Name="btnPrev"
                 Grid.Row="2"
                 HorizontalAlignment="Left"
-                Style="{StaticResource buttonStylePrimary}"
+                Style="{StaticResource buttonStyle}"
                 Margin="8,8,8,8"
-                Click="btnBack_Click">
+                Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
-                       Content="&#xf0d9;" />
-                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Back" />
+                    <Label Style="{StaticResource labelStyleIconLeft}"
+                       Content="&#xf053;" />
+                    <Label Style="{StaticResource labelStyleButtonText}"
+                       Content="Prev" />
                 </StackPanel>
             </Button>
         </Grid>

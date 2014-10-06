@@ -2,7 +2,8 @@
     Used to manage styles for specific blocks.
 
     1. Contributions - block add a contribution transaction
-
+    2. Scheduled Transactions - Styles for the scheduled transaction blocks
+    3. Transaction Matching
 
 */
 
@@ -57,4 +58,46 @@
 .is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb 
 {
 	opacity: 1;
+}
+
+// 2. Scheduled Transactions
+// -------------------------
+.scheduledtransaction-item {
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid @gray-lighter;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+
+    .actions {
+        margin: 6px 0;
+    }
+
+}
+
+// 3. Transaction Matching
+// -------------------------
+.transaction-image {
+    width: 100%;
+    margin-bottom: 12px;
+    border: 2px solid @accent-bold-color;
+}
+
+.transaction-image-thumbnail {
+    max-width: 200px;
+    max-height: 100px;
+    margin: 5px;
+    cursor: pointer;
+    border: 2px solid @accent-bold-color;
+}
+
+.transaction-matching {
+    .progress {
+        width: 30%;
+        width: 30%;
+        float: left;
+        margin-bottom: 0;
+    }
 }

@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a financial transaction schedule in Rock. A user can schedule transactions for varying frequencies, number of transactions and 
     /// and time period. A scheduled transaction can include multiple <see cref="Rock.Model.FinancialScheduledTransactionDetail"/> items so that a single 
-    /// scheduled transaction can include payments/gifts for multiple <see cref="Rock.Model.FinancialAccount">Financial Accounts</see>/funds.
+    /// scheduled transaction can include payments/gifts for multiple <see cref="Rock.Model.FinancialAccount">Financial Accounts</see>/accounts.
     /// </summary>
     /// <remarks>
     /// Several examples include - A one time transaction to occur on 1/1/2014; an ongoing weekly transaction; a weekly transaction for 10 weeks; a monthly transaction from 1/1/2014 - 12/31/2014.
@@ -43,13 +43,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who authorized the scheduled transaction.
+        /// Gets or sets the authorized person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who authorized the scheduled transaction.
+        /// The authorized person alias identifier.
         /// </value>
         [DataMember]
-        public int AuthorizedPersonId { get; set; }
+        public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the transaction frequency <see cref="Rock.Model.DefinedValue"/> that represents the frequency that this 
@@ -62,6 +62,29 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_FREQUENCY )]
         public int TransactionFrequencyValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the currency type <see cref="Rock.Model.DefinedValue"/> indicating the currency that the
+        /// transaction was made in.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32" /> representing the DefinedValueId of the CurrencyType <see cref="Rock.Model.DefinedValue" /> for this transaction.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE )]
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
+        /// to make this transaction. This value will be null for transactions that were not made by credit card.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> that was used to make this transaction.
+        /// This value value will be null for transactions that were not made by credit card.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
+        public int? CreditCardTypeValueId { get; set; }
+        
         /// <summary>
         /// Gets or sets the start date for this schedule. The first transaction will occur on or after this date.
         /// </summary>
@@ -111,7 +134,6 @@ namespace Rock.Model
         /// A <see cref="System.DateTime" /> representing the date and time of the last status update.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
         public DateTime? LastStatusUpdateDateTime { get; set; }
 
         /// <summary>
@@ -183,12 +205,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> that authorized the scheduled transaction.
+        /// Gets or sets the authorized person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> that authorized the scheduled transaction.
+        /// The authorized person alias.
         /// </value>
-        public virtual Person AuthorizedPerson { get; set; }
+        public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> for the financial gateway.
@@ -208,6 +230,27 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue TransactionFrequencyValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
+        /// transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for the transaction.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the type of credit card that was used for this transaction.
+        /// If this was not a credit card based transaction, this value will be null.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue" /> indicating the type of credit card that was used for this transaction. This value is null
+        /// for transactions that were not made by credit card.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransactionDetail">transaction details</see> for this scheduled transaction.
@@ -269,9 +312,11 @@ namespace Rock.Model
         /// </summary>
         public FinancialScheduledTransactionConfiguration()
         {
-            this.HasRequired( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

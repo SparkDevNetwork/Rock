@@ -29,21 +29,31 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for the Forgot Username email
         /// </summary>
-        public const string  SECURITY_FORGOT_USERNAME= "113593ff-620e-4870-86b1-7a0ec0409208";
+        public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
         /// Gets the template guid for the Account Created email
         /// </summary>
-        public const string  SECURITY_ACCOUNT_CREATED= "84e373e9-3aaf-4a31-b3fb-a8e3f0666710";
+        public const string SECURITY_ACCOUNT_CREATED = "84e373e9-3aaf-4a31-b3fb-a8e3f0666710";
 
         /// <summary>
         /// Gets the template guid for the Confirm Account email
         /// </summary>
-        public const string  SECURITY_CONFIRM_ACCOUNT= "17aaceef-15ca-4c30-9a3a-11e6cf7e6411";
+        public const string SECURITY_CONFIRM_ACCOUNT = "17aaceef-15ca-4c30-9a3a-11e6cf7e6411";
 
         /// <summary>
         /// Gets the template guid for the Exception Notification email
         /// </summary>
-        public const string  CONFIG_EXCEPTION_NOTIFICATION= "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
+        public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
+
+        /// <summary>
+        /// Gets the template guid for workflow form notifications
+        /// </summary>
+        public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
+
+        /// <summary>
+        /// Gets the template guid for finance pledge confirmation email
+        /// </summary>
+        public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
     }
 }

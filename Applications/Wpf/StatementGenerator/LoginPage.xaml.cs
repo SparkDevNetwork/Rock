@@ -149,6 +149,20 @@ namespace Rock.Apps.StatementGenerator
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
+
+            // set keyboard focus to the first input that needs a value
+            if ( string.IsNullOrEmpty( txtRockUrl.Text ) )
+            {
+                Keyboard.Focus( txtRockUrl );
+            }
+            else if ( string.IsNullOrEmpty( txtUsername.Text ) )
+            {
+                Keyboard.Focus( txtUsername );
+            }
+            else
+            {
+                Keyboard.Focus( txtPassword );
+            }
         }
 
         /// <summary>
@@ -178,6 +192,19 @@ namespace Rock.Apps.StatementGenerator
         {
             ProgressPage progressPage = new ProgressPage();
             this.NavigationService.Navigate( progressPage );
+        }
+
+        /// <summary>
+        /// Handles the KeyDown event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
+        private void Page_KeyDown( object sender, KeyEventArgs e )
+        {
+            if ( e.Key == Key.Enter )
+            {
+                btnLogin_Click( null, null );
+            }
         }
     }
 }

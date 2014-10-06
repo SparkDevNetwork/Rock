@@ -54,10 +54,11 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            if (!string.IsNullOrWhiteSpace(Person.GetAttributeValue("FirstVisit")))
+            var value = Person.GetAttributeValue( "FirstVisit" );
+            DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();
+            if (firstVisit.HasValue)
             {
-                DateTime firstVisit = Convert.ToDateTime(Person.GetAttributeValue("FirstVisit"));
-                TimeSpan attendanceDuration = DateTime.Now - firstVisit;
+                TimeSpan attendanceDuration = DateTime.Now - firstVisit.Value;
 
                 string spanValue = string.Empty;
                 string spanUnit = string.Empty;

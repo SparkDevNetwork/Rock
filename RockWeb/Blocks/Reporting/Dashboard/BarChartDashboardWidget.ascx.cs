@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,47 +25,42 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Bar Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
-    public partial class BarChartDashboardWidget : ChartDashboardWidget
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Bar Chart Dashboard Widget" )]
+    public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
+        public override FlotChart FlotChartControl
+        {
+            get { return bcChart; }
+        }
+
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
+        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
+        {
+            get { return nbMetricWarning; }
+        }
+
         /// <summary>
         /// Loads the chart.
         /// </summary>
         public override void LoadChart()
         {
-            bcExample.StartDate = this.DateRange.Start;
-            bcExample.EndDate = this.DateRange.End;
-            bcExample.MetricValueType = this.MetricValueType;
-            bcExample.MetricId = this.MetricId;
-            bcExample.EntityId = this.EntityId;
-            bcExample.Title = this.Title;
-            bcExample.Subtitle = this.Subtitle;
-            bcExample.CombineValues = this.CombineValues;
-            bcExample.ShowTooltip = false;
-            bcExample.ChartClick += bcExample_ChartClick;
-
-            bcExample.Options.SetChartStyle( this.ChartStyle );
-
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
-        }
-
-        /// <summary>
-        /// Bcs the example_ chart click.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void bcExample_ChartClick( object sender, FlotChart.ChartClickArgs e )
-        {
-            if ( this.DetailPageGuid.HasValue )
-            {
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString.Add( "MetricId", this.MetricId.ToString() );
-                qryString.Add( "SeriesId", e.SeriesId );
-                qryString.Add( "YValue", e.YValue.ToString() );
-                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString( "o" ) );
-                NavigateToPage( this.DetailPageGuid.Value, qryString );
-            }
+            base.LoadChart();
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

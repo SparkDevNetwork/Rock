@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Core
 
         #region Fields
 
-        // used for private variables
-        bool _isReadOnly = false;
+        // If block is being used on a stand alone page ( i.e. not navigated to through defined type list )
+        bool _isStandAlone = false;
 
         #endregion
 
@@ -92,9 +92,9 @@ namespace RockWeb.Blocks.Core
             {
                 int? itemId = InitItemId();
 
-                if ( itemId != null )
+                if ( itemId.HasValue )
                 {
-                    ShowDetail( "definedTypeId", (int)itemId );
+                    ShowDetail( itemId.Value );
                 }
                 else
                 {
@@ -109,21 +109,22 @@ namespace RockWeb.Blocks.Core
         /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/> or null if it was not found.</returns>
         private int? InitItemId()
         {
-            Guid definedTypeGuid;
+            Guid? definedTypeGuid = GetAttributeValue( "DefinedType" ).AsGuidOrNull();
             int? itemId = null;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
-            if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
+            if ( definedTypeGuid.HasValue )
             {
-                _isReadOnly = true;
+                _isStandAlone = true;
                 // hide reorder, edit and delete
+
                 gDefinedTypeAttributes.Columns[0].Visible = false;
                 gDefinedTypeAttributes.Columns[2].Visible = false;
                 gDefinedTypeAttributes.Columns[3].Visible = false;
                 gDefinedTypeAttributes.Actions.ShowAdd = false;
 
-                itemId = DefinedTypeCache.Read( definedTypeGuid ).Id;
-                var definedType = DefinedTypeCache.Read( definedTypeGuid );
+                itemId = DefinedTypeCache.Read( definedTypeGuid.Value ).Id;
+                var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
                 if ( definedType != null )
                 {
                     itemId = definedType.Id;
@@ -138,6 +139,7 @@ namespace RockWeb.Blocks.Core
 
                 itemId = PageParameter( "definedTypeId" ).AsIntegerOrNull();
             }
+
             return itemId;
         }
 
@@ -154,9 +156,9 @@ namespace RockWeb.Blocks.Core
         {
             int? itemId = InitItemId();
 
-            if ( itemId != null )
+            if ( itemId.HasValue )
             {
-                ShowDetail( "definedTypeId", (int)itemId );
+                ShowDetail( itemId.Value );
             }
             else
             {
@@ -193,7 +195,7 @@ namespace RockWeb.Blocks.Core
 
             definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             definedType.Name = tbTypeName.Text;
-            definedType.Category = tbTypeCategory.Text;
+            definedType.CategoryId = cpCategory.SelectedValueAsInt();
             definedType.Description = tbTypeDescription.Text;
             definedType.HelpText = tbHelpText.Text;
 
@@ -290,11 +292,15 @@ namespace RockWeb.Blocks.Core
                 rcHelpText.Visible = false;
             }
 
-            lblMainDetails.Text = new DescriptionList()
-                .Add("Category", definedType.Category)
-                .Html;
-
             definedType.LoadAttributes();
+
+            if (!_isStandAlone && definedType.Category != null )
+            {
+                lblMainDetails.Text = new DescriptionList()
+                    .Add( "Category", definedType.Category.Name )
+                    .Html;
+            }
+
         }
 
         /// <summary>
@@ -305,17 +311,17 @@ namespace RockWeb.Blocks.Core
         {
             if ( definedType.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
 
             tbTypeName.Text = definedType.Name;
-            tbTypeCategory.Text = definedType.Category;
+            cpCategory.SetValue( definedType.CategoryId );
             tbTypeDescription.Text = definedType.Description;
             tbHelpText.Text = definedType.HelpText;
         }
@@ -348,29 +354,18 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="definedTypeId">The defined type identifier.</param>
+        public void ShowDetail( int definedTypeId )
         {
-            if ( !itemKey.Equals( "definedTypeId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
             DefinedType definedType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !definedTypeId.Equals( 0 ) )
             {
-                definedType = new DefinedTypeService( new RockContext() ).Get( itemKeyValue );
-                // If bad data was passed in, return and show nothing.
-                if ( definedType == null )
-                {
-                    pnlDetails.Visible = false;
-                    return;
-                }
+                definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
             }
-            else
+
+            if ( definedType == null )
             {
                 definedType = new DefinedType { Id = 0 };
             }
@@ -381,26 +376,35 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( _isReadOnly || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( _isStandAlone )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
             }
-
-            if ( definedType.IsSystem )
+            else
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
+                if ( !IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
+                }
+
+                if ( definedType.IsSystem )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
+                }
             }
 
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 ShowReadonlyDetails( definedType );
             }
             else
             {
                 btnEdit.Visible = true;
+                btnDelete.Visible = false;
                 if ( definedType.Id > 0 )
                 {
                     ShowReadonlyDetails( definedType );
@@ -411,7 +415,8 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            BindDefinedTypeAttributesGrid();            
+            BindDefinedTypeAttributesGrid();         
+  
         }
                 
         #endregion
@@ -623,6 +628,9 @@ namespace RockWeb.Blocks.Core
 
             gDefinedTypeAttributes.DataSource = attributes;
             gDefinedTypeAttributes.DataBind();
+
+            pnlAttributeTypes.Visible = !_isStandAlone || attributes.Count > 0;
+
         }
 
         #endregion       

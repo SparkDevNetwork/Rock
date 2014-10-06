@@ -38,6 +38,11 @@ namespace Rock.Web.UI.Controls
         private CheckBox _cbVisible;
         private CheckBox _cbEditable;
         private CheckBox _cbRequired;
+        private CheckBox _cbHideLabel;
+        private CheckBox _cbPreHtml;
+        private CheckBox _cbPostHtml;
+        private RockTextBox _tbPreHtml;
+        private RockTextBox _tbPostHtml;
 
         /// <summary>
         /// Gets or sets the attribute unique identifier.
@@ -156,6 +161,86 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [hide label].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbHideLabel.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbHideLabel.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbPreHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbPreHtml.Text = value;
+                _cbPreHtml.Checked = !string.IsNullOrWhiteSpace( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbPostHtml.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbPostHtml.Text = value;
+                _cbPostHtml.Checked = !string.IsNullOrWhiteSpace( value );
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+    $('input.js-form-attribute-show-pre-html').change(function(){
+        $(this).closest('td').find('div.js-form-attribute-pre-html').slideToggle();
+    });
+    $('input.js-form-attribute-show-post-html').change(function(){
+        $(this).closest('td').find('div.js-form-attribute-post-html').slideToggle();
+    });
+";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "wf-attribute-row-html", script, true );
+        }
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -177,6 +262,32 @@ namespace Rock.Web.UI.Controls
             _cbRequired = new CheckBox();
             _cbRequired.ID = this.ID + "_cbRequired";
             Controls.Add( _cbRequired );
+
+            _cbHideLabel = new CheckBox();
+            _cbHideLabel.ID = this.ID + "_cbHideLabel";
+            Controls.Add( _cbHideLabel );
+
+            _cbPreHtml = new CheckBox();
+            _cbPreHtml.ID = this.ID + "_cbPreHtml";
+            _cbPreHtml.AddCssClass( "js-form-attribute-show-pre-html" );
+            Controls.Add( _cbPreHtml );
+
+            _cbPostHtml = new CheckBox();
+            _cbPostHtml.ID = this.ID + "_cbPostHtml";
+            _cbPostHtml.AddCssClass( "js-form-attribute-show-post-html" );
+            Controls.Add( _cbPostHtml );
+
+            _tbPreHtml = new RockTextBox();
+            _tbPreHtml.ID = this.ID + "_tbPreHtml";
+            _tbPreHtml.TextMode = TextBoxMode.MultiLine;
+            _tbPreHtml.Rows = 3;
+            Controls.Add( _tbPreHtml );
+
+            _tbPostHtml = new RockTextBox();
+            _tbPostHtml.ID = this.ID + "_tbPostHtml";
+            _tbPostHtml.TextMode = TextBoxMode.MultiLine;
+            _tbPostHtml.Rows = 3;
+            Controls.Add( _tbPostHtml );
         }
 
         /// <summary>
@@ -204,22 +315,78 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();      // Td
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-pre-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPreHtml.Checked ? "block" : "none" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbPreHtml.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( AttributeName );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbHideLabel.RenderControl( writer );
                 writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbPreHtml.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbPostHtml.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();      // row
+
+                writer.RenderEndTag();      // col-xs-9
+
+                writer.RenderEndTag();      // row
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-post-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPostHtml.Checked ? "block" : "none" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbPostHtml.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();      // Td
+
+                writer.RenderEndTag();      // Tr
             }
         }
     }

@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Communication
 {
     /// <summary>
-    /// Sends an email template using the Email communication channel
+    /// Sends an email template using the Email communication medium
     /// </summary>
     public static class Email
     {
@@ -36,19 +36,19 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
+        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "" )
         {
             try
             {
                 if ( recipients != null && recipients.Any() )
                 {
-                    var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
-                    if ( channelEntity != null )
+                    var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+                    if ( mediumEntity != null )
                     {
-                        var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                        if ( channel != null && channel.IsActive )
+                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        if ( medium != null && medium.IsActive )
                         {
-                            var transport = channel.Transport;
+                            var transport = medium.Transport;
                             if ( transport != null && transport.IsActive )
                             {
                                 var template = new SystemEmailService( new RockContext() ).Get( emailTemplateGuid );
@@ -70,17 +70,17 @@ namespace Rock.Communication
                             }
                             else
                             {
-                                throw new Exception(string.Format("Error sending System Email: The '{0}' channel does not have a valid transport, or the transport is not active.", channelEntity.FriendlyName));
+                                throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName ) );
                             }
                         }
                         else
                         {
-                            throw new Exception(string.Format("Error sending System Email: The '{0}' channel does not exist, or is not active (type: {1}).", channelEntity.FriendlyName, channelEntity.Name));
+                            throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name ) );
                         }
                     }
                     else
                     {
-                        throw new Exception("Error sending System Email: Could not read Email Channel Entity Type");
+                        throw new Exception( "Error sending System Email: Could not read Email Medium Entity Type" );
                     }
                 }
             }

@@ -41,9 +41,26 @@ namespace Rock.Web.UI.Controls
         private HtmlGenericControl _subtitleSmall;
         private LiteralControl _subtitle;
 
+        private Literal _scrollStartLiteral;
         private Panel _contentPanel;
+        private Literal _scrollEndLiteral;
 
         private Panel _footerPanel;
+
+        /// <summary>
+        /// Gets the server save link.
+        /// </summary>
+        /// <value>
+        /// The server save link.
+        /// </value>
+        public HtmlAnchor ServerSaveLink
+        {
+            get
+            {
+                return _serverSaveLink;
+            }
+        }
+
         private HtmlAnchor _serverSaveLink;
         private HtmlAnchor _saveLink;
         private HtmlAnchor _cancelLink;
@@ -56,6 +73,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
+            this.Y = 50;
 
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
@@ -135,10 +153,22 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The validation group.
         /// </value>
-        public string ValidationGroup 
+        public string ValidationGroup
         {
             get { return ViewState["ValidationGroup"] as string ?? string.Empty; }
             set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [scrollbar enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [scrollbar enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ScrollbarEnabled
+        {
+            get { return ViewState["ScrollbarEnabled"] as bool? ?? true; }
+            set { ViewState["ScrollbarEnabled"] = value; }
         }
 
         /// <summary>
@@ -159,7 +189,6 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _contentPanel;
             }
-
         }
 
         /// <summary>
@@ -178,22 +207,52 @@ namespace Rock.Web.UI.Controls
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "rock-modal rock-modal-frame";
+            _dialogPanel.CssClass = "modal-content rock-modal rock-modal-frame";
             _dialogPanel.Attributes.Add( "style", "display:none" );
 
             _headerPanel = new Panel();
             _dialogPanel.Controls.Add( _headerPanel );
-            _headerPanel.ID = "headerPanel";
+            //_headerPanel.ID = "headerPanel";
             _headerPanel.CssClass = "modal-header";
+
+            // add start div of modal-body
+            _dialogPanel.Controls.Add( new Literal { Text = @"<div class='modal-body'>" } );
+
+            // Content Panel wrapper with scroll-container
+            _scrollStartLiteral = new Literal();
+            _scrollStartLiteral.Text = @"
+                <div class='modal-dialog-scroll-container scroll-container scroll-container-vertical'>                
+                    <div class='scrollbar'>
+                        <div class='track'>
+                            <div class='thumb'>
+                                <div class='end'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='viewport'>
+                        <div class='overview'>";
+
+            _dialogPanel.Controls.Add( _scrollStartLiteral );
 
             _contentPanel = new Panel();
             _dialogPanel.Controls.Add( _contentPanel );
             _contentPanel.ID = "contentPanel";
-            _contentPanel.CssClass = "modal-body";
 
+            _scrollEndLiteral = new Literal();
+            _scrollEndLiteral.Text = @"
+                        </div>
+                    </div>
+                </div>";
+
+            _dialogPanel.Controls.Add( _scrollEndLiteral );
+
+            // add end div of modal-body
+            _dialogPanel.Controls.Add( new Literal { Text = "</div>" } );
+
+            // Footer
             _footerPanel = new Panel();
             _dialogPanel.Controls.Add( _footerPanel );
-            _footerPanel.ID = "footerPanel";
+            //_footerPanel.ID = "footerPanel";
             _footerPanel.CssClass = "modal-footer";
 
             _closeLink = new HtmlGenericControl( "A" );
@@ -245,6 +304,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
+            RegisterJavaScript();
+
             _closeLink.Attributes["onclick"] = string.Format(
                 "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
@@ -255,6 +316,9 @@ namespace Rock.Web.UI.Controls
             _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
+
+            _scrollStartLiteral.Visible = ScrollbarEnabled;
+            _scrollEndLiteral.Visible = ScrollbarEnabled;
 
             if ( !_serverSaveLink.Visible )
             {
@@ -270,9 +334,28 @@ namespace Rock.Web.UI.Controls
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )
+            {
                 this.TargetControlID = _dfltShowButton.ID;
+            }
 
             base.OnPreRender( e );
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected void RegisterJavaScript()
+        {
+            string scriptFormat = @"
+            // use setTimeout so that tinyscrollbar will get initialized after renders
+            setTimeout(function () {{
+                $('#{0} .modal-dialog-scroll-container').tinyscrollbar({{ size: 150, sizethumb: 20 }});
+            }}, 0);
+";
+
+            var script = string.Format( scriptFormat, _dialogPanel.ClientID );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-scroll-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -290,7 +373,5 @@ namespace Rock.Web.UI.Controls
         /// Occurs when the save button is clicked.
         /// </summary>
         public event EventHandler SaveClick;
-
     }
-
 }

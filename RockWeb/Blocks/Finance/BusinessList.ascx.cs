@@ -99,6 +99,15 @@ namespace RockWeb.Blocks.Finance
         private void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBusinessFilter.SaveUserPreference( "Business Name", tbBusinessName.Text );
+            if ( ddlActiveFilter.SelectedValue == "all" )
+            {
+                gfBusinessFilter.SaveUserPreference( "Active Status", string.Empty );
+            }
+            else
+            {
+                gfBusinessFilter.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
+            }
+
             BindGrid();
         }
 
@@ -133,64 +142,32 @@ namespace RockWeb.Blocks.Finance
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var rockContext = new RockContext();
                 var business = e.Row.DataItem as Person;
-                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-
-                if ( business.PhoneNumbers.Count > 0 )
+                if ( business != null )
                 {
-                    var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
-                    if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
+                    // Phone Number
+                    if ( business.PhoneNumbers.Count > 0 )
                     {
-                        Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
-                        if ( lblPhoneNumber != null )
+                        var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
+                        if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
                         {
-                            lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
-                        }
-                    }
-                }
-
-                if ( !string.IsNullOrWhiteSpace( business.Email ) )
-                {
-                    Label lblEmail = e.Row.FindControl( "lblEmail" ) as Label;
-                    if ( lblEmail != null )
-                    {
-                        lblEmail.Text = string.Format( "{0}", business.Email );
-                    }
-                }
-
-                if ( business.GivingGroup.GroupLocations.Count > 0 )
-                {
-                    var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
-                    if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                    {
-                        Label lblStreet1 = e.Row.FindControl( "lblStreet1" ) as Label;
-                        if ( lblStreet1 != null )
-                        {
-                            lblStreet1.Text = string.Format( "{0}</br>", location.Street1 );
+                            Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
+                            if ( lblPhoneNumber != null )
+                            {
+                                lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
+                            }
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( location.Street2 ) )
+                    // Address
+                    if ( business.GivingGroup != null && business.GivingGroup.GroupLocations.Any() )
                     {
-                        Label lblStreet2 = e.Row.FindControl( "lblStreet2" ) as Label;
-                        if ( lblStreet2 != null )
-                        {
-                            lblStreet2.Text = string.Format( "{0}</br>", location.Street2 );
-                        }
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.Zip ) )
-                    {
-                        Label lblCityStateZip = e.Row.FindControl( "lblCityStateZip" ) as Label;
-                        if ( lblCityStateZip != null )
-                        {
-                            lblCityStateZip.Text = string.Format( "{0}, {1} {2}", location.City, location.State, location.Zip );
-                        }
+                        Label lblAddress = e.Row.FindControl( "lblAddress" ) as Label;
+                        lblAddress.Text = business.GivingGroup.GroupLocations
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault()
+                            .GetFullStreetAddress()
+                            .ConvertCrLfToHtmlBr();
                     }
                 }
             }
@@ -209,37 +186,6 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
-        /// <summary>
-        /// Handles the Edit event of the gBusinessList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            var parms = new Dictionary<string, string>();
-            var businessId = (int)e.RowKeyValue;
-            parms.Add( "businessId", businessId.ToString() );
-            NavigateToLinkedPage( "DetailPage", parms );
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gBusinessList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            var rockContext = new RockContext();
-            PersonService service = new PersonService( rockContext );
-            Person business = service.Get( e.RowKeyId );
-            if ( business != null )
-            {
-                business.RecordStatusValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                rockContext.SaveChanges();
-            }
-
-            BindGrid();
-        }
 
         #endregion Events
 
@@ -254,6 +200,13 @@ namespace RockWeb.Blocks.Finance
 
             // Business Name Filter
             tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
+            
+            // Set the Active Status
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfBusinessFilter.GetUserPreference( "Active Status" ) );
+            if ( itemActiveStatus != null )
+            {
+                itemActiveStatus.Selected = true;
+            }
         }
 
         /// <summary>
@@ -263,20 +216,26 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-            var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                .Where( r =>
-                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
-                .Select( r => r.Id )
-                .FirstOrDefault();
+
             var queryable = new PersonService( rockContext ).Queryable()
-                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
+                .Where( q => q.RecordTypeValueId == recordTypeValueId );
 
             // Business Name Filter
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
-                queryable = queryable.Where( a => a.FirstName.Contains( businessName ) );
+                queryable = queryable.Where( a => a.LastName.Contains( businessName ) );
+            }
+
+            var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
+            if (activeFilterValue == "inactive")
+            {
+                queryable = queryable.Where( b => b.RecordStatusValueId != activeRecordStatusValueId );
+            }
+            else if (activeFilterValue == "active")
+            {
+                queryable = queryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;
@@ -286,7 +245,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                gBusinessList.DataSource = queryable.OrderBy( q => q.FirstName ).ToList();
+                gBusinessList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
             }
 
             gBusinessList.DataBind();

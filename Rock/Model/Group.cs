@@ -141,6 +141,16 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets whether group allows members to specify additional "guests" that will be part of the group (i.e. attend event)
+        /// </summary>
+        /// <value>
+        /// The allow guests flag
+        /// </value>
+        [DataMember]
+        public bool? AllowGuests { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -19,11 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-using System.Web.UI;
+
 using Rock.Data;
-using Rock.Field;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -130,6 +128,15 @@ namespace Rock.Web.Cache
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        [DataMember]
+        public string HighlightColor { get; set; }
+
+        /// <summary>
         /// Gets the parent category.
         /// </summary>
         /// <value>
@@ -211,6 +218,7 @@ namespace Rock.Web.Cache
                 this.Description = category.Description;
                 this.Order = category.Order;
                 this.IconCssClass = category.IconCssClass;
+                this.HighlightColor = category.HighlightColor;
             }
         }
 
@@ -239,74 +247,68 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id of the Category to read</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CategoryCache Read( int id )
+        public static CategoryCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CategoryCache.CacheKey( id );
-
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             CategoryCache category = cache[cacheKey] as CategoryCache;
 
-            if ( category != null )
+            if ( category == null )
             {
-                return category;
-            }
-            else
-            {
-                var categoryService = new Rock.Model.CategoryService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var categoryService = new Rock.Model.CategoryService( rockContext );
                 var categoryModel = categoryService.Get( id );
                 if ( categoryModel != null )
                 {
+                    categoryModel.LoadAttributes( rockContext );
                     category = new CategoryCache( categoryModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-
-                    return category;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return category;
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CategoryCache Read( Guid guid )
+        public static CategoryCache Read( Guid guid, RockContext rockContext = null )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            CategoryCache category = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                category = Read( (int)cacheObj, rockContext );
             }
-            else
+
+            if ( category == null )
             {
-                var categoryService = new CategoryService( new RockContext() );
-                var categoryModel = categoryService.Get(guid);
+                rockContext = rockContext ?? new RockContext();
+                var categoryService = new CategoryService( rockContext );
+                var categoryModel = categoryService.Get( guid );
 
                 if ( categoryModel != null )
                 {
-                    categoryModel.LoadAttributes();
-                    var category = new CategoryCache( categoryModel );
+                    categoryModel.LoadAttributes( rockContext );
+                    category = new CategoryCache( categoryModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( CategoryCache.CacheKey( category.Id ), category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-
-                    return category;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return category;
         }
 
         /// <summary>
@@ -317,25 +319,22 @@ namespace Rock.Web.Cache
         public static CategoryCache Read( Rock.Model.Category categoryModel )
         {
             string cacheKey = CategoryCache.CacheKey( categoryModel.Id );
-
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             CategoryCache category = cache[cacheKey] as CategoryCache;
 
             if ( category != null )
             {
                 category.CopyFromModel( categoryModel );
-                return category;
             }
             else
             {
                 category = new CategoryCache( categoryModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, category, cachePolicy );
                 cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-                
-                return category;
             }
+
+            return category;
         }
 
         /// <summary>
@@ -344,7 +343,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the category to remove from cache</param>
         public static void Flush( int id )
         {
-            ObjectCache cache = MemoryCache.Default;
+            ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( CategoryCache.CacheKey( id ) );
         }
 

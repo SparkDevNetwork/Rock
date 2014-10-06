@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{633206D3-C28A-481F-8CF3-2C9A9877FAC3}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Rock.Client</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)CodeGenerated\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeQualifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuditDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Auth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Block.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BlockType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Campus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Category.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipientActivity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DefinedType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DefinedValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Device.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySetItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntityType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ExceptionLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FieldType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialBatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPersonBankAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPersonSavedAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPledge.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionImage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionRefund.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionScannedCheck.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Following.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Group.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\History.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaign.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAd.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAdType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignAudience.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MarketingCampaignCampus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Page.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PhoneNumber.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PluginMigration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PrayerRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Report.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ReportField.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Schedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\TaggedItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLogin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Workflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionForm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionFormAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActivity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActivityType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowTrigger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowType.cs" />
+  </ItemGroup>
+</Project>

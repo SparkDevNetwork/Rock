@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+        private int _numberOfAvailablePackages = 0;
 
         #endregion
 
@@ -88,16 +89,26 @@ namespace RockWeb.Blocks.Core
             DisplayRockVersion();
             if ( !IsPostBack )
             {
-                _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
-                if ( IsUpdateAvailable() )
+                try
                 {
-                    pnlUpdatesAvailable.Visible = true;
-                    pnlNoUpdates.Visible = false;
-                    cbIncludeStats.Visible = true;
-                    BindGrid();
+                    _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
+                    if ( IsUpdateAvailable() )
+                    {
+                        pnlUpdatesAvailable.Visible = true;
+                        pnlNoUpdates.Visible = false;
+                        cbIncludeStats.Visible = true;
+                        BindGrid();
+                    }
+
+                    RemoveOldRDeleteFiles();
+                }
+                catch ( System.InvalidOperationException ex )
+                {
+                    HandleNuGetException( ex );
                 }
             }
         }
+
         #endregion
 
         #region Events
@@ -121,27 +132,32 @@ namespace RockWeb.Blocks.Core
             WriteAppOffline();
             try
             {
+                pnlUpdatesAvailable.Visible = false;
+
                 if ( ! UpdateRockPackage( version ) )
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
+                    SendStatictics( version );
                 }
 
-                pnlUpdatesAvailable.Visible = false;
                 lRockVersion.Text = "";
-
-                SendStatictics( version );
             }
             catch ( Exception ex )
             {
                 pnlError.Visible = true;
-                pnlUpdateSuccess.Visible = false;
+                pnlUpdateSuccess.Visible = false; 
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
             RemoveAppOffline();
         }
 
+        /// <summary>
+        /// Enables and sets the appropriate CSS class on the install buttons and each div panel.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -152,27 +168,43 @@ namespace RockWeb.Blocks.Core
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the first item in the list is the primary
-                    if ( e.Item.ItemIndex == 0 )
+                    // Only the last item in the list is the primary
+                    if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
                     {
                         lbInstall.Enabled = true;
-                        lbInstall.AddCssClass( "btn-primary" );
-                        divPanel.AddCssClass( "panel-primary" );
+                        lbInstall.AddCssClass( "btn-info" );
+                        divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
-                        lbInstall.Enabled = true;
+                        lbInstall.Enabled = false;
+                        lbInstall.Text = "Pending";
                         lbInstall.AddCssClass( "btn-default" );
-                        divPanel.AddCssClass( "panel-default" );
+                        divPanel.AddCssClass( "panel-block" );
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the particular version button that was clicked.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             string version = e.CommandArgument.ToString();
             Update( version );
+        }
+
+        /// <summary>
+        /// Simply reload the page in order to cause a restart.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void bbtnRestart_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
@@ -197,7 +229,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    errors = NuGetService.UpdatePackage( update );
+                    errors = NuGetService.UpdatePackageAndBackup( update, installed );
                 }
 
                 CheckForManualFileMoves( version );
@@ -213,13 +245,27 @@ namespace RockWeb.Blocks.Core
                 {
                     RestControllerService.RegisterControllers();
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
                     LogException( ex );
                 }
             }
-            catch ( InvalidOperationException ex )
+            catch ( OutOfMemoryException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
+                LogException( ex );
+            }
+            catch( System.Xml.XmlException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( System.IO.IOException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. We were not able to replace an important file ({1}) after the update. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#unabletoreplacefile'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( Exception ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
                 LogException( ex );
@@ -257,7 +303,6 @@ namespace RockWeb.Blocks.Core
         private bool IsUpdateAvailable()
         {
             List<IPackage> verifiedPackages = new List<IPackage>();
-
             try
             {
                 // Get the installed package so we can check its version...
@@ -278,19 +323,26 @@ namespace RockWeb.Blocks.Core
 
                     verifiedPackages.Add( package );
 
-                    if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
-                    {
-                        var requiredVersion = ExtractRequiredVersionFromTags( package );
-                        // if that required version is greater than our currently installed version
-                        // then we can't have any of the prior packages in the verifiedPackages list
-                        // so we clear it out and keep processing.
-                        if ( requiredVersion > _installedVersion )
-                        {
-                            verifiedPackages.Clear();
-                        }
-                    }
+                    //if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
+                    //{
+                    //    var requiredVersion = ExtractRequiredVersionFromTags( package );
+                    //    // if that required version is greater than our currently installed version
+                    //    // then we can't have any of the prior packages in the verifiedPackages list
+                    //    // so we clear it out and keep processing.
+                    //    if ( requiredVersion > _installedVersion )
+                    //    {
+                            
+                    //        verifiedPackages.Clear();
+                    //    }
+                    //}
                 }
+
                 _availablePackages = verifiedPackages;
+                _numberOfAvailablePackages = verifiedPackages.Count;
+                if ( _numberOfAvailablePackages > 1 )
+                {
+                    nbMoreUpdatesAvailable.Visible = true;
+                }
             }
             catch ( InvalidOperationException ex )
             {
@@ -387,6 +439,26 @@ namespace RockWeb.Blocks.Core
 " );
         }
 
+        /// <summary>
+        /// Removes the old *.rdelete (Rock delete) files that were created during an update.
+        /// </summary>
+        private void RemoveOldRDeleteFiles()
+        {
+            var rockDirectory = new DirectoryInfo( Server.MapPath( "~" ) );
+
+            foreach ( var file in rockDirectory.EnumerateFiles( "*.rdelete", SearchOption.AllDirectories ) )
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch
+                {
+                    //we'll try again later
+                }
+            }
+        }
+
         private void CheckForManualFileMoves( string version )
         {
             var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
@@ -399,7 +471,6 @@ namespace RockWeb.Blocks.Core
 
                 versionDirectory.Delete( true );
             }
-
         }
 
         private void ManuallyMoveFile( FileInfo file, string newPath )
@@ -464,8 +535,10 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Sends statistics to the SDN server but only if the sample data has not been 
-        /// loaded. The statistics are:
+        /// Sends statistics to the SDN server but only if there are more than 100 person records
+        /// or the sample data has not been loaded. 
+        /// 
+        /// The statistics are:
         ///     * Rock Instance Id
         ///     * Update Version
         ///     * IP Address - The IP address of your Rock server.
@@ -482,14 +555,15 @@ namespace RockWeb.Blocks.Core
         {
             try
             {
-                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
-                string organizationName = string.Empty;
-                ImpactLocation organizationLocation = null;
-                int numberOfActiveRecords = 0;
-                string publicUrl = string.Empty;
+                var rockContext = new RockContext();
+                int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( sampleDataLoadDate == null )
-                {
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                { 
+                    string organizationName = string.Empty;
+                    ImpactLocation organizationLocation = null;
+                    string publicUrl = string.Empty;
+
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
@@ -498,8 +572,6 @@ namespace RockWeb.Blocks.Core
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
                         publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
-
-                        var rockContext = new RockContext();
 
                         // Fetch the organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
@@ -511,12 +583,16 @@ namespace RockWeb.Blocks.Core
                                 organizationLocation = new ImpactLocation( location );
                             }
                         }
-
-                        numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                    }
+                    else
+                    {
+                        numberOfActiveRecords = 0;
                     }
 
-                    // TODO now send them to SDN/Rock server
-                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
+                    var environmentData = GetEnvDataAsJson();
+
+                    // now send them to SDN/Rock server
+                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords, environmentData );
                 }
             }
             catch ( Exception ex )
@@ -532,16 +608,47 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Returns the environment data as json.
+        /// </summary>
+        /// <returns>a JSON formatted string</returns>
+        private string GetEnvDataAsJson()
+        {
+            string sqlVersion = "";
+            try
+            {
+                sqlVersion = Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
+            }
+            catch
+            {
+                // oh well, sorry, I have to move on...
+            }
+
+            EnvData envData = new EnvData()
+            {
+                AppRoot = ResolveRockUrl( "~/" ),
+                Architecture = (IntPtr.Size == 4) ? "32bit" : "64bit",
+                AspNetVersion = Environment.Version.ToString(),
+                IisVersion = Request.ServerVariables["SERVER_SOFTWARE"],
+                //Ram = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory,
+                ServerOs = Environment.OSVersion.ToString(),
+                SqlVersion = sqlVersion
+            };
+
+            return envData.ToJson();
+        }
+
+        /// <summary>
         /// Sends the public data and impact statistics to the Rock server.
         /// </summary>
-        /// <param name="rockInstanceId"></param>
-        /// <param name="version"></param>
-        /// <param name="ipAddress"></param>
-        /// <param name="publicUrl"></param>
-        /// <param name="organizationName"></param>
-        /// <param name="organizationAddress"></param>
-        /// <param name="numberOfActiveRecords"></param>
-        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords )
+        /// <param name="rockInstanceId">The rock instance identifier.</param>
+        /// <param name="version">The version.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="publicUrl">The public URL.</param>
+        /// <param name="organizationName">Name of the organization.</param>
+        /// <param name="organizationLocation">The organization location.</param>
+        /// <param name="numberOfActiveRecords">The number of active records.</param>
+        /// <param name="environmentData">The environment data (JSON).</param>
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords, string environmentData )
         {
             ImpactStatistic impactStatistic = new ImpactStatistic()
             {
@@ -551,7 +658,8 @@ namespace RockWeb.Blocks.Core
                 PublicUrl = publicUrl,
                 OrganizationName = organizationName,
                 OrganizationLocation = organizationLocation,
-                NumberOfActiveRecords = numberOfActiveRecords
+                NumberOfActiveRecords = numberOfActiveRecords,
+                EnvironmentData = environmentData
             };
 
             var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
@@ -561,7 +669,46 @@ namespace RockWeb.Blocks.Core
             var response = client.Execute( request );
         }
 
+        /// <summary>
+        /// Sets up the page to report the error in a nicer manner.
+        /// </summary>
+        /// <param name="ex"></param>
+        private void HandleNuGetException( Exception ex )
+        {
+            pnlError.Visible = true;
+            pnlUpdateSuccess.Visible = false;
+            pnlNoUpdates.Visible = false;
+
+            if ( ex.Message.Contains( "404" ) )
+            {
+                nbErrors.Text = string.Format( "It appears that someone configured your <code>UpdateServerUrl</code> setting incorrectly: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "could not be resolved" ) )
+            {
+                nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Read().GetValue( "UpdateServerUrl" ) );
+            }
+            else if ( ex.Message.Contains( "Unable to connect" ) )
+            {
+                nbErrors.Text = "The update server is down. Try again later.";
+            }
+            else
+            {
+                nbErrors.Text = string.Format( "...actually, I'm not sure what happened here: {0}", ex.Message );
+            }
+        }
         #endregion
+}
+
+    [Serializable]
+    public class EnvData
+    {
+        public string AppRoot { get; set; }
+        public string Architecture { get; set; }
+        public string AspNetVersion { get; set; }
+        public string IisVersion { get; set; }
+        public string Ram { get; set; }
+        public string ServerOs { get; set; }
+        public string SqlVersion { get; set; }
     }
 
     [Serializable]
@@ -574,6 +721,7 @@ namespace RockWeb.Blocks.Core
         public string OrganizationName { get; set; }
         public ImpactLocation OrganizationLocation { get; set; }
         public int NumberOfActiveRecords { get; set; }
+        public string EnvironmentData { get; set; }
     }
 
     [Serializable]
@@ -583,7 +731,8 @@ namespace RockWeb.Blocks.Core
         public string Street2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
+        public string Country { get; set; }
 
         public ImpactLocation( Rock.Model.Location location )
         {
@@ -591,7 +740,8 @@ namespace RockWeb.Blocks.Core
             Street2 = location.Street2;
             City = location.City;
             State = location.State;
-            Zip = location.Zip;
+            PostalCode = location.PostalCode;
+            Country = location.Country;
         }
     }
 

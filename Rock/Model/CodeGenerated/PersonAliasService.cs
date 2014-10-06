@@ -102,9 +102,15 @@ namespace Rock.Model
             
             // ignoring Communication,ModifiedByPersonAliasId 
             
+            // ignoring Communication,ReviewerPersonAliasId 
+            
+            // ignoring Communication,SenderPersonAliasId 
+            
             // ignoring CommunicationRecipient,CreatedByPersonAliasId 
             
             // ignoring CommunicationRecipient,ModifiedByPersonAliasId 
+            
+            // ignoring CommunicationRecipient,PersonAliasId 
             
             // ignoring CommunicationRecipientActivity,CreatedByPersonAliasId 
             
@@ -115,6 +121,20 @@ namespace Rock.Model
             // ignoring CommunicationTemplate,ModifiedByPersonAliasId 
             
             // ignoring CommunicationTemplate,SenderPersonAliasId 
+            
+            // ignoring ContentChannel,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannel,ModifiedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,ApprovedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,ModifiedByPersonAliasId 
+            
+            // ignoring ContentChannelType,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannelType,ModifiedByPersonAliasId 
             
             // ignoring DataView,CreatedByPersonAliasId 
             
@@ -135,6 +155,14 @@ namespace Rock.Model
             // ignoring Device,CreatedByPersonAliasId 
             
             // ignoring Device,ModifiedByPersonAliasId 
+            
+            // ignoring EntitySet,CreatedByPersonAliasId 
+            
+            // ignoring EntitySet,ModifiedByPersonAliasId 
+            
+            // ignoring EntitySetItem,CreatedByPersonAliasId 
+            
+            // ignoring EntitySetItem,ModifiedByPersonAliasId 
             
             // ignoring ExceptionLog,CreatedByPersonAliasId 
             
@@ -164,6 +192,10 @@ namespace Rock.Model
             
             // ignoring FinancialPledge,ModifiedByPersonAliasId 
             
+            // ignoring FinancialPledge,PersonAliasId 
+            
+            // ignoring FinancialScheduledTransaction,AuthorizedPersonAliasId 
+            
             // ignoring FinancialScheduledTransaction,CreatedByPersonAliasId 
             
             // ignoring FinancialScheduledTransaction,ModifiedByPersonAliasId 
@@ -172,9 +204,13 @@ namespace Rock.Model
             
             // ignoring FinancialScheduledTransactionDetail,ModifiedByPersonAliasId 
             
+            // ignoring FinancialTransaction,AuthorizedPersonAliasId 
+            
             // ignoring FinancialTransaction,CreatedByPersonAliasId 
             
             // ignoring FinancialTransaction,ModifiedByPersonAliasId 
+            
+            // ignoring FinancialTransaction,ProcessedByPersonAliasId 
             
             // ignoring FinancialTransactionDetail,CreatedByPersonAliasId 
             
@@ -216,6 +252,8 @@ namespace Rock.Model
             
             // ignoring History,ModifiedByPersonAliasId 
             
+            // ignoring HtmlContent,ApprovedByPersonAliasId 
+            
             // ignoring HtmlContent,CreatedByPersonAliasId 
             
             // ignoring HtmlContent,ModifiedByPersonAliasId 
@@ -227,26 +265,6 @@ namespace Rock.Model
             // ignoring Location,CreatedByPersonAliasId 
             
             // ignoring Location,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,ModifiedByPersonAliasId 
             
             // ignoring Metric,AdminPersonAliasId 
             
@@ -294,6 +312,14 @@ namespace Rock.Model
             
             // ignoring PersonBadge,ModifiedByPersonAliasId 
             
+            // ignoring PersonDuplicate,CreatedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,DuplicatePersonAliasId 
+            
+            // ignoring PersonDuplicate,ModifiedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,PersonAliasId 
+            
             // ignoring PersonViewed,TargetPersonAliasId 
             
             // ignoring PersonViewed,ViewerPersonAliasId 
@@ -306,9 +332,13 @@ namespace Rock.Model
             
             // ignoring PluginMigration,ModifiedByPersonAliasId 
             
+            // ignoring PrayerRequest,ApprovedByPersonAliasId 
+            
             // ignoring PrayerRequest,CreatedByPersonAliasId 
             
             // ignoring PrayerRequest,ModifiedByPersonAliasId 
+            
+            // ignoring PrayerRequest,RequestedByPersonAliasId 
             
             // ignoring Report,CreatedByPersonAliasId 
             
@@ -354,6 +384,8 @@ namespace Rock.Model
             
             // ignoring Tag,ModifiedByPersonAliasId 
             
+            // ignoring Tag,OwnerPersonAliasId 
+            
             // ignoring TaggedItem,CreatedByPersonAliasId 
             
             // ignoring TaggedItem,ModifiedByPersonAliasId 
@@ -363,6 +395,8 @@ namespace Rock.Model
             // ignoring UserLogin,ModifiedByPersonAliasId 
             
             // ignoring Workflow,CreatedByPersonAliasId 
+            
+            // ignoring Workflow,InitiatorPersonAliasId 
             
             // ignoring Workflow,ModifiedByPersonAliasId 
             
@@ -382,6 +416,8 @@ namespace Rock.Model
             
             // ignoring WorkflowActionType,ModifiedByPersonAliasId 
             
+            // ignoring WorkflowActivity,AssignedPersonAliasId 
+            
             // ignoring WorkflowActivity,CreatedByPersonAliasId 
             
             // ignoring WorkflowActivity,ModifiedByPersonAliasId 
@@ -389,6 +425,10 @@ namespace Rock.Model
             // ignoring WorkflowActivityType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActivityType,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowLog,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowLog,ModifiedByPersonAliasId 
             
             // ignoring WorkflowType,CreatedByPersonAliasId 
             

@@ -48,6 +48,7 @@ namespace Rock.Data
         /// </value>
         [Key]
         [DataMember]
+        [IncludeForReporting]
         public int Id { get; set; }
 
         /// <summary>
@@ -65,6 +66,7 @@ namespace Rock.Data
         /// </value>
         [Index( IsUnique = true )]
         [DataMember]
+        [IncludeForReporting]
         public Guid Guid
         {
             get { return _guid; }
@@ -80,6 +82,7 @@ namespace Rock.Data
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [HideFromReporting]
         public string ForeignId { get; set; }
 
         #endregion
@@ -290,7 +293,7 @@ namespace Rock.Data
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
-        public virtual object ToLiquid()
+        public object ToLiquid()
         {
             return this.ToLiquid( false );
         }
@@ -314,7 +317,8 @@ namespace Rock.Data
             {
                 if ( propInfo.Name != "Attributes" &&
                     propInfo.Name != "AttributeValues" &&
-                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 
@@ -323,7 +327,11 @@ namespace Rock.Data
                         propValue = ( (Guid)propValue ).ToString();
                     }
 
-                    if ( debug && propValue is DotLiquid.ILiquidizable )
+                    if ( debug && propValue is IEntity )
+                    {
+                        dictionary.Add( propInfo.Name, ( (IEntity)propValue ).ToLiquid( true ) );
+                    }
+                    else if ( debug && propValue is DotLiquid.ILiquidizable )
                     {
                         dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
                     }

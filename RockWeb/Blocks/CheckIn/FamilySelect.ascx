@@ -4,25 +4,29 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row checkin-header">
-        <div class="col-md-12">
-            <h1>Families</h1>
-        </div>
+    <div class="checkin-header">
+        <h1>Families</h1>
     </div>
                 
-    <div class="row checkin-body">
-        <div class="col-md-12">
-            <div class="control-group checkin-body-container">
-                <label class="control-label">Select Your Family</label>
-                <div class="controls">
-                    <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select"  OnClientClick="$(this).button('loading')"  ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
-                        </ItemTemplate>
-                    </asp:Repeater>
+    <div class="checkin-body">
+        
+        <div class="checkin-scroll-panel">
+            <div class="scroller">
+
+                <div class="control-group checkin-body-container">
+                    <label class="control-label">Select Your Family</label>
+                    <div class="controls">
+                        <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
+                            <ItemTemplate>
+                                <Rock:BootstrapButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select"  DataLoadingText="Loading..." ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></Rock:BootstrapButton>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
                 </div>
+
             </div>
         </div>
+
     </div>
 
 

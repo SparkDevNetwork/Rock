@@ -1,0 +1,471 @@
+﻿//
+// Flat Theme
+// ----------
+//
+// By Nick Sheck (http://github.com/sheck)
+// Based on the flatly bootstrap theme (http://bootswatch.com/flatly/)
+//
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less"; 
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+@import "_ad-rotater.less";
+
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Flatly Theme
+
+    */
+
+// 1. HTML Overrides
+// -------------------------
+
+main {
+    display:block;
+}
+
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+
+    // using fontawesome nav toggle button instead of the BS default
+    .navbar-toggle {
+      padding: 6px 10px;
+      i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
+    }
+
+    .navbar-brand {
+      font-family: @headings-font-family;
+      text-transform: uppercase;
+      @media (max-width: @screen-xs-max) {
+        font-size: 97%
+      }
+    }
+}
+
+a:hover i.fs
+{
+    text-decoration: none;
+}
+
+#cms-admin-footer .btn {
+  padding: 6px 12px;
+}
+
+// 3. Theme Styling 
+// -------------------------
+
+.color {
+    padding: 3em;
+    width: 10em;
+    margin: 1em;
+    text-align: center;
+    display: inline-block;
+}
+.accent {
+    background: @accent-color;
+    color: @accent-text-color;
+}
+.accent-light {
+    background: @accent-light-color;
+    color: @accent-light-text-color;
+}
+.accent-semi {
+    background: @accent-semibold-color;
+    color: @accent-semibold-text-color;
+}
+.accent-bold {
+    background: @accent-bold-color;
+    color: @accent-bold-text-color;
+}
+
+header {
+    .page-menu,
+    .login-status {
+        float: right;
+    }
+}
+
+.main-feature {
+    @media (min-width: @screen-sm-min) {
+        background: @gray-lighter;
+        margin-bottom: @grid-gutter-width;
+    }
+}
+
+// homepage items
+#announcement-rotator {
+    margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
+    @media (min-width: @screen-sm-min) {
+        margin: @spacing-lg-px 0;
+    }
+}
+
+.announcements-container {
+    max-width: 1440px;
+    .center-block();
+
+    .announcement-list {
+        .make-row(-@grid-gutter-width/2);
+
+        .announcement {
+            .make-sm-column(4, @grid-gutter-width/2 );
+            margin-bottom: @grid-gutter-width/2;
+            @media (max-width: @screen-xs-max) {
+                max-width: 400px;
+                .center-block();
+            }
+            
+            .transition(opacity .3s);
+            &:hover { .opacity(.75); }
+
+            img {
+              border-radius: 5px;
+              width: 100%;
+            }
+        }
+    }
+}
+
+.nav-sub {
+    li {
+        border: 1px solid @gray-lighter;
+        border-radius: @border-radius-base;
+
+        a:hover {
+            background-color: @gray-lighter;
+        }
+    }
+}
+
+footer {
+    padding-bottom: 50px;
+    .opacity(.5);
+    .transition(opacity .5s);
+    &:hover { .opacity(1); }
+
+    .footer-message {
+        float: left;
+    }
+
+    .footer-address {
+        float: right;
+    }
+}
+
+#splash.error {
+
+    background-color: @gray-lighter;
+    
+    #content {
+        margin-top: 20px;
+        background-color: @body-bg;
+        border-radius: @border-radius-base;
+        padding: 20px;
+    }
+}
+
+.not-found h2 {
+    font-size: 200px;
+    font-weight: @font-weight-bold;
+    letter-spacing: -5px;
+    line-height: 210px;
+
+    i {
+        color: #F03;
+        font-size: 210px;
+        position: relative;
+        top: -12px;
+    }
+}
+
+
+// 4. Flatly 
+// -------------------------
+
+// Navbar =====================================================================
+
+.navbar {
+  border-width: 0;
+
+  &-default {
+
+    .badge {
+      background-color: #fff;
+      color: @navbar-default-bg;
+    }
+  }
+
+  &-inverse {
+
+    .badge {
+      background-color: #fff;
+      color: @navbar-inverse-bg;
+    }
+  }
+
+  &-brand {
+    padding: 18.5px 15px 20.5px;
+  }
+}
+
+// Buttons ====================================================================
+
+.btn:active {
+  .box-shadow(none);
+}
+
+.btn-group.open .dropdown-toggle {
+  .box-shadow(none);
+}
+
+// Typography =================================================================
+
+.text-primary,
+.text-primary:hover {
+  color: @brand-primary;
+}
+
+.text-success,
+.text-success:hover {
+  color: @brand-success;
+}
+
+.text-danger,
+.text-danger:hover {
+  color: @brand-danger;
+}
+
+.text-warning,
+.text-warning:hover {
+  color: @brand-warning;
+}
+
+.text-info,
+.text-info:hover {
+  color: @brand-info;
+}
+
+// Tables =====================================================================
+
+table,
+.table {
+
+  a:not(.btn) {
+    text-decoration: underline;
+  }
+
+  .success,
+  .warning,
+  .danger,
+  .info {
+    color: #fff;
+
+    a {
+      color: #fff;
+    }
+  }
+
+  > thead > tr > th,
+  > tbody > tr > th,
+  > tfoot > tr > th,
+  > thead > tr > td,
+  > tbody > tr > td,
+  > tfoot > tr > td {
+    border: none;
+  }
+
+  &-bordered > thead > tr > th,
+  &-bordered > tbody > tr > th,
+  &-bordered > tfoot > tr > th,
+  &-bordered > thead > tr > td,
+  &-bordered > tbody > tr > td,
+  &-bordered > tfoot > tr > td {
+    border: 1px solid @table-border-color;
+  }
+}
+
+// Forms ======================================================================
+
+.form-control,
+input, {
+  border-width: 2px;
+  .box-shadow(none);
+
+  &:focus {
+    .box-shadow(none);
+  }
+}
+
+.has-warning {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  .form-control-feedback {
+    color: @brand-warning;
+  }
+
+  .form-control,
+  .form-control:focus {
+    border: 2px solid @brand-warning;
+  }
+
+  .input-group-addon {
+    border-color: @brand-warning;
+  }
+}
+
+.has-error {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  .form-control-feedback {
+    color: @brand-danger;
+  }
+
+  .form-control,
+  .form-control:focus {
+    border: 2px solid @brand-danger;
+  }
+
+  .input-group-addon {
+    border-color: @brand-danger;
+  }
+}
+
+.has-success {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  .form-control-feedback {
+    color: @brand-success;
+  }
+
+  .form-control,
+  .form-control:focus {
+    border: 2px solid @brand-success;
+  }
+
+  .input-group-addon {
+    border-color: @brand-success;
+  }
+}
+
+// Navs =======================================================================
+
+.nav {
+  .open > a,
+  .open > a:hover,
+  .open > a:focus {
+    border-color: transparent;
+  }
+}
+
+.pager {
+  a,
+  a:hover {
+    color: #fff;
+  }
+
+  .disabled {
+    &>a,
+    &>a:hover,
+    &>a:focus,
+    &>span {
+      background-color: @pagination-disabled-bg;
+    }
+  }
+}
+
+// Pagination ==================================================================
+
+.pagination {
+  > li {
+    > a,
+    > span {
+      color: #fff;
+    }
+  }
+}
+
+// Indicators =================================================================
+
+.close {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.4;
+
+  &:hover,
+  &:focus {
+    color: #fff;
+    opacity: 1;
+  }
+}
+
+.alert {
+
+  .alert-link {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+// Progress bars ==============================================================
+
+.progress {
+  height: 10px;
+  .box-shadow(none);
+  .progress-bar {
+    font-size: 10px;
+    line-height: 10px;
+  }
+}
+
+// Containers =================================================================
+
+.well {
+  .box-shadow(none);
+}
+
+.panel {
+  &-default {
+    .close {
+      color: @text-color;
+    }
+  }
+}
+
+.modal {
+  .close {
+    color: @text-color;
+  }
+}
+
+.popover {
+  color: @text-color;
+}

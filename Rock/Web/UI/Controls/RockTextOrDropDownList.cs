@@ -32,7 +32,15 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private HiddenField _hiddenField;
+
+        /// <summary>
+        /// The _text box
+        /// </summary>
         public RockTextBox _textBox;
+
+        /// <summary>
+        /// The _drop down list
+        /// </summary>
         public RockDropDownList _dropDownList;
 
         #endregion
@@ -200,6 +208,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         #endregion
@@ -262,18 +276,19 @@ namespace Rock.Web.UI.Controls
                 _textBox.Text = _hiddenField.Value;
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-text-or-ddl-row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-text-or-ddl-row " + this.CssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Style, this.Style.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hiddenField.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _textBox.AddCssClass( "js-text-or-ddl-input" );
             _textBox.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-1" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-1" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             var lOr = new RockLiteral();
             lOr.Label = "&nbsp;";
@@ -281,7 +296,7 @@ namespace Rock.Web.UI.Controls
             lOr.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-5" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dropDownList.AddCssClass( "js-text-or-ddl-input" );
             _dropDownList.RenderControl( writer );

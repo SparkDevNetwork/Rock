@@ -126,9 +126,10 @@ namespace Rock.Web.UI.Controls
             toggleAllAny = new Toggle();
             Controls.Add( toggleAllAny );
             toggleAllAny.ID = this.ID + "_toggleAllAny";
-            toggleAllAny.AddCssClass( "switch-mini" );
+            toggleAllAny.ButtonSizeCssClass = "btn-xs";
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
+            toggleAllAny.ActiveButtonCssClass = "btn-info";
 
             btnAddGroup = new LinkButton();
             Controls.Add( btnAddGroup );
@@ -178,11 +179,12 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
             writer.RenderBeginTag( "header" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "Show if" );
             writer.RenderEndTag();
+            toggleAllAny.CssClass = "pull-left";
             toggleAllAny.RenderControl( writer );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "of these are true" );

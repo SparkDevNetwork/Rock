@@ -19,7 +19,7 @@ using Rock.Field.Types;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Stored as a delimited list of FinancialAccount Guids
     /// </summary>
     public class AccountsFieldAttribute : FieldAttribute
     {

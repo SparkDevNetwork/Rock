@@ -13,7 +13,10 @@
     NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
         of the DefinedValue editor) when editing something like the AbilityLevel person
         attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-*/
+
+    JME - Not sure we need this with the new theme. Let me know if you see any
+          area that is in need of this still.
+
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -29,7 +32,7 @@
     -moz-transition: border linear .2s, box-shadow linear .2s;
     -o-transition: border linear .2s, box-shadow linear .2s;
     transition: border linear .2s, box-shadow linear .2s;
-}
+}*/
 
 
 
@@ -70,22 +73,12 @@ table.server-variables
     word-wrap:break-word;
 }
 
-    table.server-variables td
-    {
-        min-width:200px;
-        vertical-align:text-top;
-    }
-
-/* CSF - Exception Detail Grid*/
-.exceptionDetail-stackTrace-hide
+table.server-variables td
 {
-    display: none;
+    min-width:200px;
+    vertical-align:text-top;
 }
 
-.exceptionDetail-stackTrace-show
-{
-    display:table-row;
-}
 
 
 
@@ -162,36 +155,8 @@ span.data-view-filter-label {
     cursor:pointer;
 }
 
-/* NA 5/7/2014 Hover effect when you're in the right zone to drop the file upload (confusing without this) */
-.fileupload-group .fileupload-dropzone:hover {
-  border: 1px dotted #66afe9;
-  outline: 0;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
-}
 
-/* DT 5/20/2014 Workflow Type Editor */
 
-/* Style the inactive and activated with workflow activity headers differently */
-div.workflow-activity-list > section.activated-with-workflow > .panel-heading {
-    background-color: #BCF5A9;
-    border-color: #BCF5A9;
-}
-div.workflow-activity-list > section.workflow-activity-inactive > .panel-heading {
-    color: #A4A4A4;
-    background-color: #E6E6E6;
-    border-color: #E6E6E6;
-}
-
-/* Get rid of spacing on the form field grid when editing a form entry action */
-tbody.workflow-formfield-list td > div.checkbox {
-    margin-top: 0px;
-}
-tbody.workflow-formfield-list td > div.checkbox:last-child { 
-    margin-bottom: 0px;
-}
-
-/* Add some spacing between the rows where actions are entered for a form entry action */
-div.form-action-rows > div.row {
-    margin-bottom: 12px;
+div.toggle-container {   /* ???? JME */
+    display: inline-block;
 }

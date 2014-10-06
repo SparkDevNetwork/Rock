@@ -36,6 +36,9 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -45,37 +48,35 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !Page.IsPostBack )
                 {
                     ClearSelection();
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+
+                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .FirstOrDefault();
+
+                    if ( family == null )
                     {
-                        lFamilyName.Text = family.ToString();
+                        GoBack();
+                    }
 
-                        if ( family.People.Count == 1 )
+                    lFamilyName.Text = family.ToString();
+
+                    if ( family.People.Count == 1 )
+                    {
+                        if ( UserBackedUp )
                         {
-                            if ( UserBackedUp )
-                            {
-                                GoBack();
-                            }
-                            else
-                            {
-                                foreach ( var familyMember in family.People )
-                                {
-                                    familyMember.Selected = true;
-                                }
-
-                                ProcessSelection( maWarning );
-                            }
+                            GoBack();
                         }
                         else
                         {
-                            rSelection.DataSource = family.People;
-                            rSelection.DataBind();
+                            family.People.FirstOrDefault().Selected = true;
+                            ProcessSelection();
                         }
                     }
                     else
                     {
-                        GoBack();
+                        rSelection.DataSource = family.People;
+                        rSelection.DataBind();
                     }
+
                 }
             }
         }
@@ -89,6 +90,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 foreach ( var person in family.People )
                 {
+                    person.ClearFilteredExclusions();
                     person.Selected = false;
                 }
             }
@@ -98,16 +100,15 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                int id = Int32.Parse( e.CommandArgument.ToString() );
+                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Person.Id == id ) )
+                    .FirstOrDefault();
+
+                if ( person != null )
                 {
-                    int id = Int32.Parse( e.CommandArgument.ToString() );
-                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-                    if ( familyMember != null )
-                    {
-                        familyMember.Selected = true;
-                        ProcessSelection( maWarning );
-                    }
+                    person.Selected = true;
+                    ProcessSelection();
                 }
             }
         }
@@ -132,5 +133,15 @@ namespace RockWeb.Blocks.CheckIn
                 linkButton.AddCssClass( "btn-dimmed" );
             }
         }
+
+        protected void ProcessSelection()
+        {
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                .SelectMany( f => f.People.Where( p => p.Selected )
+                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
+                .Count() <= 0,
+                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
+        }
+
     }
 }

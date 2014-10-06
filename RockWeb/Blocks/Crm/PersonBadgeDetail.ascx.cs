@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
                 PersonBadge.SaveAttributeValues( rockContext );

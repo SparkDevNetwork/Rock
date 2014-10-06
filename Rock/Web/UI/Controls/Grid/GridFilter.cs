@@ -55,11 +55,24 @@ namespace Rock.Web.UI.Controls
                     _userPreferences.Add( userPreference.Key.Replace( keyPrefix, string.Empty ), userPreference.Value );
                 }
             }
+        }
 
+        /// <summary>
+        /// Shows the filter in expanded mode
+        /// </summary>
+        public void Show()
+        {
+            EnsureChildControls();
+            _hfVisible.Value = "true";
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
             const string scriptKey = "grid-filter-script";
             const string script = @"
-Sys.Application.add_load(function () {
-
     $('div.grid-filter header').click(function () {
         $('i.toggle-filter', this).toggleClass('fa-chevron-down fa-chevron-up');
         var $hf = $('input', this).first();
@@ -70,12 +83,8 @@ Sys.Application.add_load(function () {
         }
         $(this).siblings('div').slideToggle();
     });
-
-});";
-            if ( !this.Page.ClientScript.IsStartupScriptRegistered( scriptKey ) )
-            {
-                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
-            }
+";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), scriptKey, script, true );
         }
 
         /// <summary>
@@ -208,6 +217,8 @@ Sys.Application.add_load(function () {
                     SaveUserPreferences();
                     _isDirty = false;
                 }
+
+                RegisterJavaScript();
             }
         }
 

@@ -46,6 +46,14 @@ namespace Rock.Data
         Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        string ForeignId { get; set; }
+
+        /// <summary>
         /// Gets the Entity Type ID for this entity.
         /// </summary>
         /// <value>
@@ -98,6 +106,13 @@ namespace Rock.Data
         /// </summary>
         /// <returns></returns>
         IEntity Clone();
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <returns></returns>
+        object ToLiquid( bool debug );
 
     }
 }

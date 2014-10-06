@@ -14,6 +14,7 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkProfile />
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -43,10 +44,6 @@
     <Reference Include="ceTe.DynamicPDF.40, Version=7.0.3.40, Culture=neutral, PublicKeyToken=09b5ce0d5c0a9d8b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Rock-StatementGenerator\libs\DynamicPDF v7.0.3 for .NET\bin\ceTe.DynamicPDF.40.dll</HintPath>
-    </Reference>
-    <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -102,6 +99,10 @@
     <Compile Include="StartPage.xaml.cs">
       <DependentUpon>StartPage.xaml</DependentUpon>
     </Compile>
+    <Page Include="images\rock-logo-sm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="images\rock-logo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -161,16 +162,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ceTeLicenseKeys.csl3" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="ceTeLicenseKeys.csl3" />
     <AppDesigner Include="Properties\" />
     <Resource Include="resources\OpenSans-Light-webfont.ttf" />
     <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
     <None Include="rock-standard.dplx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <Resource Include="resources\fontawesome-webfont.ttf" />
   </ItemGroup>
@@ -178,6 +180,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>

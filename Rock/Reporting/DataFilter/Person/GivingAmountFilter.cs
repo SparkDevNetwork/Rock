@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -87,15 +88,17 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            // Giving amount total {0} {1} between {2} and {3}
             return @"
 function() {
     var comparisonText = $('select:first', $content).find(':selected').text();
     var totalAmount = $('.number-box', $content).find('input').val();
     var startDate = $('.date-range-picker', $content).find('input:first').val();
     var endDate = $('.date-range-picker', $content).find('input:last').val();
+    
+    var accountPicker = $('.js-account-picker', $content);
+    var accountNames = accountPicker.find('.selected-names').text()
 
-    return 'Giving amount total ' + comparisonText.toLowerCase() + ' $' + totalAmount + ' between ' + startDate + ' and ' + endDate;
+    return 'Giving amount total ' + comparisonText.toLowerCase() + ' $' + totalAmount + ' to accounts:' + accountNames  + ' between ' + startDate + ' and ' + endDate;
 }
 ";
         }
@@ -117,8 +120,20 @@ function() {
                 decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
                 DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
+                string accountNames = string.Empty;
+                if ( selectionValues.Length >= 5 )
+                {
+                    var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                    accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+                }
 
-                result = string.Format( "Giving amount total {0} {1} between {2} and {3}", comparisonType.ConvertToString().ToLower(), amount.ToString("C"), startDate.ToShortDateString(), endDate.ToShortDateString() );
+                result = string.Format(
+                    "Giving amount total {0} {1} {2} between {3} and {4}",
+                    comparisonType.ConvertToString().ToLower(),
+                    amount.ToString( "C" ),
+                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
+                    startDate.ToShortDateString(),
+                    endDate.ToShortDateString() );
             }
 
             return result;
@@ -130,19 +145,26 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var comparisonControl = this.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo );
+            var comparisonControl = ComparisonHelper.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
             comparisonControl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( comparisonControl );
 
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
             NumberBox numberBoxAmount = new NumberBox();
-            numberBoxAmount.PrependText = globalAttributes.GetValue("CurrencySymbol") ?? "$";
+            numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
             numberBoxAmount.NumberType = ValidationDataType.Currency;
             numberBoxAmount.ID = filterControl.ID + "_1";
             numberBoxAmount.Label = "Amount";
 
             filterControl.Controls.Add( numberBoxAmount );
+
+            AccountPicker accountPicker = new AccountPicker();
+            accountPicker.AllowMultiSelect = true;
+            accountPicker.ID = filterControl.ID + "_accountPicker";
+            accountPicker.AddCssClass( "js-account-picker" );
+            accountPicker.Label = "Accounts";
+            filterControl.Controls.Add( accountPicker );
 
             DateRangePicker dateRangePicker = new DateRangePicker();
             dateRangePicker.ID = filterControl.ID + "_2";
@@ -150,9 +172,9 @@ function() {
             dateRangePicker.Required = true;
             filterControl.Controls.Add( dateRangePicker );
 
-            var controls = new Control[3] { comparisonControl, numberBoxAmount, dateRangePicker };
+            var controls = new Control[4] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker };
 
-            SetSelection( entityType, controls, string.Format( "{0}|||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            SetSelection( entityType, controls, string.Format( "{0}||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -179,8 +201,17 @@ function() {
         {
             string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
             decimal? amount = ( controls[1] as NumberBox ).Text.AsDecimal();
-            DateRangePicker dateRangePicker = controls[2] as DateRangePicker;
-            return string.Format( "{0}|{1}|{2}|{3}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue );
+
+            var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
+            string accountGuids = string.Empty;
+            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            if ( accounts != null && accounts.Any() )
+            {
+                accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
+            }
+
+            DateRangePicker dateRangePicker = controls[3] as DateRangePicker;
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids );
         }
 
         /// <summary>
@@ -196,11 +227,12 @@ function() {
             {
                 var comparisonControl = controls[0] as DropDownList;
                 var numberBox = controls[1] as NumberBox;
-                var dateRangePicker = controls[2] as DateRangePicker;
+                var accountPicker = controls[2] as AccountPicker;
+                var dateRangePicker = controls[3] as DateRangePicker;
 
                 comparisonControl.SetValue( selectionValues[0] );
                 decimal? amount = selectionValues[1].AsDecimal();
-                if (amount.HasValue)
+                if ( amount.HasValue )
                 {
                     numberBox.Text = amount.Value.ToString( "F2" );
                 }
@@ -208,9 +240,19 @@ function() {
                 {
                     numberBox.Text = string.Empty;
                 }
-                
+
                 dateRangePicker.LowerValue = selectionValues[2].AsDateTime();
                 dateRangePicker.UpperValue = selectionValues[3].AsDateTime();
+
+                if ( selectionValues.Length >= 5 )
+                {
+                    var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                    var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
+                    if ( accounts != null && accounts.Any() )
+                    {
+                        accountPicker.SetValues( accounts );
+                    }
+                }
             }
         }
 
@@ -227,7 +269,7 @@ function() {
             var rockContext = (RockContext)serviceInstance.Context;
 
             string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length != 4 )
+            if ( selectionValues.Length < 4 )
             {
                 return null;
             }
@@ -236,26 +278,41 @@ function() {
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
+            var accountIdList = new List<int>();
+            if ( selectionValues.Length >= 5 )
+            {
+                var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+            }
+
+            bool limitToAccounts = accountIdList.Any();
+            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
+                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
-                .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
+                .Where( xx => !limitToAccounts || xx.TransactionDetails.Any( d => accountIdList.Contains( d.AccountId ) ) )
+                .GroupBy( xx => ( xx.AuthorizedPersonAlias != null ? xx.AuthorizedPersonAlias.PersonId : 0 ) ).Select( xx =>
                     new
                     {
                         PersonId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Sum( td => td.Amount) )
+                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Sum( td => td.Amount ) )
                     } );
 
             if ( comparisonType == ComparisonType.LessThan )
             {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
             }
-            else
+            else if ( comparisonType == ComparisonType.EqualTo )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount == amount );
+            }
+            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
             }
 
-            var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
+            var innerQry = financialTransactionQry.Select( xx => xx.PersonId ).AsQueryable();
 
             var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );

@@ -51,6 +51,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public override void Delete( int id )
         {
+            SetProxyCreation( true );
+
             // get the ids of the page and layout so we can flush stuff after the base.Delete
             int? pageId = null;
             int? layoutId = null;
@@ -91,6 +93,8 @@ namespace Rock.Rest.Controllers
         {
             var person = GetPerson();
 
+            SetProxyCreation( true );
+
             block.Id = id;
             Block model;
             if ( !Service.TryGet( id, out model ) )
@@ -118,6 +122,7 @@ namespace Rock.Rest.Controllers
             if ( model.IsValid )
             {
                 model.Order = ((BlockService)Service).GetMaxOrder( model );
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else

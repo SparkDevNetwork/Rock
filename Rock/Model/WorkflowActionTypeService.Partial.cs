@@ -28,6 +28,11 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowActionTypeService 
     {
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
         public override bool Delete( WorkflowActionType item )
         {
             var actionService = new WorkflowActionService( (RockContext)this.Context );

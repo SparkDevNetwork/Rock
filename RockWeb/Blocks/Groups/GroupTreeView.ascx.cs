@@ -62,7 +62,15 @@ namespace RockWeb.Blocks.Groups
 
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
-            hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
+            Guid? rootGroupGuid = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
+            if ( rootGroupGuid.HasValue )
+            {
+                var group = new GroupService( new RockContext() ).Get( rootGroupGuid.Value );
+                if ( group != null )
+                {
+                    hfRootGroupId.Value = group.Id.ToString();
+                }
+            }
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
@@ -138,7 +146,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
-                int? rootGroupId = GetAttributeValue( "RootGroup" ).AsIntegerOrNull();
+                int? rootGroupId = hfRootGroupId.Value.AsIntegerOrNull();
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
@@ -200,7 +208,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", hfRootGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -246,7 +254,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
-            foreach ( var group in qry )
+            foreach ( var group in qry.OrderBy( g => g.Name ) )
             {
                 // return first group they are authorized to view
                 if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

@@ -34,12 +34,25 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Check-in Configuration")]
-    [Category("Check-in")]
-    [Description("Helps to configure the check-in workflow.")]
+    [DisplayName( "Check-in Configuration" )]
+    [Category( "Check-in" )]
+    [Description( "Helps to configure the check-in workflow." )]
     public partial class CheckinConfiguration : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // Save and Cancel should not confirm exit
+            btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+            btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -51,25 +64,12 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
             }
             else
             {
                 // assume if there is a PostBack, that something changed  and that confirmExit should be enabled
                 confirmExit.Enabled = true;
-            }
-
-            if (hfLocationPickerVisible.Value.AsBoolean())
-            {
-                mdLocationPicker.Show();
             }
 
             // handle sort events
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn
                     var siblingGroupEditors = allCheckinGroupEditors.Where( a => a.GroupTypeId == sortedGroupEditor.GroupTypeId ).ToList();
 
                     Control parentControl = sortedGroupEditor.Parent;
-                    
+
                     // parent control has other controls, so just just remove all the checkingroupeditors, sort them, and add them back in the new order
                     foreach ( var item in siblingGroupEditors )
                     {
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.CheckIn
                         parentControl.Controls.Add( item );
                     }
 
-                    ( sortedGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+                    ( sortedGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
                 }
             }
         }
@@ -208,11 +208,13 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void SaveGroupTypeControlsToViewState()
         {
+            var rockContext = new RockContext();
+
             // save all the base grouptypes (along with their children) to viewstate
             var groupTypeList = new List<GroupType>();
             foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>() )
             {
-                var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                var groupType = checkinGroupTypeEditor.GetCheckinGroupType( rockContext );
                 groupTypeList.Add( groupType );
             }
 
@@ -245,12 +247,13 @@ namespace RockWeb.Blocks.CheckIn
         private void BuildGroupTypeEditorControlsFromViewState()
         {
             phCheckinGroupTypes.Controls.Clear();
+            var rockContext = new RockContext();
 
             ViewStateList<GroupType> groupTypeViewStateList = ViewState["CheckinGroupTypes"] as ViewStateList<GroupType>;
 
             foreach ( var groupType in groupTypeViewStateList )
             {
-                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
+                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, rockContext );
             }
         }
 
@@ -258,18 +261,24 @@ namespace RockWeb.Blocks.CheckIn
         /// Creates the group type editor controls.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
-        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, bool forceGroupTypeEditorVisible = false )
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
+        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
-            groupTypeEditor.SetGroupType( groupType );
+            groupTypeEditor.SetGroupType( groupType.Id, groupType.Guid, groupType.Name, groupType.InheritedGroupTypeId );
             groupTypeEditor.AddGroupClick += groupTypeEditor_AddGroupClick;
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
             groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
             groupTypeEditor.DeleteGroupTypeClick += groupTypeEditor_DeleteGroupTypeClick;
             groupTypeEditor.CheckinLabels = null;
-            groupTypeEditor.ForceContentVisible = forceGroupTypeEditorVisible;
+            if ( createExpanded )
+            {
+                groupTypeEditor.Expanded = true;
+            }
 
             if ( GroupTypeCheckinLabelAttributesState.ContainsKey( groupType.Guid ) )
             {
@@ -281,35 +290,39 @@ namespace RockWeb.Blocks.CheckIn
                 // load CheckInLabels from Database if they haven't been set yet
                 groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
 
-                groupType.LoadAttributes();
-                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
-                BinaryFileService binaryFileService = new BinaryFileService( new RockContext() );
+                groupType.LoadAttributes( rockContext );
+                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType.Attributes, rockContext ).Select( a => a.Key ).ToList();
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
                 foreach ( string key in labelAttributeKeys )
                 {
                     var attributeValue = groupType.GetAttributeValue( key );
-                    int binaryFileId = attributeValue.AsInteger();
-                    var binaryFile = binaryFileService.Get( binaryFileId );
-                    if ( binaryFile != null )
+                    Guid binaryFileGuid = attributeValue.AsGuid();
+                    var fileName = binaryFileService.Queryable().Where( a => a.Guid == binaryFileGuid ).Select( a => a.FileName ).FirstOrDefault();
+                    if ( fileName != null )
                     {
-                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
+                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileGuid = binaryFileGuid, FileName = fileName } );
                     }
                 }
             }
 
             parentControl.Controls.Add( groupTypeEditor );
 
+            // get the GroupType from the control just in case the InheritedFrom changed
+            var childGroupGroupType = groupTypeEditor.GetCheckinGroupType( rockContext );
+
             foreach ( var childGroup in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                // get the GroupType from the control just in case it the InheritedFrom changed
-                childGroup.GroupType = groupTypeEditor.GetCheckinGroupType();
-
-                CreateGroupEditorControls( childGroup, groupTypeEditor, false );
+                childGroup.GroupType = childGroupGroupType;
+                CreateGroupEditorControls( childGroup, groupTypeEditor, rockContext, false );
             }
 
-            foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var childGroupType in groupType.ChildGroupTypes
+                .Where( t => t.Id != groupType.Id)
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
             {
-                CreateGroupTypeEditorControls( childGroupType, groupTypeEditor );
+                CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, rockContext );
             }
         }
 
@@ -321,11 +334,12 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupTypeEditor_DeleteGroupTypeClick( object sender, EventArgs e )
         {
             CheckinGroupTypeEditor groupTypeEditor = sender as CheckinGroupTypeEditor;
+            var rockContext = new RockContext();
             var groupType = GroupTypeCache.Read( groupTypeEditor.GroupTypeGuid );
             if ( groupType != null )
             {
                 // Warn if this GroupType or any of its child grouptypes (recursive) is being used as an Inherited Group Type. Probably shouldn't happen, but just in case
-                if ( IsInheritedGroupTypeRecursive( groupType ) )
+                if ( IsInheritedGroupTypeRecursive( groupType, rockContext ) )
                 {
                     nbDeleteWarning.Text = "WARNING - Cannot delete. This group type or one of its child group types is assigned as an inherited group type.";
                     nbDeleteWarning.Visible = true;
@@ -340,11 +354,10 @@ namespace RockWeb.Blocks.CheckIn
         /// Determines whether [is inherited group type recursive] [the specified group type].
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType, RockContext rockContext = null )
+        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
-
             if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
             {
                 return true;
@@ -352,7 +365,7 @@ namespace RockWeb.Blocks.CheckIn
 
             foreach ( var childGroupType in groupType.ChildGroupTypes )
             {
-                if ( IsInheritedGroupTypeRecursive( childGroupType ) )
+                if ( IsInheritedGroupTypeRecursive( childGroupType, rockContext ) )
                 {
                     return true;
                 }
@@ -369,20 +382,21 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbAddCheckinArea_Click( object sender, EventArgs e )
         {
             int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger();
-            GroupType parentGroupType = new GroupTypeService( new RockContext() ).Get( parentGroupTypeId );
+            var rockContext = new RockContext();
+            GroupType parentGroupType = new GroupTypeService( rockContext ).Get( parentGroupTypeId );
 
             // CheckinArea is GroupType entity
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentGroupType );
-            checkinArea.LoadAttributes();
 
-            CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes, true );
+            CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes, rockContext, true );
         }
 
         /// <summary>
@@ -392,21 +406,23 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void groupTypeEditor_AddGroupTypeClick( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             CheckinGroupTypeEditor parentEditor = sender as CheckinGroupTypeEditor;
-            parentEditor.ForceContentVisible = true;
+            parentEditor.Expanded = true;
 
             // CheckinArea is GroupType entity
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
-            checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType() );
-            checkinArea.LoadAttributes();
+            checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType( rockContext ) );
 
-            CreateGroupTypeEditorControls( checkinArea, parentEditor );
+            CreateGroupTypeEditorControls( checkinArea, parentEditor, rockContext, true );
         }
 
         /// <summary>
@@ -417,7 +433,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupTypeEditor_AddGroupClick( object sender, EventArgs e )
         {
             CheckinGroupTypeEditor parentGroupTypeEditor = sender as CheckinGroupTypeEditor;
-            parentGroupTypeEditor.ForceContentVisible = true;
+            parentGroupTypeEditor.Expanded = true;
 
             Group checkinGroup = new Group();
             checkinGroup.Guid = Guid.NewGuid();
@@ -427,7 +443,9 @@ namespace RockWeb.Blocks.CheckIn
             // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
             checkinGroup.GroupType = new GroupType { Guid = parentGroupTypeEditor.GroupTypeGuid };
 
-            CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor );
+            var rockContext = new RockContext();
+
+            CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor, rockContext, true );
         }
 
         /// <summary>
@@ -435,27 +453,45 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="parentControl">The parent control.</param>
-        /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
-        private void CreateGroupEditorControls( Group group, Control parentControl, bool forceContentVisible = false )
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
+        private void CreateGroupEditorControls( Group group, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
-            groupEditor.SetGroup( group );
-            groupEditor.Locations = group.GroupLocations
-                .Select( a =>
-                    new CheckinGroupEditor.LocationGridItem()
-                        {
-                            LocationId = a.LocationId,
-                            Name = a.Location.ToString()
-                        } )
-                        .OrderBy( o => o.Name )
-                        .ToList();
-
-            groupEditor.AddLocationClick += groupEditor_AddLocationClick; 
-            groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
-            groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
+            if ( createExpanded )
+            {
+                groupEditor.Expanded = true;
+            }
 
             parentControl.Controls.Add( groupEditor );
+            groupEditor.SetGroup( group, rockContext );
+            var locationService = new LocationService( rockContext );
+            var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
+
+            groupEditor.Locations = new List<CheckinGroupEditor.LocationGridItem>();
+            foreach ( var location in group.GroupLocations.Select( a => a.Location ).OrderBy( o => o.Name ) )
+            {
+                var gridItem = new CheckinGroupEditor.LocationGridItem();
+                gridItem.LocationId = location.Id;
+                gridItem.Name = location.Name;
+                gridItem.FullNamePath = location.Name;
+                gridItem.ParentLocationId = location.ParentLocationId;
+
+                var parentLocationId = location.ParentLocationId;
+                while ( parentLocationId != null )
+                {
+                    var parentLocation = locationQry.FirstOrDefault( a => a.Id == parentLocationId );
+                    gridItem.FullNamePath = parentLocation.Name + " > " + gridItem.FullNamePath;
+                    parentLocationId = parentLocation.ParentLocationId;
+                }
+
+                groupEditor.Locations.Add( gridItem );
+            }
+
+            groupEditor.AddLocationClick += groupEditor_AddLocationClick;
+            groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
+            groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
         }
 
         /// <summary>
@@ -503,22 +539,22 @@ namespace RockWeb.Blocks.CheckIn
             var binaryFileService = new BinaryFileService( new RockContext() );
 
             ddlCheckinLabel.Items.Clear();
+            ddlCheckinLabel.AutoPostBack = false;
+            ddlCheckinLabel.Required = true;
+            ddlCheckinLabel.Items.Add( new ListItem() );
+            
             var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) && a.IsTemporary == false ).OrderBy( a => a.FileName ).ToList();
 
             foreach ( var item in list )
             {
                 // add checkinlabels to dropdownlist if they aren't already a checkin label for this grouptype
-                if ( !checkinGroupTypeEditor.CheckinLabels.Select( a => a.BinaryFileId ).Contains( item.Id ) )
+                if ( !checkinGroupTypeEditor.CheckinLabels.Select( a => a.BinaryFileGuid ).Contains( item.Guid ) )
                 {
-                    ddlCheckinLabel.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    ddlCheckinLabel.Items.Add( new ListItem( item.FileName, item.Guid.ToString() ) );
                 }
             }
 
-            // only enable the Add button if there are labels that can be added
-            btnAddCheckinLabel.Enabled = ddlCheckinLabel.Items.Count > 0;
-
-            pnlCheckinLabelPicker.Visible = true;
-            pnlDetails.Visible = false;
+            mdAddCheckinLabel.Show();
         }
 
         /// <summary>
@@ -533,7 +569,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var label = checkinGroupTypeEditor.CheckinLabels.FirstOrDefault( a => a.AttributeKey == attributeKey );
             checkinGroupTypeEditor.CheckinLabels.Remove( label );
-            checkinGroupTypeEditor.ForceContentVisible = true;
+            checkinGroupTypeEditor.Expanded = true;
         }
 
         /// <summary>
@@ -544,10 +580,10 @@ namespace RockWeb.Blocks.CheckIn
         protected void btnAddCheckinLabel_Click( object sender, EventArgs e )
         {
             var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
-            groupTypeEditor.ForceContentVisible = true;
+            groupTypeEditor.Expanded = true;
 
             var checkinLabelAttributeInfo = new CheckinGroupTypeEditor.CheckinLabelAttributeInfo();
-            checkinLabelAttributeInfo.BinaryFileId = ddlCheckinLabel.SelectedValueAsInt() ?? 0;
+            checkinLabelAttributeInfo.BinaryFileGuid = ddlCheckinLabel.SelectedValue.AsGuid();
             checkinLabelAttributeInfo.FileName = ddlCheckinLabel.SelectedItem.Text;
 
             // have the attribute key just be the filename without spaces, but make sure it is not a duplicate
@@ -562,22 +598,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
-
-            pnlCheckinLabelPicker.Visible = false;
-            pnlDetails.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelAddCheckinLabel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelAddCheckinLabel_Click( object sender, EventArgs e )
-        {
-            var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
-            groupTypeEditor.ForceContentVisible = true;
-
-            pnlCheckinLabelPicker.Visible = false;
+            
             pnlDetails.Visible = true;
         }
 
@@ -596,10 +617,9 @@ namespace RockWeb.Blocks.CheckIn
 
             // set a hidden field value for the Group Guid so we know which Group to add the location to
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
-
-            hfLocationPickerVisible.Value = true.ToString();
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
+            
             mdLocationPicker.Show();
         }
 
@@ -611,8 +631,8 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupEditor_DeleteLocationClick( object sender, RowEventArgs e )
         {
             CheckinGroupEditor checkinGroupEditor = sender as CheckinGroupEditor;
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
             var location = checkinGroupEditor.Locations.FirstOrDefault( a => a.LocationId == e.RowKeyId );
             checkinGroupEditor.Locations.Remove( location );
@@ -628,21 +648,30 @@ namespace RockWeb.Blocks.CheckIn
             CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
 
             // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
-            if ( locationPicker.Location != null )
+            var location = new LocationService( new RockContext() ).Get( locationPicker.SelectedValue.AsInteger() );
+            if ( location != null )
             {
-                if ( !checkinGroupEditor.Locations.Any( a => a.LocationId == locationPicker.Location.Id ) )
+                if ( !checkinGroupEditor.Locations.Any( a => a.LocationId == location.Id ) )
                 {
                     CheckinGroupEditor.LocationGridItem gridItem = new CheckinGroupEditor.LocationGridItem();
-                    gridItem.LocationId = locationPicker.Location.Id;
-                    gridItem.Name = locationPicker.Location.Name;
+                    gridItem.LocationId = location.Id;
+                    gridItem.Name = location.Name;
+                    gridItem.FullNamePath = location.Name;
+                    gridItem.ParentLocationId = location.ParentLocationId;
+                    var parentLocation = location.ParentLocation;
+                    while ( parentLocation != null )
+                    {
+                        gridItem.FullNamePath = parentLocation.Name + " > " + gridItem.FullNamePath;
+                        parentLocation = parentLocation.ParentLocation;
+                    }
+
                     checkinGroupEditor.Locations.Add( gridItem );
                 }
             }
 
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
-            hfLocationPickerVisible.Value = false.ToString();
             mdLocationPicker.Hide();
         }
 
@@ -670,7 +699,7 @@ namespace RockWeb.Blocks.CheckIn
 
             foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
             {
-                var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                var groupType = checkinGroupTypeEditor.GetCheckinGroupType( rockContext );
                 groupTypeUIList.Add( groupType );
             }
 
@@ -692,7 +721,7 @@ namespace RockWeb.Blocks.CheckIn
             int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
             int binaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // delete in reverse order to get deepest child items first
                 groupsToDelete.Reverse();
@@ -721,6 +750,7 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB = new GroupType();
                         groupTypeDB.Id = 0;
                         groupTypeDB.Guid = groupTypeUI.Guid;
+                        groupTypeDB.ShowInNavigation = false;
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
@@ -739,7 +769,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         hasValidationErrors = true;
                         CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
-                        groupTypeEditor.ForceContentVisible = true;
+                        groupTypeEditor.Expanded = true;
 
                         return;
                     }
@@ -752,12 +782,13 @@ namespace RockWeb.Blocks.CheckIn
                     groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
 
                     // rebuild the CheckinLabel attributes from the UI (brute-force)
-                    foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB ) )
+                    foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB.Attributes, rockContext ) )
                     {
                         var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
                         Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Delete( attribute );
                     }
+
                     rockContext.SaveChanges();
 
                     foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
@@ -769,7 +800,7 @@ namespace RockWeb.Blocks.CheckIn
                         attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );
                         attribute.EntityTypeQualifierColumn = "Id";
                         attribute.EntityTypeQualifierValue = groupTypeDB.Id.ToString();
-                        attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
+                        attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileGuid.ToString();
                         attribute.Key = checkinLabelAttributeInfo.AttributeKey;
                         attribute.Name = checkinLabelAttributeInfo.FileName;
 
@@ -777,13 +808,14 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             hasValidationErrors = true;
                             CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
-                            groupTypeEditor.ForceContentVisible = true;
+                            groupTypeEditor.Expanded = true;
 
                             return;
                         }
 
                         attributeService.Add( attribute );
                     }
+
                     rockContext.SaveChanges();
                 }
 
@@ -835,7 +867,7 @@ namespace RockWeb.Blocks.CheckIn
                         hasValidationErrors = true;
                         hasValidationErrors = true;
                         CheckinGroupEditor groupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().First( a => a.GroupGuid == groupDB.Guid );
-                        groupEditor.ForceContentVisible = true;
+                        groupEditor.Expanded = true;
 
                         return;
                     }
@@ -872,14 +904,12 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 rockContext.SaveChanges();
-
             } );
 
             if ( !hasValidationErrors )
             {
                 NavigateToParentPage();
             }
-
         }
 
         /// <summary>
@@ -898,7 +928,7 @@ namespace RockWeb.Blocks.CheckIn
             };
 
             // delete non-template childgrouptypes that were deleted in this ui
-            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes )
+            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes.Where( g => g.Id != groupTypeDB.Id ) )
             {
                 if ( !templateGroupTypes.Contains( childGroupTypeDB.GroupTypePurposeValueId ?? 0 ) )
                 {
@@ -971,20 +1001,16 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void ShowDetail( int groupTypeId )
         {
             // hide the details panel until we verify the page params are good and that the user has edit access
             pnlDetails.Visible = false;
 
-            if ( itemKey != "groupTypeId" )
-            {
-                return;
-            }
+            var rockContext = new RockContext();
 
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
-            GroupType parentGroupType = groupTypeService.Get( itemKeyValue );
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+            GroupType parentGroupType = groupTypeService.Get( groupTypeId );
 
             if ( parentGroupType == null )
             {
@@ -1018,8 +1044,7 @@ namespace RockWeb.Blocks.CheckIn
             // Load the Controls
             foreach ( GroupType groupType in checkinGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                groupType.LoadAttributes();
-                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
+                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, rockContext );
             }
         }
     }

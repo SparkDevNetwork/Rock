@@ -117,6 +117,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> where the IsEntity flag is set to true, person is Authorized to View, and EntityType isn't HideFromReporting
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns></returns>
+        public IEnumerable<EntityType> GetReportableEntities(Person currentPerson)
+        {
+            return this.GetEntities()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson, this.Context as RockContext ) )
+                .Where( a => !Rock.Web.Cache.EntityTypeCache.Read( a ).GetEntityType().GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() );
+        }
+
+        /// <summary>
         /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> with the 
         /// "Common" flag set to true.
         /// </summary>
@@ -159,7 +171,7 @@ namespace Rock.Model
                 entityType.Name = type.Key;
                 entityType.FriendlyName = type.Value.Name.SplitCase();
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
-                entityType.IsEntity = true;
+                entityType.IsEntity = !type.Value.GetCustomAttributes( typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute), false ).Any();
                 entityType.IsSecured = false;
                 entityTypes.Add( type.Key, entityType );
             }

@@ -89,8 +89,16 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
-            set { ViewState["Required"] = value; }
+            get 
+            {
+                EnsureChildControls();
+                return _datePicker.Required;
+            }
+            set 
+            {
+                EnsureChildControls();
+                _datePicker.Required = value;
+            }
         }
 
         /// <summary>
@@ -103,15 +111,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                EnsureChildControls();
+                return _datePicker.RequiredErrorMessage;
             }
 
             set
             {
-                if ( RequiredFieldValidator != null )
-                {
-                    RequiredFieldValidator.ErrorMessage = value;
-                }
+                EnsureChildControls();
+                _datePicker.RequiredErrorMessage = value;
             }
         }
 
@@ -125,7 +132,8 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                EnsureChildControls();
+                return _datePicker.IsValid;
             }
         }
 
@@ -153,7 +161,6 @@ namespace Rock.Web.UI.Controls
         public DateTimePicker()
             : base()
         {
-            RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
         }
 
@@ -287,6 +294,10 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                if ( _datePicker.SelectedDate == null && _timePicker.SelectedTime == null)
+                {
+                    return null;
+                }
                 return ( _datePicker.SelectedDate ?? RockDateTime.Today ) +
                     ( _timePicker.SelectedTime ?? new TimeSpan( 0 ) );
             }

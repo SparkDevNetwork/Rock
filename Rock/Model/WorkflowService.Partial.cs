@@ -38,14 +38,19 @@ namespace Rock.Model
             workflow.IsProcessing = true;
             this.Context.SaveChanges();
 
-            workflow.LoadAttributes( (RockContext)this.Context );
+            var rockContext = (RockContext)this.Context;
+            workflow.LoadAttributes( rockContext );
 
-            workflow.Process( (RockContext)this.Context, out errorMessages);
+            workflow.Process( rockContext, out errorMessages );
 
-            RockTransactionScope.WrapTransaction( () =>
+            this.Context.WrapTransaction( () =>
             {
                 this.Context.SaveChanges();
-                workflow.SaveAttributeValues( (RockContext)this.Context );
+                workflow.SaveAttributeValues( rockContext );
+                foreach ( var activity in workflow.Activities )
+                {
+                    activity.SaveAttributeValues( rockContext );
+                }
             } );
 
             workflow.IsProcessing = false;

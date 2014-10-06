@@ -53,6 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index("IX_AttributeIdKey", 0, IsUnique=true)]
         public int AttributeId { get; set; }
         
         /// <summary>
@@ -64,6 +65,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
         public string Key { get; set; }
         
         /// <summary>

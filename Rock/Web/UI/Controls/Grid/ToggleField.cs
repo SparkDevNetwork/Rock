@@ -37,17 +37,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the CssClass of the field.
+        /// Gets or sets the button size CSS class.
         /// </summary>
         /// <value>
-        /// The CssClass.
+        /// The button size CSS class.
         /// </value>
-        public string CssClass
-        {
-            get { return cssClass; }
-            set { cssClass = value; }
-        }
-        private string cssClass = "switch-mini";
+        public string ButtonSizeCssClass {get; set;}
+
+        /// <summary>
+        /// Gets or sets the active button CSS class.
+        /// </summary>
+        /// <value>
+        /// The active button CSS class.
+        /// </value>
+        public string ActiveButtonCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the DataField of the BoundField.
@@ -186,7 +189,8 @@ namespace Rock.Web.UI.Controls
                 toggle.OffText = toggleField.OffText;
 
                 //toggle.EnableViewState = true; // TODO remove if unnecessary
-                toggle.AddCssClass( toggleField.CssClass );
+                toggle.ActiveButtonCssClass = toggleField.ActiveButtonCssClass;
+                toggle.ButtonSizeCssClass = toggleField.ButtonSizeCssClass;
                 toggle.CheckedChanged += toggle_CheckedChanged;
                 toggle.DataBinding += toggle_DataBinding;
                 toggle.PreRender += toggle_PreRender;

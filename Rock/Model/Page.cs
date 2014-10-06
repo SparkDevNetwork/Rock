@@ -343,6 +343,7 @@ namespace Rock.Model
             {
                 var actions = new Dictionary<string, string>();
                 actions.Add( Authorization.VIEW, "The roles and/or users that have access to view the page." );
+                actions.Add( Authorization.EDIT, "The roles and/or users that have access to edit blocks on this page or any child page, when those block or pages don't specifically define security for the current user (i.e. when this page is used as a 'parent authority')." );
                 actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the page.  This includes setting properties of the page, setting security for the page, managing the zones and blocks on the page, and editing the child pages." );
                 return actions;
             }
@@ -426,9 +427,13 @@ namespace Rock.Model
                 {
                     return this.ParentPage;
                 }
-                else
+                else if (this.Layout != null && this.Layout.Site != null)
                 {
                     return this.Layout.Site;
+                }
+                else
+                {
+                    return base.ParentAuthority;
                 }
             }
         }

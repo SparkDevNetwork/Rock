@@ -91,6 +91,14 @@ namespace Rock.Data
         public DbSet<Audit> Audits { get; set; }
 
         /// <summary>
+        /// Gets or sets the audit details.
+        /// </summary>
+        /// <value>
+        /// The audit details.
+        /// </value>
+        public DbSet<AuditDetail> AuditDetails { get; set; }
+
+        /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
@@ -171,12 +179,44 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication recipient activities.
+        /// </summary>
+        /// <value>
+        /// The communication recipient activities.
+        /// </value>
+        public DbSet<CommunicationRecipientActivity> CommunicationRecipientActivities { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication templates.
         /// </summary>
         /// <value>
         /// The communication templates.
         /// </value>
         public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channels.
+        /// </summary>
+        /// <value>
+        /// The content channels.
+        /// </value>
+        public DbSet<ContentChannel> ContentChannels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel items.
+        /// </summary>
+        /// <value>
+        /// The content channel items.
+        /// </value>
+        public DbSet<ContentChannelItem> ContentChannelItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel types.
+        /// </summary>
+        /// <value>
+        /// The content channel types.
+        /// </value>
+        public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the data views.
@@ -219,13 +259,21 @@ namespace Rock.Data
         public DbSet<Device> Devices { get; set; }
 
         /// <summary>
-        /// Gets or sets the Email Templates.
+        /// Gets or sets the entity sets.
         /// </summary>
         /// <value>
-        /// the Email Templates.
+        /// The entity sets.
         /// </value>
-        public DbSet<SystemEmail> EmailTemplates { get; set; }
+        public DbSet<EntitySet> EntitySets { get; set; }
 
+        /// <summary>
+        /// Gets or sets the entity set items.
+        /// </summary>
+        /// <value>
+        /// The entity set items.
+        /// </value>
+        public DbSet<EntitySetItem> EntitySetItems { get; set; }
+        
         /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
@@ -254,7 +302,7 @@ namespace Rock.Data
         /// Gets or sets the accounts.
         /// </summary>
         /// <value>
-        /// The fund.
+        /// The Financial Account.
         /// </value>
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
@@ -265,14 +313,6 @@ namespace Rock.Data
         /// The batches.
         /// </value>
         public DbSet<FinancialBatch> FinancialBatches { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledges.
-        /// </summary>
-        /// <value>
-        /// The pledges.
-        /// </value>
-        public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
         /// Gets or sets the financial person bank account.
@@ -289,6 +329,14 @@ namespace Rock.Data
         /// The financial person saved account.
         /// </value>
         public DbSet<FinancialPersonSavedAccount> FinancialPersonSavedAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pledges.
+        /// </summary>
+        /// <value>
+        /// The pledges.
+        /// </value>
+        public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
         /// Gets or sets the financial scheduled transactions.
@@ -371,20 +419,20 @@ namespace Rock.Data
         public DbSet<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
-        /// Gets or sets the Group Roles.
-        /// </summary>
-        /// <value>
-        /// the Group Roles.
-        /// </value>
-        public DbSet<GroupTypeRole> GroupRoles { get; set; }
-
-        /// <summary>
         /// Gets or sets the Group Types.
         /// </summary>
         /// <value>
         /// the Group Types.
         /// </value>
         public DbSet<GroupType> GroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Roles.
+        /// </summary>
+        /// <value>
+        /// the Group Roles.
+        /// </value>
+        public DbSet<GroupTypeRole> GroupTypeRoles { get; set; }
 
         /// <summary>
         /// Gets or sets the histories.
@@ -403,52 +451,20 @@ namespace Rock.Data
         public DbSet<HtmlContent> HtmlContents { get; set; }
 
         /// <summary>
+        /// Gets or sets the layouts.
+        /// </summary>
+        /// <value>
+        /// The layouts.
+        /// </value>
+        public DbSet<Layout> Layouts { get; set; }
+
+        /// <summary>
         /// Gets or sets the Location.
         /// </summary>
         /// <value>
         /// the Location.
         /// </value>
         public DbSet<Location> Locations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaigns.
-        /// </summary>
-        /// <value>
-        /// The marketing campaigns.
-        /// </value>
-        public DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ads.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ads.
-        /// </value>
-        public DbSet<MarketingCampaignAd> MarketingCampaignAds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ad types.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ad types.
-        /// </value>
-        public DbSet<MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign audiences.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign audiences.
-        /// </value>
-        public DbSet<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign campuses.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign campuses.
-        /// </value>
-        public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
 
         /// <summary>
         /// Gets or sets the metaphones.
@@ -465,6 +481,14 @@ namespace Rock.Data
         /// the Defined Types.
         /// </value>
         public DbSet<Metric> Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric categories.
+        /// </summary>
+        /// <value>
+        /// The metric categories.
+        /// </value>
+        public DbSet<MetricCategory> MetricCategories { get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Values.
@@ -651,6 +675,14 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the system emails.
+        /// </summary>
+        /// <value>
+        /// The system emails.
+        /// </value>
+        public DbSet<SystemEmail> SystemEmails { get; set; }
+
+        /// <summary>
         /// Gets or sets the Tags.
         /// </summary>
         /// <value>
@@ -691,6 +723,22 @@ namespace Rock.Data
         public DbSet<WorkflowAction> WorkflowActions { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow action forms.
+        /// </summary>
+        /// <value>
+        /// The workflow action forms.
+        /// </value>
+        public DbSet<WorkflowActionForm> WorkflowActionForms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow action form attributes.
+        /// </summary>
+        /// <value>
+        /// The workflow action form attributes.
+        /// </value>
+        public DbSet<WorkflowActionFormAttribute> WorkflowActionFormAttributes { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow action types.
         /// </summary>
         /// <value>
@@ -713,22 +761,6 @@ namespace Rock.Data
         /// The workflow activity types.
         /// </value>
         public DbSet<WorkflowActivityType> WorkflowActivityTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the workflow action form.
-        /// </summary>
-        /// <value>
-        /// The workflow action form.
-        /// </value>
-        public DbSet<WorkflowActionForm> WorkflowActionForms { get; set; }
-
-        /// <summary>
-        /// Gets or sets the workflow form attributes.
-        /// </summary>
-        /// <value>
-        /// The workflow form attributes.
-        /// </value>
-        public DbSet<WorkflowActionFormAttribute> WorkflowActionFormAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow logs.

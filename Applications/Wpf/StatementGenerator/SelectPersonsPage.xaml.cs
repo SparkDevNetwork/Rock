@@ -184,7 +184,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( searchValue.Length > 2 )
             {
-                string uriFormat = "api/People/Search?name={0}&includeHtml=true";
+                string uriFormat = "api/People/Search?name={0}&includeHtml=true&includeBusinesses=true";
                 var searchResult = _rockRestClient.GetXml( string.Format( uriFormat, HttpUtility.UrlEncode( searchValue ) ), 10000 );
                 if ( searchResult != null )
                 {
@@ -195,7 +195,7 @@ namespace Rock.Apps.StatementGenerator
                     {
                        personResults.Add( new
                         {
-                            Id = node["Id"].InnerText.AsInteger() ?? 0,
+                            Id = node["Id"].InnerText.AsInteger(),
                             FullName = node["Name"].InnerText,
                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
                             Gender = node["Gender"].InnerText,
@@ -231,11 +231,11 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Handles the Click event of the btnBack control.
+        /// Handles the Click event of the btnPrev control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnBack_Click( object sender, RoutedEventArgs e )
+        private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
             this.NavigationService.GoBack();
         }

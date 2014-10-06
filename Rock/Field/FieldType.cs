@@ -35,6 +35,14 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -45,17 +53,11 @@ namespace Rock.Field
         public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( condensed )
+            {
                 return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+            }
 
             return value;
-        }
-
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        public virtual HorizontalAlign AlignValue
-        {
-            get { return HorizontalAlign.Left; }
         }
 
         /// <summary>
@@ -117,10 +119,10 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
+        /// <param name="id">The id.</param>
         /// <returns>
         /// The control
         /// </returns>
@@ -138,7 +140,10 @@ namespace Rock.Field
         public virtual string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is TextBox )
+            {
                 return ( (TextBox)control ).Text;
+            }
+
             return null;
         }
 
@@ -151,7 +156,9 @@ namespace Rock.Field
         public virtual void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             if ( control != null && control is TextBox )
+            {
                 ( (TextBox)control ).Text = value;
+            }
         }
 
         /// <summary>
@@ -172,6 +179,25 @@ namespace Rock.Field
         /// </summary>
         public event EventHandler QualifierUpdated;
 
-    }
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public virtual Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var entityField = new Rock.Reporting.EntityField();
+            entityField.Name = attribute.Name;
+            entityField.Title = attribute.Name.SplitCase();
+            entityField.AttributeGuid = attribute.Guid;
+            entityField.FieldKind = Reporting.FieldKind.Attribute;
+            entityField.PropertyType = null;
 
+            entityField.ControlCount = 2;
+            entityField.FilterFieldType = SystemGuid.FieldType.TEXT;
+            
+            return entityField;
+        }
+    }
 }

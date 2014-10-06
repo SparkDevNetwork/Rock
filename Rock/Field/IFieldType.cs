@@ -26,6 +26,11 @@ namespace Rock.Field
     public interface IFieldType
     {
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
+
+        /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -34,11 +39,6 @@ namespace Rock.Field
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
-
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -100,6 +100,14 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
+
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns></returns>
+        Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute );
 
         /// <summary>
         /// Occurs when a qualifier is updated.

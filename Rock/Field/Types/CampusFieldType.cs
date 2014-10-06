@@ -14,18 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI.WebControls;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) CampusFieldType
+    /// Stored as Campus's Guid
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
     {
@@ -43,7 +44,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var campus = new CampusService( new RockContext() ).Get( value.AsInteger() );
+                var campus = CampusCache.Read( value.AsGuid() );
                 if ( campus != null )
                 {
                     formattedValue = campus.Name;
@@ -54,7 +55,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -63,22 +64,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
-            editControl.Label = "Campus";
+            var campusPicker = new CampusPicker { ID = id };
 
-            CampusService campusService = new CampusService( new RockContext() );
-            var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-
-            editControl.Items.Add( Rock.Constants.None.ListItem );
+            var campusList = CampusCache.All();
 
             if ( campusList.Any() )
             {
-                foreach ( var campus in campusList )
-                {
-                    editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
-                }
-
-                return editControl;
+                campusPicker.Campuses = campusList;
+                return campusPicker;
             }
 
             return null;
@@ -86,45 +79,49 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Reads new values entered by the user for the field
-        /// returns Campus.Id as string
+        /// returns Campus.Guid as string
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            List<string> values = new List<string>();
+            CampusPicker campusPicker = control as CampusPicker;
 
-            DropDownList dropDownList = control as DropDownList;
-
-            if ( dropDownList != null )
+            if ( campusPicker != null )
             {
-                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
+                int? campusId = campusPicker.SelectedCampusId;
+                if (campusId.HasValue)
                 {
-                    return null;
-                }
-                else
-                {
-                    return dropDownList.SelectedValue;
+                    var campus = CampusCache.Read( campusId.Value );
+                    if (campus != null )
+                    {
+                        return campus.Guid.ToString();
+                    }
                 }
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>
         /// Sets the value.
-        /// Expects value as a Campus.Id as string
+        /// Expects value as a Campus.Guid as string
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            CampusPicker campusPicker = control as CampusPicker;
+
+            if ( campusPicker != null )
             {
-                DropDownList dropDownList = control as DropDownList;
-                dropDownList.SetValue( value );
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var campus = CampusCache.Read( guid );
+                campusPicker.SetValue( campus == null ? "0" : campus.Id.ToString() );
             }
         }
 
@@ -136,7 +133,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = CampusCache.Read( guid );
+            return item != null ? item.Id : (int?)null;
         }
 
         /// <summary>
@@ -147,7 +146,13 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            SetEditValue( control, configurationValues, id.ToString() );
+            CampusCache item = null;
+            if ( id.HasValue )
+            {
+                item = CampusCache.Read( id.Value );
+            }
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }

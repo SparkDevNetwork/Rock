@@ -28,9 +28,9 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
-    /// SMS Communication Channel control
+    /// SMS Communication Medium control
     /// </summary>
-    public class Sms : ChannelControl
+    public class Sms : MediumControl
     {
         #region UI Controls
 
@@ -44,19 +44,19 @@ namespace Rock.Web.UI.Controls.Communication
         #region Properties
 
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        public override Dictionary<string, string> ChannelData
+        public override Dictionary<string, string> MediumData
         {
             get
             {
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromValue", ddlFrom.SelectedValue );
-                data.Add( "Subject", "From: " + ddlFrom.SelectedItem.Text );
+                data.Add( "Subject", ddlFrom.SelectedItem != null ? ( "From: " + ddlFrom.SelectedItem.Text ) : string.Empty );
                 data.Add( "Message", tbMessage.Text );
                 return data;
             }
@@ -91,6 +91,7 @@ namespace Rock.Web.UI.Controls.Communication
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
             rcwMessage.Label = "Message";
+            rcwMessage.Help = "<span class='tip tip-liquid'></span>";
             Controls.Add( rcwMessage );
 
             mfpMessage = new MergeFieldPicker();

@@ -43,6 +43,8 @@ namespace Rock.Web.UI.Controls
 
             string script = string.Format( @"Rock.controls.searchField.initialize({{ controlId: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "search-field-" + this.ID, script, true );
+
+            this.CssClass = "searchinput";
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace Rock.Web.UI.Controls
 
             var searchExtensions = new Dictionary<string,Tuple<string, string>>();
             foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"][0].Value ) )
+                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( service.Value.Value.SearchLabel, service.Value.Value.ResultUrl ) );
                     if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
@@ -66,9 +68,13 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "smartsearch " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.RenderControl( writer );
+            writer.AddAttribute( "class", "fa fa-search" );
+            writer.RenderBeginTag( HtmlTextWriterTag.I );
+            writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "nav pull-right" );
+            
+
+            writer.AddAttribute( "class", "nav pull-right smartsearch-type" );
             writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
             writer.AddAttribute( "class", "dropdown" );
@@ -109,6 +115,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag(); //ul
             writer.RenderEndTag(); //li
             writer.RenderEndTag(); //ul
+
+            base.RenderControl( writer );
 
             hfFilter.RenderControl(writer);
 

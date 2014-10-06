@@ -133,6 +133,16 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !string.IsNullOrWhiteSpace( hfIdValue.Value ) )
                 {
+                    var rockContext = new RockContext();
+                    Category category = new CategoryService( rockContext ).Get( hfIdValue.Value.AsInteger() );
+                    if (category == null)
+                    {
+                        category = new Category { EntityTypeId = _entityTypeId };
+                    }
+                    category.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( category, phAttributes, false );
+
                     mdDetails.Show();
                 }
             }
@@ -296,6 +306,10 @@ namespace RockWeb.Blocks.Core
             category.Description = tbDescription.Text;
             category.ParentCategoryId = catpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
+
+            category.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, category );
 
             List<int> orphanedBinaryFileIdList = new List<int>();
            
@@ -312,7 +326,11 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    category.SaveAttributeValues( rockContext );
+                } );
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();
@@ -378,20 +396,26 @@ namespace RockWeb.Blocks.Core
                 category = new CategoryService( new RockContext() ).Get( categoryId );
             }
 
-            if ( category != null )
+            if ( category == null )
             {
-                tbName.Text = category.Name;
-                tbDescription.Text = category.Description;
-                catpParentCategory.SetValue( category.ParentCategoryId );
-                tbIconCssClass.Text = category.IconCssClass;
+                category = new Category
+                {
+                    Id = 0,
+                    EntityTypeId = _entityTypeId,
+                    ParentCategoryId = _parentCategoryId,
+                };
             }
-            else
-            {
-                tbName.Text = string.Empty;
-                tbDescription.Text = string.Empty;
-                catpParentCategory.SetValue( _parentCategoryId );
-                tbIconCssClass.Text = string.Empty;
-            }
+
+
+            tbName.Text = category.Name;
+            tbDescription.Text = category.Description;
+            catpParentCategory.SetValue( category.ParentCategoryId );
+            tbIconCssClass.Text = category.IconCssClass;
+            tbHighlightColor.Text = category.HighlightColor;
+
+            category.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( category, phAttributes, true );
 
             hfIdValue.Value = categoryId.ToString();
             mdDetails.Show();

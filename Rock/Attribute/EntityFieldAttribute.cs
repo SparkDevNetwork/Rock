@@ -29,15 +29,20 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="includeGlobalAttributeOption">if set to <c>true</c> [include global attribute option].</param>
         /// <param name="description">The description.</param>
+        /// <param name="entityControlHelpTextFormat">The entity control help text format.
+        /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
+        /// and/or a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included
+        /// </param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EntityFieldAttribute( string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
+        public EntityFieldAttribute( string name, string description = "", string entityControlHelpTextFormat = "", bool required = true, string category = "", int order = 0, string key = null )
             : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityFieldType ).FullName )
         {
+            
+            FieldConfigurationValues.Add( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
         }
     }
 }

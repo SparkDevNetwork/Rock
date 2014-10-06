@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -51,6 +52,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
 
+    [ContextAware]
     public partial class HtmlContentDetail : RockBlock
     {
         #region Base Control Methods
@@ -65,6 +67,15 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
             if ( !this.IsPostBack )
             {
@@ -152,17 +163,37 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
-            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
+            htmlEditor.MergeFields.Add( "Campuses" );
+            htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "Rock.Model.Person" );
+            ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
+            ceHtml.MergeFields.Add( "Campuses" );
+            ceHtml.MergeFields.Add( "RockVersion" );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        string mergeField = string.Format( "{0}|Current {1} (Context)|Context", type.FullName, type.Name );  
+                        htmlEditor.MergeFields.Add( mergeField );
+                        ceHtml.MergeFields.Add( mergeField );
+                    }
+                }
+            }
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
@@ -221,7 +252,8 @@ namespace RockWeb.Blocks.Cms
                 SaveAttributeValues();
             }
 
-            FlushCacheItem( EntityValue() );
+            HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
+            
             ShowView();
         }
 
@@ -297,7 +329,7 @@ namespace RockWeb.Blocks.Cms
             {
                 // if this block doesn't require Approval, mark it as approved
                 htmlContent.IsApproved = true;
-                htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                htmlContent.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 htmlContent.ApprovedDateTime = RockDateTime.Now;
             }
             else
@@ -307,7 +339,7 @@ namespace RockWeb.Blocks.Cms
                 if ( currentUserCanApprove && hfApprovalStatus.Value.AsBoolean() )
                 {
                     htmlContent.IsApproved = true;
-                    htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                    htmlContent.ApprovedByPersonAliasId = CurrentPersonAliasId;
                     htmlContent.ApprovedDateTime = RockDateTime.Now;
                 }
                 else
@@ -323,17 +355,12 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( rockContext.SaveChanges() > 0 )
-            {
-                // flush cache content 
-                this.FlushCacheItem( entityValue );
+            rockContext.SaveChanges();
 
-                ShowView();
-            }
-            else
-            {
-                // TODO: service.ErrorMessages;
-            }
+            // flush cache content 
+            HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
+
+            ShowView();
         }
 
         /// <summary>
@@ -399,7 +426,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbApprove_Click( object sender, EventArgs e )
         {
-            SetApprovalValues( true, CurrentPerson );
+            SetApprovalValues( true, CurrentPersonAlias );
         }
 
         /// <summary>
@@ -409,7 +436,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeny_Click( object sender, EventArgs e )
         {
-            SetApprovalValues( false, CurrentPerson );
+            SetApprovalValues( false, CurrentPersonAlias );
         }
 
         #endregion
@@ -433,7 +460,7 @@ namespace RockWeb.Blocks.Cms
                     ModifiedDateTime = "(" + v.ModifiedDateTime.ToElapsedString() + ")",
                     ModifiedByPerson = v.ModifiedByPersonAlias != null ? v.ModifiedByPersonAlias.Person : null,
                     Approved = v.IsApproved,
-                    ApprovedByPerson = v.ApprovedByPerson,
+                    ApprovedByPerson = v.ApprovedByPersonAlias != null ? v.ApprovedByPersonAlias.Person : null,
                     v.StartDateTime,
                     v.ExpireDateTime
                 } ).ToList();
@@ -466,7 +493,7 @@ namespace RockWeb.Blocks.Cms
                 lVersion.Text = string.Format( "Version {0} | ", htmlContent.Version );
             }
 
-            SetApprovalValues( htmlContent.IsApproved, htmlContent.ApprovedByPerson );
+            SetApprovalValues( htmlContent.IsApproved, htmlContent.ApprovedByPersonAlias );
 
             drpDateRange.LowerValue = htmlContent.StartDateTime;
             drpDateRange.UpperValue = htmlContent.ExpireDateTime;
@@ -479,7 +506,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="approved">if set to <c>true</c> [approved].</param>
         /// <param name="person">The person.</param>
-        private void SetApprovalValues( bool approved, Person person )
+        private void SetApprovalValues( bool approved, PersonAlias personAlias )
         {
             string cssClass = string.Empty;
 
@@ -495,11 +522,16 @@ namespace RockWeb.Blocks.Cms
             lblApprovalStatus.Text = string.Format( "<span class='{0}'>{1}</span>", cssClass, approved ? "Approved" : "Not-Approved" );
 
             hfApprovalStatus.Value = approved.ToTrueFalse();
-            lblApprovalStatusPerson.Visible = person != null;
-            if ( person != null )
+
+            if ( personAlias != null && personAlias.Person != null )
+            { 
+                lblApprovalStatusPerson.Visible = true;
+                lblApprovalStatusPerson.Text = "by " + personAlias.Person.FullName;
+                hfApprovalStatusPersonId.Value = personAlias.Person.Id.ToString();
+            }
+            else
             {
-                lblApprovalStatusPerson.Text = "by " + person.FullName;
-                hfApprovalStatusPersonId.Value = person.Id.ToString();
+                lblApprovalStatusPerson.Visible = false;
             }
         }
 
@@ -521,6 +553,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
+            
+            
             mdEdit.Hide();
             pnlEditModel.Visible = false;
             upnlHtmlContent.Update();
@@ -533,25 +567,56 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            string cachedContent = GetCacheItem( entityValue ) as string;
+            string cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                HtmlContent content = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
+                var rockContext = new RockContext();
+                var htmlContentService = new HtmlContentService( rockContext );
+                HtmlContent content = htmlContentService.GetActiveContent( this.BlockId, entityValue );
 
                 if ( content != null )
                 {
-                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    if (CurrentPerson != null)
+                    if ( content.Content.HasMergeFields() )
                     {
-                        mergeFields.Add( "Person", CurrentPerson );
-                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
-                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
-                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
-                    }
+                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                        if ( CurrentPerson != null )
+                        {
+                            mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
+                            mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
+                            mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            mergeFields.Add( "Campuses", CampusCache.All() );
 
-                    html = content.Content.ResolveMergeFields( mergeFields );
+                            var contextObjects = new Dictionary<string, object>();
+                            foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
+                            {
+                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                                if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                                {
+                                    var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                                    if (type != null)
+                                    {
+                                        contextObjects.Add( type.Name, contextEntity );
+                                    }
+                                }
+
+                            }
+
+                            if ( contextObjects.Any() )
+                            {
+                                mergeFields.Add( "Context", contextObjects );
+                            }
+                        }
+
+                        html = content.Content.ResolveMergeFields( mergeFields );
+                    }
+                    else
+                    {
+                        html = content.Content;
+                    }
                 }
                 else
                 {
@@ -567,7 +632,7 @@ namespace RockWeb.Blocks.Cms
                 int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
-                    AddCacheItem( entityValue, html, cacheDuration );
+                    HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );
                 }
             }
             else

@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     public class CommunicationTemplateFieldType : FieldType
     {
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -41,6 +41,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name );
             if ( templates.Any() )

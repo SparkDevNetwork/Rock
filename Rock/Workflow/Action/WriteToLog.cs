@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     [Description( "Writes a message to Workflow log." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write To Log" )]
-    [MemoField( "Message", "The message to write to the log", true, "" )]
+    [MemoField( "Message", "The message to write to the log. <span class='tip tip-liquid'></span>", true, "" )]
     public class WriteToLog : ActionComponent
     {
         /// <summary>
@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action
 
             var message = GetAttributeValue( action, "Message" ).ResolveMergeFields( GetMergeFields( action ) );
 
-            action.Activity.Workflow.AddLogEntry( message );
+            action.Activity.Workflow.AddLogEntry( message, true );
 
             return true;
         }

@@ -59,7 +59,7 @@ namespace Rock.Field.Types
                         var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
                         if ( definedValue != null )
                         {
-                            names.Add( definedValue.Name );
+                            names.Add( definedValue.Value );
                         }
                     }
                 }
@@ -101,7 +101,7 @@ namespace Rock.Field.Types
             ddl.Help = "The Defined Type to select values from.";
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
+            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
@@ -167,7 +167,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -200,10 +200,10 @@ namespace Rock.Field.Types
                     {
                         foreach ( var definedValue in definedValues )
                         {
-                            editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                            editControl.Items.Add( new ListItem( definedValue.Value, definedValue.Id.ToString() ) );
                         }
-                        return editControl;
                     }
+                    return editControl;
                 }
             }
 
@@ -289,5 +289,31 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+
+            if ( attribute.QualifierValues.ContainsKey( DEFINED_TYPE_KEY ) )
+            {
+                int? definedTypeId = attribute.QualifierValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
+                if (definedTypeId.HasValue)
+                {
+                    var definedType = Rock.Web.Cache.DefinedTypeCache.Read( definedTypeId.Value );
+                    if (definedType != null)
+                    {
+                        filterConfig.DefinedTypeGuid = definedType.Guid;
+                    }
+                }
+            }
+
+            return filterConfig;
+        }
     }
 }

@@ -61,12 +61,12 @@ namespace Rock.Jobs
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo(beginWindow) >= 0 && c.CreatedDateTime.Value.CompareTo(endWindow) <= 0 ) ||
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo(beginWindow) >= 0 && c.FutureSendDateTime.Value.CompareTo(endWindow) <= 0 )
-                    )))
+                    ) ).ToList() )
             {
-                var channel = comm.Channel;
-                if ( channel != null )
+                var medium = comm.Medium;
+                if ( medium != null )
                 {
-                    channel.Send( comm );
+                    medium.Send( comm );
                 }
             }
         }

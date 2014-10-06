@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -35,16 +37,17 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
 
-    [LinkedPage( "Detail Page" )]
-    public partial class BatchList : Rock.Web.UI.RockBlock
+    [LinkedPage( "Detail Page", order: 0 )]
+    [BooleanField("Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1)]
+    public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
 
-        private bool _canConfigure = false;
+        private RockDropDownList ddlAction;
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -54,24 +57,26 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
-            _canConfigure = IsUserAuthorized( Authorization.EDIT );
+            gBatchList.DataKeyNames = new string[] { "id" };
+            gBatchList.Actions.ShowAdd = true;
+            gBatchList.Actions.AddClick += gBatchList_Add;
+            gBatchList.GridRebind += gBatchList_GridRebind;
 
-            if ( _canConfigure )
-            {
-                gBatchList.DataKeyNames = new string[] { "id" };
-                gBatchList.Actions.ShowAdd = true;
-                gBatchList.Actions.AddClick += gBatchList_Add;
-                gBatchList.GridRebind += gBatchList_GridRebind;
-                gBatchList.GridReorder += gBatchList_GridReorder;
-            }
-            else
-            {
-                nbWarningMessage.Text = "You are not authorized to edit these batches";
-                nbWarningMessage.Visible = true;
-            }
+            ddlAction = new RockDropDownList();
+            ddlAction.ID = "ddlAction";
+            ddlAction.CssClass = "pull-left input-width-lg";
+            ddlAction.Items.Add( new ListItem( "-- Select Action --", string.Empty ) );
+            ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN") );
+            ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
+
+            gBatchList.Actions.AddCustomActionControl( ddlAction );
         }
 
         /// <summary>
@@ -80,17 +85,54 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            nbResult.Visible = false;
+
             if ( !Page.IsPostBack )
             {
+                SetVisibilityOption();
                 BindFilter();
                 BindGrid();
             }
+
+            string script = string.Format( @"
+    $('#{0}').change(function( e ){{
+        var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
+        if (count == 0) {{
+            eval({2});
+        }}
+        else
+        {{
+            var $ddl = $(this);
+            if ($ddl.val() != '') {{
+                Rock.dialogs.confirm('Are you sure you want to ' + ($ddl.val() == 'OPEN' ? 'open' : 'close') + ' the selected batches?', function (result) {{
+                    if (result) {{
+                        eval({2});
+                    }}
+                    $ddl.val('');
+                }});
+            }}
+        }}
+    }});
+", ddlAction.ClientID, gBatchList.ClientID, Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ) );
+            ScriptManager.RegisterStartupScript( ddlAction, ddlAction.GetType(), "ConfirmStatusChange", script, true );
+
         }
 
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            SetVisibilityOption();
+            BindGrid();
+        }        
+        
         /// <summary>
         /// Handles the DisplayFilterValue event of the gfBatchFilter control.
         /// </summary>
@@ -100,13 +142,39 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+
                 case "Status":
-                    e.Value = e.Value.ConvertToEnum<BatchStatus>().ConvertToString();
-                    break;
+                    {
+                        var status = e.Value.ConvertToEnumOrNull<BatchStatus>();
+                        if ( status.HasValue )
+                        {
+                            e.Value = status.ConvertToString();
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                        break;
+                    }
 
                 case "Campus":
-                    e.Value = CampusCache.Read( int.Parse( e.Value ) ).Name;
-                    break;
+                    {
+                        var campus = CampusCache.Read( e.Value.AsInteger() );
+                        if (campus != null)
+                        {
+                            e.Value = campus.Name;
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                        break;
+                    }
             }
         }
 
@@ -117,14 +185,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfBatchFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfBatchFilter.SaveUserPreference( "From Date", dpBatchDate.Text );
+            gfBatchFilter.SaveUserPreference( "Date Range", drpBatchDate.DelimitedValues );
             gfBatchFilter.SaveUserPreference( "Title", tbTitle.Text );
-
-            int? statusFilter = ddlStatus.SelectedValueAsInt( false );
-            gfBatchFilter.SaveUserPreference( "Status", statusFilter.HasValue && statusFilter.Value >= 0 ? statusFilter.ToString() : string.Empty );
-
-            int? campusFilter = campCampus.SelectedCampusId;
-            gfBatchFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : string.Empty );
+            if ( tbAccountingCode.Visible )
+            {
+                gfBatchFilter.SaveUserPreference( "Accounting Code", tbAccountingCode.Text );
+            }
+            gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
 
             BindGrid();
         }
@@ -137,18 +205,18 @@ namespace RockWeb.Blocks.Finance
         protected void gBatchList_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
-            FinancialBatch financialBatch = financialBatchService.Get( e.RowKeyId );
-            if ( financialBatch != null )
+            var batchService = new FinancialBatchService( rockContext );
+            var batch = batchService.Get( e.RowKeyId );
+            if ( batch != null )
             {
                 string errorMessage;
-                if ( !financialBatchService.CanDelete( financialBatch, out errorMessage ) )
+                if ( !batchService.CanDelete( batch, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                financialBatchService.Delete( financialBatch );
+                batchService.Delete( batch );
                 rockContext.SaveChanges();
             }
 
@@ -162,7 +230,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Edit( object sender, RowEventArgs e )
         {
-            ShowDetailForm( (int)gBatchList.DataKeys[e.RowIndex]["id"] );
+            NavigateToLinkedPage( "DetailPage", "batchId", e.RowKeyId );
         }
 
         /// <summary>
@@ -172,25 +240,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Add( object sender, EventArgs e )
         {
-            BindFilter();
-            ShowDetailForm( 0 );
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the gBatchList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        private void gBatchList_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            var rockContext = new RockContext();
-            var batchService = new Rock.Model.FinancialBatchService( rockContext );
-            var queryable = batchService.Queryable();
-
-            List<Rock.Model.FinancialBatch> items = queryable.ToList();
-            batchService.Reorder( items, e.OldIndex, e.NewIndex );
-            rockContext.SaveChanges();
-            BindGrid();
+            NavigateToLinkedPage( "DetailPage", "batchId", 0 );
         }
 
         /// <summary>
@@ -204,103 +254,71 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gBatchList control.
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gBatchList_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
         {
-            Rock.Model.FinancialBatch batch = e.Row.DataItem as Rock.Model.FinancialBatch;
-            if ( batch != null )
+            if ( eventArgument == "StatusUpdate" &&
+                ddlAction != null &&
+                ddlAction.SelectedValue != null &&
+                !String.IsNullOrWhiteSpace( ddlAction.SelectedValue ) )
             {
-                var startDate = Convert.ToDateTime( e.Row.DataItem.GetPropertyValue( "BatchStartDateTime" ) ).ToShortDateString();
-                e.Row.Cells[1].Text = startDate;
+                var batchesSelected = new List<int>();
 
-                Literal transactionTotal = e.Row.FindControl( "TransactionTotal" ) as Literal;
-                if ( transactionTotal != null )
+                gBatchList.SelectedKeys.ToList().ForEach( b => batchesSelected.Add( b.ToString().AsInteger() ) );
+
+                if ( batchesSelected.Any() )
                 {
-                    var data = batch.Transactions.Where( d => d.TotalAmount > 0 );
-                    var totalSum = data.Sum( d => d.TotalAmount );
-                    transactionTotal.Text = string.Format( "{0:C}", totalSum );
+                    var newStatus = ddlAction.SelectedValue == "OPEN" ? BatchStatus.Open : BatchStatus.Closed;
 
-                    Label variance = e.Row.FindControl( "lblVariance" ) as Label;
-                    if ( variance != null )
+                    var rockContext = new RockContext();
+                    var batchService = new FinancialBatchService( rockContext );
+                    var batchesToUpdate = batchService.Queryable()
+                        .Where( b =>
+                            batchesSelected.Contains( b.Id ) &&
+                            b.Status != newStatus )
+                        .ToList();
+
+                    foreach ( var batch in batchesToUpdate )
                     {
-                        if ( batch.ControlAmount > 0 )
-                        {
-                            var varianceAmount = Convert.ToDecimal( batch.ControlAmount ) - totalSum;
-                            variance.Text = string.Format( "{0:C}", varianceAmount );
-                            if ( varianceAmount != 0 )
-                            {
-                                variance.AddCssClass( "text-danger" );
-                            }
-                        }
+                        batch.Status = newStatus;
                     }
+
+                    rockContext.SaveChanges();
+
+                    nbResult.Text = string.Format( "{0} batches were {1}.", 
+                        batchesToUpdate.Count().ToString("N0"), newStatus == BatchStatus.Open ? "opened" : "closed" );
+                    nbResult.NotificationBoxType = NotificationBoxType.Success;
+                    nbResult.Visible = true;
+                }
+                else
+                {
+                    nbResult.Text = string.Format( "There were not any batches selected." );
+                    nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                    nbResult.Visible = true;
                 }
 
-                Literal transactionCount = e.Row.FindControl( "TransactionCount" ) as Literal;
-                if ( transactionCount != null )
-                {
-                    transactionCount.Text = batch.Transactions.Count.ToString();
-                }
-
-                var status = e.Row.DataItem.GetPropertyValue( "Status" ).ToString();
-                if ( !string.IsNullOrWhiteSpace( status ) )
-                {
-                    switch ( status.ToUpper() )
-                    {
-                        case "CLOSED":
-                            e.Row.Cells[7].Text = "<span class='label label-success'>Closed</span>";
-                            break;
-                        case "OPEN":
-                            e.Row.Cells[7].Text = "<span class='label label-warning'>Open</span>";
-                            break;
-                        case "PENDING":
-                            e.Row.Cells[7].Text = "<span class='label label-default'>Pending</span>";
-                            break;
-                    }
-                }
-
-                // Get any warnings for this row and display them in the Warnings column
-                Label warnings = e.Row.FindControl( "lblWarnings" ) as Label;
-                var warningList = GetWarnings( batch );
-                if ( warningList != null )
-                {
-                    foreach ( var warning in warningList )
-                    {
-                        switch ( warning.ToUpper() )
-                        {
-                            case "UNTIED":
-                                warnings.Text += "<span class='label label-danger'>Untied Transactions</span>";
-                                break;
-                        }
-                    }
-                }
+                ddlAction.SelectedIndex = 0;
+                BindGrid();
             }
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Methods
 
-        /// <summary>
-        /// Gets the warnings.
-        /// </summary>
-        /// <returns></returns>
-        private List<string> GetWarnings( FinancialBatch batch )
+        private void SetVisibilityOption()
         {
-            var warningList = new List<string>();
-            if ( batch.Status == BatchStatus.Open )
-            {
-                var transactionService = new FinancialTransactionService( new RockContext() );
-                var transactionList = transactionService.Queryable().Where( trans => trans.BatchId == batch.Id && trans.AuthorizedPersonId == null ).ToList();
-                if ( transactionList.Count > 0 )
-                {
-                    warningList.Add( "UNTIED" );
-                }
-            }
+            bool showAccountingCode = GetAttributeValue( "ShowAccountingCode" ).AsBoolean();
+            tbAccountingCode.Visible = showAccountingCode;
+            gBatchList.Columns[4].Visible = showAccountingCode;
 
-            return warningList;
+            if ( showAccountingCode )
+            {
+                string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
+                tbAccountingCode.Text = !string.IsNullOrWhiteSpace( accountingCode ) ? accountingCode : string.Empty;
+            }
         }
 
         /// <summary>
@@ -311,27 +329,25 @@ namespace RockWeb.Blocks.Finance
             string titleFilter = gfBatchFilter.GetUserPreference( "Title" );
             tbTitle.Text = !string.IsNullOrWhiteSpace( titleFilter ) ? titleFilter : string.Empty;
 
-            ddlStatus.BindToEnum( typeof( BatchStatus ) );
-            ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
-            ddlStatus.SetValue( gfBatchFilter.GetUserPreference( "Status" ) );
+            if ( tbAccountingCode.Visible )
+            {
+                string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
+                tbAccountingCode.Text = !string.IsNullOrWhiteSpace( accountingCode ) ? accountingCode : string.Empty;
+            }
 
-            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            ddlStatus.BindToEnum<BatchStatus>();
+            ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
+            string statusFilter = gfBatchFilter.GetUserPreference( "Status" );
+            if (string.IsNullOrWhiteSpace(statusFilter))
+            {
+                statusFilter = "Open";
+            }
+            ddlStatus.SetValue( statusFilter );
+
+            var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
-        }
-
-        /// <summary>
-        /// Binds the defined type dropdown.
-        /// </summary>
-        /// <param name="ListControl">The list control.</param>
-        /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl listControl, Guid definedTypeGuid, string userPreferenceKey )
-        {
-            listControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            listControl.SelectedValue = !string.IsNullOrWhiteSpace( gfBatchFilter.GetUserPreference( userPreferenceKey ) ) ?
-                listControl.SelectedValue = gfBatchFilter.GetUserPreference( userPreferenceKey ) : null;
         }
 
         /// <summary>
@@ -339,51 +355,207 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            gBatchList.DataSource = GetData();
+            gBatchList.DataBind();
+        }
+
+        private List<BatchRow> GetData()
+        {
             var batchService = new FinancialBatchService( new RockContext() );
-            var batches = batchService.Queryable();
+            var qry = batchService.Queryable()
+                .Where( b => b.BatchStartDateTime.HasValue );
 
-            if ( dpBatchDate.SelectedDate.HasValue )
+            // filter by date
+            string dateRangeValue = gfBatchFilter.GetUserPreference( "Date Range" );
+            if ( !string.IsNullOrWhiteSpace( dateRangeValue ) )
             {
-                batches = batches.Where( batch => batch.BatchStartDateTime >= dpBatchDate.SelectedDate );
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = dateRangeValue;
+                if ( drp.LowerValue.HasValue )
+                {
+                    qry = qry.Where( b => b.BatchStartDateTime >= drp.LowerValue );
+                }
+
+                if ( drp.UpperValue.HasValue )
+                {
+                    var endOfDay = drp.UpperValue.Value.AddDays( 1 );
+                    qry = qry.Where( b => b.BatchStartDateTime < drp.UpperValue );
+                }
             }
 
-            string status = gfBatchFilter.GetUserPreference( "Status" );
-            if ( !string.IsNullOrWhiteSpace( status ) )
+            // filter by status
+            var status = gfBatchFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<BatchStatus>();
+            if (status.HasValue)
             {
-                var batchStatus = (BatchStatus)Enum.Parse( typeof( BatchStatus ), status );
-                batches = batches.Where( batch => batch.Status == batchStatus );
+                qry = qry.Where( b => b.Status == status );
             }
 
-            if ( !string.IsNullOrEmpty( tbTitle.Text ) )
+            // filter by title
+            string title = gfBatchFilter.GetUserPreference( "Title" );
+            if ( !string.IsNullOrEmpty( title ) )
             {
-                batches = batches.Where( batch => batch.Name == tbTitle.Text );
+                qry = qry.Where( batch => batch.Name.StartsWith( title ) );
             }
 
-            if ( campCampus.SelectedCampusId.HasValue )
+            // filter by accounting code
+            if ( tbAccountingCode.Visible )
             {
-                batches = batches.Where( batch => batch.CampusId == campCampus.SelectedCampusId.Value );
+                string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
+                if ( !string.IsNullOrEmpty( accountingCode ) )
+                {
+                    qry = qry.Where( batch => batch.AccountingSystemCode.StartsWith( accountingCode ) );
+                }
             }
+
+            // filter by campus
+            var campus = CampusCache.Read( gfBatchFilter.GetUserPreference( "Campus" ).AsInteger() );
+            if (campus != null)
+            {
+                qry = qry.Where( b => b.CampusId == campus.Id );
+            }
+
+            IOrderedQueryable<FinancialBatch> sortedQry = null;
 
             SortProperty sortProperty = gBatchList.SortProperty;
             if ( sortProperty != null )
             {
-                gBatchList.DataSource = batches.Sort( sortProperty ).ToList();
+                switch ( sortProperty.Property )
+                {
+                    case "TransactionCount":
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                sortedQry = qry.OrderBy( b => b.Transactions.Count() );
+                            }
+                            else
+                            {
+                                sortedQry = qry.OrderByDescending( b => b.Transactions.Count() );
+                            }
+                            break;
+                        }
+                    case "TransactionAmount":
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                sortedQry = qry.OrderBy( b => b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M );
+                            }
+                            else
+                            {
+                                sortedQry = qry.OrderByDescending( b => b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M );
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            sortedQry = qry.Sort( sortProperty );
+                            break;
+                        }
+                }
             }
             else
             {
-                gBatchList.DataSource = batches.OrderBy( batch => batch.Name ).ToList();
+                sortedQry = qry
+                    .OrderByDescending( b => b.BatchStartDateTime )
+                    .ThenBy( b => b.Name );
             }
 
-            gBatchList.DataBind();
+            return sortedQry
+                .Select( b => new BatchRow
+                {
+                    Id = b.Id,
+                    BatchStartDateTime = b.BatchStartDateTime.Value,
+                    Name = b.Name,
+                    AccountingSystemCode = b.AccountingSystemCode,
+                    TransactionCount = b.Transactions.Count(),
+                    TransactionAmount = b.Transactions.Sum( t => (decimal?)(t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M )) ?? 0.0M,
+                    ControlAmount = b.ControlAmount,
+                    CampusName = b.Campus != null ? b.Campus.Name : "",
+                    Status = b.Status,
+                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
+                } )
+                .ToList();
         }
 
-        /// <summary>
-        /// Shows the detail form.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        protected void ShowDetailForm( int id )
+        #endregion
+
+        #region Helper Class
+
+        public class BatchRow
         {
-            NavigateToLinkedPage( "DetailPage", "financialBatchId", id );
+            public int Id { get; set; }
+            public DateTime BatchStartDateTime { get; set; }
+            public string Name { get; set; }
+            public string AccountingSystemCode { get; set; }
+            public int TransactionCount { get; set; }
+            public decimal TransactionAmount { get; set; }
+            public decimal ControlAmount { get; set; }
+            public string CampusName { get; set; }
+            public BatchStatus Status { get; set; }
+            public bool UnMatchedTxns { get; set; }
+
+            public decimal Variance
+            {
+                get
+                {
+                    return TransactionAmount - ControlAmount;
+                }
+            }
+
+            public string StatusText
+            {
+                get
+                {
+                    return Status.ConvertToString();
+                }
+            }
+
+            public string StatusLabelClass
+            {
+                get
+                {
+                    switch ( Status )
+                    {
+                        case BatchStatus.Closed : return "label label-default";
+                        case BatchStatus.Open: return "label label-info";
+                        case BatchStatus.Pending: return "label label-default";
+                    }
+
+                    return string.Empty;
+                }
+            }
+
+            public string Notes
+            {
+                get
+                {
+                    var notes = new StringBuilder();
+
+                    switch ( Status )
+                    {
+                        case BatchStatus.Open:
+                            {
+                                if ( UnMatchedTxns )
+                                {
+                                    notes.Append( "<span class='label label-warning'>Unmatched Transactions</span><br/>" );
+                                }
+
+                                break;
+                            }
+                        case BatchStatus.Closed:
+                            {
+                                if ( ControlAmount != TransactionAmount )
+                                {
+                                    notes.Append( "<span class='label label-danger'>Transaction Total Does Not Match Control Amount</span><br/>" );
+                                }
+
+                                break;
+                            }
+                    }
+
+                    return notes.ToString();
+                }
+            }
+            
         }
 
         #endregion

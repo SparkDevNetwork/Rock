@@ -72,9 +72,11 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void SetPassword( UserLogin user, string password )
         {
-            var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            var entityType = EntityTypeCache.Read( user.EntityTypeId ?? 0);
+
+            var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ) );
 
             if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
@@ -187,7 +189,7 @@ namespace Rock.Model
                     Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                     Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
-                        return impersonatedPerson.ImpersonatedUser;
+                        return impersonatedPerson.GetImpersonatedUser();
                 }
                 else
                 {
@@ -203,13 +205,14 @@ namespace Rock.Model
 
                         if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
                         {
-
-                            if ( HttpContext.Current.Session["RockUserId"] != null )
+                            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
                             {
-                                transaction.SessionUserId = (int)HttpContext.Current.Session["RockUserId"];
+                                if ( HttpContext.Current.Session["RockUserId"] != null )
+                                {
+                                    transaction.SessionUserId = (int)HttpContext.Current.Session["RockUserId"];
+                                }
+                                HttpContext.Current.Session["RockUserId"] = user.Id;
                             }
-
-                            HttpContext.Current.Session["RockUserId"] = user.Id;
 
                             // see if there is already a LastActivitytransaction queued for this user, and just update its LastActivityDate instead of adding another to the queue
                             var userLastActivity = Rock.Transactions.RockQueue.TransactionQueue.ToArray().OfType<Rock.Transactions.UserLastActivityTransaction>()
@@ -332,7 +335,7 @@ namespace Rock.Model
 
                     userLoginService.Add( user );
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
 
@@ -362,6 +365,10 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
+            var historyService = new HistoryService( rockContext );
+
+            var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            var activityCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext ).Id;
 
             if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
             {
@@ -369,6 +376,26 @@ namespace Rock.Model
                 if ( userLogin != null )
                 {
                     userLogin.LastLoginDateTime = RockDateTime.Now;
+
+                    if ( userLogin.PersonId.HasValue )
+                    {
+                        var summary = new System.Text.StringBuilder();
+                        summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userLogin.UserName );
+                        if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+                        {
+                            summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                                HttpContext.Current.Request.Url.AbsoluteUri, HttpContext.Current.Request.UserHostAddress );
+                        }
+                        summary.Append( "." );
+
+                        historyService.Add( new History
+                        {
+                            EntityTypeId = personEntityTypeId,
+                            CategoryId = activityCategoryId,
+                            EntityId = userLogin.PersonId.Value,
+                            Summary = summary.ToString()
+                        } );
+                    }
                     rockContext.SaveChanges();
                 }
             }

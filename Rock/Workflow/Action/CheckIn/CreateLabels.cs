@@ -30,8 +30,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Saves the selected check-in data as attendance
     /// </summary>
-    [Description("Saves the selected check-in data as attendance")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Saves the selected check-in data as attendance" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
     public class CreateLabels : CheckInActionComponent
     {
@@ -49,18 +49,18 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
 
             var labels = new List<CheckInLabel>();
-            
+
             if ( checkInState != null )
             {
                 int labelFileTypeId = new BinaryFileTypeService( rockContext )
                     .Queryable()
-                    .Where( f => f.Guid == new Guid(SystemGuid.BinaryFiletype.CHECKIN_LABEL))
-                    .Select( f => f.Id)
+                    .Where( f => f.Guid == new Guid( SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
+                    .Select( f => f.Id )
                     .FirstOrDefault();
 
                 if ( labelFileTypeId != 0 )
                 {
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
                     var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
                     foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                var mergeObjects =  new Dictionary<string, object>();
+                                var mergeObjects = new Dictionary<string, object>();
                                 foreach ( var keyValue in globalMergeValues )
                                 {
                                     mergeObjects.Add( keyValue.Key, keyValue.Value );
@@ -154,30 +154,23 @@ namespace Rock.Workflow.Action.CheckIn
             //groupType.LoadAttributes();
             foreach ( var attribute in groupType.Attributes )
             {
-                if ( attribute.Value.FieldType.Guid == new Guid( SystemGuid.FieldType.BINARY_FILE ) &&
+                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
                     attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
                     attribute.Value.QualifierValues["binaryFileType"].Value == labelFileTypeId.ToString() )
                 {
-                    string attributeValue = groupType.GetAttributeValue( attribute.Key );
-                    if ( attributeValue != null )
+                    Guid? binaryFileGuid = groupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
+                    if ( binaryFileGuid != null )
                     {
-                        int fileId = int.MinValue;
-                        if ( int.TryParse( attributeValue, out fileId ) )
+                        var labelCache = KioskLabel.Read( binaryFileGuid.Value );
+                        if ( labelCache != null )
                         {
-                            var labelCache = KioskLabel.Read( fileId );
-                            if ( labelCache != null )
-                            {
-                                var checkInLabel = new CheckInLabel( labelCache, mergeObjects );
-                                checkInLabel.FileId = fileId;
-                                labels.Add( checkInLabel );
-                            }
+                            var checkInLabel = new CheckInLabel( labelCache, mergeObjects );
+                            checkInLabel.FileGuid = binaryFileGuid.Value;
+                            labels.Add( checkInLabel );
                         }
                     }
                 }
             }
         }
-
     }
-
-
 }

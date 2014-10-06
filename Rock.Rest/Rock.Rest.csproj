@@ -31,10 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
@@ -42,6 +38,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Humanizer">
+      <HintPath>..\packages\Humanizer.1.29.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -76,9 +75,15 @@
       <HintPath>..\packages\System.Spatial.5.6.1\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.1.2\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Http, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.1.2\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.1.2\lib\net45\System.Web.Http.Cors.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Http.OData, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -105,11 +110,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
@@ -135,7 +147,6 @@
     <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
@@ -182,11 +193,6 @@
     <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LocationsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAdsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAdTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignAudiencesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignCampusController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MarketingCampaignsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageContextsController.cs" />
@@ -217,6 +223,7 @@
     <Compile Include="Controllers\LocationsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />
     <Compile Include="Controllers\UserLoginsController.Partial.cs" />
+    <Compile Include="EnableCorsFromOriginAttribute.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
@@ -225,6 +232,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>

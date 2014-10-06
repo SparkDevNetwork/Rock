@@ -61,6 +61,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var attendanceCodeService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
+                var personAliasService = new PersonAliasService(rockContext);
 
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
@@ -92,14 +93,20 @@ namespace Rock.Workflow.Action.CheckIn
                                         var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
                                         if ( attendance == null )
                                         {
-                                            attendance = rockContext.Attendances.Create();
-                                            attendance.LocationId = location.Location.Id;
-                                            attendance.ScheduleId = schedule.Schedule.Id;
-                                            attendance.GroupId = group.Group.Id;
-                                            attendance.PersonId = person.Person.Id;
-                                            attendance.DeviceId = checkInState.Kiosk.Device.Id;
-                                            attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
-                                            attendanceService.Add( attendance );
+                                            var primaryAlias = personAliasService.GetPrimaryAlias( person.Person.Id );
+                                            if ( primaryAlias != null )
+                                            {
+                                                attendance = rockContext.Attendances.Create();
+                                                attendance.LocationId = location.Location.Id;
+                                                attendance.CampusId = location.CampuId;
+                                                attendance.ScheduleId = schedule.Schedule.Id;
+                                                attendance.GroupId = group.Group.Id;
+                                                attendance.PersonAlias = primaryAlias;
+                                                attendance.PersonAliasId = primaryAlias.Id;
+                                                attendance.DeviceId = checkInState.Kiosk.Device.Id;
+                                                attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                                attendanceService.Add( attendance );
+                                            }
                                         }
 
                                         attendance.AttendanceCodeId = attendanceCode.Id;

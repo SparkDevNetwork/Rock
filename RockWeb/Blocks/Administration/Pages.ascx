@@ -8,15 +8,18 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
-            <Columns>
-                <Rock:ReorderField />
-                <asp:BoundField DataField="Id" HeaderText="Id" />
-                <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="InternalName" HeaderText="Name" Target="_parent" />
-                <asp:BoundField DataField="Layout.Name" HeaderText="Layout"  />
-                <Rock:DeleteField OnClick="rGrid_Delete" />
-            </Columns>
-        </Rock:Grid>
+        
+        <div class="grid">
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
+                <Columns>
+                    <Rock:ReorderField />
+                    <asp:BoundField DataField="Id" HeaderText="Id" />
+                    <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="InternalName" HeaderText="Name" Target="_parent" />
+                    <asp:BoundField DataField="Layout.Name" HeaderText="Layout"  />
+                    <Rock:DeleteField OnClick="rGrid_Delete" />
+                </Columns>
+            </Rock:Grid>
+        </div>
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 

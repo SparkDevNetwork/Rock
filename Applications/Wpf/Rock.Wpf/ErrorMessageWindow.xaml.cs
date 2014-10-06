@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Windows;
 
 namespace Rock.Wpf
@@ -23,14 +24,23 @@ namespace Rock.Wpf
     /// </summary>
     public partial class ErrorMessageWindow : Window
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorMessageWindow"/> class.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public ErrorMessageWindow(string message)
+        public ErrorMessageWindow( Exception ex )
         {
+            if (ex is AggregateException)
+            {
+                ex = ( ex as AggregateException ).Flatten();
+            }
+
+            string message = ex.Message;
+            var innerEx = ex.InnerException;
+            while (innerEx != null)
+            {
+                message += "\n" + innerEx.Message;
+                innerEx = innerEx.InnerException;
+            }
+
             InitializeComponent();
-            txtErrorMessage.Text = message;
+            lblErrorMessage.Content = message;
         }
 
         /// <summary>

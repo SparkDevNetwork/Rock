@@ -2,13 +2,14 @@
 
 <asp:UpdatePanel ID="upBinaryFile" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
+        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-block">
             <asp:HiddenField ID="hfBinaryFileId" runat="server" />
 
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-file-text-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+            </div>
             <div class="panel-body">
-                
-                <div class="banner"><h1><asp:Literal ID="lActionTitle" runat="server" /></h1></div>
-                
+
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"  />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -43,7 +44,9 @@
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
+
             </div>
+
         </asp:Panel>
 
     </ContentTemplate>

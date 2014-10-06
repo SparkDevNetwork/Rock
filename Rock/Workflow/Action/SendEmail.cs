@@ -35,11 +35,10 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
-    [TextField( "To", "The To address that email should be sent to.", false, "", "", 0 )]
-    [WorkflowAttribute( "To Attribute", "An attribute that contains the person or email address that email should be sent to.", false, "", "", 1 )]
-    [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 2 )]
-    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 3 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
+    [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-liquid'></span>", false, "", "", 0, "From" )]
+    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "To")]
+    [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-liquid'></span>", false, "", "", 2 )]
+    [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -54,29 +53,64 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var recipients = new List<string>();
+            var mergeFields = GetMergeFields( action );
 
             string to = GetAttributeValue( action, "To" );
-            if ( !string.IsNullOrWhiteSpace( to ) )
-            {
-                recipients.Add( to );
-            }
+            string fromValue = GetAttributeValue( action, "From" );
+            string subject = GetAttributeValue( action, "Subject" );
+            string body = GetAttributeValue( action, "Body" );
 
-            // Get the To attribute email value
-            Guid guid = GetAttributeValue( action, "ToAttribute" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            string from = string.Empty;
+            Guid? fromGuid = fromValue.AsGuidOrNull();
+            if ( fromGuid.HasValue )
             {
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( fromGuid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    string toValue = action.GetWorklowAttributeValue( guid );
+                    string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( fromAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.PersonFieldType")
+                        {
+                            Guid personAliasGuid = fromAttributeValue.AsGuid();
+                            if ( !personAliasGuid.IsEmpty() )
+                            {
+                                var person = new PersonAliasService( rockContext ).Queryable()
+                                    .Where( a => a.Guid.Equals( personAliasGuid ) )
+                                    .Select( a => a.Person )
+                                    .FirstOrDefault();
+                                if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
+                                {
+                                    from = person.Email;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            from = fromAttributeValue;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                from = fromValue;
+            }
+
+            Guid? guid = to.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                var attribute = AttributeCache.Read( guid.Value, rockContext );
+                if ( attribute != null )
+                {
+                    string toValue = action.GetWorklowAttributeValue( guid.Value );
                     if ( !string.IsNullOrWhiteSpace( toValue ) )
                     {
                         switch ( attribute.FieldType.Class )
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( toValue );
+                                    Send( toValue, from, subject, body, mergeFields, rockContext );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -84,13 +118,53 @@ namespace Rock.Workflow.Action
                                     Guid personAliasGuid = toValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        to = new PersonAliasService( new RockContext() ).Queryable()
+                                        var person = new PersonAliasService( rockContext ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
-                                            .Select( a => a.Person.Email )
+                                            .Select( a => a.Person )
                                             .FirstOrDefault();
-                                        if ( !string.IsNullOrWhiteSpace( to ) )
+                                        if ( person == null )
                                         {
-                                            recipients.Add( to );
+                                            action.AddLogEntry("Invalid Recipient: Person not found", true );
+                                        }
+                                        else if ( string.IsNullOrWhiteSpace( person.Email ) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
+                                        }
+                                        else if ( !(person.IsEmailActive ?? true) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
+                                        }
+                                        else if ( person.EmailPreference == EmailPreference.DoNotEmail )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient has requested 'Do Not Email'", true );
+                                        }
+                                        else
+                                        {
+                                            var personDict = new Dictionary<string, object>(mergeFields);
+                                            personDict.Add("Person", person);
+                                            Send( person.Email, from, subject, body, personDict, rockContext );
+                                        }
+                                    }
+                                    break;
+                                }
+                            case "Rock.Field.Types.GroupFieldType":
+                                {
+                                    int? groupId = toValue.AsIntegerOrNull();
+                                    if ( !groupId.HasValue )
+                                    {
+                                        foreach ( var person in new GroupMemberService( rockContext )
+                                            .GetByGroupId( groupId.Value )
+                                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Select( m => m.Person ) )
+                                        {
+                                            if ( (person.IsEmailActive ?? true) &&
+                                                person.EmailPreference != EmailPreference.DoNotEmail && 
+                                                !string.IsNullOrWhiteSpace( person.Email ) )
+                                            {
+                                                var personDict = new Dictionary<string, object>( mergeFields );
+                                                personDict.Add( "Person", person );
+                                                Send( person.Email, from, subject, body, personDict, rockContext );
+                                            }
                                         }
                                     }
                                     break;
@@ -99,32 +173,38 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
-
-            if ( recipients.Any() )
+            else
             {
-                var mergeFields = GetMergeFields( action );
-
-                var channelData = new Dictionary<string, string>();
-                channelData.Add( "From", GetAttributeValue( action, "From" ) );
-                channelData.Add( "Subject", GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields ) );
-                channelData.Add( "Body", GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields ) );
-
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
-                if ( channelEntity != null )
-                {
-                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                    if ( channel != null && channel.IsActive )
-                    {
-                        var transport = channel.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            transport.Send( channelData, recipients, string.Empty, string.Empty );
-                        }
-                    }
-                }
+                Send( to, from, subject, body, mergeFields, rockContext );
             }
 
             return true;
+        }
+
+        private void Send( string recipient, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext )
+        {
+            var recipients = new List<string>();
+            recipients.Add( recipient );
+             
+            var mediumData = new Dictionary<string, string>();
+            mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
+            mediumData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
+            mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
+
+            var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
+            if ( mediumEntity != null )
+            {
+                var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                if ( medium != null && medium.IsActive )
+                {
+                    var transport = medium.Transport;
+                    if ( transport != null && transport.IsActive )
+                    {
+                        var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
+                        transport.Send( mediumData, recipients, appRoot, string.Empty );
+                    }
+                }
+            }
         }
     }
 }

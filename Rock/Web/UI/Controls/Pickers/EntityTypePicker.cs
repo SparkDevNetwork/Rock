@@ -49,15 +49,15 @@ namespace Rock.Web.UI.Controls
             {
                 this.Items.Clear();
 
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, "00" ) );
-                }
+                
+                // always add an empty option regardless of IsRequired
+                this.Items.Add( new ListItem() );
 
                 if ( IncludeGlobalOption )
                 {
                     this.Items.Add( new ListItem( "None (Global Attributes)", "0" ) );
                 }
+                
 
                 var entities = value.OrderBy( e => e.FriendlyName ).ToList();
 
@@ -114,16 +114,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected EntityType ids.
+        /// Gets or sets the selected entity type identifier.
         /// </summary>
         /// <value>
-        /// The selected EntityType ids.
+        /// The selected entity type identifier.
         /// </value>
         public int? SelectedEntityTypeId
         {
             get
             {
-                return this.SelectedValueAsInt( false );
+                return this.SelectedValueAsInt( true );
             }
             set
             {

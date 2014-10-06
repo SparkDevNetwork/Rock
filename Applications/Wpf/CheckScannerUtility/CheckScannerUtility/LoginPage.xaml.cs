@@ -55,6 +55,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
+            lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
             RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
@@ -90,8 +91,7 @@ namespace Rock.Apps.CheckScannerUtility
                     rockConfig.Password = txtPassword.Password;
                     rockConfig.Save();
 
-                    BatchPage batchPage = new BatchPage();
-                    batchPage.LoggedInPerson = person;
+                    BatchPage batchPage = new BatchPage( person );
 
                     if ( this.NavigationService.CanGoBack )
                     {
@@ -155,6 +155,20 @@ namespace Rock.Apps.CheckScannerUtility
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
+
+            // set keyboard focus to the first input that needs a value
+            if ( string.IsNullOrEmpty( txtRockUrl.Text ) )
+            {
+                Keyboard.Focus( txtRockUrl );
+            }
+            else if ( string.IsNullOrEmpty( txtUsername.Text ) )
+            {
+                Keyboard.Focus( txtUsername );
+            }
+            else
+            {
+                Keyboard.Focus( txtPassword );
+            }
         }
 
         /// <summary>
@@ -173,6 +187,19 @@ namespace Rock.Apps.CheckScannerUtility
         private void HideLoginWarning( object sender, System.Windows.Input.KeyEventArgs e )
         {
             lblLoginWarning.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Handles the KeyDown event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
+        private void Page_KeyDown( object sender, KeyEventArgs e )
+        {
+            if ( e.Key == Key.Enter )
+            {
+                btnLogin_Click( null, null );
+            }
         }
     }
 }

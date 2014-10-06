@@ -26,7 +26,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
         /// </summary>
-        public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
+        public const string COMMUNICATION_MEDIUM = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
+
+        /// <summary>
+        /// The domains that are safe to send from
+        /// </summary>
+        public const string COMMUNICATION_SAFE_SENDER_DOMAINS = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED";
 
         /// <summary>
         /// The list of values that SMS messages can be sent from.  Depending on provider, these may
@@ -85,11 +90,6 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
 
         /// <summary>
-        /// Guid for Financial transaction image type
-        /// </summary>
-        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39"; 
-
-        /// <summary>
         /// Guid for Financial Transaction Type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
@@ -103,6 +103,11 @@ namespace Rock.SystemGuid
         /// Guid for GroupType Purpose
         /// </summary>
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
+
+        /// <summary>
+        /// Guid for countries
+        /// </summary>
+        public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
 
         /// <summary>
         /// Guid for the types of States that can be tied to a Location's address.
@@ -183,6 +188,16 @@ namespace Rock.SystemGuid
         /// Guid for the types of chart styles
         /// </summary>
         public const string CHART_STYLES = "FC684FD7-FE68-493F-AF38-1656FBF67E6B";
+
+        /// <summary>
+        /// Guid for the button html
+        /// </summary>
+        public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+
+        /// <summary>
+        /// The resource t_ ap i_ allowe d_ domains
+        /// </summary>
+        public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
     }
 }

@@ -39,13 +39,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who owns the account.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who owns the account.
+        /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash so that it can be matched without being known
@@ -56,19 +56,29 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 128 )]
+        [HideFromReporting]
         public string AccountNumberSecured { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s)
+        /// </summary>
+        /// <value>
+        /// The account number masked.
+        /// </value>
+        [Required]
+        public string AccountNumberMasked { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> who owns the account.
+        /// Gets or sets the person alias.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Person"/> who owns the account.
+        /// The person alias.
         /// </value>
-        public virtual Person Person { get; set; }
+        public virtual PersonAlias PersonAlias { get; set; }
 
         #endregion
 
@@ -82,7 +92,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberSecured.ToStringSafe();
+            return this.AccountNumberMasked;
         }
 
         /// <summary>
@@ -94,27 +104,8 @@ namespace Rock.Model
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
         public static string EncodeAccountNumber( string routingNumber, string accountNumber )
         {
-            var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
-            if ( String.IsNullOrWhiteSpace( passwordKey ) )
-            {
-                throw new ConfigurationErrorsException( "Account encoding requires a 'PasswordKey' app setting" );
-            }
-
-            byte[] encryptionKey = HexToByte( passwordKey );
-
-            HMACSHA1 hash = new HMACSHA1();
-            hash.Key = encryptionKey;
-
             string toHash = string.Format( "{0}|{1}", routingNumber, accountNumber );
-            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( toHash ) ) );
-        }
-
-        private static byte[] HexToByte( string hexString )
-        {
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            for ( int i = 0; i < returnBytes.Length; i++ )
-                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
-            return returnBytes;
+            return Rock.Security.Encryption.GetSHA1Hash( toHash );
         }
 
         #endregion
@@ -132,7 +123,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialPersonBankAccountConfiguration()
         {
-            this.HasRequired( b => b.Person ).WithMany().HasForeignKey( b => b.PersonId ).WillCascadeOnDelete( true );
+            this.HasRequired( b => b.PersonAlias ).WithMany().HasForeignKey( b => b.PersonAliasId ).WillCascadeOnDelete( true );
         }
     }
 

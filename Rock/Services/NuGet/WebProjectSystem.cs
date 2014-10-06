@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using Microsoft.Web.XmlTransform;
 using NuGet;
+using NuGet.Resources;
 using Rock.Model;
 
 namespace Rock.Services.NuGet
@@ -29,8 +30,6 @@ namespace Rock.Services.NuGet
     /// </summary>
     public class WebProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
     {
-        private static readonly string _transformFilePrefix = ".rock.xdt";
-
         /// <summary>
         /// 
         /// </summary>
@@ -171,8 +170,8 @@ namespace Rock.Services.NuGet
         }
 
         /// <summary>
-        /// Workaround until we get to NuGet 2.7 and to del with the
-        /// "because it is being used by another process" dll problem.
+        /// Workaround to deal with the "because it is being used by 
+        /// another process" dll problem.
         /// This method will always add the file to the filesystem.
         /// </summary>
         /// <param name="path"></param>
@@ -181,6 +180,8 @@ namespace Rock.Services.NuGet
         {
             string fileToDelete = string.Empty;
             int fileCount = 0;
+
+            // If dll file not in the bin folder...
             if ( path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" ) )
             {
                 string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
@@ -198,7 +199,10 @@ namespace Rock.Services.NuGet
                 }
             }
 
-            base.AddFile( path, stream );
+            if ( ! path.EndsWith( RockProjectManager.TRANSFORM_FILE_PREFIX ) )
+            {
+                base.AddFile( path, stream );
+            }
 
             if ( fileToDelete != string.Empty )
             {
@@ -214,10 +218,6 @@ namespace Rock.Services.NuGet
             if ( path.Equals( Path.Combine( "App_Data", "deletefile.lst" ) ) )
             {
                 ProcessFilesToDelete( path );
-            }
-            else if ( path.EndsWith( _transformFilePrefix ) )
-            {
-                ProcessXmlDocumentTransformation( path );
             }
         }
 
@@ -255,8 +255,27 @@ namespace Rock.Services.NuGet
                         
                         if ( File.Exists( physicalFile ) )
                         {
-                            // TODO guard against things like file is temporarily locked, wait then try delete, etc.
-                            File.Delete( physicalFile );
+                            // guard against things like file is temporarily locked, wait then try delete, etc.
+                            try
+                            {
+                                File.Delete( physicalFile );
+                            }
+                            catch
+                            {
+                                // if the delete failed, we'll try moving the file to a *.rdelete file for
+                                // removal later.
+
+                                // generate a unique *.#.rdelete filename
+                                int fileCount = 0;
+                                do
+                                {
+                                    fileCount++;
+                                }
+                                while ( File.Exists( string.Format( "{0}.{1}.rdelete", physicalFile, fileCount ) ) );
+
+                                string fileToDelete = string.Format( "{0}.{1}.rdelete", physicalFile, fileCount );
+                                File.Move( physicalFile, fileToDelete );
+                            }
                         }
                     }
                 }
@@ -264,60 +283,6 @@ namespace Rock.Services.NuGet
             }
             File.Delete( deleteListFile );
         }
-
-        /// <summary>
-        /// Transforms the file for the corresponding XDT file.
-        /// </summary>
-        /// <param name="transformFile">The transform file.</param>
-        /// <returns>
-        /// true if the transformation was successful; false otherwise.
-        /// </returns>
-        private bool ProcessXmlDocumentTransformation( string transformFile )
-        {
-            bool isSuccess = true;
-
-            string sourceFile = transformFile.Remove( transformFile.Length - _transformFilePrefix.Length );
-
-            transformFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", transformFile ) );
-            sourceFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", sourceFile ) );
-
-            if ( !File.Exists( sourceFile ) )
-            {
-                ExceptionLogService.LogException( new FileNotFoundException( string.Format( "Source transform file ({0}) does not exist.", sourceFile ) ), System.Web.HttpContext.Current );
-                return false;
-            }
-
-            // This really shouldn't happen since it was theoretically‎ just added before
-            // we were called.
-            if ( !File.Exists( transformFile ) )
-            {
-                ExceptionLogService.LogException( new FileNotFoundException( string.Format( "Transform file ({0}) does not exist.", transformFile ) ), System.Web.HttpContext.Current );
-                return false;
-            }
-
-            string destFile = sourceFile;
-
-            using ( XmlTransformableDocument document = new XmlTransformableDocument() )
-            {
-                document.PreserveWhitespace = true;
-                document.Load( sourceFile );
-
-                using ( XmlTransformation transform = new XmlTransformation( transformFile ) )
-                {
-                    isSuccess = transform.Apply( document );
-                    document.Save( destFile );
-                }
-            }
-
-            if ( isSuccess )
-            {
-                File.Delete( transformFile );
-            }
-
-            return isSuccess;
-        }
-
-
 
         /// <summary>
         /// Adds the import.

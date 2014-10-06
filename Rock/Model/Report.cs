@@ -26,6 +26,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -175,7 +176,7 @@ namespace Rock.Model
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public List<object> GetDataSource( RockContext context, Type entityType, Dictionary<int,EntityField> entityFields, Dictionary<int,AttributeCache> attributes, Dictionary<int,ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
+        public List<object> GetDataSource( RockContext context, Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -199,12 +200,12 @@ namespace Rock.Model
                     // Create the dynamic type
                     var dynamicFields = new Dictionary<string, Type>();
                     dynamicFields.Add( "Id", typeof( int ) );
-                    foreach (var f in entityFields)
+                    foreach ( var f in entityFields )
                     {
                         dynamicFields.Add( string.Format( "Entity_{0}_{1}", f.Value.Name, f.Key ), f.Value.PropertyType );
                     }
 
-                    foreach (var a in attributes)
+                    foreach ( var a in attributes )
                     {
                         dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), typeof( string ) );
                     }
@@ -217,8 +218,8 @@ namespace Rock.Model
                             dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
                         }
                     }
-                    
-                    if (dynamicFields.Count == 0)
+
+                    if ( dynamicFields.Count == 0 )
                     {
                         errorMessages.Add( "At least one field must be defined" );
                         return null;
@@ -228,18 +229,19 @@ namespace Rock.Model
                     ConstructorInfo methodFromHandle = dynamicType.GetConstructor( Type.EmptyTypes );
 
                     // Bind the dynamic fields to their expressions
-                    var bindings = new List<MemberBinding>();
+                    var bindings = new List<MemberAssignment>();
                     bindings.Add( Expression.Bind( dynamicType.GetField( "id" ), idExpression ) );
 
-                    foreach (var f in entityFields)
+                    foreach ( var f in entityFields )
                     {
                         bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "entity_{0}_{1}", f.Value.Name, f.Key ) ), Expression.Property( paramExpression, f.Value.Name ) ) );
                     }
 
-                    foreach (var a in attributes)
+                    foreach ( var a in attributes )
                     {
                         bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
                     }
+
                     foreach ( var reportField in selectComponents )
                     {
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
@@ -252,21 +254,60 @@ namespace Rock.Model
                     ConstructorInfo constructorInfo = dynamicType.GetConstructor( Type.EmptyTypes );
                     NewExpression newExpression = Expression.New( constructorInfo );
                     MemberInitExpression memberInitExpression = Expression.MemberInit( newExpression, bindings );
-                    Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
-                    Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+                    LambdaExpression selector = Expression.Lambda( memberInitExpression, paramExpression );
+
+                    // NOTE: having a NULL Dataview is OK.
+                    Expression whereExpression = null;
+                    if ( this.DataView != null )
+                    {
+                        whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
+                    }
 
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty, this.FetchTop } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, this.FetchTop } );
                         var qry = getResult as IQueryable<IEntity>;
+                        var qryExpression = qry.Expression;
 
-                        var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );
-                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
+                        // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
+                        string orderByMethod = "OrderBy";
+                        if ( sortProperty != null )
+                        {
+                            foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                            {
+                                string propertyName;
+
+                                var direction = sortProperty.Direction;
+                                if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
+                                {
+                                    propertyName = column.Left( column.Length - 5 );
+
+                                    // toggle the direction if sortProperty is Descending
+                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                                }
+                                else
+                                {
+                                    propertyName = column;
+                                }
+
+                                string methodName = direction == SortDirection.Ascending ? orderByMethod + "Descending" : orderByMethod;
+
+                                // Call OrderBy on whatever the Expression is for that Column
+                                var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
+                                LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
+                                qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
+                                orderByMethod = "ThenBy";
+                            }
+                        }
+
+                        var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
+
+                        var query = qry.Provider.CreateQuery( selectExpression );
 
                         // enumerate thru the query results and put into a list
                         var reportResult = new List<object>();
-                        var enumerator = query.GetEnumerator();
+                        var enumerator = query.AsNoTracking().GetEnumerator();
                         while ( enumerator.MoveNext() )
                         {
                             reportResult.Add( enumerator.Current );

@@ -206,6 +206,41 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the name of the entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
+        public string EntityTypeName
+        {
+            get
+            {
+                var entityType = EntityTypeCache.Read( this.EntityId ?? 0 );
+                if ( entityType != null )
+                {
+                    return entityType.Name;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                var entityType = EntityTypeCache.Read( value );
+                if ( entityType != null )
+                {
+                    this.EntityTypeId = entityType.Id;
+                }
+                else
+                {
+                    this.EntityTypeId = null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
@@ -250,6 +285,46 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the entity control help text format
+        /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
+        /// and/or a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included
+        /// </summary>
+        /// <value>
+        /// The entity control help text.
+        /// </value>
+        public string EntityControlHelpTextFormat
+        {
+            get
+            {
+                return ViewState["EntityControlHelpTextFormat"] as string;
+            }
+
+            set
+            {
+                ViewState["EntityControlHelpTextFormat"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [entity type picker visible].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [entity type picker visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EntityTypePickerVisible
+        {
+            get
+            {
+                return ViewState["EntityTypePickerVisible"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["EntityTypePickerVisible"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -259,6 +334,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            EnsureChildControls();
             UpdateEntityTypeControls();
         }
 
@@ -325,7 +401,12 @@ namespace Rock.Web.UI.Controls
             {
                 if ( _entityTypeEditControl is IRockControl )
                 {
-                    ( _entityTypeEditControl as IRockControl ).Help = string.Format( "Either select a specific {0} or leave {0} blank to get it from the page context.", fieldTypeName, fieldTypeName.Pluralize() );
+                    if ( entityType != null )
+                    {
+                        ( _entityTypeEditControl as IRockControl ).Label = entityType.FriendlyName;
+                    }
+
+                    ( _entityTypeEditControl as IRockControl ).Help = string.Format( EntityControlHelpTextFormat ?? string.Empty, fieldTypeName, fieldTypeName.Pluralize() );
                 }
 
                 _phEntityTypeEntityIdValue.Controls.Add( _entityTypeEditControl );
@@ -361,7 +442,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            _etpEntityType.Visible = EntityTypePickerVisible;
             _etpEntityType.RenderControl( writer );
+
             _phEntityTypeEntityIdValue.RenderControl( writer );
         }
 

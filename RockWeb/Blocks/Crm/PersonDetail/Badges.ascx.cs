@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            if ( !Page.IsPostBack && Person != null )
+            if ( !Page.IsPostBack && Person != null && Person.Id != 0 )
             {
                 string badgeList = GetAttributeValue( "Badges" );
                 if ( !string.IsNullOrWhiteSpace( badgeList ) )

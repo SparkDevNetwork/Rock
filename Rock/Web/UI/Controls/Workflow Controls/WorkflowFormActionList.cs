@@ -36,12 +36,15 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfValue;
         private List<RockTextBox> _actionControls;
-        private List<RockTextBox> _cssClassControls;
+        private List<RockDropDownList> _buttonHtmlControls;
         private List<RockDropDownList> _activityControls;
         private List<RockTextBox> _responseControls;
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowFormActionList"/> class.
+        /// </summary>
         public WorkflowFormActionList()
         {
             _hfValue = new HiddenField();
@@ -59,6 +62,12 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Activities"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public string Value
         {
             get
@@ -72,6 +81,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             Controls.Clear();
@@ -80,7 +92,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfValue );
 
             _actionControls = new List<RockTextBox>();
-            _cssClassControls = new List<RockTextBox>();
+            _buttonHtmlControls = new List<RockDropDownList>();
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
 
@@ -99,15 +111,20 @@ namespace Rock.Web.UI.Controls
                 tbAction.Text = nameValueResponse.Length > 0 ? nameValueResponse[0] : string.Empty;
                 _actionControls.Add( tbAction );
 
-                var tbCssClass = new RockTextBox();
-                tbCssClass.ID = this.ID + "_tbCssClass" + i.ToString();
-                Controls.Add( tbCssClass );
-                tbCssClass.Placeholder = "btn btn-primary";
-                tbCssClass.AddCssClass( "form-action-css" );
-                tbCssClass.AddCssClass( "form-control" );
-                tbCssClass.AddCssClass( "js-form-action-input" );
-                tbCssClass.Text = nameValueResponse.Length > 1 ? nameValueResponse[1] : string.Empty;
-                _cssClassControls.Add( tbCssClass );
+                var ddlButtonHtml = new RockDropDownList();
+                ddlButtonHtml.ID = this.ID + "_ddlButtonHtml" + i.ToString();
+                Controls.Add( ddlButtonHtml );
+                ddlButtonHtml.AddCssClass( "form-action-button" );
+                ddlButtonHtml.AddCssClass( "form-control" );
+                ddlButtonHtml.AddCssClass( "js-form-action-input" );
+                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
+                foreach( var definedValue in definedType.DefinedValues )
+                {
+                    var li = new ListItem( definedValue.Value, definedValue.Guid.ToString() );
+                    li.Selected = nameValueResponse.Length > 1 && li.Value.Equals( nameValueResponse[1], StringComparison.OrdinalIgnoreCase );
+                    ddlButtonHtml.Items.Add( li );
+                }
+                _buttonHtmlControls.Add( ddlButtonHtml );
 
                 var ddlActivity = new RockDropDownList();
                 ddlActivity.ID = this.ID + "_ddlActivity" + i.ToString();
@@ -122,7 +139,7 @@ namespace Rock.Web.UI.Controls
                 ddlActivity.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                 foreach(ListItem li in ddlActivity.Items)
                 {
-                    li.Selected = nameValueResponse.Length > 2 && li.Value == nameValueResponse[2];
+                    li.Selected = nameValueResponse.Length > 2 && li.Value.Equals( nameValueResponse[2], StringComparison.OrdinalIgnoreCase );
                 }
                 _activityControls.Add( ddlActivity );
 
@@ -144,7 +161,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-list" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-list form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfValue.RenderControl( writer );
@@ -152,7 +169,13 @@ namespace Rock.Web.UI.Controls
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""row"">" );
             valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-key form-control js-form-action-input"" type=""text"" placeholder=""Action""></input></div>" );
-            valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-css form-control js-form-action-input"" type=""text"" placeholder=""CSS Class""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-2""><select class=""form-action-button form-control js-form-action-input"">" );
+            var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
+            foreach ( var definedValue in definedType.DefinedValues )
+            {
+                valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Guid.ToString(), definedValue.Value );
+            }
+            valueHtml.Append( @"</select></div>" );
             valueHtml.Append( @"<div class=""col-sm-3""><select class=""form-action-value form-control js-form-action-input""><option value=""""></option>" );
             foreach ( var activity in Activities )
             {
@@ -176,7 +199,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "Action" );
+            writer.Write( "Command Label" );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
@@ -185,7 +208,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "CSS Class" );
+            writer.Write( "Button Type" );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
@@ -229,10 +252,10 @@ namespace Rock.Web.UI.Controls
                 _actionControls[i].RenderControl( writer );
                 writer.RenderEndTag();  
 
-                // Write Css
+                // Write Button Type
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _cssClassControls[i].RenderControl( writer );
+                _buttonHtmlControls[i].RenderControl( writer );
                 writer.RenderEndTag();  
 
                 // Write Activity Value
@@ -293,7 +316,7 @@ namespace Rock.Web.UI.Controls
         $actionList.find('div.form-action-rows:first').children('div.row').each(function( index ) {
             newValue += 
                 $(this).find('.form-action-key:first').val() + '^' + 
-                $(this).find('.form-action-css:first').val() + '^' + 
+                $(this).find('.form-action-button:first').val() + '^' + 
                 $(this).find('.form-action-value:first').val() + '^' + 
                 $(this).find('.form-action-response:first').val() + '|'
         });

@@ -24,6 +24,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select multiple MEF components
+    /// Stored as a comma-delimited list of EntityType.Guid
     /// </summary>
     public class ComponentsFieldAttribute : FieldAttribute
     {

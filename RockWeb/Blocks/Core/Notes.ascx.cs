@@ -64,24 +64,13 @@ namespace RockWeb.Blocks.Core
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
+                upNotes.Visible = true;
+
                 string noteTypeName = GetAttributeValue( "NoteType" );
 
                 var rockContext = new RockContext();
                 var service = new NoteTypeService( rockContext );
                 var noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-                // If a note type with the specified name does not exist for the context entity type, create one
-                if ( noteType == null )
-                {
-                    noteType = new NoteType();
-                    noteType.IsSystem = false;
-                    noteType.EntityTypeId = contextEntity.TypeId;
-                    noteType.EntityTypeQualifierColumn = string.Empty;
-                    noteType.EntityTypeQualifierValue = string.Empty;
-                    noteType.Name = noteTypeName;
-                    service.Add( noteType );
-                    rockContext.SaveChanges();
-                }
 
                 notesTimeline.NoteTypeId = noteType.Id;
                 notesTimeline.EntityId = contextEntity.Id;
@@ -100,6 +89,10 @@ namespace RockWeb.Blocks.Core
                 notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
                 notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
                 notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
+            }
+            else
+            {
+                upNotes.Visible = false;
             }
         }
 

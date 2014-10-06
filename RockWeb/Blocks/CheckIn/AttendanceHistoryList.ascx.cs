@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,8 +82,32 @@ namespace RockWeb.Blocks.Checkin
 
             if ( !Page.IsPostBack )
             {
-                BindFilter(); 
-                BindGrid();
+                bool valid = true;
+                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                if ( ContextTypesRequired.Any( p => p.Id == personEntityTypeId ) && _person == null )
+                {
+                    valid = false;
+                }
+
+                int batchEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                if ( ContextTypesRequired.Any( g => g.Id == batchEntityTypeId ) && _group == null )
+                {
+                    valid = false;
+                }
+
+                if ( valid )
+                {
+                    rFilter.Visible = true;
+                    gHistory.Visible = true;
+                    BindFilter();
+                    BindGrid();
+                }
+                else
+                {
+                    rFilter.Visible = false;
+                    gHistory.Visible = false;
+                }
+
             }
         }
 
@@ -170,10 +195,10 @@ namespace RockWeb.Blocks.Checkin
             drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
 
             var attendanceService = new AttendanceService( new RockContext() );
-            var attendanceQuery = attendanceService.Queryable();
+            var attendanceQuery = attendanceService.Queryable( "PersonAlias.Person" );
             if ( _person != null )
             {
-                attendanceQuery = attendanceQuery.Where( a => a.PersonId == _person.Id );
+                attendanceQuery = attendanceQuery.Where( a => a.PersonAlias.PersonId == _person.Id );
 
                 ddlGroups.DataSource = attendanceQuery.Select( a => a.Group ).Distinct().OrderBy( a => a.Name ).ToList();
                 ddlGroups.DataBind();
@@ -188,11 +213,11 @@ namespace RockWeb.Blocks.Checkin
             {
                 attendanceQuery = attendanceQuery.Where( a => a.GroupId == _group.Id );
                 var attendanceList = attendanceQuery.ToList();
- 
-                ddlPeople.DataSource = attendanceList.OrderBy( a => a.Person.FullName ).Select( a => a.Person.FullName ).Distinct();
+
+                ddlPeople.DataSource = attendanceList.OrderBy( a => a.PersonAlias.Person.FullName ).Select( a => a.PersonAlias.Person.FullName ).Distinct();
                 ddlPeople.DataBind();
                 ddlPeople.Items.Insert( 0, Rock.Constants.All.ListItem );
-                ddlPeople.Visible = attendanceList.Select( a => a.Person.FullName ).Distinct().Any();
+                ddlPeople.Visible = attendanceList.Select( a => a.PersonAlias.Person.FullName ).Distinct().Any();
                 ddlPeople.SetValue( rFilter.GetUserPreference( "Person" ) );
 
                 ddlGroups.Visible = false;
@@ -211,10 +236,10 @@ namespace RockWeb.Blocks.Checkin
         protected void BindGrid()
         {
             var attendanceService = new AttendanceService( new RockContext() );
-            var attendanceQuery = attendanceService.Queryable();
+            var attendanceQuery = attendanceService.Queryable( "PersonAlias.Person" );
             if ( _person != null )
             {
-                attendanceQuery = attendanceQuery.Where( a => a.PersonId == _person.Id );
+                attendanceQuery = attendanceQuery.Where( a => a.PersonAlias.PersonId == _person.Id );
             }
             else if ( _group != null )
             {
@@ -227,7 +252,7 @@ namespace RockWeb.Blocks.Checkin
                 {
                     Location = a.Location,
                     Schedule = a.Schedule,
-                    FullName = a.Person.FullName,
+                    FullName = a.PersonAlias.Person.FullName,
                     Group = a.Group,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime

@@ -27,6 +27,22 @@ namespace Rock.Plugin
     public abstract class Migration : Rock.Data.IMigration
     {
         /// <summary>
+        /// Gets or sets the SQL connection.
+        /// </summary>
+        /// <value>
+        /// The SQL connection.
+        /// </value>
+        public virtual SqlConnection SqlConnection { get; set;}
+
+        /// <summary>
+        /// Gets or sets the SQL transaction.
+        /// </summary>
+        /// <value>
+        /// The SQL transaction.
+        /// </value>
+        public virtual SqlTransaction SqlTransaction { get; set; }
+
+        /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public abstract void Up();
@@ -37,27 +53,41 @@ namespace Rock.Plugin
         public abstract void Down();
 
         /// <summary>
+        /// Gets the rock migration helper.
+        /// </summary>
+        /// <value>
+        /// The rock migration helper.
+        /// </value>
+        public Rock.Data.MigrationHelper RockMigrationHelper
+        {
+            get
+            {
+                if ( _migrationHelper == null )
+                {
+                    _migrationHelper = new Rock.Data.MigrationHelper( this );
+                }
+                return _migrationHelper;
+            }
+        }
+        private Rock.Data.MigrationHelper _migrationHelper = null;
+
+        /// <summary>
         /// Executes a sql statement
         /// </summary>
         /// <param name="sql">The SQL.</param>
         public void Sql( string sql )
         {
-            var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
-            if ( configConnectionString != null )
+            if ( SqlConnection != null || SqlTransaction != null )
             {
-                string connectionString = configConnectionString.ConnectionString;
-                if ( !string.IsNullOrWhiteSpace( connectionString ) )
+                using ( SqlCommand sqlCommand = new SqlCommand( sql, SqlConnection, SqlTransaction ) )
                 {
-                    using ( SqlConnection con = new SqlConnection( connectionString ) )
-                    {
-                        con.Open();
-                        using ( SqlCommand sqlCommand = new SqlCommand( sql, con ) )
-                        {
-                            sqlCommand.CommandType = CommandType.Text;
-                            sqlCommand.ExecuteNonQuery();
-                        }
-                    }
+                    sqlCommand.CommandType = CommandType.Text;
+                    sqlCommand.ExecuteNonQuery();
                 }
+            }
+            else
+            {
+                throw new NullReferenceException( "The Plugin Migration requires valid SqlConnection and SqlTransaction values when executing SQL" );
             }
         }
     }

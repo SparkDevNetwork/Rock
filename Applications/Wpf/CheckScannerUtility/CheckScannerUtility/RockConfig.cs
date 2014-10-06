@@ -16,7 +16,6 @@
 //
 using System;
 using System.Configuration;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -27,9 +26,14 @@ namespace Rock.Apps.CheckScannerUtility
     internal sealed partial class RockConfig : ApplicationSettingsBase
     {
         /// <summary>
+        /// The password, stored for the session, but not in the config file
+        /// </summary>
+        private static string sessionPassword = null;
+        
+        /// <summary>
         /// The default instance
         /// </summary>
-        private static RockConfig defaultInstance = ( (RockConfig)( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
+        private static RockConfig defaultInstance = (RockConfig)ApplicationSettingsBase.Synchronized( new RockConfig() );
 
         /// <summary>
         /// Gets the default.
@@ -88,48 +92,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        /// <value>
-        /// The password.
-        /// </value>
-        [DefaultSettingValueAttribute( "" )]
-        [UserScopedSetting]
-        public string PasswordEncryptedBase64
-        {
-            get
-            {
-                return this["PasswordEncryptedBase64"] as string;
-
-            }
-
-            set
-            {
-                this["PasswordEncryptedBase64"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the password encrypted.
-        /// </summary>
-        /// <value>
-        /// The password encrypted.
-        /// </value>
-        private byte[] PasswordEncrypted
-        {
-            get
-            {
-                return Convert.FromBase64String( PasswordEncryptedBase64 );
-            }
-
-            set
-            {
-                PasswordEncryptedBase64 = Convert.ToBase64String( value );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the password.
+        /// Gets or sets the password (not stored in config, just session)
         /// </summary>
         /// <value>
         /// The password.
@@ -138,28 +101,12 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                try
-                {
-                    byte[] clearTextPasswordBytes = ProtectedData.Unprotect( PasswordEncrypted ?? new byte[] { 0 }, null, DataProtectionScope.CurrentUser );
-                    return Encoding.Unicode.GetString( clearTextPasswordBytes );
-                }
-                catch ( CryptographicException )
-                {
-                    return string.Empty;
-                }
+                return sessionPassword;
             }
 
             set
             {
-                try
-                {
-                    byte[] clearTextPasswordBytes = Encoding.Unicode.GetBytes( value );
-                    PasswordEncrypted = ProtectedData.Protect( clearTextPasswordBytes, null, DataProtectionScope.CurrentUser );
-                }
-                catch ( CryptographicException )
-                {
-                    PasswordEncrypted = new byte[] { 0 };
-                }
+                sessionPassword = value;
             }
         }
 
@@ -169,14 +116,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The type of the image color.
         /// </value>
-        [DefaultSettingValueAttribute( "1" ) ]
+        [DefaultSettingValueAttribute( "0" )]
         [UserScopedSetting]
         public ImageColorType ImageColorType
         {
             get
             {
                 return (ImageColorType)this["ImageColorType"];
-
             }
 
             set
@@ -198,7 +144,6 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return (short)this["MICRImageComPort"];
-
             }
 
             set
@@ -229,12 +174,128 @@ namespace Rock.Apps.CheckScannerUtility
             get
             {
                 return (InterfaceType)this["ScannerInterfaceType"];
-
             }
 
             set
             {
                 this["ScannerInterfaceType"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tender type value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The tender type value unique identifier.
+        /// </value>
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string TenderTypeValueGuid
+        {
+            get
+            {
+                string result = this["TenderTypeValueGuid"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
+                }
+
+                return result;
+            }
+
+            set
+            {
+                this["TenderTypeValueGuid"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the source type value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The source type value unique identifier.
+        /// </value>
+        [DefaultSettingValueAttribute( "" )]
+        [UserScopedSetting]
+        public string SourceTypeValueGuid
+        {
+            get
+            {
+                string result = this["SourceTypeValueGuid"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
+                }
+
+                return result;
+            }
+
+            set
+            {
+                this["SourceTypeValueGuid"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the scanner should scan both the front and rear sides (applies only to Ranger)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable rear image]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "true" )]
+        [UserScopedSetting]
+        public bool EnableRearImage
+        {
+            get
+            {
+                return this["EnableRearImage"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableRearImage"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the UI should prompt to have the user scan the rear side (applies only to MagTek)
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [prompt to scan rear image]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "true" )]
+        [UserScopedSetting]
+        public bool PromptToScanRearImage
+        {
+            get
+            {
+                return this["PromptToScanRearImage"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["PromptToScanRearImage"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "true" )]
+        [UserScopedSetting]
+        public bool EnableDoubleDocDetection
+        {
+            get
+            {
+                return this["EnableDoubleDocDetection"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableDoubleDocDetection"] = value;
             }
         }
 

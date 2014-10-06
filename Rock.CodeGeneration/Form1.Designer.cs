@@ -38,6 +38,7 @@
             this.ofdAssembly = new System.Windows.Forms.OpenFileDialog();
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.fbdDataViewOutput = new System.Windows.Forms.FolderBrowserDialog();
+            this.cbClient = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -73,7 +74,7 @@
             this.cbSelectAll.AutoSize = true;
             this.cbSelectAll.Location = new System.Drawing.Point(305, 19);
             this.cbSelectAll.Name = "cbSelectAll";
-            this.cbSelectAll.Size = new System.Drawing.Size(70, 17);
+            this.cbSelectAll.Size = new System.Drawing.Size(69, 17);
             this.cbSelectAll.TabIndex = 4;
             this.cbSelectAll.Text = "Select All";
             this.cbSelectAll.UseVisualStyleBackColor = true;
@@ -81,9 +82,8 @@
             // 
             // fbdServiceOutput
             // 
-            this.fbdServiceOutput.Description = "Select the project folder that the Service files should be added to.  The" +
-    " namespace of the objects will be used to create a relative folder path if necce" +
-    "ssary.";
+            this.fbdServiceOutput.Description = "Select the project folder that the Service files should be added to.  The namespa" +
+    "ce of the objects will be used to create a relative folder path if neccessary.";
             this.fbdServiceOutput.ShowNewFolderButton = false;
             // 
             // cbRest
@@ -105,7 +105,7 @@
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbService.Location = new System.Drawing.Point(99, 385);
             this.cbService.Name = "cbService";
-            this.cbService.Size = new System.Drawing.Size(62, 17);
+            this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
             this.cbService.Text = "Service";
             this.cbService.UseVisualStyleBackColor = true;
@@ -126,17 +126,31 @@
             this.fbdDataViewOutput.Description = "Select the project folder that the DataFilters files should be added to.  ";
             this.fbdDataViewOutput.ShowNewFolderButton = false;
             // 
+            // cbClient
+            // 
+            this.cbClient.AutoSize = true;
+            this.cbClient.Checked = true;
+            this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbClient.Location = new System.Drawing.Point(221, 385);
+            this.cbClient.Name = "cbClient";
+            this.cbClient.Size = new System.Drawing.Size(53, 17);
+            this.cbClient.TabIndex = 8;
+            this.cbClient.Text = "Client";
+            this.cbClient.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(386, 416);
+            this.Controls.Add(this.cbClient);
             this.Controls.Add(this.cbService);
             this.Controls.Add(this.cbRest);
             this.Controls.Add(this.cbSelectAll);
             this.Controls.Add(this.cblModels);
             this.Controls.Add(this.btnGenerate);
             this.Controls.Add(this.btnLoad);
+            this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -156,6 +170,7 @@
 		private System.Windows.Forms.OpenFileDialog ofdAssembly;
         private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
         private System.Windows.Forms.FolderBrowserDialog fbdDataViewOutput;
+        private System.Windows.Forms.CheckBox cbClient;
     }
 }
 

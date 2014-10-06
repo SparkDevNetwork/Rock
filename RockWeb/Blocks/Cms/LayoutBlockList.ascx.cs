@@ -126,9 +126,18 @@ namespace RockWeb.Blocks.Cms
             int layoutId = PageParameter( "layoutId" ).AsInteger();
             if ( layoutId == 0 )
             {
+                pnlContent.Visible = false;
                 return;
             }
 
+            var rockContext = new RockContext();
+            var layout = LayoutCache.Read( layoutId, rockContext );
+            if (layout == null)
+            {
+                pnlContent.Visible = false;
+                return;
+            }
+                
             hfLayoutId.SetValue( layoutId );
 
             pnlBlocks.Visible = true;

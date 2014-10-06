@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
     [Description( "Block for administrating a tag." )]
-    public partial class TagDetail : Rock.Web.UI.RockBlock
+    public partial class TagDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
 
@@ -69,24 +69,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "tagId" );
-                string entityTypeId = PageParameter( "entityTypeId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( entityTypeId ) )
-                    {
-                        ShowDetail( "tagId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "tagId", int.Parse( itemId ), int.Parse( entityTypeId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "tagId" ).AsInteger(), PageParameter( "entityTypeId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -194,7 +177,10 @@ namespace RockWeb.Blocks.Core
                     .Where( t =>
                         t.Id != tagId &&
                         t.Name == name &&
-                        t.OwnerId.Equals( ownerId ) &&
+                        ( 
+                            ( t.OwnerPersonAlias == null && !ownerId.HasValue ) || 
+                            ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value ) 
+                        ) &&
                         t.EntityTypeId == entityTypeId &&
                         t.EntityTypeQualifierColumn == qualifierCol &&
                         t.EntityTypeQualifierValue == qualifierVal )
@@ -206,9 +192,14 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                int? ownerPersonAliasId = null;
+                if (ownerId.HasValue)
+                {
+                    ownerPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ownerId.Value );
+                }
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
-                tag.OwnerId = ownerId;
+                tag.OwnerPersonAliasId = ownerPersonAliasId;
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = qualifierCol;
                 tag.EntityTypeQualifierValue = qualifierVal;
@@ -278,44 +269,35 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="tagId">The tag identifier.</param>
+        public void ShowDetail( int tagId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( tagId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? entityTypeId )
+        /// <param name="tagId">The tag identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        public void ShowDetail( int tagId, int? entityTypeId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "tagId" ) )
-            {
-                return;
-            }
 
             Tag tag = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !tagId.Equals( 0 ) )
             {
-                tag = new TagService( new RockContext() ).Get( itemKeyValue );
+                tag = new TagService( new RockContext() ).Get( tagId );
             }
-            else
+            
+            if ( tag == null )
             {
-                tag = new Tag { Id = 0, OwnerId = CurrentPersonId };
+                tag = new Tag { Id = 0, OwnerPersonAliasId = CurrentPersonAliasId, OwnerPersonAlias = CurrentPersonAlias };
                 if ( entityTypeId.HasValue )
                 {
                     tag.EntityTypeId = entityTypeId.Value;
                 }
-            }
-
-            if ( tag == null )
-            {
-                return;
             }
 
             pnlDetails.Visible = true;
@@ -323,7 +305,7 @@ namespace RockWeb.Blocks.Core
 
             bool readOnly = false;
 
-            if ( !_canConfigure && tag.OwnerId != CurrentPersonId )
+            if ( !_canConfigure && ( tag.OwnerPersonAlias == null || tag.OwnerPersonAlias.PersonId != CurrentPersonId ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
@@ -376,15 +358,16 @@ namespace RockWeb.Blocks.Core
 
             tbName.Text = tag.Name;
             tbDescription.Text = tag.Description;
-            if ( tag.OwnerId.HasValue )
+            if ( tag.OwnerPersonAlias != null )
             {
                 rblScope.SelectedValue = "Personal";
+                ppOwner.SetValue( tag.OwnerPersonAlias.Person );
             }
             else
             {
                 rblScope.SelectedValue = "Organization";
+                ppOwner.SetValue( null );
             }
-            ppOwner.SetValue( tag.Owner );
 
             ddlEntityType.Items.Clear();
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );

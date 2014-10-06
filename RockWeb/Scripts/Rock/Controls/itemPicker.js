@@ -21,8 +21,8 @@
                         expandedIds: this.options.expandedIds,
                         id: this.options.startingId
                     },
-                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
-                    $hfExpandedIds = $('#hfInitialItemParentIds_' + this.options.controlId);
+                    $hfItemIds = $control.find('.js-item-id-value'),
+                    $hfExpandedIds = $control.find('.js-initial-item-parent-ids-value');
 
                 if (typeof this.options.mapItems === 'function') {
                     treeOptions.mapping = {
@@ -56,13 +56,18 @@
                 var self = this,
                     $control = $('#' + this.options.controlId),
                     $spanNames = $control.find('.selected-names'),
-                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
-                    $hfItemNames = $('#hfItemName_' + this.options.controlId);
+                    $hfItemIds = $control.find('.js-item-id-value'),
+                    $hfItemNames = $control.find('.js-item-name-value');
 
                 // Bind tree events
                 $control.find('.treeview')
                     .on('rockTree:selected', function () {
                         // intentionally blank
+                    })
+                    .on('rockTree:itemClicked', function (e) {
+                        if (!self.options.allowMultiSelect) {
+                            $control.find('.picker-btn').get(0).click();
+                        }
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                         self.updateScrollbar();
@@ -112,7 +117,7 @@
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
-                    $hfItemIds.val('');
+                    $hfItemIds.val('0');
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected
@@ -124,24 +129,14 @@
                 });
             },
             updateScrollbar: function () {
-                var $container = $('#' + this.options.controlId).find('.scroll-container'),
-                    $dialog = $('div.rock-modal > div.modal-body > div.scroll-container'),
-                    dialogTop,
-                    pickerTop,
-                    amount;
+                // first, update this control's scrollbar, then the modal's
+                var $container = $('#' + this.options.controlId).find('.scroll-container')
 
                 if ($container.is(':visible')) {
                     $container.tinyscrollbar_update('relative');
 
-                    if ($dialog.length > 0 && $dialog.is(':visible')) {
-                        dialogTop = $dialog.offset().top;
-                        pickerTop = $container.offset().top;
-                        amount = pickerTop - dialogTop;
-
-                        if (amount > 160) {
-                            $dialog.tinyscrollbar_update('bottom');
-                        }
-                    }
+                    // update the outer modal scrollbar
+                    Rock.dialogs.updateModalScrollBar(this.options.controlId);
                 }
             }
         };

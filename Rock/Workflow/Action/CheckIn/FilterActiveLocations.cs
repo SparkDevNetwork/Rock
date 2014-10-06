@@ -19,16 +19,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any locations that are not active
+    /// Removes (or excludes) any locations that are not active
     /// </summary>
-    [Description("Removes any locations that are not active")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Removes (or excludes) any locations that are not active" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if locations should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterActiveLocations : CheckInActionComponent
     {
         /// <summary>
@@ -48,9 +52,11 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
+                    foreach ( var person in family.People )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                        foreach ( var groupType in person.GroupTypes )
                         {
                             foreach ( var group in groupType.Groups )
                             {
@@ -58,7 +64,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     if ( !location.Location.IsActive )
                                     {
-                                        group.Locations.Remove( location );
+                                        if ( remove )
+                                        {
+                                            group.Locations.Remove( location );
+                                        }
+                                        else
+                                        {
+                                            location.ExcludedByFilter = true;
+                                        }
                                     }
                                 }
                             }

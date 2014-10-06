@@ -55,7 +55,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value ( as Guid )
+        /// Creates the control(s) necessary for prompting user for a new value ( as Guid )
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>

@@ -184,7 +184,7 @@ namespace Rock.Services.NuGet
 
                 // Find new block types and save them prior to scrubbing data...
                 var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService( rockContext ).Queryable() ).ToList();
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                     {
                         try
                         {
@@ -403,15 +403,23 @@ namespace Rock.Services.NuGet
 
             // find layout
             var layoutService = new LayoutService( rockContext );
-            var layout = layoutService.GetBySiteId(siteId).Where( l => l.Name == page.Layout.Name && l.FileName == page.Layout.FileName ).FirstOrDefault();
-            if ( layout == null )
+            Layout layout = new Layout();
+            if ( page.Layout != null )
             {
-                layout = new Layout();
-                layout.FileName = page.Layout.FileName;
-                layout.Name = page.Layout.Name;
-                layout.SiteId = siteId;
-                layoutService.Add( layout );
-                rockContext.SaveChanges();
+                layout = layoutService.GetBySiteId( siteId ).Where( l => l.Name == page.Layout.Name && l.FileName == page.Layout.FileName ).FirstOrDefault();
+                if ( layout == null )
+                {
+                    layout = new Layout();
+                    layout.FileName = page.Layout.FileName;
+                    layout.Name = page.Layout.Name;
+                    layout.SiteId = siteId;
+                    layoutService.Add( layout );
+                    rockContext.SaveChanges();
+                }
+            }
+            else
+            {
+                layout = layoutService.GetBySiteId( siteId ).Where( l => l.Name.Contains( "Full" ) || l.Name.Contains( "Home" ) ).First();
             }
             int layoutId = layout.Id;
 

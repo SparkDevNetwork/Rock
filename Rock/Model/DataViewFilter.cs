@@ -132,15 +132,16 @@ namespace Rock.Model
         /// <summary>
         /// Determines whether the specified action is authorized.
         /// </summary>
-        /// <param name="action">A <see cref="System.String"/> containing the action that is being performed.</param>
-        /// <param name="person">the <see cref="Rock.Model.Person"/> who is trying to perform the action.</param>
+        /// <param name="action">A <see cref="System.String" /> containing the action that is being performed.</param>
+        /// <param name="person">the <see cref="Rock.Model.Person" /> who is trying to perform the action.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public override bool IsAuthorized( string action, Person person )
+        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
             // First check if user is authorized for model
-            bool authorized = base.IsAuthorized( action, person );
+            bool authorized = base.IsAuthorized( action, person, rockContext );
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
@@ -151,7 +152,7 @@ namespace Rock.Model
                     var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( filterComponent != null )
                     {
-                        authorized = filterComponent.IsAuthorized( action, person );
+                        authorized = filterComponent.IsAuthorized( action, person, rockContext );
                     }
                 }
 
@@ -159,7 +160,7 @@ namespace Rock.Model
                 {
                     foreach ( var childFilter in ChildFilters )
                     {
-                        if ( !childFilter.IsAuthorized( action, person ) )
+                        if ( !childFilter.IsAuthorized( action, person, rockContext ) )
                         {
                             return false;
                         }

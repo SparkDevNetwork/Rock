@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
@@ -23,7 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.GroupType"/> objects.
     /// </summary>
-    public partial class GroupTypeService 
+    public partial class GroupTypeService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
@@ -41,9 +42,19 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
+        public IQueryable<GroupType> GetChildGroupTypes( int groupTypeId )
         {
             return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+        }
+
+        /// <summary>
+        /// Gets the child group types.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetChildGroupTypes( Guid groupTypeGuid )
+        {
+            return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Guid ).Contains( groupTypeGuid ) );
         }
 
         /// <summary>
@@ -58,7 +69,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
+        /// WARNING: This will fail if there is a circular reference in the GroupTypeAssociation table.
         /// </summary>
         /// <param name="parentGroupTypeId">The parent group type identifier.</param>
         /// <returns>
@@ -73,11 +84,60 @@ namespace Rock.Model
 		            UNION ALL
 		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
 		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                    WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
                  )
                 SELECT *
                 FROM [GroupType]
                 WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
                 ", parentGroupTypeId );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects that are
+        /// associated descendants of a specified group type.
+        /// WARNING: This will fail if there is a circular reference in the GroupTypeAssociation table.
+        /// </summary>
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects.
+        /// </returns>
+        public IEnumerable<GroupTypePath> GetAllAssociatedDescendentsPath( int parentGroupTypeId )
+        {
+            return this.Context.Database.SqlQuery<GroupTypePath>(
+                @"
+                -- Get GroupType association heirarchy with GroupType ancestor path information
+                WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
+                (
+                      SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
+                      FROM   [GroupTypeAssociation] GTA
+		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
+                      WHERE  [GroupTypeId] = {0}
+                      UNION ALL 
+                      SELECT
+                            GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
+                      FROM
+                            GroupTypeAssociation GTA
+		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
+		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
+                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+                )
+                SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 3, 500) AS 'Path'
+                FROM CTE
+                INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
+                ", parentGroupTypeId );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
+        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
+        /// </summary>
+        /// <param name="parentGroupTypeGuid">The parent group type unique identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendents( Guid parentGroupTypeGuid )
+        {
+            return this.GetAllAssociatedDescendents( this.Get( parentGroupTypeGuid ).Id );
         }
 
         /// <summary>
@@ -94,5 +154,27 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
+    }
+
+    /// <summary>
+    /// Represents a GroupTypePath object in Rock.
+    /// </summary>
+    public class GroupTypePath
+    {
+        /// <summary>
+        /// Gets or sets the ID of the GroupType.
+        /// </summary>
+        /// <value>
+        /// ID of the GroupType.
+        /// </value>
+        public int GroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full associated ancestor path (of group type associations). 
+        /// </summary>
+        /// <value>
+        /// Full path of the ancestor group type associations. 
+        /// </value>
+        public string Path { get; set; }
     }
 }

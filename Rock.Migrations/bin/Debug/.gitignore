@@ -4,3 +4,5 @@
 /Rock.dll
 /Rock.pdb
 /Rock.xml
+*.pdb
+*.dll

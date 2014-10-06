@@ -56,7 +56,8 @@ namespace CheckinClient
             RockCheckinScriptManager scriptManager = new RockCheckinScriptManager( this );
             wbMain.ObjectForScripting = scriptManager;
             wbMain.AllowDrop = false;
-            wbMain.Source = new Uri( ConfigurationManager.AppSettings["CheckinAddress"]);
+            var rockConfig = RockConfig.Load();
+            wbMain.Source = new Uri( rockConfig.CheckinAddress );
 
             puOverlay.IsOpen = true;
         }
@@ -69,8 +70,6 @@ namespace CheckinClient
 
             closeClickBuffer++;
 
-            btnClose.Opacity = closeClickBuffer / 300;
-
             if ( closeClickBuffer > 300 )
                 Application.Current.Shutdown();
         }
@@ -80,7 +79,6 @@ namespace CheckinClient
         {
             closeClickBuffer = 0;
             closeButtonRestartTimer.Stop();
-            btnClose.Opacity = .01;
         }
     }
 }

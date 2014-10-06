@@ -27,8 +27,30 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// This control is used to allow a photo to be uploaded and then cropped
+    /// by the user before it is automatically resized (by this control).
     /// </summary>
+    /// <remarks>
+    /// To bind an image to the control set the BinaryFileId property to an existing file id.
+    /// 
+    /// An OnFileSaved event will be raised after the photo is uploaded and cropped
+    /// allowing another control to handle this event to presumably do something 
+    /// immediately with the image.  The PhotoRequest's Upload block uses this feature.
+    /// <example>
+    /// <code>
+    /// <![CDATA[
+    ///     <Rock:ImageEditor ID="imgedPhoto" runat="server" ButtonText="<i class='fa fa-pencil'></i> Select Photo" 
+    ///             ButtonCssClass="btn btn-primary margin-t-sm" CommandArgument='<%# Eval("Id") %>' 
+    ///             OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false" />
+    /// ]]>
+    /// </code>
+    /// </example>
+    /// 
+    /// By setting the ShowDeleteButton to false, a more simplified UX occurs which is intended
+    /// for normal end-users. The remove button is not shown and the image upload button is 
+    /// always shown. This is allows for the existing image to always be replaced when the
+    /// upload button is clicked.
+    /// </remarks>
     [ToolboxData( "<{0}:ImageEditor runat=server></{0}:ImageEditor>" )]
     public class ImageEditor : CompositeControl, IRockControl
     {
@@ -164,6 +186,60 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Gets or sets the edit button text.
+        /// </summary>
+        /// <value>
+        /// The edit button text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "<i class='fa fa-pencil'></i>" ),
+        Description( "The text for the edit button." )
+        ]
+        public string ButtonText
+        {
+            get { return ViewState["ButtonText"] as string ?? "<i class='fa fa-pencil'></i>"; }
+            set { ViewState["ButtonText"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the edit button.
+        /// </summary>
+        /// <value>
+        /// The CSS class name.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The CSS class to use on the edit button." )
+        ]
+        public string ButtonCssClass
+        {
+            get { return ViewState["ButtonCssClass"] as string ?? string.Empty; }
+            set { ViewState["ButtonCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the delete button is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "true" ),
+        Description( "Allow delete by showing the delete button?" )
+        ]
+        public bool ShowDeleteButton
+        {
+            get { return ViewState["ShowDeleteButton"] as bool? ?? true; }
+            set { ViewState["ShowDeleteButton"] = value; }
+        }
+
         #region OnLoad
 
         /// <summary>
@@ -185,10 +261,12 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
+        private HiddenField _hfOriginalBinaryFileId;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
         private HtmlAnchor _aRemove;
+        private Label _lSaveStatus;
         private LinkButton _lbShowModal;
         private LinkButton _lbUploadImage;
 
@@ -217,6 +295,30 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// The OriginalBinaryFileId of the image displayed on in the main image (before uploading any new one occurs)
+        /// </summary>
+        /// <value>
+        /// The binary file identifier of the original file
+        /// </value>
+        public int? OriginalBinaryFileId
+        {
+            get
+            {
+                EnsureChildControls();
+                int? result = _hfOriginalBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // OriginalBinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// The BinaryFileId of the image displayed on in the main image (not necessarily the one being cropped in the Modal)
         /// </summary>
         /// <value>
@@ -243,6 +345,12 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfBinaryFileId.Value = value.ToString();
+
+                // only set the OriginalBinaryFileId once...
+                if ( string.IsNullOrEmpty( _hfOriginalBinaryFileId.Value ) )
+                {
+                    _hfOriginalBinaryFileId.Value = _hfBinaryFileId.Value;
+                }
             }
         }
 
@@ -369,6 +477,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when [file saved].
+        /// </summary>
+        public event EventHandler FileSaved;
+
         #endregion
 
         /// <summary>
@@ -379,6 +492,10 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
+
+            _hfOriginalBinaryFileId = new HiddenField();
+            _hfOriginalBinaryFileId.ID = this.ID + "_hfOriginalBinaryFileId";
+            Controls.Add( _hfOriginalBinaryFileId );
 
             _hfCropBinaryFileId = new HiddenField();
             _hfCropBinaryFileId.ID = this.ID + "_hfCropBinaryFileId";
@@ -395,14 +512,31 @@ namespace Rock.Web.UI.Controls
 
             _lbShowModal = new LinkButton();
             _lbShowModal.ID = this.ID + "_lbShowModal";
-            _lbShowModal.Text = "<i class='fa fa-pencil'></i>";
+            _lbShowModal.CssClass = this.ButtonCssClass;
+            _lbShowModal.Text = this.ButtonText;
             _lbShowModal.Click += _lbShowModal_Click;
             Controls.Add( _lbShowModal );
 
+            // If we are not showing the delete button then
+            // only the UploadImage button should be active.
+            if ( !ShowDeleteButton )
+            {
+                _aRemove.Visible = false;
+                _lbShowModal.Visible = false;
+            }
+
             _lbUploadImage = new LinkButton();
             _lbUploadImage.ID = this.ID + "_lbUploadImage";
-            _lbUploadImage.Text = "<i class='fa fa-pencil'></i>";
+            _lbUploadImage.CssClass = this.ButtonCssClass;
+            _lbUploadImage.Text = this.ButtonText;
             Controls.Add( _lbUploadImage );
+
+            _lSaveStatus = new Label();
+            _lSaveStatus.ID = this.ID + "_lSaveStatus";
+            _lSaveStatus.CssClass = "fa fa-2x fa-check-circle-o text-success";
+            _lSaveStatus.Style.Add( "vertical-align", "bottom" );
+            _lSaveStatus.Visible = false;
+            Controls.Add( _lSaveStatus );
 
             _fileUpload = new FileUpload();
             _fileUpload.ID = this.ID + "_fu";
@@ -470,6 +604,14 @@ namespace Rock.Web.UI.Controls
                     this.BinaryFileId = croppedBinaryFile.Id;
                 }
 
+                // Raise the FileSaved event if one is defined by another control.
+                if ( FileSaved != null )
+                {
+                    FileSaved( this, e );
+                    _lSaveStatus.Visible = true;
+                }
+
+                _hfOriginalBinaryFileId.Value = this.BinaryFileId.ToStringSafe();
                 _mdImageDialog.Hide();
             }
             catch ( ImageResizer.Plugins.Basic.SizeLimits.SizeLimitException )
@@ -563,7 +705,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _lbShowModal_Click( object sender, EventArgs e )
         {
-            if ( !BinaryFileId.HasValue )
+            // return if there's no image to crop or if this is a new upload before the image is replaced
+            if ( !BinaryFileId.HasValue || ( sender == _lbUploadImage && OriginalBinaryFileId == BinaryFileId ) )
             {
                 // no image to crop. they probably cancelled the image upload dialog
                 return;
@@ -649,9 +792,15 @@ namespace Rock.Web.UI.Controls
             writer.Write( imageDivHtml );
             writer.WriteLine();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
+            if ( string.IsNullOrEmpty( ButtonCssClass ) )
+            { 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            if ( ( BinaryFileId ?? 0 ) > 0 )
+
+            // We only show the Modal/Editor if the delete button is enabled and
+            // we have a file already.
+            if ( ShowDeleteButton && ( BinaryFileId ?? 0 ) > 0 )
             {
                 _lbShowModal.Style[HtmlTextWriterStyle.Display] = string.Empty;
                 _lbUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
@@ -663,7 +812,13 @@ namespace Rock.Web.UI.Controls
             }
 
             _lbShowModal.RenderControl( writer );
+            _lbUploadImage.Text = this.ButtonText;
+            _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.RenderControl( writer );
+
+            // render the circle check status for when save happens
+            writer.WriteLine();
+            _lSaveStatus.RenderControl( writer );
 
             writer.WriteLine();
             _aRemove.RenderControl( writer );
@@ -672,6 +827,8 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             _hfBinaryFileId.RenderControl( writer );
+            writer.WriteLine();
+            _hfOriginalBinaryFileId.RenderControl( writer );
             writer.WriteLine();
             _hfCropBinaryFileId.RenderControl( writer );
             writer.WriteLine();
@@ -757,7 +914,7 @@ $('#{5}').click(function () {{
                 Page.ClientScript.GetPostBackEventReference( _lbUploadImage, string.Empty ),
                 this.NoPictureUrl);
 
-            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
         /// <summary>

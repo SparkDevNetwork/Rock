@@ -64,6 +64,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<DefinedType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DefinedType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<History>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );
@@ -85,6 +91,12 @@ namespace Rock.Model
             if ( new Service<Schedule>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Schedule.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemEmail.FriendlyTypeName );
                 return false;
             }  
  
@@ -138,6 +150,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Description = source.Description;
             target.IconCssClass = source.IconCssClass;
+            target.HighlightColor = source.HighlightColor;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

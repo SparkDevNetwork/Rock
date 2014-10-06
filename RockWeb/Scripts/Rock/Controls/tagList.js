@@ -24,8 +24,7 @@
                 restUrl = Rock.settings.get('baseUrl') + 'api/tags';
             restUrl += '/' + tagList.entityTypeId;
             restUrl += '/' + tagList.currentPersonId;
-            restUrl += '/' + tagName;
-
+            
             if (tagList.entityQualifierColumn) {
                 restUrl += '/' + tagList.entityQualifierColumn;
             }
@@ -33,6 +32,9 @@
             if (tagList.entityQualifierValue) {
                 restUrl += '/' + tagList.entityQualifierValue;
             }
+
+            restUrl += '?name=' + encodeURIComponent(tagName);
+
 
             $.ajax({
                 url: restUrl,
@@ -42,7 +44,7 @@
                             $('#' + tagList.controlId).removeTag(tagName);
                         }
                         else {
-                            Rock.dialogs.confirm('A tag called "' + tagName + '" does not exist. Do you want to create a new personal tag?', function (result) {
+                            Rock.dialogs.confirm('A tag called "' + $('<div/>').text(tagName).html() + '" does not exist. Do you want to create a new personal tag?', function (result) {
                                 if (result) {
                                     tagList.addTag(tagName);
                                 } else {
@@ -67,7 +69,7 @@
             restUrl += '/' + tagList.entityTypeId;
             restUrl += '/' + tagList.currentPersonId;
             restUrl += '/' + tagList.entityGuid;
-            restUrl += '/' + tagName;
+            restUrl += '?name=' + encodeURIComponent(tagName);
 
             // only attempt to add tag if an entityGuid exists
             if (!tagList.delaySave) {
@@ -98,7 +100,6 @@
             restUrl += '/' + tagList.entityTypeId;
             restUrl += '/' + tagList.currentPersonId;
             restUrl += '/' + tagList.entityGuid;
-            restUrl += '/' + tagName;
 
             // only attempt to remove tag if an entityGuid exists
             if (!tagList.delaySave) {
@@ -109,6 +110,8 @@
                 if (tagList.entityQualifierValue) {
                     restUrl += '/' + tagList.entityQualifierValue;
                 }
+
+                restUrl += '?name=' + encodeURIComponent(tagName);
 
                 $.ajax({
                     type: 'DELETE',

@@ -68,7 +68,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -126,6 +126,19 @@ namespace Rock.Field.Types
         {
             string formattedValue = NumberRangeEditor.FormatDelimitedValues( value ) ?? value;
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.FilterFieldType = SystemGuid.FieldType.DECIMAL;
+            return filterConfig;
         }
     }
 }

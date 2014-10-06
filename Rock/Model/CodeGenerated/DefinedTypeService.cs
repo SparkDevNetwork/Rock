@@ -96,7 +96,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.FieldTypeId = source.FieldTypeId;
             target.Order = source.Order;
-            target.Category = source.Category;
+            target.CategoryId = source.CategoryId;
             target.Name = source.Name;
             target.Description = source.Description;
             target.HelpText = source.HelpText;

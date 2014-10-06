@@ -42,7 +42,7 @@ namespace Rock.Model
                 .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( t.OwnerId == null || (ownerId.HasValue && t.OwnerId == ownerId) ) 
+                    ( t.OwnerPersonAlias == null || (ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId) ) 
                     )
                 .OrderBy( t => t.Name );
         }
@@ -64,7 +64,7 @@ namespace Rock.Model
                 .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( t.OwnerId == null || ( ownerId.HasValue && t.OwnerId == ownerId ) ) &&
+                    ( t.OwnerPersonAlias == null || ( ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId ) ) &&
                     ( t.Name == name)
                     )
                 .FirstOrDefault();

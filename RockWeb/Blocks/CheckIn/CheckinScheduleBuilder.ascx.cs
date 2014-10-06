@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Web.UI;
@@ -25,16 +27,15 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
 
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Scedule Builder")]
-    [Category("Check-in")]
-    [Description("Helps to build schedules to be used for checkin.")]
+    [DisplayName( "Scedule Builder" )]
+    [Category( "Check-in" )]
+    [Description( "Helps to build schedules to be used for checkin." )]
     public partial class CheckinScheduleBuilder : RockBlock
     {
         #region Control Methods
@@ -259,7 +260,8 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             var groupLocationService = new GroupLocationService( rockContext );
-
+            var groupTypeService = new GroupTypeService( rockContext );
+            IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
             int groupTypeId;
 
@@ -276,10 +278,28 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( groupTypeId != Rock.Constants.All.Id )
             {
-                var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId ).Select( a => a.Id );
+                var descendantGroupTypeIds = groupTypeService.GetAllAssociatedDescendents( groupTypeId ).Select( a => a.Id );
 
                 // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
+
+                groupPaths = groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId );
+            }
+            else
+            {
+                // if no specific GroupType is specified, show all GroupTypes with GroupTypePurpose of Checkin Template and their descendents (since this blocktype is specifically for Checkin)
+                int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+                List<int> descendantGroupTypeIds = new List<int>();
+                foreach ( var templateGroupType in groupTypeService.Queryable().Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId ) )
+                {
+                    foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( templateGroupType.Id ) )
+                    {
+                        descendantGroupTypeIds.Add( childGroupType.Id );
+                        descendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( childGroupType.Id ).Select( a => a.Id ).ToList() );
+                    }
+                }
+
+                groupLocationQry = groupLocationQry.Where( a => descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
             }
 
             if ( gGroupLocationSchedule.SortProperty != null )
@@ -298,7 +318,8 @@ namespace RockWeb.Blocks.CheckIn
                     GroupName = a.Group.Name,
                     LocationName = a.Location.Name,
                     ScheduleIdList = a.Schedules.Select( s => s.Id ),
-                    a.LocationId
+                    a.LocationId,
+                    GroupTypeId = a.Group.GroupTypeId
                 } ).ToList();
 
             int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
@@ -313,6 +334,7 @@ namespace RockWeb.Blocks.CheckIn
             dataTable.Columns.Add( "GroupLocationId" );
             dataTable.Columns.Add( "GroupName" );
             dataTable.Columns.Add( "LocationName" );
+            dataTable.Columns.Add( "Path" );
             foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
             {
                 dataTable.Columns.Add( field.DataField, typeof( bool ) );
@@ -324,6 +346,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataRow["GroupLocationId"] = row.GroupLocationId;
                 dataRow["GroupName"] = row.GroupName;
                 dataRow["LocationName"] = row.LocationName;
+                dataRow["Path"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
                 foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
                 {
                     int scheduleId = int.Parse( field.DataField.Replace( "scheduleField_", string.Empty ) );

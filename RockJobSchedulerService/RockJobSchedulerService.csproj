@@ -45,9 +45,6 @@
     <Reference Include="C5">
       <HintPath>..\RockWeb\Bin\C5.dll</HintPath>
     </Reference>
-    <Reference Include="DotLiquid">
-      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
@@ -108,6 +105,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="windows-service.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

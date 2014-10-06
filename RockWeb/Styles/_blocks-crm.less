@@ -1,0 +1,859 @@
+﻿/*
+    Used to manage styles related to the person details page
+    
+    1. Page Styles
+    2. Header
+    3. Badge Bar
+    4. Family Bar
+    5. Page Tabs
+    6. Styles to Tab Pages
+    7. Edit Family Page
+    8. Add Family Page
+    9. Fluidbox
+    10. Responsive Overrides
+    11. Person Merge
+    12. Person Page Views
+    13. Deceased / Inactive Styles
+    14. Bulk Update
+    15. Photo Upload
+    16. Duplicate Pages
+*/
+
+// 1. Page Styles
+// -------------------------
+
+.personprofile { // offset pageheader margin
+    margin-top: -@spacing-md-px;
+
+    small { // lighten up small elements a bit 
+        color: lighten(@persondetails-bio-color, 30%);
+    }
+}
+
+// 2. Header
+// -------------------------
+
+.personprofilebar-bio {
+    background-color: @persondetails-bio-bg;
+    border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+    padding: @spacing-md-px @spacing-md-px 0 @spacing-md-px;
+    color: @persondetails-bio-color;
+
+    .name {
+        text-align: center;
+        margin-top: 0;
+
+        .full-name {
+            font-size: 18px;
+            
+            display: none;
+        }
+    }
+
+    .labels {
+        margin-bottom: @spacing-sm-px;
+        text-align: center;
+    }
+
+    .nav li .persondetails-actions {
+        padding: 2px 0 0 15px;
+
+        &:hover, 
+        &:focus {
+            background-color: transparent;
+        }
+    }
+
+    .actions { // edit individual button
+        position: absolute;
+        right: 50%;
+        bottom: 6px;
+        z-index: 10;
+        margin-right: -52px;
+
+        a.btn-action {
+            color: @accent-bold-text-color;
+            background-color: @accent-bold-color;
+            border-color: darken(@accent-bold-color, 5%);
+        }
+    }
+
+    .photo {
+        padding: 5px 5px 5px 5px;
+        background-color: @accent-semibold-color;
+        border: 1px solid #bdbdbd;
+        display: table;
+        max-width: 200px;
+        margin: 0 auto;
+        position: relative;
+
+        .following-status {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            z-index: 500;
+            border-top: 70px solid @link-color;
+            border-right: 70px solid transparent;
+            transition: 1s;
+            opacity: .4;
+
+            i {
+                position: absolute;
+                top: -60px;
+                left: 10px;
+                color: #fff;
+                font-size: 24px;
+                transition: 1s;
+                opacity: 0;
+            }
+
+            &.following {
+                opacity: 1;
+
+                i {
+                    opacity: 1;
+                }
+            }
+        }
+
+        a.fluidbox-opened + .following-status { // hide the following fold if the photo is zoomed
+            opacity: 0 !important;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+        }
+
+        .fluidbox-ghost {
+            cursor: -webkit-zoom-in;
+            cursor: -moz-zoom-in;
+        }
+
+        .fluidbox-opened .fluidbox-ghost {
+            cursor: -webkit-zoom-out;
+            cursor: -moz-zoom-out;
+        }
+    }
+
+    .social-icons {
+        text-align: center;
+
+        .icon {
+            background-color: @accent-bold-color;
+            margin: 0 2px;
+            border-radius: @border-radius-base;
+            font-size: 16px;
+            display: inline-block;
+
+            a {
+                color: #fff;
+
+                &:hover {
+                    opacity: .6;
+                }
+            }
+
+            i {
+                margin: 4px;
+            }
+
+            &.icon-facebook {
+                background-color: #44619d;
+                color: #fff;
+            }
+
+            &.icon-twitter {
+                background-color: #55acee;
+                color: #fff;
+            }
+
+            &.icon-instagram {
+                background-color: #39688f;
+                color: #fff;
+            }
+        }
+
+        .icon:first-child {
+            margin-left: 0;
+        }
+    }
+
+    .taglist {
+        margin-top: @spacing-sm-px;
+    }
+
+    .demographics {
+        margin-top: @spacing-lg-px;
+        text-align: center;
+    }
+
+    .personcontact {
+        text-align: center;
+        margin-top: @spacing-md-px;
+        padding-bottom: 30px;
+
+        .email {
+            .email-status i {
+                color: @accent-semibold-color;
+            }
+            .email-status.do-not-email i {
+                color: @brand-danger;
+            }
+            .email-status.not-active i {
+                color: @brand-warning;
+            }
+        }
+    }
+}
+
+
+// 3. Badge Bar
+// -------------------------
+
+.personprofilebar-badge
+{
+    background-color: @persondetails-badge-bg;
+    min-height: 64px;
+    border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
+    color: @persondetails-badge-color;
+
+    .badge-group {
+        margin: @spacing-sm-px 0;
+        text-align: center;
+
+        .badge { 
+            background-color: inherit;
+            padding: 3px 7px 0;
+            display: inline-block;  // fixes issue in default browser on Andriod
+        }
+
+        .badge-debug {
+            text-align: left;
+            position: absolute;
+            z-index: 9999;
+            width: 900px;
+            right: 12px;
+        }
+
+    }
+}
+
+.badge-baptism {
+    color: #23a5c5;
+}
+
+.badge-icon {
+
+    font-size: 45px;
+
+    &.badge-disabled {
+        opacity: 0.3;
+    }
+}
+
+.badge-attendance {
+    ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
+        display: table;
+        table-layout: fixed;
+        height: 40px;
+        margin: 0 auto;
+        width: 220px;
+
+        li {
+            position: relative;
+            display: table-cell;
+            vertical-align: bottom;
+            height: 40px;
+            width: 10px;
+        
+            span {
+                display: block;
+                background: @persondetails-badge-color;
+                position: absolute;
+                bottom: 0;
+                width: 8px;
+                min-height: 1px;
+            }
+        }
+    }
+
+    &.annimate {
+        ul.badge-attendance-chart li span {
+            -webkit-animation: bar-grow 1s ease-in-out;
+            -moz-animation: bar-grow 1s ease-in-out;
+            -o-animation: bar-grow 1s ease-in-out;
+            animation: bar-grow 1s ease-in-out;
+        }
+    }
+}
+
+.badge-ingroupoftype {
+    width: 45px;
+}
+
+.badge-attendingduration {
+    position: relative;
+    color: #686576;
+
+    .duration-metric {
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-circle;
+            color: #d0db25;
+            font-size: 45px;
+        }
+
+        &.duration-months:before {
+            color: #49b039;
+        }
+
+        &.duration-years:before {
+            color: #3971b0;
+        }
+
+        &.duration-new:before {
+            color: #db2525;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            position: absolute;
+            left: 11px;
+            top: 14px;
+            font-weight: @font-weight-bold;
+            color: #fff;
+            line-height: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            font-weight: normal;
+            display: block;
+        }
+
+        &.duration-new .metric-value {
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+            top: 18px;
+        }
+    }
+}
+
+.badge-weeksattendanceduration {
+    .weeks-metric {
+
+        position: relative;
+        color: #686576;
+
+        &:before {
+            font-family: FontAwesome;
+            content: @fa-var-square;
+            color: @brand-warning;
+            font-size: 45px;
+        }
+
+        .weeks-attended {
+            position: absolute;
+            top: 7px;
+            left: 3px;
+            font-weight: @font-weight-bold;
+            font-size: 20px;
+            letter-spacing: -2px;
+            display: block;
+            width: 18px;
+            text-align: center;
+        }
+        .week-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 4px;
+            font-weight: @font-weight-semibold;
+            font-size: 11px;
+        }
+    }
+}
+
+.badge-lastvisitonsite {
+
+    .badge-content {
+        position: relative;
+
+        color: #4f89bd;
+
+        &.today {
+            .duration {
+                font-size: 11px;
+                top: 6px;
+            }
+        }
+
+        &.recent {
+            opacity: .8;
+        }
+
+        &.moderate {
+            opacity: .6;
+        }
+
+        &.not-recent {
+            opacity: .4;
+        }
+
+        &.old {
+            opacity: .2;
+        }
+
+        i {
+            font-size: 40px;
+        }
+
+        span.duration {
+            position: absolute;
+            top: 5px;
+            font-size: 16px;
+            font-weight: @font-weight-bold;
+            text-align: center;
+            right: 50%;
+            width: 36px;
+            margin-right: -17px;
+        }
+    }
+}
+
+@-webkit-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@-moz-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@-o-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+
+// 4. Family Bar
+// -------------------------
+
+.personprofilebar-family {
+    background: @persondetails-familybar-bg;
+    padding: 12px 0;
+    border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
+    color: @persondetails-familybar-color;
+    margin-top: 12px;
+
+    a {
+        color: @persondetails-familybar-color;
+    }
+
+    .groupmembers {
+        .member {   
+            a {
+                .clearfix();
+                border-radius: @border-radius-base;
+                padding: 8px;
+                display: block;
+            }
+
+            .person-image {
+                filter: grayscale(100%);
+                -webkit-filter: grayscale(100%); /* For Webkit browsers */
+                filter: gray; /* For IE 6 - 9 */
+                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
+                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */filter: grayscale(100%);
+                -webkit-filter: grayscale(100%); /* For Webkit browsers */
+                filter: gray; /* For IE 6 - 9 */
+                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
+                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+                transition: .5s;
+            }
+
+            &:hover {
+                background-color: darken(@persondetails-familybar-bg, 8%);
+                border-radius: @border-radius-base;
+
+                .person-image {
+                    filter: grayscale(0%);
+                    -webkit-filter: grayscale(0%);
+                    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
+                }
+            }
+        }
+    }
+
+    .actions { // edit family button
+        position: absolute; 
+        right: 12px; 
+        z-index: 999;
+
+        a.btn-action {
+            color: @accent-text-color;
+            background-color: @accent-color;
+            border-color: darken(@accent-color, 5%);
+        }
+    }
+
+    header {
+        font-size: 16px;
+        margin-bottom: @spacing-sm-px;
+    }
+
+    .addresses ul {
+        list-style: none;
+        margin: 0;
+
+        li {
+            display: block;
+            clear: both;
+            margin-bottom: @spacing-md-px;
+            &:last-child { margin-bottom: 0; }
+        }
+
+        h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+        }
+
+        .address {
+            .actions {
+                a {
+                    padding: 1px;
+                }
+            }
+        }
+
+        & a.map,
+        & div.actions,
+        & div.address {
+            float: left;
+            margin-right: 12px;
+        }
+    }
+}
+
+
+
+// 5. Page Tabs
+// -------------------------
+
+.pagetabs
+{
+    margin-top: 12px;
+}
+
+
+// 6. Edit Family Page
+// -------------------------
+.editfamily-list {
+    
+    li.member {
+        max-width: 200px;
+
+        .radio { // put adult/child radios side by side
+            width: 65px;
+            float: left;
+            margin: 0;
+        }
+
+        h4 {
+            height: 38px;
+        }
+    }
+    
+    
+}
+
+// 7. Styles for Page Tabs
+// -------------------------
+
+// history page
+span.field-name {
+    font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #515151;
+    background-color: #d9e1e8;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+span.field-value {
+    font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #515151;
+    background-color: #d9e1e8;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+// 8. Add Families
+// -------------------------
+
+.table-familymembers .radio:first-child {
+    margin-top: 0;
+}
+
+// 9. Fluidbox
+// -------------------------
+
+#fluidbox-overlay {
+    background: @modal-backdrop-bg;
+}
+
+
+// 10. Responsive Overrides
+// -------------------------
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: @screen-sm-min), print {
+    
+    // bio bar
+    .personprofilebar-bio {
+        padding: @spacing-md-px;
+
+        .actions {
+            right: 12px;
+            margin-right: 0;
+        }
+
+        .name {
+            text-align: left;
+        
+            .full-name {
+                display: inline;
+            }
+        }
+        
+        .labels {
+            text-align: right;
+        }
+
+        .photo {
+            margin: 0;
+        }
+
+        .taglist {
+            margin-top: 0;
+        }
+
+        .demographics {
+            text-align: left;
+        }
+
+        .personcontact {
+            text-align: left;
+            padding-bottom: 0;
+        }
+
+        .social-icons {
+            text-align: left;
+            .icon {
+                float: left;
+            }
+        }
+    }
+
+    .personprofilebar-badge {
+        .badge-group {
+            text-align: left;
+
+            &:last-child {
+                text-align: right;
+            }
+        }
+    }
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: @screen-md-min) {
+ 
+    // bio bar
+    .personprofilebar-bio {
+        .personcontact {
+            margin-top: 0;
+        }
+    }
+}
+
+/* Large devices (large desktops, 1200px and up) */
+@media (min-width: @screen-lg-min) {
+
+}
+
+// 11. Person Merge
+// -------------------------
+
+
+.table thead th.merge-personselect {
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+    border-color: lighten(@accent-bold-color, 5%);
+    
+    vertical-align: top !important;
+
+    .merge-header-summary {
+        margin-left: 20px;
+
+        i {
+            margin-right: 12px;
+            float: left;
+        }
+    }
+
+    .btn-danger {
+        color: #fff;
+    }
+
+    small {
+        color: darken(@accent-bold-text-color, 15%);
+    }
+
+    .merge-heading-family {
+        span {
+            display: block;
+        }
+
+        margin-bottom: 12px;
+    }
+}
+
+.merge-photo {
+    border: 3px solid @accent-semibold-color;
+}
+
+// 12. Person Page Views
+// -------------------------
+.panel-widget.pageviewsession {
+
+    .pageviewsession-client {
+        color: @accent-bold-color;
+        text-align: right;
+        line-height: 1;
+    }
+}
+
+// 13. Deceased / Inactive Styles
+// -------------------------
+
+.person-bio {
+    div.deceased h1.title.name:after {
+        content: 'Deceased';
+        font-size: 14px;
+        margin-left: 12px;
+        color: @brand-danger;
+    }
+}
+
+.groupmembers {
+    .member.deceased {
+        
+        &:hover {
+            background-color: darken(@gray-light, 10%);
+        }
+
+        .person-info:after {
+            content: 'Deceased';
+            font-size: 10px;
+            color: @brand-danger;
+        }
+    }
+}
+
+//tr.deceased {
+//    td {
+//    }
+//}
+
+tr.inactive {
+    td {
+        color: lighten(@text-color, 30%);
+    }
+}
+
+// 14. Bulk Update
+// -------------------------
+
+.bulk-update {
+
+    .no-select {
+        .form-group{
+            opacity: 1;
+        }
+    }
+    
+    .fade-inactive {
+        .form-group{
+            opacity: 0.5;
+
+            .control-label {
+                cursor: pointer;
+            }
+        }
+    }
+
+    .form-group.bulk-item-selected {
+        opacity: 1;
+        background-color: @gray-light;
+        padding: 12px;
+        border-radius: @border-radius-base;
+
+        .control-label {
+            
+        }
+    }
+
+}
+
+// 15. Photo Requests
+// -------------------------
+.photoupload-photo {
+    
+    .image-editor {
+        float: left;
+        margin-right: 48px;
+
+        label {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 150px;
+            overflow: hidden;
+        }
+    }
+
+}
+
+// 16. Duplicate Pages
+// -------------------------
+
+.grid-table tbody tr.duplicate-source {
+    td,
+    &:hover > td {
+        background-color: @gray-light;
+        color: @gray-dark;
+    }
+}

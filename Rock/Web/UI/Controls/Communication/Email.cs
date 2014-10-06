@@ -25,9 +25,9 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
-    /// Email Communication Channel control
+    /// Email Communication Medium control
     /// </summary>
-    public class Email : ChannelControl
+    public class Email : MediumControl
     {
 
         #region UI Controls
@@ -46,12 +46,12 @@ namespace Rock.Web.UI.Controls.Communication
         #region Properties
 
         /// <summary>
-        /// Gets or sets the channel data.
+        /// Gets or sets the medium data.
         /// </summary>
         /// <value>
-        /// The channel data.
+        /// The medium data.
         /// </value>
-        public override Dictionary<string, string> ChannelData
+        public override Dictionary<string, string> MediumData
         {
             get
             {
@@ -141,6 +141,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
+            tbSubject.Help = "<span class='tip tip-liquid'></span>";
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();
@@ -150,8 +151,10 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
             htmlMessage.MergeFields.Add( "UnsubscribeOption" );
+            htmlMessage.Help = "<span class='tip tip-liquid'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
+            htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
 
             tbTextMessage = new RockTextBox();

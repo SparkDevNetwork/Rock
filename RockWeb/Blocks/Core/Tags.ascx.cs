@@ -56,10 +56,11 @@ namespace RockWeb.Blocks.Core
                 var service = new TaggedItemService( new RockContext() );
                 foreach ( dynamic item in service.Get(
                     contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Guid )
-                    .Select( i => new {
-                        OwnerId = i.Tag.OwnerId,
+                    .Select( i => new
+                    {
+                        OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
                         Name = i.Tag.Name
-                    }))
+                    } ) )
                 {
                     if ( sb.Length > 0 )
                         sb.Append( ',' );
@@ -111,10 +112,10 @@ namespace RockWeb.Blocks.Core
     function verifyTag(tagName) {{
         $.ajax({{
             type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/tags/{0}/{1}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/tags/{0}/{1}{3}{4}?name=' + encodeURIComponent(tagName),
             statusCode: {{
                 404: function () {{
-                        var r = confirm(""A tag called '"" + tagName + ""' does not exist. Do you want to create a new personal tag?"");
+                        var r = confirm(""A tag called '"" + $('<div/>').text(tagName).html() + ""' does not exist. Do you want to create a new personal tag?"");
                         if (r == true) {{
                             AddTag(tagName);
                         }}
@@ -133,7 +134,7 @@ namespace RockWeb.Blocks.Core
     function AddTag(tagName) {{
         $.ajax({{
             type: 'POST',
-            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}{3}{4}' + encodeURIComponent(tagName),
             error: function (xhr, status, error) {{
                 alert('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}
@@ -143,7 +144,7 @@ namespace RockWeb.Blocks.Core
     function RemoveTag(tagName) {{
         $.ajax({{
             type: 'DELETE',
-            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}{3}{4}' + encodeURIComponent(tagName),
             error: function (xhr, status, error) {{
                 alert('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}

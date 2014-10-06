@@ -133,10 +133,10 @@ namespace Rock.Security.ExternalAuthentication
 
                     UserLogin user = null;
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    var rockContext = new RockContext();
+                    rockContext.WrapTransaction( () =>
                     {
                         // query for matching id in the user table 
-                        var rockContext = new RockContext();
                         var userLoginService = new UserLoginService( rockContext );
                         user = userLoginService.GetByUserName( facebookId );
 
@@ -163,7 +163,7 @@ namespace Rock.Security.ExternalAuthentication
                                 if ( person != null )
                                 {
                                     // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                    DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
+                                    DateTime birthdate = Convert.ToDateTime( me.birthday.ToString(), new System.Globalization.CultureInfo("en-US") );
 
                                     if ( person.BirthDay == null )
                                     {
@@ -190,7 +190,7 @@ namespace Rock.Security.ExternalAuthentication
                                         person.Gender = Gender.Female;
                                     else
                                         person.Gender = Gender.Unknown;
-                                    person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
+                                    person.BirthDate = Convert.ToDateTime( me.birthday.ToString(), new System.Globalization.CultureInfo( "en-US" ) );
                                     person.EmailPreference = EmailPreference.EmailAllowed;
 
                                     GroupService.SaveNewFamily( rockContext, person, null, false );

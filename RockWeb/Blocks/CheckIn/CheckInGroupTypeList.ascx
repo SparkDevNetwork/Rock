@@ -3,24 +3,38 @@
 <asp:UpdatePanel ID="upGroupType" runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowCommand="gGroupType_RowCommand">
-            
-            <Columns>
-                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                <asp:TemplateField ItemStyle-CssClass="grid-col-actions" HeaderStyle-CssClass="grid-col-actions" HeaderText="Actions">
-                    <ItemTemplate>
-                        <asp:LinkButton runat="server" ID="btnSchedule" CssClass="btn btn-action" CausesValidation="false" CommandName="schedule" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
-                        <asp:LinkButton runat="server" ID="btnConfigure" CssClass="btn btn-action" CausesValidation="false" CommandName="configure" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-cog"></i> Groups/Locations</asp:LinkButton>
-                    </ItemTemplate>
-                </asp:TemplateField>
-            </Columns>
+        
+        <div class="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Check-in Configurations List</h1>
+            </div>
+            <div class="panel-body">
 
-        </Rock:Grid>
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true" OnRowCommand="gGroupType_RowCommand" OnRowSelected="gGroupType_RowSelected">
+                        <Columns>
+                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <asp:TemplateField ItemStyle-CssClass="grid-col-actions" HeaderStyle-CssClass="grid-col-actions" HeaderText="Actions">
+                                <ItemTemplate>
+                                    <div class="btn-group">
+                                        <asp:LinkButton runat="server" ID="btnSchedule" CssClass="btn btn-action" CausesValidation="false" CommandName="schedule" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnConfigure" CssClass="btn btn-action" CausesValidation="false" CommandName="configure" CommandArgument="<%# Container.DataItemIndex %>"><i class="fa fa-cog"></i> Groups/Locations</asp:LinkButton>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                        </Columns>
+                    </Rock:Grid>
+                </div>
 
-        <Rock:ModalDialog runat="server" ID="mdAddCheckinGroupType" SaveButtonText="Save" Title="Add Check-in Configuration Type" OnSaveClick="mdAddCheckinGroupType_SaveClick" ValidationGroup="CheckinGroupTypeListAdd">
+            </div>
+        </div>
+
+        <Rock:ModalDialog runat="server" ID="mdAddEditCheckinGroupType" SaveButtonText="Save" Title="Check-in Configuration Type" OnSaveClick="mdAddCheckinGroupType_SaveClick" ValidationGroup="CheckinGroupTypeListAdd">
             <Content>
+                <asp:HiddenField runat="server" ID="hfGroupTypeId" />
                 <Rock:RockTextBox runat="server" ID="tbGroupTypeName" Label="Name" Required="true" ValidationGroup="CheckinGroupTypeListAdd" />
+                <Rock:RockTextBox runat="server" ID="tbGroupTypeDescription" Label="Description" Required="true" ValidationGroup="CheckinGroupTypeListAdd" TextMode="MultiLine" Rows="4" />
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

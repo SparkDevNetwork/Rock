@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Communication;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -31,9 +33,10 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Email the configured recipient the name of the thing being operated against." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Send Email")]
-    [EmailTemplateField( "EmailTemplate", "The email template to send" )]
-    [TextField( "Recipient", "The email address to send to" )]
+    [ExportMetadata("ComponentName", "Send Email Template")]
+
+    [EmailTemplateField( "EmailTemplate", "The email template to send. The email templates must be assigned to the 'Workflow' category in order to be displayed on the list." )]
+    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "Recipient" )]
     public class SendEmailTemplate : ActionComponent
     {
         /// <summary>
@@ -48,21 +51,97 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var recipientEmail = GetAttributeValue( action, "Recipient" );
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
-            var mergeObjects = new Dictionary<string, object>();
+            var mergeFields = GetMergeFields( action );
+            var recipients = new List<RecipientData>();
 
-            if ( entity != null )
+            string to = GetAttributeValue( action, "To" );
+
+            Guid? guid = to.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                mergeObjects.Add( entity.GetType().Name, entity );
+                var attribute = AttributeCache.Read( guid.Value, rockContext );
+                if ( attribute != null )
+                {
+                    string toValue = action.GetWorklowAttributeValue( guid.Value );
+                    if ( !string.IsNullOrWhiteSpace( toValue ) )
+                    {
+                        switch ( attribute.FieldType.Class )
+                        {
+                            case "Rock.Field.Types.TextFieldType":
+                                {
+                                    recipients.Add( new RecipientData( toValue, mergeFields ) );
+                                    break;
+                                }
+                            case "Rock.Field.Types.PersonFieldType":
+                                {
+                                    Guid personAliasGuid = toValue.AsGuid();
+                                    if ( !personAliasGuid.IsEmpty() )
+                                    {
+                                        var person = new PersonAliasService( rockContext ).Queryable()
+                                            .Where( a => a.Guid.Equals( personAliasGuid ) )
+                                            .Select( a => a.Person )
+                                            .FirstOrDefault();
+                                        if ( person == null )
+                                        {
+                                            action.AddLogEntry( "Invalid Recipient: Person not found", true );
+                                        }
+                                        else if ( string.IsNullOrWhiteSpace( person.Email ) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
+                                        }
+                                        else if ( !( person.IsEmailActive ?? true ) )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
+                                        }
+                                        else if ( person.EmailPreference == EmailPreference.DoNotEmail )
+                                        {
+                                            action.AddLogEntry( "Email was not sent: Recipient has requested 'Do Not Email'", true );
+                                        }
+                                        else
+                                        {
+                                            var personDict = new Dictionary<string, object>( mergeFields );
+                                            personDict.Add( "Person", person );
+                                            recipients.Add( new RecipientData( person.Email, personDict ) );
+                                        }
+                                    }
+                                    break;
+                                }
+                            case "Rock.Field.Types.GroupFieldType":
+                                {
+                                    int? groupId = toValue.AsIntegerOrNull();
+                                    if ( !groupId.HasValue )
+                                    {
+                                        foreach ( var person in new GroupMemberService( rockContext )
+                                            .GetByGroupId( groupId.Value )
+                                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Select( m => m.Person ) )
+                                        {
+                                            if ( ( person.IsEmailActive ?? true ) &&
+                                                person.EmailPreference != EmailPreference.DoNotEmail &&
+                                                !string.IsNullOrWhiteSpace( person.Email ) )
+                                            {
+                                                var personDict = new Dictionary<string, object>( mergeFields );
+                                                personDict.Add( "Person", person );
+                                                recipients.Add( new RecipientData( person.Email, personDict ) );
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                recipients.Add( new RecipientData( to, mergeFields ) );
             }
 
-            recipients.Add( recipientEmail, mergeObjects );
+            if ( recipients.Any() )
+            {
+                Email.Send( GetAttributeValue( action, "EmailTemplate" ).AsGuid(), recipients );
+            }
 
-            Email.Send( GetAttributeValue( action, "EmailTemplate" ).AsGuid(), recipients );
-
-            action.AddLogEntry( string.Format( "Email sent to '{0}'", recipientEmail ) );
-            
             return true;
         }
     }

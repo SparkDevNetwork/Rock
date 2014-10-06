@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -25,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:PanelWidget runat=server></{0}:PanelWidget>" )]
-    public class PanelWidget : PlaceHolder
+    public class PanelWidget : PlaceHolder, INamingContainer
     {
         #region Properties
 
@@ -55,12 +56,31 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfTitle.Value;
+                return HttpUtility.HtmlDecode( _hfTitle.Value );
             }
             set
             {
                 EnsureChildControls();
-                _hfTitle.Value = value;
+                _hfTitle.Value = HttpUtility.HtmlEncode( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the title icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The title icon CSS class.
+        /// </value>
+        public string TitleIconCssClass
+        {
+            get
+            {
+                return ViewState["TitleIconCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["TitleIconCssClass"] = value;
             }
         }
 
@@ -195,22 +215,21 @@ $('.js-stop-immediate-propagation').click(function (event) {
             base.CreateChildControls();
 
             _hfExpanded = new HiddenField();
+            _hfExpanded.ID = "_hfExpanded";
             Controls.Add( _hfExpanded );
-            _hfExpanded.ID = this.ID + "_hfExpanded";
             _hfExpanded.Value = "False";
 
             _hfTitle = new HiddenField();
-            _hfTitle.ID = this.ID + "_hfTitle";
+            _hfTitle.ID = "_hfTitle";
             Controls.Add( _hfTitle );
 
             _lbDelete = new LinkButton();
+            _lbDelete.ID = "_lbDelete";
+            Controls.Add( _lbDelete );
             _lbDelete.CausesValidation = false;
-            _lbDelete.ID = this.ID + "_lbDelete";
             _lbDelete.CssClass = "btn btn-xs btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa fa-times'></i>" } );
-
-            Controls.Add( _lbDelete );
         }
 
         /// <summary>
@@ -256,14 +275,11 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Title
-
-
                 // Hidden Field to track Title
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
                 _hfTitle.RenderControl( writer );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description js-header-title" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title" );
                 if ( Expanded )
                 {
                     // if the panel is expanded and there are special HeaderControls to show instead of the Title, hide the title (and the header controls will be shown instead)
@@ -274,9 +290,18 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                
-                // also write out the value of the hidden field as the title
-                writer.Write( _hfTitle.Value );
+
+                // Title
+                if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                    writer.RenderBeginTag( HtmlTextWriterTag.I );
+                    writer.RenderEndTag();
+                    writer.Write( " " );
+                }
+
+                // also write out the title (also stored in _hfTitle.value)
+                writer.Write( Title );
 
                 writer.RenderEndTag();
 

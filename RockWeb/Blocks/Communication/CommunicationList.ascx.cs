@@ -94,13 +94,14 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Subject", tbSubject.Text );
-            rFilter.SaveUserPreference( "Channel", cpChannel.SelectedValue );
+            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             if ( canApprove )
             {
                 rFilter.SaveUserPreference( "Created By", ppSender.PersonId.ToString() );
             }
             rFilter.SaveUserPreference( "Content", tbContent.Text );
+            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
 
             BindGrid();
         }
@@ -115,7 +116,7 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Channel":
+                case "Medium":
                     {
                         var entity = EntityTypeCache.Read( e.Value.AsGuid() );
                         if ( entity != null )
@@ -147,6 +148,11 @@ namespace RockWeb.Blocks.Communication
                             }
                         }
 
+                        break;
+                    }
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
             }
@@ -241,14 +247,17 @@ namespace RockWeb.Blocks.Communication
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
-            if ( cpChannel.Items[0].Value != string.Empty )
+            if ( cpMedium.Items[0].Value != string.Empty )
             {
-                cpChannel.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             }
 
-            ddlStatus.BindToEnum( typeof( CommunicationStatus ) );
+            ddlStatus.BindToEnum<CommunicationStatus>();
             // Replace the Transient status with an emtyp value (need an empty one, and don't need transient value)
             ddlStatus.Items[0].Text = string.Empty;
             ddlStatus.Items[0].Value = string.Empty;
@@ -261,7 +270,7 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 tbSubject.Text = rFilter.GetUserPreference( "Subject" );
-                cpChannel.SelectedValue = rFilter.GetUserPreference( "Channel" );
+                cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
                 ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
 
                 int personId = 0;
@@ -275,16 +284,21 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
+                drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+
                 tbContent.Text = rFilter.GetUserPreference( "Content" );
             }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var rockContext = new RockContext();
 
             var communications = new CommunicationService( rockContext )
-                    .Queryable( "ChannelEntityType,Sender,Reviewer" )
+                    .Queryable( "MediumEntityType,Sender,Reviewer" )
                     .Where( c => c.Status != CommunicationStatus.Transient );
 
             string subject = rFilter.GetUserPreference( "Subject" );
@@ -294,9 +308,9 @@ namespace RockWeb.Blocks.Communication
             }
 
             Guid entityTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
+            if ( Guid.TryParse( rFilter.GetUserPreference( "Medium" ), out entityTypeGuid ) )
             {
-                communications = communications.Where( c => c.ChannelEntityType != null && c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
+                communications = communications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid ) );
             }
 
             string status = rFilter.GetUserPreference( "Status" );
@@ -311,18 +325,37 @@ namespace RockWeb.Blocks.Communication
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
                 {
-                    communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == personId );
+                    communications = communications
+                        .Where( c => 
+                            c.SenderPersonAlias != null && 
+                            c.SenderPersonAlias.PersonId == personId );
                 }
             }
             else
             {
-                communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == CurrentPersonId );
+                communications = communications
+                    .Where( c => 
+                        c.SenderPersonAliasId.HasValue && 
+                        c.SenderPersonAliasId.Value == CurrentPersonAliasId );
             }
 
             string content = rFilter.GetUserPreference( "Content" );
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                communications = communications.Where( c => c.ChannelDataJson.Contains( content ) );
+                communications = communications.Where( c => c.MediumDataJson.Contains( content ) );
+            }
+
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            if ( drp.LowerValue.HasValue )
+            {
+                communications = communications.Where( a => a.ReviewedDateTime >= drp.LowerValue.Value );
+            }
+
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                communications = communications.Where( a => a.ReviewedDateTime < upperDate );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
@@ -363,20 +396,20 @@ namespace RockWeb.Blocks.Communication
                 queryable = queryable.OrderByDescending( c => c.Communication.Id );
             }
 
-            // Get the channel names
-            var channels = new Dictionary<int, string>();
-            foreach ( var item in Rock.Communication.ChannelContainer.Instance.Components.Values )
+            // Get the medium names
+            var mediums = new Dictionary<int, string>();
+            foreach ( var item in Rock.Communication.MediumContainer.Instance.Components.Values )
             {
                 var entityType = item.Value.EntityType;
-                channels.Add( entityType.Id, item.Metadata.ComponentName );
+                mediums.Add( entityType.Id, item.Metadata.ComponentName );
             }
 
             var communicationItems = queryable.ToList();
             foreach( var c in communicationItems)
             {
-                c.ChannelName = channels.ContainsKey( c.Communication.ChannelEntityTypeId ?? 0 ) ?
-                    channels[c.Communication.ChannelEntityTypeId ?? 0] :
-                    c.Communication.ChannelEntityType.FriendlyName;
+                c.MediumName = mediums.ContainsKey( c.Communication.MediumEntityTypeId ?? 0 ) ?
+                    mediums[c.Communication.MediumEntityTypeId ?? 0] :
+                    c.Communication.MediumEntityType.FriendlyName;
             }
 
             gCommunication.DataSource = communicationItems;
@@ -390,7 +423,7 @@ namespace RockWeb.Blocks.Communication
         {
             public int Id { get; set; }
             public Rock.Model.Communication Communication { get; set; }
-            public string ChannelName { get; set; }
+            public string MediumName { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }
             public int CancelledRecipients { get; set; }

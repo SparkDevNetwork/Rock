@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Communication
                         {
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
-                            communication.ReviewerPersonId = CurrentPersonId;
+                            communication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
                             rockContext.SaveChanges();
 
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Communication
                         {
                             communication.Status = CommunicationStatus.Denied;
                             communication.ReviewedDateTime = RockDateTime.Now;
-                            communication.ReviewerPersonId = CurrentPersonId;
+                            communication.ReviewerPersonAliasId = CurrentPersonAliasId; 
 
                             rockContext.SaveChanges();
 
@@ -355,16 +355,16 @@ namespace RockWeb.Blocks.Communication
                     newCommunication.ModifiedByPersonAliasId = null;
                     newCommunication.Id = 0;
                     newCommunication.Guid = Guid.Empty;
-                    newCommunication.SenderPersonId = CurrentPersonId;
+                    newCommunication.SenderPersonAliasId = CurrentPersonAliasId;
                     newCommunication.Status = CommunicationStatus.Transient;
-                    newCommunication.ReviewerPersonId = null;
+                    newCommunication.ReviewerPersonAliasId = null;
                     newCommunication.ReviewedDateTime = null;
                     newCommunication.ReviewerNote = string.Empty;
 
                     communication.Recipients.ToList().ForEach( r =>
                         newCommunication.Recipients.Add( new CommunicationRecipient()
                         {
-                            PersonId = r.PersonId,
+                            PersonAliasId = r.PersonAliasId,
                             Status = CommunicationRecipientStatus.Pending,
                             StatusNote = string.Empty
                         } ) );
@@ -395,8 +395,6 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
         private void ShowDetail()
         {
             Rock.Model.Communication communication = null;
@@ -423,7 +421,7 @@ namespace RockWeb.Blocks.Communication
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
-            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime, "Approved By" );
+            SetPersonDateValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );
 
             if ( communication.FutureSendDateTime.HasValue && communication.FutureSendDateTime.Value > RockDateTime.Now )
             {
@@ -432,17 +430,17 @@ namespace RockWeb.Blocks.Communication
 
             pnlOpened.Visible = false;
 
-            lDetails.Text = communication.ChannelDataJson;
-            if ( communication.ChannelEntityTypeId.HasValue )
+            lDetails.Text = communication.MediumDataJson;
+            if ( communication.MediumEntityTypeId.HasValue )
             {
-                var channelEntityType = EntityTypeCache.Read( communication.ChannelEntityTypeId.Value );
-                if (channelEntityType != null)
+                var mediumEntityType = EntityTypeCache.Read( communication.MediumEntityTypeId.Value );
+                if (mediumEntityType != null)
                 {
-                    var channel = ChannelContainer.GetComponent( channelEntityType.Name );
-                    if (channel != null)
+                    var medium = MediumContainer.GetComponent( mediumEntityType.Name );
+                    if (medium != null)
                     {
-                        pnlOpened.Visible = channel.Transport.CanTrackOpens;
-                        lDetails.Text = channel.GetMessageDetails( communication );
+                        pnlOpened.Visible = medium.Transport.CanTrackOpens;
+                        lDetails.Text = medium.GetMessageDetails( communication );
                     }
                 } 
             }
@@ -481,7 +479,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var rockContext = new RockContext();
                 var recipients = new CommunicationRecipientService( rockContext )
-                    .Queryable( "Person,Activities" )
+                    .Queryable( "PersonAlias.Person,Activities" )
                     .Where( r => r.CommunicationId == CommunicationId.Value )
                     .ToList();
 
@@ -530,8 +528,8 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 grid.DataSource = recipients
-                    .OrderBy( r => r.Person.LastName )
-                    .ThenBy( r => r.Person.NickName )
+                    .OrderBy( r => r.PersonAlias.Person.LastName )
+                    .ThenBy( r => r.PersonAlias.Person.NickName )
                     .ToList();
             }
             
@@ -544,7 +542,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var rockContext = new RockContext();
                 var activity = new CommunicationRecipientActivityService( rockContext )
-                    .Queryable( "CommunicationRecipient.Person" )
+                    .Queryable( "CommunicationRecipient.PersonAlias.Person" )
                     .Where( r => r.CommunicationRecipient.CommunicationId == CommunicationId.Value );
 
                 var sortProperty = gActivity.SortProperty;

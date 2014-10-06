@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Allows a user to start a session to pray for active, approved prayer requests." )]
 
-    [TextField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", false, "<h2>Let's get ready to pray...</h2>", "", 1 )]
+    [CodeEditorField( "Welcome Introduction Text", "Some text (or HTML) to display on the first step.", CodeEditorMode.Html, height: 100, required: false, defaultValue: "<h2>Let's get ready to pray...</h2>", order: 1 )]
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
     [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
     [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
@@ -162,7 +162,8 @@ namespace RockWeb.Blocks.Prayer
                 hfPrayerIndex.Value = index.ToString();
                 var rockContext = new RockContext();
                 PrayerRequestService service = new PrayerRequestService( rockContext );
-                PrayerRequest request = service.Get( prayerRequestIds[index] );
+                int prayerRequestId = prayerRequestIds[index];
+                PrayerRequest request = service.Queryable( "RequestedByPersonAlias.Person" ).FirstOrDefault( p => p.Id == prayerRequestId );
                 ShowPrayerRequest( request, rockContext );
             }
             else
@@ -255,20 +256,6 @@ namespace RockWeb.Blocks.Prayer
             var rockContext = new RockContext();
             var service = new NoteTypeService( rockContext );
             var noteType = service.Get( entityTypeId, noteTypeName );
-
-            // If a note type with the specified name does not exist, create one
-            if ( noteType == null )
-            {
-                noteType = new NoteType();
-                noteType.IsSystem = false;
-                noteType.EntityTypeId = entityTypeId;
-                noteType.EntityTypeQualifierColumn = string.Empty;
-                noteType.EntityTypeQualifierValue = string.Empty;
-                noteType.Name = noteTypeName;
-                service.Add( noteType );
-                rockContext.SaveChanges();
-            }
-
             NoteTypeId = noteType.Id;
         }
 
@@ -404,7 +391,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowPrayerRequest( PrayerRequest prayerRequest, RockContext rockContext )
         {
             pnlPrayer.Visible = true;
-            pPrayerAnswer.Visible = false;
+            divPrayerAnswer.Visible = false;
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
@@ -418,14 +405,14 @@ namespace RockWeb.Blocks.Prayer
             // Show their answer if there is one on the request.
             if ( !string.IsNullOrWhiteSpace( prayerRequest.Answer ) )
             {
-                pPrayerAnswer.Visible = true;
+                divPrayerAnswer.Visible = true;
                 lPrayerAnswerText.Text = prayerRequest.Answer.EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
             // put the request's id in the hidden field in case it needs to be flagged.
             hfIdValue.SetValue( prayerRequest.Id );
 
-            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPerson, 50, 50 );
+            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50 );
 
             notesComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )

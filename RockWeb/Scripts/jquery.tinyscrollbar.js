@@ -15,6 +15,7 @@
             + function wheel( event ) and function drag ( event ) now only adjusts the content if the event.target's scroll container matches this's scrollbar's container
             + new function getParentScrollContainerNode()
         + Proper functionality now requires the scroll container to have css class 'scroll-container'
+        + function wheel( event ) now only adjust the content when the scrollbar is vertical (axis == 'y')
  */
 ;( function( $ ) 
 {
@@ -188,6 +189,11 @@
         {
             if (getParentScrollContainerNode(oScrollbar.obj[0]) != getParentScrollContainerNode(event.target)) {
                 // do nothing if this event target was for another scroll-container 
+                return true;
+            }
+
+            if (options.axis == 'x') {
+                // do nothing if the scrollbar is horizontal
                 return true;
             }
 			

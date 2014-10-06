@@ -127,8 +127,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                return RequiredFieldValidator.ValidationGroup;
+            }
+            set
+            {
+                RequiredFieldValidator.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -181,6 +187,7 @@ namespace Rock.Web.UI.Controls
         public FileUploader()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileTypeGuid = new HiddenField();
@@ -464,6 +471,7 @@ namespace Rock.Web.UI.Controls
 
             Controls.Add( _hfBinaryFileId );
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
+            _hfBinaryFileId.Value = "0";
 
             Controls.Add( _hfBinaryFileTypeGuid );
             _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
@@ -484,6 +492,10 @@ namespace Rock.Web.UI.Controls
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
             _fileUpload.ID = this.ID + "_fu";
+
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfBinaryFileId.ID;
+            RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
         }
 
         /// <summary>
@@ -523,7 +535,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 _aFileName.AddCssClass( "file-exists" );
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
             }
             else
             {
@@ -540,7 +552,7 @@ namespace Rock.Web.UI.Controls
                 _hfBinaryFileId.RenderControl( writer );
                 _hfBinaryFileTypeGuid.RenderControl( writer );
                 _aFileName.RenderControl( writer );
-                writer.RenderEndTag();
+                
 
                 writer.AddAttribute( "class", "fileupload-remove" );
                 if ( !ShowDeleteButton )
@@ -551,10 +563,12 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _aRemove.RenderControl( writer );
                 writer.RenderEndTag();
+
+                writer.RenderEndTag();
             }
 
             writer.Write( @"
-                <div class='js-upload-progress pull-left' style='display:none'>
+                <div class='js-upload-progress upload-progress' style='display:none'>
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
 
@@ -572,7 +586,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                writer.Write( "drop / click to upload" );
+                writer.Write( "Upload" );
             }
 
             writer.RenderEndTag();

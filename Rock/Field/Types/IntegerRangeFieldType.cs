@@ -68,7 +68,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -150,12 +150,19 @@ namespace Rock.Field.Types
                 {
                     string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
                     string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
-                    formattedValue = string.Format( "{0} to {1}", lowerValue, upperValue );
+                    if ( !string.IsNullOrWhiteSpace( lowerValue ) || !string.IsNullOrWhiteSpace( upperValue ) )
+                    {
+                        return string.Format( "{0} to {1}", lowerValue, upperValue );
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
                 }
             }
 
             // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
     }
 }

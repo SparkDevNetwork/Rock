@@ -24,7 +24,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Account Field Type.  Stored as FinancialAccount's Guid
     /// </summary>
     public class AccountFieldType : FieldType, IEntityFieldType
     {
@@ -40,10 +40,11 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
                 var service = new FinancialAccountService( new RockContext() );
-                var account = service.Get( new Guid( value ) );
+                var account = service.Get( guid.Value );
 
                 if ( account != null )
                 {
@@ -55,7 +56,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -77,23 +78,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as AccountPicker;
-            string result = null;
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
-                var id = picker.ItemId.AsIntegerOrNull();
-                var account = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
-
-                if ( account != null )
+                int? id = picker.ItemId.AsIntegerOrNull();
+                if ( id.HasValue )
                 {
-                    guid = account.Guid;
-                }
+                    var account = new FinancialAccountService( new RockContext() ).Get( id.Value );
 
-                result = guid.ToString();
+                    if ( account != null )
+                    {
+                        return account.Guid.ToString();
+                    }
+                }
             }
 
-            return result;
+            return string.Empty;
         }
 
         /// <summary>
@@ -105,17 +105,15 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
-            {
-                var picker = control as AccountPicker;
+            var picker = control as AccountPicker;
 
-                if ( picker != null )
-                {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var account = new FinancialAccountService( new RockContext() ).Get( guid );
-                    picker.SetValue( account );
-                }
+            if ( picker != null )
+            {
+                Guid guid = value.AsGuid();
+
+                // get the item (or null) and set it
+                var account = new FinancialAccountService( new RockContext() ).Get( guid );
+                picker.SetValue( account );
             }
         }
 

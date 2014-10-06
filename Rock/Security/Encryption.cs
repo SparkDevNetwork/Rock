@@ -73,6 +73,12 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// The _key bytes created new for each thread/session
+        /// </summary>
+        [ThreadStatic]
+        private static byte[] _keyBytes = null;
+
+        /// <summary>
         /// Encrypt the given string using AES.  The string can be decrypted using 
         /// DecryptStringAES().  The sharedSecret parameters must match.
         /// </summary>
@@ -91,12 +97,18 @@ namespace Rock.Security
 
             try
             {
-                // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-
                 // Create a RijndaelManaged object
                 aesAlg = new RijndaelManaged();
-                aesAlg.Key = key.GetBytes( aesAlg.KeySize / 8 );
+                
+                // generate the key from the shared secret and the salt
+                if ( _keyBytes == null )
+                {
+                    // generate a new key for every thread (vs. every call which is slow) 
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
+                }
+
+                aesAlg.Key = _keyBytes;
 
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor( aesAlg.Key, aesAlg.IV );
@@ -218,6 +230,44 @@ namespace Rock.Security
             }
 
             return buffer;
+        }
+
+        /// <summary>
+        /// Gets the SHA1 hash.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
+        public static string GetSHA1Hash(string plainText)
+        {
+            string passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
+            if ( String.IsNullOrWhiteSpace( passwordKey ) )
+            {
+                throw new ConfigurationErrorsException( "Account encoding requires a 'PasswordKey' app setting" );
+            }
+
+            byte[] encryptionKey = HexToByte( passwordKey );
+
+            HMACSHA1 hash = new HMACSHA1();
+            hash.Key = encryptionKey;
+
+            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( plainText ) ) );
+        }
+
+        /// <summary>
+        /// converts a hexadecimal string to byte.
+        /// </summary>
+        /// <param name="hexString">The hexadecimal string.</param>
+        /// <returns></returns>
+        private static byte[] HexToByte( string hexString )
+        {
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for ( int i = 0; i < returnBytes.Length; i++ )
+            {
+                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
+            }
+
+            return returnBytes;
         }
     }
 }

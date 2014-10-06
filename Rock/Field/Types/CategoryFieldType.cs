@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as Category.Guid
     /// </summary>
     public class CategoryFieldType : FieldType, IEntityFieldType
     {
@@ -75,7 +75,6 @@ namespace Rock.Field.Types
             {
                 ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
-            controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Entity Type";
@@ -145,7 +144,6 @@ namespace Rock.Field.Types
             }
         }
 
-
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -160,7 +158,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var category = CategoryCache.Read( new Guid( value ) );
+                var category = CategoryCache.Read( value.AsGuid() );
                 if ( category != null )
                 {
                     formattedValue = category.Name;
@@ -171,7 +169,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -215,23 +213,21 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var picker = control as CategoryPicker;
-            string result = null;
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
                 var id = picker.ItemId.AsIntegerOrNull();
-                var category = CategoryCache.Read( id ?? 0 );
-
-                if ( category != null )
+                if ( id.HasValue )
                 {
-                    guid = category.Guid;
+                    var category = CategoryCache.Read( id.Value );
+                    if ( category != null )
+                    {
+                        return category.Guid.ToString();
+                    }
                 }
-
-                result = guid.ToString();
             }
 
-            return result;
+            return string.Empty;
         }
 
         /// <summary>
@@ -243,15 +239,14 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
-            {
-                var picker = control as CategoryPicker;
+            var picker = control as CategoryPicker;
 
-                if ( picker != null )
+            if ( picker != null )
+            {
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid != null )
                 {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var category = new CategoryService( new RockContext() ).Get( guid );
+                    var category = new CategoryService( new RockContext() ).Get( guid.Value );
                     picker.SetValue( category );
                 }
             }

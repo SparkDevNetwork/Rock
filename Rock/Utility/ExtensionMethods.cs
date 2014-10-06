@@ -111,6 +111,11 @@ namespace Rock
                 return liquidObject;
             }
 
+            if ( liquidObject is Drop )
+            {
+                return ( (ILiquidizable)liquidObject ).ToLiquid();
+            }
+
             if ( liquidObject is ILiquidizable )
             {
                 return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();
@@ -236,6 +241,29 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a List of ListItems that contains the values/text in this string that are formatted as either 'value1,value2,value3,...' or 'value1^text1,value2^text2,value3^text3,...'
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static List<ListItem> GetListItems( this string str )
+        {
+            var result = new List<ListItem>();
+            foreach ( string keyvalue in str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( keyValueArray.Length > 0 )
+                {
+                    var listItem = new ListItem();
+                    listItem.Value = keyValueArray[0].Trim();
+                    listItem.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
+                    result.Add( listItem );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
         /// from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace
         /// </summary>
@@ -303,7 +331,7 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\\"" );
         }
 
         /// <summary>
@@ -446,7 +474,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static int AsInteger( this string str)
+        public static int AsInteger( this string str )
         {
             return str.AsIntegerOrNull() ?? 0;
         }
@@ -456,7 +484,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static int? AsIntegerOrNull( this string str)
+        public static int? AsIntegerOrNull( this string str )
         {
             int value;
             if ( int.TryParse( str, out value ) )
@@ -522,12 +550,12 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static decimal? AsDecimalOrNull( this string str)
+        public static decimal? AsDecimalOrNull( this string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             decimal value;
@@ -556,12 +584,12 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static double? AsDoubleOrNull( this string str)
+        public static double? AsDoubleOrNull( this string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             double value;
@@ -618,24 +646,46 @@ namespace Rock
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
-        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
+        {
+            try
+            {
+                if (!content.HasMergeFields())
+                {
+                    return content ?? string.Empty;
+                }
+
+                //// NOTE: This means that template filters will also use CSharpNamingConvention
+                //// For example the dotliquid documentation says to do this for formatting dates: 
+                //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                Template template = Template.Parse( content );
+
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
+            }
+            catch ( Exception ex )
+            {
+                return "Error resolving Liquid merge fields: " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [has merge fields] [the specified content].
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool HasMergeFields( this string content)
         {
             if ( content == null )
-                return string.Empty;
+                return false;
 
             // If there's no merge codes, just return the content
             if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
-                return content;
+                return false;
 
-            //// NOTE: This means that template filters will also use CSharpNamingConvention
-            //// For example the dotliquid documentation says to do this for formatting dates: 
-            //// {{ some_date_value | date:"MMM dd, yyyy" }}
-            //// However, if CSharpNamingConvention is enabled, it needs to be: 
-            //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( content );
-
-            return template.Render( Hash.FromDictionary( mergeObjects ) );
+            return true;
         }
 
         /// <summary>
@@ -672,6 +722,21 @@ namespace Rock
             return str.Replace( Environment.NewLine, "<br/>" ).Replace( "\x0A", "<br/>" );
         }
 
+        /// <summary>
+        /// Converts the HTML br to cr lf.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ConvertBrToCrLf( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Replace( "<br/>", Environment.NewLine ).Replace( "<br>", Environment.NewLine );
+        }
+        
         /// <summary>
         /// HTML Encodes the string
         /// </summary>
@@ -886,7 +951,7 @@ namespace Rock
 
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
-                return definedValue.Name;
+                return definedValue.Value;
             else
                 return string.Empty;
         }
@@ -1350,7 +1415,7 @@ namespace Rock
             string css = webControl.CssClass;
 
             while ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-            { 
+            {
                 css = Regex.Replace( css, match, " ", RegexOptions.IgnoreCase );
             }
 
@@ -1454,7 +1519,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// Try's to set the selected value. If the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
@@ -1464,13 +1529,24 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to enum.
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="listControl">The list control.</param>
-        /// <param name="enumType">Type of the enum.</param>
-        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
+        /// <param name="entity">The entity.</param>
+        public static void SetValue( this ListControl listControl, IEntity entity )
         {
+            listControl.SetValue( entity == null ? "0" : entity.Id.ToString() );
+        }
+
+        /// <summary>
+        /// Binds to enum.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false )
+        {
+            var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
@@ -1500,7 +1576,7 @@ namespace Rock
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
-                    v.Name,
+                    Name = v.Value,
                     v.Description,
                     v.Id
                 } );
@@ -1571,11 +1647,23 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        public static T SelectedValueAsEnum<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
         {
-            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
+            return listControl.SelectedValue.ConvertToEnum<T>( defaultValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static T? SelectedValueAsEnumOrNull<T>( this ListControl listControl, T? defaultValue = null ) where T : struct
+        {
+            return listControl.SelectedValue.ConvertToEnumOrNull<T>( defaultValue );
+        }
+        
         /// <summary>
         /// Selecteds the value as unique identifier.
         /// </summary>
@@ -1589,7 +1677,7 @@ namespace Rock
             }
             else
             {
-                return listControl.SelectedValue.AsGuid();
+                return listControl.SelectedValue.AsGuidOrNull();
             }
         }
 
@@ -1657,23 +1745,43 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T ConvertToEnum<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            if ( defaultValue.HasValue )
+            T? result = ConvertToEnumOrNull<T>(enumValue, defaultValue);
+            if (result.HasValue)
             {
-                T result;
-                if ( Enum.TryParse<T>( enumValue, out result ) )
-                {
-                    return result;
-                }
-                else
-                {
-                    return defaultValue.Value;
-                }
+                return result.Value;
             }
             else
             {
-                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+                throw new Exception( string.Format( "'{0}' is not a member of the {1} enumeration.", enumValue, typeof( T ).Name ) );
+            }
+        }
+
+        /// <summary>
+        /// Converts to enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        {
+            T result;
+            if ( Enum.TryParse<T>( (enumValue ?? "").Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
+            {
+                return result;
+            }
+            else
+            {
+                if ( defaultValue.HasValue )
+                {
+                    return defaultValue.Value;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -1697,6 +1805,26 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<Guid> AsGuidList( this IEnumerable<string> items)
+        {
+            return items.Select( a => a.AsGuidOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<int> AsIntegerList( this IEnumerable<string> items )
+        {
+            return items.Select( a => a.AsIntegerOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+        }
+
+        /// <summary>
         /// Joins a dictionary of items
         /// </summary>
         /// <param name="items">The items.</param>
@@ -1713,6 +1841,62 @@ namespace Rock
         #endregion
 
         #region IQueryable extensions
+
+        #region Where
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Where( queryable, parameterExpression, whereExpression, null, null );
+        }
+
+        /// <summary>
+        /// Queries a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
+        {
+            return Where( queryable, parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Queries the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public static IQueryable<T> Where<T>( this IQueryable<T> queryable, ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                queryable = queryable.Where( lambda );
+            }
+
+            if ( sortProperty != null )
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
+
+            if ( fetchTop.HasValue )
+            {
+                queryable = queryable.Take( fetchTop.Value );
+            }
+
+            return queryable;
+        }
+
+        #endregion
 
         /// <summary>
         /// Orders the list by the name of a property.
@@ -1772,8 +1956,11 @@ namespace Rock
             {
                 // use reflection (not ComponentModel) to mirror LINQ
                 PropertyInfo pi = type.GetProperty( prop );
-                expr = Expression.Property( expr, pi );
-                type = pi.PropertyType;
+                if ( pi != null )
+                {
+                    expr = Expression.Property( expr, pi );
+                    type = pi.PropertyType;
+                }
             }
             Type delegateType = typeof( Func<,> ).MakeGenericType( typeof( T ), type );
             LambdaExpression lambda = Expression.Lambda( delegateType, expr, arg );
@@ -2045,5 +2232,68 @@ namespace Rock
         }
 
         #endregion
+
+        #region Dictionary<TKey, TValue> extension methods
+
+        /// <summary>
+        /// Adds or Replaces an item in a Dictionary
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
+            if ( !dictionary.ContainsKey( key ) )
+            {
+                dictionary.Add( key, value );
+            }
+            else
+            {
+                dictionary[key] = value;
+            }
+        }
+
+        #endregion
+
+        #region Geography extension methods
+
+        /// <summary>
+        /// Coordinateses the specified geography.
+        /// </summary>
+        /// <param name="geography">The geography.</param>
+        /// <returns></returns>
+        public static List<MapCoordinate> Coordinates (this System.Data.Entity.Spatial.DbGeography geography)
+        {
+            var coordinates = new List<MapCoordinate>();
+
+            var match = Regex.Match( geography.AsText(), @"(?<=POLYGON \(\()[^\)]*(?=\)\))" );
+            if (match.Success)
+            {
+                string[] longSpaceLat = match.ToString().Split( ',' );
+
+                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                {
+                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
+                    if ( longLat.Length == 2 )
+                    {
+                        double? lat = longLat[1].AsDoubleOrNull();
+                        double? lon = longLat[0].AsDoubleOrNull();
+                        if ( lat.HasValue && lon.HasValue )
+                        {
+                            coordinates.Add( new MapCoordinate( lat, lon ) );
+                        }
+                    }
+                }
+
+            }
+
+            return coordinates;
+
+        }
+
+        #endregion
+
     }
 }

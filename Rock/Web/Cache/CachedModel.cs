@@ -17,7 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
+
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -30,7 +33,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes
+    public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes, DotLiquid.ILiquidizable
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
         /// <summary>
@@ -88,6 +91,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
+        [IgnoreLiquid]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -96,12 +100,14 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
+        [IgnoreLiquid]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
+        [IgnoreLiquid]
         public virtual ISecured ParentAuthority
         {
             get
@@ -120,6 +126,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
+        [IgnoreLiquid]
         public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
@@ -127,12 +134,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person )
+        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -151,12 +159,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -164,9 +173,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -174,9 +184,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person );
+            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         #endregion
@@ -222,13 +233,14 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
+        [IgnoreLiquid]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+        public Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -236,6 +248,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
+        [IgnoreLiquid]
         public virtual Dictionary<string, string> AttributeValueDefaults
         {
             get { return null; }
@@ -257,28 +270,27 @@ namespace Rock.Web.Cache
                 {
                     if ( this.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], rockContext );
+                        Rock.Attribute.Helper.SaveAttributeValue( model, attribute.Value, this.AttributeValues[attribute.Key].Value, rockContext );
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key.
+        /// Gets the value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The stored value as a string or null if none exists.</returns>
         public string GetAttributeValue( string key )
         {
             if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+                this.AttributeValues.ContainsKey( key ) )
             {
-                return this.AttributeValues[key][0].Value;
+                return this.AttributeValues[key].Value;
             }
 
-            if (this.Attributes != null &&
-                this.Attributes.ContainsKey(key))
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
             {
                 return this.Attributes[key].DefaultValue;
             }
@@ -287,14 +299,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// Gets the value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
             string value = GetAttributeValue( key );
-            if (!string.IsNullOrWhiteSpace(value))
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 return value.SplitDelimitedValues().ToList();
             }
@@ -309,14 +321,19 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) )
+            if ( this.AttributeValues != null )
             {
-                if ( this.AttributeValues[key].Count == 0 )
+                if ( this.AttributeValues.ContainsKey( key ) )
                 {
-                    this.AttributeValues[key].Add( new AttributeValue() );
+                    this.AttributeValues[key].Value = value;
                 }
-                this.AttributeValues[key][0].Value = value;
+                else if ( this.Attributes.ContainsKey( key ) )
+                {
+                    var attributeValue = new AttributeValue();
+                    attributeValue.AttributeId = this.Attributes[key].Id;
+                    attributeValue.Value = value;
+                    this.AttributeValues.Add( key, attributeValue );
+                }
             }
         }
 
@@ -338,5 +355,88 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ILiquidizable Implementation
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return ToLiquid( false );
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <returns></returns>
+        public virtual object ToLiquid( bool debug )
+        {
+            var dictionary = new Dictionary<string, object>();
+
+            Type entityType = this.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
+
+            foreach ( var propInfo in entityType.GetProperties() )
+            {
+                if ( propInfo.Name != "Attributes" &&
+                    propInfo.Name != "AttributeValues" &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
+                {
+                    object propValue = propInfo.GetValue( this, null );
+
+                    if ( propValue is Guid )
+                    {
+                        propValue = ( (Guid)propValue ).ToString();
+                    }
+
+                    if ( debug && propValue is IEntity )
+                    {
+                        dictionary.Add( propInfo.Name, ( (IEntity)propValue ).ToLiquid( true ) );
+                    }
+                    else if ( debug && propValue is DotLiquid.ILiquidizable )
+                    {
+                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
+                    }
+                    else
+                    {
+                        dictionary.Add( propInfo.Name, propValue );
+                    }
+                }
+            }
+
+            if ( this.Attributes != null )
+            {
+                foreach ( var attribute in this.Attributes )
+                {
+                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                    {
+                        int keySuffix = 0;
+                        string key = attribute.Key;
+                        while ( dictionary.ContainsKey( key ) )
+                        {
+                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
+                        }
+
+                        var field = attribute.Value.FieldType.Field;
+                        string value = GetAttributeValue( attribute.Key );
+                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( key + "_unformatted", value );
+                        if ( field is Rock.Field.ILinkableFieldType )
+                        {
+                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                        }
+                    }
+                }
+            }
+
+            return dictionary;
+        }
+
+        #endregion
+
     }
 }

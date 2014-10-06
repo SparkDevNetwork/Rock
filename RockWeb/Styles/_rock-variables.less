@@ -1,4 +1,4 @@
-﻿    //
+﻿//
 // Rock 1.0 Variables
 // --------------------------------------------------
 
@@ -24,6 +24,16 @@
 @text-selection-color: #5279a0;
 @text-selection-text-color: #fff;
 
+@persondetails-bio-bg: #dbd5cb;
+@persondetails-bio-color: #231f20;
+@persondetails-badge-bg: #e3ded7;
+@persondetails-badge-color: #817b72;
+@persondetails-familybar-bg: @body-bg;
+@persondetails-familybar-color: @text-color;
+
+@help-color: #86b8cc;
+@required-field-color: #eca9a7;
+
 // spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
 @spacing-sm: 0.25;
 @spacing-md: 0.5;
@@ -48,7 +58,10 @@
 
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
+@modal-body-bg: @body-bg;
 @modal-body-text-color: @text-color;
+@modal-footer-bg: @gray-lighter;
+@modal-footer-text-color: @gray;
 @modal-dropshadow-color: #464646;
 // see bootstrap variables for additional modal styles
 
@@ -66,17 +79,29 @@
 @grid-hover-bg: @accent-light-color;
 
 @grid-filter-bg: @accent-color;
+@grid-filter-color: @text-color;
 @grid-footer-bg: @accent-color;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
 @grid-footer-button-bg: @accent-semibold-color;
 @grid-footer-button-text-color: @accent-semibold-text-color;
+@grid-footer-button-border: @accent-semibold-text-color;
 
+// Pagination
 @pagination-bg: @accent-light-color;
 @pagination-hover-bg: lighten(@accent-light-color, 5%);
 @pagination-border: darken(@accent-light-color, 10%);
 @pagination-active-bg: @accent-semibold-color;
+
+// Panels
+@panel-top-border-color: @accent-color;
+
+// Alerts
+@alert-success-link-border-bottom: 1px dotted @alert-success-text;
+@alert-info-link-border-bottom:    1px dotted @alert-info-text;
+@alert-warning-link-border-bottom: 1px dotted @alert-warning-text;
+@alert-danger-link-border-bottom:  1px dotted @alert-danger-text;
 
 // Admin Bar
 @adminbar-bg: @accent-bold-color;
@@ -134,9 +159,26 @@
 @smartsearch-input-selection-text-color: #fff; 
 
 // Custom Labels
-@label-campus: #83758f;
-@label-type: lighten(@banner-bg, 5%);
+@label-campus-bg: #83758f;
+@label-type-bg: lighten(@banner-bg, 5%);
+
+// Custom Buttons
+@btn-action-color:              @accent-semibold-text-color;
+@btn-action-bg:                 @accent-semibold-color;
+@btn-action-border:             darken(@accent-semibold-color, 5%);
+
+@btn-security-color:            @accent-semibold-text-color;
+@btn-security-bg:               @accent-semibold-color;
+@btn-security-border:           darken(@accent-semibold-color, 5%);
+
+@btn-authenication-color:       @accent-text-color;
+@btn-authenication-bg:          @accent-color;
+@btn-authenication-border:      darken(@accent-color, 5%);
 
 // Scrollbar Items
 @scroll-track-color: #aaa; 
 @scroll-thumb-color: #ccc;
+
+// Block Specific
+@checkin-group-border-color: #afd074;
+@checkin-area-border-color:#5593a4;

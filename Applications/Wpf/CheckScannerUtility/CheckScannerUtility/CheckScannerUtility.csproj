@@ -29,6 +29,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -73,9 +74,6 @@
       <HintPath>AxFiles\AxMTMicrImage.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="DotLiquid">
-      <HintPath>..\..\..\..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="MTMicrImage, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -85,8 +83,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
@@ -113,14 +109,23 @@
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MicrImageHostPage.xaml.cs">
+      <DependentUpon>MicrImageHostPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OptionsPage.xaml.cs">
       <DependentUpon>OptionsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RangerScannerHostPage.xaml.cs">
+      <DependentUpon>RangerScannerHostPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RangerTypes.cs" />
     <Compile Include="RockConfig.cs" />
-    <Compile Include="ScannedCheckInfo.cs" />
+    <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
       <DependentUpon>ScanningPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScanningPromptPage.xaml.cs">
+      <DependentUpon>ScanningPromptPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ZeroCurrencyConverter.cs" />
     <Page Include="BatchItemDetailPage.xaml">
@@ -132,6 +137,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="images\check-scanner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="images\rock-logo-sm.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -161,11 +170,23 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MicrImageHostPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="OptionsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="RangerScannerHostPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ScanningPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScanningPromptPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -209,6 +230,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
@@ -244,7 +269,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>call "$(DevEnvDir)..\tools\vsvars32.bat"
-editbin.exe /NXCOMPAT:NO $(TargetPath)</PostBuildEvent>
+editbin.exe /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

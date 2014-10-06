@@ -39,7 +39,9 @@ namespace Rock.Web
         System.Web.IHttpHandler IRouteHandler.GetHttpHandler( RequestContext requestContext )
         {
             if ( requestContext == null )
+            {
                 throw new ArgumentNullException( "requestContext" );
+            }
 
             try
             {
@@ -89,7 +91,9 @@ namespace Rock.Web
                     }
 
                     if ( string.IsNullOrEmpty( pageId ) )
+                    {
                         throw new SystemException( "Invalid Site Configuration" );
+                    }
                 }
 
                 PageCache page = null;
@@ -165,11 +169,11 @@ namespace Rock.Web
             {
                 if ( requestContext.HttpContext != null )
                 {
-                    requestContext.HttpContext.Items.Add( "error", "66" );
-                    requestContext.HttpContext.Items.Add( "Exception", ex );
+                    requestContext.HttpContext.Cache["RockExceptionOrder"] = "66";
+                    requestContext.HttpContext.Cache["RockLastException"] = ex;
                 }
 
-                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error.aspx", typeof( System.Web.UI.Page ) );
+                System.Web.UI.Page errorPage = (System.Web.UI.Page)BuildManager.CreateInstanceFromVirtualPath( "~/Error66.aspx", typeof( System.Web.UI.Page ) );
                 return errorPage;
             }
         }

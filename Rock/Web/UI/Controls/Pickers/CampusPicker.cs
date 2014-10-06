@@ -20,6 +20,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -43,7 +44,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The campuses.
         /// </value>
-        public List<Campus> Campuses
+        public List<CampusCache> Campuses
         {
             set
             {
@@ -54,7 +55,7 @@ namespace Rock.Web.UI.Controls
                     this.Items.Add( new ListItem( string.Empty, string.Empty ) );
                 }
 
-                foreach ( Campus campus in value )
+                foreach ( CampusCache campus in value )
                 {
                     ListItem campusItem = new ListItem();
                     campusItem.Value = campus.Id.ToString();
@@ -66,10 +67,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected campus ids.
+        /// Gets or sets the selected campus identifier.
         /// </summary>
         /// <value>
-        /// The selected campus ids.
+        /// The selected campus identifier.
         /// </value>
         public int? SelectedCampusId
         {

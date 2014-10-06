@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI.Adapters
 {
@@ -52,8 +53,21 @@ namespace Rock.Web.UI.Adapters
             if ( rb != null )
             {
                 writer.WriteLine();
-                writer.AddAttribute( "class", "radio-inline" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
+                // always render the label tag for the radiobutton, even if the radiobutton doesn't have text
+                bool renderRadioButtonLabel = true;
+                if ( renderRadioButtonLabel )
+                {
+                    if ( rb is RockRadioButton )
+                    {
+                        if ( ( rb as RockRadioButton ).DisplayInline )
+                        {
+                            writer.AddAttribute( HtmlTextWriterAttribute.Class, "radio-inline" );
+                        }
+                    }
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, rb.ClientID );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "radio" );
@@ -103,9 +117,19 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                writer.Write( rb.Text );
-
-                writer.RenderEndTag();      // Label
+                if ( renderRadioButtonLabel )
+                {
+                    if ( rb.Text.Length > 0 )
+                    {
+                        writer.Write( rb.Text );
+                    }
+                    else
+                    {
+                        writer.Write( "&nbsp;" );
+                    }
+                    
+                    writer.RenderEndTag();      // Label
+                }
 
                 if ( Page != null && Page.ClientScript != null )
                 {
