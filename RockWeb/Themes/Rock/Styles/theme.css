@@ -4548,6 +4548,11 @@ pre {
   border-color: #4c6f7c;
   color: #fff;
 }
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover td {
+  background-color: #567d8c;
+  color: #fff;
+}
 /*#endregion */
 /*#region  
 // 5. Theme Styling          */
