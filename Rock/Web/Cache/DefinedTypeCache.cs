@@ -185,14 +185,8 @@ namespace Rock.Web.Cache
                 this.Name = definedType.Name;
                 this.Description = definedType.Description;
 
-                // since we already have the Values fetched, load them into the DefinedValueCache
-                foreach ( var value in definedType.DefinedValues )
-                {
-                    DefinedValueCache.Read( value );
-                }
-
-                this.definedValueIds = definedType.DefinedValues
-                    .Select( v => v.Id ).ToList();
+                // set definedValueIds to null so it load them all at once on demand
+                this.definedValueIds = null;
             }
         }
 
@@ -234,7 +228,7 @@ namespace Rock.Web.Cache
                 rockContext = rockContext ?? new RockContext();
                 var definedTypeService = new DefinedTypeService( rockContext );
                 var definedTypeModel = definedTypeService
-                    .Queryable( "DefinedValues" )
+                    .Queryable()
                     .Where( t => t.Id == id )
                     .FirstOrDefault();
 
@@ -274,7 +268,7 @@ namespace Rock.Web.Cache
                 rockContext = rockContext ?? new RockContext();
                 var definedTypeService = new DefinedTypeService( rockContext );
                 var definedTypeModel = definedTypeService
-                    .Queryable( "DefinedValues" )
+                    .Queryable()
                     .Where( t => t.Guid == guid )
                     .FirstOrDefault();
 
