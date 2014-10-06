@@ -280,11 +280,15 @@ namespace RockWeb.Blocks.Administration
         {
             var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
             object dataSource, catalog = string.Empty;
+            string result = string.Empty;
             if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
             {
-                return string.Format( "{0} @ {1}", catalog, dataSource );
+                result += string.Format( "{0} @ {1}", catalog, dataSource );
             }
-            return string.Empty;
+
+            result += RockContext.SqlSummaryHtml;
+
+            return result;
         }
 
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within
