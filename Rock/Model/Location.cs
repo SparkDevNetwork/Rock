@@ -497,7 +497,7 @@ namespace Rock.Model
                 return string.Empty;
             }
 
-            string result = string.Format( "{0} {1} {2}, {3} {4}",
+            string result = string.Format( "{0}, {1}, {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
             var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
