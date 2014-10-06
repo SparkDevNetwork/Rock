@@ -22,6 +22,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Web;
 using Rock.Model;
 using Rock.Utility;
@@ -34,11 +35,139 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
+        public class SqlLogRecord
+        {
+            public SqlLogRecord( string SQL )
+            {
+                this.SQL = SQL;
+                this.DateTime = RockDateTime.Now;
+            }
 
-        //public RockContext()
-        //{
-        //    this.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
-        //}
+            public string SQL { get; set; }
+            public string FROMs
+            {
+                get
+                {
+                    var lines = SQL.Split( new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries );
+                    return lines.Where( a => a.IndexOf( "FROM", 0 ) >= 0 ).ToList().AsDelimited( "\n" ).Trim();
+                }
+            }
+
+            public string WHEREs
+            {
+                get
+                {
+                    var lines = SQL.Split( new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries );
+                    return lines.Where( a => a.IndexOf( "WHERE", 0 ) >= 0 ).ToList().AsDelimited( "\n" ).Trim();
+                }
+            }
+
+            public string TABLEs
+            {
+                get
+                {
+                    var lines = SQL.Split( new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries );
+                    var dboLines = lines.Where( a => a.IndexOf( "[dbo].", 0 ) >= 0 ).ToList();
+                    var tables = new List<string>();
+                    foreach ( var line in dboLines )
+                    {
+                        var dboIndex = line.IndexOf( "[dbo]." );
+                        if ( dboIndex >= 0 )
+                        {
+                            var start = line.Substring( dboIndex + "[dbo].".Length );
+                            var endBrace = start.IndexOf( ']' );
+                            tables.Add( start.Substring( 0, endBrace ).Replace( "[", "" ) );
+                        }
+                    }
+
+                    if ( !tables.Any() )
+                    {
+                        return "NONE";
+                    }
+                    else
+                    {
+                        return tables.AsDelimited( "," );
+                    }
+                }
+            }
+
+            public DateTime DateTime { get; set; }
+
+            public override string ToString()
+            {
+                return TABLEs;
+            }
+
+        }
+
+        public static List<string> DatabaseSQLLogOther = new List<string>();
+        public static List<SqlLogRecord> DatabaseSQLLogSELECT = new List<SqlLogRecord>();
+        public static List<string> DatabaseSQLLogUPDATE = new List<string>();
+        public static List<string> DatabaseSQLLogINSERT = new List<string>();
+        public static List<string> DatabaseSQLLogDELETE = new List<string>();
+        public static string SqlSummaryHtml
+        {
+            get
+            {
+                string result = @"<table class='grid'>
+<thead>
+    <tr>
+        <th>SELECTs</th>        
+        <th>Table</th>
+    </tr>
+</thead>
+<tbody>";
+                
+                result += DatabaseSQLLogSELECT.GroupBy( a => a.TABLEs ).Select( x => new
+                {
+                    Table = x.Key,
+                    Count = x.Count()
+                } ).OrderByDescending( a => a.Count )
+                        .Select( x => string.Format( "<tr><td>{0}</td><td>{1}</td></tr>", x.Count, x.Table.Truncate(120) ) )
+                        .ToList().AsDelimited( "\n" );
+
+                result += "</tbody></table>";
+
+                return result;
+            }
+        }
+
+        public static List<SqlLogRecord> MostRecent
+        {
+            get
+            {
+                return DatabaseSQLLogSELECT.OrderByDescending( a => a.DateTime ).ToList();
+            }
+        }
+
+        public RockContext()
+        {
+            this.Database.Log = s =>
+            {
+                if ( s.Contains( "DELETE" ) )
+                {
+                    DatabaseSQLLogDELETE.Add( s );
+                }
+                else if ( s.Contains( "INSERT" ) )
+                {
+                    DatabaseSQLLogINSERT.Add( s );
+                }
+                else if ( s.Contains( "UPDATE" ) )
+                {
+                    DatabaseSQLLogUPDATE.Add( s );
+                }
+                else if ( System.Text.RegularExpressions.Regex.IsMatch( s, @"^SELECT\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+                {
+                    var sqlRecord = new SqlLogRecord( s );
+                    //System.Diagnostics.Debug.WriteLine( sqlRecord.TABLEs );
+                    DatabaseSQLLogSELECT.Add( sqlRecord );
+                }
+                else
+                {
+                    DatabaseSQLLogOther.Add( s );
+                }
+            };
+        }
 
         #region Models
 
@@ -273,7 +402,7 @@ namespace Rock.Data
         /// The entity set items.
         /// </value>
         public DbSet<EntitySetItem> EntitySetItems { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
@@ -441,7 +570,7 @@ namespace Rock.Data
         /// The histories.
         /// </value>
         public DbSet<History> Histories { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
@@ -513,7 +642,7 @@ namespace Rock.Data
         /// The note types.
         /// </value>
         public DbSet<NoteType> NoteTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
@@ -528,7 +657,7 @@ namespace Rock.Data
         /// <value>
         /// The page contexts.
         /// </value>
-        public DbSet<PageContext> PageContexts { get; set; } 
+        public DbSet<PageContext> PageContexts { get; set; }
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -809,7 +938,7 @@ namespace Rock.Data
         /// Adds the configurations.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
-        public static void AddConfigurations(DbModelBuilder modelBuilder)
+        public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
