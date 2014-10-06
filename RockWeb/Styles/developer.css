@@ -160,3 +160,9 @@ span.data-view-filter-label {
 div.toggle-container {   /* ???? JME */
     display: inline-block;
 }
+
+/* MP Move Admin bar to see Glimpse bar*/
+#cms-admin-footer {
+    left: 0;
+    right: auto;
+}

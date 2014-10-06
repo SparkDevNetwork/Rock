@@ -1,11 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="Glimpse 1.8.5" Category="Package" Bounds="974.345,167.88,90.7033333333334,25.96" Label="Glimpse 1.8.5" />
-    <Node Id="Glimpse.Ado 1.7.1" Category="Package" Bounds="956.126666666666,111.92,115.14,25.96" Label="Glimpse.Ado 1.7.1" />
-    <Node Id="Glimpse.AspNet 1.9.0" Category="Package" Bounds="1101.44166666667,111.92,132.51,25.96" Label="Glimpse.AspNet 1.9.0" />
-    <Node Id="Glimpse.EF6 1.6.2" Category="Package" Bounds="651.845,55.9600000000002,111.703333333333,25.96" Label="Glimpse.EF6 1.6.2" />
-    <Node Id="Glimpse.WebForms 1.1.0" Category="Package" Bounds="1104.52833333333,55.9600000000002,150.336666666667,25.96" Label="Glimpse.WebForms 1.1.0" />
     <Node Id="RockWeb" Label="RockWeb" Category="Project" />
     <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Package" />
     <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
