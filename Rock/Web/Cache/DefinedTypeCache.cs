@@ -108,8 +108,8 @@ namespace Rock.Web.Cache
                     return CategoryCache.Read( CategoryId.Value );
                 return null;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Gets the type of the field.
         /// </summary>
@@ -184,6 +184,12 @@ namespace Rock.Web.Cache
                 this.CategoryId = definedType.CategoryId;
                 this.Name = definedType.Name;
                 this.Description = definedType.Description;
+
+                // since we already have the Values fetched, load them into the DefinedValueCache
+                foreach ( var value in definedType.DefinedValues )
+                {
+                    DefinedValueCache.Read( value );
+                }
 
                 this.definedValueIds = definedType.DefinedValues
                     .Select( v => v.Id ).ToList();
