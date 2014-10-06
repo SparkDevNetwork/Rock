@@ -349,19 +349,20 @@ namespace Rock.Web.Cache
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    BlockService blockService = new BlockService( new RockContext() );
-                    foreach ( Block block in blockService.GetByLayout( this.LayoutId ) )
+                    var rockContext = new RockContext();
+                    BlockService blockService = new BlockService( rockContext );
+                    // layout blocks are likely to be in the cache already since pages share layouts, so look in the cache first
+                    foreach ( int layoutBlockId in blockService.GetByLayout( this.LayoutId ).Select( b => b.Id ))
                     {
-                        blockIds.Add( block.Id );
-                        block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blockIds.Add( layoutBlockId );
+                        blocks.Add( BlockCache.Read( layoutBlockId ) );
                     }
 
                     // Load Page Blocks
                     foreach ( Block block in blockService.GetByPage( this.Id ) )
                     {
                         blockIds.Add( block.Id );
-                        block.LoadAttributes();
+                        block.LoadAttributes( rockContext );
                         blocks.Add( BlockCache.Read( block ) );
                     }
 
