@@ -227,6 +227,8 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        private HiddenField _hfDisableVrm;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockTextBox" /> class.
         /// </summary>
@@ -244,6 +246,11 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls(this, Controls);
+
+            _hfDisableVrm = new HiddenField();
+            _hfDisableVrm.ID = this.ID + "_dvrm";
+            _hfDisableVrm.Value = "True";
+            Controls.Add( _hfDisableVrm );
         }
 
         /// <summary>
@@ -301,7 +308,11 @@ namespace Rock.Web.UI.Controls
             {
                 this.Attributes["placeholder"] = Placeholder;
             }
-            
+
+            if ( ValidateRequestMode == System.Web.UI.ValidateRequestMode.Disabled )
+            {
+                _hfDisableVrm.RenderControl( writer );
+            }
             base.RenderControl( writer );
 
             if ( !string.IsNullOrWhiteSpace( AppendText ) )
