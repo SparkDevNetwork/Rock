@@ -14,18 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -281,12 +272,15 @@ namespace Rock.Web.UI.Controls
             _tbPreHtml.ID = this.ID + "_tbPreHtml";
             _tbPreHtml.TextMode = TextBoxMode.MultiLine;
             _tbPreHtml.Rows = 3;
+            _tbPreHtml.ValidateRequestMode = System.Web.UI.ValidateRequestMode.Disabled;
             Controls.Add( _tbPreHtml );
 
             _tbPostHtml = new RockTextBox();
             _tbPostHtml.ID = this.ID + "_tbPostHtml";
             _tbPostHtml.TextMode = TextBoxMode.MultiLine;
             _tbPostHtml.Rows = 3;
+            _tbPostHtml.ValidateRequestMode = System.Web.UI.ValidateRequestMode.Disabled;
+
             Controls.Add( _tbPostHtml );
         }
 
