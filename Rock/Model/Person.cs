@@ -629,9 +629,9 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.RecordTypeValueId != null )
+                if ( this.RecordTypeValue != null )
                 {
-                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, DefinedValueCache.Read( this.RecordTypeValueId.Value ).Guid );
+                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, this.RecordTypeValue.Guid );
                 }
                 else
                 {
