@@ -136,6 +136,9 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.GlobalAttributesCache.Flush();
             Rock.Web.SystemSettings.Flush();
 
+            RockContext.DatabaseSQLLogSELECT.Clear();
+            lDatabase.Text = GetDbInfo();
+
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }
