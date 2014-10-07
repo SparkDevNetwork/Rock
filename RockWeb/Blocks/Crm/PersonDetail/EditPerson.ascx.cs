@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 var personService = new PersonService( new RockContext() );
-                foreach ( var family in personService.GetFamilies( Person.Id ) )
+                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id } ))
                 {
                     ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
                 }
