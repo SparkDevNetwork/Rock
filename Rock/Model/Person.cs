@@ -629,9 +629,9 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.RecordTypeValueId != null )
+                if ( this.RecordTypeValue != null )
                 {
-                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, DefinedValueCache.Read( this.RecordTypeValueId.Value ).Guid );
+                    return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, this.RecordTypeValue.Guid );
                 }
                 else
                 {
@@ -1267,6 +1267,8 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? RecordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
+
+            string virtualPath = String.Empty;
             if ( photoId.HasValue )
             {
                 string widthHeightParams = string.Empty;
@@ -1280,24 +1282,24 @@ namespace Rock.Model
                     widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
                 }
 
-                return VirtualPathUtility.ToAbsolute( String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId ) );
+                virtualPath = String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
             }
             else
             {
                 if ( RecordTypeValueGuid.HasValue && RecordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    return VirtualPathUtility.ToAbsolute( "~/Assets/Images/business-no-photo.svg?" );
+                    virtualPath = "~/Assets/Images/business-no-photo.svg?";
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
                     if ( gender == Model.Gender.Female )
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-child-female.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
                     }
                     else
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-child-male.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                     }
                 }
                 else
@@ -1305,13 +1307,22 @@ namespace Rock.Model
                     // it's an adult
                     if ( gender == Model.Gender.Female )
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-female.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
                     }
                     else
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-male.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
                     }
                 }
+            }
+
+            if ( System.Web.HttpContext.Current == null )
+            {
+                return virtualPath;
+            }
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
             }
         }
 
