@@ -2274,10 +2274,10 @@ td.grid-col-actions {
 }
 .panel-note article > i {
   position: absolute;
-  color: #98a3ab;
   width: 28px;
   font-size: 28px;
   margin: 0 12px 0 4px;
+  opacity: .2;
 }
 .panel-note article .details {
   margin-left: 50px;
@@ -2308,16 +2308,10 @@ td.grid-col-actions {
 .panel-note article.highlight a {
   color: #ffffff;
 }
-.panel-note article.highlight > i {
-  color: #e42533;
-}
 .panel-note article.personal {
   background-color: #2c3e50;
   border: 1px solid #273c46;
   color: #ffffff;
-}
-.panel-note article.personal > i {
-  color: #598aa2;
 }
 .panel-note article > img {
   float: left;
