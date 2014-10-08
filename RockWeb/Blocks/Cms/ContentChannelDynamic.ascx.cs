@@ -631,7 +631,7 @@ $(document).ready(function() {
                             if ( dataFilterId.HasValue )
                             {
                                 var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Get( dataFilterId.Value );
+                                var dataFilter = dataFilterService.Queryable("ChildFilters").FirstOrDefault( a => a.Id == dataFilterId.Value);
 
                                 var errorMessages = new List<string>();
                                 Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
@@ -818,7 +818,7 @@ $(document).ready(function() {
                         item.ContentChannelId = channel.Id;
                         item.ContentChannelType = channel.ContentChannelType;
                         item.ContentChannelTypeId = channel.ContentChannelTypeId;
-                        item.LoadAttributes();
+                        item.LoadAttributes( rockContext );
                         foreach ( var attribute in item.Attributes
                             .Where( a =>
                                 a.Value.EntityTypeQualifierColumn != "" &&
