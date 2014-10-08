@@ -268,15 +268,18 @@ namespace Rock.Reporting.DataFilter
                                 }
                             }
                         }
-                        else
+                        else 
                         {
-                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
-                            if ( attribute != null )
+                            if ( entityField.FieldKind == FieldKind.Attribute )
                             {
-                                var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
-                                if ( itemValues != null )
+                                var attribute = AttributeCache.Read( entityField.AttributeGuid ?? Guid.Empty );
+                                if ( attribute != null )
                                 {
-                                    selectedTexts = itemValues.Value.GetListItems().Where( a => selectedValues.ToList().Contains( a.Value ) ).Select( s => s.Text ).ToList();
+                                    var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                                    if ( itemValues != null )
+                                    {
+                                        selectedTexts = itemValues.Value.GetListItems().Where( a => selectedValues.ToList().Contains( a.Value ) ).Select( s => s.Text ).ToList();
+                                    }
                                 }
                             }
                             else
