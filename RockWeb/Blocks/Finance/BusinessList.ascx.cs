@@ -134,46 +134,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gBusinessList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gBusinessList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var business = e.Row.DataItem as Person;
-                if ( business != null )
-                {
-                    // Phone Number
-                    if ( business.PhoneNumbers.Count > 0 )
-                    {
-                        var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
-                        if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
-                        {
-                            Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
-                            if ( lblPhoneNumber != null )
-                            {
-                                lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
-                            }
-                        }
-                    }
-
-                    // Address
-                    if ( business.GivingGroup != null && business.GivingGroup.GroupLocations.Any() )
-                    {
-                        Label lblAddress = e.Row.FindControl( "lblAddress" ) as Label;
-                        lblAddress.Text = business.GivingGroup.GroupLocations
-                            .Select( gl => gl.Location )
-                            .FirstOrDefault()
-                            .GetFullStreetAddress()
-                            .ConvertCrLfToHtmlBr();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the RowSelected event of the gBusinessList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -241,13 +201,35 @@ namespace RockWeb.Blocks.Finance
             SortProperty sortProperty = gBusinessList.SortProperty;
             if ( sortProperty != null )
             {
-                gBusinessList.DataSource = queryable.Sort( sortProperty ).ToList();
+                queryable = queryable.Sort( sortProperty );
             }
             else
             {
-                gBusinessList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
+                queryable = queryable.OrderBy( q => q.LastName );
             }
 
+            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
+
+            var businessList = queryable.Select( b => new
+            {
+                Id = b.Id,
+                b.LastName,
+                BusinessName = b.LastName,
+                PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
+                Email = b.Email,
+                Address = b.Members
+                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
+                                .SelectMany( m => m.Group.GroupLocations )
+                                .FirstOrDefault()
+                                .Location,
+                Contacts = b.Members
+                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS )
+                                .SelectMany( m => m.Group.Members)
+                                .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id)
+                                .Select( p => p.Person.LastName + ", " + p.Person.NickName)
+            } );
+
+            gBusinessList.DataSource = businessList.ToList();
             gBusinessList.DataBind();
         }
 
