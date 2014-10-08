@@ -29,6 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.ContentChannel", "Content Channel", "Rock.Model.ContentChannel, Rock, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null", true, true, "44484685-477E-4668-89A6-84F29739EB68" );
+
             Sql( @" 
                     DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ContentChannel' ) 
                     DECLARE @ChannelId int = ( SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '8E213BB1-9E6F-40C1-B468-B3F8A60D5D24' ) 
