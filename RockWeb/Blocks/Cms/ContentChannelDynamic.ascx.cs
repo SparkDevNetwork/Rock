@@ -413,16 +413,16 @@ $(document).ready(function() {
             }
 
             var mergeFields = new Dictionary<string, object>();
-            if ( CurrentPerson != null )
-            {
-                mergeFields.Add( "Pagination", pagination );
-                mergeFields.Add( "LinkedPages", linkedPages );
-                mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                mergeFields.Add( "Items", currentPageContent );
-                mergeFields.Add( "Campuses", CampusCache.All() );
-                mergeFields.Add( "Person", CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            }
+            
+            mergeFields.Add( "Pagination", pagination );
+            mergeFields.Add( "LinkedPages", linkedPages );
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.Add( "Items", currentPageContent );
+            mergeFields.Add( "Campuses", CampusCache.All() );
+            mergeFields.Add( "Person", CurrentPerson );
+
+            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            
 
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
