@@ -4013,6 +4013,9 @@ a.help {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.panel-persondetails .panel-body i.fa.fa-bars {
+  cursor: pointer;
+}
 .panel-block {
   border-color: #e2e2e2;
   border-top-color: #dbd5cb;
