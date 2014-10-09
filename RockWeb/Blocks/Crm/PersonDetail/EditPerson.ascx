@@ -36,7 +36,7 @@
                         <fieldset>
                             <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title"/>
                             <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" />
-                            <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
+                            <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" Label="Nickname" />
                             <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" />
                             <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                             <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
@@ -72,7 +72,7 @@
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
                                         <div class="form-group">
-                                            <div class="control-label col-sm-2"><%# Eval("NumberTypeValue.Value")  %></div>
+                                            <div class="control-label col-sm-2"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
                                             <div class="controls col-sm-10">
                                                 <div class="row">
                                                     <div class="col-sm-7">

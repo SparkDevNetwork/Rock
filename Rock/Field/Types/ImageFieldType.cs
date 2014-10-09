@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
@@ -70,11 +69,11 @@ namespace Rock.Field.Types
                     }
                 }
 
-                var image = new BinaryFileService( new RockContext() ).Get( value.AsGuid() );
-                if ( image != null )
+                Guid? imageGuid = value.AsGuidOrNull();
+                if ( imageGuid.HasValue )
                 {
-                    string imageUrlFormat = "<img src='" + imagePath + "?id={0}{1}' />";
-                    return string.Format( imageUrlFormat, image.Id, queryParms );
+                    string imageUrlFormat = "<img src='" + imagePath + "?guid={0}{1}' />";
+                    return string.Format( imageUrlFormat, imageGuid, queryParms );
                 }
             }
 
