@@ -413,16 +413,16 @@ $(document).ready(function() {
             }
 
             var mergeFields = new Dictionary<string, object>();
-            if ( CurrentPerson != null )
-            {
-                mergeFields.Add( "Pagination", pagination );
-                mergeFields.Add( "LinkedPages", linkedPages );
-                mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                mergeFields.Add( "Items", currentPageContent );
-                mergeFields.Add( "Campuses", CampusCache.All() );
-                mergeFields.Add( "Person", CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            }
+            
+            mergeFields.Add( "Pagination", pagination );
+            mergeFields.Add( "LinkedPages", linkedPages );
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.Add( "Items", currentPageContent );
+            mergeFields.Add( "Campuses", CampusCache.All() );
+            mergeFields.Add( "Person", CurrentPerson );
+
+            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            
 
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
@@ -631,7 +631,7 @@ $(document).ready(function() {
                             if ( dataFilterId.HasValue )
                             {
                                 var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Get( dataFilterId.Value );
+                                var dataFilter = dataFilterService.Queryable("ChildFilters").FirstOrDefault( a => a.Id == dataFilterId.Value);
 
                                 var errorMessages = new List<string>();
                                 Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
@@ -818,7 +818,7 @@ $(document).ready(function() {
                         item.ContentChannelId = channel.Id;
                         item.ContentChannelType = channel.ContentChannelType;
                         item.ContentChannelTypeId = channel.ContentChannelTypeId;
-                        item.LoadAttributes();
+                        item.LoadAttributes( rockContext );
                         foreach ( var attribute in item.Attributes
                             .Where( a =>
                                 a.Value.EntityTypeQualifierColumn != "" &&
