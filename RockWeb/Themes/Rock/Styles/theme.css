@@ -2272,10 +2272,10 @@ td.grid-col-actions {
 }
 .panel-note article > i {
   position: absolute;
-  color: #d8d8dc;
   width: 28px;
   font-size: 28px;
   margin: 0 12px 0 4px;
+  opacity: .2;
 }
 .panel-note article .details {
   margin-left: 50px;
@@ -2306,16 +2306,10 @@ td.grid-col-actions {
 .panel-note article.highlight a {
   color: #b94a48;
 }
-.panel-note article.highlight > i {
-  color: #ebccd1;
-}
 .panel-note article.personal {
   background-color: #c2b8a7;
   border: 1px solid #bcac9e;
   color: #616161;
-}
-.panel-note article.personal > i {
-  color: #f6f4f2;
 }
 .panel-note article > img {
   float: left;
@@ -4019,6 +4013,9 @@ a.help {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.panel-persondetails .panel-body i.fa.fa-bars {
+  cursor: pointer;
+}
 .panel-block {
   border-color: #e2e2e2;
   border-top-color: #dbd5cb;
@@ -4548,6 +4545,16 @@ pre {
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: #ecf2e2;
+}
+.panel-note article.personal {
+  background-color: #567d8c;
+  border-color: #4c6f7c;
+  color: #fff;
+}
+.grid-table tbody tr.duplicate-source td,
+.grid-table tbody tr.duplicate-source:hover td {
+  background-color: #567d8c;
+  color: #fff;
 }
 /*#endregion */
 /*#region  

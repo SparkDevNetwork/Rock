@@ -2272,10 +2272,10 @@ td.grid-col-actions {
 }
 .panel-note article > i {
   position: absolute;
-  color: #808080;
   width: 28px;
   font-size: 28px;
   margin: 0 12px 0 4px;
+  opacity: .2;
 }
 .panel-note article .details {
   margin-left: 50px;
@@ -2306,16 +2306,10 @@ td.grid-col-actions {
 .panel-note article.highlight a {
   color: #b94a48;
 }
-.panel-note article.highlight > i {
-  color: #ebccd1;
-}
 .panel-note article.personal {
   background-color: #999999;
   border: 1px solid #919191;
   color: #ffffff;
-}
-.panel-note article.personal > i {
-  color: #d9d9d9;
 }
 .panel-note article > img {
   float: left;
@@ -4018,6 +4012,9 @@ a.help {
   padding-top: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.panel-persondetails .panel-body i.fa.fa-bars {
+  cursor: pointer;
 }
 .panel-block {
   border-color: #e2e2e2;

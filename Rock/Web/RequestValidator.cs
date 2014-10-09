@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Util;
 
@@ -43,12 +38,17 @@ namespace Rock.Web
         protected override bool IsValidRequestString( HttpContext context, string value, RequestValidationSource requestValidationSource, string collectionKey, out int validationFailureIndex )
         {
             bool valid = base.IsValidRequestString( context, value, requestValidationSource, collectionKey, out validationFailureIndex );
-            //if (!valid && requestValidationSource == RequestValidationSource.Form )
-            //{
-            //    // TODO: For now do not validate form values.  Eventually should provide way for just specific controls to be ignored
-            //    validationFailureIndex = -1;
-            //    return true;
-            //}
+            if ( !valid && requestValidationSource == RequestValidationSource.Form )
+            {
+                if ( context != null &&
+                    context.Request.Form[collectionKey + "_dvrm"] != null &&
+                    context.Request.Form[collectionKey + "_dvrm"].AsBoolean( true ) )
+                {
+                    // If a "_vrm" form value with same id exists and is set to false, allow the invalid data.
+                    validationFailureIndex = -1;
+                    return true;
+                }
+            }
             return valid;
         }
     }
