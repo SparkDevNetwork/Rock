@@ -26,6 +26,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) SiteFieldType
+    /// Stored as Site.Id
     /// </summary>
     public class SiteFieldType : FieldType, IEntityFieldType
     {

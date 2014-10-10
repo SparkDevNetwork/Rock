@@ -62,6 +62,16 @@ namespace DotLiquid
         }
 
         /// <summary>
+        /// convert a integer to a string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToString( int input )
+        {
+            return input.ToString();
+        }
+
+        /// <summary>
         /// singularize string
         /// </summary>
         /// <param name="input"></param>

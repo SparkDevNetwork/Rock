@@ -218,6 +218,7 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
+    <Compile Include="Controllers\PrayerRequestsController.Parial.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
