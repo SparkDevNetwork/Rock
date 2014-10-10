@@ -25,11 +25,11 @@
                             <Columns>
                                 <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" />
                                 <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                                <asp:BoundField DataField="Block" HeaderText="Block"  SortExpression="Block" />
+                                <asp:BoundField DataField="BlockName" HeaderText="Block"  SortExpression="BlockName" />
                                 <asp:BoundField DataField="BlockId" HeaderText="Block Id" SortExpression="BlockId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 <asp:BoundField DataField="Content" HeaderText="Content" SortExpression="Content" />
                                 <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnText="Yes" OffText="No" OnCheckedChanged="gContentList_CheckedChanged" SortExpression="IsApproved" />
-                                <asp:BoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPerson" />
+                                <asp:BoundField DataField="ApprovedByPersonName" HeaderText="Approved By" SortExpression="ApprovedByPersonName" />
                                 <Rock:DateField DataField="ApprovedDateTime" HeaderText="Approval Date" SortExpression="ApprovedDateTime" />
                             </Columns>
                         </Rock:Grid>
