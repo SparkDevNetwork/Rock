@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -266,103 +265,40 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            var htmlList = new List<HtmlApproval>();
-            var contentList = qry.Select( a => new
+            SortProperty sortProperty = gContentList.SortProperty;
+            if ( sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderByDescending( a => a.ModifiedDateTime );
+            }
+
+            var selectQry = qry.Select( a => new
             {
                 a.Id,
-                a.Content,
+                SiteName = a.Block.PageId.HasValue ? a.Block.Page.Layout.Site.Name : a.Block.Layout.Site.Name,
+                PageName = a.Block.Page.InternalName,
+                a.ModifiedDateTime,
                 a.IsApproved,
-                a.ApprovedDateTime,
-                ApprovedByPerson = a.ApprovedByPersonAlias.Person,
+                ApprovedDateTime = a.IsApproved ? a.ApprovedDateTime : null,
+                ApprovedByPerson = a.IsApproved ? a.ApprovedByPersonAlias.Person : null,
                 BlockPageId = a.Block.PageId,
                 BlockLayoutId = a.Block.LayoutId,
-                BlockName = a.Block.Name,
-                BlockId = a.BlockId,
-            } )
-            .ToList();
-
-            foreach ( var content in contentList )
-            {
-                string pageName = string.Empty;
-                string siteName = string.Empty;
-                if ( content.BlockPageId.HasValue )
-                {
-                    var pageCache = PageCache.Read( content.BlockPageId.Value, rockContext );
-                    pageName = pageCache.InternalName;
-                    siteName = pageCache.Layout.Site.Name;
-                }
-                else if ( content.BlockLayoutId.HasValue )
-                {
-                    siteName = LayoutCache.Read( content.BlockLayoutId.Value, rockContext ).Site.Name;
-                }
-
-                var htmlApprovalClass = new HtmlApproval();
-                htmlApprovalClass.SiteName = siteName;
-                htmlApprovalClass.PageName = pageName;
-                htmlApprovalClass.BlockName = content.BlockName;
-                htmlApprovalClass.BlockId = content.BlockId;
-                htmlApprovalClass.Content = content.Content;
-                htmlApprovalClass.Id = content.Id;
-                htmlApprovalClass.IsApproved = content.IsApproved;
-                if ( content.ApprovedByPerson != null )
-                {
-                    htmlApprovalClass.ApprovedByPersonName = content.ApprovedByPerson.ToString();
-                }
-
-                htmlApprovalClass.ApprovedDateTime = content.ApprovedDateTime;
-
-                htmlList.Add( htmlApprovalClass );
-            }
+            } );
 
             // Filter by Site
             if ( ddlSiteFilter.SelectedIndex > 0 )
             {
                 if ( ddlSiteFilter.SelectedValue.ToLower() != "all" )
                 {
-                    htmlList = htmlList.Where( h => h.SiteName == ddlSiteFilter.SelectedValue ).ToList();
+                    selectQry = selectQry.Where( h => h.SiteName == ddlSiteFilter.SelectedValue );
                 }
             }
 
-            SortProperty sortProperty = gContentList.SortProperty;
-            if ( sortProperty != null )
-            {
-                gContentList.DataSource = htmlList.AsQueryable().Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gContentList.DataSource = htmlList.OrderBy( h => h.Id ).ToList();
-            }
-
+            gContentList.DataSource = selectQry.ToList();
             gContentList.DataBind();
-        }
-
-        #endregion
-
-        #region HtmlApproval Class
-
-        /// <summary>
-        /// A class to hold all the info for the HtmlContentApproval Block
-        /// </summary>
-        [Serializable]
-        protected class HtmlApproval
-        {
-            public string SiteName { get; set; }
-
-            public string PageName { get; set; }
-
-            public string BlockName { get; set; }
-
-            public int BlockId { get; set; }
-
-            public string Content { get; set; }
-
-            public int Id { get; set; }
-
-            public bool IsApproved { get; set; }
-
-            public string ApprovedByPersonName { get; set; }
-
-            public DateTime? ApprovedDateTime { get; set; }
         }
 
         #endregion
