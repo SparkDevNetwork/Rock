@@ -21,7 +21,7 @@
                             </Rock:RockDropDownList>
                             <Rock:PersonPicker ID="ppApprovedByFilter" runat="server" Label="Approved By" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gContentList" runat="server" AllowSorting="true">
+                        <Rock:Grid ID="gContentList" runat="server" AllowSorting="true" OnRowSelected="gContentList_RowSelected">
                             <Columns>
                                 <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="Block.Page.Layout.Site.Name,Block.Layout.Site.Name" />
                                 <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="Block.Page.InternalName" />
@@ -32,6 +32,16 @@
                             </Columns>
                         </Rock:Grid>
                     </div>
+
+                    <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview">
+                        <Content>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <asp:Literal ID="lPreviewHtml" runat="server" />
+                                </div>
+                            </div>
+                        </Content>
+                    </Rock:ModalDialog>
 
                 </div>
             </div>
