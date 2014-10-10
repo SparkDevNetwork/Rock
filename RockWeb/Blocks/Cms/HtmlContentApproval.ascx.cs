@@ -22,6 +22,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
@@ -82,7 +83,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void gContentListFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void gContentListFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gContentListFilter.SaveUserPreference( "Site", ddlSiteFilter.SelectedValue.ToLower() != "-1" ? ddlSiteFilter.SelectedValue : string.Empty );
             gContentListFilter.SaveUserPreference( "Approval Status", ddlApprovedFilter.SelectedValue.ToLower() != "unapproved" ? ddlApprovedFilter.SelectedValue : string.Empty );
@@ -100,7 +101,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void gContentListFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void gContentListFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
             {
@@ -146,6 +147,7 @@ namespace RockWeb.Blocks.Cms
                 if ( htmlContent != null )
                 {
                     cannotApprove = false;
+
                     // if it was approved, set it to unapproved... otherwise
                     if ( htmlContent.IsApproved )
                     {
@@ -178,7 +180,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gContentList_GridRebind( object sender, EventArgs e )
+        protected void gContentList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -211,11 +213,11 @@ namespace RockWeb.Blocks.Cms
                 ddlApprovedFilter.SelectedIndex = 2;
             }
 
-            int personId = 0;
-            if ( int.TryParse( gContentListFilter.GetUserPreference( "Approved By" ), out personId ) )
+            int? personId = gContentListFilter.GetUserPreference( "Approved By" ).AsIntegerOrNull();
+            if ( personId.HasValue )
             {
                 var personService = new PersonService( rockContext );
-                var person = personService.Get( personId );
+                var person = personService.Get( personId.Value );
                 if ( person != null )
                 {
                     ppApprovedByFilter.SetValue( person );
@@ -230,51 +232,86 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
 
+            int entityTypeIdBlock = EntityTypeCache.Read( typeof( Rock.Model.Block ), true, rockContext ).Id;
+            string entityTypeQualifier = BlockTypeCache.Read( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid(), rockContext ).Id.ToString();
             var htmlContentService = new HtmlContentService( rockContext );
-            var htmlContent = htmlContentService.Queryable( "ApprovedByPersonAlias.Person" );
+            var attributeValueQry = new AttributeValueService( rockContext ).Queryable()
+                .Where( a => a.Attribute.Key == "RequireApproval" && a.Attribute.EntityTypeId == entityTypeIdBlock )
+                .Where( a => a.Attribute.EntityTypeQualifierColumn == "BlockTypeId" && a.Attribute.EntityTypeQualifierValue == entityTypeQualifier )
+                .Where( a => a.Value == "True" )
+                .Select( a => a.EntityId );
 
-            string pageName = "";
-            string siteName = "";
-            var htmlList = new List<HtmlApproval>();
-            foreach ( var content in htmlContent )
+            var qry = htmlContentService.Queryable().Where( a => attributeValueQry.Contains( a.BlockId ) );
+
+            // Filter by approved/unapproved
+            if ( ddlApprovedFilter.SelectedIndex > -1 )
             {
-                content.Block.LoadAttributes();
-                var blah = content.Block.GetAttributeValue( "RequireApproval" );
-                if ( !string.IsNullOrEmpty( blah ) && blah.ToLower() == "true" )
+                if ( ddlApprovedFilter.SelectedValue.ToLower() == "unapproved" )
                 {
-                    var pageService = new PageService( rockContext );
-                    if ( content.Block.PageId != null )
-                    {
-                        var page = pageService.Get( (int)content.Block.PageId );
-                        if ( page != null )
-                        {
-                            pageName = page.InternalName;
-                            while ( page.ParentPageId != null )
-                            {
-                                page = pageService.Get( (int)page.ParentPageId );
-                            }
-                            var siteService = new SiteService( rockContext );
-                            siteName = siteService.GetByDefaultPageId( page.Id ).Select( s => s.Name ).FirstOrDefault();
-                        }
-                    }
-
-                    var htmlApprovalClass = new HtmlApproval();
-                    htmlApprovalClass.SiteName = siteName;
-                    htmlApprovalClass.PageName = pageName;
-                    htmlApprovalClass.Block = content.Block;
-                    htmlApprovalClass.BlockId = content.BlockId;
-                    htmlApprovalClass.Content = content.Content;
-                    htmlApprovalClass.Id = content.Id;
-                    htmlApprovalClass.IsApproved = content.IsApproved;
-                    if ( content.ApprovedByPersonAlias != null )
-                    {
-                        htmlApprovalClass.ApprovedByPerson = content.ApprovedByPersonAlias.Person;
-                        htmlApprovalClass.ApprovedByPersonId = content.ApprovedByPersonAlias.PersonId;
-                    }
-                    htmlApprovalClass.ApprovedDateTime = content.ApprovedDateTime;
-
-                    htmlList.Add( htmlApprovalClass );
+                    qry = qry.Where( a => a.IsApproved == false );
                 }
+                else if ( ddlApprovedFilter.SelectedValue.ToLower() == "approved" )
+                {
+                    qry = qry.Where( a => a.IsApproved == true );
+                }
+            }
+
+            // Filter by the person that approved the content
+            if ( _canApprove )
+            {
+                int? personId = gContentListFilter.GetUserPreference( "Approved By" ).AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    qry = qry.Where( a => a.ApprovedByPersonAliasId.HasValue && a.ApprovedByPersonAlias.PersonId == personId );
+                }
+            }
+
+            var htmlList = new List<HtmlApproval>();
+            var contentList = qry.Select( a => new
+            {
+                a.Id,
+                a.Content,
+                a.IsApproved,
+                a.ApprovedDateTime,
+                ApprovedByPerson = a.ApprovedByPersonAlias.Person,
+                BlockPageId = a.Block.PageId,
+                BlockLayoutId = a.Block.LayoutId,
+                BlockName = a.Block.Name,
+                BlockId = a.BlockId,
+            } )
+            .ToList();
+
+            foreach ( var content in contentList )
+            {
+                string pageName = string.Empty;
+                string siteName = string.Empty;
+                if ( content.BlockPageId.HasValue )
+                {
+                    var pageCache = PageCache.Read( content.BlockPageId.Value, rockContext );
+                    pageName = pageCache.InternalName;
+                    siteName = pageCache.Layout.Site.Name;
+                }
+                else if ( content.BlockLayoutId.HasValue )
+                {
+                    siteName = LayoutCache.Read( content.BlockLayoutId.Value, rockContext ).Site.Name;
+                }
+
+                var htmlApprovalClass = new HtmlApproval();
+                htmlApprovalClass.SiteName = siteName;
+                htmlApprovalClass.PageName = pageName;
+                htmlApprovalClass.BlockName = content.BlockName;
+                htmlApprovalClass.BlockId = content.BlockId;
+                htmlApprovalClass.Content = content.Content;
+                htmlApprovalClass.Id = content.Id;
+                htmlApprovalClass.IsApproved = content.IsApproved;
+                if ( content.ApprovedByPerson != null )
+                {
+                    htmlApprovalClass.ApprovedByPersonName = content.ApprovedByPerson.ToString();
+                }
+
+                htmlApprovalClass.ApprovedDateTime = content.ApprovedDateTime;
+
+                htmlList.Add( htmlApprovalClass );
             }
 
             // Filter by Site
@@ -283,29 +320,6 @@ namespace RockWeb.Blocks.Cms
                 if ( ddlSiteFilter.SelectedValue.ToLower() != "all" )
                 {
                     htmlList = htmlList.Where( h => h.SiteName == ddlSiteFilter.SelectedValue ).ToList();
-                }
-            }
-
-            // Filter by approved/unapproved
-            if ( ddlApprovedFilter.SelectedIndex > -1 )
-            {
-                if ( ddlApprovedFilter.SelectedValue.ToLower() == "unapproved" )
-                {
-                    htmlList = htmlList.Where( a => a.IsApproved == false ).ToList();
-                }
-                else if ( ddlApprovedFilter.SelectedValue.ToLower() == "approved" )
-                {
-                    htmlList = htmlList.Where( a => a.IsApproved == true ).ToList();
-                }
-            }
-
-            // Filter by the person that approved the content
-            if ( _canApprove )
-            {
-                int personId = 0;
-                if ( int.TryParse( gContentListFilter.GetUserPreference( "Approved By" ), out personId ) && personId != 0 )
-                {
-                    htmlList = htmlList.Where( a => a.ApprovedByPersonId.HasValue && a.ApprovedByPersonId.Value == personId ).ToList();
                 }
             }
 
@@ -320,7 +334,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             gContentList.DataBind();
-
         }
 
         #endregion
@@ -330,33 +343,26 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// A class to hold all the info for the HtmlContentApproval Block
         /// </summary>
-        [Serializable()]
+        [Serializable]
         protected class HtmlApproval
         {
             public string SiteName { get; set; }
-            public string PageName { get; set; }
-            public Block Block { get; set; }
-            public int BlockId { get; set; }
-            public string Content { get; set; }
-            public int Id { get; set; }
-            public bool IsApproved { get; set; }
-            public Person ApprovedByPerson { get; set; }
-            public int? ApprovedByPersonId { get; set; }
-            public DateTime? ApprovedDateTime { get; set; }
 
-            public HtmlApproval()
-            {
-                SiteName = string.Empty;
-                PageName = string.Empty;
-                Block = new Block();
-                BlockId = 0;
-                Content = string.Empty;
-                Id = 0;
-                IsApproved = false;
-                ApprovedByPerson = new Person();
-                ApprovedByPersonId = 0;
-                ApprovedDateTime = new DateTime();
-            }
+            public string PageName { get; set; }
+
+            public string BlockName { get; set; }
+
+            public int BlockId { get; set; }
+
+            public string Content { get; set; }
+
+            public int Id { get; set; }
+
+            public bool IsApproved { get; set; }
+
+            public string ApprovedByPersonName { get; set; }
+
+            public DateTime? ApprovedDateTime { get; set; }
         }
 
         #endregion
