@@ -175,6 +175,21 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the RowSelected event of the gContentList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gContentList_RowSelected( object sender, RowEventArgs e )
+        {
+            var htmlContent = new HtmlContentService(new RockContext()).Get(e.RowKeyId);
+            if ( htmlContent != null )
+            {
+                lPreviewHtml.Text = htmlContent.Content;
+                mdPreview.Show();
+            }
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gContentList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -302,5 +317,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-    }
+        
+}
 }
