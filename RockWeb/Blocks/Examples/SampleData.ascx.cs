@@ -1029,6 +1029,7 @@ namespace RockWeb.Blocks.Examples
             PageViewService pageViewService = new PageViewService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            PersonDuplicateService personDuplicateService = new PersonDuplicateService( rockContext );
             NoteService noteService = new NoteService( rockContext );
             AuthService authService = new AuthService( rockContext );
             CommunicationService communicationService = new CommunicationService( rockContext );
@@ -1110,6 +1111,11 @@ namespace RockWeb.Blocks.Examples
                         // delete their aliases
                         foreach ( var alias in personAliasService.Queryable().Where( a => a.PersonId == person.Id ) )
                         {
+                            foreach ( var duplicate in personDuplicateService.Queryable().Where( d => d.DuplicatePersonAliasId == alias.Id ) )
+                            {
+                                personDuplicateService.Delete( duplicate );
+                            }
+
                             personAliasService.Delete( alias );
                         }
 
