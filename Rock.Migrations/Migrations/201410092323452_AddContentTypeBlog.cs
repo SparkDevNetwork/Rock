@@ -484,6 +484,29 @@ INSERT INTO [AttributeValue] ([AttributeId], [IsSystem], [EntityId], [Value], [G
     {{ item.Content }}
 
 {% endfor %}");
+
+            // add content to new html blocks
+            Sql( @"
+                DECLARE @BlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '4A25275A-0CC8-4334-939E-C00320A016BD')
+  INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
+  VALUES (@BlockId, 1, '<div class=""well"">
+    <h3>Blog Sidebar</h3>
+    
+    <p>
+        Sidebar content for the blog.
+    </p>
+</div>', 1, 'DDFC4AFB-6144-4FEA-85DD-A367216DDB26')
+
+SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '65970B39-4DC3-4CFA-A8E7-49C23978E923')
+INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
+  VALUES (@BlockId, 1, '<div class=""well"">
+    <h3>Blog Sidebar</h3>
+    
+    <p>
+        Sidebar content for the blog.
+    </p>
+</div>', 1, '7237365D-09EE-4E55-ACB1-C58D3A5C10E3')
+" );
         }
         
         /// <summary>
