@@ -75,6 +75,14 @@ namespace RockWeb
                 {
                     if ( channel.EnableRss )
                     {
+                        // load merge fields
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        mergeFields.Add( "Campuses", CampusCache.All() );
+
+                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
+                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+                        
                         // check for new rss item limit
                         if ( request.QueryString["Count"] != null )
                         {
@@ -123,7 +131,7 @@ namespace RockWeb
                             rss.WriteElementString( "title", item.Title );
                             rss.WriteElementString( "link", String.Format("{0}?ContentItemId={1}", channel.ItemUrl, item.Id.ToString()));
                             rss.WriteElementString( "pubDate", String.Format( "{0:R}", item.StartDateTime.ToString() ) );
-                            rss.WriteElementString( "description", item.Content );
+                            rss.WriteElementString( "description", item.Content.ResolveMergeFields(mergeFields) );
 
                             // get item attributes and add them as elements to the feed
                             item.LoadAttributes( rockContext );
@@ -134,7 +142,7 @@ namespace RockWeb
 
                                 if ( !string.IsNullOrWhiteSpace( value ) )
                                 {
-                                    rss.WriteElementString( attributeValue.Key.ToLower(), value );
+                                    rss.WriteElementString( attributeValue.Key.ToLower(), value.ResolveMergeFields(mergeFields) );
                                 }
                             }
 

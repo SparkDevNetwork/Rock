@@ -41,19 +41,38 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new PageService( new RockContext() );
-                var page = service.Get( new Guid( value ) );
-                if ( page != null )
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( valuePair.Length > 0 )
                 {
-                    formattedValue = page.InternalName;
+                    Guid? pageGuid = valuePair[0].AsGuidOrNull();
+                    if ( pageGuid.HasValue )
+                    {
+                        var page = Rock.Web.Cache.PageCache.Read( pageGuid.Value );
+                        if ( page != null )
+                        {
+                            if ( valuePair.Length > 1 )
+                            {
+                                Guid? routeGuid = valuePair[1].AsGuidOrNull();
+                                if ( routeGuid.HasValue )
+                                {
+                                    var route = page.PageRoutes.FirstOrDefault( r => r.Guid.Equals( routeGuid.Value ) );
+                                    if ( route != null )
+                                    {
+                                        return string.Format( "{0} ({1})", page.PageTitle, route.Route );
+                                    }
+                                }
+                            }
+
+                            return page.PageTitle;
+                        }
+                    }
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return value;
         }
 
         /// <summary>
