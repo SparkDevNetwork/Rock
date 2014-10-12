@@ -379,7 +379,7 @@ $(document).ready(function() {
             upnlContent.Update();
 
             var pageRef = CurrentPageReference;
-            pageRef.Parameters.AddOrReplace( "Page", "{0}" );
+            pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
@@ -1080,8 +1080,15 @@ $(document).ready(function() {
             {
                 get
                 {
-                    return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
-                        ( ( ItemCount % PageSize ) > 0 ? 1 : 0 );
+                    if ( PageSize == 0 )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
+                            ((ItemCount % PageSize) > 0 ? 1 : 0);
+                    }
                 }
             }
 

@@ -23,6 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a site.
+    /// Stored as Site.Id
     /// </summary>
     public class SiteFieldAttribute : FieldAttribute
     {

@@ -21,19 +21,27 @@
                             </Rock:RockDropDownList>
                             <Rock:PersonPicker ID="ppApprovedByFilter" runat="server" Label="Approved By" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gContentList" runat="server" AllowSorting="true">
+                        <Rock:Grid ID="gContentList" runat="server" AllowSorting="true" OnRowSelected="gContentList_RowSelected">
                             <Columns>
-                                <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" />
-                                <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                                <asp:BoundField DataField="Block" HeaderText="Block"  SortExpression="Block" />
-                                <asp:BoundField DataField="BlockId" HeaderText="Block Id" SortExpression="BlockId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                <asp:BoundField DataField="Content" HeaderText="Content" SortExpression="Content" />
-                                <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnText="Yes" OffText="No" OnCheckedChanged="gContentList_CheckedChanged" SortExpression="IsApproved" />
-                                <asp:BoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPerson" />
+                                <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="Block.Page.Layout.Site.Name,Block.Layout.Site.Name" />
+                                <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="Block.Page.InternalName" />
+                                <Rock:DateTimeField DataField="ModifiedDateTime" HeaderText="Modified Date/Time" SortExpression="ModifiedDateTime" />
+                                <Rock:ToggleField DataField="IsApproved" HeaderText="Approved" ButtonSizeCssClass="btn-xs" Enabled="True" OnText="Yes" OffText="No" OnCheckedChanged="gContentList_CheckedChanged" SortExpression="IsApproved" />
+                                <asp:BoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPersonAlias.Person.NickName,ApprovedByPersonAlias.Person.LastName" />
                                 <Rock:DateField DataField="ApprovedDateTime" HeaderText="Approval Date" SortExpression="ApprovedDateTime" />
                             </Columns>
                         </Rock:Grid>
                     </div>
+
+                    <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview">
+                        <Content>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <asp:Literal ID="lPreviewHtml" runat="server" />
+                                </div>
+                            </div>
+                        </Content>
+                    </Rock:ModalDialog>
 
                 </div>
             </div>
