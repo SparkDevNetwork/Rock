@@ -17,48 +17,31 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Text;
+using System.Web;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Text;
-using System.Web;
 
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Displays a list of active users of a website.
     /// </summary>
     [DisplayName( "Active Users" )]
     [Category( "CMS" )]
     [Description( "Displays a list of active users of a website." )]
-    [SiteField("Site", "Site to show current active users for.", true)]
+    [SiteField( "Site", "Site to show current active users for.", true )]
     [BooleanField( "Show Site Name As Title", "Detmine whether to show the name of the site as a title above the list.", true )]
-    [LinkedPage("Person Profile Page", "Page reference to the person profil page you would like to use as a link. Not providing a reference will suppress the creation of a link.", false)]
-    [IntegerField("Page View Count", "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.", true, 5)]
+    [LinkedPage( "Person Profile Page", "Page reference to the person profil page you would like to use as a link. Not providing a reference will suppress the creation of a link.", false )]
+    [IntegerField( "Page View Count", "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.", true, 5 )]
     public partial class ActiveUsers : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-        
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -88,14 +71,12 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the active users control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowActiveUsers();
         }
@@ -104,10 +85,18 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
-       // helper functional methods (like BindGrid(), etc.)
+        /// <summary>
+        /// Shows the active users.
+        /// </summary>
         private void ShowActiveUsers()
         {
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
+            int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
+            if (!siteId.HasValue)
+            {
+                lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
+                return;
+            }
+            else
             {
                 int? pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull();
                 if ( !pageViewCount.HasValue || pageViewCount.Value == 0 )
@@ -117,7 +106,7 @@ namespace RockWeb.Blocks.Cms
 
                 StringBuilder sbUsers = new StringBuilder();
 
-                var site = SiteCache.Read( GetAttributeValue( "Site" ).AsInteger() );
+                var site = SiteCache.Read( siteId.Value );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 
@@ -143,8 +132,7 @@ namespace RockWeb.Blocks.Cms
                     } )
                     .Where( a =>
                         a.pageViews.Any() &&
-                        a.pageViews.FirstOrDefault().SiteId == site.Id
-                    );
+                        a.pageViews.FirstOrDefault().SiteId == site.Id );
 
                 if ( CurrentUser != null )
                 {
@@ -161,7 +149,7 @@ namespace RockWeb.Blocks.Cms
                                             .Where( v => v.SessionId == latestSession )
                                             .Select( v => HttpUtility.HtmlEncode( v.Page.PageTitle ) ).ToList().AsDelimited( "<br> " );
 
-                    TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
+                    TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
                     string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
 
                     // create link to the person
@@ -173,39 +161,37 @@ namespace RockWeb.Blocks.Cms
                         var pageParams = new Dictionary<string, string>();
                         pageParams.Add( "PersonId", login.Person.Id.ToString() );
                         var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
-                        personLink = String.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
+                        personLink = string.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
                     }
 
                     // determine whether to show last page views
                     if ( GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
                     {
-                        sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
-                                                                <i class='fa-li fa fa-circle'></i> {1}
-                                                        </li>",
-                                        className, personLink, pageViewsHtml ) );
+                        string format = @"
+<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
+    <i class='fa-li fa fa-circle'></i> {1}
+</li>";
+
+                        sbUsers.Append( string.Format( format, className, personLink, pageViewsHtml ) );
                     }
                     else
                     {
-                        sbUsers.Append( String.Format( @"<li class='active-user {0}'>
-                                                                <i class='fa-li fa fa-circle'></i> {1}
-                                                        </li>",
-                                        className, personLink ) );
+                        string format = @"
+<li class='active-user {0}'>
+    <i class='fa-li fa fa-circle'></i> {1}
+</li>";
+                        sbUsers.Append( string.Format( format, className, personLink ) );
                     }
                 }
 
                 if ( sbUsers.Length > 0 )
                 {
-                    lUsers.Text = String.Format( @"<ul class='activeusers fa-ul'>{0}</ul>", sbUsers.ToString() );
+                    lUsers.Text = string.Format( @"<ul class='activeusers fa-ul'>{0}</ul>", sbUsers.ToString() );
                 }
                 else
                 {
-                    lMessages.Text = String.Format( "There are no logged in users on the {0} site.", site.Name );
+                    lMessages.Text = string.Format( "There are no logged in users on the {0} site.", site.Name );
                 }
-
-            }
-            else
-            {
-                lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
             }
         }
 
