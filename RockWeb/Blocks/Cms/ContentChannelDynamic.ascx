@@ -35,7 +35,7 @@
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:NumberBox ID="nbCount" runat="server" CssClass="input-width-sm" Label="Items per Page"
+                <Rock:NumberBox ID="nbCount" runat="server" CssClass="input-width-sm" Label="Items Per Page"
                     help="The maximum number of items to display per page (0 means unlimited)." />
                 <Rock:NumberBox ID="nbCacheDuration" runat="server" CssClass="input-width-sm" Label="Cache Duration"
                     help="The number of seconds to cache the content for (use '0' for no caching)." />
@@ -47,6 +47,7 @@
                     Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
                 <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
                     Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
+                <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
             </div>
         </div>
 

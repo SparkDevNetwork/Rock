@@ -25,12 +25,11 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -224,8 +223,10 @@ $(document).ready(function() {
             ceQuery.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
-
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
+
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
 
             var directions = new Dictionary<string, string>();
             directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
@@ -298,6 +299,10 @@ $(document).ready(function() {
             SetAttributeValue( "RssAutodiscover", cbSetRssAutodiscover.Checked.ToString() );
             SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
             SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
+
+            var ppFieldType = new PageReferenceFieldType();
+            SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
+
             SaveAttributeValues();
 
             FlushCacheItem( CONTENT_CACHE_KEY );
@@ -379,7 +384,7 @@ $(document).ready(function() {
             upnlContent.Update();
 
             var pageRef = CurrentPageReference;
-            pageRef.Parameters.AddOrReplace( "Page", "{0}" );
+            pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
@@ -413,16 +418,16 @@ $(document).ready(function() {
             }
 
             var mergeFields = new Dictionary<string, object>();
-            if ( CurrentPerson != null )
-            {
-                mergeFields.Add( "Pagination", pagination );
-                mergeFields.Add( "LinkedPages", linkedPages );
-                mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                mergeFields.Add( "Items", currentPageContent );
-                mergeFields.Add( "Campuses", CampusCache.All() );
-                mergeFields.Add( "Person", CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            }
+            
+            mergeFields.Add( "Pagination", pagination );
+            mergeFields.Add( "LinkedPages", linkedPages );
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.Add( "Items", currentPageContent );
+            mergeFields.Add( "Campuses", CampusCache.All() );
+            mergeFields.Add( "Person", CurrentPerson );
+
+            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            
 
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
@@ -631,7 +636,7 @@ $(document).ready(function() {
                             if ( dataFilterId.HasValue )
                             {
                                 var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Get( dataFilterId.Value );
+                                var dataFilter = dataFilterService.Queryable("ChildFilters").FirstOrDefault( a => a.Id == dataFilterId.Value);
 
                                 var errorMessages = new List<string>();
                                 Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
@@ -818,7 +823,7 @@ $(document).ready(function() {
                         item.ContentChannelId = channel.Id;
                         item.ContentChannelType = channel.ContentChannelType;
                         item.ContentChannelTypeId = channel.ContentChannelTypeId;
-                        item.LoadAttributes();
+                        item.LoadAttributes( rockContext );
                         foreach ( var attribute in item.Attributes
                             .Where( a =>
                                 a.Value.EntityTypeQualifierColumn != "" &&
@@ -880,7 +885,22 @@ $(document).ready(function() {
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
 
-
+                // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+                string itemKey = "FilterFieldComponents:" + ITEM_TYPE_NAME;
+                if ( HttpContext.Current.Items.Contains( itemKey ) )
+                {
+                    var filterComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
+                    if (filterComponents != null)
+                    {
+                        foreach( var section in filterComponents )
+                        {
+                            if (  section.Value.ContainsKey("Rock.Reporting.DataFilter.OtherDataViewFilter"))
+                            {
+                                section.Value.Remove( "Rock.Reporting.DataFilter.OtherDataViewFilter" );
+                            }
+                        }
+                    }
+                }
 
                 if ( filter.EntityTypeId.HasValue )
                 {
@@ -1080,8 +1100,15 @@ $(document).ready(function() {
             {
                 get
                 {
-                    return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
-                        ( ( ItemCount % PageSize ) > 0 ? 1 : 0 );
+                    if ( PageSize == 0 )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
+                            ((ItemCount % PageSize) > 0 ? 1 : 0);
+                    }
                 }
             }
 

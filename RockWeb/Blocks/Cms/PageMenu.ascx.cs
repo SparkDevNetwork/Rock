@@ -17,20 +17,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Caching;
-using System.Web.UI;
-
-using DotLiquid;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using System.Web.UI;
+using DotLiquid;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
 
 
 namespace RockWeb.Blocks.Cms
@@ -92,7 +91,8 @@ namespace RockWeb.Blocks.Cms
 
         private void Render()
         {
-            PageCache currentPage = PageCache.Read( RockPage.PageId );
+            RockContext rockContext = new RockContext();
+            PageCache currentPage = PageCache.Read( RockPage.PageId, rockContext );
             PageCache rootPage = null;
 
             Guid pageGuid = Guid.Empty;
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             var pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, pageHeirarchy, pageParameters, queryString ) );
+            pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
             string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
             // check for errors
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Cms
 
                 debugInfo.Append( "<pre>" );
                 debugInfo.Append( "<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>" );
-                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, pageHeirarchy, pageParameters, queryString ).LiquidHelpText() + "</pre>" );
+                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ).LiquidHelpText() + "</pre>" );
 
                 debugInfo.Append( "</div>" );
                 phContent.Controls.Add( new LiteralControl( debugInfo.ToString() ) );

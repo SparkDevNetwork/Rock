@@ -42,9 +42,19 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            string[] parts = ( value ?? string.Empty ).Split( '|' );
-            Guid? groupTypeGuid = parts[0].AsGuidOrNull();
-            Guid? groupGuid = parts[1].AsGuidOrNull();
+            Guid? groupTypeGuid = null;
+            Guid? groupGuid = null;
+
+            string[] parts = ( value ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( parts.Length > 0 )
+            {
+                groupTypeGuid = parts[0].AsGuidOrNull();
+                if ( parts.Length > 1 )
+                {
+                    groupGuid = parts[1].AsGuidOrNull();
+                }
+            }
+
             var rockContext = new RockContext();
             if ( groupGuid.HasValue )
             {

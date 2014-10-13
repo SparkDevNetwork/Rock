@@ -37,7 +37,7 @@ BEGIN
     DECLARE @GroupLastName varchar(max);
     DECLARE @GroupAdultFullNames varchar(max) = '';
     DECLARE @GroupNonAdultFullNames varchar(max) = '';
-    DECLARE @GroupMemberTable table (LastName varchar(max), FirstName varchar(max), FullName varchar(max), GroupRoleGuid uniqueidentifier );
+    DECLARE @GroupMemberTable table (LastName varchar(max), FirstName varchar(max), FullName varchar(max), Gender int, GroupRoleGuid uniqueidentifier );
     DECLARE @cGROUPTYPEROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
 
     IF (@PersonId is not null) 
@@ -60,6 +60,7 @@ BEGIN
             [p].[LastName] 
             , [p].[FirstName] 
             , ISNULL([p].[NickName],'') + ' ' + ISNULL([p].[LastName],'') + ' ' + ISNULL([dv].[Value], '') as [FullName] 
+            , [p].Gender
             , [gr].[Guid]
         FROM 
             [GroupMember] [gm] 
@@ -90,9 +91,10 @@ BEGIN
                 @GroupFirstNames = @GroupFirstNames + [FirstName] + ' & '
                 , @GroupAdultFullNames = @GroupAdultFullNames + [FullName] + ' & '
             FROM      
-                @GroupMemberTable
+                @GroupMemberTable g
             WHERE
-                [GroupRoleGuid] = @cGROUPTYPEROLE_FAMILY_MEMBER_ADULT;
+                g.[GroupRoleGuid] = @cGROUPTYPEROLE_FAMILY_MEMBER_ADULT
+            ORDER BY g.Gender, g.FirstName
 
             -- cleanup the trailing ' &'s
             IF len(@GroupFirstNames) > 2 BEGIN
