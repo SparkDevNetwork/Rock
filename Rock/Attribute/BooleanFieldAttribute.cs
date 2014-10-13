@@ -23,6 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute for selecting either true or false.
+    /// Stored as "True" or "False"
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class BooleanFieldAttribute : FieldAttribute

@@ -1080,8 +1080,15 @@ $(document).ready(function() {
             {
                 get
                 {
-                    return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
-                        ( ( ItemCount % PageSize ) > 0 ? 1 : 0 );
+                    if ( PageSize == 0 )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
+                            ((ItemCount % PageSize) > 0 ? 1 : 0);
+                    }
                 }
             }
 
