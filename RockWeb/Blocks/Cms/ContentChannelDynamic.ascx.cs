@@ -885,7 +885,22 @@ $(document).ready(function() {
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
 
-
+                // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+                string itemKey = "FilterFieldComponents:" + ITEM_TYPE_NAME;
+                if ( HttpContext.Current.Items.Contains( itemKey ) )
+                {
+                    var filterComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
+                    if (filterComponents != null)
+                    {
+                        foreach( var section in filterComponents )
+                        {
+                            if (  section.Value.ContainsKey("Rock.Reporting.DataFilter.OtherDataViewFilter"))
+                            {
+                                section.Value.Remove( "Rock.Reporting.DataFilter.OtherDataViewFilter" );
+                            }
+                        }
+                    }
+                }
 
                 if ( filter.EntityTypeId.HasValue )
                 {
