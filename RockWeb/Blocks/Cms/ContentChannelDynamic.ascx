@@ -47,6 +47,7 @@
                     Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
                 <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
                     Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
+                <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
             </div>
         </div>
 
