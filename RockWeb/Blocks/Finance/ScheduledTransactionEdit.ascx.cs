@@ -250,7 +250,7 @@ achieve our mission.  We are so grateful for your commitment.
                     Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
                         .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
                         .ToList()
-                        .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+                        .ForEach( v => configValues.Add( v.Key, v.Value ) );
                     lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues );
                     lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues );
                     lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
