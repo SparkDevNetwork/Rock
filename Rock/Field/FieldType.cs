@@ -182,8 +182,7 @@ namespace Rock.Field
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="guid">The unique identifier.</param>
+        /// <param name="attribute">The attribute.</param>
         /// <returns></returns>
         public virtual Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
         {
