@@ -195,11 +195,11 @@ namespace Rock.Reporting
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute )
         {
             // Ensure prop name is unique
-            string propName = attribute.Name;
+            string propName = attribute.Key;
             int i = 1;
             while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
-                propName = attribute.Name + ( i++ ).ToString();
+                propName = attribute.Key + ( i++ ).ToString();
             }
 
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
@@ -211,7 +211,7 @@ namespace Rock.Reporting
                     var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                     if ( groupType != null )
                     {
-                        entityProperty.Title = string.Format( "{0} ({1})", attribute.Name.SplitCase(), groupType.Name );
+                        entityProperty.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
                     }
                 }
 

@@ -119,7 +119,7 @@ namespace Rock.Reporting.DataFilter
             if ( values.Count > 0 )
             {
                 // First value in array is always the name of the entity field being filtered
-                string entityFieldName = values[0];
+                string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                 var entityField = GetEntityFields( entityType ).Where( p => p.Name == entityFieldName ).FirstOrDefault();
                 string entityFieldResult = GetEntityFieldFormatSelection( values, entityField );
@@ -225,7 +225,7 @@ namespace Rock.Reporting.DataFilter
 
                 if ( values.Count >= 2 )
                 {
-                    string selectedProperty = values[0];
+                    string selectedProperty = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                     var entityField = GetEntityFields( entityType ).Where( p => p.Name == selectedProperty ).FirstOrDefault();
                     if ( entityField != null )
