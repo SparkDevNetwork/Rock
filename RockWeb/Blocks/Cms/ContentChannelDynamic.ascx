@@ -62,6 +62,8 @@
 
         <div class="row">
             <div class="col-md-6">
+                <Rock:RockCheckBox ID="cbQueryParamFiltering" runat="server" Label="Enable Query Parameter Filtering" Text="Yes"
+                    Help="Enabling this option will allow results to be filtered further by any query string parameters that are included." />
                 <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By"  KeyPrompt="Field" ValuePrompt="Direction" 
                     help="The field value and direction that items should be ordered by."/>
             </div>

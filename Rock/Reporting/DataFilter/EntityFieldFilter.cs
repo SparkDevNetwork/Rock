@@ -540,7 +540,7 @@ namespace Rock.Reporting.DataFilter
         {
             if ( values.Count > 0 )
             {
-                string selectedProperty = values[0];
+                string selectedProperty = values[0].Replace(" ", "");   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                 if ( ddlProperty != null )
                 {
