@@ -63,6 +63,11 @@ WHERE [Guid] IN ( '3205122B-3EA8-4FEE-A516-2C64CA0F35F4', '1CBE10C7-5E64-4385-BE
 UPDATE [GroupType] 
 SET [TakesAttendance] = 1 
 WHERE [Guid] = '2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4'
+
+-- Fix breadcrumb trail for content item detail page
+UPDATE [Page]
+SET [BreadCrumbDisplayName] = 0
+WHERE [Guid] = 'D18E837C-9E65-4A38-8647-DFF04A595D97'
 " );
 
             // Update PersonProfilePage settings on all the GroupMemberDetail block instances
