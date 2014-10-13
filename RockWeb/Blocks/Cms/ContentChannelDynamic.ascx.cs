@@ -657,8 +657,6 @@ $(document).ready(function() {
                             }
                         }
 
-                        return items;
-
                     }
                 }
 
