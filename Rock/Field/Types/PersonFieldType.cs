@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a person
+    /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType

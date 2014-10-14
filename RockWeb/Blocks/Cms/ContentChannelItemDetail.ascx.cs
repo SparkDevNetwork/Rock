@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Cms
                 contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
                     dtpExpire.SelectedDateTime : null;
 
-                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? 1;
+                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? contentItem.Status.ConvertToInt();
                 int oldStatusId = contentItem.Status.ConvertToInt();
                 if ( newStatusID != oldStatusId && contentItem.IsAuthorized(Authorization.APPROVE, CurrentPerson))
                 {
@@ -419,12 +419,14 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                hfStatus.Value = contentItem.Status.ConvertToInt().ToString();
                 lStatusDetails.Visible = true;
                 lStatusDetails.Text = statusDetail.ToString();
 
             }
             else
             {
+                hfStatus.Value = ContentChannelItemStatus.Approved.ToString();
                 pnlStatus.Visible = false;
                 lStatusDetails.Visible = false;
                 divStatus.Visible = false;

@@ -25,12 +25,11 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -55,13 +54,14 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "Advanced", 5 )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "Advanced", 6 )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "Advanced", 7 )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "Advanced", 8 )]
-    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "Advanced", 9 )]
+    [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "Advanced", 8 )]
+    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "Advanced", 9 )]
+    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "Advanced", 10 )]
 
-    [BooleanField( "Set Page Title", "Determines the block should set the page title with the channel name or content item.", false, "Advanced", 10 )]
-    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "Advanced", 11 )]
-    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "Advanced", 12 )]
-    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "Advanced", 13 )]
+    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "Advanced", 11 )]
+    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "Advanced", 12 )]
+    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "Advanced", 13 )]
+    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "Advanced", 14 )]
 
     public partial class ContentChannelDynamic : RockBlock
     {
@@ -224,8 +224,11 @@ $(document).ready(function() {
             ceQuery.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
-
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
+            cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
+
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
 
             var directions = new Dictionary<string, string>();
             directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
@@ -293,11 +296,16 @@ $(document).ready(function() {
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
+            SetAttributeValue( "QueryParameterFiltering", cbQueryParamFiltering.Checked.ToString() );
             SetAttributeValue( "Order", kvlOrder.Value );
             SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             SetAttributeValue( "RssAutodiscover", cbSetRssAutodiscover.Checked.ToString() );
             SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
             SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
+
+            var ppFieldType = new PageReferenceFieldType();
+            SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
+
             SaveAttributeValues();
 
             FlushCacheItem( CONTENT_CACHE_KEY );
@@ -562,110 +570,159 @@ $(document).ready(function() {
         private List<ContentChannelItem> GetContent()
         {
             var items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
+            bool queryParameterFiltering = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
 
-            if ( items == null )
+            if ( items == null || ( queryParameterFiltering && Request.QueryString.Count > 0 ) )
             {
-                items = new List<ContentChannelItem>();
-
                 Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
                 if ( channelGuid.HasValue )
                 {
                     var rockContext = new RockContext();
                     var service = new ContentChannelItemService( rockContext );
+                    var itemType = typeof( Rock.Model.ContentChannelItem );
+                    
+                    ParameterExpression paramExpression = service.ParameterExpression;
 
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
                     if ( contentChannel != null )
                     {
-                        HackEntityFields( contentChannel, rockContext );
+                        var entityFields = HackEntityFields( contentChannel, rockContext );
 
-                        var qry = service.Queryable( "ContentChannel,ContentChannelType" );
-
-                        int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
-                        if ( itemId.HasValue )
+                        if ( items == null )
                         {
-                            qry = qry.Where( i => i.Id == itemId.Value );
-                        }
-                        else
-                        {
-                            qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
+                            items = new List<ContentChannelItem>();
 
-                            if ( contentChannel.RequiresApproval )
+                            var qry = service.Queryable( "ContentChannel,ContentChannelType" );
+
+                            int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
+                            if ( itemId.HasValue )
                             {
-                                // Check for the configured status and limit query to those
-                                var statuses = new List<ContentChannelItemStatus>();
+                                qry = qry.Where( i => i.Id == itemId.Value );
+                            }
+                            else
+                            {
+                                qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
 
-                                foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                                if ( contentChannel.RequiresApproval )
                                 {
-                                    var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                                    if ( status != null )
+                                    // Check for the configured status and limit query to those
+                                    var statuses = new List<ContentChannelItemStatus>();
+
+                                    foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                                     {
-                                        statuses.Add( status.Value );
+                                        var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                                        if ( status != null )
+                                        {
+                                            statuses.Add( status.Value );
+                                        }
+                                    }
+                                    if ( statuses.Any() )
+                                    {
+                                        qry = qry.Where( i => statuses.Contains( i.Status ) );
                                     }
                                 }
-                                if ( statuses.Any() )
+
+                                SortProperty sortProperty = null;
+
+                                string orderBy = GetAttributeValue( "Order" );
+                                if ( !string.IsNullOrWhiteSpace( orderBy ) )
                                 {
-                                    qry = qry.Where( i => statuses.Contains( i.Status ) );
+                                    var fieldDirection = new List<string>();
+                                    foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                                    {
+                                        var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                    }
+
+                                    sortProperty = new SortProperty();
+                                    sortProperty.Direction = SortDirection.Ascending;
+                                    sortProperty.Property = fieldDirection.AsDelimited( "," );
+                                }
+
+                                int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                                if ( dataFilterId.HasValue )
+                                {
+                                    var dataFilterService = new DataViewFilterService( rockContext );
+                                    var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+
+                                    var errorMessages = new List<string>();
+                                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
+
+                                    qry = qry.Where( paramExpression, whereExpression, sortProperty );
+                                }
+
+
+                            }
+
+                            // All filtering has been added, now run query and then check security and load attributes
+                            foreach ( var item in qry.ToList() )
+                            {
+                                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                {
+                                    item.LoadAttributes( rockContext );
+                                    items.Add( item );
                                 }
                             }
 
-                            SortProperty sortProperty = null;
-
-                            string orderBy = GetAttributeValue( "Order" );
-                            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                            int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+                            if ( cacheDuration > 0 )
                             {
-                                var fieldDirection = new List<string>();
-                                foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
-                                {
-                                    var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                    fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
-                                }
-
-                                sortProperty = new SortProperty();
-                                sortProperty.Direction = SortDirection.Ascending;
-                                sortProperty.Property = fieldDirection.AsDelimited( "," );
+                                var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
+                                AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
                             }
-
-                            ParameterExpression paramExpression = service.ParameterExpression;
-
-                            int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
-                            if ( dataFilterId.HasValue )
-                            {
-                                var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Queryable("ChildFilters").FirstOrDefault( a => a.Id == dataFilterId.Value);
-
-                                var errorMessages = new List<string>();
-                                Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( typeof( Rock.Model.ContentChannelItem ), service, paramExpression, errorMessages ) : null;
-
-                                qry = qry.Where( paramExpression, whereExpression, sortProperty );
-                            }
-
-
                         }
 
-                        // All filtering has been added, now run query and then check security and load attributes
-                        foreach ( var item in qry.ToList() )
+                        if ( queryParameterFiltering && Request.QueryString.Count > 0 )
                         {
-                            if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                item.LoadAttributes( rockContext );
-                                items.Add( item );
-                            }
-                        }
+                            var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
 
-                        return items;
+                            var itemQry = items.AsQueryable();
+                            foreach( string key in Request.QueryString.AllKeys )
+                            {
+                                var selection = new List<string>();
+                                selection.Add( key );
+
+                                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                                if ( entityField != null )
+                                {
+                                    string value = Request.QueryString[key];
+                                    switch ( entityField.FilterFieldType.ToUpper() )
+                                    {
+                                        case Rock.SystemGuid.FieldType.DAY_OF_WEEK:
+                                        case Rock.SystemGuid.FieldType.SINGLE_SELECT:
+                                            {
+                                                selection.Add( value );
+                                            }
+                                            break;
+                                        case Rock.SystemGuid.FieldType.MULTI_SELECT:
+                                            {
+                                                var values = new List<string>();
+                                                values.Add( value );
+                                                selection.Add( Newtonsoft.Json.JsonConvert.SerializeObject( values ) );
+                                            }
+                                            break;
+                                        default:
+                                            {
+                                                selection.Add( ComparisonType.EqualTo.ConvertToInt().ToString());
+                                                selection.Add( value);
+                                            }
+                                            break;
+                                    }
+
+                                    itemQry = itemQry.Where( paramExpression, propertyFilter.GetExpression( itemType, service, paramExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) ) );
+                                }
+                            }
+
+                            items = itemQry.ToList();
+
+                        }
 
                     }
-                }
-
-                int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
-                if ( cacheDuration > 0 )
-                {
-                    var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
-                    AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
                 }
             }
 
             return items;
+
         }
 
         /// <summary>
@@ -791,7 +848,7 @@ $(document).ready(function() {
         /// list to same cached object so that property filter lists our collection of properties/attributes
         /// instead.
         /// </summary>
-        private void HackEntityFields( ContentChannel channel, RockContext rockContext )
+        private List<Rock.Reporting.EntityField> HackEntityFields( ContentChannel channel, RockContext rockContext )
         {
             if ( channel != null )
             {
@@ -841,8 +898,12 @@ $(document).ready(function() {
                         // Save new fields to cache ( which report field will use instead of reading them again )
                         HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedEntityFields;
                     }
+
+                    return entityFields;
                 }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -880,7 +941,22 @@ $(document).ready(function() {
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
 
-
+                // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+                string itemKey = "FilterFieldComponents:" + ITEM_TYPE_NAME;
+                if ( HttpContext.Current.Items.Contains( itemKey ) )
+                {
+                    var filterComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
+                    if (filterComponents != null)
+                    {
+                        foreach( var section in filterComponents )
+                        {
+                            if (  section.Value.ContainsKey("Rock.Reporting.DataFilter.OtherDataViewFilter"))
+                            {
+                                section.Value.Remove( "Rock.Reporting.DataFilter.OtherDataViewFilter" );
+                            }
+                        }
+                    }
+                }
 
                 if ( filter.EntityTypeId.HasValue )
                 {

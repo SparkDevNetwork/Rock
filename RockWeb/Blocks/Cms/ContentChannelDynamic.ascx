@@ -44,9 +44,10 @@
             </div>
             <div class="col-md-6">
                 <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
-                    Help="Enabling debug will display the fields of the first 5 items to help show you wants available for your template." />
+                    Help="Enabling debug will display the fields of the first 5 items to help show you whats available for your template." />
                 <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
                     Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
+                <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
             </div>
         </div>
 
@@ -61,6 +62,8 @@
 
         <div class="row">
             <div class="col-md-6">
+                <Rock:RockCheckBox ID="cbQueryParamFiltering" runat="server" Label="Enable Query Parameter Filtering" Text="Yes"
+                    Help="Enabling this option will allow results to be filtered further by any query string parameters that are included." />
                 <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By"  KeyPrompt="Field" ValuePrompt="Direction" 
                     help="The field value and direction that items should be ordered by."/>
             </div>
