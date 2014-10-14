@@ -233,34 +233,43 @@ END
 
 
             // move route page
-            Sql( @"  DECLARE @CmsPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
-  UPDATE [Page] 
-	SET [ParentPageId] = @CmsPageId
-	WHERE [Guid] = '4A833BE3-7D5E-4C38-AF60-5706260015EA'" );
+            Sql( @"  
+    DECLARE @CmsPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
+    IF @CmsPageId IS NOT NULL
+    BEGIN
+        UPDATE [Page] 
+	    SET [ParentPageId] = @CmsPageId
+	    WHERE [Guid] = '4A833BE3-7D5E-4C38-AF60-5706260015EA'
+    END
+" );
+
+            RockMigrationHelper.UpdateEntityType( "Rock.Workflow.Action.AssignActivityToGroup", "DB2D8C44-6E57-4B45-8973-5DE327D61554", false, true );
 
             // convert AssignActivityToGroup to use GroupTypeGroupField which stores it's value as GroupType.Guid|Group.Guid
             try
             {
                 Sql( @"
-DECLARE @entityTypeId INT = (
-        SELECT TOP 1 Id
-        FROM EntityType
-        WHERE NAME = 'Rock.Workflow.Action.AssignActivityToGroup'
-        )
-DECLARE @attributeId INT = (
-        SELECT TOP 1 Id
-        FROM Attribute
-        WHERE EntityTypeQualifierColumn = 'EntityTypeId'
-            AND EntityTypeQualifierValue = @entityTypeId
-            AND [Key] = 'Group'
-        )
-
-UPDATE AttributeValue
-SET Value = cast(gt.[Guid] AS NVARCHAR(max)) + '|' + cast(g.[Guid] AS NVARCHAR(max))
-FROM [AttributeValue] av
-JOIN [Group] g ON av.Value = g.Guid
-JOIN [GroupType] gt ON g.GroupTypeId = gt.Id
-WHERE av.AttributeId = @attributeId
+    DECLARE @entityTypeId INT = (
+            SELECT TOP 1 Id
+            FROM EntityType
+            WHERE NAME = 'Rock.Workflow.Action.AssignActivityToGroup'
+            )
+    DECLARE @attributeId INT = (
+            SELECT TOP 1 Id
+            FROM Attribute
+            WHERE EntityTypeQualifierColumn = 'EntityTypeId'
+                AND EntityTypeQualifierValue = @entityTypeId
+                AND [Key] = 'Group'
+            )
+    IF @attributeId IS NOT NULL
+    BEGIN
+        UPDATE AttributeValue
+        SET Value = cast(gt.[Guid] AS NVARCHAR(max)) + '|' + cast(g.[Guid] AS NVARCHAR(max))
+        FROM [AttributeValue] av
+        JOIN [Group] g ON av.Value = g.Guid
+        JOIN [GroupType] gt ON g.GroupTypeId = gt.Id
+        WHERE av.AttributeId = @attributeId
+    END
 " );
             }
             catch

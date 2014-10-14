@@ -58,10 +58,7 @@ DECLARE @CommunicationAdminGroupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE 
 -- Create channel types
 INSERT INTO [ContentChannelType] ( [IsSystem], [Name], [DateRangeType], [DisablePriority], [Guid] ) VALUES 
 	( 0, 'Blogs', 1, 1, 'C0549458-DCCF-4E02-8978-B15932576F68' )
-
 DECLARE @BlogsTypeId int = SCOPE_IDENTITy()
-
-
 
 -- Create channel image attribute for blog type
 INSERT INTO [Attribute] ([IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
@@ -74,14 +71,12 @@ INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Gu
 VALUES (0, @AttributeId, 'binaryFileType', CAST(@BinaryFileTypeId AS varchar), NEWID() )
 
 
-
 -- Create content item summary text attribute for blog type
 INSERT INTO [Attribute] ([IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
 	[Key],[Name],[Description],[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],[Guid])
 VALUES (0, @MemoFieldTypeId, @ChannelItemEntityId, 'ContentChannelTypeId', CAST(@BlogsTypeId as varchar),
 	'Summary', 'Summary', 'Short description of the blog post',0,0,'',0,0,'AE455FB9-20FD-4767-9A65-4801B00FCD1A')
 SET @SummaryAttributeId = SCOPE_IDENTITy()
-
 
 
 -- Create content item image attribute for blog type
@@ -94,28 +89,34 @@ SET @AttributeId = SCOPE_IDENTITy()
 INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid] )
 VALUES (0, @AttributeId, 'binaryFileType', CAST(@BinaryFileTypeId AS varchar), NEWID() )
 
-
 -- add the bulletin channel
-INSERT INTO [ContentChannel] ( [ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl] ,[TimeToLive], [ContentControlType], [RootImageDirectory], [Guid] )
-VALUES ( @BulletinChannelTypeId, 'Service Bulletin', 'Used to track bulletin requests for the main service.', 'fa fa-bookmark', 1, 0, '', '', 0, 1, '~/Content/ServiceBulletins', '3CBD6C7A-30B4-4CF5-B1B9-4216C4EEF371' )
-DECLARE @BulletinChannelId int = SCOPE_IDENTITY()
+IF @BulletinChannelTypeId IS NOT NULL
+BEGIN
 
--- set security for the bulletin channel
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BulletinChannelId, 0, 'Edit', 'A', @CommunicationAdminGroupId, 0, '64C0AA99-BFE7-4CE0-9579-62AED07BD5D7')
+    INSERT INTO [ContentChannel] ( [ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl] ,[TimeToLive], [ContentControlType], [RootImageDirectory], [Guid] )
+    VALUES ( @BulletinChannelTypeId, 'Service Bulletin', 'Used to track bulletin requests for the main service.', 'fa fa-bookmark', 1, 0, '', '', 0, 1, '~/Content/ServiceBulletins', '3CBD6C7A-30B4-4CF5-B1B9-4216C4EEF371' )
+    DECLARE @BulletinChannelId int = SCOPE_IDENTITY()
 
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId], [SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BulletinChannelId, 1, 'Administrate', 'A', @CommunicationAdminGroupId, 0, '06DA6708-D142-4F32-A4B3-4180C5EE54C5')
+    -- set security for the bulletin channel
+    IF @CommunicationAdminGroupId IS NOT NULL
+    BEGIN
+        INSERT INTO [Auth] 
+	        ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
+        VALUES 
+	        (@ChannelEntityId, @BulletinChannelId, 0, 'Edit', 'A', @CommunicationAdminGroupId, 0, '64C0AA99-BFE7-4CE0-9579-62AED07BD5D7')
 
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BulletinChannelId, 2, 'Approve', 'A', @CommunicationAdminGroupId, 0, 'B2D4A357-30B3-4312-AFB8-9C0CBCDAE5A8')
+        INSERT INTO [Auth] 
+	        ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId], [SpecialRole] ,[Guid] )
+        VALUES 
+	        (@ChannelEntityId, @BulletinChannelId, 1, 'Administrate', 'A', @CommunicationAdminGroupId, 0, '06DA6708-D142-4F32-A4B3-4180C5EE54C5')
 
+        INSERT INTO [Auth] 
+	        ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
+        VALUES 
+	        (@ChannelEntityId, @BulletinChannelId, 2, 'Approve', 'A', @CommunicationAdminGroupId, 0, 'B2D4A357-30B3-4312-AFB8-9C0CBCDAE5A8')
+    END
+
+END
 
 -- add the external website blog
 INSERT INTO [ContentChannel] ( [ContentChannelTypeId], [Name], [Description], [IconCssClass], [RequiresApproval], [EnableRss], [ChannelUrl], [ItemUrl] ,[TimeToLive], [ContentControlType], [RootImageDirectory], [Guid] )
@@ -123,20 +124,23 @@ VALUES ( @BlogsTypeId, 'Website Blog', 'Organization''s primary blog.', 'fa fa-r
 DECLARE @BlogChannelId int = SCOPE_IDENTITY()
 
 -- set security for the website blog
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BlogChannelId, 0, 'Edit', 'A', @CommunicationAdminGroupId, 0, '2B408DA7-BDD1-4E71-B6AC-F22D786B605F')
+IF @CommunicationAdminGroupId IS NOT NULL
+BEGIN
+    INSERT INTO [Auth] 
+	    ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
+    VALUES 
+	    (@ChannelEntityId, @BlogChannelId, 0, 'Edit', 'A', @CommunicationAdminGroupId, 0, '2B408DA7-BDD1-4E71-B6AC-F22D786B605F')
 
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId], [SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BlogChannelId, 1, 'Administrate', 'A', @CommunicationAdminGroupId, 0, 'FD58183C-4B40-44FB-9418-867212341AEE')
+    INSERT INTO [Auth] 
+	    ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId], [SpecialRole] ,[Guid] )
+    VALUES 
+	    (@ChannelEntityId, @BlogChannelId, 1, 'Administrate', 'A', @CommunicationAdminGroupId, 0, 'FD58183C-4B40-44FB-9418-867212341AEE')
 
-INSERT INTO [Auth] 
-	([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
-VALUES 
-	(@ChannelEntityId, @BlogChannelId, 2, 'Approve', 'A', @CommunicationAdminGroupId, 0, '2C2E1B6C-E08E-493E-A6AD-CC6A8A9755CA')
+    INSERT INTO [Auth] 
+	    ([EntityTypeId] ,[EntityId] ,[Order] ,[Action] ,[AllowOrDeny] ,[GroupId] ,[SpecialRole] ,[Guid] )
+    VALUES 
+	    (@ChannelEntityId, @BlogChannelId, 2, 'Approve', 'A', @CommunicationAdminGroupId, 0, '2C2E1B6C-E08E-493E-A6AD-CC6A8A9755CA')
+END
 
 -- add blog content
 ------ item 1
@@ -487,25 +491,31 @@ INSERT INTO [AttributeValue] ([AttributeId], [IsSystem], [EntityId], [Value], [G
 
             // add content to new html blocks
             Sql( @"
-                DECLARE @BlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '4A25275A-0CC8-4334-939E-C00320A016BD')
-  INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
-  VALUES (@BlockId, 1, '<div class=""well"">
+    DECLARE @BlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '4A25275A-0CC8-4334-939E-C00320A016BD')
+    IF @BlockId IS NOT NULL
+    BEGIN
+        INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
+        VALUES (@BlockId, 1, '<div class=""well"">
     <h3>Blog Sidebar</h3>
     
     <p>
         Sidebar content for the blog.
     </p>
 </div>', 1, 'DDFC4AFB-6144-4FEA-85DD-A367216DDB26')
+    END
 
-SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '65970B39-4DC3-4CFA-A8E7-49C23978E923')
-INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
-  VALUES (@BlockId, 1, '<div class=""well"">
+    SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '65970B39-4DC3-4CFA-A8E7-49C23978E923')
+    IF @BlockId IS NOT NULL
+    BEGIN
+        INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
+        VALUES (@BlockId, 1, '<div class=""well"">
     <h3>Blog Sidebar</h3>
     
     <p>
         Sidebar content for the blog.
     </p>
 </div>', 1, '7237365D-09EE-4E55-ACB1-C58D3A5C10E3')
+    END
 " );
         }
         
