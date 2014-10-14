@@ -124,7 +124,6 @@ namespace RockWeb.Blocks.Core
 
                 foreach ( var item in dtItem.DefinedValues )
                 {
-                    //item.LoadAttributes(new RockContext());
                     definedValues.Add( item );
                 }
 
