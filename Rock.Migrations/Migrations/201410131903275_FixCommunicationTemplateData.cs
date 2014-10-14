@@ -268,7 +268,7 @@ WHERE av.AttributeId = @attributeId
                 // ignore if there was an exception
             }
 
-
+            RockMigrationHelper.AddSecurityAuthForBlock( "D6691357-A904-43EE-815C-FEE7A752E3AA", 0, Rock.Security.Authorization.APPROVE, true, Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS, Model.SpecialRole.None, "6B136C56-58B2-450A-B124-56A1BA5EDE10" );
         }
         
         /// <summary>
