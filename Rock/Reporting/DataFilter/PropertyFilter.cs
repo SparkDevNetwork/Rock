@@ -280,7 +280,11 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                        DateTime dateValue = DateTime.Today;
+                        if ( !values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                        {
+                            dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                        }
                         ConstantExpression constantExpression = Expression.Constant( dateValue );
                         return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
