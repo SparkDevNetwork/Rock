@@ -27,6 +27,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) group filtered by a selected group type
+    /// Stored as "GroupType.Guid|Group.Guid"
     /// </summary>
     public class GroupTypeGroupFieldType : FieldType
     {
