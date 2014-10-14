@@ -231,6 +231,12 @@ END
   WHERE [Guid] = 'A2991117-0B85-4209-9008-254929C6E00F'
 " );
 
+            // move route page
+            Sql( @"  DECLARE @CmsPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
+  UPDATE [Page] 
+	SET [ParentPageId] = @CmsPageId
+	WHERE [Guid] = '4A833BE3-7D5E-4C38-AF60-5706260015EA'" );
+
         }
         
         /// <summary>
