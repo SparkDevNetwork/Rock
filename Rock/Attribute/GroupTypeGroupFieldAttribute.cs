@@ -23,6 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select 0 or 1 group filtered by group type
+    /// Stored as "GroupType.Guid|Group.Guid"
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupTypeGroupFieldAttribute : FieldAttribute
