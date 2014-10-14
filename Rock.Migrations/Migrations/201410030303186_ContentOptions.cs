@@ -96,6 +96,31 @@ namespace Rock.Migrations
 	    INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
 	    VALUES ( 0, @AttributeId, @BlockId, CAST( @FilterId as varchar ), NEWID())
     END	
+
+    -- Update the content item detail lava to check for empty image
+    SET @BlockId = ( SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '7173AA95-15AF-49C5-933D-004717A3FF3C' )
+    SET @AttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8' )
+    IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL 
+    BEGIN
+        DECLARE @Value varchar(max) =  ( SELECT TOP 1 [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+		IF @Value = '
+{% for item in Items %}
+    <img src=""/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}"" class=""title-image""><h1>{{ item.Title }}</h1>{{ item.Content }}
+{% endfor -%}
+'		BEGIN
+			UPDATE [AttributeValue] 
+			SET [Value] = '
+{% for item in Items %}
+    {% if item.DetailImage_unformatted != '''' %}
+        <img src=""/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}"" class=""title-image"">
+    {% endif %}
+    <h1>{{ item.Title }}</h1>{{ item.Content }}
+{% endfor -%}
+'
+			WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId 
+		END
+	END
+
 " );
         }
         
