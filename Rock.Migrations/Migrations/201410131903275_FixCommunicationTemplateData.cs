@@ -231,11 +231,43 @@ END
   WHERE [Guid] = 'A2991117-0B85-4209-9008-254929C6E00F'
 " );
 
+
             // move route page
             Sql( @"  DECLARE @CmsPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
   UPDATE [Page] 
 	SET [ParentPageId] = @CmsPageId
 	WHERE [Guid] = '4A833BE3-7D5E-4C38-AF60-5706260015EA'" );
+
+            // convert AssignActivityToGroup to use GroupTypeGroupField which stores it's value as GroupType.Guid|Group.Guid
+            try
+            {
+                Sql( @"
+DECLARE @entityTypeId INT = (
+        SELECT TOP 1 Id
+        FROM EntityType
+        WHERE NAME = 'Rock.Workflow.Action.AssignActivityToGroup'
+        )
+DECLARE @attributeId INT = (
+        SELECT TOP 1 Id
+        FROM Attribute
+        WHERE EntityTypeQualifierColumn = 'EntityTypeId'
+            AND EntityTypeQualifierValue = @entityTypeId
+            AND [Key] = 'Group'
+        )
+
+UPDATE AttributeValue
+SET Value = cast(gt.[Guid] AS NVARCHAR(max)) + '|' + cast(g.[Guid] AS NVARCHAR(max))
+FROM [AttributeValue] av
+JOIN [Group] g ON av.Value = g.Guid
+JOIN [GroupType] gt ON g.GroupTypeId = gt.Id
+WHERE av.AttributeId = @attributeId
+" );
+            }
+            catch
+            { 
+                // ignore if there was an exception
+            }
+
 
         }
         
