@@ -583,7 +583,7 @@ namespace Rock.Reporting.DataFilter
                             if ( control is DatePicker )
                             {
                                 var dtp = control as DatePicker;
-                                if ( selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                                if ( selectedValue != null && selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                                 {
                                     dtp.CurrentDate = true;
                                 }
@@ -678,7 +678,7 @@ namespace Rock.Reporting.DataFilter
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
                             DateTime dateValue = DateTime.Today;
-                            if ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                            if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
                             {
                                 dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                             }
