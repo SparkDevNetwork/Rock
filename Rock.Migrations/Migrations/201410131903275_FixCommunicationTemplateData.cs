@@ -224,6 +224,13 @@ BEGIN
   RETURN
 END
 " );
+
+            Sql( @"
+  UPDATE [Page]
+  SET [BrowserTitle] = 'Site Detail'
+  WHERE [Guid] = 'A2991117-0B85-4209-9008-254929C6E00F'
+" );
+
         }
         
         /// <summary>
