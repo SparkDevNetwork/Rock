@@ -33,6 +33,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="groupPickerLabel">The group picker label.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>
