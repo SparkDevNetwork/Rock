@@ -43,7 +43,7 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            if ( value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
                 return "Current Date";
             }
@@ -242,7 +242,7 @@ namespace Rock.Field.Types
                 var dtp = control as DatePicker;
                 if ( dtp != null )
                 {
-                    if ( dtp.DisplayCurrentOption && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                    if ( dtp.DisplayCurrentOption && value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                     {
                         dtp.CurrentDate = true;
                     }

@@ -281,7 +281,7 @@ namespace Rock.Reporting.DataFilter
                     {
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                         DateTime dateValue = DateTime.Today;
-                        if ( !values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                        if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
                         {
                             dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                         }
