@@ -1847,6 +1847,8 @@ namespace Rock
         /// <summary>
         /// Queries a list of items that match the specified expression.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
@@ -1858,6 +1860,8 @@ namespace Rock
         /// <summary>
         /// Queries a list of items that match the specified expression.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <param name="sortProperty">The sort property.</param>
@@ -1870,6 +1874,8 @@ namespace Rock
         /// <summary>
         /// Queries the specified parameter expression.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <param name="sortProperty">The sort property.</param>
