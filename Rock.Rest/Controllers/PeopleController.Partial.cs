@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.Http;
+using System.Web.Http.OData.Query;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -108,6 +109,28 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "GetPopupHtml"
                 } );
+        }
+
+        /// <summary>
+        /// Overrides base Get api controller to add option to include Person records for deceased individuals.
+        /// </summary>
+        /// <returns>A queryable collection of Person records that matches the supplied Odata query.</returns>
+        [Authenticate, Secured]
+        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
+        public override IQueryable<Person> Get()
+        {
+            string queryString = Request.RequestUri.Query;
+            string includeDeceased = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "IncludeDeceased" );
+
+            if ( includeDeceased.AsBoolean( false ) )
+            {
+                var rockContext = new Rock.Data.RockContext();
+                return new PersonService( rockContext ).Queryable( true );
+            }
+            else
+            {
+                return base.Get();
+            }
         }
 
         /// <summary>
@@ -433,6 +456,7 @@ namespace Rock.Rest.Controllers
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
+
     }
 
     /// <summary>
