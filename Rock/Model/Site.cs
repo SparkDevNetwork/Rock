@@ -319,6 +319,22 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var result = base.SupportedActions;;
+                result.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve. Used as a base for blocks that use the approve action." );
+                return result;
+            }
+        }
+
         #endregion
 
     }

@@ -119,7 +119,7 @@ namespace Rock.Reporting.DataFilter
             if ( values.Count > 0 )
             {
                 // First value in array is always the name of the entity field being filtered
-                string entityFieldName = values[0];
+                string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                 var entityField = GetEntityFields( entityType ).Where( p => p.Name == entityFieldName ).FirstOrDefault();
                 string entityFieldResult = GetEntityFieldFormatSelection( values, entityField );
@@ -225,7 +225,7 @@ namespace Rock.Reporting.DataFilter
 
                 if ( values.Count >= 2 )
                 {
-                    string selectedProperty = values[0];
+                    string selectedProperty = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                     var entityField = GetEntityFields( entityType ).Where( p => p.Name == selectedProperty ).FirstOrDefault();
                     if ( entityField != null )
@@ -280,7 +280,11 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                        DateTime dateValue = DateTime.Today;
+                        if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                        {
+                            dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                        }
                         ConstantExpression constantExpression = Expression.Constant( dateValue );
                         return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }

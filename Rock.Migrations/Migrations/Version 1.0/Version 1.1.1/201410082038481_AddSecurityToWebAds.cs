@@ -36,42 +36,49 @@ namespace Rock.Migrations
                     DECLARE @ChannelId int = ( SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '8E213BB1-9E6F-40C1-B468-B3F8A60D5D24' ) 
                     DECLARE @GroupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = 'B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B' ) 
 
-                    INSERT INTO [Auth] 
-	                    ([EntityTypeId]
-                          ,[EntityId]
-                          ,[Order]
-                          ,[Action]
-                          ,[AllowOrDeny]
-                          ,[GroupId]
-	                      ,[SpecialRole]
-                          ,[Guid] )
-                    VALUES 
-	                    (@EntityTypeId, @ChannelId, 0, 'Edit', 'A', @GroupId, 0, 'B7AD0E8E-263A-4BD7-83F4-BB87C7A170F3')
+                    IF @EntityTypeId IS NOT NULL AND @ChannelID IS NOT NULL AND @GroupId IS NOT NULL
+                    BEGIN
 
-                    INSERT INTO [Auth] 
-	                    ([EntityTypeId]
-                          ,[EntityId]
-                          ,[Order]
-                          ,[Action]
-                          ,[AllowOrDeny]
-                          ,[GroupId]
-	                      ,[SpecialRole]
-                          ,[Guid] )
-                    VALUES 
-	                    (@EntityTypeId, @ChannelId, 1, 'Administrate', 'A', @GroupId, 0, 'F49ECF94-510F-47AE-A204-07995BC9EA16')
+                        INSERT INTO [Auth] 
+	                        ([EntityTypeId]
+                              ,[EntityId]
+                              ,[Order]
+                              ,[Action]
+                              ,[AllowOrDeny]
+                              ,[GroupId]
+	                          ,[SpecialRole]
+                              ,[Guid] )
+                        VALUES 
+	                        (@EntityTypeId, @ChannelId, 0, 'Edit', 'A', @GroupId, 0, 'B7AD0E8E-263A-4BD7-83F4-BB87C7A170F3')
+
+                        INSERT INTO [Auth] 
+	                        ([EntityTypeId]
+                              ,[EntityId]
+                              ,[Order]
+                              ,[Action]
+                              ,[AllowOrDeny]
+                              ,[GroupId]
+	                          ,[SpecialRole]
+                              ,[Guid] )
+                        VALUES 
+	                        (@EntityTypeId, @ChannelId, 1, 'Administrate', 'A', @GroupId, 0, 'F49ECF94-510F-47AE-A204-07995BC9EA16')
 
 
-                    INSERT INTO [Auth] 
-	                    ([EntityTypeId]
-                          ,[EntityId]
-                          ,[Order]
-                          ,[Action]
-                          ,[AllowOrDeny]
-                          ,[GroupId]
-	                      ,[SpecialRole]
-                          ,[Guid] )
-                    VALUES 
-	                    (@EntityTypeId, @ChannelId, 2, 'Approve', 'A', @GroupId, 0, '40798AFD-E4A6-46BC-BBB5-A11171087791')" );
+                        INSERT INTO [Auth] 
+	                        ([EntityTypeId]
+                              ,[EntityId]
+                              ,[Order]
+                              ,[Action]
+                              ,[AllowOrDeny]
+                              ,[GroupId]
+	                          ,[SpecialRole]
+                              ,[Guid] )
+                        VALUES 
+	                        (@EntityTypeId, @ChannelId, 2, 'Approve', 'A', @GroupId, 0, '40798AFD-E4A6-46BC-BBB5-A11171087791')
+
+                    END
+" );
+
         }
         
         /// <summary>

@@ -66,6 +66,10 @@
     <Compile Include="Migrations\201410092323452_AddContentTypeBlog.Designer.cs">
       <DependentUpon>201410092323452_AddContentTypeBlog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201410131903275_FixCommunicationTemplateData.cs" />
+    <Compile Include="Migrations\201410131903275_FixCommunicationTemplateData.Designer.cs">
+      <DependentUpon>201410131903275_FixCommunicationTemplateData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.Designer.cs">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
@@ -1282,6 +1286,9 @@
     <EmbeddedResource Include="Migrations\201410092323452_AddContentTypeBlog.resx">
       <DependentUpon>201410092323452_AddContentTypeBlog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201410131903275_FixCommunicationTemplateData.resx">
+      <DependentUpon>201410131903275_FixCommunicationTemplateData.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.resx">
       <DependentUpon>201409301455533_ValueAsDateTimeFix.cs</DependentUpon>
     </EmbeddedResource>
@@ -2171,7 +2178,9 @@
       <DependentUpon>201408191153260_DefinedValueValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Migrations\Version 1.0\Version 1.1.1\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

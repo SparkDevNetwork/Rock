@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -359,8 +359,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsPublic = cbIsPublic.Checked;
             prayerRequest.FirstName = dtbFirstName.Text;
             prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Text = dtbText.Text.Trim();
-            prayerRequest.Answer = dtbAnswer.Text.Trim();
+            prayerRequest.Text = HttpUtility.HtmlEncode(dtbText.Text.Trim());
+            prayerRequest.Answer = HttpUtility.HtmlEncode(dtbAnswer.Text.Trim());
 
             if ( !Page.IsValid )
             {

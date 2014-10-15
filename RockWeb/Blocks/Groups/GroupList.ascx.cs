@@ -440,6 +440,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                lTitle.Text = BlockName;
                 iIcon.AddCssClass( "fa fa-users" );
             }
 

@@ -188,10 +188,12 @@ img.jcrop-preview {
   border: 1px dashed #909090;
   /* todo */
   min-height: 30px;
-  min-width: 120px;
+  min-width: 50px;
   position: relative;
   margin: 1px;
   border-radius: 3px;
+  float: left;
+  width: 100%;
 }
 .zone-configuration {
   background: #18bc9c;
@@ -2221,6 +2223,14 @@ td.grid-col-actions {
 }
 .field-criteria .checkbox-inline {
   margin-top: 8px;
+}
+.filter-item div[class*='col'] {
+  margin-bottom: 6px;
+}
+@media (min-width: 992px) {
+  .filter-item div[class*='col'] {
+    margin-bottom: 0;
+  }
 }
 /*
     Used to manage styles for specific blocks.
