@@ -77,12 +77,28 @@ namespace Rock.Web.UI.Controls
         public string OnText { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSS class for the "on" state.
+        /// </summary>
+        /// <value>
+        /// The "on" text.
+        /// </value>
+        public string OnCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the text that represents the "off" state.
         /// </summary>
         /// <value>
         /// The "off" text.
         /// </value>
         public string OffText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSS class for the "on" state.
+        /// </summary>
+        /// <value>
+        /// The "on" text.
+        /// </value>
+        public string OffCssClass { get; set; }
 
         /// <summary>
         /// Gets the parent grid.
@@ -187,6 +203,8 @@ namespace Rock.Web.UI.Controls
                 Toggle toggle = new Toggle();
                 toggle.OnText = toggleField.OnText;
                 toggle.OffText = toggleField.OffText;
+                toggle.OnCssClass = toggleField.OnCssClass;
+                toggle.OffCssClass = toggleField.OffCssClass;
 
                 //toggle.EnableViewState = true; // TODO remove if unnecessary
                 toggle.ActiveButtonCssClass = toggleField.ActiveButtonCssClass;

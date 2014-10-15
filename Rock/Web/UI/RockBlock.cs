@@ -70,6 +70,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the name of the block.
+        /// </summary>
+        /// <value>
+        /// The name of the block.
+        /// </value>
+        public string BlockName
+        {
+            get { return _blockCache.Name; }
+        }
+
+        /// <summary>
         /// Gets the current page reference.
         /// </summary>
         public PageReference CurrentPageReference

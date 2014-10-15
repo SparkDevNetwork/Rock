@@ -22,7 +22,8 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a single (or null) Person
+    /// Field Attribute to select a single (or null) Person.
+    /// Stored as PersonAlias.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class PersonFieldAttribute : FieldAttribute

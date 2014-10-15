@@ -21,6 +21,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,6 +33,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "HTML Content Approval" )]
     [Category( "CMS" )]
     [Description( "Lists HTML content blocks that need approval." )]
+
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
     public partial class HtmlContentApproval : Rock.Web.UI.RockBlock
     {
         #region Fields
