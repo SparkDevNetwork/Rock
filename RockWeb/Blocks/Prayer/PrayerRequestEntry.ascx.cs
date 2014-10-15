@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.FirstName = dtbFirstName.Text.Trim().SanitizeHtml();
             prayerRequest.LastName = dtbLastName.Text.Trim().SanitizeHtml();
             prayerRequest.Email = dtbEmail.Text.Trim();
-            prayerRequest.Text = dtbRequest.Text.Trim();
+            prayerRequest.Text = HttpUtility.HtmlEncode(dtbRequest.Text.Trim());
             
             if ( this.EnableUrgentFlag )
             {

@@ -50,24 +50,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201410012345399_ReportSort.cs" />
-    <Compile Include="Migrations\201410012345399_ReportSort.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.Designer.cs">
       <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410030303186_ContentOptions.cs" />
-    <Compile Include="Migrations\201410030303186_ContentOptions.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410030303186_ContentOptions.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410030303186_ContentOptions.Designer.cs">
       <DependentUpon>201410030303186_ContentOptions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410082038481_AddSecurityToWebAds.cs" />
-    <Compile Include="Migrations\201410082038481_AddSecurityToWebAds.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410082038481_AddSecurityToWebAds.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410082038481_AddSecurityToWebAds.Designer.cs">
       <DependentUpon>201410082038481_AddSecurityToWebAds.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410092323452_AddContentTypeBlog.cs" />
-    <Compile Include="Migrations\201410092323452_AddContentTypeBlog.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410092323452_AddContentTypeBlog.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410092323452_AddContentTypeBlog.Designer.cs">
       <DependentUpon>201410092323452_AddContentTypeBlog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410131903275_FixCommunicationTemplateData.cs" />
-    <Compile Include="Migrations\201410131903275_FixCommunicationTemplateData.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410131903275_FixCommunicationTemplateData.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410131903275_FixCommunicationTemplateData.Designer.cs">
       <DependentUpon>201410131903275_FixCommunicationTemplateData.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.cs" />
@@ -1274,19 +1274,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201410012345399_ReportSort.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.resx">
       <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410030303186_ContentOptions.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410030303186_ContentOptions.resx">
       <DependentUpon>201410030303186_ContentOptions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410082038481_AddSecurityToWebAds.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410082038481_AddSecurityToWebAds.resx">
       <DependentUpon>201410082038481_AddSecurityToWebAds.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410092323452_AddContentTypeBlog.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410092323452_AddContentTypeBlog.resx">
       <DependentUpon>201410092323452_AddContentTypeBlog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410131903275_FixCommunicationTemplateData.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410131903275_FixCommunicationTemplateData.resx">
       <DependentUpon>201410131903275_FixCommunicationTemplateData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.0\201409301455533_ValueAsDateTimeFix.resx">

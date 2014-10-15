@@ -33,14 +33,16 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="groupPickerLabel">The group picker label.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public GroupTypeGroupFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public GroupTypeGroupFieldAttribute( string name = "", string description = "", string groupPickerLabel = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupTypeGroupFieldType ).FullName )
         {
+            FieldConfigurationValues.Add( Rock.Field.Types.GroupTypeGroupFieldType.CONFIG_GROUP_PICKER_LABEL, new Field.ConfigurationValue( groupPickerLabel ) );
         }
     }
 }

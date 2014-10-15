@@ -16,6 +16,7 @@
 //
 using System;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -24,6 +25,53 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class DatePicker : DataTextBox
     {
+        private CheckBox _cbCurrent;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display current option].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display current option]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayCurrentOption
+        {
+            get
+            {
+                return ViewState["DisplayCurrentOption"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayCurrentOption"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [current date].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [current date]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CurrentDate
+        {
+            get
+            {
+                if ( DisplayCurrentOption )
+                {
+                    EnsureChildControls();
+                    return _cbCurrent.Checked;
+                }
+
+                return false;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _cbCurrent.Checked = value;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -40,8 +88,6 @@ namespace Rock.Web.UI.Controls
                 this.SourceTypeName = "Rock.Web.UI.Controls.DatePicker, Rock";
                 this.PropertyName = "SelectedDate";
             }
-
-            
         }
 
         /// <summary>
@@ -140,13 +186,52 @@ namespace Rock.Web.UI.Controls
                 if ( ( value ?? DateTime.MinValue ) != DateTime.MinValue )
                 {
                     this.Text = value.Value.ToShortDateString();
-                    this.Attributes["value"] = this.Text;
                 }
                 else
                 {
                     this.Text = string.Empty;
-                    this.Attributes["value"] = this.Text;
                 }
+
+                this.Attributes["value"] = this.Text;
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            _cbCurrent = new CheckBox();
+            _cbCurrent.ID = this.ID + "_cbCurrent";
+            _cbCurrent.Text = "Current Date";
+            Controls.Add( _cbCurrent );
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            if ( DisplayCurrentOption)
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                if (CurrentDate)
+                {
+                    base.Enabled = false;
+                }
+            }
+
+            base.RenderBaseControl( writer );
+
+            if ( DisplayCurrentOption )
+            {
+                _cbCurrent.RenderControl( writer );
+                writer.RenderEndTag();
             }
         }
 
