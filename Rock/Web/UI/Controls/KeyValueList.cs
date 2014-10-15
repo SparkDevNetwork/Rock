@@ -81,7 +81,8 @@ namespace Rock.Web.UI.Controls
                 values = CustomValues;
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list " + this.CssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
@@ -175,7 +176,6 @@ namespace Rock.Web.UI.Controls
                     ddl.DataValueField = "Key";
                     ddl.DataSource = values;
                     ddl.DataBind();
-                    ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                     if ( nameAndValue.Length >= 2 )
                     {
                         ddl.SelectedValue = nameAndValue[1];

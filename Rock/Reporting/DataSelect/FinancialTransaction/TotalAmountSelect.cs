@@ -30,7 +30,7 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
     /// </summary>
     [Description( "Select the Total Amount of a Transaction" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Transaction Total Amou t" )]
+    [ExportMetadata( "ComponentName", "Select Transaction Total Amount" )]
     public class TotalAmountSelect : DataSelectComponent
     {
         #region Properties

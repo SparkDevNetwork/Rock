@@ -34,7 +34,7 @@ namespace com.ccvonline.CommandCenter.Model
 
             if ( globalAttributes.AttributeValues.ContainsKey( "WowzaServer" ) )
             {
-                string wowzaServerUrl = globalAttributes.AttributeValues["WowzaServer"].Value;
+                string wowzaServerUrl = globalAttributes.AttributeValues["WowzaServer"];
                 if ( !string.IsNullOrWhiteSpace( wowzaServerUrl ) )
                 {
                     Dictionary<string, string> parms = new Dictionary<string, string>();

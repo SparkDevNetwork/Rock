@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 });
                 $(this).siblings('input.js-attribute-values-order').val(newOrder);
             }
-        }).disableSelection();
+        });
 ";
             ScriptManager.RegisterStartupScript( lbOrder, lbOrder.GetType(), "attribute-value-order", script, true );
         }

@@ -16,9 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -27,9 +26,81 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) group filtered by a selected group type
+    /// Stored as "GroupType.Guid|Group.Guid"
     /// </summary>
     public class GroupTypeGroupFieldType : FieldType
     {
+        /// <summary>
+        /// Configuration Key for Group Picker Label
+        /// </summary>
+        public static readonly string CONFIG_GROUP_PICKER_LABEL = "groupPickerLabel";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( CONFIG_GROUP_PICKER_LABEL );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var textBoxGroupPickerLabel = new RockTextBox();
+            controls.Add( textBoxGroupPickerLabel );
+            textBoxGroupPickerLabel.Label = "Group Picker Label";
+            textBoxGroupPickerLabel.Help = "The label for the group picker";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( CONFIG_GROUP_PICKER_LABEL, new ConfigurationValue( "Group Picker Label", "The label for the group picker.", string.Empty ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                var textBoxGroupPickerLabel = controls[0] as RockTextBox;
+                if ( textBoxGroupPickerLabel != null )
+                {
+                    configurationValues[CONFIG_GROUP_PICKER_LABEL].Value = textBoxGroupPickerLabel.Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                var textBoxGroupPickerLabel = controls[0] as RockTextBox;
+                if ( textBoxGroupPickerLabel != null )
+                {
+                    textBoxGroupPickerLabel.Text = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -42,9 +113,19 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            string[] parts = ( value ?? string.Empty ).Split( '|' );
-            Guid? groupTypeGuid = parts[0].AsGuidOrNull();
-            Guid? groupGuid = parts[1].AsGuidOrNull();
+            Guid? groupTypeGuid = null;
+            Guid? groupGuid = null;
+
+            string[] parts = ( value ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( parts.Length > 0 )
+            {
+                groupTypeGuid = parts[0].AsGuidOrNull();
+                if ( parts.Length > 1 )
+                {
+                    groupGuid = parts[1].AsGuidOrNull();
+                }
+            }
+
             var rockContext = new RockContext();
             if ( groupGuid.HasValue )
             {
@@ -77,7 +158,11 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             GroupTypeGroupPicker editControl = new GroupTypeGroupPicker { ID = id };
-            editControl.GroupControlLabel = "Root Group";
+            if ( configurationValues != null )
+            {
+                editControl.GroupControlLabel = configurationValues[CONFIG_GROUP_PICKER_LABEL].Value;
+            }
+             
             return editControl;
         }
 
@@ -115,7 +200,6 @@ namespace Rock.Field.Types
                 }
 
                 return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
-
             }
 
             return null;

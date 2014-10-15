@@ -375,7 +375,9 @@ namespace RockWeb.Blocks.CheckIn
             foreach ( var groupType in locationService.Queryable()
                 .Where( l => locationIds.Contains( l.Id ) )
                 .SelectMany( l => l.GroupLocations )
+                .Where( gl => gl.Group.GroupType.TakesAttendance )
                 .Select( gl => gl.Group.GroupType )
+                .Distinct()
                 .ToList() )
             {
                 if ( !groupTypes.ContainsKey( groupType.Id ) )

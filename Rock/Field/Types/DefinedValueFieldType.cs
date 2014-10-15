@@ -289,5 +289,31 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+
+            if ( attribute.QualifierValues.ContainsKey( DEFINED_TYPE_KEY ) )
+            {
+                int? definedTypeId = attribute.QualifierValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
+                if (definedTypeId.HasValue)
+                {
+                    var definedType = Rock.Web.Cache.DefinedTypeCache.Read( definedTypeId.Value );
+                    if (definedType != null)
+                    {
+                        filterConfig.DefinedTypeGuid = definedType.Guid;
+                    }
+                }
+            }
+
+            return filterConfig;
+        }
     }
 }

@@ -98,6 +98,7 @@ namespace Rock.Model
         /// <value>
         /// The channel URL.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string ChannelUrl { get; set; }
 
@@ -107,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The item URL.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string ItemUrl { get; set; }
 
@@ -118,6 +120,25 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? TimeToLive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the control to render when editing content for items of this type.
+        /// </summary>
+        /// <value>
+        /// The type of the item control.
+        /// </value>
+        [DataMember]
+        public ContentControlType ContentControlType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the root image directory to use when the Html control type is used
+        /// </summary>
+        /// <value>
+        /// The image root directory.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string RootImageDirectory { get; set; }
 
         #endregion
 
@@ -216,6 +237,27 @@ namespace Rock.Model
         {
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+
+    #region Enumerations
+
+    /// <summary>
+    /// Represents the type of editor to use when editing content for channel item
+    /// </summary>
+    public enum ContentControlType
+    {
+        /// <summary>
+        /// Code Editor control
+        /// </summary>
+        CodeEditor = 0,
+
+        /// <summary>
+        /// Html Editor control
+        /// </summary>
+        HtmlEditor = 1
     }
 
     #endregion

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,8 +153,8 @@ namespace RockWeb.Blocks.Administration
             {
                 ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
             }
-            string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
-            ddTimeZone.SelectedValue = orgTimeZoneSetting;
+            
+            ddTimeZone.SelectedValue = RockDateTime.OrgTimeZoneInfo.Id;
         }
 
         /// <summary>

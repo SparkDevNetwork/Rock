@@ -188,10 +188,12 @@ img.jcrop-preview {
   border: 1px dashed #909090;
   /* todo */
   min-height: 30px;
-  min-width: 120px;
+  min-width: 50px;
   position: relative;
   margin: 1px;
   border-radius: 3px;
+  float: left;
+  width: 100%;
 }
 .zone-configuration {
   background: #18bc9c;
@@ -1894,13 +1896,9 @@ dl:not(.dl-horizontal) dd {
   margin: 4px 8px 0 -2px;
   color: #7997b5;
 }
-/*.date-range-picker,
-.number-range-editor {
-    span.to {
-        float: left;
-        margin: 8px 12px 0 0;
-    }
-}*/
+.rock-check-box .checkbox {
+  margin-top: 0;
+}
 .validation-error {
   color: #e74c3c;
   font-weight: 300;
@@ -2117,6 +2115,10 @@ td.grid-col-actions {
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
 }
+.grid-select-field .checkbox label,
+.grid-select-field .radio label {
+  padding: 0;
+}
 .table > tbody > tr > th,
 .table > tbody > tr > td {
   padding: 12px;
@@ -2222,6 +2224,14 @@ td.grid-col-actions {
 .field-criteria .checkbox-inline {
   margin-top: 8px;
 }
+.filter-item div[class*='col'] {
+  margin-bottom: 6px;
+}
+@media (min-width: 992px) {
+  .filter-item div[class*='col'] {
+    margin-bottom: 0;
+  }
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -2274,10 +2284,10 @@ td.grid-col-actions {
 }
 .panel-note article > i {
   position: absolute;
-  color: #98a3ab;
   width: 28px;
   font-size: 28px;
   margin: 0 12px 0 4px;
+  opacity: .2;
 }
 .panel-note article .details {
   margin-left: 50px;
@@ -2308,16 +2318,10 @@ td.grid-col-actions {
 .panel-note article.highlight a {
   color: #ffffff;
 }
-.panel-note article.highlight > i {
-  color: #e42533;
-}
 .panel-note article.personal {
   background-color: #2c3e50;
   border: 1px solid #273c46;
   color: #ffffff;
-}
-.panel-note article.personal > i {
-  color: #598aa2;
 }
 .panel-note article > img {
   float: left;
@@ -2408,7 +2412,7 @@ td.grid-col-actions {
 .recurrence-pattern-specific-date .actions {
   float: left;
   margin-left: 12px;
-  padding-top: 5px;
+  margin-top: 4px;
 }
 .recurrence-pattern-daily .form-control-group {
   min-height: 30px;
@@ -4020,6 +4024,9 @@ a.help {
   padding-top: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.panel-persondetails .panel-body i.fa.fa-bars {
+  cursor: pointer;
 }
 .panel-block {
   border-color: #dde4e6;

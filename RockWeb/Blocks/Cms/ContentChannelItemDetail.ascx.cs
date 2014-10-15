@@ -159,13 +159,14 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null && contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 contentItem.Title = tbTitle.Text;
-                contentItem.Content = ceContent.Text;
+                contentItem.Content = contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor ?
+                    htmlContent.Text : ceContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
                 contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
                     dtpExpire.SelectedDateTime : null;
 
-                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? 1;
+                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? contentItem.Status.ConvertToInt();
                 int oldStatusId = contentItem.Status.ConvertToInt();
                 if ( newStatusID != oldStatusId && contentItem.IsAuthorized(Authorization.APPROVE, CurrentPerson))
                 {
@@ -322,13 +323,44 @@ namespace RockWeb.Blocks.Cms
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
 
                 tbTitle.Text = contentItem.Title;
-                ceContent.Text = contentItem.Content;
-                nbPriority.Text = contentItem.Priority.ToString();
+
+                if ( contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor )
+                {
+                    ceContent.Visible = false;
+                    htmlContent.Visible = true;
+                    htmlContent.Text = contentItem.Content;
+                    htmlContent.MergeFields.Clear();
+                    htmlContent.MergeFields.Add( "GlobalAttribute" );
+                    htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
+                    htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
+                    htmlContent.MergeFields.Add( "Campuses" );
+                    htmlContent.MergeFields.Add( "RockVersion" );
+
+                    if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
+                    {
+                        htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                        htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                    }
+                }
+                else
+                {
+                    htmlContent.Visible = false;
+                    ceContent.Visible = true;
+                    ceContent.Text = contentItem.Content;
+                    ceContent.MergeFields.Clear();
+                    ceContent.MergeFields.Add( "GlobalAttribute" );
+                    ceContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
+                    ceContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
+                    ceContent.MergeFields.Add( "Campuses" );
+                    ceContent.MergeFields.Add( "RockVersion" );
+                }
+
                 dtpStart.SelectedDateTime = contentItem.StartDateTime;
-
-                dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
-
+                dtpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
                 dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
+                dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+                nbPriority.Text = contentItem.Priority.ToString();
+                nbPriority.Visible = !contentItem.ContentChannelType.DisablePriority;
 
                 contentItem.LoadAttributes();
                 phAttributes.Controls.Clear();
@@ -387,12 +419,14 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                hfStatus.Value = contentItem.Status.ConvertToInt().ToString();
                 lStatusDetails.Visible = true;
                 lStatusDetails.Text = statusDetail.ToString();
 
             }
             else
             {
+                hfStatus.Value = ContentChannelItemStatus.Approved.ToString();
                 pnlStatus.Visible = false;
                 lStatusDetails.Visible = false;
                 divStatus.Visible = false;

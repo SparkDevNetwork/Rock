@@ -555,7 +555,7 @@ namespace Rock.Web.UI.Controls
                             }
                             else
                             {
-                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RadioButton)cb ).GroupName )];
+                                string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RockRadioButton)cb ).GroupName )];
                                 if ( value == cb.ClientID )
                                 {
                                     col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
@@ -1987,7 +1987,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the property name
+        /// Gets or sets the Column(s) specification for Sorting.
+        /// Specify multiple columns as "column1, column2, column3".
+        /// To sort DESC append column(s) with a " desc", for example: "column1 desc, column2, column3 desc"
         /// </summary>
         /// <value>
         /// The property.
@@ -2009,6 +2011,17 @@ namespace Rock.Web.UI.Controls
         {
             Direction = e.SortDirection;
             Property = e.SortExpression;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} [{1}]", this.Property, this.Direction );
         }
     }
 

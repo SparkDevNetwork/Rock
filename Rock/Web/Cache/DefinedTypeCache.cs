@@ -108,8 +108,8 @@ namespace Rock.Web.Cache
                     return CategoryCache.Read( CategoryId.Value );
                 return null;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Gets the type of the field.
         /// </summary>
@@ -185,8 +185,8 @@ namespace Rock.Web.Cache
                 this.Name = definedType.Name;
                 this.Description = definedType.Description;
 
-                this.definedValueIds = definedType.DefinedValues
-                    .Select( v => v.Id ).ToList();
+                // set definedValueIds to null so it load them all at once on demand
+                this.definedValueIds = null;
             }
         }
 
@@ -228,7 +228,7 @@ namespace Rock.Web.Cache
                 rockContext = rockContext ?? new RockContext();
                 var definedTypeService = new DefinedTypeService( rockContext );
                 var definedTypeModel = definedTypeService
-                    .Queryable( "DefinedValues" )
+                    .Queryable()
                     .Where( t => t.Id == id )
                     .FirstOrDefault();
 
@@ -268,7 +268,7 @@ namespace Rock.Web.Cache
                 rockContext = rockContext ?? new RockContext();
                 var definedTypeService = new DefinedTypeService( rockContext );
                 var definedTypeModel = definedTypeService
-                    .Queryable( "DefinedValues" )
+                    .Queryable()
                     .Where( t => t.Guid == guid )
                     .FirstOrDefault();
 
