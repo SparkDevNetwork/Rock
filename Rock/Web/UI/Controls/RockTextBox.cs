@@ -269,7 +269,7 @@ namespace Rock.Web.UI.Controls
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public void RenderBaseControl( HtmlTextWriter writer )
+        public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
             // logic to add input groups for preappend and append labels
             bool renderInputGroup = false;

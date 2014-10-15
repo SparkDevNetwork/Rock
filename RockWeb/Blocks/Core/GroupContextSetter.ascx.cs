@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block that can be used to set the default group context for the site." )]
 
-    [GroupTypeGroupField( "Group Filter", "Select group type and root group filter groups by root group. Leave root group blank to filter by group type." )]
+    [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group" )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site" )]
     public partial class GroupContextSetter : RockBlock
     {
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Core
                 rptGroups.Visible = true;
 
                 lCurrentSelection.Text = defaultGroup != null ? defaultGroup.ToString() : "Select Group";
-                var groups = qryGroups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().Select( a => new { a.Name, ContextKey = HttpUtility.UrlDecode( a.ContextKey ) } ).ToList();
+                var groups = qryGroups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().Select( a => new { a.Name, a.Id } ).ToList();
 
                 rptGroups.DataSource = groups;
                 rptGroups.DataBind();

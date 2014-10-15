@@ -2224,6 +2224,14 @@ td.grid-col-actions {
 .field-criteria .checkbox-inline {
   margin-top: 8px;
 }
+.filter-item div[class*='col'] {
+  margin-bottom: 6px;
+}
+@media (min-width: 992px) {
+  .filter-item div[class*='col'] {
+    margin-bottom: 0;
+  }
+}
 /*
     Used to manage styles for specific blocks.
 

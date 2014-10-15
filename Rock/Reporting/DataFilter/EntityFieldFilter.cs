@@ -59,6 +59,7 @@ namespace Rock.Reporting.DataFilter
                     var datePicker = new DatePicker();
                     datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
                     datePicker.AddCssClass( "js-filter-control" );
+                    datePicker.DisplayCurrentOption = true;
                     parentControl.Controls.Add( datePicker );
                     controls.Add( datePicker );
 
@@ -392,8 +393,11 @@ namespace Rock.Reporting.DataFilter
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
-                    case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
+                        break;
+
+                    case SystemGuid.FieldType.DATE:
+                        clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DECIMAL:
@@ -472,13 +476,20 @@ namespace Rock.Reporting.DataFilter
                     if ( control is DatePicker )
                     {
                         var dtp = control as DatePicker;
-                        if ( dtp != null && dtp.SelectedDate.HasValue )
+                        if ( dtp != null )
                         {
-                            values.Add( dtp.SelectedDate.Value.ToShortDateString() );
-                        }
-                        else
-                        {
-                            values.Add( string.Empty );
+                            if ( dtp.CurrentDate )
+                            {
+                                values.Add( "CURRENT" );
+                            }
+                            else if ( dtp.SelectedDate.HasValue )
+                            {
+                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
                         }
                     }
                     else if ( control is DateTimePicker )
@@ -571,10 +582,18 @@ namespace Rock.Reporting.DataFilter
 
                             if ( control is DatePicker )
                             {
-                                var dateTime = selectedValue.AsDateTime();
-                                if ( dateTime.HasValue )
+                                var dtp = control as DatePicker;
+                                if ( selectedValue != null && selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                                 {
-                                    ( control as DatePicker ).SelectedDate = dateTime.Value.Date;
+                                    dtp.CurrentDate = true;
+                                }
+                                else
+                                {
+                                    var dateTime = selectedValue.AsDateTime();
+                                    if ( dateTime.HasValue )
+                                    {
+                                        dtp.SelectedDate = dateTime.Value.Date;
+                                    }
                                 }
                             }
                             else if ( control is DateTimePicker )
@@ -658,7 +677,11 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            DateTime dateValue = DateTime.Today;
+                            if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            }
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:

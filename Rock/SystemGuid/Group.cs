@@ -50,5 +50,10 @@ namespace Rock.SystemGuid
         /// The Finance Users Group guid
         /// </summary>
         public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
+
+        /// <summary>
+        /// The Communication Administrators Group guid
+        /// </summary>
+        public const string GROUP_COMMUNICATION_ADMINISTRATORS = "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B";
     }
 }
