@@ -108,6 +108,15 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "GetPopupHtml"
                 } );
+
+            routes.MapHttpRoute(
+                name: "PeopleGetIncludeDeceased",
+                routeTemplate: "api/People/IncludeDeceased/",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetIncludeDeceased"
+                } );
         }
 
         /// <summary>
@@ -432,6 +441,20 @@ namespace Rock.Rest.Controllers
         {
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
+        }
+
+        [Authenticate, Secured]
+        [Queryable( AllowedQueryOptions = System.Web.Http.OData.Query.AllowedQueryOptions.All )]
+        [HttpGet]
+        public IQueryable<Person> GetIncludeDeceased()
+        {
+            var rockContext = new Rock.Data.RockContext();
+            var personService = new PersonService( rockContext );
+
+            var query = personService.Queryable( true );
+
+            return query;
+
         }
     }
 
