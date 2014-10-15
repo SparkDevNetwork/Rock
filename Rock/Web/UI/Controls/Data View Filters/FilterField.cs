@@ -195,9 +195,8 @@ $('.filter-item-select').click(function (event) {
         {
             get
             {
-                return ViewState["FilterEntityTypeName"] as string;
+                return ViewState["FilterEntityTypeName"] as string ?? "Rock.Reporting.DataFilter.PropertyFilter";
             }
-
             set
             {
                 ViewState["FilterEntityTypeName"] = value;
@@ -308,7 +307,6 @@ $('.filter-item-select').click(function (event) {
             ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
 
             ddlFilterType.Items.Clear();
-            ddlFilterType.Items.Add( new ListItem( string.Empty ) );
 
             foreach ( var section in AuthorizedComponents )
             {

@@ -56,46 +56,96 @@ namespace Rock.Migrations
             Sql( @"
     DECLARE @PropertyFilterEntityId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Reporting.DataFilter.PropertyFilter' )
     DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '618EFBDA-941D-4F60-9AA8-54955B7A03A2' )
-    DECLARE @BlockId int 
-    DECLARE @FilterId int
+	IF @AttributeId IS NOT NULL
+	BEGIN
 
-    -- If 'Rotator' audience exists, create a data filter for the first context item block on home page
-    IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = 'b364cdee-f000-4965-ae67-0c80dda365dc' )
-    BEGIN
-	    INSERT INTO [DataViewFilter] ( [ExpressionType], [Guid] ) 
-	    VALUES ( 1, NEWID() )
-	    SET @FilterId = SCOPE_IDENTITY()
+		DECLARE @BlockId int = (SELECT [Id] FROM [Block] WHERE [Guid] = '095027CB-9114-4CD5-ABE8-1E8882422DCF')
+		IF @BlockId IS NOT NULL
+		BEGIN
 
-	    INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
-	    VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+			DECLARE @FilterId int
+
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [Guid] ) 
+			VALUES ( 1, NEWID() )
+			SET @FilterId = SCOPE_IDENTITY()
+
+			-- If 'Rotator' audience exists, create a data filter for the first context item block on home page
+			IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = 'b364cdee-f000-4965-ae67-0c80dda365dc' )
+			BEGIN
+
+				INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+				VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
 [
 	""PrimaryAudience"",
 	""[\r\n  \""b364cdee-f000-4965-ae67-0c80dda365dc\""\r\n]""
 ]', NEWID() )
 
-	    SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '095027CB-9114-4CD5-ABE8-1E8882422DCF')
-	    INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
-	    VALUES ( 0, @AttributeId, @BlockId, CAST( @FilterId as varchar ), NEWID())
-    END
-	
-    -- If 'sub-promotions' audience exists, create a data filter for the second context item block on home page
-    IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = 'b364cdee-f000-4965-ae67-0c80dda365dc' )
-    BEGIN
-	    INSERT INTO [DataViewFilter] ( [ExpressionType], [Guid] ) 
-	    VALUES ( 1, NEWID() )
-	    SET @FilterId = SCOPE_IDENTITY()
+			END
 
-	    INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
-	    VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+			VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+[
+  ""StartDateTime"",
+  ""1024"",
+  ""CURRENT""
+]', NEWID() )
+
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+			VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+[
+  ""ExpireDateTime"",
+  ""128"",
+  ""CURRENT""
+]', NEWID() )
+
+			INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
+			VALUES ( 0, @AttributeId, @BlockId, CAST( @FilterId as varchar ), NEWID())
+	
+		END
+
+		SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '2E0FFD29-B4AF-4A5E-B528-667168762ABC')
+		IF @BlockId IS NOT NULL 
+		BEGIN
+
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [Guid] ) 
+			VALUES ( 1, NEWID() )
+			SET @FilterId = SCOPE_IDENTITY()
+
+			-- If 'sub-promotions' audience exists, create a data filter for the second context item block on home page
+			IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [Guid] = 'b364cdee-f000-4965-ae67-0c80dda365dc' )
+			BEGIN
+
+				INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+				VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
 [
 	""PrimaryAudience"",
 	""[\r\n  \""57b2a23f-3b0c-43a8-9f45-332120dcd0ee\""\r\n]""
 ]', NEWID() )
 	
-	    SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '2E0FFD29-B4AF-4A5E-B528-667168762ABC')
-	    INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
-	    VALUES ( 0, @AttributeId, @BlockId, CAST( @FilterId as varchar ), NEWID())
-    END	
+			END
+
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+			VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+[
+  ""StartDateTime"",
+  ""1024"",
+  ""CURRENT""
+]', NEWID() )
+
+			INSERT INTO [DataViewFilter] ( [ExpressionType], [ParentId], [EntityTypeId], [Selection], [Guid] ) 
+			VALUES ( 0, @FilterId, @PropertyFilterEntityId, '
+[
+  ""ExpireDateTime"",
+  ""128"",
+  ""CURRENT""
+]', NEWID() )
+
+			INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
+			VALUES ( 0, @AttributeId, @BlockId, CAST( @FilterId as varchar ), NEWID())
+
+		END
+
+	END
 
     -- Update the content item detail lava to check for empty image
     SET @BlockId = ( SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '7173AA95-15AF-49C5-933D-004717A3FF3C' )
@@ -120,6 +170,7 @@ namespace Rock.Migrations
 			WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId 
 		END
 	END
+
 
 " );
         }

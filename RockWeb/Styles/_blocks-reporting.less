@@ -54,7 +54,20 @@
 
 // add top margin to checkbox lists in filters
 .field-criteria {
+        
     .checkbox-inline {
         margin-top: 8px;
+    }
+}
+
+.filter-item div[class*='col']{
+    margin-bottom: 6px;
+}
+
+
+// Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+    .filter-item div[class*='col']{
+        margin-bottom: 0;
     }
 }
