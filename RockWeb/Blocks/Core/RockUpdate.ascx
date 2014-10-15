@@ -93,7 +93,8 @@
                                 <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
                         </div>
 
-                        <Rock:BootstrapButton ID="bbtnRestart" runat="server" Text="Restart" DataLoadingText="Restarting..." CssClass="btn btn-success" OnClick="bbtnRestart_Click"></Rock:BootstrapButton>
+                        <buton type="button" id="btn-restart" data-loading-text="Restarting..." class="btn btn-success">Restart</buton>
+
                     </div>
 
                 </asp:Panel>
