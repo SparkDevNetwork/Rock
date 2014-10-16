@@ -392,7 +392,8 @@ $(document).ready(function() {
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
                 
-            var content = GetContent();
+            var content = GetContent() ?? new List<ContentChannelItem>();
+
             var pagination = new Pagination();
             pagination.ItemCount = content.Count();
             pagination.PageSize = GetAttributeValue( "Count" ).AsInteger();
