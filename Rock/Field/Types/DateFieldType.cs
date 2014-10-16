@@ -165,6 +165,7 @@ namespace Rock.Field.Types
             var values = base.ConfigurationValues( controls );
             values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date)", "" ) );
             values.Add( "displayDiff", new ConfigurationValue( "Display Date Span", "Display the number of years between value and current date", "False" ) );
+            values.Add( "displayCurrentOption", new ConfigurationValue( "Allow 'Current' Option", "Display option for selecting the 'current' date instead of a specific date.", "False" ) );
 
             if ( controls != null )
             {
