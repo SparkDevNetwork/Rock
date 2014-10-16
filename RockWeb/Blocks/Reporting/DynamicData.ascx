@@ -5,6 +5,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
+            <Rock:NotificationBox ID="nbError" runat="server" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
             <asp:PlaceHolder ID="phContent" runat="server" Visible="false" />
         </asp:Panel>
 
@@ -15,8 +16,6 @@
 
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
-
-                            <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -33,6 +32,7 @@
                                         Help="The SQL query or stored procedure name to execute.  If parameters are included below, this should be the name of a stored procedure, otherwise it can be any SQL text.
                                             By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if a 'Formatted Ouput' value is included below, the results will be formatted
                                             according to the 'Formatted Ouput' value." />
+                                    <Rock:RockCheckBox ID="cbStoredProcedure" runat="server" Label="Query is a Stored Procedure" Text="Yes" />
                                 </div>
                             </div>
 

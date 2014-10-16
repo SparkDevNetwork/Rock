@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
     [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
-    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 3 )]
-    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 4 )]
-    [TextField( "Columns", "The columns to hide or show", false, "", "", 5 )]
+    [BooleanField( "Query is a Stored Procedure", "Is the query a stored procedure?", false, "", 3, "StoredProcedure" )]
+    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 4 )]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 5 )]
+    [TextField( "Columns", "The columns to hide or show", false, "", "", 6 )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
     [BooleanField( "Person Report", "Is this report a list of people.?", false, "", 8 )]
@@ -138,6 +139,7 @@ namespace RockWeb.Blocks.Reporting
             tbDesc.Visible = _updatePage;
 
             ceQuery.Text = GetAttributeValue( "Query" );
+            cbStoredProcedure.Checked = GetAttributeValue( "StoredProcedure" ).AsBoolean();
             tbParams.Text = GetAttributeValue( "QueryParams" );
             tbUrlMask.Text = GetAttributeValue( "UrlMask" );
             ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
@@ -181,6 +183,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             SetAttributeValue( "Query", ceQuery.Text );
+            SetAttributeValue( "StoredProcedure", cbStoredProcedure.Checked.ToString() );
             SetAttributeValue( "QueryParams", tbParams.Text );
             SetAttributeValue( "UrlMask", tbUrlMask.Text );
             SetAttributeValue( "Columns", tbColumns.Text );
@@ -267,7 +270,7 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    return DbService.GetDataSet( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    return DbService.GetDataSet( query, GetAttributeValue("StoredProcedure").AsBoolean(false) ? CommandType.StoredProcedure : CommandType.Text, parameters );
                 }
 
                 catch ( System.Exception ex )
@@ -377,6 +380,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 phContent.Visible = true;
+                nbError.Visible = false;
             }
 
         }
