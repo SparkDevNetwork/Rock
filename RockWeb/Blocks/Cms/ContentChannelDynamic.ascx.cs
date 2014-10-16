@@ -406,7 +406,10 @@ $(document).ready(function() {
             if ( GetAttributeValue( "MergeContent" ).AsBoolean() )
             {
                 var itemMergeFields = new Dictionary<string, object>();
-                itemMergeFields.Add( "Person", CurrentPerson );
+                if ( CurrentPerson != null )
+                {
+                    itemMergeFields.Add( "Person", CurrentPerson );
+                }
                 globalAttributeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
 
                 foreach ( var item in currentPageContent )
@@ -438,14 +441,14 @@ $(document).ready(function() {
                 var debugFields = new Dictionary<string, object>();
                 if ( CurrentPerson != null )
                 {
-                    debugFields.Add( "Pagination", pagination );
-                    debugFields.Add( "LinkedPages", linkedPages );
-                    debugFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                    debugFields.Add( "Items", currentPageContent.Take( 5 ).ToList() );
-                    debugFields.Add( "Campuses", CampusCache.All() );
                     debugFields.Add( "Person", CurrentPerson );
-                    globalAttributeFields.ToList().ForEach( d => debugFields.Add( d.Key, d.Value ) );
                 }
+                debugFields.Add( "Pagination", pagination );
+                debugFields.Add( "LinkedPages", linkedPages );
+                debugFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                debugFields.Add( "Items", currentPageContent.Take( 5 ).ToList() );
+                debugFields.Add( "Campuses", CampusCache.All() );
+                globalAttributeFields.ToList().ForEach( d => debugFields.Add( d.Key, d.Value ) );
 
                 lDebug.Visible = true;
                 StringBuilder debugInfo = new StringBuilder();

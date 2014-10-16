@@ -584,32 +584,34 @@ namespace RockWeb.Blocks.Cms
                         if ( CurrentPerson != null )
                         {
                             mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
-                            mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
-                            mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
-                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                            mergeFields.Add( "Campuses", CampusCache.All() );
-
-                            var contextObjects = new Dictionary<string, object>();
-                            foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
-                            {
-                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                                if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
-                                {
-                                    var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
-                                    if (type != null)
-                                    {
-                                        contextObjects.Add( type.Name, contextEntity );
-                                    }
-                                }
-
-                            }
-
-                            if ( contextObjects.Any() )
-                            {
-                                mergeFields.Add( "Context", contextObjects );
-                            }
                         }
+
+                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
+                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
+                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        mergeFields.Add( "Campuses", CampusCache.All() );
+
+                        var contextObjects = new Dictionary<string, object>();
+                        foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
+                        {
+                            var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                            if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                            {
+                                var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                                if (type != null)
+                                {
+                                    contextObjects.Add( type.Name, contextEntity );
+                                }
+                            }
+
+                        }
+
+                        if ( contextObjects.Any() )
+                        {
+                            mergeFields.Add( "Context", contextObjects );
+                        }
+                        
 
                         html = content.Content.ResolveMergeFields( mergeFields );
                     }
