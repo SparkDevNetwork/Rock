@@ -5,8 +5,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <div class="grid"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
-            <asp:PlaceHolder ID="phHtml" runat="server" Visible="false" />
+            <asp:PlaceHolder ID="phContent" runat="server" Visible="false" />
         </asp:Panel>
 
         <%-- Edit Panel --%>
@@ -63,7 +62,7 @@
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
                                         Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
                                     <Rock:CodeEditor ID="ceFormattedOutput" runat="server" Label="Formatted Output" CssClass="input-large" EditorHeight="180"
-                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %}" />
+                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %} or if query returns multiple result sets: {% for row in table1.rows %} {{ row.FirstName }} {% endfor %} " />
                                 </div>
                             </div>
 
