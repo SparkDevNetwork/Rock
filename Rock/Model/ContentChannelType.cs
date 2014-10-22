@@ -64,6 +64,15 @@ namespace Rock.Model
         [DataMember]
         public ContentChannelDateType DateRangeType { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [disable priority].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable priority]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisablePriority { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -403,10 +403,11 @@ namespace Rock.Attribute
 
                     // Read this item's value(s) for each attribute 
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                    foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
+                    foreach ( var attributeValue in attributeValueService.Queryable()
                         .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                     {
-                        attributeValues[attributeValue.Attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                        var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
+                        attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
                     }
 
                     // Look for any attributes that don't have a value and create a default value entry

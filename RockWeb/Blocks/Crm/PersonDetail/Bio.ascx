@@ -79,7 +79,7 @@
                             <ul class="list-unstyled phonenumbers">
                                 <asp:Repeater ID="rptPhones" runat="server">
                                     <ItemTemplate>
-                                        <li data-value="<%# Eval("Number") %>"><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Value") %></small></li>
+                                        <li data-value="<%# Eval("Number") %>"><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></small></li>
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </ul>

@@ -411,13 +411,13 @@ namespace Rock.Web.UI.Controls
         private NumberBox _tbDurationHours;
         private NumberBox _tbDurationMinutes;
 
-        private RadioButton _radOneTime;
-        private RadioButton _radRecurring;
+        private RockRadioButton _radOneTime;
+        private RockRadioButton _radRecurring;
 
-        private RadioButton _radSpecificDates;
-        private RadioButton _radDaily;
-        private RadioButton _radWeekly;
-        private RadioButton _radMonthly;
+        private RockRadioButton _radSpecificDates;
+        private RockRadioButton _radDaily;
+        private RockRadioButton _radWeekly;
+        private RockRadioButton _radMonthly;
 
         private HiddenField _hfSpecificDateListValues;
 
@@ -425,10 +425,10 @@ namespace Rock.Web.UI.Controls
         private DatePicker _dpSpecificDate;
 
         // daily recurrence
-        private RadioButton _radDailyEveryXDays;
+        private RockRadioButton _radDailyEveryXDays;
         private NumberBox _tbDailyEveryXDays;
-        private RadioButton _radDailyEveryWeekday;
-        private RadioButton _radDailyEveryWeekendDay;
+        private RockRadioButton _radDailyEveryWeekday;
+        private RockRadioButton _radDailyEveryWeekendDay;
 
         // weekly recurrence
         private NumberBox _tbWeeklyEveryX;
@@ -441,18 +441,18 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbWeeklySaturday;
 
         // monthly
-        private RadioButton _radMonthlyDayX;
+        private RockRadioButton _radMonthlyDayX;
         private NumberBox _tbMonthlyDayX;
         private NumberBox _tbMonthlyXMonths;
-        private RadioButton _radMonthlyNth;
+        private RockRadioButton _radMonthlyNth;
         private RockDropDownList _ddlMonthlyNth;
         private RockDropDownList _ddlMonthlyDayName;
 
         // end date
-        private RadioButton _radEndByNone;
-        private RadioButton _radEndByDate;
+        private RockRadioButton _radEndByNone;
+        private RockRadioButton _radEndByDate;
         private DatePicker _dpEndBy;
-        private RadioButton _radEndByOccurrenceCount;
+        private RockRadioButton _radEndByOccurrenceCount;
         private NumberBox _tbEndByOccurrenceCount;
 
         // exclusions
@@ -479,13 +479,13 @@ END:VCALENDAR
             _tbDurationHours = new NumberBox();
             _tbDurationMinutes = new NumberBox();
 
-            _radOneTime = new RadioButton();
-            _radRecurring = new RadioButton();
+            _radOneTime = new RockRadioButton();
+            _radRecurring = new RockRadioButton();
 
-            _radSpecificDates = new RadioButton();
-            _radDaily = new RadioButton();
-            _radWeekly = new RadioButton();
-            _radMonthly = new RadioButton();
+            _radSpecificDates = new RockRadioButton();
+            _radDaily = new RockRadioButton();
+            _radWeekly = new RockRadioButton();
+            _radMonthly = new RockRadioButton();
 
             // specific date
             _hfSpecificDateListValues = new HiddenField();
@@ -493,10 +493,10 @@ END:VCALENDAR
             _dpSpecificDate = new DatePicker();
 
             // daily
-            _radDailyEveryXDays = new RadioButton();
+            _radDailyEveryXDays = new RockRadioButton();
             _tbDailyEveryXDays = new NumberBox();
-            _radDailyEveryWeekday = new RadioButton();
-            _radDailyEveryWeekendDay = new RadioButton();
+            _radDailyEveryWeekday = new RockRadioButton();
+            _radDailyEveryWeekendDay = new RockRadioButton();
 
             // weekly
             _tbWeeklyEveryX = new NumberBox();
@@ -509,18 +509,18 @@ END:VCALENDAR
             _cbWeeklySaturday = new RockCheckBox();
 
             // monthly
-            _radMonthlyDayX = new RadioButton();
+            _radMonthlyDayX = new RockRadioButton();
             _tbMonthlyDayX = new NumberBox();
             _tbMonthlyXMonths = new NumberBox();
-            _radMonthlyNth = new RadioButton();
+            _radMonthlyNth = new RockRadioButton();
             _ddlMonthlyNth = new RockDropDownList();
             _ddlMonthlyDayName = new RockDropDownList();
 
             // end date
-            _radEndByNone = new RadioButton();
-            _radEndByDate = new RadioButton();
+            _radEndByNone = new RockRadioButton();
+            _radEndByDate = new RockRadioButton();
             _dpEndBy = new DatePicker();
-            _radEndByOccurrenceCount = new RadioButton();
+            _radEndByOccurrenceCount = new RockRadioButton();
             _tbEndByOccurrenceCount = new NumberBox();
 
             // exclusions
@@ -817,7 +817,7 @@ END:VCALENDAR
                 //// We just need one Calendar and one Event
 
                 // set all rad to false to prevent multiple from being true
-                foreach ( var radControl in this.Controls.OfType<RadioButton>().ToList() )
+                foreach ( var radControl in this.Controls.OfType<RockRadioButton>().ToList() )
                 {
                     radControl.Checked = false;
                 }
@@ -1151,27 +1151,21 @@ END:VCALENDAR
             _cbWeeklyMonday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyMonday.ID = "cbWeeklyMonday_" + this.ClientID;
             _cbWeeklyMonday.Text = "Mon";
-            _cbWeeklyMonday.CssClass = "checkbox-inline";
             _cbWeeklyTuesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyTuesday.ID = "cbWeeklyTuesday_" + this.ClientID;
             _cbWeeklyTuesday.Text = "Tue";
-            _cbWeeklyTuesday.CssClass = "checkbox-inline";
             _cbWeeklyWednesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyWednesday.ID = "cbWeeklyWednesday_" + this.ClientID;
             _cbWeeklyWednesday.Text = "Wed";
-            _cbWeeklyWednesday.CssClass = "checkbox-inline";
             _cbWeeklyThursday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyThursday.ID = "cbWeeklyThursday_" + this.ClientID;
             _cbWeeklyThursday.Text = "Thu";
-            _cbWeeklyThursday.CssClass = "checkbox-inline";
             _cbWeeklyFriday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyFriday.ID = "cbWeeklyFriday_" + this.ClientID;
             _cbWeeklyFriday.Text = "Fri";
-            _cbWeeklyFriday.CssClass = "checkbox-inline";
             _cbWeeklySaturday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklySaturday.ID = "cbWeeklySaturday_" + this.ClientID;
             _cbWeeklySaturday.Text = "Sat";
-            _cbWeeklySaturday.CssClass = "checkbox-inline";
 
             // monthly
             _radMonthlyDayX.ClientIDMode = ClientIDMode.Static;
@@ -1434,21 +1428,22 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryXDays.Text = "Every";
             _radDailyEveryXDays.RenderControl( writer );
-            writer.Write( "<span>Every </span>" );
+            _tbDailyEveryXDays.AddCssClass( "margin-l-sm" );
             _tbDailyEveryXDays.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryWeekday.Text = "Every weekday";
             _radDailyEveryWeekday.RenderControl( writer );
-            writer.Write( "<span>Every weekday</span>" );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radDailyEveryWeekendDay.Text = "Every weekend day";
             _radDailyEveryWeekendDay.RenderControl( writer );
-            writer.Write( "<span>Every weekend day</span>" );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -1502,8 +1497,9 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radMonthlyDayX.Text = "Day";
             _radMonthlyDayX.RenderControl( writer );
-            writer.Write( "<span>Day </span>" );
+            _tbMonthlyDayX.AddCssClass( "margin-l-sm" );
             _tbMonthlyDayX.RenderControl( writer );
             writer.Write( "<span> of every </span>" );
             _tbMonthlyXMonths.RenderControl( writer );
@@ -1512,8 +1508,9 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radMonthlyNth.Text = "The";
             _radMonthlyNth.RenderControl( writer );
-            writer.Write( "<span>The </span>" );
+            _ddlMonthlyNth.AddCssClass( "margin-l-sm" );
             _ddlMonthlyNth.RenderControl( writer );
             writer.Write( "<span> </span>" );
             _ddlMonthlyDayName.RenderControl( writer );
@@ -1534,21 +1531,23 @@ END:VCALENDAR
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByNone.Text = "No End";
             _radEndByNone.RenderControl( writer );
-            writer.Write( "<span>No End</span>" );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByDate.Text = "End by ";
             _radEndByDate.RenderControl( writer );
-            writer.Write( "<span>End by </span>" );
+            _dpEndBy.AddCssClass( "margin-l-sm" );
             _dpEndBy.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _radEndByOccurrenceCount.Text = "End after ";
             _radEndByOccurrenceCount.RenderControl( writer );
-            writer.Write( "<span>End after </span>" );
+            _tbEndByOccurrenceCount.AddCssClass( "margin-l-sm" );
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
 

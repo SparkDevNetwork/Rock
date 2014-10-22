@@ -195,66 +195,15 @@ namespace Rock.Reporting
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute )
         {
             // Ensure prop name is unique
-            string propName = attribute.Name;
+            string propName = attribute.Key;
             int i = 1;
             while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
-                propName = attribute.Name + ( i++ ).ToString();
+                propName = attribute.Key + ( i++ ).ToString();
             }
-
-            EntityField entityProperty = null;
 
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
-            string fieldTypeUpperGuid = fieldType.Guid.ToString().ToUpper();
-
-            switch ( fieldTypeUpperGuid )
-            {
-                case SystemGuid.FieldType.BOOLEAN:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.DATE:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                    break;
-
-                case SystemGuid.FieldType.TIME:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
-                    break;
-
-                case SystemGuid.FieldType.INTEGER:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                    break;
-
-                case SystemGuid.FieldType.DECIMAL:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
-                    break;
-
-                case SystemGuid.FieldType.DAY_OF_WEEK:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
-                    break;
-
-                case SystemGuid.FieldType.MULTI_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.SINGLE_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    break;
-
-                case SystemGuid.FieldType.TEXT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                    break;
-            }
-
+            var entityProperty = fieldType.Field.GetFilterConfig( attribute );
             if ( entityProperty != null )
             {
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
@@ -262,10 +211,11 @@ namespace Rock.Reporting
                     var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                     if ( groupType != null )
                     {
-                        entityProperty.Title = string.Format( "{0} ({1})", attribute.Name.SplitCase(), groupType.Name );
+                        entityProperty.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
                     }
                 }
 
+                entityProperty.Name = propName;
                 entityFields.Add( entityProperty );
             }
         }
@@ -378,6 +328,13 @@ namespace Rock.Reporting
         ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
         /// </value>
         public bool IsPreviewable { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// </summary>
+        public EntityField()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.

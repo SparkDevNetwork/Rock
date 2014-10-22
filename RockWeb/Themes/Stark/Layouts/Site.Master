@@ -65,7 +65,9 @@
 			        </div>	
                     <div class="navbar-collapse collapse">   
                         <!-- Main Navigation -->
-                        <Rock:Zone Name="Login" runat="server" />
+                        <div class="pull-right">
+                            <Rock:Zone Name="Login" runat="server" />
+                        </div>
                         <Rock:Zone Name="Navigation" runat="server" />
 			        </div>	
                 </div>

@@ -101,6 +101,14 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns></returns>
+        Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute );
+
         /// <summary>
         /// Occurs when a qualifier is updated.
         /// </summary>

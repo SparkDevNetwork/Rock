@@ -24,20 +24,26 @@
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" OnRowSelected="gBusinessList_RowSelected">
+                    <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowSelected="gBusinessList_RowSelected">
                         <Columns>
-                            <asp:BoundField DataField="LastName" HeaderText="Business Name" SortExpression="LastName" />
+                            <asp:BoundField DataField="BusinessName" HeaderText="Business Name" SortExpression="LastName" />
                             <asp:TemplateField>
-                                <HeaderTemplate>Contact</HeaderTemplate>
+                                <HeaderTemplate>Contact Information</HeaderTemplate>
                                 <ItemTemplate>
-                                    <asp:Label ID="lblPhoneNumber" runat="server" />
+                                    <%# Eval("PhoneNumber") %><br />
                                     <%# Eval("Email") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField>
                                 <HeaderTemplate>Address</HeaderTemplate>
                                 <ItemTemplate>
-                                    <asp:Label ID="lblAddress" runat="server" />
+                                    <%# Eval("Address") %>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField>
+                                <HeaderTemplate>Contacts</HeaderTemplate>
+                                <ItemTemplate>
+                                    <%# string.Join( "<br/> ", ((List<string>)Eval("Contacts")).ToArray() ) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                         </Columns>

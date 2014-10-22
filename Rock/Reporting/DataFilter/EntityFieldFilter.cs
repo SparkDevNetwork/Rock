@@ -59,6 +59,7 @@ namespace Rock.Reporting.DataFilter
                     var datePicker = new DatePicker();
                     datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
                     datePicker.AddCssClass( "js-filter-control" );
+                    datePicker.DisplayCurrentOption = true;
                     parentControl.Controls.Add( datePicker );
                     controls.Add( datePicker );
 
@@ -107,7 +108,20 @@ namespace Rock.Reporting.DataFilter
                     cblMultiSelect.RepeatDirection = RepeatDirection.Horizontal;
                     controls.Add( cblMultiSelect );
 
-                    if ( entityField.FieldKind == FieldKind.Property )
+                    if ( entityField.DefinedTypeGuid.HasValue )
+                    {
+                        // Defined Value Properties
+                        var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
+                        if ( definedType != null )
+                        {
+                            foreach ( var definedValue in definedType.DefinedValues )
+                            {
+                                cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
+                            }
+                        }
+                    }
+
+                    else if ( entityField.FieldKind == FieldKind.Property )
                     {
                         if ( entityField.PropertyType.IsEnum )
                         {
@@ -115,18 +129,6 @@ namespace Rock.Reporting.DataFilter
                             foreach ( var value in Enum.GetValues( entityField.PropertyType ) )
                             {
                                 cblMultiSelect.Items.Add( new ListItem( Enum.GetName( entityField.PropertyType, value ).SplitCase() ) );
-                            }
-                        }
-                        else if ( entityField.DefinedTypeGuid.HasValue )
-                        {
-                            // Defined Value Properties
-                            var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
-                            if ( definedType != null )
-                            {
-                                foreach ( var definedValue in definedType.DefinedValues )
-                                {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
-                                }
                             }
                         }
                     }
@@ -181,9 +183,14 @@ namespace Rock.Reporting.DataFilter
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                             {
                                 case SystemGuid.FieldType.BOOLEAN:
-                                    ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
-                                    ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
-                                    break;
+                                    {
+                                        string trueText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "True";
+                                        string falseText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "False";
+
+                                        ddlSingleSelect.Items.Add( new ListItem( trueText, "True" ) );
+                                        ddlSingleSelect.Items.Add( new ListItem( falseText, "False" ) );
+                                        break;
+                                    }
                             }
                         }
                     }
@@ -262,9 +269,24 @@ namespace Rock.Reporting.DataFilter
                                 }
                             }
                         }
-                        else
+                        else 
                         {
-                            selectedTexts = selectedValues.ToList();
+                            if ( entityField.FieldKind == FieldKind.Attribute )
+                            {
+                                var attribute = AttributeCache.Read( entityField.AttributeGuid ?? Guid.Empty );
+                                if ( attribute != null )
+                                {
+                                    var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                                    if ( itemValues != null )
+                                    {
+                                        selectedTexts = itemValues.Value.GetListItems().Where( a => selectedValues.ToList().Contains( a.Value ) ).Select( s => s.Text ).ToList();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                selectedTexts = selectedValues.ToList();
+                            }
                         }
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
@@ -371,8 +393,11 @@ namespace Rock.Reporting.DataFilter
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
-                    case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
+                        break;
+
+                    case SystemGuid.FieldType.DATE:
+                        clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DECIMAL:
@@ -451,13 +476,20 @@ namespace Rock.Reporting.DataFilter
                     if ( control is DatePicker )
                     {
                         var dtp = control as DatePicker;
-                        if ( dtp != null && dtp.SelectedDate.HasValue )
+                        if ( dtp != null )
                         {
-                            values.Add( dtp.SelectedDate.Value.ToShortDateString() );
-                        }
-                        else
-                        {
-                            values.Add( string.Empty );
+                            if ( dtp.CurrentDate )
+                            {
+                                values.Add( "CURRENT" );
+                            }
+                            else if ( dtp.SelectedDate.HasValue )
+                            {
+                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
                         }
                     }
                     else if ( control is DateTimePicker )
@@ -519,7 +551,7 @@ namespace Rock.Reporting.DataFilter
         {
             if ( values.Count > 0 )
             {
-                string selectedProperty = values[0];
+                string selectedProperty = values[0].Replace(" ", "");   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                 if ( ddlProperty != null )
                 {
@@ -550,10 +582,18 @@ namespace Rock.Reporting.DataFilter
 
                             if ( control is DatePicker )
                             {
-                                var dateTime = selectedValue.AsDateTime();
-                                if ( dateTime.HasValue )
+                                var dtp = control as DatePicker;
+                                if ( selectedValue != null && selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                                 {
-                                    ( control as DatePicker ).SelectedDate = dateTime.Value.Date;
+                                    dtp.CurrentDate = true;
+                                }
+                                else
+                                {
+                                    var dateTime = selectedValue.AsDateTime();
+                                    if ( dateTime.HasValue )
+                                    {
+                                        dtp.SelectedDate = dateTime.Value.Date;
+                                    }
                                 }
                             }
                             else if ( control is DateTimePicker )
@@ -608,7 +648,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField property, List<string> values )
         {
-            IEnumerable<int> ids = null;
+            IQueryable<int> ids = null;
 
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
@@ -637,7 +677,11 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            DateTime dateValue = DateTime.Today;
+                            if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            }
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
@@ -801,8 +845,18 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 1 )
                     {
-                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
-                        ids = attributeValues.Where( v => selectedValues.Contains( v.Value ) ).Select( v => v.EntityId.Value );
+                        List<string> compareValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
+                        foreach (var compareValue in compareValues)
+                        {
+                            if (ids == null)
+                            {
+                                ids = attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value );
+                            }
+                            else
+                            {
+                                ids = ids.Union(attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value ));
+                            }
+                        }
                     }
 
                     break;

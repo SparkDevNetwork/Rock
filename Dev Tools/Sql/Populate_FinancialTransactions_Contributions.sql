@@ -1,10 +1,10 @@
 set nocount on
 
 declare
-  @authorizedPersonId int = 1,
+  @authorizedPersonAliasId int = 1,
   @transactionCounter int = 0,
   @maxTransactionCount int = 200000, 
-  @maxPersonIdForTransactions int = (select max(id) from (select top 4000 id from Person order by Id) x),  /* limit to first 4000 persons in the database */ 
+  @maxPersonAliasIdForTransactions int = (select max(Id) from (select top 4000 Id from PersonAlias order by Id) x),  /* limit to first 4000 persons in the database */ 
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
   @transactionNote nvarchar(max),
@@ -32,18 +32,18 @@ while @transactionCounter < @maxTransactionCount
     begin
         set @transactionAmount = ROUND(rand() * 5000, 2);
         set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
-        set @authorizedPersonId =  (select top 1 Id from Person where Id <= rand() * @maxPersonIdForTransactions order by Id desc);
-        while @authorizedPersonId is null
+        set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
+        while @authorizedPersonAliasId is null
         begin
           -- Try again just in case we didn't get anybody
-          set @authorizedPersonId =  (select top 1 Id from Person where Id <= rand() * @maxPersonIdForTransactions order by Id desc);
+          set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
         end
 
         set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
         set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
 
         INSERT INTO [dbo].[FinancialTransaction]
-                   ([AuthorizedPersonId]
+                   ([AuthorizedPersonAliasId]
                    ,[BatchId]
                    ,[TransactionDateTime]
                    ,[TransactionCode]
@@ -56,7 +56,7 @@ while @transactionCounter < @maxTransactionCount
                    ,[CheckMicrHash]
                    ,[Guid])
              VALUES
-                   (@authorizedPersonId
+                   (@authorizedPersonAliasId
                    ,null
                    ,@transactionDateTime
                    ,null
