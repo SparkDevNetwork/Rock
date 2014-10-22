@@ -545,54 +545,57 @@ namespace Rock.Web.UI.Controls
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            if ( this.DisplayMode == UploaderDisplayMode.DropZone )
+            if ( this.Enabled )
             {
-                writer.AddAttribute( "class", "fileupload-thumbnail" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _hfBinaryFileId.RenderControl( writer );
-                _hfBinaryFileTypeGuid.RenderControl( writer );
-                _aFileName.RenderControl( writer );
+                if ( this.DisplayMode == UploaderDisplayMode.DropZone )
+                {
+                    writer.AddAttribute( "class", "fileupload-thumbnail" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _hfBinaryFileId.RenderControl( writer );
+                    _hfBinaryFileTypeGuid.RenderControl( writer );
+                    _aFileName.RenderControl( writer );
                 
 
-                writer.AddAttribute( "class", "fileupload-remove" );
-                if ( !ShowDeleteButton )
+                    writer.AddAttribute( "class", "fileupload-remove" );
+                    if ( !ShowDeleteButton )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.Visibility, "hidden" );
+                    }
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _aRemove.RenderControl( writer );
+                    writer.RenderEndTag();
+
+                    writer.RenderEndTag();
+                }
+
+                writer.Write( @"
+                    <div class='js-upload-progress upload-progress' style='display:none'>
+                        <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+                    </div>" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
+                if ( this.DisplayMode == UploaderDisplayMode.Button )
                 {
-                    writer.AddStyleAttribute( HtmlTextWriterStyle.Visibility, "hidden" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-button" );
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _aRemove.RenderControl( writer );
-                writer.RenderEndTag();
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                if ( this.DisplayMode == UploaderDisplayMode.Button )
+                {
+                    writer.Write( "upload file" );
+                }
+                else
+                {
+                    writer.Write( "Upload" );
+                }
 
                 writer.RenderEndTag();
+                _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
+                _fileUpload.RenderControl( writer );
+                writer.RenderEndTag();
             }
-
-            writer.Write( @"
-                <div class='js-upload-progress upload-progress' style='display:none'>
-                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
-                </div>" );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
-            if ( this.DisplayMode == UploaderDisplayMode.Button )
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-button" );
-            }
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            if ( this.DisplayMode == UploaderDisplayMode.Button )
-            {
-                writer.Write( "upload file" );
-            }
-            else
-            {
-                writer.Write( "Upload" );
-            }
-
-            writer.RenderEndTag();
-            _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
-            _fileUpload.RenderControl( writer );
-            writer.RenderEndTag();
 
             RegisterStartupScript();
 
