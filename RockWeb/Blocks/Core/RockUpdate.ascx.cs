@@ -76,6 +76,25 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+    $('#btn-restart').click(function () {
+        var btn = $(this);
+        btn.button('loading');
+        location = location.href;
+    });
+";
+            ScriptManager.RegisterStartupScript( pnlUpdateSuccess, pnlUpdateSuccess.GetType(), "restart-script", script, true );
+        }
+
         /// <summary>
         /// Invoked on page load.
         /// </summary>
@@ -195,16 +214,6 @@ namespace RockWeb.Blocks.Core
         {
             string version = e.CommandArgument.ToString();
             Update( version );
-        }
-
-        /// <summary>
-        /// Simply reload the page in order to cause a restart.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void bbtnRestart_Click( object sender, EventArgs e )
-        {
-            Response.Redirect( Request.RawUrl );
         }
 
         #endregion
