@@ -451,6 +451,10 @@ namespace RockInstaller
                         this.SendConsoleMessage( "Successfully ran SQL config script." );
                         this.UpdateProgressBar( 40 );
                     }
+                    else
+                    {
+                        return result;
+                    }
                 }
             }
 

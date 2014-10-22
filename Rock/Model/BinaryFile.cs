@@ -235,44 +235,7 @@ namespace Rock.Model
                 return this.BinaryFileType;
             }
         }
-
-        private Storage.ProviderComponent DetermineBinaryFileStorageProvider(  )
-        {
-            Rock.Storage.ProviderComponent storageProvider = null;
-
-            StorageEntityType = StorageEntityType ?? new EntityTypeService( new RockContext() ).Get( StorageEntityTypeId ?? 0 );
-            if ( StorageEntityType != null )
-            {
-                storageProvider = Rock.Storage.ProviderContainer.GetComponent( StorageEntityType.Name );
-            }
-
-            return storageProvider;
-        }
-
-        #endregion
-
-        #region StaticMethods
-
-        /// <summary>
-        /// Makes the <see cref="Rock.Model.BinaryFile">BinaryFiles</see> represented in the comma delimited list of BinaryFileIds permanent.
-        /// </summary>
-        /// <param name="commaDelimitedIds">A <see cref="System.String"/> containing a comma delimited list of BinaryFileIDs representing the <see cref="Rock.Model.BinaryFile">BinaryFiles</see> that are to be marked as permanent.</param>
-        public static void MakePermanent( string commaDelimitedIds )
-        {
-            string query = string.Format( "UPDATE BinaryFile SET IsTemporary = 0 WHERE Id IN ({0})", commaDelimitedIds );
-            Rock.Data.DbService.ExecuteCommand( query );
-        }
-
-        /// <summary>
-        /// Makes the <see cref="Rock.Model.BinaryFile"/> represented by the provided BinaryFileId permanent.
-        /// </summary>
-        /// <param name="id">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> to be made permanent.</param>
-        public static void MakePermanent( int id)
-        {
-            string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);
-            Rock.Data.DbService.ExecuteCommand( query );
-        }
-
+        
         #endregion
     }
 

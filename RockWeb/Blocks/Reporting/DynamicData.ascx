@@ -5,8 +5,8 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <div class="grid"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
-            <asp:PlaceHolder ID="phHtml" runat="server" Visible="false" />
+            <Rock:NotificationBox ID="nbError" runat="server" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
+            <asp:PlaceHolder ID="phContent" runat="server" Visible="false" />
         </asp:Panel>
 
         <%-- Edit Panel --%>
@@ -16,8 +16,6 @@
 
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
-
-                            <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -34,6 +32,7 @@
                                         Help="The SQL query or stored procedure name to execute.  If parameters are included below, this should be the name of a stored procedure, otherwise it can be any SQL text.
                                             By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if a 'Formatted Ouput' value is included below, the results will be formatted
                                             according to the 'Formatted Ouput' value." />
+                                    <Rock:RockCheckBox ID="cbStoredProcedure" runat="server" Label="Query is a Stored Procedure" Text="Yes" />
                                 </div>
                             </div>
 
@@ -63,7 +62,7 @@
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
                                         Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
                                     <Rock:CodeEditor ID="ceFormattedOutput" runat="server" Label="Formatted Output" CssClass="input-large" EditorHeight="180"
-                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %}" />
+                                        Help="Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }} {% endfor %} or if query returns multiple result sets: {% for row in table1.rows %} {{ row.FirstName }} {% endfor %} " />
                                 </div>
                             </div>
 

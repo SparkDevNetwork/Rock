@@ -246,6 +246,7 @@
     <None Include="App.config" />
     <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
     <Compile Include="Controllers\MetricsController.partial.cs" />
+    <Compile Include="Controllers\GroupMembersController.Partial.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
