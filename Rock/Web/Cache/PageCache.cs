@@ -293,34 +293,32 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets a List of child <see cref="PageCache"/> objects.
         /// </summary>
-        public List<PageCache> Pages
+        public List<PageCache> GetPages(RockContext rockContext)
         {
-            get
+            List<PageCache> pages = new List<PageCache>();
+
+            if ( pageIds != null )
             {
-                List<PageCache> pages = new List<PageCache>();
-
-                if ( pageIds != null )
+                foreach ( int id in pageIds.ToList() )
                 {
-                    foreach ( int id in pageIds.ToList() )
-                    {
-                        pages.Add( PageCache.Read( id ) );
-                    }
+                    pages.Add( PageCache.Read( id, rockContext ) );
                 }
-                else
-                {
-                    pageIds = new List<int>();
-
-                    PageService pageService = new PageService( new RockContext() );
-                    foreach ( Page page in pageService.GetByParentPageId( this.Id ) )
-                    {
-                        page.LoadAttributes();
-                        pageIds.Add( page.Id );
-                        pages.Add( PageCache.Read( page ) );
-                    }
-                }
-
-                return pages;
             }
+            else
+            {
+                pageIds = new List<int>();
+
+                PageService pageService = new PageService( rockContext );
+
+                foreach ( Page page in pageService.GetByParentPageId( this.Id, "PageRoutes,PageContexts" ) )
+                {
+                    page.LoadAttributes( rockContext );
+                    pageIds.Add( page.Id );
+                    pages.Add( PageCache.Read( page ) );
+                }
+            }
+
+            return pages;
         }
         private List<int> pageIds = null;
 
@@ -349,19 +347,20 @@ namespace Rock.Web.Cache
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    BlockService blockService = new BlockService( new RockContext() );
-                    foreach ( Block block in blockService.GetByLayout( this.LayoutId ) )
+                    var rockContext = new RockContext();
+                    BlockService blockService = new BlockService( rockContext );
+                    // layout blocks are likely to be in the cache already since pages share layouts, so look in the cache first
+                    foreach ( int layoutBlockId in blockService.GetByLayout( this.LayoutId ).Select( b => b.Id ))
                     {
-                        blockIds.Add( block.Id );
-                        block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blockIds.Add( layoutBlockId );
+                        blocks.Add( BlockCache.Read( layoutBlockId ) );
                     }
 
                     // Load Page Blocks
                     foreach ( Block block in blockService.GetByPage( this.Id ) )
                     {
                         blockIds.Add( block.Id );
-                        block.LoadAttributes();
+                        block.LoadAttributes( rockContext );
                         blocks.Add( BlockCache.Read( block ) );
                     }
 
@@ -578,10 +577,11 @@ namespace Rock.Web.Cache
         /// Returns XML for a page menu.  XML will be 1 level deep
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public XDocument MenuXml( Person person )
+        public XDocument MenuXml( Person person, RockContext rockContext )
         {
-            return MenuXml( 1, person );
+            return MenuXml( 1, person, rockContext );
         }
 
         /// <summary>
@@ -589,13 +589,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="currentPage">The current page.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        public XDocument MenuXml( int levelsDeep, Person person, RockContext rockContext,  PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters, queryString );
+            XElement menuElement = MenuXmlElement( levelsDeep, person, rockContext, currentPage, parameters, queryString );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
@@ -604,11 +605,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="currentPage">The current page.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        private XElement MenuXmlElement( int levelsDeep, Person person, RockContext rockContext, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -639,11 +641,11 @@ namespace Rock.Web.Cache
                 pageElement.Add( childPagesElement );
 
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages )
-                    foreach ( PageCache page in Pages )
+                    foreach ( PageCache page in GetPages(rockContext) )
                     {
                         if ( page != null )
                         {
-                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, rockContext, currentPage, parameters, queryString );
                             if ( childPageElement != null )
                                 childPagesElement.Add( childPageElement );
                         }
@@ -663,10 +665,11 @@ namespace Rock.Web.Cache
         /// Gets the menu properties.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public Dictionary<string, object> GetMenuProperties( Person person )
+        public Dictionary<string, object> GetMenuProperties( Person person, RockContext rockContext )
         {
-            return GetMenuProperties( 1, person );
+            return GetMenuProperties( 1, person, rockContext );
         }
 
         /// <summary>
@@ -674,11 +677,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="currentPageHeirarchy">The current page heirarchy.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
-        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, RockContext rockContext, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 )
             {
@@ -715,11 +719,11 @@ namespace Rock.Web.Cache
                 {
                     var childPages = new List<Dictionary<string, object>>();
 
-                    foreach ( PageCache page in Pages )
+                    foreach ( PageCache page in GetPages(rockContext) )
                     {
                         if ( page != null && page.DisplayInNav( person ) )
                         {
-                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPageHeirarchy, parameters, queryString );
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, rockContext, currentPageHeirarchy, parameters, queryString );
                             if ( childPageElement != null )
                             {
                                 childPages.Add( childPageElement );
@@ -791,7 +795,7 @@ namespace Rock.Web.Cache
             {
                 rockContext = rockContext ?? new RockContext();
                 var pageService = new PageService( rockContext );
-                var pageModel = pageService.Get( id );
+                var pageModel = pageService.Queryable("PageContexts,PageRoutes").FirstOrDefault(a => a.Id == id);
                 if ( pageModel != null )
                 {
                     pageModel.LoadAttributes( rockContext );

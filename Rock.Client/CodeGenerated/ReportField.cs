@@ -46,7 +46,13 @@ namespace Rock.Client
         public string Selection { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int ColumnOrder { get; set; }
+
+        /// <summary />
+        public int? SortOrder { get; set; }
+
+        /// <summary />
+        public int /* SortDirection*/ SortDirection { get; set; }
 
         /// <summary />
         public string ColumnHeaderText { get; set; }

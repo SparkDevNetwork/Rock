@@ -8,7 +8,7 @@
                 <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
 
                 <div class="pull-right">
-                    <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+                    <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Items" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
             </div>

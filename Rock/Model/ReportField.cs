@@ -33,7 +33,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "ReportField" )]
     [DataContract]
-    public partial class ReportField : Model<ReportField>, IOrdered
+    public partial class ReportField : Model<ReportField>
     {
         #region Entity Properties
 
@@ -88,13 +88,31 @@ namespace Rock.Model
         public string Selection { get; set; }
 
         /// <summary>
-        /// Gets or sets the order.
+        /// Gets or sets the column order of this field
         /// </summary>
         /// <value>
         /// The order.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int ColumnOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order (ORDER BY). NULL means don't sort by this field
+        /// </summary>
+        /// <value>
+        /// The sort order.
+        /// </value>
+        [DataMember]
+        public int? SortOrder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort direction.
+        /// </summary>
+        /// <value>
+        /// The sort direction.
+        /// </value>
+        [DataMember]
+        public System.Web.UI.WebControls.SortDirection SortDirection { get; set; }
 
         /// <summary>
         /// Gets or sets the column header text.

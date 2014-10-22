@@ -178,5 +178,25 @@ namespace Rock.Field
         /// Occurs when [qualifier updated].
         /// </summary>
         public event EventHandler QualifierUpdated;
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns></returns>
+        public virtual Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var entityField = new Rock.Reporting.EntityField();
+            entityField.Name = attribute.Name;
+            entityField.Title = attribute.Name.SplitCase();
+            entityField.AttributeGuid = attribute.Guid;
+            entityField.FieldKind = Reporting.FieldKind.Attribute;
+            entityField.PropertyType = null;
+
+            entityField.ControlCount = 2;
+            entityField.FilterFieldType = SystemGuid.FieldType.TEXT;
+            
+            return entityField;
+        }
     }
 }

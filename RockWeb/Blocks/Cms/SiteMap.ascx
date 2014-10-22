@@ -13,7 +13,7 @@
             <div class="panel-body">
 
                 <div id="pages" style="display:none">
-                    <asp:Literal ID="lPages" runat="server"></asp:Literal>
+                    <asp:Literal ID="lPages" runat="server" ViewStateMode="Disabled" ></asp:Literal>
                 </div>
 
             </div>

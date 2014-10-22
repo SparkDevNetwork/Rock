@@ -28,13 +28,16 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Page"/> entities by the parent <see cref="Rock.Model.Page">Page's</see> Id.
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities by the parent <see cref="Rock.Model.Page">Page's</see> Id.
         /// </summary>
-        /// <param name="parentPageId">The Id of the Parent <see cref="Rock.Model.Page"/> to search by. </param>
-        /// <returns>An enumerable list of <see cref="Rock.Model.Page"/> entities who's ParentPageId matches the provided value.</returns>
-        public IOrderedQueryable<Page> GetByParentPageId( int? parentPageId )
+        /// <param name="parentPageId">The Id of the Parent <see cref="Rock.Model.Page" /> to search by.</param>
+        /// <param name="includes">The includes.</param>
+        /// <returns>
+        /// An enumerable list of <see cref="Rock.Model.Page" /> entities who's ParentPageId matches the provided value.
+        /// </returns>
+        public IOrderedQueryable<Page> GetByParentPageId( int? parentPageId, string includes = null )
         {
-            return Queryable().Where( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable( includes ).Where( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>

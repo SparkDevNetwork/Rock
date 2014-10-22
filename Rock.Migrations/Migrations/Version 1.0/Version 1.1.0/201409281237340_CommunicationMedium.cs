@@ -49,13 +49,12 @@ namespace Rock.Migrations
 " );
 
             RenameColumn(table: "dbo.Communication", name: "ChannelEntityTypeId", newName: "MediumEntityTypeId");
-            RenameColumn(table: "dbo.CommunicationTemplate", name: "ChannelEntityTypeId", newName: "MediumEntityTypeId");
-            RenameIndex(table: "dbo.Communication", name: "IX_ChannelEntityTypeId", newName: "IX_MediumEntityTypeId");
+            RenameColumn( table: "dbo.Communication", name: "ChannelDataJson", newName: "MediumDataJson" );
+            RenameIndex( table: "dbo.Communication", name: "IX_ChannelEntityTypeId", newName: "IX_MediumEntityTypeId" );
+
+            RenameColumn( table: "dbo.CommunicationTemplate", name: "ChannelEntityTypeId", newName: "MediumEntityTypeId" );
+            RenameColumn( table: "dbo.CommunicationTemplate", name: "ChannelDataJson", newName: "MediumDataJson" );
             RenameIndex(table: "dbo.CommunicationTemplate", name: "IX_ChannelEntityTypeId", newName: "IX_MediumEntityTypeId");
-            AddColumn("dbo.Communication", "MediumDataJson", c => c.String());
-            AddColumn("dbo.CommunicationTemplate", "MediumDataJson", c => c.String());
-            DropColumn("dbo.Communication", "ChannelDataJson");
-            DropColumn("dbo.CommunicationTemplate", "ChannelDataJson");
         }
         
         /// <summary>
@@ -80,14 +79,13 @@ namespace Rock.Migrations
     WHERE [Value] = 'Rock.Communication.MediumContainer, Rock'
 " );
 
-            AddColumn( "dbo.CommunicationTemplate", "ChannelDataJson", c => c.String() );
-            AddColumn("dbo.Communication", "ChannelDataJson", c => c.String());
-            DropColumn("dbo.CommunicationTemplate", "MediumDataJson");
-            DropColumn("dbo.Communication", "MediumDataJson");
             RenameIndex(table: "dbo.CommunicationTemplate", name: "IX_MediumEntityTypeId", newName: "IX_ChannelEntityTypeId");
-            RenameIndex(table: "dbo.Communication", name: "IX_MediumEntityTypeId", newName: "IX_ChannelEntityTypeId");
-            RenameColumn(table: "dbo.CommunicationTemplate", name: "MediumEntityTypeId", newName: "ChannelEntityTypeId");
-            RenameColumn(table: "dbo.Communication", name: "MediumEntityTypeId", newName: "ChannelEntityTypeId");
+            RenameColumn( table: "dbo.CommunicationTemplate", name: "MediumDataJson", newName: "ChannelDataJson" );
+            RenameColumn( table: "dbo.CommunicationTemplate", name: "MediumEntityTypeId", newName: "ChannelEntityTypeId" );
+
+            RenameIndex( table: "dbo.Communication", name: "IX_MediumEntityTypeId", newName: "IX_ChannelEntityTypeId" );
+            RenameColumn( table: "dbo.Communication", name: "MediumDataJson", newName: "ChannelDataJson" );
+            RenameColumn( table: "dbo.Communication", name: "MediumEntityTypeId", newName: "ChannelEntityTypeId" );
         }
     }
 }

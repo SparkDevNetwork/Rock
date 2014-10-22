@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -90,6 +91,29 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( configurationValues.ContainsKey( "values" ) )
+            {
+                var listItems = configurationValues["values"].Value.GetListItems();
+                if (listItems != null)
+                {
+                    var valueList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    return listItems.Where( a => valueList.Contains( a.Value ) ).ToList().AsDelimited( "," );
+                }
+            }
+
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         /// <summary>
@@ -181,6 +205,19 @@ namespace Rock.Field.Types
                         li.Selected = values.Contains( li.Value );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+            return filterConfig;
         }
     }
 }

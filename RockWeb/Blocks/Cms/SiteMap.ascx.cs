@@ -42,7 +42,8 @@ namespace RockWeb.Blocks.Cms
             base.OnLoad( e );
 
             List<int> expandedPageIds = new List<int>();
-            PageService pageService = new PageService( new RockContext() );
+            RockContext rockContext = new RockContext();
+            PageService pageService = new PageService( rockContext );
 
             if ( Page.IsPostBack )
             {
@@ -84,7 +85,7 @@ namespace RockWeb.Blocks.Cms
             var allPages = pageService.Queryable( "Pages, Blocks" ).ToList();
             foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
-                sb.Append( PageNode( page, expandedPageIds ) );
+                sb.Append( PageNode( page, expandedPageIds, rockContext ) );
             }
 
             sb.AppendLine( "</ul>" );
@@ -96,8 +97,10 @@ namespace RockWeb.Blocks.Cms
         /// Adds the page nodes.
         /// </summary>
         /// <param name="page">The page.</param>
+        /// <param name="expandedPageIdList">The expanded page identifier list.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected string PageNode( Page page, List<int> expandedPageIdList )
+        protected string PageNode( Page page, List<int> expandedPageIdList, RockContext rockContext )
         {
             var sb = new StringBuilder();
 
@@ -118,12 +121,12 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
-                    sb.Append( PageNode( childPage, expandedPageIdList ) );
+                    sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
                 }
 
                 foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
                 {
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, BlockTypeCache.Read( block.BlockTypeId ).Name, Environment.NewLine );
+                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name, Environment.NewLine );
                 }
 
                 sb.AppendLine( "</ul>" );

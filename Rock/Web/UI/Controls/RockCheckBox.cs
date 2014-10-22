@@ -163,6 +163,27 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [display inline].
+        /// Defaults to False
+        /// True will render the label with class="checkbox-inline"
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display inline]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayInline
+        {
+            get
+            {
+                return this.ViewState["DisplayInline"] as bool? ?? false;
+            }
+
+            set
+            {
+                this.ViewState["DisplayInline"] = value;
+            }
+        }
+
         // Needed for rendering help block with no label value
         private string TemporaryHelpValue = string.Empty;
 

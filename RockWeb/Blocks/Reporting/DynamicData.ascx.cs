@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
     [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
-    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 3 )]
-    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 4 )]
-    [TextField( "Columns", "The columns to hide or show", false, "", "", 5 )]
+    [BooleanField( "Query is a Stored Procedure", "Is the query a stored procedure?", false, "", 3, "StoredProcedure" )]
+    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 4 )]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 5 )]
+    [TextField( "Columns", "The columns to hide or show", false, "", "", 6 )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
     [BooleanField( "Person Report", "Is this report a list of people.?", false, "", 8 )]
@@ -55,7 +56,8 @@ namespace RockWeb.Blocks.Reporting
     {
         #region Fields
 
-        bool updatePage = true;
+        Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
+        bool _updatePage = true;
 
         #endregion
 
@@ -72,26 +74,23 @@ namespace RockWeb.Blocks.Reporting
             this.BlockUpdated += DynamicData_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            gReport.GridRebind += gReport_GridRebind;
-            gReport.RowSelected += gReport_RowSelected;
+            BuildControls( !Page.IsPostBack );
 
-            updatePage = GetAttributeValue( "UpdatePage" ).AsBoolean( true );
+            _updatePage = GetAttributeValue( "UpdatePage" ).AsBoolean( true );
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Adds icons to the configuration area of a <see cref="Rock.Model.Block" /> instance.  Can be overridden to
+        /// add additional icons
         /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
-            {
-                ShowView();
-            }
-        }
-
+        /// <param name="canConfig">A <see cref="System.Boolean" /> flag that indicates if the user can configure the <see cref="Rock.Model.Block" /> instance.
+        /// This value will be <c>true</c> if the user is allowed to configure the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
+        /// <param name="canEdit">A <see cref="System.Boolean" /> flag that indicates if the user can edit the <see cref="Rock.Model.Block" /> instance.
+        /// This value will be <c>true</c> if the user is allowed to edit the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see>
+        /// that will be available to the user in the configuration area of the block instance.
+        /// </returns>
         public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
@@ -129,17 +128,18 @@ namespace RockWeb.Blocks.Reporting
             upnlContent.Update();
             mdEdit.Show();
 
-            if ( updatePage )
+            if ( _updatePage )
             {
                 var pageCache = PageCache.Read( RockPage.PageId );
                 tbName.Text = pageCache != null ? pageCache.PageTitle : string.Empty;
                 tbDesc.Text = pageCache != null ? pageCache.Description : string.Empty;
             }
 
-            tbName.Visible = updatePage;
-            tbDesc.Visible = updatePage;
+            tbName.Visible = _updatePage;
+            tbDesc.Visible = _updatePage;
 
             ceQuery.Text = GetAttributeValue( "Query" );
+            cbStoredProcedure.Checked = GetAttributeValue( "StoredProcedure" ).AsBoolean();
             tbParams.Text = GetAttributeValue( "QueryParams" );
             tbUrlMask.Text = GetAttributeValue( "UrlMask" );
             ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
@@ -151,12 +151,12 @@ namespace RockWeb.Blocks.Reporting
 
         void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
-            ShowView();
+            BuildControls( true );
         }
 
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            if ( updatePage )
+            if ( _updatePage )
             {
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null &&
@@ -183,6 +183,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             SetAttributeValue( "Query", ceQuery.Text );
+            SetAttributeValue( "StoredProcedure", cbStoredProcedure.Checked.ToString() );
             SetAttributeValue( "QueryParams", tbParams.Text );
             SetAttributeValue( "UrlMask", tbUrlMask.Text );
             SetAttributeValue( "Columns", tbColumns.Text );
@@ -192,7 +193,11 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues();
 
-            ShowView();
+            mdEdit.Hide();
+            pnlEditModel.Visible = false;
+            upnlContent.Update();
+
+            BuildControls( true );
         }
 
         /// <summary>
@@ -202,12 +207,13 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gReport_RowSelected( object sender, RowEventArgs e )
         {
+            Grid grid = sender as Grid;
             string url = GetAttributeValue( "UrlMask" );
-            if ( !string.IsNullOrWhiteSpace( url ) )
+            if ( grid != null && !string.IsNullOrWhiteSpace( url ) )
             {
-                foreach ( string key in gReport.DataKeyNames )
+                foreach ( string key in grid.DataKeyNames )
                 {
-                    url = url.Replace( "{" + key + "}", gReport.DataKeys[e.RowIndex][key].ToString() );
+                    url = url.Replace( "{" + key + "}", grid.DataKeys[e.RowIndex][key].ToString() );
                 }
 
                 Response.Redirect( url, false );
@@ -221,7 +227,26 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            ShowView();
+            string errorMessage = string.Empty;
+            var ds = GetData( out errorMessage );
+            if ( ds != null )
+            {
+                int i = 0;
+                foreach ( Control div in phContent.Controls )
+                {
+                    foreach ( var grid in div.Controls.OfType<Grid>() )
+                    {
+                        if ( ds.Tables.Count > i )
+                        {
+                            SortTable( grid, ds.Tables[i] );
+                            grid.DataSource = ds.Tables[i];
+                            grid.DataBind();
+                            i++;
+                        }
+                    }
+                }
+            }
+            upnlContent.Update();
         }
 
         #endregion
@@ -229,28 +254,13 @@ namespace RockWeb.Blocks.Reporting
         #region Internal Methods
 
         /// <summary>
-        /// Binds the grid.
+        /// Gets the data.
         /// </summary>
-        private void ShowView()
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private DataSet GetData( out string errorMessage )
         {
-            mdEdit.Hide();
-            pnlEditModel.Visible = false;
-            upnlContent.Update();
-
-            bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
-
-            if ( personReport )
-            {
-                gReport.PersonIdField = "Id";
-            }
-            else
-            {
-                gReport.PersonIdField = null;
-            }
-
-            gReport.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
-            gReport.Visible = true;
-            nbError.Visible = false;
+            errorMessage = string.Empty;
 
             string query = GetAttributeValue( "Query" );
             if ( !string.IsNullOrWhiteSpace( query ) )
@@ -260,51 +270,125 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    DataTable dataTable = DbService.GetDataTable( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    return DbService.GetDataSet( query, GetAttributeValue("StoredProcedure").AsBoolean(false) ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                }
 
+                catch ( System.Exception ex )
+                {
+                    errorMessage = ex.Message;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds the controls.
+        /// </summary>
+        /// <param name="setData">if set to <c>true</c> [set data].</param>
+        private void BuildControls( bool setData )
+        {
+            string errorMessage = string.Empty;
+            var dataSet = GetData( out errorMessage );
+
+            if ( !string.IsNullOrWhiteSpace( errorMessage ) )
+            {
+                phContent.Visible = false;
+
+                nbError.Text = errorMessage;
+                nbError.Visible = true;
+            }
+            else
+            {
+                phContent.Controls.Clear();
+
+                if ( dataSet != null )
+                {
                     string formattedOutput = GetAttributeValue( "FormattedOutput" );
                     if ( string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
-                        gReport.Visible = true;
-                        phHtml.Visible = false;
+                        bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
 
-                        AddGridColumns( dataTable );
-                        SetDataKeyNames();
-                        gReport.DataSource = GetSortedView( dataTable );
-                        gReport.DataBind();
+                        foreach ( DataTable dataTable in dataSet.Tables )
+                        {
+                            var div = new HtmlGenericControl( "div" );
+                            div.AddCssClass( "grid" );
+                            phContent.Controls.Add( div );
+
+                            var grid = new Grid();
+                            grid.AllowSorting = true;
+                            grid.EmptyDataText = "No Results";
+                            grid.GridRebind += gReport_GridRebind;
+                            grid.RowSelected += gReport_RowSelected;
+                            if ( personReport )
+                            {
+                                grid.PersonIdField = "Id";
+                            }
+                            else
+                            {
+                                grid.PersonIdField = null;
+                            }
+                            grid.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
+                            div.Controls.Add( grid );
+
+                            AddGridColumns( grid, dataTable );
+                            SetDataKeyNames( grid );
+
+                            if ( setData )
+                            {
+                                SortTable( grid, dataTable );
+                                grid.DataSource = dataTable;
+                                grid.DataBind();
+                            }
+                        }
                     }
                     else
                     {
-                        gReport.Visible = false;
-                        phHtml.Visible = true;
-
-                        var dropRows = new List<DataRowDrop>();
-                        foreach ( DataRow row in dataTable.Rows )
+                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                        if ( CurrentPerson != null )
                         {
-                            dropRows.Add( new DataRowDrop( row ) );
+                            mergeFields.Add( "Person", CurrentPerson );
                         }
 
-                        var dropTable = new Dictionary<string, object>();
-                        dropTable.Add( "rows", dropRows );
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        mergeFields.Add( "Campuses", CampusCache.All() );
 
-                        phHtml.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( dropTable ) ) );
+                        int i = 1;
+                        foreach ( DataTable dataTable in dataSet.Tables )
+                        {
+                            var dropRows = new List<DataRowDrop>();
+                            foreach ( DataRow row in dataTable.Rows )
+                            {
+                                dropRows.Add( new DataRowDrop( row ) );
+                            }
+
+                            if ( dataSet.Tables.Count > 1 )
+                            {
+                                var tableField = new Dictionary<string, object>();
+                                tableField.Add( "rows", dropRows );
+                                mergeFields.Add( "table" + i.ToString(), tableField );
+                            }
+                            else
+                            {
+                                mergeFields.Add( "rows", dropRows );
+                            }
+                            i++;
+                        }
+
+                        phContent.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( mergeFields ) ) );
                     }
                 }
-                catch ( System.Exception ex )
-                {
-                    gReport.Visible = false;
-                    phHtml.Visible = false;
 
-                    nbError.Text = ex.Message;
-                    nbError.Visible = true;
-                }
+                phContent.Visible = true;
+                nbError.Visible = false;
             }
+
         }
 
         /// <summary>
         /// Sets the data key names.
         /// </summary>
-        private void SetDataKeyNames()
+        private void SetDataKeyNames(Grid grid)
         {
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
@@ -319,7 +403,7 @@ namespace RockWeb.Blocks.Reporting
                         keyNames[i] = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
                     }
 
-                    gReport.DataKeyNames = keyNames;
+                    grid.DataKeyNames = keyNames;
                 }
             }
         }
@@ -374,7 +458,7 @@ namespace RockWeb.Blocks.Reporting
         /// Adds the grid columns.
         /// </summary>
         /// <param name="dataTable">The data table.</param>
-        private void AddGridColumns( DataTable dataTable )
+        private void AddGridColumns( Grid grid, DataTable dataTable )
         {
             bool showColumns = bool.Parse( GetAttributeValue( "ShowColumns" ) );
             var columnList = GetAttributeValue( "Columns" ).SplitDelimitedValues().ToList();
@@ -385,11 +469,11 @@ namespace RockWeb.Blocks.Reporting
                 rowsToEval = dataTable.Rows.Count;
             }
 
-            gReport.Columns.Clear();
+            grid.Columns.Clear();
 
-            if ( !string.IsNullOrWhiteSpace( gReport.PersonIdField ) )
+            if ( !string.IsNullOrWhiteSpace( grid.PersonIdField ) )
             {
-                gReport.Columns.Add( new SelectField() );
+                grid.Columns.Add( new SelectField() );
             }
 
             foreach ( DataColumn dataTableColumn in dataTable.Columns )
@@ -434,7 +518,7 @@ namespace RockWeb.Blocks.Reporting
                 bf.DataField = dataTableColumn.ColumnName;
                 bf.SortExpression = dataTableColumn.ColumnName;
                 bf.HeaderText = dataTableColumn.ColumnName.SplitCase();
-                gReport.Columns.Add( bf );
+                grid.Columns.Add( bf );
             }
         }
 
@@ -443,17 +527,15 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="dataTable">The data table.</param>
         /// <returns></returns>
-        private System.Data.DataView GetSortedView( DataTable dataTable )
+        private void SortTable( Grid grid, DataTable dataTable)
         {
             System.Data.DataView dataView = dataTable.DefaultView;
 
-            SortProperty sortProperty = gReport.SortProperty;
+            SortProperty sortProperty = grid.SortProperty;
             if ( sortProperty != null )
             {
                 dataView.Sort = string.Format( "{0} {1}", sortProperty.Property, sortProperty.DirectionString );
             }
-
-            return dataView;
         }
 
         #endregion

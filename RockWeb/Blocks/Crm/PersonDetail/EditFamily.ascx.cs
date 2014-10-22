@@ -850,7 +850,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 rockContext.SaveChanges();
 
                                 // Every person should have an alias record with same id.  If it's missing, create it
-                                if ( !groupMember.Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
+                                if ( !groupMember.Person.Aliases.Any( a => a.AliasPersonId == groupMember.Person.Id ) )
                                 {
                                     var groupMemberPerson = personService.Get( groupMember.Person.Id );
                                     if ( groupMemberPerson != null )
