@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Finance
 {{Person.NickName}}, thank you for your commitment of ${{FinancialPledge.TotalAmount}} to {{Account.Name}}.  To make your commitment even easier, you might consider making a scheduled giving profile.
 </p>
 <p>
-    <a href='/page/186?PledgeId={{ FinancialPledge.Id  }}' class='btn btn-default' >Setup a Giving Profile</a>
+    <a href='~/page/186?PledgeId={{ FinancialPledge.Id  }}' class='btn btn-default' >Setup a Giving Profile</a>
 </p>
 " )]
 
@@ -166,12 +166,17 @@ namespace RockWeb.Blocks.Finance
             // populate PledgeFrequencyValue so that Liquid can access it
             financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
 
-            var mergeObjects = new Dictionary<string, object>();
+            var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
             mergeObjects.Add( "Person", person );
             mergeObjects.Add( "FinancialPledge", financialPledge );
             mergeObjects.Add( "PledgeFrequency", pledgeFrequencySelection );
             mergeObjects.Add( "Account", financialAccount );
             lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
+
+            // Resolve any dynamic url references
+            string appRoot = ResolveRockUrl( "~/" );
+            string themeRoot = ResolveRockUrl( "~~/" );
+            lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
             // show liquid help for debug
             if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
