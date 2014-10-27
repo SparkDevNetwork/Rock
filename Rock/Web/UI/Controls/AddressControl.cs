@@ -617,11 +617,19 @@ namespace Rock.Web.UI.Controls
                 _ddlCountry.SelectedIndex = 0;
             }
 
-            string selectedState = State;
+            string selectedStateFromEdit = _tbState.Text;
+            string selectedStateFromDownDrop = _ddlState.SelectedValue;
 
             BindStates( _ddlCountry.SelectedValue );
 
-            State = selectedState;
+            if (_tbState.Visible)
+            {
+                State = selectedStateFromEdit;
+            }
+            else
+            {
+                State = selectedStateFromDownDrop;
+            }
         }
 
         #endregion
