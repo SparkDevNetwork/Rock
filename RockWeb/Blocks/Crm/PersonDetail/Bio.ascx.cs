@@ -100,6 +100,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         }
                     }
                 }
+
+                lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             }
 
         }
