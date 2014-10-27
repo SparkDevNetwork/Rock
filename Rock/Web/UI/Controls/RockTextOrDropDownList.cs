@@ -217,19 +217,24 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
-        public ValidateRequestMode ValidateRequestMode
+        /// <summary>
+        /// Gets or sets a value that indicates whether the control checks client input from the browser for potentially dangerous values.
+        /// </summary>
+        public override ValidateRequestMode ValidateRequestMode
         {
             get
             {
-                EnsureChildControls();
-                return _textBox.ValidateRequestMode;
+                return base.ValidateRequestMode;
             }
             set
             {
+                base.ValidateRequestMode = value;
+
                 EnsureChildControls();
                 _textBox.ValidateRequestMode = value;
             }
         }
+
         #endregion
 
         /// <summary>
