@@ -82,6 +82,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new Rock.Web.UI.Controls.RockTextOrDropDownList { ID = id };
+            editControl.ValidateRequestMode = ValidateRequestMode.Disabled;
 
             editControl.DropDownList.Items.Add( new ListItem() );
 
