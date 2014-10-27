@@ -20,7 +20,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
-using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect
@@ -28,9 +27,9 @@ namespace Rock.Reporting.DataSelect
     /// <summary>
     /// A special-case DataSelectComponent that can be used to apply a DotLiquid template against the row returned from a Report query
     /// </summary>
-    [Description( "Select the Age of the Person" )]
+    [Description( "Select output using Liquid template" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Age" )]
+    [ExportMetadata( "ComponentName", "Liquid Template" )]
     public class LiquidSelect : DataSelectComponent
     {
         #region Properties
