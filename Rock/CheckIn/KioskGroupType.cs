@@ -47,7 +47,7 @@ namespace Rock.CheckIn
         /// The next active time.
         /// </value>
         [DataMember]
-        public DateTimeOffset NextActiveTime { get; set; }
+        public DateTime NextActiveTime { get; set; }
 
         /// <summary>
         /// All groups with active schedules

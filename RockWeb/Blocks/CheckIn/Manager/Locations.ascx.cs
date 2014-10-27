@@ -713,11 +713,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 foreach ( DateTime chartTime in chartTimes )
                 {
                     // Get the active schedules
-                    var timeOffset = new DateTimeOffset(chartTime);
                     var activeSchedules = new List<int>();
                     foreach ( var schedule in schedules )
                     {
-                        if ( schedule.WasScheduleOrCheckInActive(timeOffset) )
+                        if ( schedule.WasScheduleOrCheckInActive( chartTime ) )
                         {
                             activeSchedules.Add( schedule.Id );
                         }
