@@ -355,6 +355,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
                     History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
                 }
+                
+                person.GivingGroupId = newGivingGroupId;
 
                 int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
                 History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
