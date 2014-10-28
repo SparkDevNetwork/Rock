@@ -115,6 +115,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             recording.App = tbApp.Text;
             recording.Date = dpDate.SelectedDate;
             recording.StreamName = tbStream.Text;
+            recording.Venue = tbVenue.Text;
             recording.Label = tbLabel.Text;
             recording.RecordingName = tbRecording.Text;
 
@@ -159,6 +160,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             tbApp.Text = recording.App ?? string.Empty;
             dpDate.SelectedDate = recording.Date;
             tbStream.Text = recording.StreamName ?? string.Empty;
+            tbVenue.Text = recording.Venue ?? string.Empty;
             tbLabel.Text = recording.Label ?? string.Empty;
             tbRecording.Text = recording.RecordingName ?? string.Empty;
             lStarted.Text = recording.StartTime.HasValue ? recording.StartTime.Value.ToString() : string.Empty;
@@ -187,6 +189,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             tbApp.ReadOnly = readOnly;
             dpDate.ReadOnly = readOnly;
             tbStream.ReadOnly = readOnly;
+            tbVenue.ReadOnly = readOnly;
             tbLabel.ReadOnly = readOnly;
             tbRecording.ReadOnly = readOnly;
 

@@ -17,6 +17,7 @@
                 <Rock:DataTextBox ID="tbApp" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="App" />
                 <Rock:DatePicker ID="dpDate" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Date" />
                 <Rock:DataTextBox ID="tbStream" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="StreamName" />
+                <Rock:DataTextBox ID="tbVenue" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Venue" />
                 <Rock:DataTextBox ID="tbLabel" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Label" />
                 <Rock:DataTextBox ID="tbRecording" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="RecordingName" CssClass="input-xlarge" />
                 <Rock:RockTextBox ID="lStarted" runat="server" Label="Started" />
