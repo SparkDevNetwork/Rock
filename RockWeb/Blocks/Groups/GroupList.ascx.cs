@@ -43,8 +43,9 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
     [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5 )]
     [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 6 )]
-    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 6 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 7 )]
+    [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 7 )]
+    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 8 )]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 9 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -351,7 +352,7 @@ namespace RockWeb.Blocks.Groups
 
                 boundFields["GroupRole"].Visible = false;
                 boundFields["DateAdded"].Visible = false;
-                boundFields["MemberCount"].Visible = true;
+                boundFields["MemberCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).AsBoolean() ;
 
                 var qry = new GroupService( rockContext ).Queryable()
                     .Where( g =>
