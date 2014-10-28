@@ -38,6 +38,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
 
+        #region Fields
+
+        private bool _allowEdit = false;
+
+        #endregion
         #region Base Control Methods
 
         /// <summary>
@@ -46,8 +51,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit(EventArgs e)
         {
-            rptrFamilies.ItemDataBound += rptrFamilies_ItemDataBound;
  	        base.OnInit(e);
+
+            rptrFamilies.ItemDataBound += rptrFamilies_ItemDataBound;
+
+            _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
         }
 
         /// <summary>
@@ -57,10 +65,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            //if (!Page.IsPostBack)
-            //{
-                BindFamilies();
-            //}
+
+            BindFamilies();
         }
 
         #endregion
@@ -77,6 +83,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HyperLink hlEditFamily = e.Item.FindControl( "hlEditFamily" ) as HyperLink;
                     if ( hlEditFamily != null )
                     {
+                        hlEditFamily.Visible = _allowEdit;
                         hlEditFamily.NavigateUrl = string.Format( "~/EditFamily/{0}/{1}", Person.Id, group.Id );
                     }
 
