@@ -155,6 +155,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ddlNewPersonGender.BindToEnum<Gender>();
 
+            btnSave.Visible = _canEdit;
+
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
             btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
@@ -349,13 +351,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var lbNewFamily = e.Item.FindControl( "lbNewFamily" ) as LinkButton;
                     if ( lbNewFamily != null )
                     {
-                        lbNewFamily.Visible = familyMember.ExistingFamilyMember && members > 1;
+                        lbNewFamily.Visible = _canEdit && familyMember.ExistingFamilyMember && members > 1;
                     }
 
                     var lbRemoveMember = e.Item.FindControl( "lbRemoveMember" ) as LinkButton;
                     if ( lbRemoveMember != null )
                     {
-                        lbRemoveMember.Visible = !familyMember.ExistingFamilyMember && members > 1;
+                        lbRemoveMember.Visible = _canEdit && !familyMember.ExistingFamilyMember && members > 1;
                     }
                 }
             }
@@ -720,6 +722,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+            {
+                return;
+            }
+
             // confirmation was disabled by btnSave on client-side.  So if returning without a redirect,
             // it should be enabled.  If returning with a redirect, the control won't be updated to reflect
             // confirmation being enabled, so it's ok to enable it here

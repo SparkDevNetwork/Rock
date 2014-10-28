@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -40,6 +41,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField("Create Group", "Should group be created if a group/role cannot be found for the current person.", true)]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
+        protected bool CanEdit = false;
         protected bool ShowRole = false;
         protected Guid ownerRoleGuid = Guid.Empty;
         protected bool IsKnownRelationships = false;
@@ -55,10 +57,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lbAdd.Visible = IsKnownRelationships;
 
+            rGroupMembers.ItemDataBound += rGroupMembers_ItemDataBound;
             rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
 
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
             modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfRoleId.ClientID );
+
+            CanEdit = IsUserAuthorized( Authorization.EDIT );
+            lbAdd.Visible = CanEdit;
 
             string script = @"
     $('a.remove-relationship').click(function(){
@@ -99,40 +105,59 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         protected void lbAdd_Click( object sender, EventArgs e )
         {
-            ShowModal( null, null, null );
+            if ( CanEdit )
+            {
+                ShowModal( null, null, null );
+            }
         }
+
+        void rGroupMembers_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        {
+            var lbEdit = e.Item.FindControl( "lbEdit" ) as LinkButton;
+            var lbRemove = e.Item.FindControl( "lbRemove" ) as LinkButton;
+
+            if ( lbEdit != null && lbRemove != null)
+            {
+                lbEdit.Visible = CanEdit;
+                lbRemove.Visible = CanEdit;
+            }
+        }
+
 
         void rGroupMembers_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
         {
-            int groupMemberId = int.MinValue;
-            if ( int.TryParse( e.CommandArgument.ToString(), out groupMemberId ) )
+            if ( CanEdit )
             {
-                var rockContext = new RockContext();
-                var service = new GroupMemberService( rockContext );
-                var groupMember = service.Get( groupMemberId );
-                if ( groupMember != null )
+                int groupMemberId = int.MinValue;
+                if ( int.TryParse( e.CommandArgument.ToString(), out groupMemberId ) )
                 {
-                    if ( e.CommandName == "EditRole" )
+                    var rockContext = new RockContext();
+                    var service = new GroupMemberService( rockContext );
+                    var groupMember = service.Get( groupMemberId );
+                    if ( groupMember != null )
                     {
-                        ShowModal(groupMember.Person, groupMember.GroupRoleId, groupMemberId);
-                    }
-
-                    else if ( e.CommandName == "RemoveRole" )
-                    {
-                        if ( IsKnownRelationships )
+                        if ( e.CommandName == "EditRole" )
                         {
-                            var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
-                            if ( inverseGroupMember != null )
-                            {
-                                service.Delete( inverseGroupMember );
-                            }
+                            ShowModal( groupMember.Person, groupMember.GroupRoleId, groupMemberId );
                         }
 
-                        service.Delete( groupMember );
+                        else if ( e.CommandName == "RemoveRole" )
+                        {
+                            if ( IsKnownRelationships )
+                            {
+                                var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                                if ( inverseGroupMember != null )
+                                {
+                                    service.Delete( inverseGroupMember );
+                                }
+                            }
 
-                        rockContext.SaveChanges();
+                            service.Delete( groupMember );
 
-                        BindData();
+                            rockContext.SaveChanges();
+
+                            BindData();
+                        }
                     }
                 }
             }
@@ -140,74 +165,77 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         void modalAddPerson_SaveClick( object sender, EventArgs e )
         {
-            if ( ppPerson.PersonId.HasValue )
+            if ( CanEdit )
             {
-                int? roleId = grpRole.GroupRoleId;
-                if ( roleId.HasValue )
+                if ( ppPerson.PersonId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    var memberService = new GroupMemberService( rockContext );
-
-                    var group = memberService.Queryable()
-                        .Where( m =>
-                            m.PersonId == Person.Id &&
-                            m.GroupRole.Guid == ownerRoleGuid
-                        )
-                        .Select( m => m.Group )
-                        .FirstOrDefault();
-
-                    if ( group != null )
+                    int? roleId = grpRole.GroupRoleId;
+                    if ( roleId.HasValue )
                     {
-                        GroupMember groupMember = null;
-                        int? groupMemberId = hfRoleId.Value.AsIntegerOrNull();
-                        if ( groupMemberId.HasValue )
-                        {
-                            groupMember = memberService.Queryable()
-                            .Where( m => m.Id == groupMemberId.Value )
+                        var rockContext = new RockContext();
+                        var memberService = new GroupMemberService( rockContext );
+
+                        var group = memberService.Queryable()
+                            .Where( m =>
+                                m.PersonId == Person.Id &&
+                                m.GroupRole.Guid == ownerRoleGuid
+                            )
+                            .Select( m => m.Group )
                             .FirstOrDefault();
-                        }
 
-                        if ( groupMember == null )
+                        if ( group != null )
                         {
-                            groupMember = new GroupMember();
-                            groupMember.GroupId = group.Id;
-                            memberService.Add( groupMember );
-                        }
-
-                        GroupMember formerInverseGroupMember = null;
-                        if ( IsKnownRelationships )
-                        {
-                            formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
-                        }
-
-                        groupMember.PersonId = ppPerson.PersonId.Value;
-                        groupMember.GroupRoleId = roleId.Value;
-
-                        rockContext.SaveChanges();
-
-                        if ( IsKnownRelationships )
-                        {
-                            var inverseGroupMember = memberService.GetInverseRelationship(
-                                groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
-                            if ( inverseGroupMember != null )
+                            GroupMember groupMember = null;
+                            int? groupMemberId = hfRoleId.Value.AsIntegerOrNull();
+                            if ( groupMemberId.HasValue )
                             {
-                                rockContext.SaveChanges();
-                                if ( formerInverseGroupMember != null && formerInverseGroupMember.Id != inverseGroupMember.Id )
+                                groupMember = memberService.Queryable()
+                                .Where( m => m.Id == groupMemberId.Value )
+                                .FirstOrDefault();
+                            }
+
+                            if ( groupMember == null )
+                            {
+                                groupMember = new GroupMember();
+                                groupMember.GroupId = group.Id;
+                                memberService.Add( groupMember );
+                            }
+
+                            GroupMember formerInverseGroupMember = null;
+                            if ( IsKnownRelationships )
+                            {
+                                formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                            }
+
+                            groupMember.PersonId = ppPerson.PersonId.Value;
+                            groupMember.GroupRoleId = roleId.Value;
+
+                            rockContext.SaveChanges();
+
+                            if ( IsKnownRelationships )
+                            {
+                                var inverseGroupMember = memberService.GetInverseRelationship(
+                                    groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
+                                if ( inverseGroupMember != null )
                                 {
-                                    memberService.Delete( formerInverseGroupMember );
                                     rockContext.SaveChanges();
+                                    if ( formerInverseGroupMember != null && formerInverseGroupMember.Id != inverseGroupMember.Id )
+                                    {
+                                        memberService.Delete( formerInverseGroupMember );
+                                        rockContext.SaveChanges();
+                                    }
                                 }
                             }
                         }
+
                     }
 
                 }
 
+                HideDialog();
+
+                BindData();
             }
-
-            HideDialog();
-
-            BindData();
         }
 
         /// <summary>
