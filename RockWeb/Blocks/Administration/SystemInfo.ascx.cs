@@ -73,6 +73,8 @@ namespace RockWeb.Blocks.Administration
         {
             Rock.Web.Cache.RockMemoryCache.Clear();
 
+            Rock.Security.Authorization.Flush();
+
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }
