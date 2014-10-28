@@ -208,7 +208,13 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", hfRootGroupId.ValueAsInt() );
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "GroupId", 0.ToString() );
+            queryParams.Add( "ParentGroupId", hfRootGroupId.Value );
+            queryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
+
+
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>
@@ -219,7 +225,13 @@ namespace RockWeb.Blocks.Groups
         protected void lbAddGroupChild_Click( object sender, EventArgs e )
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
-            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", groupId );
+
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "GroupId", 0.ToString() );
+            queryParams.Add( "ParentGroupId", groupId.ToString() );
+            queryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
+
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         #endregion
