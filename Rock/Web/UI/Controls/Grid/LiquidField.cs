@@ -111,6 +111,11 @@ namespace Rock.Web.UI.Controls
             {
                 Dictionary<string, object> mergeValues = this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem );
                 lOutputText.Text = this.LiquidField.LiquidTemplate.ResolveMergeFields( mergeValues );
+
+                // Resolve any dynamic url references
+                string appRoot = ( (RockPage)lOutputText.Page ).ResolveRockUrl( "~/" );
+                string themeRoot = ( (RockPage)lOutputText.Page ).ResolveRockUrl( "~~/" );
+                lOutputText.Text = lOutputText.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
             }
         }
 
