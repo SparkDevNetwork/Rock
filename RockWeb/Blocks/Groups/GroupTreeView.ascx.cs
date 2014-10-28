@@ -208,13 +208,13 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            queryParams.Add( "GroupId", 0.ToString() );
-            queryParams.Add( "ParentGroupId", hfRootGroupId.Value );
-            queryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "GroupId", 0.ToString() );
+            qryParams.Add( "ParentGroupId", hfRootGroupId.Value );
+            qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
 
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         /// <summary>
@@ -226,12 +226,12 @@ namespace RockWeb.Blocks.Groups
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
 
-            Dictionary<string, string> queryParams = new Dictionary<string, string>();
-            queryParams.Add( "GroupId", 0.ToString() );
-            queryParams.Add( "ParentGroupId", groupId.ToString() );
-            queryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "GroupId", 0.ToString() );
+            qryParams.Add( "ParentGroupId", groupId.ToString() );
+            qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
-            NavigateToLinkedPage( "DetailPage", queryParams );
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         #endregion

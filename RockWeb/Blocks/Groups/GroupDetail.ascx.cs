@@ -321,6 +321,8 @@ namespace RockWeb.Blocks.Groups
                 qryParams["GroupId"] = parentGroupId.ToString();
             }
 
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
