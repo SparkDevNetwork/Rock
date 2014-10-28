@@ -491,7 +491,18 @@ $(document).ready(function() {
                 rssLink.Attributes.Add("type", "application/rss+xml");
                 rssLink.Attributes.Add("rel", "alternate");
                 rssLink.Attributes.Add("title", content.Select(c => c.ContentChannel.Name).FirstOrDefault());
-                rssLink.Attributes.Add( "href", content.Select(c => c.ContentChannel.ChannelUrl).FirstOrDefault() );
+
+                var context = HttpContext.Current;
+                string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
+                                    context.Request.Url.Scheme,
+                                    context.Request.Url.Host,
+                                    context.Request.Url.Port == 80
+                                        ? string.Empty
+                                        : ":" + context.Request.Url.Port,
+                                    RockPage.ResolveRockUrl( "~/GetChannelRss.ashx?ChannelId="),
+                                    content.Select(c => c.ContentChannelId).FirstOrDefault());
+
+                rssLink.Attributes.Add( "href", channelRssUrl );
                 RockPage.Header.Controls.Add( rssLink );
             }
 
