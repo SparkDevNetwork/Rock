@@ -281,11 +281,11 @@ namespace Rock.Model
 
                 if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
                 {
-                    int? binaryFileId = DefaultValue.AsIntegerOrNull();
-                    if ( binaryFileId.HasValue )
+                    Guid? binaryFileGuid = DefaultValue.AsGuidOrNull();
+                    if ( binaryFileGuid.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
                             binaryFile.IsTemporary = false;
