@@ -1,15 +1,9 @@
 ﻿<div class="announcement-list">
   
-  {% for Ad in Ads -%}
+  {% for item in Items -%}
 
     <div class="announcement">
-      <a href="{{ Ad.DetailPageUrl }}">
-        {% for Attribute in Ad.Attributes -%}
-          {% if Attribute.Key == 'AdImage' -%}
-            {{ Attribute.Value }}
-          {% endif -%}
-        {% endfor -%}
-      </a>
+      <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
     </div>
 
     {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
