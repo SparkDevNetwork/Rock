@@ -38,6 +38,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
+            : base()
         {
         }
 
