@@ -779,6 +779,9 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
+            ddlGroupType.Visible = group.Id == 0;
+            lGroupType.Visible = group.Id != 0;
+
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -823,6 +826,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 ddlGroupType.SetValue( group.GroupTypeId );
+                lGroupType.Text = GroupTypeCache.Read( group.GroupTypeId, rockContext ).Name;
             }
 
             ddlCampus.SetValue( group.CampusId );
