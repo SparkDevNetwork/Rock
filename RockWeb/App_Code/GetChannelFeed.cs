@@ -32,12 +32,11 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file data from storage
     /// </summary>
-    public class GetChannelRss : IHttpHandler
+    public class GetChannelFeed : IHttpHandler
     {
 
         private HttpRequest request;
         private HttpResponse response;
-        private XmlTextWriter rss;
 
         private int rssItemLimit = 10;
 
@@ -46,7 +45,7 @@ namespace RockWeb
             request = context.Request;
             response = context.Response;
 
-            response.ContentType = "application/rss+xml";
+            RockContext rockContext = new RockContext();
 
             if ( request.HttpMethod != "GET" )
             {
@@ -58,6 +57,9 @@ namespace RockWeb
             if ( request.QueryString["ChannelId"] != null )
             {
                 int channelId;
+                int templateDefinedValueId;
+                DefinedValueCache dvRssTemplate;
+                string rssTemplate;
 
                 if ( !int.TryParse( request.QueryString["ChannelId"] , out channelId ))
                 {
@@ -65,8 +67,27 @@ namespace RockWeb
                     response.StatusCode = 200;
                     return;
                 }
+
+                if ( request.QueryString["TemplateId"] == null || !int.TryParse( request.QueryString["TemplateId"], out templateDefinedValueId ) )
+                {
+                    dvRssTemplate = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEFAULT_RSS_CHANNEL );
+                }
+                else
+                {
+                    dvRssTemplate = DefinedValueCache.Read( templateDefinedValueId );
+                }
+
+                rssTemplate = dvRssTemplate.GetAttributeValue( "Template" );
+
+                if ( string.IsNullOrWhiteSpace( dvRssTemplate.GetAttributeValue( "MimeType" ) ) )
+                {
+                    response.ContentType = "application/rss+xml";
+                }
+                else
+                {
+                    response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
+                }
                 
-                RockContext rockContext = new RockContext();
                 ContentChannelService channelService = new ContentChannelService( rockContext );
 
                 var channel = channelService.Get( channelId );
@@ -79,6 +100,20 @@ namespace RockWeb
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "Channel", channel.ToLiquid() );
+
+                        Dictionary<string, object> requestObjects = new Dictionary<string, object>();
+                        requestObjects.Add( "Scheme", request.Url.Scheme );
+                        requestObjects.Add( "Host", request.Url.Host );
+                        requestObjects.Add( "Authority", request.Url.Authority );
+                        requestObjects.Add( "LocalPath", request.Url.LocalPath );
+                        requestObjects.Add( "AbsoluteUri", request.Url.AbsoluteUri );
+                        requestObjects.Add( "AbsolutePath", request.Url.AbsolutePath );
+                        requestObjects.Add( "Port", request.Url.Port );
+                        requestObjects.Add( "Query", request.Url.Query );
+                        requestObjects.Add( "OriginalString", request.Url.OriginalString );
+
+                        mergeFields.Add( "Request", requestObjects );
 
                         var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
                         globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
@@ -87,34 +122,6 @@ namespace RockWeb
                         if ( request.QueryString["Count"] != null )
                         {
                             int.TryParse( request.QueryString["Count"], out rssItemLimit );
-                        }
-                        
-                        rss = new XmlTextWriter( response.OutputStream, Encoding.UTF8 );
-
-                        // write rss header
-                        rss.WriteStartDocument();
-                        rss.WriteStartElement( "rss" );
-                        rss.WriteAttributeString( "version", "2.0" );
-
-                        // write channel info
-                        rss.WriteStartElement( "channel" );
-                        rss.WriteElementString( "title", channel.Name );
-                        rss.WriteElementString( "link", channel.ChannelUrl );
-                        rss.WriteElementString( "description", channel.Description );
-                        rss.WriteElementString( "language", "en-us" );
-                        rss.WriteElementString( "ttl", channel.TimeToLive.ToString() );
-                        rss.WriteElementString( "lastBuildDate", String.Format( "{0:R}", RockDateTime.Now ) );
-
-                        // get channel attributes and add them as elements to the feed
-                        channel.LoadAttributes( rockContext );
-                        foreach ( var attributeValue in channel.AttributeValues )
-                        {
-                            var attribute = AttributeCache.Read( attributeValue.Value.AttributeId);
-                            string value = attribute.FieldType.Field.FormatValue( null, attributeValue.Value.Value, attribute.QualifierValues, false );
-                            if ( !string.IsNullOrWhiteSpace( value ) )
-                            {
-                                rss.WriteElementString( attributeValue.Key.ToLower(), value );
-                            }
                         }
 
                         // get channel items
@@ -126,35 +133,25 @@ namespace RockWeb
 
                         foreach ( var item in content )
                         {
-                            rss.WriteStartElement( "item" );
-
-                            rss.WriteElementString( "title", item.Title );
-                            rss.WriteElementString( "link", String.Format("{0}?ContentItemId={1}", channel.ItemUrl, item.Id.ToString()));
-                            rss.WriteElementString( "pubDate", String.Format( "{0:R}", item.StartDateTime.ToString() ) );
-                            rss.WriteElementString( "description", item.Content.ResolveMergeFields(mergeFields) );
+                            item.Content = item.Content.ResolveMergeFields( mergeFields );
 
                             // get item attributes and add them as elements to the feed
                             item.LoadAttributes( rockContext );
                             foreach ( var attributeValue in item.AttributeValues )
                             {
-                                var attribute = AttributeCache.Read( attributeValue.Value.AttributeId );
-                                string value = attribute.FieldType.Field.FormatValue( null, attributeValue.Value.Value, attribute.QualifierValues, false );
-
-                                if ( !string.IsNullOrWhiteSpace( value ) )
-                                {
-                                    rss.WriteElementString( attributeValue.Key.ToLower(), value.ResolveMergeFields(mergeFields) );
-                                }
+                                attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( mergeFields );
                             }
-
-                            rss.WriteEndElement();
                         }
 
-                        // finish up document
-                        rss.WriteEndElement(); // channel
-                        rss.WriteEndElement(); // rss
-                        rss.WriteEndDocument();
-                        rss.Flush();
-                        rss.Close();
+                        mergeFields.Add( "Items", content );
+
+                        // show debug info
+                        if ( request.QueryString["EnableDebug"] != null )
+                        {
+                            response.Write( mergeFields.ToJson() );
+                        }
+
+                        response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
                     }
                     else
                     {
