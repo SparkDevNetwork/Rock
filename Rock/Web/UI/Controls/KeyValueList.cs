@@ -107,7 +107,7 @@ namespace Rock.Web.UI.Controls
 
             if ( values != null )
             {
-                html.Append( @"<select class=""key-value-value form-control input-width-md js-key-value-input""><option value=""""></option>" );
+                html.Append( @"<select class=""key-value-value form-control input-width-md js-key-value-input"">" );
                 foreach ( var value in values )
                 {
                     html.AppendFormat( @"<option value=""{0}"">{1}</option>", value.Key, value.Value );
