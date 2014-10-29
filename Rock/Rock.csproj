@@ -785,6 +785,7 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
