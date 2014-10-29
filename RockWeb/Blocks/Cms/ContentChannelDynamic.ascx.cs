@@ -454,7 +454,7 @@ $(document).ready(function() {
                 lDebug.Visible = true;
                 StringBuilder debugInfo = new StringBuilder();
                 debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Showing first 5 groups.</em></p>" );
+                debugInfo.Append( "<p><em>Showing first 5 items.</em></p>" );
                 debugInfo.Append( "<pre>" + debugFields.LiquidizeChildren().ToJson() + "</pre>" );
                 debugInfo.Append( "</div" );
                 lDebug.Text = debugInfo.ToString();
