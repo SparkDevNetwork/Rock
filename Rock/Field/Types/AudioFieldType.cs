@@ -22,10 +22,10 @@ using System.Web.UI.WebControls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Video field type
+    /// Audio field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    public class VideoFieldType : FileFieldType
+    public class AudioFieldType : FileFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
