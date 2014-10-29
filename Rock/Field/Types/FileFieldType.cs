@@ -60,7 +60,7 @@ namespace Rock.Field.Types
                 var binaryFile = new BinaryFileService( new RockContext() ).Get( fileUploader.BinaryFileId ?? 0 );
                 if ( binaryFile != null )
                 {
-                    binaryFile.Guid.ToString();
+                    return binaryFile.Guid.ToString();
                 }
             }
 
