@@ -37,6 +37,37 @@ namespace RockWeb.Blocks.Administration
     [Description( "Displays the blocks for a given zone." )]
     public partial class ZoneBlocks : RockBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [page updated].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page updated]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool PageUpdated
+        {
+            get 
+            {
+                DialogPage dialogPage = this.Page as DialogPage;
+                if ( dialogPage != null )
+                {
+                    return dialogPage.CloseMessage == "PAGE_UPDATED";
+                }
+                return false;
+            }
+            set 
+            {
+                DialogPage dialogPage = this.Page as DialogPage;
+                if ( dialogPage != null )
+                {
+                    dialogPage.CloseMessage = value ? "PAGE_UPDATED" : "";
+                }
+            }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -153,7 +184,6 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-
             int pageId = PageParameter( "EditPage" ).AsInteger();
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
@@ -163,8 +193,9 @@ namespace RockWeb.Blocks.Administration
             var blocks = blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList();
             blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
-            
             Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
+            PageUpdated = true;
+            
             BindGrids();
         }
 
@@ -196,6 +227,7 @@ namespace RockWeb.Blocks.Administration
                 blockService.Delete( block );
                 rockContext.SaveChanges();
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
+                PageUpdated = true;
             }
 
             BindGrids();
@@ -238,6 +270,7 @@ namespace RockWeb.Blocks.Administration
             blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
             page.FlushBlocks();
+            PageUpdated = true;
 
             BindGrids();
         }
@@ -271,6 +304,7 @@ namespace RockWeb.Blocks.Administration
                 blockService.Delete( block );
                 rockContext.SaveChanges();
                 page.FlushBlocks();
+                PageUpdated = true;
             }
 
             BindGrids();
@@ -380,6 +414,8 @@ namespace RockWeb.Blocks.Administration
             {
                 page.FlushBlocks();
             }
+
+            PageUpdated = true;
 
             BindGrids();
 
