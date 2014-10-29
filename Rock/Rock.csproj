@@ -243,6 +243,7 @@
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
+    <Compile Include="Field\Types\AudioFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
