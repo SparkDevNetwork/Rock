@@ -74,9 +74,13 @@ namespace RockWeb.Blocks.Security
 
                 if ( CurrentPerson.BirthDate.HasValue )
                 {
+                    var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+                    string mdp = dtf.ShortDatePattern;
+                    mdp = mdp.Replace( dtf.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dtf.DateSeparator, "" );
+
                     string ageText = ( CurrentPerson.BirthYear.HasValue && CurrentPerson.BirthYear != DateTime.MinValue.Year ) ?
                         string.Format( "{0} yrs old ", CurrentPerson.BirthDate.Value.Age() ) : string.Empty;
-                    lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, CurrentPerson.BirthDate.Value.ToString( "MM/dd" ) );
+                    lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, CurrentPerson.BirthDate.Value.ToMonthDayString() );
                 }
 
                 lGender.Text = CurrentPerson.Gender != Gender.Unknown ? CurrentPerson.Gender.ToString() : string.Empty;
