@@ -132,15 +132,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? phoneNumberTypeValidId = selection.AsIntegerOrNull();
-            if (!phoneNumberTypeValidId.HasValue)
+            Guid? phoneNumberTypeValueGuid = selection.AsGuidOrNull();
+            if ( !phoneNumberTypeValueGuid.HasValue )
             {
-                phoneNumberTypeValidId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
+                phoneNumberTypeValueGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
             }
+
+            int phoneNumberTypeValueId = DefinedValueCache.Read( phoneNumberTypeValueGuid.Value ).Id;
 
             // NOTE: This actually selects the entire PhoneNumber record instead of just one field. This is done intentionally so that the Grid will call the .ToString() method of PhoneNumber which formats it correctly
             var personPhoneNumberQuery = new PersonService( context ).Queryable()
-                .Select( p => p.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValueId == phoneNumberTypeValidId ) );
+                .Select( p => p.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValueId == phoneNumberTypeValueId ) );
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personPhoneNumberQuery, entityIdProperty, "p" );
 
