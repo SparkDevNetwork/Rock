@@ -637,23 +637,6 @@ $(document).ready(function() {
                                     }
                                 }
 
-                                SortProperty sortProperty = null;
-
-                                string orderBy = GetAttributeValue( "Order" );
-                                if ( !string.IsNullOrWhiteSpace( orderBy ) )
-                                {
-                                    var fieldDirection = new List<string>();
-                                    foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
-                                    {
-                                        var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
-                                    }
-
-                                    sortProperty = new SortProperty();
-                                    sortProperty.Direction = SortDirection.Ascending;
-                                    sortProperty.Property = fieldDirection.AsDelimited( "," );
-                                }
-
                                 int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
                                 if ( dataFilterId.HasValue )
                                 {
@@ -663,7 +646,7 @@ $(document).ready(function() {
                                     var errorMessages = new List<string>();
                                     Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
 
-                                    qry = qry.Where( paramExpression, whereExpression, sortProperty );
+                                    qry = qry.Where( paramExpression, whereExpression, null );
                                 }
 
 
@@ -732,6 +715,83 @@ $(document).ready(function() {
 
                         }
 
+                        SortProperty sortProperty = null;
+
+                        string orderBy = GetAttributeValue( "Order" );
+                        if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                        {
+                            var fieldDirection = new List<string>();
+                            foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                            {
+                                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                            }
+
+                            sortProperty = new SortProperty();
+                            sortProperty.Direction = SortDirection.Ascending;
+                            sortProperty.Property = fieldDirection.AsDelimited( "," );
+
+                            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                            var itemQry = items.AsQueryable();
+                            IOrderedQueryable<ContentChannelItem> qry = null;
+
+                            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                            {
+                                string column = columns[columnIndex].Trim();
+
+                                var direction = sortProperty.Direction;
+                                if ( column.ToLower().EndsWith( " desc" ) )
+                                {
+                                    column = column.Left( column.Length - 5 );
+                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                                }
+
+                                try
+                                {
+                                    if ( column.StartsWith( "Attribute:" ) )
+                                    {
+                                        string attributeKey = column.Substring( 10 );
+
+                                        if ( direction == SortDirection.Ascending )
+                                        {
+                                            qry = ( columnIndex == 0 ) ?
+                                                itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
+                                                qry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                        }
+                                        else
+                                        {
+                                            qry = ( columnIndex == 0 ) ?
+                                                itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
+                                                qry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ( direction == SortDirection.Ascending )
+                                        {
+                                            qry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : qry.ThenBy( column );
+                                        }
+                                        else
+                                        {
+                                            qry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : qry.ThenByDescending( column );
+                                        }
+                                    }
+                                }
+                                catch { }
+
+                            }
+
+                            try
+                            {
+                                if ( qry != null )
+                                {
+                                    items = qry.ToList();
+                                }
+                            }
+                            catch { }
+
+                        }
                     }
                 }
             }
@@ -816,6 +876,8 @@ $(document).ready(function() {
                                             .ToList();
                     foreach ( var attribute in itemAttributes )
                     {
+                        kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );
+
                         string computedKey = "I^" + attribute.Key;
                         ddlMetaDescriptionAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
 
@@ -831,14 +893,6 @@ $(document).ready(function() {
                     SetListValue( ddlMetaDescriptionAttribute, currentMetaDescriptionAttribute );
                     SetListValue( ddlMetaImageAttribute, currentMetaImageAttribute );
 
-                    //var channelItem = new ContentChannelItem();
-                    //channelItem.ContentChannelTypeId = channel.ContentChannelTypeId;
-                    //channelItem.LoadAttributes( rockContext );
-
-                    //foreach ( var attribute in channelItem.Attributes.Select( a => a.Value ) )
-                    //{
-                    //    kvlOrder.CustomKeys.Add( "Attribute_" + attribute.Key.ToString(), attribute.Name );
-                    //}
                 }
             }
         }
