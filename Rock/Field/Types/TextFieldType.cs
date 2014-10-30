@@ -40,8 +40,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
+            {
+                return "********";
+            }
+
             if ( condensed )
+            {
                 return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+            }
 
             return System.Web.HttpUtility.HtmlEncode( value );
         }
