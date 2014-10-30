@@ -1164,6 +1164,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Workflow\Action\BackgroundCheck\" />
     <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <ItemGroup>
