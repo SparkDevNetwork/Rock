@@ -27,10 +27,8 @@ namespace Rock.Attribute
     /// If using a custom <see cref="Rock.Field.IFieldType"/> make sure that the fieldtype has been added to Rock.
     /// </remarks>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class TextFieldAttribute : FieldAttribute
+    public class EncryptedTextFieldAttribute: TextFieldAttribute
     {
-        private const string IS_PASSWORD_KEY = "ispassword";
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
         /// </summary>
@@ -41,12 +39,9 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public TextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", 
-            int order = 0, string key = null, bool isPassword = false, string fieldTypeClass = null  )
-            : base( name, description, required, defaultValue, category, order, key, fieldTypeClass )
+        public EncryptedTextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, bool isPassword = false )
+            : base( name, description, required, defaultValue, category, order, key, isPassword, typeof(Rock.Field.Types.EncryptedTextFieldType).FullName )
         {
-            var isPasswordValue = new Field.ConfigurationValue( isPassword.ToString() );
-            FieldConfigurationValues.Add( IS_PASSWORD_KEY, isPasswordValue );
         }
 
     }
