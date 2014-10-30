@@ -750,7 +750,14 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB = new GroupType();
                         groupTypeDB.Id = 0;
                         groupTypeDB.Guid = groupTypeUI.Guid;
+                        groupTypeDB.IsSystem = false;
                         groupTypeDB.ShowInNavigation = false;
+                        groupTypeDB.ShowInGroupList = false;
+                        groupTypeDB.TakesAttendance = true;
+                        groupTypeDB.AttendanceRule = AttendanceRule.None;
+                        groupTypeDB.AttendancePrintTo = PrintTo.Default;
+                        groupTypeDB.AllowMultipleLocations = true;
+                        groupTypeDB.EnableLocationSchedules = true;
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
