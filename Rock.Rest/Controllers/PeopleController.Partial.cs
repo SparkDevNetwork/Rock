@@ -173,7 +173,7 @@ namespace Rock.Rest.Controllers
             bool reversed;
             bool allowFirstNameOnly = false;
 
-            var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ) );
+            var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
             if ( searchComponent != null )
             {
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
