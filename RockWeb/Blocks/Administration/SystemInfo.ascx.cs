@@ -28,6 +28,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Data;
+using Rock.Model;
 using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
@@ -74,6 +75,11 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.RockMemoryCache.Clear();
 
             Rock.Security.Authorization.Flush();
+
+            string webAppPath = Server.MapPath("~");
+            EntityTypeService.RegisterEntityTypes( webAppPath );
+            FieldTypeService.RegisterFieldTypes( webAppPath );
+            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
 
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
