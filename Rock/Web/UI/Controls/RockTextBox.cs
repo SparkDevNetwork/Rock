@@ -225,6 +225,43 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Placeholder"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the behavior mode (single-line, multiline, or password) of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// NOTE: using TextMode=Password results in the password being included in HTML source on postback.  Make sure you are ok 
+        /// with this before using this option!
+        /// </summary>
+        public override TextBoxMode TextMode
+        {
+            get
+            {
+                return base.TextMode;
+            }
+            set
+            {
+                base.TextMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
+        protected string Password
+        {
+            get
+            {
+                string password = ViewState["Password"] as string;
+                return password ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["Password"] = value;
+            }
+        }
+
         #endregion
 
         private HiddenField _hfDisableVrm;
@@ -254,6 +291,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( System.EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( this.Page.IsPostBack && this.TextMode == TextBoxMode.Password )
+            {
+                Password = this.Text;
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -271,6 +321,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
+            if ( this.TextMode == TextBoxMode.Password )
+            {
+                if ( this.Text == string.Empty && Password != string.Empty )
+                {
+                    this.Text = Password;
+                }
+                this.Attributes["value"] = this.Text;
+            }
+
             // logic to add input groups for preappend and append labels
             bool renderInputGroup = false;
             string cssClass = this.CssClass;
