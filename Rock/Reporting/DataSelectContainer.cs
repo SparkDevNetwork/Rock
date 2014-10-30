@@ -24,41 +24,49 @@ using Rock.Extension;
 namespace Rock.Reporting
 {
     /// <summary>
-    /// MEF Container class for data selects
+    /// MEF Container class for Binary File DataSelect Components
     /// </summary>
     public class DataSelectContainer : Container<DataSelectComponent, IComponentData>
     {
         /// <summary>
-        /// The instance
+        /// Singleton instance
         /// </summary>
-        private static DataSelectContainer instance;
+        private static readonly Lazy<DataSelectContainer> instance =
+            new Lazy<DataSelectContainer>( () => new DataSelectContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static DataSelectContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                {
-                    instance = new DataSelectContainer();
-                }
-
-                return instance;
-            }
+            get { return instance.Value; }
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="DataSelectContainer"/> class from being created.
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        private DataSelectContainer()
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static DataSelectComponent GetComponent( string entityType )
         {
-            Refresh();
+            return Instance.GetComponentByEntity( entityType );
         }
 
         /// <summary>
-        /// Gets the available select entity type names.
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets a list of entity type names that have select components
         /// </summary>
         /// <returns></returns>
         public static List<string> GetAvailableSelectEntityTypeNames()
@@ -78,45 +86,29 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
-        /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <returns></returns>
-        public static DataSelectComponent GetComponent( string entityTypeName )
-        {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the components that are for transformed a given entity type name
+        /// Gets the components that are for selecting a given entity type name
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
         public static List<DataSelectComponent> GetComponentsBySelectedEntityTypeName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => 
+                .Where( c =>
                     c.Value.Value.AppliesToEntityType == entityTypeName ||
-                    string.IsNullOrEmpty(c.Value.Value.AppliesToEntityType)
-                    )
+                    string.IsNullOrEmpty( c.Value.Value.AppliesToEntityType ) )
                 .Select( c => c.Value.Value )
                 .OrderBy( c => c.Order )
                 .ToList();
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( DataSelectComponent ) )]
         protected override IEnumerable<Lazy<DataSelectComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
+
     }
 }

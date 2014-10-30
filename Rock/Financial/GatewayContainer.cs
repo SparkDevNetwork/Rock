@@ -34,14 +34,6 @@ namespace Rock.Financial
             new Lazy<GatewayContainer>( () => new GatewayContainer() );
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="GatewayContainer"/> class from being created.
-        /// </summary>
-        private GatewayContainer()
-        {
-            Refresh();
-        }
-
-        /// <summary>
         /// Gets the instance.
         /// </summary>
         /// <value>
@@ -59,25 +51,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public static GatewayComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-
-                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
-                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
-                {
-                    if ( component.IsActive )
-                    {
-                        return component;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
 
         /// <summary>
@@ -87,25 +61,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public static string GetComponentName( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-
-                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
-                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
-                {
-                    if ( component.IsActive )
-                    {
-                        return serviceEntry.Value.Metadata.ComponentName;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return string.Empty;
+            return Instance.GetComponentNameByEntity( entityType );
         }
 
         /// <summary>
@@ -114,7 +70,8 @@ namespace Rock.Financial
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof (GatewayComponent) )]
+        [ImportMany( typeof( GatewayComponent ) )]
         protected override IEnumerable<Lazy<GatewayComponent, IComponentData>> MEFComponents { get; set; }
+
     }
 }
