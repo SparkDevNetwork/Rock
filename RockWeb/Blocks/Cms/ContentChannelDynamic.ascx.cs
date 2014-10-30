@@ -499,7 +499,7 @@ $(document).ready(function() {
                                     context.Request.Url.Port == 80
                                         ? string.Empty
                                         : ":" + context.Request.Url.Port,
-                                    RockPage.ResolveRockUrl( "~/GetChannelRss.ashx?ChannelId="),
+                                    RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId="),
                                     content.Select(c => c.ContentChannelId).FirstOrDefault());
 
                 rssLink.Attributes.Add( "href", channelRssUrl );
