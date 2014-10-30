@@ -331,6 +331,9 @@ $(document).ready(function() {
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
+            
+            // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+            filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
         }
@@ -384,6 +387,7 @@ $(document).ready(function() {
         {
             pnlEdit.Visible = false;
             pnlView.Visible = true;
+            nbContentError.Visible = false;
             upnlContent.Update();
 
             var pageRef = CurrentPageReference;
@@ -391,8 +395,33 @@ $(document).ready(function() {
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+
+            var errorMessages = new List<string>();
+            List<ContentChannelItem> content;
+            try
+            {
+                content = GetContent( errorMessages ) ?? new List<ContentChannelItem>();
+            }
+            catch (Exception ex)
+            {
+                this.LogException( ex );
+                Exception exception = ex;
+                while ( exception != null )
+                {
+                    errorMessages.Add( exception.Message );
+                    exception = exception.InnerException;
+                }
                 
-            var content = GetContent() ?? new List<ContentChannelItem>();
+                content = new List<ContentChannelItem>();
+            }
+
+            if (errorMessages.Any())
+            {
+                nbContentError.Text = "ERROR: There was a problem getting content...<br/> ";
+                nbContentError.NotificationBoxType = NotificationBoxType.Danger;
+                nbContentError.Details = errorMessages.AsDelimited( "<br/>" );
+                nbContentError.Visible = true;
+            }
 
             var pagination = new Pagination();
             pagination.ItemCount = content.Count();
@@ -585,7 +614,7 @@ $(document).ready(function() {
             return template;
         }
 
-        private List<ContentChannelItem> GetContent()
+        private List<ContentChannelItem> GetContent( List<string> errorMessages )
         {
             var items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
             bool queryParameterFiltering = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
@@ -645,8 +674,6 @@ $(document).ready(function() {
                                 {
                                     var dataFilterService = new DataViewFilterService( rockContext );
                                     var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-
-                                    var errorMessages = new List<string>();
                                     Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
 
                                     qry = qry.Where( paramExpression, whereExpression, null );
@@ -1008,27 +1035,14 @@ $(document).ready(function() {
             if ( filter.ExpressionType == FilterExpressionType.Filter )
             {
                 var filterControl = new FilterField();
+                
                 parentControl.Controls.Add( filterControl );
                 filterControl.DataViewFilterGuid = filter.Guid;
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
-                filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
-
+                
                 // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
-                string itemKey = "FilterFieldComponents:" + ITEM_TYPE_NAME;
-                if ( HttpContext.Current.Items.Contains( itemKey ) )
-                {
-                    var filterComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
-                    if (filterComponents != null)
-                    {
-                        foreach( var section in filterComponents )
-                        {
-                            if (  section.Value.ContainsKey("Rock.Reporting.DataFilter.OtherDataViewFilter"))
-                            {
-                                section.Value.Remove( "Rock.Reporting.DataFilter.OtherDataViewFilter" );
-                            }
-                        }
-                    }
-                }
+                filterControl.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
+                filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
 
                 if ( filter.EntityTypeId.HasValue )
                 {
