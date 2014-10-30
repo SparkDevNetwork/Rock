@@ -185,8 +185,8 @@ namespace RockWeb.Blocks.Cms
         private Template GetTemplate()
         {
             string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
             Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
 
             string cacheKey = CacheKey();
 
