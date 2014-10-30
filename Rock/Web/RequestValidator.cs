@@ -40,6 +40,12 @@ namespace Rock.Web
             bool valid = base.IsValidRequestString( context, value, requestValidationSource, collectionKey, out validationFailureIndex );
             if ( !valid && requestValidationSource == RequestValidationSource.Form )
             {
+                if ( collectionKey == "mandrill_events")
+                {
+                    validationFailureIndex = -1;
+                    return true;
+                }
+
                 if ( context != null &&
                     context.Request.Form[collectionKey + "_dvrm"] != null &&
                     context.Request.Form[collectionKey + "_dvrm"].AsBoolean( true ) )
