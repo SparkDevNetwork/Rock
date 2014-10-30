@@ -58,6 +58,10 @@
     <Compile Include="Migrations\201410281734252_BlogLiquidRollupItems.Designer.cs">
       <DependentUpon>201410281734252_BlogLiquidRollupItems.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201410291600272_LiquidTemplateDefinedType.cs" />
+    <Compile Include="Migrations\201410291600272_LiquidTemplateDefinedType.Designer.cs">
+      <DependentUpon>201410291600272_LiquidTemplateDefinedType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.Designer.cs">
       <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>
@@ -1287,6 +1291,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201410281734252_BlogLiquidRollupItems.resx">
       <DependentUpon>201410281734252_BlogLiquidRollupItems.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201410291600272_LiquidTemplateDefinedType.resx">
+      <DependentUpon>201410291600272_LiquidTemplateDefinedType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.resx">
       <DependentUpon>201410012345399_ReportSort.cs</DependentUpon>

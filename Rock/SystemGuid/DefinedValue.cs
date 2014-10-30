@@ -403,5 +403,14 @@ namespace Rock.SystemGuid
         public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
 
         #endregion
+
+        #region Liquid Templates
+
+        /// <summary>
+        /// Default RSS Channel Template
+        /// </summary>
+        public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
+
+        #endregion
     }
 }
