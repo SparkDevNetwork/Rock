@@ -48,6 +48,9 @@
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\dotLiquid\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -1167,12 +1170,6 @@
   <ItemGroup>
     <Folder Include="Auth\" />
     <Folder Include="Workflow\Attribute\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
-      <Name>DotLiquid</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
