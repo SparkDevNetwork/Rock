@@ -505,8 +505,12 @@ namespace RockWeb.Blocks.Core
                 .ThenBy( a => a.Name )
                 .ToList();
 
-            attributes.ForEach( a => a.Order = order++ );
-
+            foreach ( var attribute in attributes )
+            {
+                attribute.Order = order++;
+                AttributeCache.Flush( attribute.Id );
+            }
+            
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
             if ( movedItem != null )
             {
