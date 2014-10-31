@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gTransactions_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            ShowDetailForm( (int)e.RowKeyValue );
+            ShowDetailForm( e.RowKeyId );
         }
 
         /// <summary>
