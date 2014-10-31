@@ -287,6 +287,9 @@
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Security\BackgroundCheckComponent.cs" />
+    <Compile Include="Security\BackgroundCheckContainer.cs" />
+    <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
