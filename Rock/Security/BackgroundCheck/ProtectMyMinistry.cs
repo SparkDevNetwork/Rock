@@ -209,34 +209,7 @@ namespace Rock.Security.BackgroundCheck
                 {
                     if ( xResult.Root.Descendants().Count() > 0 )
                     {
-                        var xOrderDetail = xResult.Descendants( "OrderDetail" ).FirstOrDefault();
-                        if ( xOrderDetail != null )
-                        {
-                            string status = ( from o in xOrderDetail.Descendants( "Status" ) select o.Value ).FirstOrDefault();
-                            if ( !string.IsNullOrWhiteSpace( status ) )
-                            {
-                                // Request has been completed
-
-                                // Save the status
-                                workflow.SetAttributeValue( "ReportStatus", status );
-
-                                // Save the report link 
-                                string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();
-                                workflow.SetAttributeValue( "ReportLink", reportLink );
-
-                                // Save the recommendation 
-                                string recommendation = ( from o in xResult.Descendants( "Recommendation" ) select o.Value ).FirstOrDefault();
-                                workflow.SetAttributeValue( "ReportRecommendation", recommendation );
-
-                                // Save the report
-                                Guid? binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
-                                if ( binaryFileGuid.HasValue )
-                                {
-                                    workflow.SetAttributeValue( "Report", binaryFileGuid.Value.ToString() );
-                                }
-
-                            }
-                        }
+                        SaveResults( xResult, workflow );
                     }
                     return true;
                 }
@@ -254,50 +227,6 @@ namespace Rock.Security.BackgroundCheck
                 errorMessages.Add( ex.Message );
                 return false;
             }
-        }
-
-        private Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
-        {
-            // get BinaryFileType info
-            if ( binaryFileAttribute != null &&
-                binaryFileAttribute.QualifierValues != null &&
-                binaryFileAttribute.QualifierValues.ContainsKey( "binaryFileType" ) )
-            {
-                int? fileTypeId = binaryFileAttribute.QualifierValues["binaryFileType"].Value.AsIntegerOrNull();
-                if ( fileTypeId.HasValue )
-                {
-                    RockContext rockContext = new RockContext();
-                    BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeId.Value );
-
-                    if ( binaryFileType != null )
-                    {
-                        byte[] data = null;
-
-                        using ( WebClient wc = new WebClient() )
-                        {
-                            data = wc.DownloadData( url );
-                        }
-
-                        BinaryFile binaryFile = new BinaryFile();
-                        binaryFile.Guid = Guid.NewGuid();
-                        binaryFile.IsTemporary = true;
-                        binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                        binaryFile.MimeType = "application/pdf";
-                        binaryFile.FileName = fileName;
-                        binaryFile.Data = new BinaryFileData();
-                        binaryFile.Data.Content = data;
-
-                        var binaryFileService = new BinaryFileService( rockContext );
-                        binaryFileService.Add( binaryFile );
-
-                        rockContext.SaveChanges();
-
-                        return binaryFile.Guid;
-                    }
-                }
-            }
-
-            return null;
         }
 
         XDocument PostToWebService( XDocument data, string requestUrl )
@@ -370,6 +299,82 @@ namespace Rock.Security.BackgroundCheck
             while ( count > 0 );
 
             return sb.ToString();
+        }
+
+        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow)
+        {
+            var xOrderDetail = xResult.Descendants( "OrderDetail" ).FirstOrDefault();
+            if ( xOrderDetail != null )
+            {
+                string status = ( from o in xOrderDetail.Descendants( "Status" ) select o.Value ).FirstOrDefault();
+                if ( !string.IsNullOrWhiteSpace( status ) )
+                {
+                    // Request has been completed
+
+                    // Save the status
+                    workflow.SetAttributeValue( "ReportStatus", status );
+
+                    // Save the report link 
+                    string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();
+                    workflow.SetAttributeValue( "ReportLink", reportLink );
+
+                    // Save the recommendation 
+                    string recommendation = ( from o in xResult.Descendants( "Recommendation" ) select o.Value ).FirstOrDefault();
+                    workflow.SetAttributeValue( "ReportRecommendation", recommendation );
+
+                    // Save the report
+                    Guid? binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
+                    if ( binaryFileGuid.HasValue )
+                    {
+                        workflow.SetAttributeValue( "Report", binaryFileGuid.Value.ToString() );
+                    }
+
+                }
+            }
+        }
+
+        private static Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
+        {
+            // get BinaryFileType info
+            if ( binaryFileAttribute != null &&
+                binaryFileAttribute.QualifierValues != null &&
+                binaryFileAttribute.QualifierValues.ContainsKey( "binaryFileType" ) )
+            {
+                int? fileTypeId = binaryFileAttribute.QualifierValues["binaryFileType"].Value.AsIntegerOrNull();
+                if ( fileTypeId.HasValue )
+                {
+                    RockContext rockContext = new RockContext();
+                    BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeId.Value );
+
+                    if ( binaryFileType != null )
+                    {
+                        byte[] data = null;
+
+                        using ( WebClient wc = new WebClient() )
+                        {
+                            data = wc.DownloadData( url );
+                        }
+
+                        BinaryFile binaryFile = new BinaryFile();
+                        binaryFile.Guid = Guid.NewGuid();
+                        binaryFile.IsTemporary = true;
+                        binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                        binaryFile.MimeType = "application/pdf";
+                        binaryFile.FileName = fileName;
+                        binaryFile.Data = new BinaryFileData();
+                        binaryFile.Data.Content = data;
+
+                        var binaryFileService = new BinaryFileService( rockContext );
+                        binaryFileService.Add( binaryFile );
+
+                        rockContext.SaveChanges();
+
+                        return binaryFile.Guid;
+                    }
+                }
+            }
+
+            return null;
         }
 
     }

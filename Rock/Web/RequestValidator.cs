@@ -40,13 +40,22 @@ namespace Rock.Web
             bool valid = base.IsValidRequestString( context, value, requestValidationSource, collectionKey, out validationFailureIndex );
             if ( !valid && requestValidationSource == RequestValidationSource.Form )
             {
-                if ( context != null &&
-                    context.Request.Form[collectionKey + "_dvrm"] != null &&
-                    context.Request.Form[collectionKey + "_dvrm"].AsBoolean( true ) )
+                if ( context != null )
                 {
-                    // If a "_vrm" form value with same id exists and is set to false, allow the invalid data.
-                    validationFailureIndex = -1;
-                    return true;
+                    if ( context.Request != null && context.Request.Path.EndsWith(".ashx", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        // If this is a webhook, allow it
+                        validationFailureIndex = -1;
+                        return true;
+                    }
+
+                    if ( context.Request.Form[collectionKey + "_dvrm"] != null &&
+                    context.Request.Form[collectionKey + "_dvrm"].AsBoolean( true ) )
+                    {
+                        // If a "_vrm" form value with same id exists and is set to false, allow the invalid data.
+                        validationFailureIndex = -1;
+                        return true;
+                    }
                 }
             }
             return valid;
