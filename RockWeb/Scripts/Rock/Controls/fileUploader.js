@@ -82,7 +82,6 @@
                     }
                     if (options.maxUploadBytes && data.total) {
                         if (data.total >= options.maxUploadBytes) {
-                            debugger
                             msg = "file size is limited to " + (options.maxUploadBytes / 1024 / 1024) + "MB";
                         }
                     }
