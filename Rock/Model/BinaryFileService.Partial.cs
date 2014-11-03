@@ -19,6 +19,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -68,19 +69,19 @@ namespace Rock.Model
         /// <summary>
         /// Determines the storage provider that was used the last time the file was saved
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext dbContext, BinaryFile item )
+        public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext rockContext, BinaryFile item )
         {
             Rock.Storage.ProviderComponent storageProvider = null;
 
-            if ( item != null )
+            if ( item != null && item.StorageEntityTypeId.HasValue)
             {
-                item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService( dbContext ).Get( item.StorageEntityTypeId ?? 0 );
-                if ( item.StorageEntityType != null )
+                var storageEntityType = EntityTypeCache.Read( item.StorageEntityTypeId.Value, rockContext );
+                if ( storageEntityType != null )
                 {
-                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
+                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( storageEntityType.Name );
                 }
             }
 

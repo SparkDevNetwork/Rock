@@ -5,6 +5,7 @@
 
     <%-- View Panel --%>
     <asp:Panel ID="pnlView" runat="server">
+        <Rock:NotificationBox ID="nbContentError" runat="server" Dismissable="true" Visible="false" />
         <asp:PlaceHolder ID="phContent" runat="server" />
         <asp:Literal ID="lDebug" runat="server" />
     </asp:Panel>

@@ -272,7 +272,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.PersonAlias.Person.ToStringSafe();
+            if ( this.PersonAlias != null && this.PersonAlias.Person != null )
+            {
+                return this.PersonAlias.Person.ToStringSafe();
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
 
         #endregion

@@ -177,7 +177,7 @@ public class Mandrill : IHttpHandler
                 // Unix timestamp is seconds past epoch
                 double timeStampSeconds = Double.TryParse( TimeStamp, out timeStampSeconds ) ? timeStampSeconds : 0;
                 System.DateTime dtDateTime = new DateTime( 1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc );
-                return dtDateTime.AddSeconds( timeStampSeconds ).ToLocalTime();
+                return Rock.RockDateTime.ConvertLocalDateTimeToRockDateTime( dtDateTime.AddSeconds( timeStampSeconds ).ToLocalTime() );
             }
 
         }

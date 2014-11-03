@@ -229,8 +229,8 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
-                    groupMember.SaveAttributeValues( rockContext );
                     rockContext.SaveChanges();
+                    groupMember.SaveAttributeValues( rockContext );
                 } );
 
                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );

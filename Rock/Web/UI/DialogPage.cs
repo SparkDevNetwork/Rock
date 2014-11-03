@@ -26,9 +26,20 @@ namespace Rock.Web.UI
     {
         /// <summary>
         /// An optional subtitle
-        /// </summary>        
-        public string SubTitle { get; set; }
-        
+        /// </summary>
+        /// <value>
+        /// The sub title.
+        /// </value>
+        public virtual string SubTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the close message.
+        /// </summary>
+        /// <value>
+        /// The close message.
+        /// </value>
+        public virtual string CloseMessage { get; set; }
+
         /// <summary>
         /// Fires the save.
         /// </summary>

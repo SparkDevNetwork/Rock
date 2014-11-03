@@ -1,19 +1,27 @@
-+ Added the option for specifying 'Current Date' when adding data view or content channel item filters on date fields or attributes.
-+ Updated default format on content channel item detail block to check for missing image (Fixes #580)
-+ Added the option to support additional filtering based on query string parameter values to the Content Channel Dynamic block
-+ Fixed the Social Media person attribute category to have the correct qualifier (Fixes #579)
-+ Added communication template content that was deleted in the v1.0 update
-+ Fixed issue with content channel items getting saved with incorrect status when user is authorized to approve channel items. (Fixes #576)
-+ Updated check-in administration screen to exclude any group types that do not have the 'Takes Attendance' option enabled when selecting the 'Check-in Areas' to use for check-in. (Fixes #559)
-+ Added preview dialog to Html Content Approval
-+ Added support for merging liquid fields in the RSS channel HTTP hander.
-+ Added new content channel type of 'Blogs' along with a sample blog on the external website. Also added the 'Bulletins' channel type.
-+ Added new Lava filter 'ToString' to convert integers to strings.
-+ Removed the homepage link from the stark theme as the logo already acts as a home button.
-+ Added security to the 'Web Ads' content channel to allow 'Communication Administrators' to be able to Edit/Administrate/Approve. (Fixes #568)
-+ Fixed issue that was keeping content from showing in the ContentChannelDynamic block if you were not logged in. (Fixes #567)
-+ Fixed typo changing 'Nick Name' to 'Nickname'. (Fixes #570)
-+ Fixed issue that limited the editing of attributes on the Person Profile screen in Firefox. . (Fixes #573)
-+ Added the ability to change the page title, override the meta description, add an RSS autodiscover tag and add meta images on the ContentChannelDynamic block.
-+ Added ability to sort reports on any column (except for Liquid).
-+ Fixed DataView filters to work on MultiSelect Attributes.  For example, if the Attribute is "Favorite Colors" with options of "Red,Blue,Green", a data filter of "Favorite Colors is Blue or Red" will work.
++ Update the Content Channel Dynamic block so that it does not default to a specific channel when first added to a page.
++ Update ordering of defined type attributes to clear the attribute cache so that editing values immediately reflects the updated order.
++ Turn off form validation for the field that is returned by Mandrill to Rock's Mandrill webhook so that exceptions do not occur when Mandrill posts this event data.
++ Fixed issue with the date picker when used at the bottom of screens (Fixes #592).
++ Update the Content Channel Dynamic block to set the correct liquid template folder prior to looking for liquid template files.
++ Update Check-in Configuration block to save new group types (Areas) with correct default options for being used by check-in application (Fixes #610).
++ Made the Dynamic Content Channel feed feature work off of liquid templates. NOTE: The address of the handler changed from GetChannelRss.ashx to GetChannelFeed.ashx to make it more reusable. There is also a new defined type for storing liquid templates in. See documentation for more information.
++ Update the Content Channel Dynamic block to allow sorting items by attribute values in addition to item properties.
++ Update the Zone editor so that it refreshes the page after adding, removing, or changing the order of blocks on a page.
++ Fix the age and anniversary on person profile page, and the birthday picker on person edit page to be culture aware when formatting date display (Fixes #607).
++ Correct bug that was not saving the first attribute value on new group members (Fixes #606).
++ Family can now be deleted if there is only one member and that member is in at least one other family (Fixes #581).
++ Update the System Information's Clear Cache option to also clear all the cached security authorization rules.
++ Fix issue with attribute images being saved as temporary images (and therefore subsequently being deleted by clean-up job).
++ Update how cache items are cleared in the System Information's Clear Cache option. It now deletes the entire caching object instead of attempting to remove individual items.
++ Fix the Assign Activity to Group workflow action to correctly assign the activity to the selected group.
++ Fix exception caused when viewing a single select field with no value (Fixes #602).
++ Update the Person Profile page to check for 'Edit' security before allowing edits to the person, family, and relationships.  Also add Staff and Staff-Like roles to have the ability to edit by default (Fixes #597).
++ Update Google maps to load over both http and https (Fixes #593).
++ Update check-in location active time, and mandrill notices to handle time zone time comparisons correctly (Fixes #594).
++ Fix the workflow text/attribute drop down control to allow html in the text portion of the control (Fixes #591).
++ Fix issue that would cause 404 page to fail XSS validation test (Fixes #563).
++ Fix GivingGroup not getting set in EditPerson (Fixes #599).
++ fix address control getting an error if the Country doesn't have any States defined (Fixes #587).
++ Updated the Content Channel Dynamic blocks on the external site to use the themes liquid files (as an include file).
++ Updated the Group Detail block so that GroupType can only be edited when adding a new group (Fixes #605).
++ Fixed auto discovery link for RSS channels
