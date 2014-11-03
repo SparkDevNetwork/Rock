@@ -53,16 +53,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201410272234402_StaticMapSsl-DynamicContent.cs" />
-    <Compile Include="Migrations\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410281734252_BlogLiquidRollupItems.cs" />
-    <Compile Include="Migrations\201410281734252_BlogLiquidRollupItems.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410281734252_BlogLiquidRollupItems.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410281734252_BlogLiquidRollupItems.Designer.cs">
       <DependentUpon>201410281734252_BlogLiquidRollupItems.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201410291600272_LiquidTemplateDefinedType.cs" />
-    <Compile Include="Migrations\201410291600272_LiquidTemplateDefinedType.Designer.cs">
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410291600272_LiquidTemplateDefinedType.cs" />
+    <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410291600272_LiquidTemplateDefinedType.Designer.cs">
       <DependentUpon>201410291600272_LiquidTemplateDefinedType.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.cs" />
@@ -1285,13 +1285,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201410272234402_StaticMapSsl-DynamicContent.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410281734252_BlogLiquidRollupItems.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410281734252_BlogLiquidRollupItems.resx">
       <DependentUpon>201410281734252_BlogLiquidRollupItems.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201410291600272_LiquidTemplateDefinedType.resx">
+    <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410291600272_LiquidTemplateDefinedType.resx">
       <DependentUpon>201410291600272_LiquidTemplateDefinedType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.1\201410012345399_ReportSort.resx">

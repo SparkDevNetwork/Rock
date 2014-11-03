@@ -205,6 +205,7 @@ $(document).ready(function() {
                 .Select( c => new { c.Guid, c.Name } )
                 .ToList();
             ddlChannel.DataBind();
+            ddlChannel.Items.Insert( 0, new ListItem( "", "" ) );
             ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
             ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
 
