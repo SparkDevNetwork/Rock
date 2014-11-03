@@ -901,10 +901,15 @@ $(document).ready(function() {
                     // add item attributes
                     AttributeService attributeService = new AttributeService( rockContext );
                     var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
-                                            .Where( a =>
-                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                                a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) )
+                                            .Where( a => (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) 
+                                                ) || (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() ) 
+                                                ) )
                                             .ToList();
+
                     foreach ( var attribute in itemAttributes )
                     {
                         kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );
