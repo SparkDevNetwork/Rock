@@ -132,7 +132,7 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// The Organization Address location
         /// </summary>
-        private Rock.Model.Location _organizationAddressLocation = null;
+        private Rock.Client.Location _organizationAddressLocation = null;
 
         /// <summary>
         /// The _account summary query
@@ -176,18 +176,18 @@ namespace Rock.Apps.StatementGenerator
                 OrderByPostalCode = true
             };
 
-            var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Model.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();
+            var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Client.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();
             if ( organizationAddressAttribute != null )
             {
                 Guid locationGuid = Guid.Empty;
                 if ( Guid.TryParse( organizationAddressAttribute.DefaultValue, out locationGuid ) )
                 {
-                    _organizationAddressLocation = _rockRestClient.GetDataByGuid<Rock.Model.Location>( "api/locations", locationGuid );
+                    _organizationAddressLocation = _rockRestClient.GetData<List<Rock.Client.Location>>( "api/locations", string.Format( "Guid eq guid'{0}'", locationGuid ) ).FirstOrDefault();
                 }
             }
 
             // If we don't have a _organizationAddressLocation, just create an empty location
-            _organizationAddressLocation = _organizationAddressLocation ?? new Rock.Model.Location();
+            _organizationAddressLocation = _organizationAddressLocation ?? new Rock.Client.Location();
 
             // setup report layout and events
             DocumentLayout report = new DocumentLayout( this.Options.LayoutFile );
@@ -285,7 +285,7 @@ namespace Rock.Apps.StatementGenerator
         protected void orgInfoQuery_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
         {
             // everytime the OrgInfoSubReport is called, just give it a one row dataset with a Location object
-            List<Rock.Model.Location> orgInfoList = new List<Rock.Model.Location>();
+            List<Rock.Client.Location> orgInfoList = new List<Rock.Client.Location>();
             orgInfoList.Add( _organizationAddressLocation );
             e.RecordSet = new EnumerableRecordSet( orgInfoList );
         }
