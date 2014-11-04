@@ -147,6 +147,10 @@ namespace Rock.Storage.Provider
             BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId );
             binaryFileType.LoadAttributes();
             string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
+            if (string.IsNullOrEmpty(rootPath))
+            {
+                rootPath = "~/App_Data/Files";
+            }
             return rootPath;
         }
 

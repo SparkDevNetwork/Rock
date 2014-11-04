@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Edit( object sender, RowEventArgs e )
         {
-            gDefinedValues_ShowEdit( (int)e.RowKeyValue );
+            gDefinedValues_ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var definedValueService = new DefinedValueService( rockContext );
 
-            DefinedValue value = definedValueService.Get( (int)e.RowKeyValue );
+            DefinedValue value = definedValueService.Get( e.RowKeyId );
 
             if ( value != null )
             {

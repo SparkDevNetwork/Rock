@@ -16,7 +16,7 @@
 
                 var $textBox = $('#' + options.id);
 
-                // uses https://github.com/ianserlin/bootstrap-datepicker/tree/3.x
+                // uses https://github.com/eternicode/bootstrap-datepicker
                 $textBox.datepicker({
                     format: dateFormat,
                     autoclose: true,

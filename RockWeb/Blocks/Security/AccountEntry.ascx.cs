@@ -57,50 +57,6 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        /// <value>
-        /// The password.
-        /// </value>
-        protected string Password
-        {
-            get
-            {
-                string password = ViewState["Password"] as string;
-                return password ?? string.Empty;
-            }
-
-            set
-            {
-                ViewState["Password"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the password confirm.
-        /// </summary>
-        /// <value>
-        /// The password confirm.
-        /// </value>
-        protected string PasswordConfirm
-        {
-            get
-            {
-                string password = ViewState["PasswordConfirm"] as string;
-                return password ?? string.Empty;
-            }
-
-            set
-            {
-                ViewState["PasswordConfirm"] = value;
-            }
-        }
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -140,25 +96,6 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
-
-            if ( tbPassword.Text == string.Empty && Password != string.Empty )
-            {
-                tbPassword.Text = Password;
-            }
-
-            if ( tbPasswordConfirm.Text == string.Empty && PasswordConfirm != string.Empty )
-            {
-                tbPasswordConfirm.Text = PasswordConfirm;
-            }
-        }
-
         #endregion
 
         #region Events
@@ -172,12 +109,10 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
-            Password = tbPassword.Text;
-            PasswordConfirm = tbPasswordConfirm.Text;
 
             if ( Page.IsValid )
             {
-                if ( UserLoginService.IsPasswordValid( Password ) )
+                if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
                     var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
                     var userLogin = userLoginService.GetByUserName( tbUserName.Text );
@@ -634,7 +569,7 @@ namespace RockWeb.Blocks.Security
                 Rock.Model.AuthenticationServiceType.Internal,
                 EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 tbUserName.Text, 
-                Password, 
+                tbPassword.Text,
                 confirmed );
         }
 

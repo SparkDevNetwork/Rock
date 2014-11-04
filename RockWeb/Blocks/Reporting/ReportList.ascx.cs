@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Reporting
 
         protected void gList_RowSelected( object sender, RowEventArgs e )
         {
-            int selectedId = (int)e.RowKeyValue;
+            int selectedId = e.RowKeyId;
 
             NavigateToLinkedPage( "DetailPage", "ReportId", selectedId );
         }

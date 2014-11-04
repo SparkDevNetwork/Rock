@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelDetail" %>
 
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=hfActiveDialog.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -62,6 +68,21 @@
                         </div>
                     </div>
 
+                    <Rock:PanelWidget ID="wpItemAttributes" runat="server" Title="Item Attributes">
+                        <div class="grid">
+                            <Rock:Grid ID="gItemAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Item Attribute" ShowConfirmDeleteDialog="false">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
+                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:EditField OnClick="gItemAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gItemAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
@@ -86,5 +107,13 @@
 
         </asp:Panel>
         
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgItemAttributes" runat="server" Title="Content Item Attributes" OnSaveClick="dlgItemAttributes_SaveClick"  OnCancelScript="clearActiveDialog();" ValidationGroup="ItemAttributes">
+            <Content>
+                <Rock:AttributeEditor ID="edtItemAttributes" runat="server" ShowActions="false" ValidationGroup="ItemAttributes" />
+            </Content>
+        </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>

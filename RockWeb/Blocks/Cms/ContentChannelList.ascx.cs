@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
 
-            ContentChannel contentChannel = contentChannelService.Get( (int)e.RowKeyValue );
+            ContentChannel contentChannel = contentChannelService.Get( e.RowKeyId );
 
             if ( contentChannel != null )
             {

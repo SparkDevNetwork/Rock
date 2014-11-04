@@ -17,6 +17,7 @@
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server"  />
                 </div>
             </div>
 
@@ -44,7 +45,6 @@
                                             <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
                                         </div>
                                     </asp:Panel>
-                                    <asp:Literal ID="lStatusDetails" runat="server"></asp:Literal>
                                 </div>
                             </div>
                         </div>
@@ -57,13 +57,19 @@
                         </div>
                     </div>
 
+
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
-                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                             <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                     </div>

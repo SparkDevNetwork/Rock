@@ -608,6 +608,7 @@ $(document).ready(function() {
                         }
                         catch ( Exception ex )
                         {
+                            this.LogException( ex );
                             Exception exception = ex;
                             while ( exception != null )
                             {

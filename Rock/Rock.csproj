@@ -48,6 +48,9 @@
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\dotLiquid\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -161,6 +164,7 @@
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
+    <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
@@ -233,6 +237,7 @@
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
+    <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
@@ -243,6 +248,7 @@
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
+    <Compile Include="Field\Types\AudioFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
@@ -784,6 +790,7 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
@@ -1163,12 +1170,6 @@
   <ItemGroup>
     <Folder Include="Auth\" />
     <Folder Include="Workflow\Attribute\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
-      <Name>DotLiquid</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

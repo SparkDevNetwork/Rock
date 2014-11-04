@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDevice_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "DeviceId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "DeviceId", e.RowKeyId );
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             DeviceService DeviceService = new DeviceService( rockContext );
-            Device Device = DeviceService.Get( (int)e.RowKeyValue );
+            Device Device = DeviceService.Get( e.RowKeyId );
 
             if ( Device != null )
             {
