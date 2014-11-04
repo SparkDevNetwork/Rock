@@ -133,6 +133,13 @@ namespace RockWeb.Blocks.Security
                     var birthday = bpBirthDay.SelectedDate;
                     if ( birthday.HasValue )
                     {
+                        // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                        var today = RockDateTime.Today;
+                        while ( birthday.Value.CompareTo( today ) > 0 )
+                        {
+                            birthday = birthday.Value.AddYears( -100 );
+                        }
+
                         person.BirthMonth = birthday.Value.Month;
                         person.BirthDay = birthday.Value.Day;
                         if ( birthday.Value.Year != DateTime.MinValue.Year )
