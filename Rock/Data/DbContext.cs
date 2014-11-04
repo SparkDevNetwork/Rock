@@ -421,7 +421,17 @@ namespace Rock.Data
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( rockEntityType );
                     if ( entityType != null )
                     {
-                        string title = item.Entity.ToString();
+                        string title;
+                        try
+                        {
+                            title = item.Entity.ToString();
+                        }
+                        catch
+                        {
+                            // ignore exception (Entity often overrides ToString() and we don't want that prevent the audit if it fails)
+                            title = null;
+                        }
+
                         if ( string.IsNullOrWhiteSpace( title ) )
                         {
                             title = entityType.FriendlyName ?? string.Empty;

@@ -80,7 +80,7 @@
                             <li><a href="#activator">WebActivatorEx</a> (Ms-PL) - <a href="http://nuget.org/packages/WebActivator">Project Site</a> </li>
                             <li><a href="#webgrease">WebGrease</a> (Custom) - <a href="http://nuget.org/packages/WebGrease/">Project Site</a> </li>
                             <li><a href="#limitboot">Limit Boostrap</a> (Apache) - <a href="http://jvashishtha.github.io/bootstrap/javascript.html#limit">Project Site</a> </li>
-                            <li><a href="#datepicker">Boostrap Datepicker</a> (Apache) - <a href="https://github.com/ianserlin/bootstrap-datepicker/">Project Site</a> </li>
+                            <li><a href="#datepicker">Boostrap Datepicker</a> (Apache) - <a href="https://github.com/eternicode/bootstrap-datepicker">Project Site</a> </li>
                             <li><a href="#imageresizer">ImageResizer</a> (MIT) - <a href="http://imageresizing.net/">Project Site</a> </li>
                             <li><a href="#fastclick">FastClick</a> (Custom) - <a href="https://github.com/ftlabs/fastclick">Project Site</a> </li>
                             <li><a href="#prettify">Prettify.js</a> (Apache) - <a href="https://code.google.com/p/google-code-prettify/">Project Site</a> </li>

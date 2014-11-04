@@ -33,7 +33,7 @@ namespace Rock.Communication.Transport
 
     [TextField( "Server", "", true, "smtp.mandrillapp.com", "", 0 )]
     [TextField( "Username", "The SMTP username provided by Mandrill", true, "", "", 1 )]
-    [TextField( "Password", "Any valid Mandrill API key (not the password you use to login to Mandrill)", true, "", "", 2 )]
+    [TextField( "Password", "Any valid Mandrill API key (not the password you use to login to Mandrill)", true, "", "", 2, null, true )]
     [IntegerField( "Port", "", false, 25, "", 3 )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
     [BooleanField( "Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 5 )]

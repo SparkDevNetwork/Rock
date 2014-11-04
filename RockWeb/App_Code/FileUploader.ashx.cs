@@ -208,6 +208,18 @@ namespace RockWeb
         public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
         {
             // NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
+            int fiveMB = 5 * 1024 * 1024;
+            if ( uploadedFile.ContentLength > fiveMB )
+            {
+                //// allocating a large byte array of (for example, over 50MB) can result in an OutOfMemory exception 
+                //// due to LOH Fragmentation (there isn't a contiguous 50MB chunk)
+                //// So, let's defrag the LOH anytime a file over 5MB gets uploaded to minimize the chance of this happening.
+                //// See http://stackoverflow.com/questions/686950/large-object-heap-fragmentation, but .NET 4.5.1 now has a 
+                //// LargeObjectHeapCompactionMode setting that we can take advantage of
+                System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect();
+            }
+
             var bytes = new byte[uploadedFile.ContentLength];
             uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
             return bytes;

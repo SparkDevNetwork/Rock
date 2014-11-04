@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         void gEntityTypes_EditRow( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)e.RowKeyValue );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>

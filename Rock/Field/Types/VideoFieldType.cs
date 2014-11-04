@@ -23,9 +23,9 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Video field type
+    /// Stored as BinaryFile.Guid
     /// </summary>
-    [Serializable]
-    public class VideoFieldType : FieldType
+    public class VideoFieldType : FileFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -37,50 +37,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( value.Trim() != string.Empty )
-            {
-                if (condensed)
-                {
-                    return base.FormatValue( parentControl, value, configurationValues, true );
-                }
-
-                string poster = string.Empty;
-                string video = value;
-
-                if ( value.Contains( "|" ) )
-                {
-                    string[] values = value.Split( '|' );
-                    if ( values.Length >= 2 )
-                    {
-                        poster = string.Format( "poster='{0}'", values[0] );
-                        video = values[1];
-                    }
-                }
-
-                return string.Format( @"
-    <video id='{0}_video' class='video-js vjs-default-skin' controls width='640' height='264' {1} preload='auto'>
-        <source type='video/mp4' src='{2}'/>
-    </video>
-    <script>
-        var myPlayer = _V_('{0}_video');
-    </script>
-", parentControl.ID, poster, video );
-            }
-            else
-                return string.Empty;
-        }
-
-        /// <summary>
-        /// Adds any required CSS or Script Links to the current page
-        /// </summary>
-        /// <param name="page">The page.</param>
-        public static void AddLinks( Page page )
-        {
-            Rock.Web.UI.RockPage.AddCSSLink( page, "http://vjs.zencdn.net/c/video-js.css", false );
-            Rock.Web.UI.RockPage.AddScriptLink( page, "http://vjs.zencdn.net/c/video.js", false );
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
     }
-
 }
