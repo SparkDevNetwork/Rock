@@ -61,6 +61,9 @@ namespace Rock.Migrations
 
 </channel>" );
 
+            // update new location of statementgenerator installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.1.2/statementgenerator.exe' where [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'" );
+
         }
         
         /// <summary>
