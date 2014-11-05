@@ -598,10 +598,6 @@ $(document).ready(function() {
             var template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
             if ( template == null )
             {
-                string liquidFolder = Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-                Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
                 template = Template.Parse( GetAttributeValue( "Template" ) );
 
                 int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();

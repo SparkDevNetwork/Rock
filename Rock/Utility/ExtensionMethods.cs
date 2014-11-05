@@ -655,14 +655,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                //// NOTE: This means that template filters will also use CSharpNamingConvention
-                //// For example the dotliquid documentation says to do this for formatting dates: 
-                //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template template = Template.Parse( content );
-
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
