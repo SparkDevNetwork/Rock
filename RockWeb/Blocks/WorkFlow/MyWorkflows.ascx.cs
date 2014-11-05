@@ -264,21 +264,34 @@ namespace RockWeb.Blocks.WorkFlow
                     .ToList();
             }
 
+            var displayedTypes = new List<WorkflowType>();
+            foreach ( var workflowType in allWorkflowTypes.Where( w => workflowTypeCounts.Keys.Contains( w.Id ) ) )
+            {
+                if ( workflowTypeCounts[workflowType.Id] > 0 )
+                {
+                    // Always show any types that have active assignments assigned to user
+                    displayedTypes.Add( workflowType );
+                }
+                else
+                {
+                    // If there are not any active assigned activities, and not filtering by active, then also
+                    // show any types that user is authorized to edit
+                    if ( ( !StatusFilter.HasValue || !StatusFilter.Value ) &&
+                        workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson, rockContext ) )
+                    {
+                        displayedTypes.Add( workflowType );
+                    }
+                }
+            }
+
             // Create a query to return workflow type, the count of active action forms, and the selected class
-            var qry = allWorkflowTypes
-                .Where( w => workflowTypeCounts.Keys.Contains( w.Id ) )
+            var qry = displayedTypes
                 .Select( w => new
                 {
                     WorkflowType = w,
                     Count = workflowTypeCounts[w.Id],
                     Class = ( SelectedWorkflowTypeId.HasValue && SelectedWorkflowTypeId.Value == w.Id ) ? "active" : ""
                 } );
-
-            // If displaying active only, update query to exclude those workflow types without any active form actions
-            if ( StatusFilter.HasValue && StatusFilter.Value )
-            {
-                qry = qry.Where( q => q.Count > 0 );
-            }
 
             rptWorkflowTypes.DataSource = qry.ToList();
             rptWorkflowTypes.DataBind();
