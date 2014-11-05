@@ -59,6 +59,12 @@ namespace Rock.Migrations
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/RSSFeed', '~~/Assets/Liquid/_RSSFeed.liquid' ) WHERE [Value] like '%{[%] include%'
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/RSSFeedItem', '~~/Assets/Liquid/_RSSFeedItem.liquid' ) WHERE [Value] like '%{[%] include%'
 " );
+
+            // Remove the 'Blocs' route
+            Sql( @"
+    DECLARE @BlockTypesPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D' )
+    DELETE [PageRoute] WHERE [PageId] = @BlockTypesPageId AND [Route] = 'Blocs' 
+" );
         }
         
         /// <summary>
