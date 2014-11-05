@@ -65,6 +65,11 @@ namespace Rock.Migrations
     DECLARE @BlockTypesPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D' )
     DELETE [PageRoute] WHERE [PageId] = @BlockTypesPageId AND [Route] = 'Blocs' 
 " );
+
+            // Update the 'Person/{PersonId}/StaffDetails' route to 'Person/{PersonId}/Security'
+            Sql( @"
+    UPDATE [PageRoute] SET [Route] = REPLACE( [Route], 'StaffDetails', 'Security' ) WHERE [Route] like '%StaffDetails%'
+" );
         }
         
         /// <summary>
