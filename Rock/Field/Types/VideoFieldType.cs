@@ -56,33 +56,35 @@ namespace Rock.Field.Types
                 else
                 {
                     var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                    var cssPath = System.Web.VirtualPathUtility.ToAbsolute( "~/Scripts/mediaelementjs/mediaelementplayer.min.css");
+
                     string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
                     
                     var htmlFormat = @"
 <video 
     src='{0}?guid={1}' 
     type='{2}' 
+    id='{3}'
     height='240'
     width='320'
-    controls=true
+    controls='true'
 >
 </video>
 <script>
     $(document).ready(function() {{
-        
-        $('video').mediaelementplayer({{
-            success: function(player, node) {{
-                $('#' + node.id + '-mode').html('mode: ' + player.pluginType);
-            }}
-        }});
+        -- ensure that css for mediaelementplayers is added to page
+        if (!$('#mediaElementCss').length) {{
+            $('head').append(""<link id='mediaElementCss' href='{4}' type='text/css' rel='stylesheet' />"");
+        }}
+
+        $('#{3}').mediaelementplayer();
     }});
 </script>
-<span id='{3}-mode' display=''></span>
 ";
 
                     if ( binaryFile != null )
                     {
-                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId );
+                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId, cssPath );
                         return html;
                     }
                 }
