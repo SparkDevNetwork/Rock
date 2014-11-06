@@ -1,46 +1,21 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Disc.ascx.cs" Inherits="Rockweb.Blocks.Crm.Disc" ViewStateMode="Enabled" EnableViewState="true" %>
 
-<div id="tabs">
-    <ul id="navTabs" class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#instructions">Instructions</a></li>
-        <li><a data-toggle="tab" href="#questions">Questions</a></li>
-        <li><a data-toggle="tab" href="#results">Results</a></li>
-    </ul>
-    <div class="tab-content">
-        <div id="instructions" class="tab-pane active">
-            <h3>Welcome!</h3>
-            <p>
-                In this assessment you are given a series of questions, each containing four phrases.
-            Select one phrase from each question that MOST describes you and one phrase that
-            LEAST describes you.
-            </p>
-            <p>
-                This assessment is environmentally sensitive, which means that you may score differently
-            in different situations. In other words, you may act differently at home than you
-            do on the job. So, as you complete the assessment you should focus on one environment
-            for which you are seeking to understand yourself. For instance, if you are trying
-            to understand yourself in marriage, you should only think of your responses to situations
-            in the context of your marriage. On the other hand, if you want to know your behavioral
-            needs on the job, then only think of how you would respond in the job context.
-            </p>
-            <p>
-                One final thought as you give your responses. On these kinds of assessments, it
-            is often best and easiest if you respond quickly and do not deliberate too long
-            on each question. Your response on one question will not unduly influence your scores,
-            so simply answer as quickly as possible and enjoy the process. Don't get too hung
-            up, if none of the phrases describe you or if there are some phrases that seem too
-            similar, just go with your instinct.
-            </p>
-            <p>
-                When you are ready, click the 'Questions' tab above to proceed.
-            </p>
-        </div>
-        <div id="questions" class="tab-pane">
+<asp:UpdatePanel ID="upnlContent" runat="server">
+    <ContentTemplate>
+        <asp:Panel ID="pnlInstructions" runat="server">
+            <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
+            <div class="actions">
+                <asp:Button ID="btnStart" Text="Start" runat="server" CssClass="btn btn-primary" OnClick="btnStart_Click" />
+            </div>
+
+        </asp:Panel>
+
+        <asp:Panel ID="pnlQuestions" runat="server">
             <div class="container">
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <div class="panel panel-default">
+                        <div class="js-disc-questions panel panel-default">
                             <div class="panel-heading">
                                 Question <%# Container.ItemIndex + 1 %>
                             </div>
@@ -49,7 +24,7 @@
                                     <div class="col-md-1">
                                         MORE
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-11">
                                         LESS
                                     </div>
                                 </div>
@@ -57,7 +32,7 @@
                                     <div class="col-md-1">
                                         <Rock:RockRadioButtonList ID="rblMore" runat="server" />
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-11">
                                         <Rock:RockRadioButtonList ID="rblLess" runat="server" />
                                     </div>
                                 </div>
@@ -68,8 +43,120 @@
                 <div style="display: none" class="alert alert-danger" id="divError">
                     Please answer all questions before scoring.
                 </div>
-                <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
+                <div class="actions">
+                    <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
+                </div>
             </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlResults" runat="server">
+
+            <h2>Results</h2>
+            <p>Here are the result of your test:</p>
+
+            <style>
+                .disc-chart {
+                    display: table;
+                    table-layout: fixed;
+                    width: 70%;
+                    max-width: 500px;
+                    height: 200px;
+                    //background-image: linear-gradient(to top, rgba(0, 0, 0, 0.1) 2%, rgba(0, 0, 0, 0) 2%);
+                    background-size: 100% 50px;
+                    background-position: left top;
+                    padding: 30px;
+                    border: 1px solid #e1e1e8;
+                    border-radius: 5px;
+                }
+
+                    .disc-chart li {
+                        position: relative;
+                        display: table-cell;
+                        vertical-align: bottom;
+                        height: 200px;
+                    }
+
+                    .disc-chart span {
+                        margin: 0 1em;
+                        display: block;
+                        //background: rgba(209, 236, 250, 0.75);
+                        animation: draw 1s ease-in-out;
+                    }
+
+                    .disc-chart span .discbar-primary {
+                    }
+                        .disc-chart span:before {
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: 100%;
+                            padding: 5px 1em 0;
+                            display: block;
+                            text-align: center;
+                            content: attr(title);
+                            word-wrap: break-word;
+                        }
+
+                @keyframes draw {
+                    0% {
+                        height: 0;
+                    }
+                }
+            </style>
+
+            <h3>Natural Behavior</h3>
+
+            <ul class="disc-chart">
+                <li>
+                    <span id="discNaturalScore_D" runat="server" title="D" class="label-default discbar-d"></span>
+                </li>
+                <li>
+                    <span id="discNaturalScore_I" runat="server" title="I" class="label-default discbar-i"></span>
+                </li>
+                <li>
+                    <span id="discNaturalScore_S" runat="server" title="S" class="label-default discbar-s"></span>
+                </li>
+                <li>
+                    <span id="discNaturalScore_C" runat="server" title="C" class="label-default discbar-c"></span>
+                </li>
+            </ul>
+
+            <h3>Adaptive Behavior</h3>
+
+            <ul class="disc-chart">
+                <li>
+                    <span id="discAdaptiveScore_D" runat="server" title="D" class="label-default discbar-d"></span>
+                </li>
+                <li>
+                    <span id="discAdaptiveScore_I" runat="server" title="I" class="label-default discbar-i"></span>
+                </li>
+                <li>
+                    <span id="discAdaptiveScore_S" runat="server" title="S" class="label-default discbar-s"></span>
+                </li>
+                <li>
+                    <span id="discAdaptiveScore_C" runat="server" title="C" class="label-default discbar-c"></span>
+                </li>
+            </ul>
+
+            <div class="actions">
+                <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+            </div>
+
+        </asp:Panel>
+
+    </ContentTemplate>
+</asp:UpdatePanel>
+
+<!--
+<div id="tabs">
+    <ul id="navTabs" class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#instructions">Instructions</a></li>
+        <li><a data-toggle="tab" href="#questions">Questions</a></li>
+        <li><a data-toggle="tab" href="#results">Results</a></li>
+    </ul>
+    <div class="tab-content">
+
+        <div id="questions" class="tab-pane">
 
         </div>
         <div id="results" class="tab-pane">
@@ -137,7 +224,7 @@
                     </table>
                 </div>
             </div>
-            <asp:Button ID="btnSaveResults" Text="Save Results" runat="server" CssClass="btn btn-primary" OnClick="btnSaveResults_Click" />
+
             <hr />
             <h2>Your Saved DISC Assessment Scores
             </h2>
@@ -212,3 +299,4 @@
         </div>
     </div>
 </div>
+    -->
