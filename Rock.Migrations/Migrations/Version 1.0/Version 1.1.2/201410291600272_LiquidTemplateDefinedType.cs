@@ -38,8 +38,9 @@ namespace Rock.Migrations
 
             RockMigrationHelper.AddDefinedValue( "C3D44004-6951-44D9-8560-8567D705A48B", "Default RSS Channel", "The default RSS channel template used by the RSS provider if one is not provided.", "D6149581-9EFC-40D8-BD38-E92C0717BEDA" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "D6149581-9EFC-40D8-BD38-E92C0717BEDA", "4FBF9D1A-06A4-4941-B9F4-85D2C4C12F2A", "application/rss+xml" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D6149581-9EFC-40D8-BD38-E92C0717BEDA", "1E13E409-B568-45D0-B4B6-556C87D61232", @"<?xml version=""1.0"" encoding=""utf-8""?>
-<rss version=""2.0"">
+            RockMigrationHelper.AddDefinedValueAttributeValue( "D6149581-9EFC-40D8-BD38-E92C0717BEDA", "1E13E409-B568-45D0-B4B6-556C87D61232", @"{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}
+<?xml version=""1.0"" encoding=""utf-8""?>
+<rss version=""2.0"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
 <channel>
     <title>{{ Channel.Name }}</title>
@@ -47,19 +48,22 @@ namespace Rock.Migrations
     <description>{{ Channel.Description }}</description>
     <language>en-us</language>
     <ttl>{{ Channel.TimeToLive }}</ttl>
-    <lastBuildDate>{{ 'Now' | Date:'ddd MMM d, yyyy h:m tt' }}</lastBuildDate>
+    <lastBuildDate>{{ 'Now' | Date:'ddd, dd MMM yyyy HH:mm:00' }} {{ timezone }}</lastBuildDate>
 {% for item in Items -%}
     <item>
         <title>{{ item.Title }}</title>
+        <guid>{{ Channel.ItemUrl }}?Item={{ item.Id }}</guid>
         <link>{{ Channel.ItemUrl }}?Item={{ item.Id }}</link>
-        <pubDate>{{ item.StartDateTime | Date:'ddd MMM d, yyyy h:m tt' }}</pubDate>
-        <decription>{{ item.Content | Escape }}</description>
-        <image>{{ Request.Scheme }}://{{ Request.Authority }}/GetImage.ashx?guid={{ item.Image_unformatted }}</image>
-        <summary>{{ item.Summary | Escape }}</summary>
+        <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00' }} {{ timezone }}</pubDate>
+        <description>{{ item.Content | Escape }}</description>
     </item>
 {% endfor -%}
 
-</channel>" );
+</channel>
+</rss>" );
+
+            // update new location of statementgenerator installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.1.2/statementgenerator.exe' where [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'" );
 
         }
         

@@ -18,7 +18,6 @@ using System.ComponentModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Input;
-using Rock.Model;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -79,7 +78,7 @@ namespace Rock.Apps.StatementGenerator
                         throw ee.Error;
                     }
 
-                    Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
+                    Rock.Client.Person person = rockRestClient.GetData<Rock.Client.Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
                     RockConfig rockConfig = RockConfig.Load();
                     rockConfig.RockBaseUrl = txtRockUrl.Text;
                     rockConfig.Username = txtUsername.Text;

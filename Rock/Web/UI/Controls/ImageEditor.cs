@@ -587,7 +587,7 @@ namespace Rock.Web.UI.Controls
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
                 if ( binaryFile != null )
                 {
-                    byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
+                    Stream croppedImage = CropImage( binaryFile.Data.ContentStream, binaryFile.MimeType );
 
                     BinaryFile croppedBinaryFile = new BinaryFile();
                     croppedBinaryFile.IsTemporary = true;
@@ -596,7 +596,7 @@ namespace Rock.Web.UI.Controls
                     croppedBinaryFile.FileName = binaryFile.FileName;
                     croppedBinaryFile.Description = binaryFile.Description;
                     croppedBinaryFile.Data = new BinaryFileData();
-                    croppedBinaryFile.Data.Content = croppedImage;
+                    croppedBinaryFile.Data.ContentStream = croppedImage;
 
                     binaryFileService.Add( croppedBinaryFile );
                     rockContext.SaveChanges();
@@ -630,7 +630,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="bitmapContent">Content of the bitmap.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns></returns>
-        private byte[] CropImage( byte[] bitmapContent, string mimeType )
+        private Stream CropImage( Stream bitmapContent, string mimeType )
         {
             if ( mimeType == "image/svg+xml" )
             {
@@ -645,7 +645,7 @@ namespace Rock.Web.UI.Controls
             int x2 = x + width;
             int y2 = y + height;
 
-            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
+            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( bitmapContent );
 
             // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
             var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
@@ -680,11 +680,11 @@ namespace Rock.Web.UI.Controls
                 ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
                 croppedStream.Seek( 0, SeekOrigin.Begin );
                 ImageResizer.ImageBuilder.Current.Build( croppedStream, croppedAndResizedStream, resizeSettings );
-                return croppedAndResizedStream.GetBuffer();
+                return croppedAndResizedStream;
             }
             else
             {
-                return croppedStream.GetBuffer();
+                return croppedStream;
             }
         }
 
@@ -727,9 +727,9 @@ namespace Rock.Web.UI.Controls
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
-                    if ( binaryFile.Data != null && binaryFile.Data.Content != null )
+                    if ( binaryFile.Data != null && binaryFile.Data.ContentStream != null )
                     {
-                        var bitMap = new System.Drawing.Bitmap( new MemoryStream( binaryFile.Data.Content ) );
+                        var bitMap = new System.Drawing.Bitmap( binaryFile.Data.ContentStream );
                         _imgCropSource.Width = bitMap.Width;
                         _imgCropSource.Height = bitMap.Height;
                     }

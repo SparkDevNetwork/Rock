@@ -215,15 +215,17 @@ namespace Rock.Field.Types
             if (control != null && control is DatePicker)
             {
                 var dtp = control as DatePicker;
-                if (dtp != null && dtp.SelectedDate.HasValue)
+                if (dtp != null )
                 {
                     if ( dtp.CurrentDate )
                     {
                         return "CURRENT";
                     }
-
-                    // serialize the date using ISO 8601 standard
-                    return dtp.SelectedDate.Value.ToString( "o" );
+                    else if ( dtp.SelectedDate.HasValue )
+                    {
+                        // serialize the date using ISO 8601 standard
+                        return dtp.SelectedDate.Value.ToString( "o" );
+                    }
                 }
             }
 
