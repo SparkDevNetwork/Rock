@@ -42,7 +42,7 @@ namespace Rock.Model
         
         /// <summary>
         /// Gets or sets the data/content of a <see cref="Rock.Model.BinaryFile"/>
-        /// Private so that it will be read/write using ContentStream, but needs to be there for EF
+        /// NOTE: Use ContentStream instead of Content whenever possible
         /// </summary>
         /// <value>
         /// A <see cref="System.Byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
@@ -65,7 +65,7 @@ namespace Rock.Model
                 }
             }
 
-            private set
+            set
             {
                 this.ContentStream = new MemoryStream( value );
             }
