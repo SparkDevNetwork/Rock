@@ -72,7 +72,7 @@ namespace Rock.Field.Types
 </video>
 <script>
     $(document).ready(function() {{
-        -- ensure that css for mediaelementplayers is added to page
+        // ensure that css for mediaelementplayers is added to page
         if (!$('#mediaElementCss').length) {{
             $('head').append(""<link id='mediaElementCss' href='{4}' type='text/css' rel='stylesheet' />"");
         }}
