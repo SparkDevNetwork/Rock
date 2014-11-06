@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Core
                     if ( uploadedBinaryFile.Data != null )
                     {
                         binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
-                        binaryFile.Data.Content = uploadedBinaryFile.Data.Content;
+                        binaryFile.Data.ContentStream = uploadedBinaryFile.Data.ContentStream;
                     }
                 }
             }

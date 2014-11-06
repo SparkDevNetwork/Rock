@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.UI;
 
 namespace Rock.Field.Types
 {
@@ -37,7 +40,56 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            var binaryFileGuid = value.AsGuidOrNull();
+            if ( binaryFileGuid.HasValue )
+            {
+                var binaryFileService = new BinaryFileService( new RockContext() );
+                var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
+
+                if ( condensed )
+                {
+                    if ( binaryFile != null )
+                    {
+                        return binaryFile.FileName;
+                    }
+                }
+                else
+                {
+                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                    string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
+                    
+                    var htmlFormat = @"
+<video 
+    src='{0}?guid={1}' 
+    type='{2}' 
+    height='240'
+    width='320'
+    controls=true
+>
+</video>
+<script>
+    $(document).ready(function() {{
+        
+        $('video').mediaelementplayer({{
+            success: function(player, node) {{
+                $('#' + node.id + '-mode').html('mode: ' + player.pluginType);
+            }}
+        }});
+    }});
+</script>
+<span id='{3}-mode' display=''></span>
+";
+
+                    if ( binaryFile != null )
+                    {
+                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId );
+                        return html;
+                    }
+                }
+            }
+
+            // value or binaryfile was null
+            return null;
         }
     }
 }
