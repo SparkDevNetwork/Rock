@@ -30,21 +30,15 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// DISC Badge
+    /// DISC Badge as implemented from http://www.gregwiens.com/scid/ assessment template.
     /// </summary>
     [Description( "Bade that displays a person's DISC results" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "DISC" )]
 
-
-
     public class DISC : BadgeComponent
     {
-
-
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -63,7 +57,6 @@ namespace Rock.PersonProfile.Badge
                 //Does the scores have values?
                 if ( !discScores[i].HasValue )
                 {
-
                     isValidDiscScore = false;
                 }
                 else
@@ -75,12 +68,11 @@ namespace Rock.PersonProfile.Badge
                     }
                     else
                     {
-                        if (discScores[i].Value > discScores[discStrength].Value)
+                        if ( discScores[i].Value > discScores[discStrength].Value )
                         {
                             discStrength = i;
                         }
                     }
-
                 }
             }
 
@@ -109,15 +101,14 @@ namespace Rock.PersonProfile.Badge
                 }
 
                 //Badge HTML
-                writer.Write( String.Format( "<div class='badge badge-disc annimate badge-id-{0}' data-original-title='{1}'>", badge.Id, description ) );
+                writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-original-title='{1}'>", badge.Id, description ) );
                 writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
-                writer.Write( string.Format( "<li title='D'><span style='height:{0}%'></span></li>", discScores[0].Value ) );
-                writer.Write( string.Format( "<li title='I'><span style='height:{0}%'></span></li>", discScores[1].Value ) );
-                writer.Write( string.Format( "<li title='S'><span style='height:{0}%'></span></li>", discScores[2].Value ) );
-                writer.Write( string.Format( "<li title='C'><span style='height:{0}%'></span></li>", discScores[3].Value ) );
+                writer.Write( string.Format( "<li class='badge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", discScores[0].Value, ( discStrength == 0 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", discScores[1].Value, ( discStrength == 1 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-s {1}' title='S'><span style='height:{0}%'></span></li>", discScores[2].Value, ( discStrength == 2 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-c {1}' title='C'><span style='height:{0}%'></span></li>", discScores[3].Value, ( discStrength == 3 ) ? "badge-disc-primary" : String.Empty ) );
                 writer.Write( "</ul></div>" );
             }
-
         }
     }
 }
