@@ -65,6 +65,11 @@ namespace Rock.Migrations
             // update new location of statementgenerator installer
             Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.1.2/statementgenerator.exe' where [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'" );
 
+            // update to computed column to handle ISO 8601 formatted values
+            Sql( @"
+    ALTER TABLE [dbo].[AttributeValue] DROP COLUMN [ValueAsDateTime]
+    ALTER TABLE [dbo].[AttributeValue] ADD [ValueAsDateTime] AS CASE WHEN [value] LIKE '____-__-__T__:__:__%' THEN CONVERT(datetime, CONVERT(datetimeoffset, [value])) ELSE CASE WHEN (LEN([value]) < 50 AND ISDATE( [value]) = 1) THEN CONVERT(datetime, [value]) ELSE NULL END END
+" );
         }
         
         /// <summary>
