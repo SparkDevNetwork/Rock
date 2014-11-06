@@ -1027,7 +1027,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
 
                 var chartData = new List<string>();
-                TimeSpan baseSpan = new TimeSpan( DateTime.Parse( "1/1/1970" ).Ticks );
+
+                TimeSpan baseSpan = new TimeSpan( new DateTime(1970, 1, 1).Ticks );
                 foreach ( var kv in chartCounts.OrderBy( c => c.Key ) )
                 {
                     DateTime offsetTime = kv.Key.Subtract( baseSpan );

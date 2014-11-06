@@ -283,6 +283,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
         }
 
+        protected string FormatPersonName( string nickName, string lastName )
+        {
+            if ( Person != null && Person.LastName != lastName )
+            {
+                return string.Format( "{0} {1}", nickName, lastName );
+            }
+            return nickName;
+        }
+
         protected string FormatPersonCssClass( bool? isDeceased )
         {
             return ( isDeceased ?? false ) ? "member deceased" : "member";
