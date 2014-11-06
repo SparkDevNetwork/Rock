@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Caching;
 using Rock.Data;
 using Rock.Model;
@@ -105,7 +106,7 @@ namespace Rock.CheckIn
                     label.Guid = file.Guid;
                     label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                     label.MergeFields = new Dictionary<string, string>();
-                    label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
+                    label.FileContent = new StreamReader( file.Data.ContentStream ).ReadToEnd();
 
                     file.LoadAttributes();
                     string attributeValue = file.GetAttributeValue( "MergeCodes" );

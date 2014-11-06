@@ -124,7 +124,7 @@ namespace RockWeb
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
             string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
-            byte[] fileContent = GetFileBytes( context, uploadedFile );
+            var fileContent = GetFileContentStream( context, uploadedFile );
 
             // store the content file in the specified physical content folder
             if ( !Directory.Exists( physicalContentFolderName ) )
@@ -137,7 +137,11 @@ namespace RockWeb
                 File.Delete( physicalFilePath );
             }
 
-            File.WriteAllBytes( physicalFilePath, fileContent );
+            using ( var writeStream = File.OpenWrite( physicalFilePath ) )
+            {
+                fileContent.Seek( 0, SeekOrigin.Begin );
+                fileContent.CopyTo( writeStream );
+            }
 
             var response = new
             {
@@ -183,7 +187,7 @@ namespace RockWeb
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
             binaryFile.Data = new BinaryFileData();
-            binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
+            binaryFile.Data.ContentStream = GetFileContentStream( context, uploadedFile );
 
             var binaryFileService = new BinaryFileService( rockContext );
             binaryFileService.Add( binaryFile );
@@ -205,24 +209,10 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
+        public virtual Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
             // NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
-            int fiveMB = 5 * 1024 * 1024;
-            if ( uploadedFile.ContentLength > fiveMB )
-            {
-                //// allocating a large byte array of (for example, over 50MB) can result in an OutOfMemory exception 
-                //// due to LOH Fragmentation (there isn't a contiguous 50MB chunk)
-                //// So, let's defrag the LOH anytime a file over 5MB gets uploaded to minimize the chance of this happening.
-                //// See http://stackoverflow.com/questions/686950/large-object-heap-fragmentation, but .NET 4.5.1 now has a 
-                //// LargeObjectHeapCompactionMode setting that we can take advantage of
-                System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect();
-            }
-
-            var bytes = new byte[uploadedFile.ContentLength];
-            uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
-            return bytes;
+            return uploadedFile.InputStream;
         }
 
         /// <summary>

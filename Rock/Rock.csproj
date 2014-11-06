@@ -249,6 +249,7 @@
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\AudioFieldType.cs" />
+    <Compile Include="Field\Types\VideoFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
@@ -914,7 +915,7 @@
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
     <Compile Include="Field\Types\DateFieldType.cs" />
     <Compile Include="Field\Types\ImageFieldType.cs" />
-    <Compile Include="Field\Types\VideoFieldType.cs" />
+    <Compile Include="Field\Types\MediaFieldType.cs" />
     <Compile Include="Model\FinancialBatch.cs">
       <SubType>Code</SubType>
     </Compile>
