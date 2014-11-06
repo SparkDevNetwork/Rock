@@ -83,6 +83,9 @@ END" );
             // add 
             RockMigrationHelper.UpdateFieldType( "Encrypted Text", "", "Rock", "Rock.Field.Types.EncryptedTextFieldType", "36167F3E-8CB2-44F9-9022-102F171FBC9A" );
 
+            // Filter date field type
+            RockMigrationHelper.UpdateFieldType( "Filter Date", "", "Rock", "Rock.Field.Types.FilterDateFieldType", "4F879A48-63DA-446F-837B-7458799298C0" );
+
             // add Attribute of Root Path for BinaryFileType of FileSystem
             RockMigrationHelper.AddEntityAttribute( typeof( Rock.Model.BinaryFileType ).FullName, Rock.SystemGuid.FieldType.TEXT, "StorageEntityTypeId", "52", "Root Path", "", "The root path where files should be stored on the file system", 0, "~/App_Data/Files", "3CAFA34D-9208-439B-A046-CB727FB729DE" );
         }
