@@ -87,7 +87,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this BinaryFileData target, BinaryFileData source )
         {
-            //target.Content = source.Content;
+            target.Content = source.Content;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
