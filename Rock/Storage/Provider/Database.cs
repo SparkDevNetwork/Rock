@@ -1,4 +1,6 @@
-﻿// <copyright>
+﻿using System;
+using System.Collections.Generic;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +18,8 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
 using System.Web;
 using Rock.Model;
 
@@ -58,9 +62,24 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override byte[] GetFileContent( BinaryFile file, HttpContext context )
         {
-            if (file.Data != null)
+            var stream = this.GetFileContentStream( file, context );
+            var result = new byte[stream.Length];
+            stream.Seek( 0, SeekOrigin.Begin );
+            stream.Read( result, 0, result.Length );
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
+        {
+            if ( file.Data != null )
             {
-                return file.Data.Content;
+                return file.Data.ContentStream;
             }
             else
             {
@@ -73,7 +92,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GenerateUrl( BinaryFile file)
+        public override string GenerateUrl( BinaryFile file )
         {
             string urlPath;
 

@@ -29,7 +29,7 @@ using Rock.Security;
 namespace RockWeb
 {
     /// <summary>
-    /// Handles retrieving file (image) data from storage, with all the bells and whistles.
+    /// Handles retrieving file (image) data from storage
     /// </summary>
     public class GetImage : IHttpHandler
     {
@@ -92,27 +92,30 @@ namespace RockWeb
 
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
-            byte[] fileContents = File.ReadAllBytes( physicalContentFileName );
-
-            if ( fileContents != null )
+            using ( Stream fileContents = File.OpenRead( physicalContentFileName ) )
             {
-                string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
-
-                // If more than 1 query string param is passed in, assume resize is needed
-                if ( context.Request.QueryString.Count > 1 )
+                if ( fileContents != null )
                 {
-                    // if it isn't an SVG file, do a Resize
-                    if ( mimeType != "image/svg+xml" )
+                    string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
+                    context.Response.ContentType = mimeType;
+                    
+                    // If more than 1 query string param is passed in and it isn't an SVG file, do a Resize, assume resize is needed
+                    if ( (context.Request.QueryString.Count > 1) && ( mimeType != "image/svg+xml" ))
                     {
-                        fileContents = GetResized( context.Request.QueryString, fileContents );
+                        using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
+                        {
+                            resizedStream.CopyTo( context.Response.OutputStream );
+                        }
                     }
+                    else
+                    {
+                        fileContents.CopyTo( context.Response.OutputStream );
+                    }
+                    
+                    context.Response.Flush();
+                    context.ApplicationInstance.CompleteRequest();
                 }
-
-                context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
-                context.Response.ContentType = mimeType;
-                context.Response.BinaryWrite( fileContents );
-                context.Response.Flush();
-                context.ApplicationInstance.CompleteRequest();
             }
         }
 
@@ -173,73 +176,85 @@ namespace RockWeb
                 }
             }
 
-            byte[] fileContent = null;
-
-            // Is it cached
-            string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
-            string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
-            if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
+            
+            Stream fileContent = null;
+            try
             {
-                //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
-                //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
-                //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
-                DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( File.GetCreationTime( physCachedFilePath ) );
-                if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
+                // Is it cached
+                string cacheName = UrlQueryToCachedFileName( context.Request.QueryString, binaryFileMetaData.MimeType );
+                string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
+                if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
                 {
-                    // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
-                    fileContent = FetchFromCache( physCachedFilePath );
-                }
-            }
-
-            if ( fileContent == null )
-            {
-                // If we didn't get it from the cache, get it from the binaryFileService
-                BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
-
-                if ( binaryFile != null && binaryFile.Data != null )
-                {
-                    fileContent = binaryFile.Data.Content;
-                }
-
-                // If we got the image from the binaryFileService, it might need to be resized and cached
-                if ( fileContent != null )
-                {
-                    // If more than 1 query string param is passed in, assume resize is needed
-                    if ( context.Request.QueryString.Count > 1 )
+                    //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
+                    //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
+                    //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
+                    DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( File.GetCreationTime( physCachedFilePath ) );
+                    if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
                     {
-                        // if it isn't an SVG file, do a Resize
-                        if ( binaryFile.MimeType != "image/svg+xml" )
+                        // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
+                        fileContent = FetchFromCache( physCachedFilePath );
+                    }
+                }
+
+                if ( fileContent == null )
+                {
+                    // If we didn't get it from the cache, get it from the binaryFileService
+                    BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
+
+                    if ( binaryFile != null && binaryFile.Data != null )
+                    {
+                        fileContent = binaryFile.Data.ContentStream;
+                    }
+
+                    // If we got the image from the binaryFileService, it might need to be resized and cached
+                    if ( fileContent != null )
+                    {
+                        // If more than 1 query string param is passed in, assume resize is needed
+                        if ( context.Request.QueryString.Count > 1 )
                         {
-                            fileContent = GetResized( context.Request.QueryString, fileContent );
+                            // if it isn't an SVG file, do a Resize
+                            if ( binaryFile.MimeType != "image/svg+xml" )
+                            {
+                                fileContent = GetResized( context.Request.QueryString, fileContent );
+                            }
+                        }
+
+                        if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                        {
+                            Cache( fileContent, physCachedFilePath );
                         }
                     }
+                }
 
-                    if ( binaryFileMetaData.BinaryFileType_AllowCaching )
-                    {
-                        Cache( fileContent, physCachedFilePath );
-                    }
+                if ( fileContent == null )
+                {
+                    // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
+                    SendNotFound( context );
+                    return;
+                }
+
+                // respond with File
+                if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+                {
+                    // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
+                    context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
+                    context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
+                }
+
+                context.Response.ContentType = binaryFileMetaData.MimeType;
+
+                context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+                fileContent.Seek( 0, SeekOrigin.Begin );
+                fileContent.CopyTo( context.Response.OutputStream );
+                context.Response.Flush();
+            }
+            finally
+            {
+                if (fileContent != null)
+                {
+                    fileContent.Dispose();
                 }
             }
-
-            if ( fileContent == null )
-            {
-                // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
-                SendNotFound( context );
-                return;
-            }
-
-            // respond with File
-            context.Response.ContentType = binaryFileMetaData.MimeType;
-            context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
-            if ( binaryFileMetaData.BinaryFileType_AllowCaching )
-            {
-                // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
-                context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
-                context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
-            }
-
-            context.Response.BinaryWrite( fileContent );
-            context.Response.Flush();
         }
 
         /// <summary>
@@ -260,7 +275,7 @@ namespace RockWeb
             string fileName = string.Empty;
             foreach ( var key in cleanedQueryString.Keys )
             {
-                fileName += ( string.Format( "{0}_{1}", key, cleanedQueryString[key as string] ) ).RemoveSpecialCharacters() + "-";
+                fileName += string.Format( "{0}_{1}", key, cleanedQueryString[key as string] ).RemoveSpecialCharacters() + "-";
             }
 
             fileName = fileName.TrimEnd( new char[] { '-' } );
@@ -322,12 +337,12 @@ namespace RockWeb
         /// <param name="queryString">The query string.</param>
         /// <param name="fileContent">Content of the file.</param>
         /// <returns></returns>
-        private byte[] GetResized( NameValueCollection queryString, byte[] fileContent )
+        private Stream GetResized( NameValueCollection queryString, Stream fileContent )
         {
             ResizeSettings settings = new ResizeSettings( queryString );
             MemoryStream resizedStream = new MemoryStream();
-            ImageBuilder.Current.Build( new MemoryStream( fileContent ), resizedStream, settings );
-            return resizedStream.GetBuffer();
+            ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+            return resizedStream;
         }
 
         /// <summary>
@@ -335,7 +350,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="fileContent">Content of the file.</param>
         /// <param name="physFilePath">The physical file path.</param>
-        private void Cache( byte[] fileContent, string physFilePath )
+        private void Cache( Stream fileContent, string physFilePath )
         {
             try
             {
@@ -346,9 +361,10 @@ namespace RockWeb
                     Directory.CreateDirectory( cacheFolderPath );
                 }
 
-                using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
+                using ( var writeStream = File.OpenWrite( physFilePath ) )
                 {
-                    binWriter.Write( fileContent );
+                    fileContent.Seek( 0, SeekOrigin.Begin );
+                    fileContent.CopyTo( writeStream );
                 }
             }
             catch
@@ -362,17 +378,11 @@ namespace RockWeb
         /// </summary>
         /// <param name="physFilePath">The phys file path.</param>
         /// <returns></returns>
-        private byte[] FetchFromCache( string physFilePath )
+        private Stream FetchFromCache( string physFilePath )
         {
             try
             {
-                byte[] data;
-                using ( new BinaryReader( File.Open( physFilePath, FileMode.Open, FileAccess.Read, FileShare.Read ) ) )
-                {
-                    data = File.ReadAllBytes( physFilePath );
-                }
-
-                return data;
+                return File.Open( physFilePath, FileMode.Open, FileAccess.Read, FileShare.Read );
             }
             catch
             {
@@ -387,7 +397,7 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void SendNotFound( HttpContext context )
         {
-            context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt(); ;
+            context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt();
             context.Response.StatusDescription = "The requested image could not be found.";
             context.ApplicationInstance.CompleteRequest();
         }
