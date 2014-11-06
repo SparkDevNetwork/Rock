@@ -14,13 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Field.Types
 {
@@ -28,70 +21,20 @@ namespace Rock.Field.Types
     /// Video field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    public class VideoFieldType : FileFieldType
+    public class VideoFieldType : MediaFieldType
     {
         /// <summary>
-        /// Returns the field's current value(s)
+        /// Gets the media tag.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <value>
+        /// The media tag.
+        /// </value>
+        public override MediaFieldType.MediaTypeTag MediaTag
         {
-            var binaryFileGuid = value.AsGuidOrNull();
-            if ( binaryFileGuid.HasValue )
+            get
             {
-                var binaryFileService = new BinaryFileService( new RockContext() );
-                var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
-
-                if ( condensed )
-                {
-                    if ( binaryFile != null )
-                    {
-                        return binaryFile.FileName;
-                    }
-                }
-                else
-                {
-                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                    var cssPath = System.Web.VirtualPathUtility.ToAbsolute( "~/Scripts/mediaelementjs/mediaelementplayer.min.css");
-
-                    string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
-                    
-                    var htmlFormat = @"
-<video 
-    src='{0}?guid={1}' 
-    type='{2}' 
-    id='{3}'
-    height='240'
-    width='320'
-    controls='true'
->
-</video>
-<script>
-    $(document).ready(function() {{
-        // ensure that css for mediaelementplayers is added to page
-        if (!$('#mediaElementCss').length) {{
-            $('head').append(""<link id='mediaElementCss' href='{4}' type='text/css' rel='stylesheet' />"");
-        }}
-
-        $('#{3}').mediaelementplayer();
-    }});
-</script>
-";
-
-                    if ( binaryFile != null )
-                    {
-                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId, cssPath );
-                        return html;
-                    }
-                }
+                return MediaTypeTag.video;
             }
-
-            // value or binaryfile was null
-            return null;
         }
     }
 }
