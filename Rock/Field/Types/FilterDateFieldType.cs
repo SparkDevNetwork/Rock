@@ -26,10 +26,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a date value
+    /// Field used to save and display a date value with additional option to use 'current' date
     /// </summary>
     [Serializable]
-    public class DateFieldType : FieldType
+    public class FilterDateFieldType : DateFieldType
     {
         /// <summary>
         /// Formats date display
@@ -43,35 +43,9 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            DateTime? dateValue = value.AsDateTime();
-            if ( dateValue.HasValue )
+            if ( value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
-                formattedValue = dateValue.Value.ToShortDateString();
-
-                if ( configurationValues != null &&
-                    configurationValues.ContainsKey( "format" ) &&
-                    !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
-                {
-                    try
-                    {
-                        formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
-                    }
-                    catch
-                    {
-                        formattedValue = dateValue.Value.ToShortDateString();
-                    }
-                }
-
-                if ( !condensed )
-                {
-                    if ( configurationValues != null &&
-                        configurationValues.ContainsKey( "displayDiff" ) )
-                    {
-                        bool displayDiff = false;
-                        if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
-                            formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
-                    }
-                }
+                return "Current Date";
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -84,8 +58,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var keys = base.ConfigurationKeys();
-            keys.Add( "format" );
-            keys.Add( "displayDiff" );
+            keys.Add( "displayCurrentOption" );
             return keys;
         }
 
@@ -97,18 +70,13 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var textbox = new RockTextBox();
-            controls.Add( textbox );
-            textbox.Label = "Date Format";
-            textbox.Help = "The format string to use for date (default is system short date)";
-
-            var cbDisplayDiff = new RockCheckBox();
-            controls.Add( cbDisplayDiff );
-            cbDisplayDiff.Label = "Display Date Span";
-            cbDisplayDiff.Text = "Yes";
-            cbDisplayDiff.Help = "Display the number of years between value and current date";
-
+            var cbDisplayCurrent = new RockCheckBox();
+            controls.Add( cbDisplayCurrent );
+            cbDisplayCurrent.Label = "Allow 'Current' Option";
+            cbDisplayCurrent.Text = "Yes";
+            cbDisplayCurrent.Help = "Display option for selecting the 'current' date instead of a specific date";
             return controls;
+
         }
 
         /// <summary>
@@ -122,17 +90,12 @@ namespace Rock.Field.Types
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox &&
-                    configurationValues.ContainsKey( "format" ) )
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox &&
+                    configurationValues.ContainsKey( "displayCurrentOption" ) )
                 {
-                    ( (TextBox)controls[0] ).Text = configurationValues["format"].Value ?? string.Empty;
+                    ( (CheckBox)controls[2] ).Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
                 }
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox &&
-                    configurationValues.ContainsKey( "displayDiff" ) )
-                {
-                    ( (CheckBox)controls[1] ).Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
-                }
             }
         }
 
@@ -144,19 +107,13 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             var values = base.ConfigurationValues( controls );
-            values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date)", "" ) );
-            values.Add( "displayDiff", new ConfigurationValue( "Display Date Span", "Display the number of years between value and current date", "False" ) );
+            values.Add( "displayCurrentOption", new ConfigurationValue( "Allow 'Current' Option", "Display option for selecting the 'current' date instead of a specific date.", "False" ) );
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
                 {
-                    values["format"].Value = ( (TextBox)controls[0] ).Text;
-                }
-
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
-                {
-                    values["displayDiff"].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                    values["displayCurrentOption"].Value = ( (CheckBox)controls[2] ).Checked.ToString();
                 }
             }
 
@@ -173,7 +130,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new DatePicker { ID = id }; 
+            var dp = base.EditControl( configurationValues, id ) as DatePicker;
+            if ( dp != null )
+            {
+                dp.DisplayCurrentOption = configurationValues.ContainsKey( "displayCurrentOption" ) &&
+                    configurationValues["displayCurrentOption"].Value.AsBoolean( false );
+                return dp;
+            }
+            return null;
         }
 
         /// <summary>
@@ -187,17 +151,13 @@ namespace Rock.Field.Types
             if (control != null)
             {
                 var dtp = control as DatePicker;
-                if (dtp != null )
+                if (dtp != null && dtp.CurrentDate )
                 {
-                    if ( dtp.SelectedDate.HasValue )
-                    {
-                        // serialize the date using ISO 8601 standard
-                        return dtp.SelectedDate.Value.ToString( "o" );
-                    }
+                    return "CURRENT";
                 }
             }
 
-            return null;
+            return base.GetEditValue( control, configurationValues );
         }
 
         /// <summary>
@@ -208,15 +168,18 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null ) 
+            if ( control != null  ) 
             {
                 var dtp = control as DatePicker;
                 if ( dtp != null )
                 {
-                    var dt = value.AsDateTime();
-                    if ( dt.HasValue )
+                    if ( dtp.DisplayCurrentOption && value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        dtp.SelectedDate = dt;
+                        dtp.CurrentDate = true;
+                    }
+                    else
+                    {
+                        base.SetEditValue( control, configurationValues, value );
                     }
                 }
             }

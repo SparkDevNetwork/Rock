@@ -236,6 +236,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />

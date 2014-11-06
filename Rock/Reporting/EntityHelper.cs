@@ -81,7 +81,7 @@ namespace Rock.Reporting
                 else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
                 {
                     entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.FILTER_DATE;
                 }
 
                 // Decimal properties
