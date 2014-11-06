@@ -210,7 +210,7 @@ namespace RockWeb
         private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName )
         {
             context.Response.Clear();
-            context.Response.Buffer = false;
+            context.Response.Buffer = true;
             context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
             context.Response.ContentType = mimeType;
 
@@ -220,7 +220,7 @@ namespace RockWeb
                 fileContents.CopyTo( context.Response.OutputStream );
             }
 
-            context.Response.End();
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
