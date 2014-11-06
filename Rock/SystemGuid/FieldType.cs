@@ -179,6 +179,11 @@ namespace Rock.SystemGuid
         public const string FILE = "6F9E2DD0-E39E-4602-ADF9-EB710A75304A";
 
         /// <summary>
+        /// Filter date field type
+        /// </summary>
+        public const string FILTER_DATE = "4F879A48-63DA-446F-837B-7458799298C0";
+
+        /// <summary>
         /// Financial Account field type
         /// </summary>
         public const string FINANCIAL_ACCOUNT = "434D7B6F-F8DD-45B7-8C3E-C76EF10BE56A";

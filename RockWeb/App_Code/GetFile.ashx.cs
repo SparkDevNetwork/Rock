@@ -210,14 +210,45 @@ namespace RockWeb
         private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName )
         {
             context.Response.Clear();
-            context.Response.Buffer = true;
+            context.Response.Buffer = false;
             context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+            context.Response.AddHeader( "content-length", fileContents.Length.ToString() );
             context.Response.ContentType = mimeType;
+            byte[] buffer = new byte[4096];
 
             if ( context.Response.IsClientConnected )
             {
                 fileContents.Seek( 0, SeekOrigin.Begin );
-                fileContents.CopyTo( context.Response.OutputStream );
+                while (true)
+                {
+                    var bytesRead = fileContents.Read( buffer, 0, buffer.Length );
+                    if ( bytesRead == 0 )
+                    {
+                        break;
+                    }
+
+                    if ( !context.Response.IsClientConnected )
+                    {
+                        // quit sending if the client isn't connected
+                        break;
+                    }
+
+                    try
+                    {
+                        context.Response.OutputStream.Write( buffer, 0, bytesRead );
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (!context.Response.IsClientConnected)
+                        {
+                            // if client disconnected during the .write, ignore
+                        }
+                        else
+                        {
+                            throw ex;
+                        }
+                    }
+                }
             }
 
             context.ApplicationInstance.CompleteRequest();
