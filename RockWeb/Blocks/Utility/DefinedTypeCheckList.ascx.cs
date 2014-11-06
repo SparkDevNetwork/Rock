@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -41,7 +42,8 @@ namespace RockWeb.Blocks.Utility
     [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]
     [BooleanField("Hide Block When Empty", "Hides entire block if no checklist items are available.", false)]
     [TextField("Checklist Title", "Title for your checklist.",false,"","Description",1)]
-    [MemoField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.",false,"","Description", 2)]
+    [CodeEditorField("Checklist Description", "Description for your checklist. Leave this blank and nothing will be displayed.", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, "", "Description", 2)]
     public partial class DefinedTypeCheckList : RockBlock
     {
         private string attributeKey = string.Empty;
