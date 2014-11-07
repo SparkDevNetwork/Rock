@@ -33,7 +33,14 @@ namespace Rock.Field.Types
         /// </summary>
         public enum MediaTypeTag
         {
+            /// <summary>
+            /// The audio
+            /// </summary>
             audio,
+            
+            /// <summary>
+            /// The video
+            /// </summary>
             video
         }
 
