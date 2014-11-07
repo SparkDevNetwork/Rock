@@ -329,41 +329,37 @@ namespace Rock.Web.Cache
         {
             get
             {
-                List<BlockCache> blocks = new List<BlockCache>();
 
-                if ( blockIds != null )
-                {
-                    foreach ( int id in blockIds.ToList() )
-                    {
-                        BlockCache block = BlockCache.Read( id );
-                        if ( block != null )
-                        {
-                            blocks.Add( block );
-                        }
-                    }
-                }
-                else
+                if ( blockIds == null )
                 {
                     blockIds = new List<int>();
 
-                    // Load Layout Blocks
                     var rockContext = new RockContext();
                     BlockService blockService = new BlockService( rockContext );
-                    // layout blocks are likely to be in the cache already since pages share layouts, so look in the cache first
-                    foreach ( int layoutBlockId in blockService.GetByLayout( this.LayoutId ).Select( b => b.Id ))
-                    {
-                        blockIds.Add( layoutBlockId );
-                        blocks.Add( BlockCache.Read( layoutBlockId ) );
-                    }
+
+                    // Load Layout Blocks
+                    blockService
+                        .GetByLayout( this.LayoutId )
+                        .Select( b => b.Id )
+                        .ToList()
+                        .ForEach( b => blockIds.Add( b ) );
 
                     // Load Page Blocks
-                    foreach ( Block block in blockService.GetByPage( this.Id ) )
-                    {
-                        blockIds.Add( block.Id );
-                        block.LoadAttributes( rockContext );
-                        blocks.Add( BlockCache.Read( block ) );
-                    }
+                    blockService
+                        .GetByPage( this.Id )
+                        .Select( b => b.Id )
+                        .ToList()
+                        .ForEach( b => blockIds.Add( b ) );
+                }
 
+                var blocks = new List<BlockCache>();
+                foreach( int id in blockIds)
+                {
+                    var block = BlockCache.Read( id );
+                    if ( block != null )
+                    {
+                        blocks.Add( block );
+                    }
                 }
                 return blocks;
             }

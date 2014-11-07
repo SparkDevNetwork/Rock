@@ -136,27 +136,22 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var definedValues = new List<DefinedValueCache>();
-
-                if ( definedValueIds != null )
+                if ( definedValueIds == null )
                 {
-                    foreach ( int id in definedValueIds.ToList() )
-                    {
-                        definedValues.Add( DefinedValueCache.Read( id ) );
-                    }
+                    definedValueIds = new Model.DefinedValueService( new RockContext() )
+                        .GetByDefinedTypeId( this.Id )
+                        .Select( v => v.Id )
+                        .ToList();
                 }
-                else
-                {
-                    definedValueIds = new List<int>();
 
-                    var rockContext = new RockContext();
-                    var definedValueService = new Model.DefinedValueService( rockContext );
-                    foreach ( var definedValue in definedValueService.GetByDefinedTypeId( this.Id ) )
+                var definedValues = new List<DefinedValueCache>();
+                foreach( int id in definedValueIds)
+                { 
+                    var definedValue = DefinedValueCache.Read( id );
+                    if (definedValue != null)
                     {
-                        definedValueIds.Add( definedValue.Id );
-                        definedValues.Add( DefinedValueCache.Read( definedValue, rockContext ) );
+                        definedValues.Add( definedValue );
                     }
-
                 }
                 return definedValues;
             }
