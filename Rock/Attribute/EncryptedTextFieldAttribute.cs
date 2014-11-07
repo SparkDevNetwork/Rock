@@ -39,6 +39,7 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        /// <param name="isPassword">if set to <c>true</c> [is password].</param>
         public EncryptedTextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, bool isPassword = false )
             : base( name, description, required, defaultValue, category, order, key, isPassword, typeof(Rock.Field.Types.EncryptedTextFieldType).FullName )
         {
