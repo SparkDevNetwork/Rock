@@ -100,29 +100,27 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string HumanizeDateTime( string input )
+        public static string HumanizeDateTime( object input )
         {
             if ( input == null )
-                return input;
-
-            DateTime dateProvided;
-
-            if (DateTime.TryParse( input.ToString(), out dateProvided ) )
+                return string.Empty;
+            
+            DateTime dtInput;
+            
+            if ( input is DateTime )
             {
-                return dateProvided.Humanize( false, RockDateTime.Now );
+                dtInput = (DateTime)input;
             }
             else
             {
-                return input;
+                if ( !DateTime.TryParse( input.ToString(), out dtInput ) ) {
+                    return string.Empty;
+                }
             }
+
+            return dtInput.Humanize( false, RockDateTime.Now );
+
         }
-
-        /*public static string HumanizeDateTime2( DateTime input )
-        {
-            
-            return input.Humanize( false, RockDateTime.Now );
-
-        }*/
 
         /// <summary>
         /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
