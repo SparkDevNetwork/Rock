@@ -32,11 +32,14 @@ var ZebraPrintPlugin = {
         if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
             console.log('Rock iPad Client');
             Cordova.exec(success, fail, "ZebraPrint", "printTags", [tagJson]);
+        } else if (navigator.userAgent.match(/rockwinclient/)) {
+            console.log('Rock Windows Client 2.0');
+            eoWebBrowser.extInvoke("printLabels", [tagJson]);
         } else if (navigator.userAgent.match(/.NET CLR/)) {
-            console.log('Rock Windows Client');
+            console.log('Rock Windows Client 1.0');
             window.external.PrintLabels(tagJson);
         } else {
-            bootbox.alert("<strong>Could Not Print</strong> <p>Print from client settings configured but no client plugin is available. You should run this from the Rock Windows Check-in client or the Rock Check-in iPad Application.")
+            bootbox.alert("<strong>2Could Not Print</strong> <p>Print from client settings configured but no client plugin is available. You should run this from the Rock Windows Check-in client or the Rock Check-in iPad Application.")
         }
     }
 };
