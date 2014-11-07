@@ -87,11 +87,10 @@ namespace Rock.Field.Types
                     {
                         htmlFormat += @"
 <video
-    src='{0}?guid={1}' 
+    src='{0}?guid={1}'
+    class='img img-responsive' 
     type='{2}' 
     id='{3}'
-    height='240'
-    width='320'
     controls='true'
 >
 </video>";
@@ -101,6 +100,7 @@ namespace Rock.Field.Types
                         htmlFormat += @"
 <audio
     src='{0}?guid={1}' 
+    class='img img-responsive'
     type='{2}' 
     id='{3}'
     controls='true'
