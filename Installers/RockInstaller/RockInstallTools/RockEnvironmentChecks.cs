@@ -261,6 +261,15 @@ namespace RockInstallTools
                 }
             }
 
+            DatabaseConfigurationResult sizeResult = CheckSqlDatabaseSize( dbServer, dbUsername, dbPassword, dbDatabase );
+            if ( !sizeResult.Success )
+            {
+                result.Message = sizeResult.Message;
+                result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DatabaseTooSmall";
+                result.DidPass = false;
+                return result;
+            }
+
             return result;
         }
 
@@ -479,11 +488,12 @@ namespace RockInstallTools
         }
 
         // check if database is of proper size
-        private static bool CheckSqlDatabaseSize( string servername, string username, string password, string database )
+        private static DatabaseConfigurationResult CheckSqlDatabaseSize( string servername, string username, string password, string database )
         {
-
-            bool meetsMinimumSize = true;
-
+            DatabaseConfigurationResult result = new DatabaseConfigurationResult();
+            result.Success = true;
+            result.Message = "Database meets size requirements";
+           
             // setup connection
             string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database );
             SqlConnection testConnection = new SqlConnection( connectionString );
@@ -515,7 +525,8 @@ namespace RockInstallTools
 
                         if ( sizeInMB < minimumDatabaseSize )
                         {
-                            meetsMinimumSize = false;
+                            result.Success = false;
+                            result.Message = String.Format( "The database '{0}' is not large enough to properly support Rock. Please ensure it is at least {1}MB in size (current size is {2}MB).", database, minimumDatabaseSize.ToString(), sizeInMB.ToString());
                         }
                     }
                 }
@@ -525,14 +536,15 @@ namespace RockInstallTools
             catch ( Exception ex )
             {
                 // we'll default to everything is OK
-                return true;
+                result.Message = "Assuming database size is acceptable as we were unable to determine its size.";
+                return result;
             }
             finally
             {
                 testConnection = null;
             }
 
-            return meetsMinimumSize;
+            return result;
         }
 
         // check is database is empty
