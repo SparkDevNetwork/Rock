@@ -58,6 +58,10 @@
     <Compile Include="Migrations\201411061819546_MediaFileFieldType.Designer.cs">
       <DependentUpon>201411061819546_MediaFileFieldType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201411080039598_AudioVideoFieldTypes.cs" />
+    <Compile Include="Migrations\201411080039598_AudioVideoFieldTypes.Designer.cs">
+      <DependentUpon>201411080039598_AudioVideoFieldTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1299,6 +1303,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201411061819546_MediaFileFieldType.resx">
       <DependentUpon>201411061819546_MediaFileFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411080039598_AudioVideoFieldTypes.resx">
+      <DependentUpon>201411080039598_AudioVideoFieldTypes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>

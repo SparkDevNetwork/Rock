@@ -76,16 +76,6 @@ BEGIN
     WHERE [Guid] = '6CBEA3B0-E983-40C1-9712-BD3FA2466EAE'
 END" );
 
-            // Add/Update FieldTypes for Audio and Video
-            RockMigrationHelper.UpdateFieldType( "Audio", "", "Rock", "Rock.Field.Types.AudioFieldType", "0D842975-7439-4D2E-BB94-BAD8DDF22260" );
-            RockMigrationHelper.UpdateFieldType( "Video", "", "Rock", "Rock.Field.Types.VideoFieldType", "FA398F9D-5B01-41EA-9A93-112F910A277D" );
-
-            // add 
-            RockMigrationHelper.UpdateFieldType( "Encrypted Text", "", "Rock", "Rock.Field.Types.EncryptedTextFieldType", "36167F3E-8CB2-44F9-9022-102F171FBC9A" );
-
-            // Filter date field type
-            RockMigrationHelper.UpdateFieldType( "Filter Date", "", "Rock", "Rock.Field.Types.FilterDateFieldType", "4F879A48-63DA-446F-837B-7458799298C0" );
-
             // add Attribute of Root Path for BinaryFileType of FileSystem
             RockMigrationHelper.AddEntityAttribute( typeof( Rock.Model.BinaryFileType ).FullName, Rock.SystemGuid.FieldType.TEXT, "StorageEntityTypeId", "52", "Root Path", "", "The root path where files should be stored on the file system", 0, "~/App_Data/Files", "3CAFA34D-9208-439B-A046-CB727FB729DE" );
         }
