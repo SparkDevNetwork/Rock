@@ -23,41 +23,17 @@ using Rock.Model;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Video field type
+    /// Video file field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    public abstract class MediaFieldType : FileFieldType
+    public class VideoFileFieldType : FileFieldType
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum MediaTypeTag
-        {
-            /// <summary>
-            /// The audio
-            /// </summary>
-            audio,
-            
-            /// <summary>
-            /// The video
-            /// </summary>
-            video
-        }
-
-        /// <summary>
-        /// Gets the media tag.
-        /// </summary>
-        /// <value>
-        /// The media tag.
-        /// </value>
-        public abstract MediaTypeTag MediaTag { get; }
-        
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
@@ -67,25 +43,17 @@ namespace Rock.Field.Types
             {
                 var binaryFileService = new BinaryFileService( new RockContext() );
                 var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
-
-                if ( condensed )
+                if ( binaryFile != null )
                 {
-                    if ( binaryFile != null )
+                    if ( condensed )
                     {
                         return binaryFile.FileName;
                     }
-                }
-                else
-                {
-                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                    var cssPath = System.Web.VirtualPathUtility.ToAbsolute( "~/Scripts/mediaelementjs/mediaelementplayer.min.css");
-
-                    string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
-
-                    string htmlFormat = string.Empty;
-                    if (this.MediaTag == MediaTypeTag.video)
+                    else
                     {
-                        htmlFormat += @"
+                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
+                        string htmlFormat = @"
 <video
     src='{0}?guid={1}'
     class='img img-responsive' 
@@ -93,37 +61,15 @@ namespace Rock.Field.Types
     id='{3}'
     controls='true'
 >
-</video>";
-                    }
-                    else if (this.MediaTag == MediaTypeTag.audio)
-                    {
-                        htmlFormat += @"
-<audio
-    src='{0}?guid={1}' 
-    class='img img-responsive'
-    type='{2}' 
-    id='{3}'
-    controls='true'
->
-</audio>";
-                    }
+</video>
                     
-                    htmlFormat += @"
 <script>
     $(document).ready(function() {{
-        // ensure that css for mediaelementplayers is added to page
-        if (!$('#mediaElementCss').length) {{
-            $('head').append(""<link id='mediaElementCss' href='{4}' type='text/css' rel='stylesheet' />"");
-        }}
-
-        $('#{3}').mediaelementplayer();
+        Rock.controls.mediaPlayer.initialize({{ id: '{3}' }});
     }});
 </script>
 ";
-
-                    if ( binaryFile != null )
-                    {
-                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId, cssPath );
+                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId );
                         return html;
                     }
                 }
