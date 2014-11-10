@@ -341,6 +341,10 @@
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
 		<row><td>CheckinClient.Primary_output</td><td>{1B06C1F8-B287-44E9-8085-3B35A7AF7173}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>CheckinClient.Primary_output1</td><td>{6CD4C90A-A5AE-461D-8EE4-0626DDB7AD48}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>EO.WebBrowser.Wpf.dll</td><td>{674FCC7E-3C78-4F29-8394-93D8C3FFB306}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.wpf.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>EO.WebBrowser.dll</td><td>{93B37390-60EB-4A76-9185-64C135A3EE31}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{63D3226F-83BF-4024-AE88-F45A3411417A}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -1049,6 +1053,7 @@
 	<table name="CreateFolder">
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 	</table>
 
 	<table name="CustomAction">
@@ -1864,6 +1869,10 @@
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
 		<row><td>AlwaysInstall</td><td>CheckinClient.Primary_output</td></row>
+		<row><td>AlwaysInstall</td><td>CheckinClient.Primary_output1</td></row>
+		<row><td>AlwaysInstall</td><td>EO.WebBrowser.Wpf.dll</td></row>
+		<row><td>AlwaysInstall</td><td>EO.WebBrowser.dll</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 	</table>
 
 	<table name="File">
@@ -1878,7 +1887,9 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
-		<row><td>checkinclient.primary_output</td><td>CheckinClient.Primary_output</td><td>CheckinClient.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;CheckinClient&gt;|Built</td><td>3</td><td/></row>
+		<row><td>checkinclient.primary_output</td><td>CheckinClient.Primary_output1</td><td>CheckinClient.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;CheckinClient1&gt;|Built</td><td>3</td><td/></row>
+		<row><td>eo.webbrowser.dll</td><td>EO.WebBrowser.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.dll</td><td>1</td><td/></row>
+		<row><td>eo.webbrowser.wpf.dll</td><td>EO.WebBrowser.Wpf.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.Wpf.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.Wpf.dll</td><td>1</td><td/></row>
 	</table>
 
 	<table name="FileSFPCatalog">
@@ -2023,6 +2034,10 @@
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
 		<row><td>CheckinClient.Primary_output</td><td/><td/><td>_2FBB17E1_4956_41A6_888A_E23E54FCDAAB_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>CheckinClient.Primary_output1</td><td/><td/><td>_AD52BAF5_4CA7_4274_B563_AF872BA43EFA_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>EO.WebBrowser.Wpf.dll</td><td/><td/><td>_9C2A0300_D71C_4C8A_B4A8_812DFA3A81EA_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>EO.WebBrowser.dll</td><td/><td/><td>_93F087E3_35BF_4F2C_A55D_F61C68659D9D_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_16CDAFC1_0B19_4EE1_9F18_6E21F8772791_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="ISCustomActionReference">
@@ -2324,6 +2339,7 @@
 		<col def="S255">TestValue</col>
 		<col def="i4">Type</col>
 		<row><td>CheckinClient</td><td>..\..\Applications\Wpf\CheckinClient\CheckinClient.csproj</td><td/><td>2</td></row>
+		<row><td>CheckinClient1</td><td>..\..\..\Rock-WindowsCheckin\CheckinClient.csproj</td><td/><td>2</td></row>
 		<row><td>CommonFilesFolder</td><td/><td/><td>1</td></row>
 		<row><td>ISPROJECTDIR</td><td/><td/><td>1</td></row>
 		<row><td>ISProductFolder</td><td/><td/><td>1</td></row>
@@ -2640,7 +2656,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
-		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-2086519153</td></row>
+		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1034051086</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>-2086474737</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>-2086474737</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION45FULL</td><td>1033</td><td>Microsoft .NET Framework 4.5 Full package or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>-2086521489</td></row>
@@ -3742,8 +3758,8 @@
 		<row><td>IDS__TargetReq_DESC_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>-2086474737</td></row>
 		<row><td>IDS__TargetReq_DESC_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>-2086474737</td></row>
 		<row><td>IDS__TargetReq_DESC_RESOLUTION</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>-2086474737</td></row>
-		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>-2086519153</td></row>
-		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-2086519153</td></row>
+		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>1034051086</td></row>
+		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1034051086</td></row>
 		<row><td>ID_STRING3</td><td>1033</td><td>Launch |Built</td><td>0</td><td/><td>-2086490737</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>-2086474737</td></row>
 	</table>
@@ -3852,7 +3868,9 @@
 		<col def="V0">Data</col>
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
-		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Projects\Rock\Applications\Wpf\CheckinClient\app.ico</td><td>0</td></row>
+		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>_Built1_23CFFCD7DCC94F18ABB06A2C9599C939.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>_Built_FB67052ED16B4C0095E5DDA133D94FA6.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
 	</table>
 
 	<table name="IniFile">
@@ -3985,7 +4003,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{38802604-0846-4DEC-823A-7581098448C4}</td></row>
 		<row><td>ISUSSignature</td><td>{6631B87A-232F-4DAC-AB92-0D246326C957}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewAppV,viewProject,viewRelease</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewAppV,viewProject,viewRelease,viewAppFiles,viewSupportFiles,viewCustomActions,viewSystemSearch,viewInstallScriptStd,viewShortcuts,viewRegistry,viewIniFiles,viewTextFiles,viewXMLConfig,viewFileExtensions,viewEnvironmentVariables,viewVRoots,viewSQLServer,viewTextMessages,viewDesignPatches,viewFeatureFiles,viewObjects,viewDependencies</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
@@ -4525,8 +4543,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">ISComments</col>
 		<col def="S255">ISShortcutName</col>
 		<col def="I4">ISAttributes</col>
-		<row><td>_Built</td><td>rockrm_1_rockrms__check_in_client</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>_Built</td><td>rockrm_1_rockrms__check_in_client</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built_FB67052ED16B4C0095E5DDA133D94FA6.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built1_23CFFCD7DCC94F18ABB06A2C9599C939.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">

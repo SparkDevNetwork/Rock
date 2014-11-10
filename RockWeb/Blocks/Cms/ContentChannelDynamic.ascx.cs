@@ -205,6 +205,7 @@ $(document).ready(function() {
                 .Select( c => new { c.Guid, c.Name } )
                 .ToList();
             ddlChannel.DataBind();
+            ddlChannel.Items.Insert( 0, new ListItem( "", "" ) );
             ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
             ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
 
@@ -500,15 +501,17 @@ $(document).ready(function() {
                 if ( string.IsNullOrWhiteSpace( PageParameter( "Item" ) ) )
                 {
                     // set title to channel name
-                    RockPage.BrowserTitle = String.Format( "{0} | {1}", content.Select( c => c.ContentChannel.Name ).FirstOrDefault(), RockPage.Site.Name );
-                    RockPage.PageTitle = content.Select( c => c.ContentChannel.Name ).FirstOrDefault();
-                    RockPage.Header.Title = String.Format( "{0} | {1}", content.Select( c => c.ContentChannel.Name ).FirstOrDefault(), RockPage.Site.Name );
+                    string channelName = content.Select( c => c.ContentChannel.Name ).FirstOrDefault();
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", channelName, RockPage.Site.Name );
+                    RockPage.PageTitle = channelName;
+                    RockPage.Header.Title = String.Format( "{0} | {1}", channelName, RockPage.Site.Name );
                 }
                 else
                 {
-                    RockPage.PageTitle = content.Select( c => c.Title ).FirstOrDefault();
-                    RockPage.BrowserTitle = String.Format( "{0} | {1}", content.Select( c => c.Title ).FirstOrDefault(), RockPage.Site.Name );
-                    RockPage.Header.Title = String.Format( "{0} | {1}", content.Select( c => c.Title ).FirstOrDefault(), RockPage.Site.Name );
+                    string itemTitle = content.Select( c => c.Title ).FirstOrDefault();
+                    RockPage.PageTitle = itemTitle;
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
+                    RockPage.Header.Title = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
                 }
             }
 
@@ -597,10 +600,6 @@ $(document).ready(function() {
             var template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
             if ( template == null )
             {
-                string liquidFolder = Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-                Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
                 template = Template.Parse( GetAttributeValue( "Template" ) );
 
                 int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
@@ -678,8 +677,6 @@ $(document).ready(function() {
 
                                     qry = qry.Where( paramExpression, whereExpression, null );
                                 }
-
-
                             }
 
                             // All filtering has been added, now run query and then check security and load attributes
@@ -692,6 +689,85 @@ $(document).ready(function() {
                                 }
                             }
 
+                            // Order the items
+                            SortProperty sortProperty = null;
+
+                            string orderBy = GetAttributeValue( "Order" );
+                            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                            {
+                                var fieldDirection = new List<string>();
+                                foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                                {
+                                    var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                                    fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                }
+
+                                sortProperty = new SortProperty();
+                                sortProperty.Direction = SortDirection.Ascending;
+                                sortProperty.Property = fieldDirection.AsDelimited( "," );
+
+                                string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                                var itemQry = items.AsQueryable();
+                                IOrderedQueryable<ContentChannelItem> orderedQry = null;
+
+                                for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                                {
+                                    string column = columns[columnIndex].Trim();
+
+                                    var direction = sortProperty.Direction;
+                                    if ( column.ToLower().EndsWith( " desc" ) )
+                                    {
+                                        column = column.Left( column.Length - 5 );
+                                        direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                                    }
+
+                                    try
+                                    {
+                                        if ( column.StartsWith( "Attribute:" ) )
+                                        {
+                                            string attributeKey = column.Substring( 10 );
+
+                                            if ( direction == SortDirection.Ascending )
+                                            {
+                                                orderedQry = ( columnIndex == 0 ) ?
+                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
+                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                            }
+                                            else
+                                            {
+                                                orderedQry = ( columnIndex == 0 ) ?
+                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
+                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if ( direction == SortDirection.Ascending )
+                                            {
+                                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                                            }
+                                            else
+                                            {
+                                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                                            }
+                                        }
+                                    }
+                                    catch { }
+
+                                }
+
+                                try
+                                {
+                                    if ( orderedQry != null )
+                                    {
+                                        items = orderedQry.ToList();
+                                    }
+                                }
+                                catch { }
+
+                            }
+
                             int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                             if ( cacheDuration > 0 )
                             {
@@ -700,6 +776,7 @@ $(document).ready(function() {
                             }
                         }
 
+                        // If items could be filtered by querystring values, check for filters
                         if ( queryParameterFiltering && Request.QueryString.Count > 0 )
                         {
                             var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
@@ -742,84 +819,6 @@ $(document).ready(function() {
                             }
 
                             items = itemQry.ToList();
-
-                        }
-
-                        SortProperty sortProperty = null;
-
-                        string orderBy = GetAttributeValue( "Order" );
-                        if ( !string.IsNullOrWhiteSpace( orderBy ) )
-                        {
-                            var fieldDirection = new List<string>();
-                            foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
-                            {
-                                var sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
-                            }
-
-                            sortProperty = new SortProperty();
-                            sortProperty.Direction = SortDirection.Ascending;
-                            sortProperty.Property = fieldDirection.AsDelimited( "," );
-
-                            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-                            var itemQry = items.AsQueryable();
-                            IOrderedQueryable<ContentChannelItem> qry = null;
-
-                            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
-                            {
-                                string column = columns[columnIndex].Trim();
-
-                                var direction = sortProperty.Direction;
-                                if ( column.ToLower().EndsWith( " desc" ) )
-                                {
-                                    column = column.Left( column.Length - 5 );
-                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                                }
-
-                                try
-                                {
-                                    if ( column.StartsWith( "Attribute:" ) )
-                                    {
-                                        string attributeKey = column.Substring( 10 );
-
-                                        if ( direction == SortDirection.Ascending )
-                                        {
-                                            qry = ( columnIndex == 0 ) ?
-                                                itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                qry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
-                                        }
-                                        else
-                                        {
-                                            qry = ( columnIndex == 0 ) ?
-                                                itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                qry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if ( direction == SortDirection.Ascending )
-                                        {
-                                            qry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : qry.ThenBy( column );
-                                        }
-                                        else
-                                        {
-                                            qry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : qry.ThenByDescending( column );
-                                        }
-                                    }
-                                }
-                                catch { }
-
-                            }
-
-                            try
-                            {
-                                if ( qry != null )
-                                {
-                                    items = qry.ToList();
-                                }
-                            }
-                            catch { }
 
                         }
                     }
@@ -900,10 +899,15 @@ $(document).ready(function() {
                     // add item attributes
                     AttributeService attributeService = new AttributeService( rockContext );
                     var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
-                                            .Where( a =>
-                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                                a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) )
+                                            .Where( a => (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) 
+                                                ) || (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() ) 
+                                                ) )
                                             .ToList();
+
                     foreach ( var attribute in itemAttributes )
                     {
                         kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );

@@ -462,7 +462,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.LastName = row.LastName;
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
-                groupMember.Person.BirthDate = row.BirthDate;
+
+                DateTime? birthdate = row.BirthDate;
+                if (birthdate.HasValue)
+                {
+                    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                    var today = RockDateTime.Today;
+                    while ( birthdate.Value.CompareTo( today ) > 0 )
+                    {
+                        birthdate = birthdate.Value.AddYears( -100 );
+                    }
+                }
+                groupMember.Person.BirthDate = birthdate;
+
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
 

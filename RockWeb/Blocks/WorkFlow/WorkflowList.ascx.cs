@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "workflowId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             var rockContext = new RockContext();
             WorkflowService workflowService = new WorkflowService( rockContext );
-            Workflow workflow = workflowService.Get( (int)e.RowKeyValue );
+            Workflow workflow = workflowService.Get( e.RowKeyId );
             if ( workflow != null )
             {
                 string errorMessage;

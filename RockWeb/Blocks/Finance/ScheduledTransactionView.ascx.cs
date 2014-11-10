@@ -294,9 +294,9 @@ namespace RockWeb.Blocks.Finance
                     {
                         n.Caption,
                         Text = n.Text.ConvertCrLfToHtmlBr(),
-                        Person = n.CreatedByPersonAlias.Person.FullName,
-                        Date = n.CreatedDateTime.Value.ToShortDateString(),
-                        Time = n.CreatedDateTime.Value.ToShortTimeString()
+                        Person = ( n.CreatedByPersonAlias != null && n.CreatedByPersonAlias.Person != null ) ? n.CreatedByPersonAlias.Person.FullName : "",
+                        Date = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortDateString() : "",
+                        Time = n.CreatedDateTime.HasValue ? n.CreatedDateTime.Value.ToShortTimeString() : ""
                     } )
                     .ToList();
                 rptrNotes.DataBind();

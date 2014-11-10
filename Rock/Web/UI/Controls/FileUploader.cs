@@ -16,7 +16,9 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -554,7 +556,7 @@ namespace Rock.Web.UI.Controls
                     _hfBinaryFileId.RenderControl( writer );
                     _hfBinaryFileTypeGuid.RenderControl( writer );
                     _aFileName.RenderControl( writer );
-                
+
 
                     writer.AddAttribute( "class", "fileupload-remove" );
                     if ( !ShowDeleteButton )
@@ -607,6 +609,21 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
+            int? maxUploadBytes = null;
+            try
+            {
+                HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
+                if ( section != null )
+                {
+                    // MaxRequestLength is in KB
+                    maxUploadBytes = section.MaxRequestLength * 1024;
+                }
+            }
+            catch
+            {
+                // intentionally ignore and don't tell the fileUploader the limit
+            }
+
             var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
             postBackScript = postBackScript.Replace( '\'', '"' );
             var script = string.Format(
@@ -628,7 +645,8 @@ Rock.controls.fileUploader.initialize({{
     }},
     doneFunction: function (e, data) {{
         {11}
-    }}
+    }},
+    maxUploadBytes: {12}
 }});",
                 _fileUpload.ClientID,
                 this.BinaryFileId,
@@ -641,7 +659,8 @@ Rock.controls.fileUploader.initialize({{
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.UploadUrl,
                 this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript );
+                this.DoneFunctionClientScript,
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 
