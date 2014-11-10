@@ -54,11 +54,18 @@
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipientActivity.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="CodeGenerated\ContentChannel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItem.cs" />
+    <Compile Include="CodeGenerated\ContentChannelType.cs" />
+    <Compile Include="CodeGenerated\ContentItem.cs" />
+    <Compile Include="CodeGenerated\ContentType.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
     <Compile Include="CodeGenerated\DefinedType.cs" />
     <Compile Include="CodeGenerated\DefinedValue.cs" />
     <Compile Include="CodeGenerated\Device.cs" />
+    <Compile Include="CodeGenerated\EntitySet.cs" />
+    <Compile Include="CodeGenerated\EntitySetItem.cs" />
     <Compile Include="CodeGenerated\EntityType.cs" />
     <Compile Include="CodeGenerated\ExceptionLog.cs" />
     <Compile Include="CodeGenerated\FieldType.cs" />
@@ -101,6 +108,7 @@
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
+    <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
     <Compile Include="CodeGenerated\PluginMigration.cs" />

@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "emailId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "emailId", e.RowKeyId );
         }
 
         /// <summary>
