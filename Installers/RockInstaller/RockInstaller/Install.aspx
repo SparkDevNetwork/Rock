@@ -507,7 +507,7 @@
                         <h1>Email Server Settings</h1>
 						
 					    <p>Email is an essential part of the Rock RMS.  Please provide a few details about your email environment.  You can change 
-					    these values at an time inside the app. 
+					    these values at any time inside the app. 
 					    </p>
 
 					    <div class="form-group">

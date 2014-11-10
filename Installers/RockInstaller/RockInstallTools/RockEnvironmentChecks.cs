@@ -238,7 +238,7 @@ namespace RockInstallTools
                     return result;
                 }
 
-                result.Message = String.Format( "The '{0}' database does not exist on the server, but you have persmissions to create it.  Rock will create it for you as part of the install.", dbDatabase );
+                result.Message = String.Format( "The '{0}' database does not exist on the server, but you have permissions to create it.  Rock will create it for you as part of the install.", dbDatabase );
             }
             else
             {
