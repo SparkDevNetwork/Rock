@@ -34,11 +34,23 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        public RockContext()
+            : base()
+        {
+        }
 
-        //public RockContext()
-        //{
-        //    this.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
-        //}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// Use this if you need to specify a connection string other than the default
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
+        public RockContext( string nameOrConnectionString )
+            : base( nameOrConnectionString )
+        {
+        }
 
         #region Models
 
@@ -273,7 +285,7 @@ namespace Rock.Data
         /// The entity set items.
         /// </value>
         public DbSet<EntitySetItem> EntitySetItems { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
@@ -441,7 +453,7 @@ namespace Rock.Data
         /// The histories.
         /// </value>
         public DbSet<History> Histories { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
@@ -513,7 +525,7 @@ namespace Rock.Data
         /// The note types.
         /// </value>
         public DbSet<NoteType> NoteTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
@@ -528,7 +540,7 @@ namespace Rock.Data
         /// <value>
         /// The page contexts.
         /// </value>
-        public DbSet<PageContext> PageContexts { get; set; } 
+        public DbSet<PageContext> PageContexts { get; set; }
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -809,7 +821,7 @@ namespace Rock.Data
         /// Adds the configurations.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
-        public static void AddConfigurations(DbModelBuilder modelBuilder)
+        public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );

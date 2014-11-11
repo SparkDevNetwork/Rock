@@ -215,8 +215,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowImpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+            if ( GetAttributeValue( "Impersonation" ).AsBooleanOrNull() ?? false )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -225,8 +224,19 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            // if TargetPerson wasn't set by Impersonation, try to get it from the PersonId parameter (if specified)
+            if (TargetPerson == null)
+            {
+                int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    TargetPerson = new PersonService( new RockContext() ).Get( personId.Value );
+                }
+            }
+
             if ( TargetPerson == null )
             {
+                
                 TargetPerson = CurrentPerson;
             }
 

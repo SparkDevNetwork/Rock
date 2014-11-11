@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "TemplateId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "TemplateId", e.RowKeyId );
         }
 
         /// <summary>

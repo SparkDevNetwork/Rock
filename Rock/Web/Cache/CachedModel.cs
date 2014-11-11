@@ -77,8 +77,8 @@ namespace Rock.Web.Cache
                 if ( attributeModel.Attributes != null )
                 {
                     this.Attributes = attributeModel.Attributes;
+                    this.AttributeValues = attributeModel.AttributeValues;
                 }
-                this.AttributeValues = attributeModel.AttributeValues;
             }
         }
 
@@ -240,7 +240,7 @@ namespace Rock.Web.Cache
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        public Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.

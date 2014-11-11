@@ -31,6 +31,7 @@ namespace Rock.Web.UI.Controls
     {
         #region Controls
 
+        private HiddenField _hfDisableVrm;
         private HiddenField _hiddenField;
 
         /// <summary>
@@ -216,6 +217,24 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the control checks client input from the browser for potentially dangerous values.
+        /// </summary>
+        public override ValidateRequestMode ValidateRequestMode
+        {
+            get
+            {
+                return base.ValidateRequestMode;
+            }
+            set
+            {
+                base.ValidateRequestMode = value;
+
+                EnsureChildControls();
+                _textBox.ValidateRequestMode = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -229,6 +248,11 @@ namespace Rock.Web.UI.Controls
             _hiddenField.ID = this.ID + "_hiddenField";
             Controls.Add( _hiddenField );
 
+            _hfDisableVrm = new HiddenField();
+            _hfDisableVrm.ID = this.ID + "_hiddenField_dvrm";
+            _hfDisableVrm.Value = "True";
+            Controls.Add( _hfDisableVrm ); 
+            
             _textBox = new RockTextBox();
             _textBox.ID = this.ID + "_textBox";
             Controls.Add( _textBox );
@@ -281,6 +305,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hiddenField.RenderControl( writer );
+            if ( ValidateRequestMode == System.Web.UI.ValidateRequestMode.Disabled )
+            {
+                _hfDisableVrm.RenderControl( writer );
+            }
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

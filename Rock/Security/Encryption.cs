@@ -80,13 +80,17 @@ namespace Rock.Security
 
         /// <summary>
         /// Encrypt the given string using AES.  The string can be decrypted using 
-        /// DecryptStringAES().  The sharedSecret parameters must match.
+        /// DecryptString().  The sharedSecret parameters must match.
         /// </summary>
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
-            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return string.Empty;
+            }
 
+            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
@@ -143,14 +147,14 @@ namespace Rock.Security
 
         /// <summary>
         /// Decrypt the given string.  Assumes the string was encrypted using 
-        /// EncryptStringAES(), using an identical sharedSecret.
+        /// EncryptString(), using an identical sharedSecret.
         /// </summary>
         /// <param name="cipherText">The text to decrypt.</param>
         public static string DecryptString( string cipherText )
         {
             if ( string.IsNullOrEmpty( cipherText ) )
             {
-                throw new ArgumentNullException( "cipherText" );
+                return string.Empty;
             }
 
             string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];

@@ -626,7 +626,7 @@ order by [parentTable], [columnName]
                 case "SByte": return "sbyte";
                 case "Int16": return "short";
                 case "String": return "string";
-                case "DbGeography": return "string";
+                case "DbGeography": return "object";
             }
 
             return typeName;

@@ -161,6 +161,7 @@
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
+    <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
@@ -232,7 +233,9 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
+    <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
@@ -243,6 +246,10 @@
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
+    <Compile Include="Field\Types\AudioFileFieldType.cs" />
+    <Compile Include="Field\Types\AudioUrlFieldType.cs" />
+    <Compile Include="Field\Types\VideoUrlFieldType.cs" />
+    <Compile Include="Field\Types\VideoFileFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
@@ -281,6 +288,8 @@
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
@@ -784,8 +793,11 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
+    <Compile Include="Workflow\Action\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\SendSms.cs" />
+    <Compile Include="Workflow\Action\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
@@ -906,7 +918,6 @@
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
     <Compile Include="Field\Types\DateFieldType.cs" />
     <Compile Include="Field\Types\ImageFieldType.cs" />
-    <Compile Include="Field\Types\VideoFieldType.cs" />
     <Compile Include="Model\FinancialBatch.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -7,6 +7,42 @@
 <script runat="server">
     
     /// <summary>
+    /// An optional subtitle
+    /// </summary>
+    /// <value>
+    /// The sub title.
+    /// </value>
+    public override string SubTitle
+    {
+        get
+        {
+            return lSubTitle.Text.TrimStart( "<small>".ToCharArray() ).TrimEnd( "</small>".ToCharArray() );
+        }
+        set
+        {
+            lSubTitle.Text = string.IsNullOrWhiteSpace( value ) ? "" : "<small>" + value + "</small>";
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the close message.
+    /// </summary>
+    /// <value>
+    /// The close message.
+    /// </value>    
+    public override string CloseMessage
+    {
+        get
+        {
+            return hfCloseMessage.Value;
+        }
+        set
+        {
+            hfCloseMessage.Value = value;
+        }
+    }
+    
+    /// <summary>
     /// Handles the Click event of the btnSave control.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
@@ -71,12 +107,11 @@
         <asp:UpdatePanel ID="updatePanelDialog" runat="server">
             <ContentTemplate>
                 <div class="modal-content">
+                    <Rock:HiddenFieldWithClass ID="hfCloseMessage" runat="server" CssClass="modal-close-message" />
                     <div class="modal-header">
-                        <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
+                        <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">&times;</a>
                         <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
-                        <% if (!String.IsNullOrWhiteSpace(SubTitle)) { %>
-                        <small><%= SubTitle %></small>
-                        <% } %>
+                        <asp:Literal ID="lSubTitle" runat="server"></asp:Literal>
                     </div>
 
                     <div class="modal-body">
@@ -97,7 +132,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());" CausesValidation="false" />
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
                     </div>
                 </div>

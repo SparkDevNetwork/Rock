@@ -29,9 +29,13 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+
+using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -173,6 +177,14 @@ namespace RockWeb
                     // start the scheduler
                     sched.Start();
                 }
+
+                //// NOTE: This means that template filters will also use CSharpNamingConvention
+                //// For example the dotliquid documentation says to do this for formatting dates: 
+                //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                Template.FileSystem = new RockWeb.LiquidFileSystem();
 
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();

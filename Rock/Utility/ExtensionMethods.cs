@@ -655,14 +655,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                //// NOTE: This means that template filters will also use CSharpNamingConvention
-                //// For example the dotliquid documentation says to do this for formatting dates: 
-                //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template template = Template.Parse( content );
-
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
@@ -1262,6 +1255,19 @@ namespace Rock
         public static long ToJavascriptMilliseconds( this DateTime dateTime )
         {
             return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+        }
+
+        /// <summary>
+        /// Converts the date to a string containing month and day values ( culture-specific ).
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToMonthDayString( this DateTime dateTime )
+        {
+            var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+            string mdp = dtf.ShortDatePattern;
+            mdp = mdp.Replace( dtf.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dtf.DateSeparator, "" );
+            return dateTime.ToString( mdp );
         }
 
         #endregion

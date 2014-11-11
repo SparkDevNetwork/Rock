@@ -28,6 +28,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Data;
+using Rock.Model;
 using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
@@ -67,74 +68,18 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Used to manually flush the attribute cache.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            Rock.Web.Cache.RockMemoryCache.Clear();
 
-            foreach ( int id in new Rock.Model.AttributeService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.AttributeCache.Flush( id );
-            }
+            Rock.Security.Authorization.Flush();
 
-            foreach ( int id in new Rock.Model.BlockTypeService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.BlockTypeCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.BlockService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.BlockCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.PageService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.PageCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.DefinedTypeService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.DefinedTypeCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.DefinedValueService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.DefinedValueCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.GroupTypeService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.GroupTypeCache.Flush( id );
-            }
-
-            Guid securityRoleGuid = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
-            foreach ( int id in new Rock.Model.GroupService( rockContext ).Queryable()
-                .Where( g =>
-                    g.IsSecurityRole ||
-                    g.GroupType.Guid.Equals( securityRoleGuid ) )
-                .Select( a => a.Id ) )
-            {
-                Rock.Security.Role.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.CampusService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.CampusCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.CategoryService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.CategoryCache.Flush( id );
-            }
-
-            foreach ( int id in new Rock.Model.LayoutService( rockContext ).Queryable().Select( a => a.Id ) )
-            {
-                Rock.Web.Cache.LayoutCache.Flush( id );
-            }
-
-            Rock.Web.Cache.GlobalAttributesCache.Flush();
-            Rock.Web.SystemSettings.Flush();
+            string webAppPath = Server.MapPath("~");
+            EntityTypeService.RegisterEntityTypes( webAppPath );
+            FieldTypeService.RegisterFieldTypes( webAppPath );
+            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
 
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";

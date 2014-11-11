@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Cms
     [IntegerField("Results per page", "How many results/articles to display on the page at a time. Default is 10.", false, 10, "Feed")]
     [IntegerField("Cache Duration", "The length of time (in minutes) that the RSS Feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20, "Feed")]
     [TextField("CSS File", "An optional CSS file to add to the page for styling. Example \"Styles/rss.css\" would point to the stylesheet in the current theme's styles folder.", false, "", "Layout")]
-    [CodeEditorField("Template", "The liquid template to use for rendering. This template should be in the theme's \"Assets/Liquid\" folder and should have an underscore prepended to the filename.", 
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'RSSFeed' %}", "Layout")]
+    [CodeEditorField("Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Liquid/_RSSFeed.liquid' %}", "Layout" )]
     [BooleanField("Enable Debug", "Flag indicating that the control should output the feed data that will be passed to Liquid for parsing.", false)]
     [BooleanField("Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed")]
     [LinkedPage("Detail Page")]
@@ -103,10 +103,6 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
-
             ObjectCache cache = RockMemoryCache.Default;
             Template template = null;
 

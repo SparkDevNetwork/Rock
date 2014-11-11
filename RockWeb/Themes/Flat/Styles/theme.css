@@ -4357,6 +4357,7 @@ div.aspNetDisabled {
   color: #fff;
   background: #7b8a8b;
   overflow: auto;
+  position: relative;
 }
 @media (min-width: 768px) {
   .slide-control {

@@ -207,7 +207,7 @@ namespace Rock.Model
         {
             get
             {
-                return WasScheduleActive( DateTimeOffset.Now );
+                return WasScheduleActive( RockDateTime.Now );
             }
         }
 
@@ -221,7 +221,7 @@ namespace Rock.Model
         {
             get
             {
-                return WasCheckInActive( DateTimeOffset.Now );
+                return WasCheckInActive( RockDateTime.Now );
             }
         }
 
@@ -235,7 +235,7 @@ namespace Rock.Model
         {
             get
             {
-                return WasScheduleOrCheckInActive( DateTimeOffset.Now );
+                return WasScheduleOrCheckInActive( RockDateTime.Now );
             }
         }
 
@@ -281,9 +281,9 @@ namespace Rock.Model
         /// <summary>
         /// Gets the next Check-in start date for this Schedule.  
         /// </summary>
-        /// <param name="beginDateTime">A <see cref="System.DateTimeOffset"/> representing the base date.</param>
+        /// <param name="beginDateTime">A <see cref="System.DateTime"/> representing the base date.</param>
         /// <returns>A <see cref="System.DateTime"/> containing the next time that Check-in begins for this schedule.</returns>
-        public virtual DateTime? GetNextCheckInStartTime( DateTimeOffset beginDateTime )
+        public virtual DateTime? GetNextCheckInStartTime( DateTime beginDateTime )
         {
             if ( !IsCheckInEnabled )
             {
@@ -292,7 +292,7 @@ namespace Rock.Model
 
             // Get the effective start datetime if there's not a specific effective 
             // start time
-            DateTime fromDate = beginDateTime.DateTime;
+            DateTime fromDate = beginDateTime;
             if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( fromDate ) > 0 )
             {
                 fromDate = EffectiveStartDate.Value;
@@ -308,7 +308,7 @@ namespace Rock.Model
                 if ( occurrences.Count > 0 )
                 {
                     var nextOccurance = occurrences[0];
-                    nextStartTime = nextOccurance.Period.StartTime.Date.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                    nextStartTime = nextOccurance.Period.StartTime.Value.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
                 }
             }
 
@@ -439,14 +439,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
-        public bool WasScheduleActive( DateTimeOffset time )
+        public bool WasScheduleActive( DateTime time )
         {
-            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time.DateTime ) > 0 )
+            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time ) > 0 )
             {
                 return false;
             }
 
-            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time.DateTime ) < 0 )
+            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time ) < 0 )
             {
                 return false;
             }
@@ -477,19 +477,19 @@ namespace Rock.Model
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
-        public bool WasCheckInActive(DateTimeOffset time)
+        public bool WasCheckInActive(DateTime time)
         {
             if ( !IsCheckInEnabled )
             {
                 return false;
             }
 
-            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time.DateTime ) > 0 )
+            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time ) > 0 )
             {
                 return false;
             }
 
-            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time.DateTime ) < 0 )
+            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time ) < 0 )
             {
                 return false;
             }
@@ -538,14 +538,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
-        public bool WasScheduleOrCheckInActive( DateTimeOffset time )
+        public bool WasScheduleOrCheckInActive( DateTime time )
         {
-            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time.DateTime ) > 0 )
+            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time ) > 0 )
             {
                 return false;
             }
 
-            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time.DateTime ) < 0 )
+            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time ) < 0 )
             {
                 return false;
             }

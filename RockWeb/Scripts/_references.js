@@ -16,3 +16,4 @@
 /// <reference path="ckeditor/ckeditor.js" />
 /// <reference path="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing" />
 /// <reference path="flot/jquery.flot.js" />
+/// <reference path="mediaelementjs/mediaelement-and-player.js" />

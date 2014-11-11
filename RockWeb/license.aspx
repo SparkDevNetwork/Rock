@@ -80,7 +80,7 @@
                             <li><a href="#activator">WebActivatorEx</a> (Ms-PL) - <a href="http://nuget.org/packages/WebActivator">Project Site</a> </li>
                             <li><a href="#webgrease">WebGrease</a> (Custom) - <a href="http://nuget.org/packages/WebGrease/">Project Site</a> </li>
                             <li><a href="#limitboot">Limit Boostrap</a> (Apache) - <a href="http://jvashishtha.github.io/bootstrap/javascript.html#limit">Project Site</a> </li>
-                            <li><a href="#datepicker">Boostrap Datepicker</a> (Apache) - <a href="https://github.com/ianserlin/bootstrap-datepicker/">Project Site</a> </li>
+                            <li><a href="#datepicker">Boostrap Datepicker</a> (Apache) - <a href="https://github.com/eternicode/bootstrap-datepicker">Project Site</a> </li>
                             <li><a href="#imageresizer">ImageResizer</a> (MIT) - <a href="http://imageresizing.net/">Project Site</a> </li>
                             <li><a href="#fastclick">FastClick</a> (Custom) - <a href="https://github.com/ftlabs/fastclick">Project Site</a> </li>
                             <li><a href="#prettify">Prettify.js</a> (Apache) - <a href="https://code.google.com/p/google-code-prettify/">Project Site</a> </li>
@@ -110,6 +110,7 @@
                             <li><a href="#flot">Flot</a> (Custom) - <a href="http://www.flotcharts.org/">Project Site</a> </li>
                             <li><a href="#iscroll">iScroll</a> (MIT) - <a href="http://iscrolljs.com/">Project Site</a> </li>
                             <li><a href="#humanizer">Humanizer</a> (MIT) - <a href="http://humanizr.net/">Project Site</a> </li>
+                            <li><a href="#mediaelementjs">MediaElement.js</a> (MIT) - <a href="http://mediaelementjs.com/">Project Site</a> </li>
                         </ul>
 
 
@@ -2493,7 +2494,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 </pre>
 
                         <a name="iScroll"></a>
-
+<h3>iScroll</h3>
 <pre>
 License (MIT)
 Copyright (c) 2014 Matteo Spinelli, cubiq.org
@@ -2503,7 +2504,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </pre>
 
                         <a name="Humanizer"></a>
-
+<h3>Humanizer</h3>
 <pre>
 The MIT License (MIT)
 
@@ -2541,6 +2542,19 @@ Copyright (c) 2013-2014 Omar Khudeira (http://omar.io)
 
 ==============================================================================
 
+</pre>
+
+                        <a name="mediaelementjs"></a>
+<h3>MediaElement.js</h3>
+<pre>
+The MIT License (MIT) 
+Copyright © 2014 John Dyer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </pre>
                     </div>
                 </div>

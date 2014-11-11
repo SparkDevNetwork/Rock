@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -61,8 +61,9 @@ namespace Rock.Workflow.Action
 
                 StringBuilder sb = new StringBuilder();
 
+                var contentString = new StreamReader( binaryFile.Data.ContentStream ).ReadToEnd();
                 foreach ( Match match in Regex.Matches( 
-                    System.Text.Encoding.Default.GetString( binaryFile.Data.Content ),
+                    contentString,
                     @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
                 {
                     sb.AppendFormat( "{0}^|", match.Value );
