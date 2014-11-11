@@ -58,6 +58,12 @@ namespace Rock.Client
         public int? TimeToLive { get; set; }
 
         /// <summary />
+        public int /* ContentControlType*/ ContentControlType { get; set; }
+
+        /// <summary />
+        public string RootImageDirectory { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

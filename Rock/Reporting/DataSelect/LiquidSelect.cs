@@ -20,7 +20,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
-using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect
@@ -28,9 +27,9 @@ namespace Rock.Reporting.DataSelect
     /// <summary>
     /// A special-case DataSelectComponent that can be used to apply a DotLiquid template against the row returned from a Report query
     /// </summary>
-    [Description( "Select the Age of the Person" )]
+    [Description( "Select output using Liquid template" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Age" )]
+    [ExportMetadata( "ComponentName", "Liquid Template" )]
     public class LiquidSelect : DataSelectComponent
     {
         #region Properties
@@ -156,7 +155,7 @@ namespace Rock.Reporting.DataSelect
         {
             CodeEditor codeEditor = new CodeEditor();
             codeEditor.HelpBlock.Text = @"
-Use Liquid syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
+Use Liquid syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
 Note: The fieldname will be the Column Label without spaces or special characters.";
 
             codeEditor.EditorMode = CodeEditorMode.Liquid;

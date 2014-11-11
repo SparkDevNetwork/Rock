@@ -47,7 +47,18 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var groupGuid = GetAttributeValue( action, "Group" ).AsGuidOrNull();
+            var parts = ( GetAttributeValue( action, "Group" ) ?? string.Empty ).Split( '|' );
+            Guid? groupTypeGuid = null;
+            Guid? groupGuid = null;
+            if ( parts.Length >= 1 )
+            {
+                groupTypeGuid = parts[0].AsGuidOrNull();
+                if ( parts.Length >= 2 )
+                {
+                    groupGuid = parts[1].AsGuidOrNull();
+                }
+            }
+
             if ( groupGuid.HasValue )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid.Value );

@@ -321,6 +321,31 @@ namespace RockWeb.Blocks.Cms
                 lTitle.Text = title.FormatAsHtmlTitle();
 
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
+                hlStatus.Text = contentItem.Status.ConvertToString();
+
+                hlStatus.LabelType = LabelType.Default;
+                if ( contentItem.Status == ContentChannelItemStatus.Approved )
+                {
+                    hlStatus.LabelType = LabelType.Success;
+                } 
+                else if ( contentItem.Status == ContentChannelItemStatus.Denied )
+                {
+                    hlStatus.LabelType = LabelType.Danger;
+                }
+                if ( contentItem.Status != ContentChannelItemStatus.PendingApproval )
+                {
+                    var statusDetail = new System.Text.StringBuilder();
+                    if ( contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null )
+                    {
+                        statusDetail.AppendFormat( "by {0} ", contentItem.ApprovedByPersonAlias.Person.FullName );
+                    }
+                    if ( contentItem.ApprovedDateTime.HasValue )
+                    {
+                        statusDetail.AppendFormat( "on {0} at {1}", contentItem.ApprovedDateTime.Value.ToShortDateString(),
+                            contentItem.ApprovedDateTime.Value.ToShortTimeString() );
+                    }
+                    hlStatus.ToolTip = statusDetail.ToString();
+                }
 
                 tbTitle.Text = contentItem.Title;
 
@@ -380,8 +405,6 @@ namespace RockWeb.Blocks.Cms
                 contentItem.ContentChannel.RequiresApproval )
             {
 
-                var statusDetail = new System.Text.StringBuilder();
-
                 if ( contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
                 {
                     pnlStatus.Visible = true;
@@ -393,42 +416,14 @@ namespace RockWeb.Blocks.Cms
                 else
                 {
                     pnlStatus.Visible = false;
-
-                    string labelCss = "default";
-                    if ( contentItem.Status == ContentChannelItemStatus.Approved )
-                    {
-                        labelCss = "success";
-                    }
-                    else if ( contentItem.Status == ContentChannelItemStatus.Denied )
-                    {
-                        labelCss = "danger";
-                    }
-                    statusDetail.AppendFormat( "<span class='label label-{0}'>{1}</span> ", labelCss, contentItem.Status.ConvertToString() );
-                }
-
-                if ( contentItem.Status != ContentChannelItemStatus.PendingApproval )
-                {
-                    if ( contentItem.ApprovedByPersonAlias != null && contentItem.ApprovedByPersonAlias.Person != null )
-                    {
-                        statusDetail.AppendFormat( "by {0} ", contentItem.ApprovedByPersonAlias.Person.FullName );
-                    }
-                    if ( contentItem.ApprovedDateTime.HasValue )
-                    {
-                        statusDetail.AppendFormat( "on {0} at {1}", contentItem.ApprovedDateTime.Value.ToShortDateString(),
-                            contentItem.ApprovedDateTime.Value.ToShortTimeString() );
-                    }
                 }
 
                 hfStatus.Value = contentItem.Status.ConvertToInt().ToString();
-                lStatusDetails.Visible = true;
-                lStatusDetails.Text = statusDetail.ToString();
-
             }
             else
             {
                 hfStatus.Value = ContentChannelItemStatus.Approved.ToString();
                 pnlStatus.Visible = false;
-                lStatusDetails.Visible = false;
                 divStatus.Visible = false;
             }
         }

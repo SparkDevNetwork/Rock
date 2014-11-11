@@ -27,17 +27,94 @@ namespace Rock.Field.Types
     /// </summary>
     public class MemoFieldType : FieldType
     {
+        private const string NUMBER_OF_ROWS = "numberofrows";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( NUMBER_OF_ROWS );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add nuber box for selecting the number of rows
+            var nb = new NumberBox();
+            controls.Add( nb );
+            nb.NumberType = ValidationDataType.Integer;
+            nb.Label = "Rows";
+            nb.Help = "The number of rows to display (default is 3).";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is NumberBox )
+                {
+                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[0] ).Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                {
+                    ( (NumberBox)controls[0] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                }
+            }
+        }
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
+        /// <param name="id">The id.</param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new RockTextBox { ID = id, TextMode = TextBoxMode.MultiLine, Rows = 3 };
+            RockTextBox tb = new RockTextBox { ID = id, TextMode = TextBoxMode.MultiLine };
+            int? rows = 3;
+
+            if ( configurationValues != null && configurationValues.ContainsKey( NUMBER_OF_ROWS ))
+            {
+                rows = configurationValues[NUMBER_OF_ROWS].Value.AsIntegerOrNull() ?? 3;
+            }
+            tb.Rows = rows.HasValue ? rows.Value : 3;
+
+            return tb;
         }
+
     }
 }

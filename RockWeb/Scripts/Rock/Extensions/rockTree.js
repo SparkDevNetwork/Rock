@@ -214,6 +214,11 @@
                         }
 
                         currentNode = _findNodeById(currentId, self.nodes);
+                        while (currentNode == null && toExpand.length > 0) {
+                            // if we can't find it, try the next one until we find one or run out of expanded ids
+                            currentId = toExpand.shift();
+                            currentNode = _findNodeById(currentId, self.nodes);
+                        }
 
                         if (!currentNode) {
                             return;

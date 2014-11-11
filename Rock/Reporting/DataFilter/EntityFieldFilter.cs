@@ -49,6 +49,7 @@ namespace Rock.Reporting.DataFilter
             switch ( entityField.FilterFieldType )
             {
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     var ddlDateCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.DateFilterComparisonTypes );
                     ddlDateCompare.ID = string.Format( "{0}_ddlDateCompare", controlIdPrefix );
@@ -59,7 +60,7 @@ namespace Rock.Reporting.DataFilter
                     var datePicker = new DatePicker();
                     datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
                     datePicker.AddCssClass( "js-filter-control" );
-                    datePicker.DisplayCurrentOption = true;
+                    datePicker.DisplayCurrentOption = entityField.FilterFieldType == SystemGuid.FieldType.FILTER_DATE;
                     parentControl.Controls.Add( datePicker );
                     controls.Add( datePicker );
 
@@ -393,10 +394,11 @@ namespace Rock.Reporting.DataFilter
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
+                    case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
                         break;
 
-                    case SystemGuid.FieldType.DATE:
+                    case SystemGuid.FieldType.FILTER_DATE:
                         clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
                         break;
 
@@ -670,6 +672,7 @@ namespace Rock.Reporting.DataFilter
             switch ( property.FilterFieldType )
             {
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     if ( values.Count == 2 )
                     {

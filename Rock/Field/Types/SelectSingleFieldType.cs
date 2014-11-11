@@ -123,7 +123,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( configurationValues.ContainsKey( "values" ) )
+            if ( !string.IsNullOrWhiteSpace(value) && configurationValues.ContainsKey( "values" ) )
             {
                 var listItems = configurationValues["values"].Value.GetListItems();
                 if ( listItems != null )

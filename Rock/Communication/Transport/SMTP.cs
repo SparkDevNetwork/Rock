@@ -31,7 +31,7 @@ namespace Rock.Communication.Transport
     [TextField( "Server", "", true, "", "", 0 )]
     [IntegerField( "Port", "", false, 25, "", 1 )]
     [TextField( "User Name", "", false, "", "", 2 )]
-    [TextField( "Password", "", false, "", "", 3 )]
+    [TextField( "Password", "", false, "", "", 3, null, true )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
     public class SMTP : SMTPComponent
     {

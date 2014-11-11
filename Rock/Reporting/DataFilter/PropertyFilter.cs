@@ -276,6 +276,7 @@ namespace Rock.Reporting.DataFilter
             {
                 // Date Properties
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     if ( values.Count == 2 )
                     {

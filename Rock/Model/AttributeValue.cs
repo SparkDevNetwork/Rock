@@ -150,16 +150,14 @@ namespace Rock.Model
             var attributeCache = AttributeCache.Read( this.AttributeId );
             if (attributeCache != null)
             {
-                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
-                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
-
-                if ( attributeCache.FieldTypeId == fieldTypeImage.Id || attributeCache.FieldTypeId == fieldTypeBinaryFile.Id )
+                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+                if ( attributeCache.FieldType.Field is Rock.Field.Types.BinaryFileFieldType )
                 {
-                    int? binaryFileId = Value.AsIntegerOrNull();
-                    if ( binaryFileId.HasValue )
+                    Guid? binaryFileGuid = Value.AsGuidOrNull();
+                    if ( binaryFileGuid.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
                             binaryFile.IsTemporary = false;

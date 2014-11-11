@@ -197,7 +197,7 @@ namespace Rock.Communication.Transport
                             var binaryFile = binaryFileService.Get(binaryFileId);
                             if ( binaryFile != null )
                             {
-                                Stream stream = new MemoryStream( binaryFile.Data.Content );
+                                Stream stream = binaryFile.Data.ContentStream;
                                 message.Attachments.Add( new Attachment( stream, binaryFile.FileName ) );
                             }
                         }

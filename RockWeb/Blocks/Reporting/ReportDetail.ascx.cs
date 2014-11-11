@@ -973,7 +973,8 @@ namespace RockWeb.Blocks.Reporting
                                 reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
 
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.FILTER_DATE.AsGuid() ) )
                                 {
                                     boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                                     boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
@@ -1077,6 +1078,7 @@ namespace RockWeb.Blocks.Reporting
                 catch ( Exception ex )
                 {
                     Exception exception = ex;
+                    this.LogException( ex );
                     while ( exception != null )
                     {
                         if ( exception is System.Data.SqlClient.SqlException )

@@ -2,16 +2,15 @@
 
 <asp:UpdatePanel ID="upEditFamily" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbInvalidFamily" runat="server" Visible="false" />
 
-        <div class="panel panel-block">
+        <div class="panel panel-block" id="pnlEditFamily" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lBanner" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
-                <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
                 <div class="row">
                     <div class="col-md-4">
@@ -122,15 +121,12 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>
 
             </div>
         </div>
-
         
-
-        
-
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
