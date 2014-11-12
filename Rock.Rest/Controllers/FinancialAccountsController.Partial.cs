@@ -46,6 +46,11 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( int id )
         {
