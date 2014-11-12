@@ -591,6 +591,7 @@ namespace RockWeb.Blocks.Cms
                         mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "PageParameter", PageParameters() );
 
                         var contextObjects = new Dictionary<string, object>();
                         foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
