@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -49,6 +50,7 @@ namespace Rock.Rest.Controllers
         /// Gets the chart data.
         /// </summary>
         /// <returns></returns>
+        [Authenticate, Secured]
         public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
             return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds );
