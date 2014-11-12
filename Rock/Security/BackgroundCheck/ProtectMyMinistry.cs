@@ -41,8 +41,8 @@ namespace Rock.Security.BackgroundCheck
     [TextField( "User Name", "Protect My Ministry User Name", true, "", "", 0 )]
     [EncryptedTextField( "Password", "Protect My Ministry Password", true, "", "", 1, null, true )]
     [BooleanField( "Test Mode", "Should requests be sent in 'test' mode?", false, "", 2 )]
-    [TextField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3)]
-    [TextField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
+    [UrlLinkField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3 )]
+    [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
     public class ProtectMyMinistry : BackgroundCheckComponent
     {
         private HttpStatusCode _HTTPStatusCode;
@@ -113,7 +113,7 @@ namespace Rock.Security.BackgroundCheck
                     rootElement.Add( new XElement( "TestMode", "YES" ) );
                 }
 
-                rootElement.Add( new XElement( "ReturnResultURL", GetAttributeValue("RequestURL" ) ) );
+                rootElement.Add( new XElement( "ReturnResultURL", GetAttributeValue( "ReturnURL" ) ) );
 
                 XElement orderElement = new XElement( "Order" );
                 rootElement.Add( orderElement );
@@ -203,7 +203,7 @@ namespace Rock.Security.BackgroundCheck
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
 
-                XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestUrl") );
+                XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestURL") );
 
                 if ( _HTTPStatusCode == HttpStatusCode.OK )
                 {
@@ -312,7 +312,7 @@ namespace Rock.Security.BackgroundCheck
                     // Request has been completed
 
                     // Save the status
-                    workflow.SetAttributeValue( "ReportStatus", status );
+                    workflow.SetAttributeValue( "ReportStatus", status == "NO RECORD" ? "Pass" : "Review" );
 
                     // Save the report link 
                     string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();

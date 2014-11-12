@@ -1790,6 +1790,47 @@ namespace Rock.Data
         
         #endregion
 
+        #region BinaryFile Methods
+
+        public void UpdateBinaryFileType( string storageEntityTypeId, string name, string description,string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @StorageEntityTypeId int
+                SET @StorageEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [BinaryFileType] 
+                    WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [BinaryFileType] SET
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [IconCssClass] = '{3}',
+                        [StorageEntityTypeId] = @StorageEntityTypeId,
+                        [AllowCaching] = {5},
+                        [RequiresViewSecurity] = {6}
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[AllowCaching],[RequiresViewSecurity],[Guid] )
+                    VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )  
+                END
+",
+                    storageEntityTypeId,
+                    name,
+                    description.Replace( "'", "''" ),
+                    iconCssClass,
+                    guid,
+                    ( allowCaching ? "1" : "0" ),
+                    ( requiresViewSecurity ? "1" : "0" )
+            ) );
+        }
+
+        #endregion
+
         #region Security/Auth
 
         /// <summary>
@@ -2672,6 +2713,51 @@ INSERT INTO [dbo].[Auth]
         #endregion
 
         #region PersonAttribute
+
+        /// <summary>
+        /// Updates the person attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdatePersonAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @AttributeEntityTypeId int
+                SET @AttributeEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '5997C8D3-8840-4591-99A5-552919F90CBD')
+
+                DECLARE @PersonEntityTypeId int
+                SET @PersonEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Category] 
+                    WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [Category] SET
+                        [Name] = '{0}',
+                        [IconCssClass] = '{1}',
+                        [Description] = '{2}',
+                        [Order] = {4}
+                    WHERE [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[IconCssClass],[Description],[Order],[Guid] )
+                    VALUES( 1,@AttributeEntityTypeId,'EntityTypeId',CAST(@PersonEntityTypeId as varchar()),'{0}','{1}','{2}',{4},'{3}' )  
+                END
+",
+                    name,
+                    iconCssClass,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    order )
+            );
+        }
+
 
         /// <summary>
         /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
