@@ -59,6 +59,10 @@ namespace Rock.Workflow.Action
             {
                 updateValue = action.GetWorklowAttributeValue( valueGuid.Value );
             }
+            else
+            {
+                updateValue = updateValue.ResolveMergeFields( GetMergeFields( action ) );
+            }
 
             string personAttribute = GetAttributeValue( action, "PersonAttribute" );
 

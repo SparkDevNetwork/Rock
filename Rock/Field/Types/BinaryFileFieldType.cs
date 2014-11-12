@@ -85,15 +85,15 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.DataTextField = "Name";
-            ddl.DataValueField = "Id";
-            ddl.DataSource = new BinaryFileTypeService( new RockContext() )
+            ddl.Items.Clear();
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
                 .Queryable()
                 .OrderBy( f => f.Name )
-                .Select( f => new { f.Id, f.Name } )
-                .ToList();
-            ddl.DataBind();
-            ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                .Select( f => new { f.Guid, f.Name } ) )
+            {
+                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower()));
+            }
             ddl.Label = "File Type";
             ddl.Help = "The type of files to list.";
 
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["binaryFileType"].Value;
+                ( (DropDownList)controls[0] ).SetValue( configurationValues["binaryFileType"].Value.ToLower() );
             }
         }
 
