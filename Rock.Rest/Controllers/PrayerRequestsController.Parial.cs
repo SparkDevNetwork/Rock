@@ -18,6 +18,7 @@ using System.Linq;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -48,6 +49,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="categoryId">The category identifier.</param>
         /// <returns></returns>
+        [Authenticate, Secured]
         [HttpGet]
         [Queryable]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
