@@ -89,14 +89,6 @@ public class Mandrill : IHttpHandler
                                                                     item.UserAgent.Type );
                                     communicationRecipient.Activities.Add( clickActivity );
                                     break;
-                                case MandrillEventType.SoftBounced:
-                                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                                    communicationRecipient.StatusNote = String.Format( "Soft Bounce Occurred on {0} ({1})", item.EventDateTime.ToShortDateString(), item.Msg.BounceDescription );
-                                    break;
-                                case MandrillEventType.HardBounced:
-                                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                                    communicationRecipient.StatusNote = String.Format( "Hard Bounce Occurred on {0} ({1})", item.EventDateTime.ToShortDateString(), item.Msg.BounceDescription );
-                                    break;
                             }
                         }
                     }
@@ -131,16 +123,7 @@ public class Mandrill : IHttpHandler
 
                     if ( !string.IsNullOrEmpty( item.Msg.Email ) )
                     {
-                        PersonService personService = new PersonService( rockContext );
-                        var peopleWithEmail = personService.Queryable().Where( p => p.Email == item.Msg.Email );
-
-                        foreach ( var person in peopleWithEmail )
-                        {
-                            person.IsEmailActive = false;
-                            person.EmailNote = String.Format( "{0} ({1})", bounceDescription, item.EventDateTime.ToShortDateString() );
-                        }
-
-                        rockContext.SaveChanges();
+                        Rock.Communication.Email.ProcessBounce( item.Msg.Email, Rock.Communication.BounceType.HardBounce, bounceDescription, item.EventDateTime );
                     }
                 }
             }
