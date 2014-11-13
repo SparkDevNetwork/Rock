@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
 using Rock.Model;
@@ -32,31 +31,28 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class MergeFieldsController : ApiController, IHasCustomRoutes
+    public partial class MergeFieldsController : ApiController
     {
         /// <summary>
-        /// Adds the routes.
+        /// Gets the specified identifier.
         /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "MergeFieldsGetChildren",
-                routeTemplate: "api/MergeFields/GetChildren/{id}/{additionalFields}",
-                defaults: new
-                {
-                    controller = "MergeFields",
-                    action = "GetChildren"
-                } );
-        }
-
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
+        [Route( "api/MergeFields/{id}" )]
         public virtual string Get( string id )
         {
             return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
         }
 
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="additionalFields">The additional fields.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
+        [Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             List<TreeViewItem> items = new List<TreeViewItem>();
@@ -64,8 +60,8 @@ namespace Rock.Rest.Controllers
             switch ( id )
             {
                 case "0":
-                    
-                    if (!string.IsNullOrWhiteSpace(additionalFields))
+
+                    if ( !string.IsNullOrWhiteSpace( additionalFields ) )
                     {
                         foreach ( string fieldInfo in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
@@ -80,7 +76,7 @@ namespace Rock.Rest.Controllers
                                 items.Add( new TreeViewItem
                                 {
                                     Id = fieldId,
-                                    Name =  parts.Length > 1 ? parts[1] : entityType.FriendlyName,
+                                    Name = parts.Length > 1 ? parts[1] : entityType.FriendlyName,
                                     HasChildren = true
                                 } );
                             }
@@ -97,7 +93,7 @@ namespace Rock.Rest.Controllers
                     }
 
                     break;
-                    
+
                 case "GlobalAttribute":
 
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -127,7 +123,7 @@ namespace Rock.Rest.Controllers
                         // Get the root type
                         int pathPointer = 0;
                         EntityTypeCache entityType = null;
-                        while (entityType == null && pathPointer < idParts.Count())
+                        while ( entityType == null && pathPointer < idParts.Count() )
                         {
                             entityType = EntityTypeCache.Read( idParts[pathPointer], false );
                             pathPointer++;
@@ -152,6 +148,7 @@ namespace Rock.Rest.Controllers
                                         type = type.GetGenericArguments()[0];
                                     }
                                 }
+
                                 pathPointer++;
                             }
 
@@ -190,6 +187,7 @@ namespace Rock.Rest.Controllers
                                             }
                                         }
                                     }
+
                                     treeViewItem.HasChildren = hasChildren;
 
                                     items.Add( treeViewItem );
@@ -215,13 +213,11 @@ namespace Rock.Rest.Controllers
                             }
                         }
                     }
+
                     break;
             }
 
-            return items.OrderBy( i => i.Name).AsQueryable();
-
+            return items.OrderBy( i => i.Name ).AsQueryable();
         }
     }
-
-
 }

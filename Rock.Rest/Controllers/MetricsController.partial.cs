@@ -30,24 +30,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class MetricsController : IHasCustomRoutes
+    public partial class MetricsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "MetricsGetHtmlByBlockId",
-                routeTemplate: "api/Metrics/GetHtmlForBlock/{blockId}",
-                defaults: new
-                {
-                    controller = "Metrics",
-                    action = "GetHtmlForBlock"
-                } );
-        }
-
         /// <summary>
         /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
@@ -55,6 +39,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
+        [System.Web.Http.RouteAttribute( "api/Metrics/GetHtmlForBlock/{blockId}" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
