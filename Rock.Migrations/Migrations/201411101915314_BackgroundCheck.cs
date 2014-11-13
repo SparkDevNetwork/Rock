@@ -29,6 +29,95 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.AddBlockType( "Defined Value List Liquid", "Takes a defined type and returns all defined values and merges them with a liquid template.", "~/Blocks/Core/DefinedValueListLiquid.ascx", "Core", "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED" );
+            RockMigrationHelper.AddBlockTypeAttribute( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "", "The defined type to load values for merge fields.", 0, "", "8F50A283-4AAD-41DD-94AB-F0CF543453AA", true );
+            RockMigrationHelper.AddBlockTypeAttribute( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Liquid Template", "LiquidTemplate", "", "Liquid template to use to display content.", 1, @"{% for definedValue in DefinedValues %}
+    {{ definedValue.Value }}
+{% endfor %}", "FF11C16B-27E1-463B-8B68-E9A854DD28A0", true );
+            RockMigrationHelper.AddBlockTypeAttribute( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Debug", "EnableDebug", "", "Show merge data to help you see what's available to you.", 2, "", "B16D998A-DBAF-48C3-B8A2-ED32ACF21F10", false );
+
+            Sql( @" DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '6FF59F53-28EA-4BFE-AFE1-A459CC588495')
+  
+  /* info button */
+  DECLARE @DefinedValueId int = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '3C026B37-29D4-47CB-BB6E-DA43AFE779FE')
+
+  UPDATE [AttributeValue]
+  SET [Value] = '<div class=""btn-tabled"" style=""float: left; margin: 0 6px 12px 0"">
+<table width=""100%"" border=""0"" cellspacing=""0"" cellpadding=""0"">
+  <tr>
+    <td>
+      <table border=""0"" cellspacing=""0"" cellpadding=""0"">
+        <tr>
+          <td align=""center"" style=""
+			-webkit-border-radius: 4px; 
+			-moz-border-radius: 4px; 
+			border-radius: 4px;"" 
+			bgcolor=""#20a9c7"">
+								
+				<a href=""{{ ButtonLink }}"" onclick=""{{ ButtonClick }}"" data-loading-text=""<i class=''fa fa-refresh fa-spin''></i> {{ ButtonText }}""
+					style=""	
+						font-size: 14px; 
+						font-family: OpenSans, ''Helvetica Neue'', Helvetica, Arial, sans-serif; 
+						color: #ffffff; 
+						text-decoration: none; 
+						-webkit-border-radius: 4px; 
+						-moz-border-radius: 4px; 
+						border-radius: 4px; 
+						padding: 6px 12px; 
+						border: 1px solid #1b8fa8; 
+						display: inline-block;"">
+							{{ ButtonText }}
+				</a>
+			</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</div>'
+  WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId
+
+
+  /* warning button */
+SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03C9591-C497-4E27-A714-6A482E745141')
+
+  UPDATE [AttributeValue]
+  SET [Value] = '<div class=""btn-tabled"" style=""float: left; margin: 0 6px 12px 0"">
+<table width=""100%"" border=""0"" cellspacing=""0"" cellpadding=""0"">
+  <tr>
+    <td>
+      <table border=""0"" cellspacing=""0"" cellpadding=""0"">
+        <tr>
+          <td align=""center"" style=""
+			-webkit-border-radius: 4px; 
+			-moz-border-radius: 4px; 
+			border-radius: 4px;"" 
+			bgcolor=""#efc137"">
+								
+				<a href=""{{ ButtonLink }}"" onclick=""{{ ButtonClick }}"" data-loading-text=""<i class=''fa fa-refresh fa-spin''></i> {{ ButtonText }}""
+					style=""	
+						font-size: 14px; 
+						font-family: OpenSans, ''Helvetica Neue'', Helvetica, Arial, sans-serif; 
+						color: #ffffff; 
+						text-decoration: none; 
+						-webkit-border-radius: 4px; 
+						-moz-border-radius: 4px; 
+						border-radius: 4px; 
+						padding: 6px 12px; 
+						border: 1px solid #edb716; 
+						display: inline-block;"">
+							{{ ButtonText }}
+				</a>
+			</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</div>'
+  WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId
+ " );
+
             // Update the EntityType qualifier on Attribute attributes to use Guid instead of Id
             Sql( @"
     UPDATE AQ
