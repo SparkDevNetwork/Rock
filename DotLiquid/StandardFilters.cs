@@ -127,19 +127,53 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string HumanizeTimeSpan( string sStartDate, string sEndDate, int precision = 1 )
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
         {
-            if ( string.IsNullOrWhiteSpace( sStartDate ) || string.IsNullOrWhiteSpace( sEndDate ) )
-                return "Two dates must be provided";
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
 
-            if ( sEndDate == "Now" )
+            // convert start date if string
+            if ( sStartDate is String )
             {
-                sEndDate = RockDateTime.Now.ToString();
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
             }
 
-            DateTime startDate, endDate;
+            // convert end date if string
+            if ( sEndDate is String )
+            {
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
+            }
 
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse( sEndDate, out endDate ) )
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
                 return difference.Humanize( precision );
@@ -155,24 +189,55 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static Int64? DateDiff( string sStartDate, string sEndDate, string unit )
+        public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-            if ( string.IsNullOrWhiteSpace( sStartDate ) || string.IsNullOrWhiteSpace( sEndDate ) )
-                return null;
 
-            if ( sEndDate == "Now" )
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
+            
+            // convert start date if string
+            if ( sStartDate is String )
             {
-                sEndDate = RockDateTime.Now.ToString();
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
             }
 
-            if ( sStartDate == "Now" )
+            // convert end date if string
+            if ( sEndDate is String )
             {
-                sStartDate = RockDateTime.Now.ToString();
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
             }
 
-            DateTime startDate, endDate;
 
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse( sEndDate, out endDate ) )
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
 
@@ -184,6 +249,10 @@ namespace DotLiquid
                         return (Int64)difference.TotalHours;
                     case "m":
                         return (Int64)difference.TotalMinutes;
+                    case "M":
+                        return (Int64)GetMonthsBetween( startDate, endDate );
+                    case "Y":
+                        return (Int64)(endDate.Year - startDate.Year);
                     case "s":
                         return (Int64)difference.TotalSeconds;
                     default:
@@ -193,6 +262,22 @@ namespace DotLiquid
             else
             {
                 return null;
+            }
+        }
+
+        private static int GetMonthsBetween( DateTime from, DateTime to )
+        {
+            if ( from > to ) return GetMonthsBetween( to, from );
+
+            var monthDiff = Math.Abs( (to.Year * 12 + (to.Month - 1)) - (from.Year * 12 + (from.Month - 1)) );
+
+            if ( from.AddMonths( monthDiff ) > to || to.Day < from.Day )
+            {
+                return monthDiff - 1;
+            }
+            else
+            {
+                return monthDiff;
             }
         }
 
