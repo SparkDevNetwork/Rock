@@ -31,6 +31,9 @@ public partial class Http404Error : System.Web.UI.Page
     {
         try
         {
+            // Set form action to pass XSS test
+            form1.Action = "/";
+
             // Check to see if exception should be logged
             if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
             {

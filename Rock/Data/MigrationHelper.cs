@@ -2043,7 +2043,16 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @blockId int
 SET @blockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @blockId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
            ([EntityTypeId]
            ,[EntityId]
            ,[Order]
@@ -2061,6 +2070,7 @@ INSERT INTO [dbo].[Auth]
            ,{4}
            ,@groupId
            ,'{5}')
+END
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, blockGuid, action, specialRole.ConvertToInt(), authGuid, order,
                 ( allow ? "A" : "D" ) ) );

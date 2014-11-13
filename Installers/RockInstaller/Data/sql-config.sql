@@ -223,29 +223,22 @@ ELSE
 */
 
 /* safe sender domain */
-SET @attribute_id = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'CDD29C51-5D33-435F-96AB-2C06BA772F88')
-IF EXISTS(SELECT * FROM  [AttributeValue]  WHERE [AttributeId] =  @attribute_id)
-	BEGIN
-		UPDATE [AttributeValue]
-			SET [Value] = '{SafeSender}'
-			WHERE [AttributeId] = @attribute_id
-	END
-ELSE
-	BEGIN
-		INSERT INTO [AttributeValue]
-			(
-				[IsSystem]
-				, [AttributeId]
-				, [Value]
-				, [Guid]
-			)
-			VALUES (
-				0
-				, @attribute_id
-				, '{SafeSender}'
-				, '0ED6742D-15B5-44FD-B5F0-98708F47DDB6'
-			)
-	END
+DECLARE @defined_type_id int = (SELECT TOP 1 [Id] FROM [DefinedType] WHERE [Guid] = 'DB91D0E9-DCA6-45A9-8276-AEF032BE8AED')
+INSERT INTO [DefinedValue]
+	(
+		[IsSystem]
+		, [DefinedTypeId]
+		, [Value]
+		, [Guid]
+		, [Order]
+	)
+	VALUES (
+		0
+		, @defined_type_id
+		, '{SafeSender}'
+		, '0ED6742D-15B5-44FD-B5F0-98708F47DDB6'
+		, 0
+	)
 
 /* email exceptions */
 SET @attribute_id = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'F7D2FE87-537D-4452-B503-3991D15BD242')
@@ -293,14 +286,12 @@ ELSE
 				, [Value]
 				, [Guid]
 				, [EntityId]
-				, [Order]
 			)
 			VALUES (
 				0
 				, @attribute_id
 				, '{SmtpServer}'
 				, 'D0849B6F-56F8-45D8-8861-C7E56806B496'
-				, 0
 				, 0
 			)
 	END
@@ -322,14 +313,12 @@ ELSE
 				, [Value]
 				, [Guid]
 				, [EntityId]
-				, [Order]
 			)
 			VALUES (
 				0
 				, @attribute_id
 				, '{SmtpPort}'
 				, 'F671DE32-F2FD-40B6-A7E4-84D42233972A'
-				, 0
 				, 0
 			)
 	END
@@ -351,14 +340,12 @@ ELSE
 				, [Value]
 				, [Guid]
 				, [EntityId]
-				, [Order]
 			)
 			VALUES (
 				0
 				, @attribute_id
 				, '{SmtpUser}'
 				, '1A7C18C0-1751-4F83-B3E3-7059990B5B24'
-				, 0
 				, 0
 			)
 	END
@@ -380,14 +367,12 @@ ELSE
 				, [Value]
 				, [Guid]
 				, [EntityId]
-				, [Order]
 			)
 			VALUES (
 				0
 				, @attribute_id
 				, '{SmtpPassword}'
 				, '9CC1623D-1A25-4554-AA8E-3593930F3739'
-				, 0
 				, 0
 			)
 	END
@@ -409,14 +394,12 @@ ELSE
 				, [Value]
 				, [Guid]
 				, [EntityId]
-				, [Order]
 			)
 			VALUES (
 				0
 				, @attribute_id
 				, '{SmtpUseSsl}'
 				, '210A1472-6AAD-43F0-B346-FB5EBE9D4928'
-				, 0
 				, 0
 			)
 	END

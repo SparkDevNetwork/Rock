@@ -43,10 +43,10 @@ namespace Rock.Client
         public int? LocationTypeValueId { get; set; }
 
         /// <summary />
-        public string GeoPoint { get; set; }
+        //public string GeoPoint { get; set; }
 
         /// <summary />
-        public string GeoFence { get; set; }
+        //public string GeoFence { get; set; }
 
         /// <summary />
         public string Street1 { get; set; }

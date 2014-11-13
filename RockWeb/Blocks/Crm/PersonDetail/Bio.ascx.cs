@@ -100,6 +100,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         }
                     }
                 }
+
+                lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             }
 
         }
@@ -167,7 +169,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
                             string.Format( "{0} yrs old ", Person.BirthDate.Value.Age() ) : string.Empty;
-                        lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToString( "MM/dd" ) );
+                        lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString() );
                     }
 
                     lGender.Text = Person.Gender.ToString();
@@ -187,7 +189,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue )
-                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );
+                        lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
 
                     if ( Person.PhoneNumbers != null )
                     {

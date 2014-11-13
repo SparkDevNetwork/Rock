@@ -195,6 +195,8 @@ namespace RockWeb.Blocks.Core
                 lActionTitle.Text = ActionTitle.View( BinaryFile.FriendlyTypeName );
                 btnCancel.Text = "Close";
                 Rock.Attribute.Helper.AddDisplayControls( binaryFile, phAttributes );
+                fsFile.Enabled = false;
+                fsFile.Label = "View File";
             }
             else
             {

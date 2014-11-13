@@ -155,5 +155,20 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Clears all items from cache.
+        /// </summary>
+        public static void Clear()
+        {
+            lock( RockMemoryCache.s_initLock)
+            {
+                if (RockMemoryCache.s_defaultCache != null)
+                {
+                    RockMemoryCache.s_defaultCache.Dispose();
+                    RockMemoryCache.s_defaultCache = null;
+                }
+            }
+        }
+
     }
 }

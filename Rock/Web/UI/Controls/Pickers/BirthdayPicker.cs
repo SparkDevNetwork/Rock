@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -279,14 +281,41 @@ namespace Rock.Web.UI.Controls
             dayDropDownList.AutoPostBack = needsAutoPostBack;
             yearDropDownList.AutoPostBack = needsAutoPostBack;
 
-            writer.AddAttribute("class", "form-control-group");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            writer.AddAttribute( "class", "form-control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            monthDropDownList.RenderControl( writer );
-            writer.Write(" <span class='separator'>/</span> ");
-            dayDropDownList.RenderControl( writer );
-            writer.Write( " <span class='separator'>/</span> " );
-            yearDropDownList.RenderControl( writer );
+            // Get date format and separater for current culture
+            var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+            string mdp = dtf.ShortDatePattern;
+            var dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( dateParts.Count() != 3 ||
+                !dateParts.Contains( "MM" ) || 
+                !dateParts.Contains( "dd" ) || 
+                !dateParts.Contains( "yyyy" ) )
+            {
+                dateParts = new List<string> { "MM", "dd", "yyyy" };
+            }
+            string separatorHtml = string.Format( " <span class='separator'>{0}</span> ", dtf.DateSeparator );
+
+            for ( int i = 0; i < 3; i++ )
+            {
+                switch( dateParts[i])
+                {
+                    case "MM":
+                        monthDropDownList.RenderControl( writer );
+                        break;
+                    case "dd":
+                        dayDropDownList.RenderControl( writer );
+                        break;
+                    case "yyyy":
+                        yearDropDownList.RenderControl( writer );
+                        break;
+                }
+                if ( i < 2)
+                {
+                    writer.Write( separatorHtml );
+                }
+            }
 
             writer.RenderEndTag();
         }

@@ -1077,6 +1077,7 @@ namespace RockWeb.Blocks.Reporting
                 catch ( Exception ex )
                 {
                     Exception exception = ex;
+                    this.LogException( ex );
                     while ( exception != null )
                     {
                         if ( exception is System.Data.SqlClient.SqlException )

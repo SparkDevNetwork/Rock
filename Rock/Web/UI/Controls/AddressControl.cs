@@ -472,7 +472,11 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.SetValue( defaultCountry );
 
             BindStates( defaultCountry );
-            _ddlState.SetValue( defaultState );
+            if ( _ddlState.Visible )
+            {
+                _ddlState.SetValue( defaultState );
+            }
+
             _tbState.Text = defaultState;
         }
 
@@ -613,11 +617,19 @@ namespace Rock.Web.UI.Controls
                 _ddlCountry.SelectedIndex = 0;
             }
 
-            string selectedState = State;
+            string selectedStateFromEdit = _tbState.Text;
+            string selectedStateFromDownDrop = _ddlState.SelectedValue;
 
             BindStates( _ddlCountry.SelectedValue );
 
-            State = selectedState;
+            if (_tbState.Visible)
+            {
+                State = selectedStateFromEdit;
+            }
+            else
+            {
+                State = selectedStateFromDownDrop;
+            }
         }
 
         #endregion

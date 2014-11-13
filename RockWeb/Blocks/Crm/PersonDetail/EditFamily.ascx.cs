@@ -97,6 +97,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             basePersonUrl = ResolveUrl( "~/Person/" );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", "Family" );
 
             var rockContext = new RockContext();
 
@@ -106,12 +107,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 _family = new GroupService( rockContext ).Get( familyId );
                 if ( _family != null && string.Compare( _family.GroupType.Guid.ToString(), Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, true ) != 0 )
                 {
-                    nbNotice.Heading = "Invalid Family";
-                    nbNotice.Text = "Sorry, but the group selected is not a Family group";
-                    nbNotice.NotificationBoxType = NotificationBoxType.Danger;
-                    nbNotice.Visible = true;
+                    nbInvalidFamily.Text = "Sorry, but the group selected is not a Family group";
+                    nbInvalidFamily.NotificationBoxType = NotificationBoxType.Danger;
+                    nbInvalidFamily.Visible = true;
 
                     _family = null;
+                    pnlEditFamily.Visible = false;
+                    return;
+                }
+                else if (_family == null)
+                {
+                    nbInvalidFamily.Text = "Sorry, but the specified family was not found.";
+                    nbInvalidFamily.NotificationBoxType = NotificationBoxType.Danger;
+                    nbInvalidFamily.Visible = true;
+
+                    _family = null;
+                    pnlEditFamily.Visible = false;
                     return;
                 }
                 else
@@ -154,6 +165,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gLocations.GridRebind += gLocations_GridRebind;
 
             ddlNewPersonGender.BindToEnum<Gender>();
+
+            btnSave.Visible = _canEdit;
 
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
@@ -349,13 +362,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var lbNewFamily = e.Item.FindControl( "lbNewFamily" ) as LinkButton;
                     if ( lbNewFamily != null )
                     {
-                        lbNewFamily.Visible = familyMember.ExistingFamilyMember && members > 1;
+                        lbNewFamily.Visible = _canEdit && familyMember.ExistingFamilyMember && members > 1;
                     }
 
                     var lbRemoveMember = e.Item.FindControl( "lbRemoveMember" ) as LinkButton;
                     if ( lbRemoveMember != null )
                     {
-                        lbRemoveMember.Visible = !familyMember.ExistingFamilyMember && members > 1;
+                        lbRemoveMember.Visible = _canEdit && !familyMember.ExistingFamilyMember && members > 1;
                     }
                 }
             }
@@ -476,7 +489,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyMember.NickName = tbNewPersonFirstName.Text;
                 familyMember.LastName = tbNewPersonLastName.Text;
                 familyMember.Gender = ddlNewPersonGender.SelectedValueAsEnum<Gender>();
-                familyMember.BirthDate = dpNewPersonBirthDate.SelectedDate;
+
+                DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
+                if ( birthdate.HasValue )
+                {
+                    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                    var today = RockDateTime.Today;
+                    while ( birthdate.Value.CompareTo( today ) > 0 )
+                    {
+                        birthdate = birthdate.Value.AddYears( -100 );
+                    }
+                }
+                familyMember.BirthDate = birthdate;
 
                 familyMember.ConnectionStatusValueId = rblNewPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
                 var role = familyRoles.Where( r => r.Id == ( rblNewPersonRole.SelectedValueAsInt() ?? 0 ) ).FirstOrDefault();
@@ -720,6 +744,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+            {
+                return;
+            }
+
             // confirmation was disabled by btnSave on client-side.  So if returning without a redirect,
             // it should be enabled.  If returning with a redirect, the control won't be updated to reflect
             // confirmation being enabled, so it's ok to enable it here
@@ -797,7 +826,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 person.Gender = familyMember.Gender;
                                 History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
 
-                                person.BirthDate = familyMember.BirthDate;
+                                DateTime? birthdate = familyMember.BirthDate;
+                                if ( birthdate.HasValue )
+                                {
+                                    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                                    var today = RockDateTime.Today;
+                                    while ( birthdate.Value.CompareTo( today ) > 0 )
+                                    {
+                                        birthdate = birthdate.Value.AddYears( -100 );
+                                    }
+                                }
+                                person.BirthDate = birthdate;
+
                                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
 
                                 person.ConnectionStatusValueId = familyMember.ConnectionStatusValueId;
@@ -1129,6 +1169,67 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            var familyGroupId = _family.Id;
+            var rockContext = new RockContext();
+            var familyMemberService = new GroupMemberService( rockContext );
+            var familyMembers = familyMemberService.GetByGroupId( familyGroupId, true );
+
+            if (familyMembers.Count() == 1)
+            { 
+                var fm = familyMembers.FirstOrDefault();
+
+                // If the person's giving group id is this family, change their giving group id to null
+                if ( fm.Person.GivingGroupId == fm.GroupId )
+                {
+                    var personService = new PersonService( rockContext );
+                    var person = personService.Get( fm.PersonId );
+
+                    var demographicChanges = new List<string>();
+                    History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, "" );
+                    person.GivingGroupId = null;
+
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            person.Id, demographicChanges );
+
+                    rockContext.SaveChanges();
+                }
+
+                // remove person from family
+                var oldMemberChanges = new List<string>();
+                History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
+                History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
+                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    fm.Person.Id, oldMemberChanges, fm.Group.Name, typeof( Group ), fm.Group.Id );
+
+                familyMemberService.Delete( fm );
+                rockContext.SaveChanges();
+            }
+
+            var familyService = new GroupService( rockContext );
+            
+            // get the family that we want to delete (if it has no members )
+            var family = familyService.Queryable()
+                .Where( g =>
+                    g.Id == familyGroupId &&
+                    !g.Members.Any() )
+                .FirstOrDefault();
+            
+            if ( family != null )
+            {
+                familyService.Delete( family );
+                rockContext.SaveChanges();
+            }
+
+            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+        }
+
         #endregion
 
         #endregion
@@ -1139,6 +1240,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             int i = 0;
             FamilyMembers.ForEach( m => m.Index = i++ );
+
+            // only show the Delete Family button if there is only one member (or less ) in the family, and that member is in at least one other family
+            btnDelete.Visible = false;
+            if ( FamilyMembers.Count <= 1 )
+            {
+                var familyMember = FamilyMembers.FirstOrDefault();
+                int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+                if ( familyMember != null )
+                {
+                    bool isInOtherFamilies = new GroupMemberService( new RockContext() ).Queryable()
+                                    .Where( m =>
+                                        m.PersonId == familyMember.Id &&
+                                        m.Group.GroupTypeId == familyGroupTypeId &&
+                                        m.GroupId != _family.Id ).Any();
+                    if ( isInOtherFamilies )
+                    {
+                        // person is only person in the current family, and they are also in at least one other family, so let them delete this family
+                        btnDelete.Visible = true;
+                    }
+                }
+                else
+                {
+                    // somehow there are no people in this family at all, so let them delete this family
+                    btnDelete.Visible = true;
+                }
+            }
 
             lvMembers.DataSource = GetMembersOrdered();
             lvMembers.DataBind();
@@ -1193,7 +1320,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         #endregion
-
     }
 
     [Serializable]

@@ -463,7 +463,7 @@ namespace RockWeb.Blocks.Core
                     attributeId = 0;
                 }
 
-                if ( attributeId != 0 && fsEditControl.Controls.Count > 0 )
+                if ( attributeId != 0 && phEditControls.Controls.Count > 0 )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
-                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
+                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
 
                     rockContext.SaveChanges();
 
@@ -673,7 +673,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( _displayValueEdit )
             {
-                fsEditControl.Controls.Clear();
+                phEditControls.Controls.Clear();
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 if ( attribute != null )
@@ -682,9 +682,9 @@ namespace RockWeb.Blocks.Core
 
                     var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attributeId, _entityId );
                     string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
-                    attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
+                    attribute.AddControl( phEditControls.Controls, value, string.Empty, setValues, true );
 
-                    SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
+                    SetValidationGroup( phEditControls.Controls, mdAttributeValue.ValidationGroup );
 
                     if ( setValues )
                     {

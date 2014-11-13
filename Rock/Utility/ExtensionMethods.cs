@@ -1264,6 +1264,19 @@ namespace Rock
             return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }
 
+        /// <summary>
+        /// Converts the date to a string containing month and day values ( culture-specific ).
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToMonthDayString( this DateTime dateTime )
+        {
+            var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+            string mdp = dtf.ShortDatePattern;
+            mdp = mdp.Replace( dtf.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dtf.DateSeparator, "" );
+            return dateTime.ToString( mdp );
+        }
+
         #endregion
 
         #region TimeSpan Extensions

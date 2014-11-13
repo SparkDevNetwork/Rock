@@ -134,7 +134,7 @@ namespace Rock.CheckIn
             // If the kioskdevice is currently inactive, but has a next active time prior to now, force a refresh
             if ( device != null && device.FilteredGroupTypes(configuredGroupTypes).Count > 0 && !device.HasLocations( configuredGroupTypes ) )
             {
-                if ( device.KioskGroupTypes.Select( g => g.NextActiveTime ).Min().CompareTo( DateTimeOffset.Now ) < 0 )
+                if ( device.KioskGroupTypes.Select( g => g.NextActiveTime ).Min().CompareTo( RockDateTime.Now ) < 0 )
                 {
                     device = null;
                 }
@@ -228,7 +228,7 @@ namespace Rock.CheckIn
             var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var groupLocation in groupLocationService.GetActiveByLocation( location.Id ) )
             {
-                DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
+                DateTime nextGroupActiveTime = DateTime.MaxValue;
 
                 var kioskLocation = new KioskLocation( location );
                 kioskLocation.CampusId = campusId;
@@ -236,8 +236,8 @@ namespace Rock.CheckIn
                 // Populate each kioskLocation with it's schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
-                    var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( DateTimeOffset.Now );
-                    if ( nextScheduleActiveTime.HasValue && nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime.DateTime ) < 0 )
+                    var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( RockDateTime.Now );
+                    if ( nextScheduleActiveTime.HasValue && nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime ) < 0 )
                     {
                         nextGroupActiveTime = nextScheduleActiveTime.Value;
                     }
@@ -250,14 +250,14 @@ namespace Rock.CheckIn
 
                 // If the group location has any active OR future schedules, add the group's group type to the kiosk's 
                 // list of group types
-                if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
+                if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTime.MaxValue )
                 {
                     KioskGroupType kioskGroupType = kioskDevice.KioskGroupTypes.Where( g => g.GroupType.Id == groupLocation.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
                         kioskGroupType.GroupType.LoadAttributes();
-                        kioskGroupType.NextActiveTime = DateTimeOffset.MaxValue;
+                        kioskGroupType.NextActiveTime = DateTime.MaxValue;
                         kioskDevice.KioskGroupTypes.Add( kioskGroupType );
                     }
 

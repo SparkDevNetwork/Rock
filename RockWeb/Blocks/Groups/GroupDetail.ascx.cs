@@ -321,6 +321,8 @@ namespace RockWeb.Blocks.Groups
                 qryParams["GroupId"] = parentGroupId.ToString();
             }
 
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -499,6 +501,7 @@ namespace RockWeb.Blocks.Groups
 
             var qryParams = new Dictionary<string, string>();
             qryParams["GroupId"] = group.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -521,6 +524,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         qryParams["GroupId"] = parentGroupId.ToString();
                     }
+
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -773,6 +779,9 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
+            ddlGroupType.Visible = group.Id == 0;
+            lGroupType.Visible = group.Id != 0;
+
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -817,6 +826,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 ddlGroupType.SetValue( group.GroupTypeId );
+                lGroupType.Text = GroupTypeCache.Read( group.GroupTypeId, rockContext ).Name;
             }
 
             ddlCampus.SetValue( group.CampusId );

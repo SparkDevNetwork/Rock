@@ -225,6 +225,24 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Gets or sets the excluded filter types.
+        /// </summary>
+        /// <value>
+        /// The excluded filter types.
+        /// </value>
+        public string[] ExcludedFilterTypes
+        {
+            get
+            {
+                return ViewState["ExcludedFilterTypes"] as string[] ?? new string[] { };
+            }
+            set
+            {
+                ViewState["ExcludedFilterTypes"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -312,13 +330,16 @@ $('.filter-item-select').click(function (event) {
             {
                 foreach ( var item in section.Value )
                 {
-                    ListItem li = new ListItem( item.Value, item.Key );
-                    if ( !string.IsNullOrWhiteSpace( section.Key ) )
+                    if ( !this.ExcludedFilterTypes.Any( a => a == item.Key) )
                     {
-                        li.Attributes.Add( "optiongroup", section.Key );
+                        ListItem li = new ListItem( item.Value, item.Key );
+                        if ( !string.IsNullOrWhiteSpace( section.Key ) )
+                        {
+                            li.Attributes.Add( "optiongroup", section.Key );
+                        }
+                        li.Selected = item.Key == FilterEntityTypeName;
+                        ddlFilterType.Items.Add( li );
                     }
-                    li.Selected = item.Key == FilterEntityTypeName;
-                    ddlFilterType.Items.Add( li );
                 }
             }
 
