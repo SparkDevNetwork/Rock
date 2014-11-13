@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-using System.Web.Http.OData.Query;
+using System.Web.Http.OData;
 using System.Web.Routing;
-using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -76,7 +75,7 @@ namespace Rock.Rest.Controllers
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
+        [EnableQuery]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
             var metric = new MetricService( new RockContext() ).Get( metricId );

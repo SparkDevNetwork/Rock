@@ -16,6 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -51,7 +52,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [Queryable]
+        [EnableQuery]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
         {
             var rockContext = ( this.Service.Context as RockContext ) ?? new RockContext();
