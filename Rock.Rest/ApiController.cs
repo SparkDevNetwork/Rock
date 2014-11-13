@@ -21,7 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
-using System.Web.Http.OData.Query;
+using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
@@ -30,6 +30,18 @@ using Rock.Security;
 
 namespace Rock.Rest
 {
+    /*
+     * NOTE: We could have inherited from System.Web.Http.OData.ODataController, but that changes 
+     * the response format from vanilla REST to OData format. That breaks existing Rock Rest clients.
+     * 
+     */
+
+    /// <summary>
+    /// Base ApiController for Rock REST endpoints
+    /// Supports ODataV3 Queries and ODataRouting 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [ODataRouting]
     public abstract class ApiController<T> : ApiController
         where T : Rock.Data.Entity<T>, new()
     {
@@ -61,7 +73,7 @@ namespace Rock.Rest
 
         // GET api/<controller>
         [Authenticate, Secured]
-        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
+        [EnableQuery]
         public virtual IQueryable<T> Get()
         {
             var result = Service.Queryable();
@@ -70,11 +82,26 @@ namespace Rock.Rest
 
         // GET api/<controller>/5
         [Authenticate, Secured]
-        public virtual T Get( int id )
+        [ActionName( "GetById" )]
+        public virtual T GetById( int id )
         {
             T model;
             if ( !Service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
+            return model;
+        }
+
+        // GET api/<controller>(5)
+        [Authenticate, Secured]
+        [EnableQuery]
+        public virtual T Get( [FromODataUri] int key )
+        {
+            T model;
+            if ( !Service.TryGet( key, out model ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
             return model;
         }
 
@@ -156,6 +183,7 @@ namespace Rock.Rest
         /// <returns></returns>
         [Authenticate, Secured]
         [ActionName( "DataView" )]
+        [EnableQuery]
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService( new RockContext() ).Get( id );
@@ -170,7 +198,7 @@ namespace Rock.Rest
                 var paramExpression = Service.ParameterExpression;
                 var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
-                if ( paramExpression != null && whereExpression != null )
+                if ( paramExpression != null)
                 {
                     return Service.Get( paramExpression, whereExpression );
                 }
@@ -185,7 +213,7 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
         {
-            if (Request.Properties.Keys.Contains("Person"))
+            if ( Request.Properties.Keys.Contains( "Person" ) )
             {
                 return Request.Properties["Person"] as Person;
             }
@@ -214,7 +242,7 @@ namespace Rock.Rest
         protected virtual Rock.Model.PersonAlias GetPersonAlias()
         {
             var person = GetPerson();
-            if (person != null)
+            if ( person != null )
             {
                 return person.PrimaryAlias;
             }
@@ -254,9 +282,9 @@ namespace Rock.Rest
         {
             if ( securedModel != null )
             {
-                if ( IsProxy(securedModel) )
+                if ( IsProxy( securedModel ) )
                 {
-                    if ( !securedModel.IsAuthorized(Rock.Security.Authorization.EDIT, person))
+                    if ( !securedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
                     {
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );
                     }
@@ -293,7 +321,7 @@ namespace Rock.Rest
         /// <returns></returns>
         protected bool IsProxy( object type )
         {
-            return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType(type.GetType()) != type.GetType();
+            return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();
         }
     }
 }
