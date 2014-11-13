@@ -183,6 +183,7 @@ namespace Rock.Rest
         /// <returns></returns>
         [Authenticate, Secured]
         [ActionName( "DataView" )]
+        [EnableQuery]
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService( new RockContext() ).Get( id );
@@ -197,7 +198,7 @@ namespace Rock.Rest
                 var paramExpression = Service.ParameterExpression;
                 var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
-                if ( paramExpression != null && whereExpression != null )
+                if ( paramExpression != null)
                 {
                     return Service.Get( paramExpression, whereExpression );
                 }
