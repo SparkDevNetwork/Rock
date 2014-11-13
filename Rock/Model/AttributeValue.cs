@@ -155,11 +155,11 @@ namespace Rock.Model
 
                 if ( attributeCache.FieldTypeId == fieldTypeImage.Id || attributeCache.FieldTypeId == fieldTypeBinaryFile.Id )
                 {
-                    int? binaryFileId = Value.AsIntegerOrNull();
-                    if ( binaryFileId.HasValue )
+                    Guid? binaryFileGuid = Value.AsGuidOrNull();
+                    if ( binaryFileGuid.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
                             binaryFile.IsTemporary = false;

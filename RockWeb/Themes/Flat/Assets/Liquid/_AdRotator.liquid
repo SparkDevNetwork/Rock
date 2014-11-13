@@ -3,15 +3,9 @@
     <div class="flexslider">
       <ul class="slides">
 
-        {% for Ad in Ads -%}
+        {% for item in Items -%}
           <li>
-            <a href="{{ Ad.DetailPageUrl }}">
-              {% for Attribute in Ad.Attributes -%}
-                {% if Attribute.Key == 'AdImage' -%}
-                  {{ Attribute.Value }}
-                {% endif -%}
-              {% endfor -%}
-            </a>
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
           </li>   
         {% endfor -%}
 
@@ -21,8 +15,8 @@
   <div class="slide-control">
     <ul>
     
-      {% for Ad in Ads -%}
-        <li>{{ Ad.Title }}</li>   
+      {% for item in Items -%}
+        <li>{{ item.Title }}</li>   
       {% endfor -%}
       
     </ul>

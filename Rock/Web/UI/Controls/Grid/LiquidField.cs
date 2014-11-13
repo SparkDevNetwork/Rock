@@ -111,7 +111,34 @@ namespace Rock.Web.UI.Controls
             {
                 Dictionary<string, object> mergeValues = this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem );
                 lOutputText.Text = this.LiquidField.LiquidTemplate.ResolveMergeFields( mergeValues );
+
+                // Resolve any dynamic url references
+                string appRoot = ( (RockPage)lOutputText.Page ).ResolveRockUrl( "~/" );
+                string themeRoot = ( (RockPage)lOutputText.Page ).ResolveRockUrl( "~~/" );
+                lOutputText.Text = lOutputText.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class DataFieldInfo
+        {
+            /// <summary>
+            /// Gets or sets the property information.
+            /// </summary>
+            /// <value>
+            /// The property information.
+            /// </value>
+            public System.Reflection.PropertyInfo PropertyInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets the grid field.
+            /// </summary>
+            /// <value>
+            /// The grid field.
+            /// </value>
+            public BoundField GridField { get; set; }
         }
 
         /// <summary>
@@ -120,7 +147,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The data item properties.
         /// </value>
-        private Dictionary<string, System.Reflection.PropertyInfo> DataItemPropertiesDictionary { get; set; }
+        private Dictionary<string, DataFieldInfo> DataItemPropertiesDictionary { get; set; }
 
         /// <summary>
         /// To the dictionary.
@@ -137,9 +164,16 @@ namespace Rock.Web.UI.Controls
                 PopulateDataItemPropertiesDictionary( dataItem );
             }
 
-            foreach ( var propInfo in DataItemPropertiesDictionary )
+            foreach ( var dataFieldItem in DataItemPropertiesDictionary )
             {
-                dictionary.Add( propInfo.Key, propInfo.Value.GetValue( dataItem, null ) );
+                var dataFieldValue = dataFieldItem.Value.PropertyInfo.GetValue( dataItem, null );
+
+                if ( dataFieldItem.Value.GridField is DefinedValueField )
+                {
+                    dataFieldValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataFieldValue ).Value;
+                }
+
+                dictionary.Add( dataFieldItem.Key, dataFieldValue );
             }
 
             return dictionary;
@@ -152,7 +186,7 @@ namespace Rock.Web.UI.Controls
         private void PopulateDataItemPropertiesDictionary( object dataItem )
         {
             var dataItemProperties = dataItem.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual ).ToArray();
-            this.DataItemPropertiesDictionary = new Dictionary<string, System.Reflection.PropertyInfo>();
+            this.DataItemPropertiesDictionary = new Dictionary<string, DataFieldInfo>();
 
             // add MergeFields based on the associated ColumnHeaderText of each property of the dataitem (without spaces or special chars)
             foreach ( var itemPropInfo in dataItemProperties )
@@ -165,7 +199,7 @@ namespace Rock.Web.UI.Controls
                     // NOTE: since we are using the HeaderText as the mergeFieldName, and that might not be unique, just add the first one if there are duplicates
                     if ( !this.DataItemPropertiesDictionary.ContainsKey( mergeFieldName ) )
                     {
-                        this.DataItemPropertiesDictionary.Add( mergeFieldName, itemPropInfo );
+                        this.DataItemPropertiesDictionary.Add( mergeFieldName, new DataFieldInfo { PropertyInfo = itemPropInfo, GridField = gridField } );
                     }
                 }
                 else
@@ -180,7 +214,7 @@ namespace Rock.Web.UI.Controls
                 var mergeFieldName = itemPropInfo.Name;
                 if ( !this.DataItemPropertiesDictionary.ContainsKey( mergeFieldName ) )
                 {
-                    this.DataItemPropertiesDictionary.Add( mergeFieldName, itemPropInfo );
+                    this.DataItemPropertiesDictionary.Add( mergeFieldName, new DataFieldInfo { PropertyInfo = itemPropInfo, GridField = null } );
                 }
             }
         }
