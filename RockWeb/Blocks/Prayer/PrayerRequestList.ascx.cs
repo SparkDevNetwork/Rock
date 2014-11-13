@@ -497,7 +497,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerRequest != null )
             {
-                DeleteAllRelatedNotes( prayerRequest );
+                DeleteAllRelatedNotes( prayerRequest, rockContext );
 
                 string errorMessage;
                 if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
@@ -517,9 +517,8 @@ namespace RockWeb.Blocks.Prayer
         /// Deletes all related notes.
         /// </summary>
         /// <param name="prayerRequest">The prayer request.</param>
-        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest )
+        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest, RockContext rockContext )
         {
-            var rockContext = new RockContext();
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( _prayerRequestEntityTypeId.Value, "Prayer Comment" );
             var noteService = new NoteService( rockContext );
@@ -527,8 +526,8 @@ namespace RockWeb.Blocks.Prayer
             foreach ( Note prayerComment in prayerComments )
             {
                 noteService.Delete( prayerComment );
-                rockContext.SaveChanges();
             }
+            rockContext.SaveChanges();
         }
 
         /// <summary>
