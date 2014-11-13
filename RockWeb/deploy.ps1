@@ -33,6 +33,12 @@ start-service -servicename w3svc
 # create empty migration flag
 New-Item "$webroot\App_Data\Run.Migration" -type file -force
 
+# set acl on migration flag file so the app has permissions to delete it
+$acl = Get-ACL "$webroot\App_Data\Run.Migration"
+$accessRule= New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","FullControl","Allow")
+$acl.AddAccessRule($accessRule)
+Set-Acl "$webroot\App_Data\Run.Migration" $acl
+
 # delete deploy scripts
 If (Test-Path "$webroot\deploy.ps1"){
 	Remove-Item "$webroot\deploy.ps1"
