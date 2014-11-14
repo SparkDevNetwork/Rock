@@ -33,7 +33,6 @@ namespace Rock.Rest.Filters
     /// </summary>
     public class SecuredAttribute : ActionFilterAttribute
     {
-
         /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
@@ -82,6 +81,5 @@ namespace Rock.Rest.Filters
                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
             }
         }
-
     }
 }
