@@ -39,7 +39,7 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [Route( "api/MergeFields/{id}" )]
+        [System.Web.Http.Route( "api/MergeFields/{id}" )]
         public virtual string Get( string id )
         {
             return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
@@ -52,7 +52,7 @@ namespace Rock.Rest.Controllers
         /// <param name="additionalFields">The additional fields.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
+        [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             List<TreeViewItem> items = new List<TreeViewItem>();

@@ -16,9 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.SqlServer;
-using System.Linq;
-using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -28,29 +25,14 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class AttendancesController : IHasCustomRoutes
+    public partial class AttendancesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "AttendancesGetChartData",
-                routeTemplate: "api/Attendances/GetChartData",
-                defaults: new
-                {
-                    controller = "Attendances",
-                    action = "GetChartData"
-                } );
-        }
-
         /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/GetChartData" )]
         public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
             return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds );

@@ -28,30 +28,15 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class FinancialAccountsController : IHasCustomRoutes
+    public partial class FinancialAccountsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "FinancialAccountsGetChildren",
-                routeTemplate: "api/FinancialAccounts/GetChildren/{id}",
-                defaults: new
-                {
-                    controller = "FinancialAccounts",
-                    action = "GetChildren"
-                } );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
         public IQueryable<TreeViewItem> GetChildren( int id )
         {
             IQueryable<FinancialAccount> qry;
@@ -74,7 +59,7 @@ namespace Rock.Rest.Controllers
 
             var resultIds = accountList.Select( f => f.Id );
             var qryHasChildren = from f in Get().Select( f => f.ParentAccountId )
-                                 where  resultIds.Contains( f.Value )
+                                 where resultIds.Contains( f.Value )
                                  select f.Value;
 
             foreach ( var accountItem in accountItemList )

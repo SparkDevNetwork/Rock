@@ -30,87 +30,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    public partial class PeopleController : IHasCustomRoutes
+    public partial class PeopleController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "PeopleSearchParam",
-                routeTemplate: "api/People/Search",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "Search"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleSearch",
-                routeTemplate: "api/People/Search/{name}/{includeHtml}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "Search"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleSearchIncludeBusinesses",
-                routeTemplate: "api/People/Search/{name}/{includeHtml}/{includeBusinesses}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "Search"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleGetByEmail",
-                routeTemplate: "api/People/GetByEmail/{email}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "GetByEmail"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleGetByPhoneNumber",
-                routeTemplate: "api/People/GetByPhoneNumber/{number}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "GetByPhoneNumber"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleGetByUserName",
-                routeTemplate: "api/People/GetByUserName/{username}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "GetByUserName"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeopleGetByPersonAliasId",
-                routeTemplate: "api/People/GetByPersonAliasId/{personAliasId}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "GetByPersonAliasId"
-                } );
-
-            routes.MapHttpRoute(
-                name: "PeoplePopupHtml",
-                routeTemplate: "api/People/PopupHtml/{personId}",
-                defaults: new
-                {
-                    controller = "People",
-                    action = "GetPopupHtml"
-                } );
-        }
-
         /// <summary>
         /// Overrides base Get api controller to add option to include Person records for deceased individuals.
         /// </summary>
@@ -140,6 +61,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/Search" )]
         public IQueryable<PersonSearchResult> Search( string name )
         {
             return Search( name, false, false );
@@ -153,6 +75,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}" )]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
         {
             return Search( name, includeHtml, false );
@@ -167,6 +90,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}/{includeBusinesses}" )]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeBusinesses )
         {
             int count = 20;
@@ -319,6 +243,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByEmail/{email}" )]
         public IQueryable<Person> GetByEmail( string email )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -333,6 +258,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByPhoneNumber/{number}" )]
         public IQueryable<Person> GetByPhoneNumber( string number )
         {
             var rockContext = new Rock.Data.RockContext();
@@ -346,6 +272,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByUserName/{username}" )]
         public Person GetByUserName( string username )
         {
             int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
@@ -369,6 +296,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByPersonAliasId/{personAliasId}" )]
         public Person GetByPersonAliasId( int personAliasId )
         {
             int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
@@ -388,6 +316,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/People/PopupHtml/{personId}" )]
         public PersonSearchResult GetPopupHtml( int personId )
         {
             var result = new PersonSearchResult();
@@ -411,7 +340,8 @@ namespace Rock.Rest.Controllers
                 }
                 
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                html.AppendFormat( 
+                    "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                     Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ),
                     person.FullName,
                     person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
@@ -419,7 +349,8 @@ namespace Rock.Rest.Controllers
                 var spouse = person.GetSpouse( rockContext );
                 if ( spouse != null )
                 {
-                    html.AppendFormat( "<strong>Spouse</strong> {0}",
+                    html.AppendFormat( 
+                        "<strong>Spouse</strong> {0}",
                         spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
                 }
 
@@ -456,7 +387,6 @@ namespace Rock.Rest.Controllers
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
             throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
         }
-
     }
 
     /// <summary>

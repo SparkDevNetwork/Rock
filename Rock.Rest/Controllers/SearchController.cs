@@ -29,7 +29,7 @@ namespace Rock.Controllers
     {
         // GET api/<controller>
         [Authenticate, Secured]
-        [Route("api/search")]
+        [System.Web.Http.Route( "api/search" )]
         public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;
