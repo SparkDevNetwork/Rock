@@ -87,7 +87,10 @@ namespace Rock.Rest
         {
             T model;
             if ( !Service.TryGet( id, out model ) )
+            {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
             return model;
         }
 
@@ -116,9 +119,11 @@ namespace Rock.Rest
             Service.Add( value );
 
             if ( !value.IsValid )
+            {
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
-                    String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                    string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+            }
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
@@ -174,7 +179,6 @@ namespace Rock.Rest
             Service.Delete( model );
             Service.Context.SaveChanges();
         }
-
 
         /// <summary>
         /// Gets a list of objects represented by the selected data view

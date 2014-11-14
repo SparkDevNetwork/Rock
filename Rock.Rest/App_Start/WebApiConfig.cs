@@ -45,8 +45,7 @@ namespace Rock.Rest
                 defaults: new
                 {
                     action = "DataView"
-                }
-            );
+                } );
 
             // finds all [Route] attributes on REST controllers and creates the routes 
             config.MapHttpAttributeRoutes();
@@ -77,8 +76,7 @@ namespace Rock.Rest
                 {
                     httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
-                }
-            );
+                } );
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApiGetFunction",
@@ -91,8 +89,7 @@ namespace Rock.Rest
                 {
                     httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
-                }
-            );
+                } );
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApiGetList",
@@ -105,8 +102,7 @@ namespace Rock.Rest
                 {
                     httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
-                }
-            );
+                } );
 
             config.Routes.MapHttpRoute(
                name: "DefaultApiPut",
@@ -120,8 +116,7 @@ namespace Rock.Rest
                {
                    httpMethod = new HttpMethodConstraint( new string[] { "PUT" } ),
                    controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
-               }
-           );
+               } );
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApiPost",
@@ -135,8 +130,7 @@ namespace Rock.Rest
                 constraints: new
                 {
                     httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
-                }
-            );
+                } );
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApiDelete",
@@ -150,8 +144,7 @@ namespace Rock.Rest
                 {
                     httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
-                }
-            );
+                } );
 
             // build OData model and create service route (mainly for metadata)
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
