@@ -29,6 +29,14 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            Sql( @"
+    --Fix the case on check-in security code merge field
+    UPDATE [AttributeValue] 
+    SET    [Value] = '{{ Person.SecurityCode }}' 
+    WHERE  [Guid] = 'a1ea9242-ef24-41f7-9094-4da8beb9f3b7' 
+    AND [Value] = '{{ person.SecurityCode }}'
+" );
+
             RockMigrationHelper.AddBlockType( "Defined Value List Liquid", "Takes a defined type and returns all defined values and merges them with a liquid template.", "~/Blocks/Core/DefinedValueListLiquid.ascx", "Core", "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED" );
             RockMigrationHelper.AddBlockTypeAttribute( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "", "The defined type to load values for merge fields.", 0, "", "8F50A283-4AAD-41DD-94AB-F0CF543453AA", true );
             RockMigrationHelper.AddBlockTypeAttribute( "C4ADDDFA-DF16-467E-9285-B1FF0FC066ED", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Liquid Template", "LiquidTemplate", "", "Liquid template to use to display content.", 1, @"{% for definedValue in DefinedValues %}

@@ -147,8 +147,7 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                int? definedTypeId = configurationValues["binaryFileType"].Value.AsIntegerOrNull();
-                control.BinaryFileTypeId = definedTypeId;
+                control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuidOrNull();
             }
 
             return control;
