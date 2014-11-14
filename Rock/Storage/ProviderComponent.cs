@@ -68,6 +68,7 @@ namespace Rock.Storage
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider
+        /// NOTE: This is the storage URL for use by the provider, not the URL that is served to a Rock client
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
