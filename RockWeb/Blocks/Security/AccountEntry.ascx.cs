@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
 
-                var mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
                 var personDictionaries = new List<IDictionary<string, object>>();
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
 
-                var mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
                 var personDictionary = person.ToLiquid() as Dictionary<string, object>;
@@ -459,7 +459,7 @@ namespace RockWeb.Blocks.Security
                             url = ResolveRockUrl( "~/ConfirmAccount" );
                         }
 
-                        var mergeObjects = new Dictionary<string, object>();
+                        var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
                         var personDictionary = person.ToLiquid() as Dictionary<string, object>;
