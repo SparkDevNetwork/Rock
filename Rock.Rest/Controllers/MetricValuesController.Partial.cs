@@ -31,42 +31,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class MetricValuesController : IHasCustomRoutes
+    public partial class MetricValuesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "MetricValuesGetByMetricId",
-                routeTemplate: "api/MetricValues/GetByMetricId/{metricId}",
-                defaults: new
-                {
-                    controller = "MetricValues",
-                    action = "GetByMetricId"
-                } );
-
-            routes.MapHttpRoute(
-                name: "MetricValuesGetSummaryByMetricID",
-                routeTemplate: "api/MetricValues/GetSummary",
-                defaults: new
-                {
-                    controller = "MetricValues",
-                    action = "GetSummary"
-                } );
-
-            routes.MapHttpRoute(
-                name: "MetricValuesGetSeriesName",
-                routeTemplate: "api/MetricValues/GetSeriesName/{metricId}/{seriesId}",
-                defaults: new
-                {
-                    controller = "MetricValues",
-                    action = "GetSeriesName"
-                } );
-        }
-
         /// <summary>
         /// Gets the by metric identifier.
         /// NOTE: The Chart blocks use ODATA to further filter this
@@ -76,6 +42,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
+        [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
             var metric = new MetricService( new RockContext() ).Get( metricId );
@@ -100,6 +67,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/MetricValues/GetSummary" )]
         public IEnumerable<MetricSummary> GetSummary( string metricIdList, DateTime? startDate = null, DateTime? endDate = null, MetricValueType? metricValueType = null, int? entityTypeId = null, int? entityId = null )
         {
             List<int> metricIds = metricIdList.SplitDelimitedValues().AsIntegerList();
@@ -170,6 +138,7 @@ namespace Rock.Rest.Controllers
         /// <param name="metricId">The metric identifier.</param>
         /// <param name="seriesId">The series identifier.</param>
         /// <returns></returns>
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
         public string GetSeriesName( int metricId, int seriesId )
         {
             var rockContext = new RockContext();

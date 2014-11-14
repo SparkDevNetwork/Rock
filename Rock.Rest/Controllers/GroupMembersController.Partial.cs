@@ -23,7 +23,6 @@ namespace Rock.Rest.Controllers
 {
     public partial class GroupMembersController 
     {
-
         /// <summary>
         /// Overrides base Get controller method to include deceased GroupMembers
         /// </summary>
@@ -45,7 +44,5 @@ namespace Rock.Rest.Controllers
                 return base.Get();
             }
         }
-
-
     }
 }

@@ -39,7 +39,7 @@ namespace Rock.Rest.Constraints
         {
             if (values.ContainsKey("controller"))
             {
-                string controllerName = ( values["controller"] as string );
+                string controllerName = values["controller"] as string;
                 if (controllerName.Length > 0)
                 {
                     // make sure the Controller parameter starts with an Alpha character (mainly so that api/$metadata will routed correctly)
