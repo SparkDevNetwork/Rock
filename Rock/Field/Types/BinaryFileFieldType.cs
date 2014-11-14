@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary files of a specific type
     /// Stored as BinaryFile's Guid
     /// </summary>
-    public class BinaryFileFieldType : FieldType
+    public class BinaryFileFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -199,6 +199,39 @@ namespace Rock.Field.Types
                 var binaryFile = new BinaryFileService( new RockContext() ).Get( guid );
                 picker.SetValue( binaryFile );
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new BinaryFileService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            BinaryFile item = null;
+            if (id.HasValue)
+            {
+                item = new BinaryFileService(new RockContext()).Get(id.Value);
+            }
+
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }
