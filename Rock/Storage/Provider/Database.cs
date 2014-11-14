@@ -94,22 +94,14 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override string GenerateUrl( BinaryFile file )
         {
-            string urlPath;
-
-            switch ( file.MimeType.ToLower() )
+            if ( file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
             {
-                case "image/jpeg":
-                case "image/gif":
-                case "image/png":
-                case "image/bmp":
-                    urlPath = "~/GetImage.ashx";
-                    break;
-                default:
-                    urlPath = "~/GetFile.ashx";
-                    break;
+                return string.Format( "~/GetImage.ashx?guid={1}", file.Guid );
             }
-
-            return string.Format( "{0}?guid={1}", urlPath, file.Guid );
+            else
+            {
+                return string.Format( "~/GetFile.ashx?guid={1}", file.Guid );
+            }
         }
     }
 }
