@@ -210,8 +210,8 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new BinaryFileService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            int? itemId = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
+            return itemId != null ? itemId : (int?)null;
         }
 
         /// <summary>
@@ -223,13 +223,13 @@ namespace Rock.Field.Types
         /// <exception cref="System.NotImplementedException"></exception>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            BinaryFile item = null;
+            Guid? itemGuid = null;
             if (id.HasValue)
             {
-                item = new BinaryFileService(new RockContext()).Get(id.Value);
+                itemGuid = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
             }
 
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
     }

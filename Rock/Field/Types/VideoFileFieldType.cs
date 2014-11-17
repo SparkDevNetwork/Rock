@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
@@ -42,12 +43,20 @@ namespace Rock.Field.Types
             if ( binaryFileGuid.HasValue )
             {
                 var binaryFileService = new BinaryFileService( new RockContext() );
-                var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
-                if ( binaryFile != null )
+                var binaryFileInfo = binaryFileService.Queryable().Where( a => a.Guid == binaryFileGuid.Value )
+                    .Select( s => new
+                    {
+                        s.FileName,
+                        s.MimeType,
+                        s.Guid
+                    } )
+                    .FirstOrDefault();
+
+                if ( binaryFileInfo != null )
                 {
                     if ( condensed )
                     {
-                        return binaryFile.FileName;
+                        return binaryFileInfo.FileName;
                     }
                     else
                     {
@@ -69,7 +78,7 @@ namespace Rock.Field.Types
     }});
 </script>
 ";
-                        var html = string.Format( htmlFormat, filePath, binaryFile.Guid, binaryFile.MimeType, controlId );
+                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType, controlId );
                         return html;
                     }
                 }
