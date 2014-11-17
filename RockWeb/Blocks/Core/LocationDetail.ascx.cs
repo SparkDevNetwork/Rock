@@ -301,11 +301,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnStandardize_Click( object sender, EventArgs e )
         {
-            int locationId = int.Parse( hfLocationId.Value );
+            int locationId = hfLocationId.Value.AsInteger();
 
             var rockContext = new RockContext();
             var service = new LocationService( rockContext );
             var location = service.Get( locationId );
+            if (location == null)
+            {
+                // if they are adding a new named location, there won't be a location record yet, so just make a new one for the verification
+                location = new Location();
+            }
+
             acAddress.GetValues( location );
 
             service.Verify( location, true );
