@@ -18,12 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Rock.Extension;
 
 namespace Rock.Storage
 {
     /// <summary>
-    /// MEF Container class for Binary File Storage Components
+    /// MEF Container class for Binary File Provider Components
     /// </summary>
     public class ProviderContainer : Container<ProviderComponent, IComponentData>
     {
@@ -35,15 +36,8 @@ namespace Rock.Storage
         /// <summary>
         /// Singleton instance
         /// </summary>
-        private static readonly Lazy<ProviderContainer> instance = new Lazy<ProviderContainer>( () => new ProviderContainer() );
-
-        /// <summary>
-        /// Prevents a default instance of the <see cref="ProviderContainer"/> class from being created.
-        /// </summary>
-        private ProviderContainer()
-        {
-            Refresh();
-        }
+        private static readonly Lazy<ProviderContainer> instance =
+            new Lazy<ProviderContainer>( () => new ProviderContainer() );
 
         /// <summary>
         /// Gets the instance.
@@ -57,6 +51,26 @@ namespace Rock.Storage
         }
 
         /// <summary>
+        /// Gets the component with the matching Entity Type Name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static ProviderComponent GetComponent( string entityType )
+        {
+            return Instance.GetComponentByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
         /// Gets the default component.
         /// </summary>
         /// <value>
@@ -66,31 +80,18 @@ namespace Rock.Storage
         {
             get
             {
-                return Instance.Components
-                    .Select( serviceEntry => serviceEntry.Value.Value )
-                    .Single( component => component.TypeName == DEFAULT_COMPONENT_NAME );
+                return GetComponent( DEFAULT_COMPONENT_NAME );
             }
         }
-
-        /// <summary>
-        /// Gets the component with the matching Entity Type Name.
-        /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <returns></returns>
-        public static ProviderComponent GetComponent( string entityTypeName )
-        {
-            return Instance.Components
-                .Select( serviceEntry => serviceEntry.Value.Value )
-                .FirstOrDefault( component => component.TypeName == entityTypeName );
-        }
-
+        
         /// <summary>
         /// Gets or sets the MEF components.
         /// </summary>
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof (ProviderComponent) )]
+        [ImportMany( typeof( ProviderComponent ) )]
         protected override IEnumerable<Lazy<ProviderComponent, IComponentData>> MEFComponents { get; set; }
+
     }
 }

@@ -62,7 +62,9 @@ namespace Rock.Model
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Url to access the file.
+        /// Gets or sets the Url that the provider can use as needed to store a URL reference to a file
+        /// NOTE: when generating the URL for a Rock Client, don't use this. 
+        /// Use ~/GetFile.ashx?guid={guid}, ~/GetImage.ashx?guid={guid} instead
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Url to the file.

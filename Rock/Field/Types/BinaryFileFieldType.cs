@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary files of a specific type
     /// Stored as BinaryFile's Guid
     /// </summary>
-    public class BinaryFileFieldType : FieldType
+    public class BinaryFileFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -85,15 +85,15 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.DataTextField = "Name";
-            ddl.DataValueField = "Id";
-            ddl.DataSource = new BinaryFileTypeService( new RockContext() )
+            ddl.Items.Clear();
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
                 .Queryable()
                 .OrderBy( f => f.Name )
-                .Select( f => new { f.Id, f.Name } )
-                .ToList();
-            ddl.DataBind();
-            ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                .Select( f => new { f.Guid, f.Name } ) )
+            {
+                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower()));
+            }
             ddl.Label = "File Type";
             ddl.Help = "The type of files to list.";
 
@@ -129,7 +129,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["binaryFileType"].Value;
+                ( (DropDownList)controls[0] ).SetValue( configurationValues["binaryFileType"].Value.ToLower() );
             }
         }
 
@@ -147,8 +147,7 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {
-                int? definedTypeId = configurationValues["binaryFileType"].Value.AsIntegerOrNull();
-                control.BinaryFileTypeId = definedTypeId;
+                control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuidOrNull();
             }
 
             return control;
@@ -199,6 +198,39 @@ namespace Rock.Field.Types
                 var binaryFile = new BinaryFileService( new RockContext() ).Get( guid );
                 picker.SetValue( binaryFile );
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            int? itemId = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
+            return itemId != null ? itemId : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            Guid? itemGuid = null;
+            if (id.HasValue)
+            {
+                itemGuid = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
+            }
+
+            string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }

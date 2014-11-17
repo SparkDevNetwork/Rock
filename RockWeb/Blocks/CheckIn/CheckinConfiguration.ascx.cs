@@ -719,7 +719,6 @@ namespace RockWeb.Blocks.CheckIn
             PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
 
             int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
-            int binaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
 
             rockContext.WrapTransaction( () =>
             {
@@ -801,7 +800,7 @@ namespace RockWeb.Blocks.CheckIn
                     foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
                     {
                         var attribute = new Rock.Model.Attribute();
-                        attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "binaryFileType", Value = binaryFileTypeId.ToString() } );
+                        attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "binaryFileType", Value = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL } );
                         attribute.Guid = Guid.NewGuid();
                         attribute.FieldTypeId = binaryFileFieldTypeID;
                         attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );

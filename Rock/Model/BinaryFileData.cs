@@ -55,8 +55,13 @@ namespace Rock.Model
                 if ( this.ContentStream != null )
                 {
                     var result = new byte[this.ContentStream.Length];
+
+                    // set position to start to ensure we read the entire stream
                     this.ContentStream.Seek( 0, SeekOrigin.Begin );
                     this.ContentStream.Read( result, 0, result.Length );
+                    
+                    // set position back to start
+                    this.ContentStream.Seek( 0, SeekOrigin.Begin );
                     return result;
                 }
                 else

@@ -162,7 +162,7 @@ namespace Rock.Model
             {
                 if ( this.EntityType != null )
                 {
-                    foreach ( var serviceEntry in WorkflowActionContainer.Instance.Components )
+                    foreach ( var serviceEntry in ActionContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
                         string componentName = component.GetType().FullName;

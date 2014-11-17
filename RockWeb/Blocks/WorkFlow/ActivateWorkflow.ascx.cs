@@ -115,8 +115,8 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                         else
                         {
-                            nbError.Title = "Workflow Processing Error(s):";
-                            nbError.Text = workflowErrors.AsDelimited( "<br/>" );
+                            nbError.Heading = "Workflow Processing Error(s)";
+                            nbError.Text = "<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         }
                     }
                     else

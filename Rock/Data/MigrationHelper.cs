@@ -426,21 +426,22 @@ namespace Rock.Data
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
-        public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "" )
+        public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "", string insertAfterPageGuid = "" )
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @ParentPageId int = null
-                IF '{0}' <> '' 
-                BEGIN                    
-                    SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-                END
+                DECLARE @ParentPageId int = ( SELECT [Id] FROM [Page] WHERE [Guid] = {0} )
+                DECLARE @LayoutId int = ( SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}' )
+                DECLARE @Order int = ( SELECT [order] + 1 FROM [Page] WHERE [Guid] = {6} )
 
-                DECLARE @LayoutId int
-                SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}')
-                        
-                DECLARE @Order int
-                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [Page] WHERE [ParentPageId] = @ParentPageId;
+                IF @Order IS NULL
+                BEGIN
+                    SELECT @Order = ISNULL(MAX([order])+1,0) FROM [Page] WHERE [ParentPageId] = @ParentPageId;
+                END
+                ELSE
+                BEGIN
+                    UPDATE [Page] SET [Order] = [Order] + 1 WHERE [ParentPageId] = @ParentPageId AND [Order] >= @Order
+                END
 
                 INSERT INTO [Page] (
                     [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
@@ -459,12 +460,13 @@ namespace Rock.Data
                     @Order,0,'{3}',1,
                     '{5}','{4}')
 ",
-                    parentPageGuid,
+                    string.IsNullOrWhiteSpace( parentPageGuid ) ? "NULL" : "'" + parentPageGuid + "'",
                     layoutGuid,
                     name,
                     description.Replace( "'", "''" ),
                     guid,
-                    iconCssClass
+                    iconCssClass,
+                    string.IsNullOrWhiteSpace( insertAfterPageGuid ) ? "NULL" : "'" + insertAfterPageGuid + "'"
                     ) );
         }
 
@@ -1790,6 +1792,47 @@ namespace Rock.Data
         
         #endregion
 
+        #region BinaryFile Methods
+
+        public void UpdateBinaryFileType( string storageEntityTypeId, string name, string description,string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @StorageEntityTypeId int
+                SET @StorageEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [BinaryFileType] 
+                    WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [BinaryFileType] SET
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [IconCssClass] = '{3}',
+                        [StorageEntityTypeId] = @StorageEntityTypeId,
+                        [AllowCaching] = {5},
+                        [RequiresViewSecurity] = {6}
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [BinaryFileType] ( [IsSystem],[Name],[Description],[IconCssClass],[StorageEntityTypeId],[AllowCaching],[RequiresViewSecurity],[Guid] )
+                    VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )  
+                END
+",
+                    storageEntityTypeId,
+                    name,
+                    description.Replace( "'", "''" ),
+                    iconCssClass,
+                    guid,
+                    ( allowCaching ? "1" : "0" ),
+                    ( requiresViewSecurity ? "1" : "0" )
+            ) );
+        }
+
+        #endregion
+
         #region Security/Auth
 
         /// <summary>
@@ -1814,7 +1857,8 @@ INSERT INTO [dbo].[Group]
            ,[Description]
            ,[IsSecurityRole]
            ,[IsActive]
-           ,[Guid])
+           ,[Guid]
+           ,[Order])
      VALUES
            (1
            ,null
@@ -1824,7 +1868,8 @@ INSERT INTO [dbo].[Group]
            ,'{1}'
            ,1
            ,1
-           ,'{2}')
+           ,'{2}'
+           ,0)
 ";
             Migration.Sql( string.Format( sql, name, description, guid ) );
         }
@@ -1937,7 +1982,7 @@ INSERT INTO [dbo].[Auth]
         {
             string sql = @"
 DECLARE @pageId int
-SET @pageId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+SET @pageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 
 DECLARE @entityTypeId int
 SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
@@ -1997,6 +2042,7 @@ INSERT INTO [dbo].[Auth]
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
         }
+
 
         /// <summary>
         /// Deletes the security authentication for block.
@@ -2192,6 +2238,143 @@ INSERT INTO [dbo].[Auth]
                 ( allow ? "A" : "D" ) ) );
         }
 
+        /// <summary>
+        /// Deletes the security authentication for page.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        public void DeleteSecurityAuthForAttribute( string attributeGuid )
+        {
+            string sql = @"
+DECLARE @attributeId int
+SET @attributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @attributeId
+";
+            Migration.Sql( string.Format( sql, attributeGuid ) );
+
+        }
+
+        /// <summary>
+        /// Adds the attribute security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForAttribute( string attributeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.Attribute";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @attributeId int
+SET @attributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@attributeId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,@groupId
+           ,'{5}')
+";
+            Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, attributeGuid, action, specialRole, authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
+        /// Deletes the security authentication for category.
+        /// </summary>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        public void DeleteSecurityAuthForCategory( string categoryGuid )
+        {
+            string sql = @"
+DECLARE @categoryId int
+SET @categoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @categoryId
+";
+            Migration.Sql( string.Format( sql, categoryGuid ) );
+
+        }
+
+        /// <summary>
+        /// Adds the category security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForCategory( string categoryGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.Category";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @categoryId int
+SET @categoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@categoryId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,@groupId
+           ,'{5}')
+";
+            Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, categoryGuid, action, specialRole, authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
 
         /// <summary>
         /// Deletes the security auth record.
@@ -2672,6 +2855,51 @@ INSERT INTO [dbo].[Auth]
         #endregion
 
         #region PersonAttribute
+
+        /// <summary>
+        /// Updates the person attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdatePersonAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @AttributeEntityTypeId int
+                SET @AttributeEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '5997C8D3-8840-4591-99A5-552919F90CBD')
+
+                DECLARE @PersonEntityTypeId int
+                SET @PersonEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Category] 
+                    WHERE [Guid] = '{3}' )
+                BEGIN
+                    UPDATE [Category] SET
+                        [Name] = '{0}',
+                        [IconCssClass] = '{1}',
+                        [Description] = '{2}',
+                        [Order] = {4}
+                    WHERE [Guid] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[IconCssClass],[Description],[Order],[Guid] )
+                    VALUES( 1,@AttributeEntityTypeId,'EntityTypeId',CAST(@PersonEntityTypeId as varchar),'{0}','{1}','{2}',{4},'{3}' )  
+                END
+",
+                    name,
+                    iconCssClass,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    order )
+            );
+        }
+
 
         /// <summary>
         /// Updates the BlockType Attribute for the given blocktype and key (if it exists);

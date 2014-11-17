@@ -29,33 +29,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Locations REST API
     /// </summary>
-    public partial class LocationsController : IHasCustomRoutes
+    public partial class LocationsController
     {
-        /// <summary>
-        /// Add custom routes needed for geocoding and standardization
-        /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "LocationGeocode",
-                routeTemplate: "api/locations/verify",
-                defaults: new
-                {
-                    controller = "locations",
-                    action = "verify"
-                } );
-
-            routes.MapHttpRoute(
-                name: "LocationsGetChildren",
-                routeTemplate: "api/locations/getchildren/{id}/{rootLocationId}",
-                defaults: new
-                {
-                    controller = "locations",
-                    action = "getchildren"
-                } );
-        }
-
         /// <summary>
         /// Geocode an location
         /// </summary>
@@ -63,6 +38,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPut]
+        [System.Web.Http.Route( "api/locations/verify" )]
         public Location Verify( Location location )
         {
             if ( location != null )
@@ -82,6 +58,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/locations/getchildren/{id}/{rootLocationId}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootLocationId )
         {
             IQueryable<Location> qry;

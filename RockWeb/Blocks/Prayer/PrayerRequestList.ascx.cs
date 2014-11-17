@@ -169,13 +169,13 @@ namespace RockWeb.Blocks.Prayer
             string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
             if ( !string.IsNullOrWhiteSpace( fromDate ) )
             {
-                drpDateRange.LowerValue = DateTime.Parse( fromDate );
+                drpDateRange.LowerValue = fromDate.AsDateTime();
             }
 
             string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
             if ( !string.IsNullOrWhiteSpace( toDate ) )
             {
-                drpDateRange.UpperValue = DateTime.Parse( toDate );
+                drpDateRange.UpperValue = toDate.AsDateTime();
             }
 
             // Set the category picker's selected value
@@ -192,8 +192,8 @@ namespace RockWeb.Blocks.Prayer
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
-            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
-            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "o" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString("o") : string.Empty );
 
             // only save settings that are not the default "all" preference...
             if ( ddlApprovedFilter.SelectedValue == "all" )
@@ -497,7 +497,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerRequest != null )
             {
-                DeleteAllRelatedNotes( prayerRequest );
+                DeleteAllRelatedNotes( prayerRequest, rockContext );
 
                 string errorMessage;
                 if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
@@ -517,9 +517,8 @@ namespace RockWeb.Blocks.Prayer
         /// Deletes all related notes.
         /// </summary>
         /// <param name="prayerRequest">The prayer request.</param>
-        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest )
+        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest, RockContext rockContext )
         {
-            var rockContext = new RockContext();
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( _prayerRequestEntityTypeId.Value, "Prayer Comment" );
             var noteService = new NoteService( rockContext );
@@ -527,8 +526,8 @@ namespace RockWeb.Blocks.Prayer
             foreach ( Note prayerComment in prayerComments )
             {
                 noteService.Delete( prayerComment );
-                rockContext.SaveChanges();
             }
+            rockContext.SaveChanges();
         }
 
         /// <summary>
