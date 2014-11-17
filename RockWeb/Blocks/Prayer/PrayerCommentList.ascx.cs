@@ -232,8 +232,8 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
-            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "o" ) : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "o" ) : string.Empty );
 
             BindCommentsGrid();
         }
@@ -322,13 +322,13 @@ namespace RockWeb.Blocks.Prayer
             string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
             if ( !string.IsNullOrWhiteSpace( fromDate ) )
             {
-                drpDateRange.LowerValue = DateTime.Parse( fromDate );
+                drpDateRange.LowerValue = fromDate.AsDateTime();
             }
 
             string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
             if ( !string.IsNullOrWhiteSpace( toDate ) )
             {
-                drpDateRange.UpperValue = DateTime.Parse( toDate );
+                drpDateRange.UpperValue = toDate.AsDateTime();
             }
         }
 
