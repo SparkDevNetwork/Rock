@@ -71,8 +71,7 @@ namespace RockWeb.Blocks.Prayer
         public static class FilterSetting
         {
             public static readonly string PrayerCategory = "Prayer Category";
-            public static readonly string FromDate = "From Date";
-            public static readonly string ToDate = "To Date";
+            public static readonly string DateRange = "Date Range";
             public static readonly string ApprovalStatus = "Approval Status";
             public static readonly string UrgentStatus = "Urgent Status";
             public static readonly string ActiveStatus = "Active Status";
@@ -165,18 +164,8 @@ namespace RockWeb.Blocks.Prayer
             {
                 itemUrgentStatus.Selected = true;
             }
-
-            string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
-            if ( !string.IsNullOrWhiteSpace( fromDate ) )
-            {
-                drpDateRange.LowerValue = fromDate.AsDateTime();
-            }
-
-            string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
-            if ( !string.IsNullOrWhiteSpace( toDate ) )
-            {
-                drpDateRange.UpperValue = toDate.AsDateTime();
-            }
+            
+            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( FilterSetting.DateRange );
 
             // Set the category picker's selected value
             int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger();
@@ -192,8 +181,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
-            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "o" ) : string.Empty );
-            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString("o") : string.Empty );
+            gfFilter.SaveUserPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
 
             // only save settings that are not the default "all" preference...
             if ( ddlApprovedFilter.SelectedValue == "all" )
@@ -253,6 +241,20 @@ namespace RockWeb.Blocks.Prayer
         {
             switch ( e.Key )
             {
+                case "Date Range":
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                // don't display dead setting
+                case "From Date":
+                    e.Value = string.Empty;
+                    break;
+
+                // don't display dead setting
+                case "To Date":
+                    e.Value = string.Empty;
+                    break;
+
                 case "Prayer Category":
 
                     int categoryId = e.Value.AsIntegerOrNull() ?? All.Id;
