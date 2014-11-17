@@ -96,11 +96,11 @@ namespace Rock.Storage.Provider
         {
             if ( file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
             {
-                return string.Format( "~/GetImage.ashx?guid={1}", file.Guid );
+                return string.Format( "~/GetImage.ashx?guid={0}", file.Guid );
             }
             else
             {
-                return string.Format( "~/GetFile.ashx?guid={1}", file.Guid );
+                return string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
             }
         }
     }
