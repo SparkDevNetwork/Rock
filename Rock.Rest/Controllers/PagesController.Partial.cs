@@ -28,24 +28,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class PagesController : IHasCustomRoutes
+    public partial class PagesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "PagesGetChildren",
-                routeTemplate: "api/Pages/GetChildren/{id}",
-                defaults: new
-                {
-                    controller = "Pages",
-                    action = "GetChildren"
-                } );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -53,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <param name="hidePageIds">List of pages that should not be included in results</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Pages/GetChildren/{id}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null)
         {
             IQueryable<Page> qry;

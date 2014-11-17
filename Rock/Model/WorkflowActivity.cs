@@ -238,7 +238,11 @@ namespace Rock.Model
             {
                 List<string> actionErrorMessages;
                 bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
-                errorMessages.AddRange( actionErrorMessages );
+                if ( actionErrorMessages.Any() )
+                {
+                    errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityType.Name, action.ActionType.Name, action.ActionType.WorkflowAction.EntityType.FriendlyName ) );
+                    errorMessages.AddRange( actionErrorMessages );
+                }
 
                 // If action was not successful, exit
                 if ( !actionSuccess )

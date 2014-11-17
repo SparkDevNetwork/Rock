@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Prayer
     
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
-    [TextField( "Save Success Text", "Some text (or HTML) to display to the requester upon successful save. (Only applies if not navigating to parent page on save.)", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties

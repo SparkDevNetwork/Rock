@@ -351,8 +351,10 @@ namespace RockWeb.Blocks.Communication
                     var newCommunication = communication.Clone( false );
                     newCommunication.CreatedByPersonAlias = null;
                     newCommunication.CreatedByPersonAliasId = null;
+                    newCommunication.CreatedDateTime = RockDateTime.Now;
                     newCommunication.ModifiedByPersonAlias = null;
                     newCommunication.ModifiedByPersonAliasId = null;
+                    newCommunication.ModifiedDateTime = RockDateTime.Now;
                     newCommunication.Id = 0;
                     newCommunication.Guid = Guid.Empty;
                     newCommunication.SenderPersonAliasId = CurrentPersonAliasId;

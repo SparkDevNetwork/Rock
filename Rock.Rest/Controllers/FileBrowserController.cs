@@ -32,24 +32,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public class FileBrowserController : ApiController, IHasCustomRoutes
+    public class FileBrowserController : ApiController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "GetFileThumbnail",
-                routeTemplate: "api/FileBrowser/GetFileThumbnail",
-                defaults: new
-                {
-                    controller = "FileBrowser",
-                    action = "GetFileThumbnail"
-                } );
-        }
-
         /// <summary>
         /// Gets the file thumbnail
         /// </summary>
@@ -61,6 +45,7 @@ namespace Rock.Rest.Controllers
         ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
         /// </example>
         [HttpGet]
+        [System.Web.Http.Route( "api/FileBrowser/GetFileThumbnail" )]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
             string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
