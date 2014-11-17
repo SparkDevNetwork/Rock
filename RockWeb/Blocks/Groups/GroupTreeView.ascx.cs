@@ -108,7 +108,14 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                redirectUrl = this.Request.Url + "?GroupId=" + _groupId.ToString();
+                                if ( this.Request.QueryString.Count == 0 )
+                                {
+                                    redirectUrl = this.Request.Url + "?GroupId=" + _groupId.ToString();
+                                }
+                                else
+                                {
+                                    redirectUrl = this.Request.Url + "&GroupId=" + _groupId.ToString();
+                                }
                             }
 
                             this.Response.Redirect( redirectUrl, false );
