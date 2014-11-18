@@ -146,6 +146,9 @@ namespace Rock.Reporting.DataFilter
 
             var entityFields = GetEntityFields( entityType );
 
+            // add Empty option first
+            ddlProperty.Items.Add(new ListItem());
+                        
             foreach ( var entityField in entityFields )
             {
                 // Add the field to the dropdown of availailable fields
