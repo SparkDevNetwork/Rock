@@ -26,7 +26,7 @@ namespace Rock.Field.Types
     /// Audio Url field type
     /// Stored as URL
     /// </summary>
-    public class AudioUrlFieldType : TextFieldType
+    public class AudioUrlFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
