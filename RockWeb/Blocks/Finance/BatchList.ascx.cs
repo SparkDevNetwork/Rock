@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Finance
             string statusFilter = gfBatchFilter.GetUserPreference( "Status" );
             if ( string.IsNullOrWhiteSpace( statusFilter ) )
             {
-                statusFilter = "Open";
+                statusFilter = BatchStatus.Open.ConvertToInt().ToString();
             }
 
             ddlStatus.SetValue( statusFilter );
