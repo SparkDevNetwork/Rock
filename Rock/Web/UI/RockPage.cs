@@ -471,9 +471,6 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
 
-            // add ckeditor (doesn't like to be added during an async postback)
-            _scriptManager.Scripts.Add( new ScriptReference( ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true ) ) );
-
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
