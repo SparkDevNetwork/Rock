@@ -95,7 +95,7 @@ namespace Rock.Field.Types
                 ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower()));
             }
             ddl.Label = "File Type";
-            ddl.Help = "The type of files to list.";
+            ddl.Help = "File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'";
 
             return controls;
         }

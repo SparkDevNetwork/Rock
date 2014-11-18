@@ -26,7 +26,7 @@ namespace Rock.Field.Types
     /// Video Url field type
     /// Stored as URL
     /// </summary>
-    public class VideoUrlFieldType : TextFieldType
+    public class VideoUrlFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
