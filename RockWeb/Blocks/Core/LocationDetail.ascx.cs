@@ -155,6 +155,8 @@ namespace RockWeb.Blocks.Core
                 qryParams["LocationId"] = parentLocationId.ToString();
             }
 
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -258,6 +260,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["LocationId"] = location.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -277,6 +280,7 @@ namespace RockWeb.Blocks.Core
                     // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["LocationId"] = parentLocationId.ToString();
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
