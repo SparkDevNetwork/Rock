@@ -165,6 +165,7 @@ namespace Rock.Rest.Controllers
                     Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
 
                 string personInfo = string.Empty;
+                Guid homeLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
 
                 var familyGroupMember = groupMemberService.Queryable()
                     .Where( a => a.PersonId == person.Id )
@@ -172,7 +173,7 @@ namespace Rock.Rest.Controllers
                     .Select( s => new
                     {
                         s.GroupRoleId,
-                        GroupLocation = s.Group.GroupLocations.Select( a => a.Location ).FirstOrDefault()
+                        GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == homeLocationGuid ).Select( a => a.Location ).FirstOrDefault()
                     } ).FirstOrDefault();
 
                 int? personAge = person.Age;
