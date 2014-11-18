@@ -20,14 +20,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +36,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
 
     [LinkedPage( "Detail Page", order: 0 )]
-    [BooleanField("Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1)]
+    [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -73,7 +71,7 @@ namespace RockWeb.Blocks.Finance
             ddlAction.ID = "ddlAction";
             ddlAction.CssClass = "pull-left input-width-lg";
             ddlAction.Items.Add( new ListItem( "-- Select Action --", string.Empty ) );
-            ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN") );
+            ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN" ) );
             ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
 
             gBatchList.Actions.AddCustomActionControl( ddlAction );
@@ -94,7 +92,7 @@ namespace RockWeb.Blocks.Finance
                 BindGrid();
             }
 
-            string script = string.Format( @"
+            string scriptFormat = @"
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
         if (count == 0) {{
@@ -112,10 +110,9 @@ namespace RockWeb.Blocks.Finance
                 }});
             }}
         }}
-    }});
-", ddlAction.ClientID, gBatchList.ClientID, Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ) );
+    }});";
+            string script = string.Format( scriptFormat, ddlAction.ClientID, gBatchList.ClientID, Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ) );
             ScriptManager.RegisterStartupScript( ddlAction, ddlAction.GetType(), "ConfirmStatusChange", script, true );
-
         }
 
         #endregion
@@ -131,8 +128,8 @@ namespace RockWeb.Blocks.Finance
         {
             SetVisibilityOption();
             BindGrid();
-        }        
-        
+        }
+
         /// <summary>
         /// Handles the DisplayFilterValue event of the gfBatchFilter control.
         /// </summary>
@@ -159,13 +156,14 @@ namespace RockWeb.Blocks.Finance
                         {
                             e.Value = string.Empty;
                         }
+
                         break;
                     }
 
                 case "Campus":
                     {
                         var campus = CampusCache.Read( e.Value.AsInteger() );
-                        if (campus != null)
+                        if ( campus != null )
                         {
                             e.Value = campus.Name;
                         }
@@ -173,6 +171,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             e.Value = string.Empty;
                         }
+
                         break;
                     }
             }
@@ -191,6 +190,7 @@ namespace RockWeb.Blocks.Finance
             {
                 gfBatchFilter.SaveUserPreference( "Accounting Code", tbAccountingCode.Text );
             }
+
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
 
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Finance
             if ( eventArgument == "StatusUpdate" &&
                 ddlAction != null &&
                 ddlAction.SelectedValue != null &&
-                !String.IsNullOrWhiteSpace( ddlAction.SelectedValue ) )
+                !string.IsNullOrWhiteSpace( ddlAction.SelectedValue ) )
             {
                 var batchesSelected = new List<int>();
 
@@ -287,8 +287,11 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.SaveChanges();
 
-                    nbResult.Text = string.Format( "{0} batches were {1}.", 
-                        batchesToUpdate.Count().ToString("N0"), newStatus == BatchStatus.Open ? "opened" : "closed" );
+                    nbResult.Text = string.Format(
+                        "{0} batches were {1}.",
+                        batchesToUpdate.Count().ToString( "N0" ),
+                        newStatus == BatchStatus.Open ? "opened" : "closed" );
+
                     nbResult.NotificationBoxType = NotificationBoxType.Success;
                     nbResult.Visible = true;
                 }
@@ -338,10 +341,11 @@ namespace RockWeb.Blocks.Finance
             ddlStatus.BindToEnum<BatchStatus>();
             ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
             string statusFilter = gfBatchFilter.GetUserPreference( "Status" );
-            if (string.IsNullOrWhiteSpace(statusFilter))
+            if ( string.IsNullOrWhiteSpace( statusFilter ) )
             {
                 statusFilter = "Open";
             }
+
             ddlStatus.SetValue( statusFilter );
 
             var campusi = CampusCache.All();
@@ -385,7 +389,7 @@ namespace RockWeb.Blocks.Finance
 
             // filter by status
             var status = gfBatchFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<BatchStatus>();
-            if (status.HasValue)
+            if ( status.HasValue )
             {
                 qry = qry.Where( b => b.Status == status );
             }
@@ -409,7 +413,7 @@ namespace RockWeb.Blocks.Finance
 
             // filter by campus
             var campus = CampusCache.Read( gfBatchFilter.GetUserPreference( "Campus" ).AsInteger() );
-            if (campus != null)
+            if ( campus != null )
             {
                 qry = qry.Where( b => b.CampusId == campus.Id );
             }
@@ -431,8 +435,10 @@ namespace RockWeb.Blocks.Finance
                             {
                                 sortedQry = qry.OrderByDescending( b => b.Transactions.Count() );
                             }
+
                             break;
                         }
+
                     case "TransactionAmount":
                         {
                             if ( sortProperty.Direction == SortDirection.Ascending )
@@ -443,8 +449,10 @@ namespace RockWeb.Blocks.Finance
                             {
                                 sortedQry = qry.OrderByDescending( b => b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M );
                             }
+
                             break;
                         }
+
                     default:
                         {
                             sortedQry = qry.Sort( sortProperty );
@@ -467,7 +475,7 @@ namespace RockWeb.Blocks.Finance
                     Name = b.Name,
                     AccountingSystemCode = b.AccountingSystemCode,
                     TransactionCount = b.Transactions.Count(),
-                    TransactionAmount = b.Transactions.Sum( t => (decimal?)(t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M )) ?? 0.0M,
+                    TransactionAmount = b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M,
                     ControlAmount = b.ControlAmount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
@@ -483,14 +491,23 @@ namespace RockWeb.Blocks.Finance
         public class BatchRow
         {
             public int Id { get; set; }
+
             public DateTime BatchStartDateTime { get; set; }
+
             public string Name { get; set; }
+
             public string AccountingSystemCode { get; set; }
+
             public int TransactionCount { get; set; }
+
             public decimal TransactionAmount { get; set; }
+
             public decimal ControlAmount { get; set; }
+
             public string CampusName { get; set; }
+
             public BatchStatus Status { get; set; }
+
             public bool UnMatchedTxns { get; set; }
 
             public decimal Variance
@@ -515,7 +532,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     switch ( Status )
                     {
-                        case BatchStatus.Closed : return "label label-default";
+                        case BatchStatus.Closed: return "label label-default";
                         case BatchStatus.Open: return "label label-info";
                         case BatchStatus.Pending: return "label label-default";
                     }
@@ -541,6 +558,7 @@ namespace RockWeb.Blocks.Finance
 
                                 break;
                             }
+
                         case BatchStatus.Closed:
                             {
                                 if ( ControlAmount != TransactionAmount )
@@ -555,7 +573,6 @@ namespace RockWeb.Blocks.Finance
                     return notes.ToString();
                 }
             }
-            
         }
 
         #endregion
