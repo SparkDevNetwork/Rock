@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -121,7 +122,13 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual Control[] CreateChildControls( Control parentControl )
         {
-            return new Control[0];
+            string validationGroup = null;
+            PlaceHolder phAttributes = new PlaceHolder();
+            phAttributes.ID = parentControl.ID + "_phAttributes";
+            parentControl.Controls.Add( phAttributes );
+            Rock.Attribute.Helper.AddEditControls( this, phAttributes, true, validationGroup, new List<string>() { "Active", "Order" } );
+
+            return new Control[1] { phAttributes };
         }
 
         /// <summary>
@@ -147,7 +154,100 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual string GetSelection( Control[] controls )
         {
+            return GetAttributesSelectionValues( controls ).ToJson();
+        }
+
+        /// <summary>
+        /// Gets the attributes selection values.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetAttributesSelectionValues( Control[] controls )
+        {
+            PlaceHolder phAttributes = controls.FirstOrDefault( a => a.ID.EndsWith( "_phAttributes" ) ) as PlaceHolder;
+            Dictionary<string, string> values = new Dictionary<string, string>();
+            if ( this.Attributes != null )
+            {
+                foreach ( var attribute in this.Attributes )
+                {
+                    Control control = phAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
+                    if ( control != null )
+                    {
+                        string value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
+                        values.Add( attribute.Key, value );
+                    }
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Gets the attribute value from selection.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetAttributeValueFromSelection( string attributeKey, string selection )
+        {
+            Dictionary<string, string> values;
+            try
+            {
+                values = Newtonsoft.Json.JsonConvert.DeserializeObject( selection, typeof( Dictionary<string, string> ) ) as Dictionary<string, string>;
+            }
+            catch
+            {
+                values = new Dictionary<string, string>();
+            }
+
+            if ( values.ContainsKey( attributeKey ) )
+            {
+                return values[attributeKey];
+            }
+
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the attributes selection values.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        private void SetAttributesSelectionValues( Control[] controls, string selection )
+        {
+            Dictionary<string, string> values = null;
+            try
+            {
+                values = Newtonsoft.Json.JsonConvert.DeserializeObject( selection, typeof( Dictionary<string, string> ) ) as Dictionary<string, string>;
+            }
+            catch
+            {
+                // intentionally ignore if selection is corrupt
+            }
+
+            values = values ?? new Dictionary<string, string>();
+
+            if ( this.Attributes != null )
+            {
+                var allControls = new List<Control>();
+                foreach ( var control in controls )
+                {
+                    allControls.Add( control );
+                    allControls.AddRange( control.ControlsOfTypeRecursive<Control>() );
+                }
+
+                foreach ( var attributeKey in values.Keys )
+                {
+                    var attribute = this.Attributes[attributeKey];
+                    if ( attribute != null )
+                    {
+                        Control control = allControls.FirstOrDefault( a => a.ID == string.Format( "attribute_field_{0}", attribute.Id ) );
+                        if ( control != null )
+                        {
+                            attribute.FieldType.Field.SetEditValue( control, attribute.QualifierValues, values[attribute.Key] );
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -157,7 +257,7 @@ namespace Rock.Reporting
         /// <param name="selection">The selection.</param>
         public virtual void SetSelection( Control[] controls, string selection )
         {
-            //
+            SetAttributesSelectionValues( controls, selection );
         }
 
         /// <summary>
