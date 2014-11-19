@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ppRequestor.PersonId.HasValue )
             {
-                prayerRequest.RequestedByPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppRequestor.PersonId.Value );
+                prayerRequest.RequestedByPersonAliasId = ppRequestor.PersonAliasId;
             }
 
             // If changing from NOT-approved to approved, record who and when
