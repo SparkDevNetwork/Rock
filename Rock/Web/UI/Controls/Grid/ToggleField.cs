@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
             {
                 object dataValue = DataBinder.Eval( dgi.DataItem, DataField );
 
-                toggle.Checked = ( (Boolean)dataValue );
+                toggle.Checked = (Boolean?)dataValue ?? false;
             }
             //toggle.AutoPostBack = true;  // TODO remove if unnecessary
         }
