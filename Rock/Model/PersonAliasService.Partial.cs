@@ -63,12 +63,7 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual int? GetPrimaryAliasId( int personId )
         {
-            var personAlias = GetPrimaryAlias( personId );
-            if ( personAlias != null )
-            {
-                return personAlias.Id;
-            }
-            return null;
+            return this.Queryable().Where( a => a.PersonId == personId && a.AliasPersonId == personId ).Select( a => a.Id ).FirstOrDefault();
         }
 
         /// <summary>
