@@ -653,7 +653,7 @@ namespace Rock.Data
                     blockTypeGuid,
                     zone,
                     order,
-                    name,
+                    name.Replace( "'", "''" ),
                     preHtml.Replace( "'", "''" ),
                     postHtml.Replace( "'", "''" ),
                     guid );
@@ -667,6 +667,35 @@ namespace Rock.Data
                     VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,2,NEWID())
 " );
             Migration.Sql( sb.ToString() );
+        }
+
+        /// <summary>
+        /// Add or Updates the HTML content for an HTML Content Block
+        /// </summary>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        /// <param name="htmlContent">Content of the HTML.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateHtmlContentBlock( string blockGuid, string htmlContent, string guid )
+        {
+            string sqlFormat = @"
+    DECLARE @BlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '{0}')
+    IF @BlockId IS NOT NULL
+    BEGIN
+        IF EXISTS (
+            SELECT [Id] 
+            FROM [HtmlContent] 
+            WHERE [Guid] = '{2}')
+        BEGIN
+            UPDATE [HtmlContent] SET [Content] = '{1}' WHERE [Guid] = '{2}'           
+        END
+        ELSE
+        BEGIN
+            INSERT INTO [HtmlContent] ([BlockId], [Version], [Content], [IsApproved], [Guid])
+                VALUES (@BlockId, 1, '{1}', 1, '{2}')
+        END
+    END";
+
+            Migration.Sql( string.Format( sqlFormat, blockGuid, htmlContent.Replace( "'", "''" ), guid ) );
         }
 
         /// <summary>
