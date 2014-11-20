@@ -63,8 +63,9 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="Humanizer">
-      <HintPath>..\packages\Humanizer.1.29.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
+    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
