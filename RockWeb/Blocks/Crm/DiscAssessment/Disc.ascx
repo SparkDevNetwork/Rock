@@ -10,7 +10,6 @@
             <div class="actions">
                 <asp:Button ID="btnStart" Text="Start" runat="server" CssClass="btn btn-primary" OnClick="btnStart_Click" />
             </div>
-
         </asp:Panel>
 
         <asp:Panel ID="pnlQuestions" runat="server">
@@ -52,9 +51,6 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlResults" runat="server">
-
-            <h2>Results</h2>
-            <p>Here are the result of your test:</p>
 
             <style>
             .disc-chart {
@@ -122,9 +118,10 @@
             }
             </style>
 
-            <h3>Natural Behavior</h3>
+            <p>Here are the "natural behavior" scores according to the DISC assessment:</p>
 
             <ul class="disc-chart">
+                <li style="height: 100%; width:0px;"></li>
                 <li id="discNaturalScore_D" runat="server" class="discbar-d">
                     <div class="discbar-label">D</div>
                 </li>
@@ -138,6 +135,29 @@
                     <div class="discbar-label">C</div>
                 </li>
             </ul>
+
+            <h3>Description</h3>
+
+            <h3>Strengths</h3>
+            <asp:Literal ID="lStrength" runat="server"></asp:Literal>
+
+            <h3>Challenges</h3>
+            <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
+
+            <h3>Under Pressure</h3>
+            <asp:Literal ID="lUnderPressure" runat="server"></asp:Literal>
+
+            <h3>Motivation</h3>
+            <asp:Literal ID="lMotivation" runat="server"></asp:Literal>
+
+            <h3>Team Contribution</h3>
+            <asp:Literal ID="lTeamContribution" runat="server"></asp:Literal>
+
+            <h3>Leadership Style</h3>
+            <asp:Literal ID="lLeadershipStyle" runat="server"></asp:Literal>
+
+            <h3>Follower Style</h3>
+            <asp:Literal ID="lFollowerStyle" runat="server"></asp:Literal>
 
             <div class="actions">
                 <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
