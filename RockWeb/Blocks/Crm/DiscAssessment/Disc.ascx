@@ -2,6 +2,8 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox id="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
+
         <asp:Panel ID="pnlInstructions" runat="server">
             <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
@@ -55,86 +57,85 @@
             <p>Here are the result of your test:</p>
 
             <style>
-                .disc-chart {
-                    display: table;
-                    table-layout: fixed;
-                    width: 70%;
-                    max-width: 500px;
-                    height: 200px;
-                    //background-image: linear-gradient(to top, rgba(0, 0, 0, 0.1) 2%, rgba(0, 0, 0, 0) 2%);
-                    background-size: 100% 50px;
-                    background-position: left top;
-                    padding: 30px;
-                    border: 1px solid #e1e1e8;
-                    border-radius: 5px;
-                }
+            .disc-chart {
+                clear: both;
+                padding: 0;
+                width: 50%;
+                height: 425px;
+                margin: 0 auto;
+            }
 
-                    .disc-chart li {
-                        position: relative;
-                        display: table-cell;
-                        vertical-align: bottom;
-                        height: 200px;
-                    }
+            .disc-chart li {
+                display: inline-block;
+                height: 425px;
+                margin: 0 10px 0 0;
+                width: 20%;
+                padding: 0;
+                position: relative;
+                text-align: center;
+                vertical-align: bottom;
+                -moz-border-radius: 4px 4px 0 0;
+                -webkit-border-radius: 4px;
+                border-radius: 4px 4px 0 0;
+                background: #e1e1e8;
+            }
 
-                    .disc-chart span {
-                        margin: 0 1em;
-                        display: block;
-                        //background: rgba(209, 236, 250, 0.75);
-                        animation: draw 1s ease-in-out;
-                    }
+            .disc-chart .discbar-value {
+                letter-spacing: -3px;
+                opacity: .4;
+                width: 100%;
+                font-size: 30px;
+                position: absolute;
+            }
 
-                    .disc-chart span .discbar-primary {
-                    }
-                        .disc-chart span:before {
-                            position: absolute;
-                            left: 0;
-                            right: 0;
-                            top: 100%;
-                            padding: 5px 1em 0;
-                            display: block;
-                            text-align: center;
-                            content: attr(title);
-                            word-wrap: break-word;
-                        }
+            .disc-chart .discbar-label {
+                font-weight: 500;
+                opacity: .5;
+                overflow: hidden;
+                text-transform: uppercase;
+                width: 100%;
+                font-size: 28px;
+                bottom: 20px;
+                position: absolute;
+            }
 
-                @keyframes draw {
-                    0% {
-                        height: 0;
-                    }
-                }
+            .disc-chart .discbar-d, .disc-chart .discbar-i, .disc-chart .discbar-s, .disc-chart .discbar-c {
+                border: 1px solid #ddd;
+            }
+            .disc-chart .discbar-d:before, .disc-chart .discbar-i:before, .disc-chart .discbar-s:before, .disc-chart .discbar-c:before {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 5%;
+                letter-spacing: -3px;
+                opacity: .4;
+                font-size: 20px;
+                padding: 5px 1em 0;
+                display: block;
+                text-align: center;
+                content: attr(title);
+                word-wrap: break-word;
+            }
+
+             .disc-chart .discbar-primary {
+                background: #ccc;
+            }
             </style>
 
             <h3>Natural Behavior</h3>
 
             <ul class="disc-chart">
-                <li>
-                    <span id="discNaturalScore_D" runat="server" title="D" class="label-default discbar-d"></span>
+                <li id="discNaturalScore_D" runat="server" class="discbar-d">
+                    <div class="discbar-label">D</div>
                 </li>
-                <li>
-                    <span id="discNaturalScore_I" runat="server" title="I" class="label-default discbar-i"></span>
+                <li id="discNaturalScore_I" runat="server" class="discbar-i">
+                    <div class="discbar-label">I</div>
                 </li>
-                <li>
-                    <span id="discNaturalScore_S" runat="server" title="S" class="label-default discbar-s"></span>
+                <li id="discNaturalScore_S" runat="server" class="discbar-s">
+                    <div class="discbar-label">S</div>
                 </li>
-                <li>
-                    <span id="discNaturalScore_C" runat="server" title="C" class="label-default discbar-c"></span>
-                </li>
-            </ul>
-
-            <h3>Adaptive Behavior</h3>
-
-            <ul class="disc-chart">
-                <li>
-                    <span id="discAdaptiveScore_D" runat="server" title="D" class="label-default discbar-d"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_I" runat="server" title="I" class="label-default discbar-i"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_S" runat="server" title="S" class="label-default discbar-s"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_C" runat="server" title="C" class="label-default discbar-c"></span>
+                <li id="discNaturalScore_C" runat="server" class="discbar-c">
+                    <div class="discbar-label">C</div>
                 </li>
             </ul>
 
@@ -146,157 +147,3 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
-
-<!--
-<div id="tabs">
-    <ul id="navTabs" class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#instructions">Instructions</a></li>
-        <li><a data-toggle="tab" href="#questions">Questions</a></li>
-        <li><a data-toggle="tab" href="#results">Results</a></li>
-    </ul>
-    <div class="tab-content">
-
-        <div id="questions" class="tab-pane">
-
-        </div>
-        <div id="results" class="tab-pane">
-            <div class="row">
-                <div class="col-md-3">
-                    <table class="table table-bordered table-condensed table-striped">
-                        <thead>
-                            <tr class="info">
-                                <th colspan="2">Adaptive Behavior
-                                </th>
-                                <th colspan="2">Natural Behavior
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABd" Text="" runat="server" />
-                                </td>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBd" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABi" Text="" runat="server" />
-                                </td>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBi" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABs" Text="" runat="server" />
-                                </td>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBs" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABc" Text="" runat="server" />
-                                </td>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBc" Text="" runat="server" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <h2>Your Saved DISC Assessment Scores
-            </h2>
-            <div>
-                Saved on:
-                <asp:Label ID="lblLastAssessmentDate" Text="" runat="server" />
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    <table class="table table-bordered table-condensed table-striped">
-                        <thead>
-                            <tr class="info">
-                                <th colspan="2">Adaptive Behavior
-                                </th>
-                                <th colspan="2">Natural Behavior
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABd" Text="" runat="server" />
-                                </td>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBd" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABi" Text="" runat="server" />
-                                </td>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBi" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABs" Text="" runat="server" />
-                                </td>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBs" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABc" Text="" runat="server" />
-                                </td>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBc" Text="" runat="server" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    -->
