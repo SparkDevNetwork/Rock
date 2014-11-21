@@ -73,6 +73,7 @@ namespace Rockweb.Blocks.Crm
         #region Fields
 
         // used for private variables
+        Person _targetPerson = null;
 
         #endregion
 
@@ -95,7 +96,33 @@ namespace Rockweb.Blocks.Crm
             //Add reference to my JS file
             RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
 
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( CurrentPerson );
+            string personKey = PageParameter( "rckipid" );
+            if ( !string.IsNullOrEmpty( personKey ) )
+            {
+                try
+                {
+                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                }
+                catch ( Exception ex )
+                {
+                    //nbWarning.Visible = true;
+                    LogException( ex );
+                }
+            }
+            else
+            {
+                // otherwise use the currently logged in person
+                if ( CurrentUser.Person != null )
+                {
+                    _targetPerson = CurrentUser.Person;
+                }
+                else
+                {
+                    nbError.Visible = true;
+                }
+            }
+
+            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
 
             if ( savedScores.LastSaveDate <= DateTime.MinValue )
             {
@@ -202,28 +229,17 @@ namespace Rockweb.Blocks.Crm
                 // Score the responses and return the results
                 DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
 
-                //Display results out to user
-                lblABd.Text = results.AdaptiveBehaviorD.ToString();
-                lblABi.Text = results.AdaptiveBehaviorI.ToString();
-                lblABs.Text = results.AdaptiveBehaviorS.ToString();
-                lblABc.Text = results.AdaptiveBehaviorC.ToString();
-
-                lblNBd.Text = results.NaturalBehaviorD.ToString();
-                lblNBi.Text = results.NaturalBehaviorI.ToString();
-                lblNBs.Text = results.NaturalBehaviorS.ToString();
-                lblNBc.Text = results.NaturalBehaviorC.ToString();
-
                 // Now save the results for this person
                 DiscService.SaveAssessmentResults(
-                    CurrentPerson,
-                    lblABd.Text,
-                    lblABi.Text,
-                    lblABs.Text,
-                    lblABc.Text,
-                    lblNBd.Text,
-                    lblNBi.Text,
-                    lblNBs.Text,
-                    lblNBc.Text
+                    _targetPerson,
+                    results.AdaptiveBehaviorD.ToString(),
+                    results.AdaptiveBehaviorI.ToString(),
+                    results.AdaptiveBehaviorS.ToString(),
+                    results.AdaptiveBehaviorC.ToString(),
+                    results.NaturalBehaviorD.ToString(),
+                    results.NaturalBehaviorI.ToString(),
+                    results.NaturalBehaviorS.ToString(),
+                    results.NaturalBehaviorC.ToString()
                 );
 
                 // Plot graph
@@ -234,7 +250,10 @@ namespace Rockweb.Blocks.Crm
             }
             catch ( Exception ex )
             {
-
+                nbError.Visible = true;
+                nbError.Title = "We're Sorry...";
+                nbError.Text = "Something went wrong while trying to save your test results.";
+                LogException( ex );
             }
         }
 
@@ -314,11 +333,7 @@ namespace Rockweb.Blocks.Crm
         {
             // Plot the Natural graph
             PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC );
-
-            // Plot the Adaptive graph
-            PlotOneGraph( discAdaptiveScore_D, discAdaptiveScore_I, discAdaptiveScore_S, discAdaptiveScore_C,
-                results.AdaptiveBehaviorD, results.AdaptiveBehaviorI, results.AdaptiveBehaviorS, results.AdaptiveBehaviorC );
+                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 35 );
         }
 
         /// <summary>
@@ -332,8 +347,9 @@ namespace Rockweb.Blocks.Crm
         /// <param name="scoreI">The I score.</param>
         /// <param name="scoreS">The S score.</param>
         /// <param name="scoreC">The C score.</param>
+        /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
         private void PlotOneGraph( HtmlGenericControl barD, HtmlGenericControl barI, HtmlGenericControl barS, HtmlGenericControl barC,
-            int scoreD, int scoreI, int scoreS, int scoreC )
+            int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
         {
             barD.RemoveCssClass( "discbar-primary" );
             barI.RemoveCssClass( "discbar-primary" );
@@ -359,11 +375,21 @@ namespace Rockweb.Blocks.Crm
                 maxValue = scoreC;
             }
             maxScore.AddCssClass( "discbar-primary" );
+            var score = Math.Floor( (double)( (double)scoreD / (double)maxScale ) * 100 ).ToString();
+            barD.Style.Add( "height", score + "%" );
+            barD.Attributes["title"] = scoreD.ToString();
 
-            barD.Style.Add( "height", scoreD.ToString() + "%" );
-            barI.Style.Add( "height", scoreI.ToString() + "%" );
-            barS.Style.Add( "height", scoreS.ToString() + "%" );
-            barC.Style.Add( "height", scoreC.ToString() + "%" );
+            score = Math.Floor( (double)( (double)scoreI / (double)maxScale ) * 100 ).ToString();
+            barI.Style.Add( "height", score + "%" );
+            barI.Attributes["title"] = scoreI.ToString();
+
+            score = Math.Floor( (double)( (double)scoreS / (double)maxScale ) * 100 ).ToString();
+            barS.Style.Add( "height", score + "%" );
+            barS.Attributes["title"] = scoreS.ToString();
+
+            score = Math.Floor( (double)( (double)scoreC / (double)maxScale ) * 100 ).ToString();
+            barC.Style.Add( "height", score + "%" );
+            barC.Attributes["title"] = scoreC.ToString();
         }
 
         /// <summary>
@@ -376,10 +402,10 @@ namespace Rockweb.Blocks.Crm
             pnlResults.Visible = false;
 
             // Resolve the text field merge fields
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            if ( CurrentPerson != null )
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( _targetPerson );
+            if ( _targetPerson != null )
             {
-                mergeFields.Add( "Person", CurrentPerson );
+                mergeFields.Add( "Person", _targetPerson );
             }
 
             Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
@@ -407,19 +433,6 @@ namespace Rockweb.Blocks.Crm
             }
 
             PlotGraph( savedScores );
-
-            //build last results table
-            lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString( "MM/dd/yyyy" );
-
-            lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
-            lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
-            lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
-            lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
-
-            lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
-            lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
-            lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
-            lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
 
             BindRepeater();
         }
