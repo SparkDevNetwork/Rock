@@ -47,23 +47,19 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
                     string htmlFormat = @"
 <audio
     src='{0}'
     class='img img-responsive' 
-    id='{1}'
-    controls='true'
+    controls
 >
 </audio>
                     
 <script>
-    $(document).ready(function() {{
-        Rock.controls.mediaPlayer.initialize({{ id: '{1}' }});
-    }});
+    Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    var html = string.Format( htmlFormat, videoUrl, controlId );
+                    var html = string.Format( htmlFormat, videoUrl );
                     return html;
                 }
 
