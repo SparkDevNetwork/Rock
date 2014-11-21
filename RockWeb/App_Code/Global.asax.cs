@@ -685,7 +685,7 @@ namespace RockWeb
                 }
 
                 // setup merge codes for email
-                var mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                 mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
                 // get email addresses to send to
