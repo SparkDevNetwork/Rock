@@ -741,13 +741,13 @@ namespace RockWeb.Blocks.Finance
                             txtPassword.Text,
                             false );
 
-                        var mergeObjects = new Dictionary<string, object>();
+                        var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                        var personDictionary = authorizedPersonAlias.Person.ToDictionary();
+                        var personDictionary = authorizedPersonAlias.Person.ToLiquid() as Dictionary<string, object>;
                         mergeObjects.Add( "Person", personDictionary );
 
-                        mergeObjects.Add( "User", user.ToDictionary() );
+                        mergeObjects.Add( "User", user );
 
                         var recipients = new List<Rock.Communication.RecipientData>();
                         recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
