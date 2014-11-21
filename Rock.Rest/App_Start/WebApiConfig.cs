@@ -54,10 +54,17 @@ namespace Rock.Rest
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ) ) )
             {
-                var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
-                if ( controller != null )
+                try
                 {
-                    controller.AddRoutes( RouteTable.Routes );
+                    var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
+                    if ( controller != null )
+                    {
+                        controller.AddRoutes( RouteTable.Routes );
+                    }
+                }
+                catch
+                {
+                    // ignore, and skip adding routes if the controller raises an exception
                 }
             }
 
