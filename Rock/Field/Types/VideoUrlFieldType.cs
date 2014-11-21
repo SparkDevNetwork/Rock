@@ -50,9 +50,12 @@ namespace Rock.Field.Types
                     string htmlFormat = @"
 <video
     src='{0}'
-    class='img img-responsive' 
-    controls
-    preload='none'
+    controls='controls'
+    preload='auto'
+    style='width:100%;height:100%;'
+    width='100%'
+    height='100%'
+    preload='auto'    
     {1}
 >
 </video>
