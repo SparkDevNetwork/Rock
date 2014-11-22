@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 descriptionList.Add( "Requested By", prayerRequest.RequestedByPersonAlias.Person.FullName );
             }
-            descriptionList.Add( "Name", prayerRequest.FullName.SanitizeHtml() );
+            descriptionList.Add( "Name", prayerRequest.FullName );
             descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
