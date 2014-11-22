@@ -92,7 +92,15 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "LocationId" ).AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
+                string locationId = PageParameter( "LocationId" );
+                if ( !string.IsNullOrWhiteSpace( locationId ) )
+                {
+                    ShowDetail( locationId.AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
             else
             {
@@ -132,7 +140,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             LocationService locationService = new LocationService( rockContext );
-            Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
+            Location location = locationService.Get( hfLocationId.Value.AsInteger() );
 
             if ( location != null )
             {
