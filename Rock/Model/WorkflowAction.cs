@@ -93,6 +93,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivity"/> that contains this WorkflowAction.
         /// </value>
+        [LiquidInclude]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
@@ -101,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
+        [LiquidInclude]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -297,78 +299,61 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// Gets the form attributes.
         /// </summary>
-        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
-        /// <returns>
-        /// DotLiquid compatible dictionary.
-        /// </returns>
-        public override object ToLiquid( bool debug )
+        /// <value>
+        /// The form attributes.
+        /// </value>
+        [NotMapped]
+        [LiquidInclude]
+        public virtual List<LiquidFormAttribute> FormAttributes
         {
-            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
-
-            if ( debug )
+            get
             {
-                mergeFields.Add( "Activity", Activity.ToLiquid( true ) );
-                mergeFields.Add( "ActionType", this.ActionType.ToLiquid( true ) );
-            }
-            else
-            {
-                mergeFields.Add( "Activity", Activity );
-                mergeFields.Add( "ActionType", this.ActionType );
-            }
+                var attributeList = new List<LiquidFormAttribute>();
 
-            mergeFields.Add( "FormAttributes", GetFormAttributesLiquid() );
-
-            return mergeFields;
-        }
-
-
-        private List<Dictionary<string, object>> GetFormAttributesLiquid()
-        {
-            var attributeList = new List<Dictionary<string, object>>();
-
-            if ( ActionType != null && ActionType.WorkflowForm != null )
-            {
-                foreach ( var formAttribute in ActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
+                if ( ActionType != null && ActionType.WorkflowForm != null )
                 {
-                    var attribute = AttributeCache.Read( formAttribute.AttributeId );
-                    if ( attribute != null && Activity != null )
+                    foreach ( var formAttribute in ActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                     {
-                        string value = string.Empty;
-
-                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                        var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                        if ( attribute != null && Activity != null )
                         {
-                            value = Activity.Workflow.GetAttributeValue( attribute.Key );
-                        }
-                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                        {
-                            value = Activity.GetAttributeValue( attribute.Key );
-                        }
+                            string value = string.Empty;
 
-                        var field = attribute.FieldType.Field;
+                            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                            {
+                                value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                            }
+                            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                            {
+                                value = Activity.GetAttributeValue( attribute.Key );
+                            }
 
-                        string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
-                        var attributeLiquid = new Dictionary<string, object>();
-                        attributeLiquid.Add( "Name", attribute.Name );
-                        attributeLiquid.Add( "Key", attribute.Key );
-                        attributeLiquid.Add( "Value", formattedValue );
-                        attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
-                        attributeLiquid.Add( "HideLabel", formAttribute.HideLabel );
-                        attributeLiquid.Add( "PreHtml", formAttribute.PreHtml );
-                        attributeLiquid.Add( "PostHtml", formAttribute.PostHtml );
-                        if ( field is Rock.Field.ILinkableFieldType )
-                        {
-                            attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
+                            var field = attribute.FieldType.Field;
+
+                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+
+                            var liquidFormAttribute = new LiquidFormAttribute();
+                            liquidFormAttribute.Name = attribute.Name;
+                            liquidFormAttribute.Key = attribute.Key;
+                            liquidFormAttribute.Value = formattedValue;
+                            liquidFormAttribute.IsRequired = formAttribute.IsRequired;
+                            liquidFormAttribute.HideLabel = formAttribute.HideLabel;
+                            liquidFormAttribute.PreHtml = formAttribute.PreHtml;
+                            liquidFormAttribute.PostHtml = formAttribute.PostHtml;
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                liquidFormAttribute.Url = "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                            }
+
+                            attributeList.Add( liquidFormAttribute );
                         }
-
-                        attributeList.Add( attributeLiquid );
                     }
                 }
+
+                return attributeList;
             }
-
-            return attributeList;
-
         }
 
         /// <summary>
@@ -406,6 +391,76 @@ namespace Rock.Model
 
         #endregion
 
+        /// <summary>
+        /// Special class for adding form attributes to liquid
+        /// </summary>
+        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+        public class LiquidFormAttribute
+        {
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is required.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsRequired { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [hide label].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [hide label]; otherwise, <c>false</c>.
+            /// </value>
+            public bool HideLabel { get; set; }
+
+            /// <summary>
+            /// Gets or sets the pre HTML.
+            /// </summary>
+            /// <value>
+            /// The pre HTML.
+            /// </value>
+            public string PreHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets the post HTML.
+            /// </summary>
+            /// <value>
+            /// The post HTML.
+            /// </value>
+            public string PostHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets the URL.
+            /// </summary>
+            /// <value>
+            /// The URL.
+            /// </value>
+            public string Url { get; set; }
+        }
     }
 
     #region Entity Configuration
