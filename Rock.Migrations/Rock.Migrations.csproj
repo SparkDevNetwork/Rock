@@ -66,6 +66,10 @@
     <Compile Include="Migrations\201411101915314_BackgroundCheck.Designer.cs">
       <DependentUpon>201411101915314_BackgroundCheck.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201411222343453_DiscDefinedType.cs" />
+    <Compile Include="Migrations\201411222343453_DiscDefinedType.Designer.cs">
+      <DependentUpon>201411222343453_DiscDefinedType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1313,6 +1317,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201411101915314_BackgroundCheck.resx">
       <DependentUpon>201411101915314_BackgroundCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411222343453_DiscDefinedType.resx">
+      <DependentUpon>201411222343453_DiscDefinedType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
