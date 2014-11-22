@@ -123,7 +123,40 @@ namespace Rock.Web.Cache
         /// <value>
         /// The service times.
         /// </value>
-        public string ServiceTimes { get; set; }
+        public string RawServiceTimes { get; set; }
+
+        /// <summary>
+        /// Gets the service times.
+        /// </summary>
+        /// <value>
+        /// The service times.
+        /// </value>
+        public List<ServiceTime> ServiceTimes
+        {
+            get
+            {
+                var serviceTimes = new List<ServiceTime>();
+
+                if ( !string.IsNullOrWhiteSpace( RawServiceTimes ) )
+                {
+
+                    string[] KeyValues = RawServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string keyValue in KeyValues )
+                    {
+                        var dayTime = keyValue.Split( new char[] { '^' } );
+                        if ( dayTime.Length == 2 )
+                        {
+                            var serviceTime = new ServiceTime();
+                            serviceTime.Day = dayTime[0];
+                            serviceTime.Time = dayTime[1];
+                            serviceTimes.Add( serviceTime );
+                        }
+                    }
+                }
+
+                return serviceTimes;
+            }
+        }
 
         #endregion
 
@@ -149,7 +182,7 @@ namespace Rock.Web.Cache
                 this.LocationId = campus.LocationId;
                 this.PhoneNumber = campus.PhoneNumber;
                 this.LeaderPersonAliasId = campus.LeaderPersonAliasId;
-                this.ServiceTimes = campus.ServiceTimes;
+                this.RawServiceTimes = campus.ServiceTimes;
             }
         }
 
@@ -337,5 +370,33 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Special class for adding service times as available liquid fields
+        /// </summary>
+        [DotLiquid.LiquidType("Day", "Time")]
+        public class ServiceTime
+        {
+            /// <summary>
+            /// Gets or sets the day.
+            /// </summary>
+            /// <value>
+            /// The day.
+            /// </value>
+            public string Day { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time.
+            /// </summary>
+            /// <value>
+            /// The time.
+            /// </value>
+            public string Time { get; set; }
+
+        }
+
+        #endregion    
     }
 }

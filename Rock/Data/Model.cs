@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿ // <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -264,49 +264,117 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
-        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
-        /// <returns>
-        /// DotLiquid compatible dictionary.
-        /// </returns>
-        public override object ToLiquid( bool debug )
+        /// <remarks>
+        /// This method is only neccessary to support the old way of getting attribute values in 
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+        /// suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// </remarks>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
         {
-            Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
-
-            // Should only load attributes if they've never been loaded since some entities may have attribute 
-            // values needed in liquid merge that have not yet been saved.
-            if (this.Attributes == null)
+            get
             {
-                this.LoadAttributes();
-            }
+                object item = base[key];
 
-            if ( this.Attributes != null )
-            {
-                foreach ( var attribute in this.Attributes )
+                if ( item == null )
                 {
-                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                    if (this.Attributes == null)
                     {
-                        int keySuffix = 0;
-                        string key = attribute.Key;
-                        while ( dictionary.ContainsKey( key ) )
-                        {
-                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
-                        }
+                        this.LoadAttributes();
+                    }
 
-                        var field = attribute.Value.FieldType.Field;
-                        string value = GetAttributeValue( attribute.Key );
-                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                        dictionary.Add( key + "_unformatted", value );
-                        if (field is Rock.Field.ILinkableFieldType)
+                    bool unformatted = false;
+                    bool url = false;
+
+                    string attributeKey = key.ToStringSafe();
+                    if ( attributeKey.EndsWith("_unformatted"))
+                    {
+                        attributeKey = attributeKey.Replace("_unformatted", "");
+                        unformatted = true;
+                    }
+                    else if ( attributeKey.EndsWith("_url"))
+                    {
+                        attributeKey = attributeKey.Replace("_url", "");
+                        url = true;
+                    }
+
+                    if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        var attribute = this.Attributes[attributeKey];
+                        if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                         {
-                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                            var field = attribute.FieldType.Field;
+                            string value = GetAttributeValue( attribute.Key );
+
+                            if ( unformatted )
+                            {
+                                return value;
+                            }
+
+                            if ( url && field is Rock.Field.ILinkableFieldType )
+                            {
+                                return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                            }
+
+                            return field.FormatValue( null, value, attribute.QualifierValues, false );
                         }
+                    }
+                }
+
+                return item;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// This method is only neccessary to support the old way of getting attribute values in 
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+        /// suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override bool ContainsKey( object key )
+        {
+            bool containsKey = base.ContainsKey( key );
+
+            if (!containsKey)
+            {
+                if (this.Attributes == null)
+                {
+                    this.LoadAttributes();
+                }
+
+                string attributeKey = key.ToStringSafe();
+                if ( attributeKey.EndsWith("_unformatted"))
+                {
+                    attributeKey = attributeKey.Replace("_unformatted", "");
+                }
+                else if ( attributeKey.EndsWith("_url"))
+                {
+                    attributeKey = attributeKey.Replace("_url", "");
+                }
+
+                if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                {
+                    var attribute = this.Attributes[attributeKey];
+                    if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
+                    {
+                        containsKey = true;
                     }
                 }
             }
 
-            return dictionary;
+            return containsKey;
         }
 
         #endregion

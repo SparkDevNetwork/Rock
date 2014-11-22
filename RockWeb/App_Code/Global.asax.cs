@@ -185,6 +185,8 @@ namespace RockWeb
                 //// {{ some_date_value | Date:"MMM dd, yyyy" }}
                 Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template.FileSystem = new RockWeb.LiquidFileSystem();
+                Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();

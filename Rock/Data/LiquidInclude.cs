@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Attribute so that the dotLiquid knows to ignore this column ( Only used when [DataMember] needs to be used for serialization )
+    /// Attribute so that the dotLiquid knows to include this column ( Only used when [DataMember] can't be used due to serialization )
     /// </summary>
-    [Obsolete("Use LiquidIgnoreAttribute instead.")]
-    public class IgnoreLiquidAttribute : LiquidIgnoreAttribute
+    public class LiquidIncludeAttribute : System.Attribute
     {
     }
 }

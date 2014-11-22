@@ -197,5 +197,18 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="personAliasGuid">The person alias unique identifier.</param>
+        /// <returns></returns>
+        public Person GetPerson (Guid personAliasGuid)
+        {
+            return Queryable()
+                .Where( a => a.Guid.Equals( personAliasGuid ) )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
+
     }
 }
