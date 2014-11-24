@@ -141,7 +141,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
-            tbSubject.Help = "<span class='tip tip-liquid'></span>";
+            tbSubject.Help = "<span class='tip tip-lava'></span>";
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();

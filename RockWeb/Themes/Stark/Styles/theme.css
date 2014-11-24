@@ -3840,8 +3840,9 @@ small {
   border-radius: 4px;
   font-size: 11px;
 }
-.tip.tip-liquid:after {
-  content: '{{ Liquid }}';
+.tip.tip-liquid:after,
+.tip.tip-lava:after {
+  content: '{{ Lava }}';
 }
 .tip.tip-html:after {
   content: '< HTML />';
