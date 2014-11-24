@@ -134,6 +134,7 @@ SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03
     INNER JOIN [FieldType] FT ON FT.[Id] = A.[FieldTypeId] AND FT.[Guid] = '99B090AA-4D7E-46D8-B393-BF945EA1BA8B'
     INNER JOIN [AttributeQualifier] AQ ON AQ.[AttributeId] = A.[Id] AND AQ.[Key] = 'entitytype'
     INNER JOIN [EntityType] ET ON ET.[Id] = CAST(AQ.[Value] AS int)
+    WHERE ISNUMERIC(AQ.Value) = 1
 " );
 
             // Update the BinaryFileType qualifier on Binary file attributes to use Guid instead of Id
@@ -144,6 +145,7 @@ SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03
     INNER JOIN [FieldType] FT ON FT.[Id] = A.[FieldTypeId] AND FT.[Guid] = 'C403E219-A56B-439E-9D50-9302DFE760CF'
     INNER JOIN [AttributeQualifier] AQ ON AQ.[AttributeId] = A.[Id] AND AQ.[Key] = 'binaryFileType'
     INNER JOIN [BinaryFileType] BFT ON BFT.[Id] = CAST(AQ.[Value] AS int)
+    WHERE ISNUMERIC(AQ.Value) = 1
 " );
             // Add the security role and application group used by background check workflow
             RockMigrationHelper.AddSecurityRoleGroup( "Safety & Security Team", "Group of people who are responsible for the safety and security of staff and members.", "32E80B6C-A1EB-40FD-BEC3-E11DE8FF75AB" );
