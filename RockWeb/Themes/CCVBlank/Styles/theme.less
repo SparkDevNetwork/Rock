@@ -1,175 +1,55 @@
 ﻿
 // Load Master Styles
 // -------------------------
-@import "../../../Styles/_rock-core.less";
+
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+
+@fa-font-path: '../../../Assets/Fonts/FontAwesome';
+@import "_variables.less";
+
+// DIN
+@import "_din-1-4-7";
+@ccv-font-path: "../../../Assets/Fonts/DIN/";
+
 @import "../../../Styles/_rock-variables.less";
+@import "../../../Styles/_rock-core.less";
+
 @import "_variables.less";
 @import "_print.less";
 
 
-/*
-    Rock Theme Styles
-
-    1. HTML Overrides
-    2. Bootstrap Overides
-    3. Theme Styling
-    4. Responsive Overrides 
-
-*/
-
-// 1. HTML Overrides
-// -------------------------
-
-main {
-    display:block;
+.modal-backdrop {
+  .opacity(.5);
 }
 
-
-// 2. Bootstrap Overrides 
-// ------------------------- 
-
-.navbar {
-    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
-
-    // using fontawesome nav toggle button instead of the BS default
-    .navbar-toggle {
-        padding: 6px 10px;
-        i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
-    }
+header[role=banner] {
+  .container;
+  margin-top: @spacing-lg-px;
+}
+header[role=banner] .logo {
+  float: left;
+}
+nav[role=navigation] {
+  float: right;
 }
 
-a:hover i.fs
-{
-    text-decoration: none;
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-transform: uppercase;
 }
 
-// 3. Theme Styling 
-// -------------------------
+#form1 > footer {
+  .container;
+  .opacity(.5);
+  font-size: @font-size-small;
+  margin-top: @spacing-lg-px;
 
-header {
-    .page-menu,
-    .login-status {
-        float: right;
-    }
+  .inner {
+    border-top: 1px solid lighten(@gray-light, 20%);
+    padding-top: @spacing-md-px;
+  }
 
-    .navbar {
-        background-color: @header-bg;
-    }
-}
-
-// homepage items
-#announcement-rotator {
-    margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
-
-    .item {
-        img {
-            width: 100%;
-        }
-    }
-}
-
-.announcement-list {
-    .announcement {
-        margin: 0 auto @spacing-lg-px;
-        max-width: 390px;
-    }
-    .announcement-title { margin: @spacing-sm-px 0; }
-    img {
-        width: 100%;
-    }
-}
-
-.announcement-detail {
-    img {
-        width: 100%;
-    }
-}
-
-.nav-sub {
-    li {
-        border: 1px solid @gray-lighter;
-        border-radius: @border-radius-base;
-
-        a:hover {
-            background-color: @gray-lighter;
-        }
-    }
-}
-
-footer {
-    margin-bottom: 50px;
-
-    .footer-message {
-        float: left;
-    }
-
-    .footer-address {
-        float: right;
-    }
-}
-
-#splash.error {
-    
-    background-color: @gray-lighter;
-    
-    #content {
-        margin-top: 20px;
-        background-color: @body-bg;
-        border-radius: @border-radius-base;
-        padding: 20px;
-    }
-}
-
-.not-found h2 {
-    font-size: 200px;
-    font-weight: @font-weight-bold;
-    letter-spacing: -5px;
-    line-height: 210px;
-
-    i {
-        color: #F03;
-        font-size: 210px;
-        position: relative;
-        top: -12px;
-    }
-}
-
-/* hide block panels */
-.panel.panel-block {
-    border: 0;
-    box-shadow: none;
-
-    & > .panel-heading {
-        display: none;
-    }
-
-    & > .panel-body {
-        padding: 0;
-
-        .grid.grid-panel {
-            margin: 0;
-        }
-    }
-}
-
-// 4. Responsive Overrides 
-// -------------------------
-
-// default styling should be for phones 767px or less
-
-// Small devices (tablets, 768px and up)
-@media (min-width: @screen-sm-min) {
-    #announcement-rotator {
-        margin: @spacing-lg-px 0;
-    }
-}
-
-// Medium devices (desktops, 992px and up) 
-@media (min-width: @screen-md-min) {
-
-}
-
-// Large devices (large desktops, 1200px and up) 
-@media (min-width: @screen-lg-min) {
-
+  .footer-message { float: left; }
+  .footer-address { float: right; }
 }
