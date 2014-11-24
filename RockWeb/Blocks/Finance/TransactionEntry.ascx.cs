@@ -845,7 +845,7 @@ namespace RockWeb.Blocks.Finance
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
             {
-                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId );
+                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -1727,6 +1727,8 @@ namespace RockWeb.Blocks.Finance
 
             public decimal Amount { get; set; }
 
+            public string PublicName { get; set; }
+
             public string AmountFormatted
             {
                 get
@@ -1735,12 +1737,13 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            public AccountItem( int id, int order, string name, int? campusId )
+            public AccountItem( int id, int order, string name, int? campusId, string publicName )
             {
                 Id = id;
                 Order = order;
                 Name = name;
                 CampusId = campusId;
+                PublicName = publicName;
             }
         }
 
