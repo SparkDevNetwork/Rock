@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.")]
     [AttributeField( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Person Attribute", "The person attribute that should be updated with the provided value.", true, false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person attribute to. <span class='tip tip-liquid'></span>", false, "", "", 2, "Value" )]
+    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person attribute to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
     
     public class SetPersonAttribute : ActionComponent
     {
