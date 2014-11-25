@@ -1,0 +1,55 @@
+﻿
+// Load Master Styles
+// -------------------------
+
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+
+@fa-font-path: '../../../Assets/Fonts/FontAwesome';
+@import "_variables.less";
+
+// DIN
+@import "_din-1-4-7";
+@ccv-font-path: "../../../Assets/Fonts/DIN/";
+
+@import "../../../Styles/_rock-variables.less";
+@import "../../../Styles/_rock-core.less";
+
+@import "_variables.less";
+@import "_print.less";
+
+
+.modal-backdrop {
+  .opacity(.5);
+}
+
+header[role=banner] {
+  .container;
+  margin-top: @spacing-lg-px;
+}
+header[role=banner] .logo {
+  float: left;
+}
+nav[role=navigation] {
+  float: right;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-transform: uppercase;
+}
+
+#form1 > footer {
+  .container;
+  .opacity(.5);
+  font-size: @font-size-small;
+  margin-top: @spacing-lg-px;
+
+  .inner {
+    border-top: 1px solid lighten(@gray-light, 20%);
+    padding-top: @spacing-md-px;
+  }
+
+  .footer-message { float: left; }
+  .footer-address { float: right; }
+}
