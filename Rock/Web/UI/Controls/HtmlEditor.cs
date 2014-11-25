@@ -430,9 +430,13 @@ namespace Rock.Web.UI.Controls
             string ckeditorInitScriptFormat = @"
 // ensure that ckEditor.js link is added to page
 if (!$('#ckeditorJsLib').length) {{
-    
+    // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
+    $.ajaxSetup({{ cache: true }});
     $('head').prepend(""<script id='ckeditorJsLib' src='{12}' />"");
 }}
+
+// allow i tags to be empty (for font awesome)
+CKEDITOR.dtd.$removeEmpty['i'] = false
 
 // In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
 if (CKEDITOR.instances.{0}) {{
@@ -452,6 +456,7 @@ CKEDITOR.replace('{0}', {{
     toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{1},
     removeButtons: '',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    entities: false, // stop CKEditor from using HTML entities in the editor output. Prevents single quote from getting escaped, etc
     htmlEncodeOutput: true,
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
