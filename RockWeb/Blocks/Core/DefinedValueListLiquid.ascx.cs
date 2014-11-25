@@ -39,7 +39,9 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Takes a defined type and returns all defined values and merges them with a liquid template." )]
     [DefinedTypeField("Defined Type", "The defined type to load values for merge fields.")]
-    [CodeEditorField("Liquid Template", "Liquid template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400)]
+    [CodeEditorField("Liquid Template", "Liquid template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
+    {{ definedValue.Value }}
+{% endfor %}")]
     [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.")]
     public partial class DefinedValueListLiquid : Rock.Web.UI.RockBlock
     {

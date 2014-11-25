@@ -95,6 +95,12 @@ BEGIN
 		INNER JOIN 
 			[Group] [g] ON [p].[GivingGroupId] = [g].[Id]
 		WHERE 
+		(
+			(@personId is null) 
+		OR 
+			([p].[Id] = @personId)
+		)
+        AND
 			[p].[Id] in (SELECT * FROM tranListCTE)
 		UNION
 		-- Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
@@ -117,6 +123,12 @@ BEGIN
 			[p].[GivingGroupId] is null
 		AND
 			[g].[GroupTypeId] = (SELECT Id FROM GroupType WHERE [Guid] = @cGROUPTYPE_FAMILY)
+        AND
+		(
+			(@personId is null) 
+		OR 
+			([p].[Id] = @personId)
+		)
 		AND [p].[Id] IN (SELECT * FROM tranListCTE)
 	) [pg]
 	CROSS APPLY 
@@ -133,12 +145,7 @@ BEGIN
 		[gl].[IsMailingLocation] = 1
 	AND
 		[gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
-	AND
-		(
-			(@personId is null) 
-		OR 
-			([pg].[PersonId] = @personId)
-		)
+	
 	ORDER BY
 	CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
 END

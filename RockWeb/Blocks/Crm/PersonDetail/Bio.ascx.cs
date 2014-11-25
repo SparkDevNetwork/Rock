@@ -159,12 +159,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         rptSocial.DataBind();
                     }
 
-                    if ( Person.PhoneNumbers != null )
-                    {
-                        rptPhones.DataSource = Person.PhoneNumbers.ToList();
-                        rptPhones.DataBind();
-                    }
-
                     if ( Person.BirthDate.HasValue )
                     {
                         string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
@@ -288,14 +282,28 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <summary>
         /// Formats the phone number.
         /// </summary>
+        /// <param name="unlisted">if set to <c>true</c> [unlisted].</param>
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">The number.</param>
+        /// <param name="phoneNumberTypeId">The phone number type identifier.</param>
         /// <returns></returns>
-        protected string FormatPhoneNumber(object countryCode, object number)
+        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId )
         {
-            string cc = countryCode as string ?? string.Empty;
-            string n = number as string ?? string.Empty;
-            return PhoneNumber.FormattedNumber(cc, n);
+            string formattedNumber = "Unlisted";
+            if ( !unlisted )
+            {
+                string cc = countryCode as string ?? string.Empty;
+                string n = number as string ?? string.Empty;
+                formattedNumber = PhoneNumber.FormattedNumber( cc, n );
+            }
+
+            var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
+            if ( phoneType != null )
+            {
+                return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+            }
+
+            return formattedNumber;
         }
 
         private void SetFollowing()

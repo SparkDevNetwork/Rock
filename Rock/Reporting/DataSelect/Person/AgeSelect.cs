@@ -119,9 +119,11 @@ namespace Rock.Reporting.DataSelect.Person
             int currentDayOfYear = currentDate.DayOfYear;
             
             //// have SQL Server do the following math (DateDiff only returns the integers):
-            //// If the person has had their birthday this year, their age is the DateDiff in Years, but if they haven't had their birthday yet, it is the DateDiff in years - 1;
+            //// If the person hasn't had their birthday this year, their age is the DateDiff in Years - 1, otherwise, it is DateDiff in Years (without adjustment)
             var personAgeQuery = new PersonService( context ).Queryable()
-                .Select( p => currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate ) ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 );
+                .Select( p => p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                    ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                    : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ));
 
             var selectAgeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, entityIdProperty, "p" );
 

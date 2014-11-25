@@ -181,7 +181,7 @@ namespace Rock.Rest.Controllers
                     ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == string.Empty || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
                     ( i.Tag.OwnerPersonAlias == null || i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
                     ( i.Tag.Name == name ) &&
-                    ( i.EntityGuid.Equals( entityGuid ) ) );
+                    i.EntityGuid.Equals( entityGuid ) );
 
             if ( taggedItem == null )
             {

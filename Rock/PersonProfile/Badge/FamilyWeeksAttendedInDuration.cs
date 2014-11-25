@@ -35,7 +35,7 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// FamilyAttendance Badge
     /// </summary>
-    [Description( "Shows a the number of times a family attended in a duration of weeks." )]
+    [Description( "Shows the number of times a family attended in a duration of weeks." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
     

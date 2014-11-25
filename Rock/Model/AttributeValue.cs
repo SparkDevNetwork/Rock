@@ -84,7 +84,6 @@ namespace Rock.Model
         /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) &lt; 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
         /// </summary>
         /// <value>
-        /// The match score.
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -92,10 +91,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a DateTime 
-        /// Calculated Field: alter table AttributeValue add ValueAsDateTime as case when (len(value) &lt; 50 and ISDATE( value) = 1) then convert(datetime, value) else null end
+        /// Calculated Field: ALTER TABLE [dbo].[AttributeValue] ADD [ValueAsDateTime] AS CASE WHEN [value] LIKE '____-__-__T__:__:__________' THEN CONVERT(datetime, CONVERT(datetimeoffset, [value])) ELSE NULL END
+        /// NOTE: Only supports "timezone neutral" ISO-8601 format
         /// </summary>
         /// <value>
-        /// The match score.
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]

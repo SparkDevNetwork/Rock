@@ -339,7 +339,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         /// Sends the confirmation.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
-        private void SendConfirmation(UserLogin userLogin)
+        private void SendConfirmation( UserLogin userLogin )
         {
             string url = LinkedPageUrl( "ConfirmationPage" );
             if ( string.IsNullOrWhiteSpace( url ) )
@@ -347,13 +347,12 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = new Dictionary<string, object>();
+            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
-            var personDictionary = userLogin.Person.ToDictionary();
+            var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
             mergeObjects.Add( "Person", personDictionary );
-
-            mergeObjects.Add( "User", userLogin.ToDictionary() );
+            mergeObjects.Add( "User", userLogin );
 
             var recipients = new List<RecipientData>();
             recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );

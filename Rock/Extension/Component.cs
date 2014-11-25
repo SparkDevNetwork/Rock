@@ -206,6 +206,8 @@ namespace Rock.Extension
         /// </summary>
         public Component()
         {
+            var type = this.GetType();
+            Rock.Attribute.Helper.UpdateAttributes(type, Rock.Web.Cache.EntityTypeCache.GetId(type.FullName));
             this.LoadAttributes();
         }
 

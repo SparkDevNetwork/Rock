@@ -29,7 +29,7 @@
 	</ItemGroup>
 	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2013Limited\InstallShield.targets"/>
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Applications\Wpf\CheckinClient\CheckinClient.csproj">
+		<ProjectReference Include="..\..\..\..\Rock-WindowsCheckin\CheckinClient.csproj">
 			<Name>CheckinClient</Name>
 			<Project>{ED157BE8-7C1E-4FED-8B79-88A8722FE994}</Project>
 		</ProjectReference>

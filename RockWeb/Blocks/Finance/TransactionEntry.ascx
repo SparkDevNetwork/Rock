@@ -23,11 +23,11 @@
 
                                     <asp:Repeater ID="rptAccountList" runat="server">
                                         <ItemTemplate>
-                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
+                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
                                         </ItemTemplate>
                                     </asp:Repeater>
                                     <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
-                                        DataTextField="Name" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+                                        DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
                                     <div class="form-group">
                                         <label>Total</label>
@@ -270,7 +270,7 @@
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
-        <div id="divActions" runat="server" class="actions">
+        <div id="divActions" runat="server" class="actions clearfix margin-b-lg">
             <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrev_Click" Visible="false" />
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click" />
         </div>
