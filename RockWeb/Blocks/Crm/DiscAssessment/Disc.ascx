@@ -55,7 +55,7 @@
         var $checkedItem = $pRow.find('input[type=radio][id*="' + partialSelector + '"]:checked');
         //If both RBLs have a selected item
         if ($checkedItem.length > 0) {
-            var $nextPanel = $pRow.closest(".panel-default").next();
+            var $nextPanel = $pRow.closest(".disc-assessment").next();
             if ($nextPanel.length > 0) {
                 $("body").animate({ scrollTop: $nextPanel.offset().top - 20 }, 400);
             }
@@ -153,163 +153,85 @@
             <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
             <div class="actions">
-                <asp:Button ID="btnStart" Text="Start" runat="server" CssClass="btn btn-primary" OnClick="btnStart_Click" />
+                <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
             </div>
         </asp:Panel>
 
         <asp:Panel ID="pnlQuestions" runat="server">
-
-            <div class="container">
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <div class="js-disc-questions panel panel-default">
-                            <div class="panel-heading">
-                                Question <%# Container.ItemIndex + 1 %>
-                            </div>
-                            <div class="panel-body">
+                        <table class="table table-condensed table-striped table-hover disc-assessment js-disc-questions margin-b-lg">
+                            <thead>
+                                <tr>
+                                    <th class="disc-question">Question <%# Container.ItemIndex + 1 %></th>
+                                    <th class="disc-answer disc-more">Most</th>
+                                    <th class="disc-answer disc-less">Least</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                <table class="table table-condensed table-hover disc-assessment">
-                                    <thead>
-                                        <tr>
-                                            <td></td>
-                                            <td>MOST</td>
-                                            <td>LEAST</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="disc-question">
-                                                <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="disc-question">
-                                                <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="disc-question">
-                                                <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="disc-question">
-                                                <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
-                                            <td>
-                                                <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
                     </ItemTemplate>
                 </asp:Repeater>
                 <div style="display: none" class="alert alert-danger" id="divError">
                     Please answer all questions before scoring.
                 </div>
-                <div class="actions">
-                    <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
+                <div class="actions clearfix">
+                    <asp:LinkButton ID="btnScoreTest" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }"><i class="fa fa-check-circle-o"></i> Score</asp:LinkButton>
                 </div>
-            </div>
+
+                <div>
+                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
+                </div>
         </asp:Panel>
 
         <asp:Panel ID="pnlResults" runat="server">
-
-            <style>
-                .disc-question {
-                    text-align:right;
-                }
-
-            .disc-chart {
-                clear: both;
-                padding: 0;
-                width: 50%;
-                height: 425px;
-                margin: 0 auto;
-            }
-
-            .disc-chart li {
-                display: inline-block;
-                height: 425px;
-                margin: 0 10px 0 0;
-                width: 20%;
-                padding: 0;
-                position: relative;
-                text-align: center;
-                vertical-align: bottom;
-                -moz-border-radius: 4px 4px 0 0;
-                -webkit-border-radius: 4px;
-                border-radius: 4px 4px 0 0;
-                background: #e1e1e8;
-            }
-
-            .disc-chart .discbar-value {
-                letter-spacing: -3px;
-                opacity: .4;
-                width: 100%;
-                font-size: 30px;
-                position: absolute;
-            }
-
-            .disc-chart .discbar-label {
-                font-weight: 500;
-                opacity: .5;
-                overflow: hidden;
-                text-transform: uppercase;
-                width: 100%;
-                font-size: 28px;
-                bottom: 20px;
-                position: absolute;
-            }
-
-            .disc-chart .discbar-d, .disc-chart .discbar-i, .disc-chart .discbar-s, .disc-chart .discbar-c {
-                border: 1px solid #ddd;
-            }
-            .disc-chart .discbar-d:before, .disc-chart .discbar-i:before, .disc-chart .discbar-s:before, .disc-chart .discbar-c:before {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 5%;
-                letter-spacing: -3px;
-                opacity: .4;
-                font-size: 20px;
-                padding: 5px 1em 0;
-                display: block;
-                text-align: center;
-                content: attr(title);
-                word-wrap: break-word;
-            }
-
-             .disc-chart .discbar-primary {
-                background: #ccc;
-            }
-            </style>
-
-            <p>Here are the "natural behavior" scores according to the DISC assessment:</p>
-
-            <ul class="disc-chart">
+            <ul class="discchart">
+                <li class="discchart-midpoint"></li>
                 <li style="height: 100%; width:0px;"></li>
-                <li id="discNaturalScore_D" runat="server" class="discbar-d">
+                <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
                     <div class="discbar-label">D</div>
                 </li>
-                <li id="discNaturalScore_I" runat="server" class="discbar-i">
+                <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
                     <div class="discbar-label">I</div>
                 </li>
-                <li id="discNaturalScore_S" runat="server" class="discbar-s">
+                <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
                     <div class="discbar-label">S</div>
                 </li>
-                <li id="discNaturalScore_C" runat="server" class="discbar-c">
+                <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
                     <div class="discbar-label">C</div>
                 </li>
             </ul>

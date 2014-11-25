@@ -17,6 +17,7 @@
     14. Bulk Update
     15. Photo Upload
     16. Duplicate Pages
+    17. DISC
 */
 
 // 1. Page Styles
@@ -888,3 +889,105 @@ tr.inactive {
         color: @gray-dark;
     }
 }
+
+// 17. DISC
+// -------------------------
+.disc-assessment {
+
+    th {
+        padding: 6px;
+
+        &:last-child {
+            border-radius: 0 @border-radius-base 0 0;
+        }
+    }
+        
+    th.disc-question{
+        font-weight: 700;
+        padding: 6px;
+        border-radius: @border-radius-base 0 0 0;
+    }
+    
+    .disc-question {
+        width: 100%;
+    }
+
+    .disc-answer {
+        width: 100px;
+    }
+}
+
+.discchart {
+    clear: both;
+    padding: 0;
+    width: 80%;
+    height: 425px;
+    margin: 0 auto;
+    max-width: 650px;
+    position: relative;
+
+    li {
+        display: inline-block;
+        height: 425px;
+        margin: 0 2% 0 0;
+        width: 20%;
+        padding: 0;
+        position: relative;
+        text-align: center;
+        vertical-align: bottom;
+        border-radius: @border-radius-large @border-radius-large 0 0;
+        background-color: @accent-bold-color;
+        color: @accent-bold-text-color;
+
+        &.discchart-midpoint {
+            height: 70%;
+            width: 100%;
+            background-color: transparent;
+            position: absolute;
+            bottom: 0;
+            border-top: 2px solid red;
+            border-radius: 0;
+        }
+    }
+
+    .discbar-label {
+        font-weight: 500;
+        overflow: hidden;
+        text-transform: uppercase;
+        width: 100%;
+        font-size: 28px;
+        bottom: 20px;
+        position: absolute;
+    }
+
+    .discbar {
+        border: 1px solid #ddd;
+
+        &:before {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 5%;
+            letter-spacing: -3px;
+            font-size: 20px;
+            padding: 5px 1em 0;
+            display: block;
+            text-align: center;
+            content: attr(title);
+            word-wrap: break-word;
+            line-height: 1em;
+        }
+
+        &.discbar-primary {
+            background: darken(@accent-bold-color, 30%);
+        }
+    }
+}
+
+            .disc-chart .discbar-value {
+                letter-spacing: -3px;
+                opacity: .4;
+                width: 100%;
+                font-size: 30px;
+                position: absolute;
+            }
