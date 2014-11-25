@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Communication
                     newCommunication.Id = 0;
                     newCommunication.Guid = Guid.Empty;
                     newCommunication.SenderPersonAliasId = CurrentPersonAliasId;
-                    newCommunication.Status = CommunicationStatus.Transient;
+                    newCommunication.Status = CommunicationStatus.Draft;
                     newCommunication.ReviewerPersonAliasId = null;
                     newCommunication.ReviewedDateTime = null;
                     newCommunication.ReviewerNote = string.Empty;
