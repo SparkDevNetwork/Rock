@@ -46,7 +46,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
-            if ( input == null)
+            if ( input == null || attributeKey == null )
             {
                 return string.Empty;
             }
