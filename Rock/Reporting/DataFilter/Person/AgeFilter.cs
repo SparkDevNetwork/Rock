@@ -232,14 +232,17 @@ namespace Rock.Reporting.DataFilter.Person
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? ageValue = values[1].AsIntegerOrNull();
+            var rockContext = (RockContext)serviceInstance.Context;
 
-            var personAgeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
+            var personAgeQuery = new PersonService( rockContext ).Queryable();
+            MemberExpression idExpression = Expression.Property( parameterExpression, "Id" );
+            Expression ageSelect = new Rock.Reporting.DataSelect.Person.AgeSelect().GetExpression( rockContext, idExpression, "" );
             var personAgeEqualQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            == ageValue );
-
+                      p => (p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                            ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )) 
+                        == ageValue );
+            
             BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
             BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
