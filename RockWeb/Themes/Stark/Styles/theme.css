@@ -2681,6 +2681,7 @@ table.attribute-grid tr th:nth-child(3) {
     14. Bulk Update
     15. Photo Upload
     16. Duplicate Pages
+    17. DISC
 */
 .personprofile {
   margin-top: -15px;
@@ -3303,6 +3304,90 @@ tr.inactive td {
 .grid-table tbody tr.duplicate-source:hover > td {
   background-color: #999999;
   color: #333333;
+}
+.disc-assessment th {
+  padding: 6px;
+}
+.disc-assessment th:last-child {
+  border-radius: 0 4px 0 0;
+}
+.disc-assessment th.disc-question {
+  font-weight: 700;
+  padding: 6px;
+  border-radius: 4px 0 0 0;
+}
+.disc-assessment .disc-question {
+  width: 100%;
+}
+.disc-assessment .disc-answer {
+  width: 100px;
+}
+.discchart {
+  clear: both;
+  padding: 0;
+  width: 80%;
+  height: 425px;
+  margin: 0 auto;
+  max-width: 650px;
+  position: relative;
+}
+.discchart li {
+  display: inline-block;
+  height: 425px;
+  margin: 0 2% 0 0;
+  width: 20%;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  vertical-align: bottom;
+  border-radius: 6px 6px 0 0;
+  background-color: #428bca;
+  color: #ecf0f3;
+}
+.discchart li.discchart-midpoint {
+  height: 70%;
+  width: 100%;
+  background-color: transparent;
+  position: absolute;
+  bottom: 0;
+  border-top: 2px solid red;
+  border-radius: 0;
+}
+.discchart .discbar-label {
+  font-weight: 500;
+  overflow: hidden;
+  text-transform: uppercase;
+  width: 100%;
+  font-size: 28px;
+  bottom: 20px;
+  position: absolute;
+}
+.discchart .discbar {
+  border: 1px solid #ddd;
+}
+.discchart .discbar:before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5%;
+  letter-spacing: -3px;
+  font-size: 20px;
+  padding: 5px 1em 0;
+  display: block;
+  text-align: center;
+  content: attr(title);
+  word-wrap: break-word;
+  line-height: 1em;
+}
+.discchart .discbar.discbar-primary {
+  background: #193c5a;
+}
+.disc-chart .discbar-value {
+  letter-spacing: -3px;
+  opacity: .4;
+  width: 100%;
+  font-size: 30px;
+  position: absolute;
 }
 /*
     Used to manage styles for specific blocks.
