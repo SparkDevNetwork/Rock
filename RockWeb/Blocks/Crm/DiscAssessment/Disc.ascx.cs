@@ -73,6 +73,7 @@ namespace Rockweb.Blocks.Crm
         #region Fields
 
         // used for private variables
+        Person _targetPerson = null;
 
         #endregion
 
@@ -92,21 +93,45 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
 
-            //Add reference to my JS file
-            RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
-
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( CurrentPerson );
-
-            if ( savedScores.LastSaveDate <= DateTime.MinValue )
+            string personKey = PageParameter( "rckipid" );
+            if ( !string.IsNullOrEmpty( personKey ) )
             {
-                ShowInstructions();
+                try
+                {
+                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                }
+                catch ( Exception ex )
+                {
+                    nbError.Visible = true;
+                }
             }
             else
             {
-                ShowResults( savedScores );
+                // otherwise use the currently logged in person
+                if ( CurrentPerson != null )
+                {
+                    _targetPerson = CurrentPerson;
+                }
+                else
+                {
+                    nbError.Visible = true;
+                }
+            }
+
+            if ( _targetPerson != null )
+            {
+                DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+
+                if ( savedScores.LastSaveDate <= DateTime.MinValue )
+                {
+                    ShowInstructions();
+                }
+                else
+                {
+                    ShowResults( savedScores );
+                }
             }
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -153,10 +178,20 @@ namespace Rockweb.Blocks.Crm
 
                 foreach ( RepeaterItem rItem in rQuestions.Items )
                 {
-                    RockRadioButtonList blMore = rItem.FindControl( "rblMore" ) as RockRadioButtonList;
-                    RockRadioButtonList blLess = rItem.FindControl( "rblLess" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore1 = rItem.FindControl( "rblMore1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore2 = rItem.FindControl( "rblMore2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore3 = rItem.FindControl( "rblMore3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore4 = rItem.FindControl( "rblMore4" ) as RockRadioButtonList;
 
-                    switch ( blMore.SelectedValue )
+                    RockRadioButtonList rblLess1 = rItem.FindControl( "rblLess1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess2 = rItem.FindControl( "rblLess2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess3 = rItem.FindControl( "rblLess3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess4 = rItem.FindControl( "rblLess4" ) as RockRadioButtonList;
+
+                    string selectedMoreValue = GetSelectedValue( rblMore1, rblMore2, rblMore3, rblMore4 );
+                    string selectedLessValue = GetSelectedValue( rblLess1, rblLess2, rblLess3, rblLess4 );
+
+                    switch ( selectedMoreValue )
                     {
                         case "N":
                             moreN++;
@@ -177,7 +212,7 @@ namespace Rockweb.Blocks.Crm
                             break;
                     }
 
-                    switch ( blLess.SelectedValue )
+                    switch ( selectedLessValue )
                     {
                         case "N":
                             lessN++;
@@ -202,28 +237,17 @@ namespace Rockweb.Blocks.Crm
                 // Score the responses and return the results
                 DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
 
-                //Display results out to user
-                lblABd.Text = results.AdaptiveBehaviorD.ToString();
-                lblABi.Text = results.AdaptiveBehaviorI.ToString();
-                lblABs.Text = results.AdaptiveBehaviorS.ToString();
-                lblABc.Text = results.AdaptiveBehaviorC.ToString();
-
-                lblNBd.Text = results.NaturalBehaviorD.ToString();
-                lblNBi.Text = results.NaturalBehaviorI.ToString();
-                lblNBs.Text = results.NaturalBehaviorS.ToString();
-                lblNBc.Text = results.NaturalBehaviorC.ToString();
-
                 // Now save the results for this person
                 DiscService.SaveAssessmentResults(
-                    CurrentPerson,
-                    lblABd.Text,
-                    lblABi.Text,
-                    lblABs.Text,
-                    lblABc.Text,
-                    lblNBd.Text,
-                    lblNBi.Text,
-                    lblNBs.Text,
-                    lblNBc.Text
+                    _targetPerson,
+                    results.AdaptiveBehaviorD.ToString(),
+                    results.AdaptiveBehaviorI.ToString(),
+                    results.AdaptiveBehaviorS.ToString(),
+                    results.AdaptiveBehaviorC.ToString(),
+                    results.NaturalBehaviorD.ToString(),
+                    results.NaturalBehaviorI.ToString(),
+                    results.NaturalBehaviorS.ToString(),
+                    results.NaturalBehaviorC.ToString()
                 );
 
                 // Plot graph
@@ -234,7 +258,10 @@ namespace Rockweb.Blocks.Crm
             }
             catch ( Exception ex )
             {
-
+                nbError.Visible = true;
+                nbError.Title = "We're Sorry...";
+                nbError.Text = "Something went wrong while trying to save your test results.";
+                LogException( ex );
             }
         }
 
@@ -247,47 +274,58 @@ namespace Rockweb.Blocks.Crm
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                RockRadioButtonList blMore = e.Item.FindControl( "rblMore" ) as RockRadioButtonList;
+                Literal lQuestion1 = e.Item.FindControl( "lQuestion1" ) as Literal;
+                Literal lQuestion2 = e.Item.FindControl( "lQuestion2" ) as Literal;
+                Literal lQuestion3 = e.Item.FindControl( "lQuestion3" ) as Literal;
+                Literal lQuestion4 = e.Item.FindControl( "lQuestion4" ) as Literal;
+
+                lQuestion1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
+                lQuestion2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
+                lQuestion3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
+                lQuestion4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
+
+                RockRadioButtonList rblMore1 = e.Item.FindControl( "rblMore1" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore2 = e.Item.FindControl( "rblMore2" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore3 = e.Item.FindControl( "rblMore3" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblLess1 = e.Item.FindControl( "rblLess1" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess2 = e.Item.FindControl( "rblLess2" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess3 = e.Item.FindControl( "rblLess3" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
+
 
                 ListItem m1 = new ListItem();
                 ListItem m2 = new ListItem();
                 ListItem m3 = new ListItem();
                 ListItem m4 = new ListItem();
+                m1.Text = m2.Text = m3.Text = m4.Text = "&nbsp;";
 
-                m1.Text = "&nbsp;";
                 m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
-                m2.Text = "&nbsp;";
                 m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
-                m3.Text = "&nbsp;";
                 m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
-                m4.Text = "&nbsp;";
                 m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
 
-                blMore.Items.Add( m1 );
-                blMore.Items.Add( m2 );
-                blMore.Items.Add( m3 );
-                blMore.Items.Add( m4 );
-
-                RockRadioButtonList blLess = e.Item.FindControl( "rblLess" ) as RockRadioButtonList;
+                rblMore1.Items.Add( m1 );
+                rblMore2.Items.Add( m2 );
+                rblMore3.Items.Add( m3 );
+                rblMore4.Items.Add( m4 );
 
                 ListItem l1 = new ListItem();
                 ListItem l2 = new ListItem();
                 ListItem l3 = new ListItem();
                 ListItem l4 = new ListItem();
+                l1.Text = l2.Text = l3.Text = l4.Text = "&nbsp;";
 
                 l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
-                l1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
                 l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
-                l2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
                 l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
-                l3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
                 l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
-                l4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
 
-                blLess.Items.Add( l1 );
-                blLess.Items.Add( l2 );
-                blLess.Items.Add( l3 );
-                blLess.Items.Add( l4 );
+                rblLess1.Items.Add( l1 );
+                rblLess2.Items.Add( l2 );
+                rblLess3.Items.Add( l3 );
+                rblLess4.Items.Add( l4 );
             }
         }
 
@@ -307,6 +345,41 @@ namespace Rockweb.Blocks.Crm
         #region Methods
 
         /// <summary>
+        /// Gets the selected value from the given radiobuttonlists.
+        /// </summary>
+        /// <param name="rbl1">The first RadioButtonList.</param>
+        /// <param name="rbl2">The second RadioButtonList.</param>
+        /// <param name="rbl3">The third RadioButtonList.</param>
+        /// <param name="rbl4">The fourth RadioButtonList.</param>
+        /// <returns>the value from the first non-empty RadioButtonList</returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">One of the RadioButtonList must be selected.</exception>
+        private string GetSelectedValue( RadioButtonList rbl1,  RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
+        {
+            if ( ! string.IsNullOrEmpty( rbl1.SelectedValue ) )
+            {
+                return rbl1.SelectedValue;
+            }
+            else if (! string.IsNullOrEmpty( rbl2.SelectedValue ))
+            {
+                return rbl2.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl3.SelectedValue ) )
+            {
+                return rbl3.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl4.SelectedValue ) )
+            {
+                return rbl4.SelectedValue;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException( "One of the RadioButtonList must be selected." );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Plots the graphs using the Disc score results.
         /// </summary>
         /// <param name="results">The results.</param>
@@ -314,11 +387,7 @@ namespace Rockweb.Blocks.Crm
         {
             // Plot the Natural graph
             PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC );
-
-            // Plot the Adaptive graph
-            PlotOneGraph( discAdaptiveScore_D, discAdaptiveScore_I, discAdaptiveScore_S, discAdaptiveScore_C,
-                results.AdaptiveBehaviorD, results.AdaptiveBehaviorI, results.AdaptiveBehaviorS, results.AdaptiveBehaviorC );
+                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 35 );
         }
 
         /// <summary>
@@ -332,8 +401,9 @@ namespace Rockweb.Blocks.Crm
         /// <param name="scoreI">The I score.</param>
         /// <param name="scoreS">The S score.</param>
         /// <param name="scoreC">The C score.</param>
+        /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
         private void PlotOneGraph( HtmlGenericControl barD, HtmlGenericControl barI, HtmlGenericControl barS, HtmlGenericControl barC,
-            int scoreD, int scoreI, int scoreS, int scoreC )
+            int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
         {
             barD.RemoveCssClass( "discbar-primary" );
             barI.RemoveCssClass( "discbar-primary" );
@@ -359,11 +429,21 @@ namespace Rockweb.Blocks.Crm
                 maxValue = scoreC;
             }
             maxScore.AddCssClass( "discbar-primary" );
+            var score = Math.Floor( (double)( (double)scoreD / (double)maxScale ) * 100 ).ToString();
+            barD.Style.Add( "height", score + "%" );
+            barD.Attributes["title"] = scoreD.ToString();
 
-            barD.Style.Add( "height", scoreD.ToString() + "%" );
-            barI.Style.Add( "height", scoreI.ToString() + "%" );
-            barS.Style.Add( "height", scoreS.ToString() + "%" );
-            barC.Style.Add( "height", scoreC.ToString() + "%" );
+            score = Math.Floor( (double)( (double)scoreI / (double)maxScale ) * 100 ).ToString();
+            barI.Style.Add( "height", score + "%" );
+            barI.Attributes["title"] = scoreI.ToString();
+
+            score = Math.Floor( (double)( (double)scoreS / (double)maxScale ) * 100 ).ToString();
+            barS.Style.Add( "height", score + "%" );
+            barS.Attributes["title"] = scoreS.ToString();
+
+            score = Math.Floor( (double)( (double)scoreC / (double)maxScale ) * 100 ).ToString();
+            barC.Style.Add( "height", score + "%" );
+            barC.Attributes["title"] = scoreC.ToString();
         }
 
         /// <summary>
@@ -376,10 +456,10 @@ namespace Rockweb.Blocks.Crm
             pnlResults.Visible = false;
 
             // Resolve the text field merge fields
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            if ( CurrentPerson != null )
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( _targetPerson );
+            if ( _targetPerson != null )
             {
-                mergeFields.Add( "Person", CurrentPerson );
+                mergeFields.Add( "Person", _targetPerson );
             }
 
             Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
@@ -407,19 +487,6 @@ namespace Rockweb.Blocks.Crm
             }
 
             PlotGraph( savedScores );
-
-            //build last results table
-            lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString( "MM/dd/yyyy" );
-
-            lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
-            lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
-            lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
-            lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
-
-            lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
-            lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
-            lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
-            lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
 
             BindRepeater();
         }

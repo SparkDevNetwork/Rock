@@ -274,6 +274,17 @@ namespace Rock.Model
                         string orderByMethod = "OrderBy";
                         if ( sortProperty != null )
                         {
+                            /*
+                             NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
+                             * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
+                             * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
+                             * Examples:
+                             *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
+                             *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
+                             *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
+                             *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
+                             */
+
                             foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
                                 string propertyName;
@@ -283,7 +294,7 @@ namespace Rock.Model
                                 {
                                     propertyName = column.Left( column.Length - 5 );
 
-                                    // toggle the direction if sortProperty is Descending
+                                    // if the column ends with " desc", toggle the direction if sortProperty is Descending
                                     direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                                 }
                                 else
@@ -291,7 +302,7 @@ namespace Rock.Model
                                     propertyName = column;
                                 }
 
-                                string methodName = direction == SortDirection.Ascending ? orderByMethod + "Descending" : orderByMethod;
+                                string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
 
                                 // Call OrderBy on whatever the Expression is for that Column
                                 var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );

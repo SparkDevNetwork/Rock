@@ -356,18 +356,59 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( scannedDoc.IsCheck )
                 {
-                    string checkMicr = rangerScanner.GetMicrText( 1 ).Replace( "-", string.Empty ).Replace( "!", string.Empty ).Trim();
+                    string checkMicr = rangerScanner.GetMicrText( 1 ).Trim();
+                    string remainingMicr = checkMicr;
+                    string accountNumber = string.Empty;
+                    string routingNumber = string.Empty;
+                    string checkNumber = string.Empty;
 
-                    string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                    string routingNumber = micrParts.Length > 0 ? micrParts[0] : "??";
-                    string accountNumber = micrParts.Length > 1 ? micrParts[1] : "??";
-                    string checkNumber = micrParts.Length > 2 ? micrParts[2] : "??";
+                    // there should always be two transit symbols ('d').  The transit number is between them
+                    int transitSymbol1 = remainingMicr.IndexOf( 'd' );
+                    int transitSymbol2 = remainingMicr.LastIndexOf( 'd' );
+                    int transitStart = transitSymbol1 + 1;
+                    int transitLength = transitSymbol2 - transitSymbol1 - 1;
+                    if ( transitLength > 0 )
+                    {
+                        routingNumber = remainingMicr.Substring( transitStart, transitLength );
+                        remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
+                    }
+
+                    // the last 'On-Us' symbol ('c') signifys the end of the account number
+                    int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
+                    if ( lastOnUsPosition > 0 )
+                    {
+                        int accountNumberDigitPosition = lastOnUsPosition - 1;
+                        // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
+                        while ( accountNumberDigitPosition >= 0 )
+                        {
+                            char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
+                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) )
+                            {
+                                accountNumber = accountNumberDigit + accountNumber;
+                            }
+                            else
+                            {
+                                break;
+                            }
+
+                            accountNumberDigitPosition--;
+                        }
+
+                        remainingMicr = remainingMicr.Remove( accountNumberDigitPosition + 1, lastOnUsPosition - accountNumberDigitPosition );
+                    }
+
+                    // any remaining digits that aren't the account number and transit number are probably the check number
+                    string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( remainingMicrParts.Length == 1 )
+                    {
+                        checkNumber = remainingMicrParts[0];
+                    }
 
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
+                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains('!') )
                     {
                         scannedDoc.BadMicr = true;
                         rangerScanner.StopFeeding();
@@ -843,10 +884,9 @@ namespace Rock.Apps.CheckScannerUtility
                     // try to set the selected batch in the grid to our current batch (if it still exists in the database)
                     grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatch.Id ) );
                 }
-
-
+                
                 // if there still isn't a selected batch, set it to the first one
-                if (grdBatches.SelectedValue == null)
+                if ( grdBatches.SelectedValue == null )
                 {
                     grdBatches.SelectedIndex = 0;
                 }

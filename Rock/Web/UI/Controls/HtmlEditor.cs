@@ -428,6 +428,12 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
+// ensure that ckEditor.js link is added to page
+if (!$('#ckeditorJsLib').length) {{
+    
+    $('head').prepend(""<script id='ckeditorJsLib' src='{12}' />"");
+}}
+
 // In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
 if (CKEDITOR.instances.{0}) {{
     try
@@ -535,6 +541,8 @@ CKEDITOR.replace('{0}', {{
                 this.AdditionalConfigurations = this.AdditionalConfigurations.Trim() + ",";
             }
 
+            string ckEditorLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true );
+
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, 
                 this.ClientID,                                                  // {0}
                 this.Toolbar.ConvertToString(),                                 // {1}
@@ -547,7 +555,8 @@ CKEDITOR.replace('{0}', {{
                 imageFileTypeWhiteList,                                         // {8}
                 fileTypeBlackList,                                              // {9}
                 this.MergeFields.AsDelimited( "," ),                            // {10}
-                this.AdditionalConfigurations );                                // {11}
+                this.AdditionalConfigurations,                                  // {11}
+                ckEditorLib );                                                  // {12}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

@@ -30,23 +30,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Followings REST API
     /// </summary>
-    public partial class FollowingsController : IHasCustomRoutes
+    public partial class FollowingsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "FollowingsDelete",
-                routeTemplate: "api/Followings/{EntityTypeId}/{EntityId}/{PersonId}",
-                defaults: new
-                {
-                    controller = "Followings",
-                } );
-        }
-
         /// <summary>
         /// Deletes the following record(s).
         /// </summary>
@@ -54,6 +39,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="personId">The person identifier.</param>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Followings/{EntityTypeId}/{EntityId}/{PersonId}" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId )
         {
             SetProxyCreation( true );

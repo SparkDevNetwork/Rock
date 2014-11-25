@@ -185,6 +185,8 @@ namespace RockWeb
                 //// {{ some_date_value | Date:"MMM dd, yyyy" }}
                 Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template.FileSystem = new RockWeb.LiquidFileSystem();
+                Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
@@ -578,83 +580,8 @@ namespace RockWeb
                 routes.AddPageRoute( pageRoute );
             }
 
-            // Add API route for dataviews
-            routes.MapHttpRoute(
-                name: "DataViewApi",
-                routeTemplate: "api/{controller}/DataView/{id}",
-                defaults: new
-                {
-                    action = "DataView"
-                }
-            );
-
-            // Add any custom api routes
-            foreach ( var type in Rock.Reflection.FindTypes(
-                typeof( Rock.Rest.IHasCustomRoutes ) ) )
-            {
-                var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
-                if ( controller != null )
-                    controller.AddRoutes( routes );
-            }
-
-            // Add Default API Service routes
-            // Instead of being able to use one default route that gets action from http method, have to 
-            // have a default route for each method so that other actions do not match the default (i.e. DataViews)
-            routes.MapHttpRoute(
-                name: "DefaultApiGet",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "GET",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } )
-                }
-            );
-
-            routes.MapHttpRoute(
-               name: "DefaultApiPut",
-               routeTemplate: "api/{controller}/{id}",
-               defaults: new
-               {
-                   action = "PUT",
-                   id = System.Web.Http.RouteParameter.Optional
-               },
-               constraints: new
-               {
-                   httpMethod = new HttpMethodConstraint( new string[] { "PUT" } )
-               }
-           );
-
-            routes.MapHttpRoute(
-                name: "DefaultApiPost",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "POST",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
-                }
-            );
-
-            routes.MapHttpRoute(
-                name: "DefaultApiDelete",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "DELETE",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } )
-                }
-            );
+            // Configure Rock Rest API routes
+            GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
@@ -760,7 +687,7 @@ namespace RockWeb
                 }
 
                 // setup merge codes for email
-                var mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                 mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
                 // get email addresses to send to

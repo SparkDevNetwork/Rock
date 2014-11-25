@@ -79,7 +79,7 @@ namespace Rock.Model
                     history.EntityTypeId = entityType.Id;
                     history.CategoryId = category.Id;
                     history.EntityId = entityId;
-                    history.Caption = caption;
+                    history.Caption = caption.Truncate(200);
                     history.Summary = message;
                     history.RelatedEntityTypeId = relatedEntityTypeId;
                     history.RelatedEntityId = relatedEntityId;

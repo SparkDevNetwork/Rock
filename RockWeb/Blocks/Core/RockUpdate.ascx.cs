@@ -66,6 +66,10 @@ namespace RockWeb.Blocks.Core
                 {
                     var globalAttributesCache = GlobalAttributesCache.Read();
                     string packageSource = globalAttributesCache.GetValue( "UpdateServerUrl" );
+                    if ( packageSource.ToLowerInvariant().Contains( "rockalpha" ) || packageSource.ToLowerInvariant().Contains( "rockbeta" ) )
+                    {
+                        nbRepoWarning.Visible = true;
+                    }
                     string siteRoot = Request.MapPath( "~/" );
                     nuGetService = new WebProjectManager( packageSource, siteRoot );
                 }
@@ -157,6 +161,9 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
+                }
+                else
+                {
                     SendStatictics( version );
                 }
 

@@ -17,68 +17,61 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Linq;
-using System.Web;
 
 using Rock.Extension;
 
 namespace Rock.Search
 {
     /// <summary>
-    /// 
+    /// MEF Container class for Binary File Search Components
     /// </summary>
     public class SearchContainer : Container<SearchComponent, IComponentData>
     {
         /// <summary>
-        /// 
+        /// Singleton instance
         /// </summary>
-        private static SearchContainer instance;
+        private static readonly Lazy<SearchContainer> instance =
+            new Lazy<SearchContainer>( () => new SearchContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static SearchContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                    instance = new SearchContainer();
-                return instance;
-            }
+            get { return instance.Value; }
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="SearchContainer" /> class from being created.
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        private SearchContainer()
-        {
-            Refresh();
-        }
-
-        /// <summary>
-        /// Gets the component.
-        /// </summary>
-        /// <param name="searchComponentType">Type of the search component.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static SearchComponent GetComponent( Type searchComponentType )
+        public static SearchComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == searchComponentType.FullName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( SearchComponent ) )]
         protected override IEnumerable<Lazy<SearchComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
+
     }
 }

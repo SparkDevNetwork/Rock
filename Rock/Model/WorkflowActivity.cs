@@ -118,6 +118,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> instance that is performing this WorkflowActivity.
         /// </value>
+        [LiquidInclude]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -126,6 +127,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
+        [LiquidInclude]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -238,7 +240,11 @@ namespace Rock.Model
             {
                 List<string> actionErrorMessages;
                 bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
-                errorMessages.AddRange( actionErrorMessages );
+                if ( actionErrorMessages.Any() )
+                {
+                    errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityType.Name, action.ActionType.Name, action.ActionType.WorkflowAction.EntityType.FriendlyName ) );
+                    errorMessages.AddRange( actionErrorMessages );
+                }
 
                 // If action was not successful, exit
                 if ( !actionSuccess )
@@ -298,30 +304,6 @@ namespace Rock.Model
             AddLogEntry( "Completed" );
         }
 
-        /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
-        /// </summary>
-        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
-        /// <returns>
-        /// DotLiquid compatible dictionary.
-        /// </returns>
-        public override object ToLiquid( bool debug )
-        {
-            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
-            if ( debug )
-            {
-                mergeFields.Add( "Workflow", Workflow.ToLiquid( true ) );
-                mergeFields.Add( "ActivityType", this.ActivityType.ToLiquid( true ) );
-            }
-            else
-            {
-                mergeFields.Add( "Workflow", Workflow );
-                mergeFields.Add( "ActivityType", this.ActivityType );
-            }
-
-            return mergeFields;
-        }       
-        
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.
         /// </summary>

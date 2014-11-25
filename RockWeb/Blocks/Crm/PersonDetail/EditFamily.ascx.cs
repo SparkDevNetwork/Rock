@@ -208,21 +208,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
                 {
-                    if ( hfActiveTab.Value == "Existing" )
-                    {
-                        liNewPerson.RemoveCssClass( "active" );
-                        divNewPerson.RemoveCssClass( "active" );
-                        liExistingPerson.AddCssClass( "active" );
-                        divExistingPerson.AddCssClass( "active" );
-                    }
-                    else
-                    {
-                        liNewPerson.AddCssClass( "active" );
-                        divNewPerson.AddCssClass( "active" );
-                        liExistingPerson.RemoveCssClass( "active" );
-                        divExistingPerson.RemoveCssClass( "active" );
-                    }
-
+                    SetActiveTab();
                     modalAddPerson.Show();
                 }
 
@@ -410,6 +396,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbNewPersonFirstName.Required = true;
             tbNewPersonLastName.Required = true;
             hfActiveTab.Value = "New";
+            SetActiveTab();
 
             ppPerson.SetValue( null );
 
@@ -1235,6 +1222,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion
 
         #region Private Methods
+
+        private void SetActiveTab()
+        {
+            if ( hfActiveTab.Value == "Existing" )
+            {
+                liNewPerson.RemoveCssClass( "active" );
+                divNewPerson.RemoveCssClass( "active" );
+                liExistingPerson.AddCssClass( "active" );
+                divExistingPerson.AddCssClass( "active" );
+            }
+            else
+            {
+                liNewPerson.AddCssClass( "active" );
+                divNewPerson.AddCssClass( "active" );
+                liExistingPerson.RemoveCssClass( "active" );
+                divExistingPerson.RemoveCssClass( "active" );
+            }
+        }
 
         private void BindMembers()
         {

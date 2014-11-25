@@ -254,7 +254,7 @@ namespace Rock.Web.UI.Controls
 
             _ceHeaderText = new CodeEditor();
             _ceHeaderText.Label = "Form Header";
-            _ceHeaderText.Help = "Text to display to user above the form fields. <span class='tip tip-liquid'></span> <span class='tip tip-html'>";
+            _ceHeaderText.Help = "Text to display to user above the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>";
             _ceHeaderText.ID = this.ID + "_tbHeaderText";
             _ceHeaderText.EditorMode = CodeEditorMode.Html;
             _ceHeaderText.EditorTheme = CodeEditorTheme.Rock;
@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
 
             _ceFooterText = new CodeEditor();
             _ceFooterText.Label = "Form Footer";
-            _ceFooterText.Help = "Text to display to user below the form fields. <span class='tip tip-liquid'></span> <span class='tip tip-html'>";
+            _ceFooterText.Help = "Text to display to user below the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>";
             _ceFooterText.ID = this.ID + "_tbFooterText";
             _ceFooterText.EditorMode = CodeEditorMode.Html;
             _ceFooterText.EditorTheme = CodeEditorTheme.Rock;

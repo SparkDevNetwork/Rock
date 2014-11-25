@@ -1,6 +1,6 @@
 select 
     CONCAT('RockMigrationHelper.AddDefinedType("', 
-    [dt].[Category], '","',
+    [c].[Name], '","',
     [dt].[Name], '","',
     [dt].[Description], '","',
     [dt].[Guid], '",@"',
@@ -9,6 +9,7 @@ select
     0 [SortOrder]
 FROM 
     [DefinedType] [dt]
+	INNER JOIN [Category] [c] ON [c].Id = [dt].CategoryId
 where dt.IsSystem=0
 union
 select 

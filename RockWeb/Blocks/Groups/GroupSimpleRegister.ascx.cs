@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Groups
                                     // Send the confirmation
                                     if ( confirmationEmailTemplateGuid != Guid.Empty )
                                     {
-                                        var mergeObjects = new Dictionary<string, object>();
+                                        var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                                         mergeObjects.Add( "Member", member );
 
                                         var pageParams = new Dictionary<string, string>();
