@@ -25,7 +25,7 @@
 .personprofile { // offset pageheader margin
     margin-top: -@spacing-md-px;
 
-    small { // lighten up small elements a bit 
+    small { // lighten up small elements a bit
         color: lighten(@persondetails-bio-color, 30%);
     }
 }
@@ -45,7 +45,6 @@
 
         .full-name {
             font-size: 18px;
-            
             display: none;
         }
     }
@@ -58,7 +57,7 @@
     .nav li .persondetails-actions {
         padding: 2px 0 0 15px;
 
-        &:hover, 
+        &:hover,
         &:focus {
             background-color: transparent;
         }
@@ -200,9 +199,11 @@
             .email-status i {
                 color: @accent-semibold-color;
             }
+
             .email-status.do-not-email i {
                 color: @brand-danger;
             }
+
             .email-status.not-active i {
                 color: @brand-warning;
             }
@@ -214,8 +215,7 @@
 // 3. Badge Bar
 // -------------------------
 
-.personprofilebar-badge
-{
+.personprofilebar-badge {
     background-color: @persondetails-badge-bg;
     min-height: 64px;
     border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
@@ -225,10 +225,10 @@
         margin: @spacing-sm-px 0;
         text-align: center;
 
-        .badge { 
+        .badge {
             background-color: inherit;
             padding: 3px 7px 0;
-            display: inline-block;  // fixes issue in default browser on Andriod
+            display: inline-block; // fixes issue in default browser on Andriod
         }
 
         .badge-debug {
@@ -238,7 +238,6 @@
             width: 900px;
             right: 12px;
         }
-
     }
 }
 
@@ -247,7 +246,6 @@
 }
 
 .badge-icon {
-
     font-size: 45px;
 
     &.badge-disabled {
@@ -269,7 +267,7 @@
             vertical-align: bottom;
             height: 40px;
             width: 10px;
-        
+
             span {
                 display: block;
                 background: @persondetails-badge-color;
@@ -290,6 +288,43 @@
         }
     }
 }
+
+.badge-disc {
+    ul.badge-disc-chart { //http://codepen.io/Victa/pen/xDqbf
+        display: table;
+        table-layout: fixed;
+        height: 40px;
+        margin: 0 auto;
+        width: 45px;
+
+        li {
+            position: relative;
+            display: table-cell;
+            vertical-align: bottom;
+            height: 40px;
+            width: 3px;
+
+            span {
+                display: block;
+                background: @persondetails-badge-color;
+                position: absolute;
+                bottom: 0;
+                width: 10px;
+                min-height: 2px;
+            }
+        }
+    }
+
+    &.annimate {
+        ul.badge-disc-chart li span {
+            -webkit-animation: bar-grow 1s ease-in-out;
+            -moz-animation: bar-grow 1s ease-in-out;
+            -o-animation: bar-grow 1s ease-in-out;
+            animation: bar-grow 1s ease-in-out;
+        }
+    }
+}
+
 
 .badge-ingroupoftype {
     width: 45px;
@@ -347,7 +382,6 @@
 
 .badge-weeksattendanceduration {
     .weeks-metric {
-
         position: relative;
         color: #686576;
 
@@ -369,6 +403,7 @@
             width: 18px;
             text-align: center;
         }
+
         .week-duration {
             position: absolute;
             bottom: 10px;
@@ -383,7 +418,6 @@
 
     .badge-content {
         position: relative;
-
         color: #4f89bd;
 
         &.today {
@@ -427,31 +461,31 @@
 }
 
 @-webkit-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
+    0% {
+        height: 0;
+        opacity: 0;
+    }
 }
 
 @-moz-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
+    0% {
+        height: 0;
+        opacity: 0;
+    }
 }
 
 @-o-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
+    0% {
+        height: 0;
+        opacity: 0;
+    }
 }
 
 @keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
+    0% {
+        height: 0;
+        opacity: 0;
+    }
 }
 
 
@@ -470,7 +504,7 @@
     }
 
     .groupmembers {
-        .member {   
+        .member {
             a {
                 .clearfix();
                 border-radius: @border-radius-base;
@@ -483,7 +517,8 @@
                 -webkit-filter: grayscale(100%); /* For Webkit browsers */
                 filter: gray; /* For IE 6 - 9 */
                 -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
-                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */filter: grayscale(100%);
+                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+                filter: grayscale(100%);
                 -webkit-filter: grayscale(100%); /* For Webkit browsers */
                 filter: gray; /* For IE 6 - 9 */
                 -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
@@ -505,8 +540,8 @@
     }
 
     .actions { // edit family button
-        position: absolute; 
-        right: 12px; 
+        position: absolute;
+        right: 12px;
         z-index: 999;
 
         a.btn-action {
@@ -529,7 +564,10 @@
             display: block;
             clear: both;
             margin-bottom: @spacing-md-px;
-            &:last-child { margin-bottom: 0; }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
         }
 
         h4 {
@@ -560,8 +598,7 @@
 // 5. Page Tabs
 // -------------------------
 
-.pagetabs
-{
+.pagetabs {
     margin-top: 12px;
 }
 
@@ -569,7 +606,7 @@
 // 6. Edit Family Page
 // -------------------------
 .editfamily-list {
-    
+
     li.member {
         max-width: 200px;
 
@@ -583,8 +620,6 @@
             height: 38px;
         }
     }
-    
-    
 }
 
 // 7. Styles for Page Tabs
@@ -631,7 +666,7 @@ span.field-value {
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: @screen-sm-min), print {
-    
+
     // bio bar
     .personprofilebar-bio {
         padding: @spacing-md-px;
@@ -643,12 +678,12 @@ span.field-value {
 
         .name {
             text-align: left;
-        
+
             .full-name {
                 display: inline;
             }
         }
-        
+
         .labels {
             text-align: right;
         }
@@ -672,6 +707,7 @@ span.field-value {
 
         .social-icons {
             text-align: left;
+
             .icon {
                 float: left;
             }
@@ -691,7 +727,7 @@ span.field-value {
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: @screen-md-min) {
- 
+
     // bio bar
     .personprofilebar-bio {
         .personcontact {
@@ -702,7 +738,6 @@ span.field-value {
 
 /* Large devices (large desktops, 1200px and up) */
 @media (min-width: @screen-lg-min) {
-
 }
 
 // 11. Person Merge
@@ -713,7 +748,6 @@ span.field-value {
     background-color: @accent-bold-color;
     color: @accent-bold-text-color;
     border-color: lighten(@accent-bold-color, 5%);
-    
     vertical-align: top !important;
 
     .merge-header-summary {
@@ -771,7 +805,7 @@ span.field-value {
 
 .groupmembers {
     .member.deceased {
-        
+
         &:hover {
             background-color: darken(@gray-light, 10%);
         }
@@ -801,13 +835,13 @@ tr.inactive {
 .bulk-update {
 
     .no-select {
-        .form-group{
+        .form-group {
             opacity: 1;
         }
     }
-    
+
     .fade-inactive {
-        .form-group{
+        .form-group {
             opacity: 0.5;
 
             .control-label {
@@ -823,16 +857,14 @@ tr.inactive {
         border-radius: @border-radius-base;
 
         .control-label {
-            
         }
     }
-
 }
 
 // 15. Photo Requests
 // -------------------------
 .photoupload-photo {
-    
+
     .image-editor {
         float: left;
         margin-right: 48px;
@@ -844,7 +876,6 @@ tr.inactive {
             overflow: hidden;
         }
     }
-
 }
 
 // 16. Duplicate Pages
