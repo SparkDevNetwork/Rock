@@ -93,9 +93,6 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
 
-            //Add reference to my JS file
-            RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
-
             string personKey = PageParameter( "rckipid" );
             if ( !string.IsNullOrEmpty( personKey ) )
             {
@@ -105,16 +102,15 @@ namespace Rockweb.Blocks.Crm
                 }
                 catch ( Exception ex )
                 {
-                    //nbWarning.Visible = true;
-                    LogException( ex );
+                    nbError.Visible = true;
                 }
             }
             else
             {
                 // otherwise use the currently logged in person
-                if ( CurrentUser.Person != null )
+                if ( CurrentPerson != null )
                 {
-                    _targetPerson = CurrentUser.Person;
+                    _targetPerson = CurrentPerson;
                 }
                 else
                 {
@@ -122,18 +118,20 @@ namespace Rockweb.Blocks.Crm
                 }
             }
 
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+            if ( _targetPerson != null )
+            {
+                DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
 
-            if ( savedScores.LastSaveDate <= DateTime.MinValue )
-            {
-                ShowInstructions();
-            }
-            else
-            {
-                ShowResults( savedScores );
+                if ( savedScores.LastSaveDate <= DateTime.MinValue )
+                {
+                    ShowInstructions();
+                }
+                else
+                {
+                    ShowResults( savedScores );
+                }
             }
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -180,10 +178,20 @@ namespace Rockweb.Blocks.Crm
 
                 foreach ( RepeaterItem rItem in rQuestions.Items )
                 {
-                    RockRadioButtonList blMore = rItem.FindControl( "rblMore" ) as RockRadioButtonList;
-                    RockRadioButtonList blLess = rItem.FindControl( "rblLess" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore1 = rItem.FindControl( "rblMore1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore2 = rItem.FindControl( "rblMore2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore3 = rItem.FindControl( "rblMore3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore4 = rItem.FindControl( "rblMore4" ) as RockRadioButtonList;
 
-                    switch ( blMore.SelectedValue )
+                    RockRadioButtonList rblLess1 = rItem.FindControl( "rblLess1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess2 = rItem.FindControl( "rblLess2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess3 = rItem.FindControl( "rblLess3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess4 = rItem.FindControl( "rblLess4" ) as RockRadioButtonList;
+
+                    string selectedMoreValue = GetSelectedValue( rblMore1, rblMore2, rblMore3, rblMore4 );
+                    string selectedLessValue = GetSelectedValue( rblLess1, rblLess2, rblLess3, rblLess4 );
+
+                    switch ( selectedMoreValue )
                     {
                         case "N":
                             moreN++;
@@ -204,7 +212,7 @@ namespace Rockweb.Blocks.Crm
                             break;
                     }
 
-                    switch ( blLess.SelectedValue )
+                    switch ( selectedLessValue )
                     {
                         case "N":
                             lessN++;
@@ -266,47 +274,58 @@ namespace Rockweb.Blocks.Crm
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                RockRadioButtonList blMore = e.Item.FindControl( "rblMore" ) as RockRadioButtonList;
+                Literal lQuestion1 = e.Item.FindControl( "lQuestion1" ) as Literal;
+                Literal lQuestion2 = e.Item.FindControl( "lQuestion2" ) as Literal;
+                Literal lQuestion3 = e.Item.FindControl( "lQuestion3" ) as Literal;
+                Literal lQuestion4 = e.Item.FindControl( "lQuestion4" ) as Literal;
+
+                lQuestion1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
+                lQuestion2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
+                lQuestion3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
+                lQuestion4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
+
+                RockRadioButtonList rblMore1 = e.Item.FindControl( "rblMore1" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore2 = e.Item.FindControl( "rblMore2" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore3 = e.Item.FindControl( "rblMore3" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblLess1 = e.Item.FindControl( "rblLess1" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess2 = e.Item.FindControl( "rblLess2" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess3 = e.Item.FindControl( "rblLess3" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
+
 
                 ListItem m1 = new ListItem();
                 ListItem m2 = new ListItem();
                 ListItem m3 = new ListItem();
                 ListItem m4 = new ListItem();
+                m1.Text = m2.Text = m3.Text = m4.Text = "&nbsp;";
 
-                m1.Text = "&nbsp;";
                 m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
-                m2.Text = "&nbsp;";
                 m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
-                m3.Text = "&nbsp;";
                 m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
-                m4.Text = "&nbsp;";
                 m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
 
-                blMore.Items.Add( m1 );
-                blMore.Items.Add( m2 );
-                blMore.Items.Add( m3 );
-                blMore.Items.Add( m4 );
-
-                RockRadioButtonList blLess = e.Item.FindControl( "rblLess" ) as RockRadioButtonList;
+                rblMore1.Items.Add( m1 );
+                rblMore2.Items.Add( m2 );
+                rblMore3.Items.Add( m3 );
+                rblMore4.Items.Add( m4 );
 
                 ListItem l1 = new ListItem();
                 ListItem l2 = new ListItem();
                 ListItem l3 = new ListItem();
                 ListItem l4 = new ListItem();
+                l1.Text = l2.Text = l3.Text = l4.Text = "&nbsp;";
 
                 l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
-                l1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
                 l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
-                l2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
                 l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
-                l3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
                 l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
-                l4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
 
-                blLess.Items.Add( l1 );
-                blLess.Items.Add( l2 );
-                blLess.Items.Add( l3 );
-                blLess.Items.Add( l4 );
+                rblLess1.Items.Add( l1 );
+                rblLess2.Items.Add( l2 );
+                rblLess3.Items.Add( l3 );
+                rblLess4.Items.Add( l4 );
             }
         }
 
@@ -324,6 +343,41 @@ namespace Rockweb.Blocks.Crm
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the selected value from the given radiobuttonlists.
+        /// </summary>
+        /// <param name="rbl1">The first RadioButtonList.</param>
+        /// <param name="rbl2">The second RadioButtonList.</param>
+        /// <param name="rbl3">The third RadioButtonList.</param>
+        /// <param name="rbl4">The fourth RadioButtonList.</param>
+        /// <returns>the value from the first non-empty RadioButtonList</returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">One of the RadioButtonList must be selected.</exception>
+        private string GetSelectedValue( RadioButtonList rbl1,  RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
+        {
+            if ( ! string.IsNullOrEmpty( rbl1.SelectedValue ) )
+            {
+                return rbl1.SelectedValue;
+            }
+            else if (! string.IsNullOrEmpty( rbl2.SelectedValue ))
+            {
+                return rbl2.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl3.SelectedValue ) )
+            {
+                return rbl3.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl4.SelectedValue ) )
+            {
+                return rbl4.SelectedValue;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException( "One of the RadioButtonList must be selected." );
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Plots the graphs using the Disc score results.
