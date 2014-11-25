@@ -307,11 +307,17 @@
 
             span {
                 display: block;
-                background: @persondetails-badge-color;
+                background: lighten(#4f89bd, 20%);
                 position: absolute;
                 bottom: 0;
                 width: 10px;
                 min-height: 2px;
+            }
+
+            &.badge-disc-primary {
+                span {
+                    background: #4f89bd;
+                }
             }
         }
     }

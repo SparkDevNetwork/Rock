@@ -39,6 +39,8 @@ namespace Rock.PersonProfile.Badge
 
     public class DISC : BadgeComponent
     {
+        int maxScoreValue = 35;
+        
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -84,16 +86,16 @@ namespace Rock.PersonProfile.Badge
                 switch ( discStrength )
                 {
                     case 0:
-                        description = "Natural Dominance: is bottom line oriented, makes quick decisions, wants direct answers.";
+                        description = "D: is bottom line oriented, makes quick decisions, wants direct answers.";
                         break;
                     case 1:
-                        description = "Natural Influence: very people oriented, has a lot of friends, wants opportunity to talk.";
+                        description = "I: very people oriented, has a lot of friends, wants opportunity to talk.";
                         break;
                     case 2:
-                        description = "Natural Steadiness: does not like change, wants limited responsibility and sincere appreciation.";
+                        description = "S: does not like change, wants limited responsibility and sincere appreciation.";
                         break;
                     case 3:
-                        description = "Natural Cautiousness: is detail oriented, wants no sudden changes, won't make decision.";
+                        description = "C: is detail oriented, wants no sudden changes, won't make decision.";
                         break;
                     default:
                         description = "DISC Results Summary";
@@ -103,12 +105,17 @@ namespace Rock.PersonProfile.Badge
                 //Badge HTML
                 writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-original-title='{1}'>", badge.Id, description ) );
                 writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
-                writer.Write( string.Format( "<li class='badge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", discScores[0].Value, ( discStrength == 0 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", discScores[1].Value, ( discStrength == 1 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-s {1}' title='S'><span style='height:{0}%'></span></li>", discScores[2].Value, ( discStrength == 2 ) ? "badge-disc-primary" : String.Empty ) );
-                writer.Write( string.Format( "<li class='badge-disc-c {1}' title='C'><span style='height:{0}%'></span></li>", discScores[3].Value, ( discStrength == 3 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", NormalizeResult(discScores[0].Value), (discStrength == 0) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", NormalizeResult(discScores[1].Value), (discStrength == 1) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-s {1}' title='S'><span style='height:{0}%'></span></li>", NormalizeResult(discScores[2].Value), ( discStrength == 2 ) ? "badge-disc-primary" : String.Empty ) );
+                writer.Write( string.Format( "<li class='badge-disc-c {1}' title='C'><span style='height:{0}%'></span></li>", NormalizeResult(discScores[3].Value), ( discStrength == 3 ) ? "badge-disc-primary" : String.Empty ) );
                 writer.Write( "</ul></div>" );
             }
+        }
+
+        private int NormalizeResult( int result )
+        {
+            return (int)Math.Floor( (double)result / (double)maxScoreValue * 100 );
         }
     }
 }

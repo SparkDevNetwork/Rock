@@ -2910,11 +2910,14 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .badge-disc ul.badge-disc-chart li span {
   display: block;
-  background: #817b72;
+  background: #99bbd9;
   position: absolute;
   bottom: 0;
   width: 10px;
   min-height: 2px;
+}
+.badge-disc ul.badge-disc-chart li.badge-disc-primary span {
+  background: #4f89bd;
 }
 .badge-disc.annimate ul.badge-disc-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
