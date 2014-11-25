@@ -18,6 +18,8 @@
 
                     // ensure that js for mediaelementplayers is added to page
                     if (!$('#mediaElementJs').length) {
+                        // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
+                        $.ajaxSetup({ cache: true });
                         $('head').prepend("<script id='mediaElementJs' src='" + jsFile + "' />");
                     }
 
