@@ -1081,7 +1081,6 @@ BEGIN
 
     COMMIT
 END
-GO
 " );
 
         }
