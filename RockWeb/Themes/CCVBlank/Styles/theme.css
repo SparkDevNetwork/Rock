@@ -12406,3 +12406,16 @@ h6,
 #form1 > footer .footer-address {
   float: right;
 }
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+}
+.panel.panel-block > .panel-heading {
+  display: none;
+}
+.panel.panel-block > .panel-body {
+  padding: 0;
+}
+.panel.panel-block > .panel-body .grid.grid-panel {
+  margin: 0;
+}

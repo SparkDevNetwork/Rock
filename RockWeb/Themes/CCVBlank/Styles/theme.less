@@ -55,3 +55,21 @@ h1, h2, h3, h4, h5, h6,
         float: right;
     }
 }
+
+// hide block panels
+.panel.panel-block {
+    border: 0;
+    box-shadow: none;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
+    }
+}
