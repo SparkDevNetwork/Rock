@@ -724,8 +724,8 @@ namespace DotLiquid
             DateTime date;
 
             return DateTime.TryParse( input.ToString(), out date )
-                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ) : date.ToString( format )
-                : input.ToString();
+                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
+                : input.ToString().Trim();
         }
 
         /// <summary>
