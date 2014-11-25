@@ -30,6 +30,18 @@ namespace RockWeb
 {
     public partial class Error : System.Web.UI.Page
     {
+        protected void Page_Init( object sender, EventArgs e )
+        {
+            // If this is an API call, and it somehow got this far, set status code and exit
+            if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
+            {
+                Response.StatusCode = 500;
+                Response.Flush();
+                Response.End();
+                return;
+            }
+        }
+        
         /// <summary>
         /// Handles the Load event of the Page control.
         /// </summary>
