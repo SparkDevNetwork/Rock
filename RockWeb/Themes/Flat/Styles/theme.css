@@ -2893,6 +2893,34 @@ table.attribute-grid tr th:nth-child(3) {
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
 }
+.badge-disc ul.badge-disc-chart {
+  display: table;
+  table-layout: fixed;
+  height: 40px;
+  margin: 0 auto;
+  width: 45px;
+}
+.badge-disc ul.badge-disc-chart li {
+  position: relative;
+  display: table-cell;
+  vertical-align: bottom;
+  height: 40px;
+  width: 3px;
+}
+.badge-disc ul.badge-disc-chart li span {
+  display: block;
+  background: #817b72;
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  min-height: 2px;
+}
+.badge-disc.annimate ul.badge-disc-chart li span {
+  -webkit-animation: bar-grow 1s ease-in-out;
+  -moz-animation: bar-grow 1s ease-in-out;
+  -o-animation: bar-grow 1s ease-in-out;
+  animation: bar-grow 1s ease-in-out;
+}
 .badge-ingroupoftype {
   width: 45px;
 }
