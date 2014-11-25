@@ -152,7 +152,7 @@ namespace Rock.Reporting.DataSelect.Person
                 // prepend it with <!--LastName, NickName--> so that Sorting Works as expected
                 if ( displayOrder == 0 )
                 {
-                    personLinkQuery = personQry.Select( p => "<!--" + p.NickName + " " + p.LastName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.NickName + " " + p.FirstName + "</a>" );
+                    personLinkQuery = personQry.Select( p => "<!--" + p.NickName + " " + p.LastName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.NickName + " " + p.LastName + "</a>" );
                 }
                 else
                 {
