@@ -1032,6 +1032,16 @@
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Boolean,System.Globalization.CultureInfo)">
+            <summary>
+            Turns a TimeSpan into a human readable form. E.g. 1 day.
+            </summary>
+            <param name="timeSpan"></param>
+            <param name="precision">The maximum number of time units to return.</param>
+            <param name="countEmptyUnits">Controls whether empty time units should be counted towards maximum number of time units. Leading empty time units never count.</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <returns></returns>
+        </member>
         <member name="T:Humanizer.In">
             <summary>
             </summary>
