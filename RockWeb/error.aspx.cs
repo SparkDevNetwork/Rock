@@ -32,7 +32,7 @@ namespace RockWeb
     {
         protected void Page_Init( object sender, EventArgs e )
         {
-            // If this is an API call, and it somehow got this far, set status code and exit
+            // If this is an API call, set status code and exit
             if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
             {
                 Response.StatusCode = 500;
