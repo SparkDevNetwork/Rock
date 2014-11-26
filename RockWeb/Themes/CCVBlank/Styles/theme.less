@@ -20,36 +20,56 @@
 
 
 .modal-backdrop {
-  .opacity(.5);
+    .opacity(.5);
 }
 
 header[role=banner] {
-  .container;
-  margin-top: @spacing-lg-px;
+    .container;
+    margin-top: @spacing-lg-px;
 }
-header[role=banner] .logo {
-  float: left;
-}
+
+    header[role=banner] .logo {
+        float: left;
+    }
+
 nav[role=navigation] {
-  float: right;
+    float: right;
 }
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-  text-transform: uppercase;
+    text-transform: uppercase;
 }
 
 #form1 > footer {
-  .container;
-  .opacity(.5);
-  font-size: @font-size-small;
-  margin-top: @spacing-lg-px;
+    .container;
+    .opacity(.5);
+    font-size: @font-size-small;
+    margin-top: @spacing-lg-px;
 
-  .inner {
-    border-top: 1px solid lighten(@gray-light, 20%);
-    padding-top: @spacing-md-px;
-  }
+    .footer-message {
+        float: left;
+    }
 
-  .footer-message { float: left; }
-  .footer-address { float: right; }
+    .footer-address {
+        float: right;
+    }
+}
+
+// hide block panels
+.panel.panel-block {
+    border: 0;
+    box-shadow: none;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
+    }
 }

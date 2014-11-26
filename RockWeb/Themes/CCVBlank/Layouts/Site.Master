@@ -69,9 +69,7 @@
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
         <footer>
-            <div class="inner">
-                <Rock:Zone Name="Footer" runat="server" />
-            </div>
+            <Rock:Zone Name="Footer" runat="server" />
         </footer>
 
         <%-- controls for scriptmanager and update panel --%>
