@@ -377,6 +377,7 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [LiquidIgnore]
         public object this[object key]
         {
             get
