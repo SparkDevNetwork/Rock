@@ -45,6 +45,12 @@ WHERE [Guid] = '113593FF-620E-4870-86B1-7A0EC0409208'
 " );
 
             Sql( @"
+    UPDATE [CommunicationTemplate] SET 
+	    [MediumDataJson] = REPLACE( [MediumDataJson], 'Communication.ChannelData.', 'Communication.MediumData.' )
+    WHERE [MediumDataJson] LIKE '%Communication.ChannelData.%'
+" );
+
+            Sql( @"
     Update DataView set 
         [Description] = 'Lists female adults whose record status is ''Active'' and connection status is ''Member'' or ''Attendee''.' 
     where [Guid] = '1d144b43-f985-4122-b2e3-d548cc3b2a82'
