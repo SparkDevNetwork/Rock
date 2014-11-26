@@ -1091,7 +1091,7 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, out errors );
+                    gReport.DataSource = report.GetDataSource( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, out errors );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
