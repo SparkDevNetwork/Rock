@@ -24,8 +24,13 @@
 }
 
 header[role=banner] {
-    .container;
-    margin-top: @spacing-lg-px;
+    .clearfix();
+    margin-left: -@grid-gutter-width/4;
+
+    @media (min-width: @screen-sm-min) {
+        .container;
+        margin-top: @spacing-lg-px;
+    }
 }
 
     header[role=banner] .logo {
