@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Security
     [EmailTemplateField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
     [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
     [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -504,11 +506,24 @@ namespace RockWeb.Blocks.Security
             var rockContext = new RockContext();
             Rock.Model.PersonService personService = new PersonService( rockContext );
 
+            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
             Person person = new Person();
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             person.EmailPreference = EmailPreference.EmailAllowed;
+
+            if ( dvcConnectionStatus != null )
+            {
+                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+            }
+
+            if ( dvcRecordStatus != null )
+            {
+                person.RecordStatusValueId = dvcRecordStatus.Id;
+            }
 
             switch ( ddlGender.SelectedValue )
             {
