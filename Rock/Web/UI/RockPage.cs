@@ -1401,37 +1401,17 @@ namespace Rock.Web.UI
                         {
                             // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
                             // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                            Type serviceType = typeof( Rock.Data.Service<> );
-                            Type contextType = typeof( Rock.Data.RockContext );
-                            if ( modelType.Assembly != serviceType.Assembly )
-                            {
-                                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                                if ( serviceTypeLookup.Any() )
-                                {
-                                    serviceType = serviceTypeLookup.First().Value;
-                                }
-
-                                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                                if ( contextTypeLookup.Any() )
-                                {
-                                    contextType = contextTypeLookup.First().Value;
-                                }
-                            }
-
-                            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                            var serviceInstance = Activator.CreateInstance( service, dbContext );
+                            System.Data.Entity.DbContext dbContext = Reflection.GetDbContextForModel( modelType );
+                            IService serviceInstance = Reflection.GetServiceForModel( modelType, dbContext );
 
                             if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                             {
-                                MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                             }
                             else
                             {
-                                MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey" );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
                             }
                         }
