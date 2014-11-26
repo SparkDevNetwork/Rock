@@ -205,16 +205,16 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the appropriate DbContext based on the model type
+        /// Gets the appropriate DbContext based on the entity type
         /// </summary>
-        /// <param name="modelType">Type of the model.</param>
+        /// <param name="entityType">Type of the Entity.</param>
         /// <returns></returns>
-        public static System.Data.Entity.DbContext GetDbContextForModel( Type modelType )
+        public static System.Data.Entity.DbContext GetDbContextForEntityType( Type entityType )
         {
             Type contextType = typeof( Rock.Data.RockContext );
-            if ( modelType.Assembly != contextType.Assembly )
+            if ( entityType.Assembly != contextType.Assembly )
             {
-                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                var contextTypeLookup = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
 
                 if ( contextTypeLookup.Any() )
                 {
@@ -227,24 +227,24 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the appropriate Rock.Data.IService based on the model type
+        /// Gets the appropriate Rock.Data.IService based on the entity type
         /// </summary>
-        /// <param name="modelType">Type of the model.</param>
+        /// <param name="entityType">Type of the Entity.</param>
         /// <param name="dbContext">The database context.</param>
         /// <returns></returns>
-        public static Rock.Data.IService GetServiceForModel( Type modelType, System.Data.Entity.DbContext dbContext )
+        public static Rock.Data.IService GetServiceForEntityType( Type entityType, System.Data.Entity.DbContext dbContext )
         {
             Type serviceType = typeof( Rock.Data.Service<> );
-            if ( modelType.Assembly != serviceType.Assembly )
+            if ( entityType.Assembly != serviceType.Assembly )
             {
-                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                var serviceTypeLookup = Reflection.SearchAssembly( entityType.Assembly, serviceType );
                 if ( serviceTypeLookup.Any() )
                 {
                     serviceType = serviceTypeLookup.First().Value;
                 }
             }
 
-            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+            Type service = serviceType.MakeGenericType( new Type[] { entityType } );
             Rock.Data.IService serviceInstance = Activator.CreateInstance( service, dbContext ) as Rock.Data.IService;
             return serviceInstance;
         }
