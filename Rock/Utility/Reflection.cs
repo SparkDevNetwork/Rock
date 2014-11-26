@@ -203,5 +203,50 @@ namespace Rock
             }
             return null;
         }
+
+        /// <summary>
+        /// Gets the appropriate DbContext based on the model type
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <returns></returns>
+        public static System.Data.Entity.DbContext GetDbContextForModel( Type modelType )
+        {
+            Type contextType = typeof( Rock.Data.RockContext );
+            if ( modelType.Assembly != contextType.Assembly )
+            {
+                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                if ( contextTypeLookup.Any() )
+                {
+                    contextType = contextTypeLookup.First().Value;
+                }
+            }
+
+            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+            return dbContext;
+        }
+
+        /// <summary>
+        /// Gets the appropriate Rock.Data.IService based on the model type
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static Rock.Data.IService GetServiceForModel( Type modelType, System.Data.Entity.DbContext dbContext )
+        {
+            Type serviceType = typeof( Rock.Data.Service<> );
+            if ( modelType.Assembly != serviceType.Assembly )
+            {
+                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                if ( serviceTypeLookup.Any() )
+                {
+                    serviceType = serviceTypeLookup.First().Value;
+                }
+            }
+
+            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+            Rock.Data.IService serviceInstance = Activator.CreateInstance( service, dbContext ) as Rock.Data.IService;
+            return serviceInstance;
+        }
     }
 }
