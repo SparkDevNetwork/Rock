@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
 using System.Web.Routing;
@@ -38,6 +39,8 @@ namespace Rock.Rest
         /// <param name="config">The configuration.</param>
         public static void Register( HttpConfiguration config )
         {
+            config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
+
             // Add API route for dataviews
             config.Routes.MapHttpRoute(
                 name: "DataViewApi",
