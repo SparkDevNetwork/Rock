@@ -48,6 +48,9 @@ namespace Rock.Migrations
     WHERE [EntityTypeId] = @EntityTypeId
     AND [Key] = 'EmailTemplate'
 " );
+
+            // update new location of checkscanner installer
+            Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/checkscanner/1.2.0/checkscanner.exe' where [Guid] = '82960DBD-2EAA-47DF-B9AC-86F7A2FCA180'" );
         }
         
         /// <summary>
