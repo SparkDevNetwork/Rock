@@ -30,6 +30,10 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+    UPDATE [SystemEmail] SET 
+	    [Body] = REPLACE ( REPLACE ( [Body], ' != '' %}', ' != '''' %}' ), '{% if attribute.Value != '''' %}', '{% if attribute.IsVisible and attribute.Value != '''' %}' )
+    WHERE [Guid] = '88C7D1CC-3478-4562-A301-AE7D4D7FFF6D'
+
     DELETE [EntityType]
     WHERE [Name] = 'Rock.Workflow.Action.SendSystemEmail'
 
