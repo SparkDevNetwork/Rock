@@ -25,11 +25,10 @@ namespace Rock.Attribute
     /// Field Attribute to select a system email
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    [Obsolete("Use SystemEmailFieldAttribute instead.")]
-    public class EmailTemplateFieldAttribute : SystemEmailFieldAttribute
+    public class SystemEmailFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="EmailTemplateFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -38,10 +37,9 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultSystemEmailGuid = "", string category = "", int order = 0, string key = null )
-            : base(name, description, required, defaultSystemEmailGuid, category, order, key )
+        public SystemEmailFieldAttribute( string name, string description = "", bool required = true, string defaultSystemEmailGuid = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultSystemEmailGuid, category, order, key, typeof( Rock.Field.Types.SystemEmailFieldType ).FullName )
         {
-
         }
     }
 }

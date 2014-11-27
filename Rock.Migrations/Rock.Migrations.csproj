@@ -74,6 +74,10 @@
     <Compile Include="Migrations\201411231414133_UpdateLiquid.Designer.cs">
       <DependentUpon>201411231414133_UpdateLiquid.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201411271243135_SystemEmailField.cs" />
+    <Compile Include="Migrations\201411271243135_SystemEmailField.Designer.cs">
+      <DependentUpon>201411271243135_SystemEmailField.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1327,6 +1331,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201411231414133_UpdateLiquid.resx">
       <DependentUpon>201411231414133_UpdateLiquid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411271243135_SystemEmailField.resx">
+      <DependentUpon>201411271243135_SystemEmailField.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
