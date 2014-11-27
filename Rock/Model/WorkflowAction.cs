@@ -338,6 +338,8 @@ namespace Rock.Model
                             liquidFormAttribute.Name = attribute.Name;
                             liquidFormAttribute.Key = attribute.Key;
                             liquidFormAttribute.Value = formattedValue;
+                            liquidFormAttribute.IsVisible = formAttribute.IsVisible;
+                            liquidFormAttribute.IsReadOnly = formAttribute.IsReadOnly;
                             liquidFormAttribute.IsRequired = formAttribute.IsRequired;
                             liquidFormAttribute.HideLabel = formAttribute.HideLabel;
                             liquidFormAttribute.PreHtml = formAttribute.PreHtml;
@@ -394,7 +396,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {
             /// <summary>
@@ -421,6 +423,22 @@ namespace Rock.Model
             /// </value>
             public string Value { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [is visible].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [is visible]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsVisible { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [is read only].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [is read only]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsReadOnly { get; set; }
+            
             /// <summary>
             /// Gets or sets a value indicating whether this instance is required.
             /// </summary>
