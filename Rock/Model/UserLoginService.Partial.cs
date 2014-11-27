@@ -401,6 +401,25 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Determines if the specified User is a Rock Administrator.
+        /// </summary>
+        /// <param name="userLogin"></param>
+        /// <returns></returns>
+        public static bool IsAdministrator(UserLogin userLogin)
+        {
+            if (userLogin == null)
+                return false;
+
+            var service = new GroupService(new RockContext());
+
+            var adminGroup = service.GetByGuid(new Guid(Rock.SystemGuid.Group.GROUP_ADMINISTRATORS));
+
+            bool isAdmin = adminGroup.Members.Any(m => m.PersonId == userLogin.PersonId);
+
+            return isAdmin;
+        }
+
         #endregion
 
     }
