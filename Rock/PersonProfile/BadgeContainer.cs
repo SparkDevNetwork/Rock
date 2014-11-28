@@ -30,24 +30,21 @@ namespace Rock.PersonProfile
     /// </summary>
     public class BadgeContainer : Container<BadgeComponent, IComponentData>
     {
-        private static BadgeContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<BadgeContainer> instance =
+            new Lazy<BadgeContainer>( () => new BadgeContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static BadgeContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                    instance = new BadgeContainer();
-                return instance;
-            }
-        }
-
-        private BadgeContainer()
-        {
-            Refresh();
+            get { return instance.Value; }
         }
 
         /// <summary>
@@ -70,28 +67,33 @@ namespace Rock.PersonProfile
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static BadgeComponent GetComponent( string entityTypeName )
+        public static BadgeComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( BadgeComponent ) )]
         protected override IEnumerable<Lazy<BadgeComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
+
     }
 }

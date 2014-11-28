@@ -179,8 +179,10 @@ namespace Rock.Apps.StatementGenerator
             var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Client.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();
             if ( organizationAddressAttribute != null )
             {
+                var organizationAddressAttributeValue = _rockRestClient.GetData<List<Rock.Client.AttributeValue>>( "api/AttributeValues", string.Format( "AttributeId eq {0}", organizationAddressAttribute.Id ) ).FirstOrDefault();
+
                 Guid locationGuid = Guid.Empty;
-                if ( Guid.TryParse( organizationAddressAttribute.DefaultValue, out locationGuid ) )
+                if ( Guid.TryParse( organizationAddressAttributeValue.Value, out locationGuid ) )
                 {
                     _organizationAddressLocation = _rockRestClient.GetData<List<Rock.Client.Location>>( "api/locations", string.Format( "Guid eq guid'{0}'", locationGuid ) ).FirstOrDefault();
                 }

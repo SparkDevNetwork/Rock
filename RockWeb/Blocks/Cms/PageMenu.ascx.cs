@@ -37,9 +37,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Page Menu")]
     [Category("CMS")]
     [Description("Renders a page menu based on a root page and liquid template.")]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template should be in the theme's 'Assets/Liquid' folder and should have an underscore prepended to the filename. ", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
-{% include 'PageNav' %}
-" )]
+    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Liquid/_PageNav.liquid' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
@@ -184,10 +183,6 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
             string cacheKey = CacheKey();
 
             ObjectCache cache = RockMemoryCache.Default;

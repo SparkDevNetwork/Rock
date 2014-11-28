@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Rock;
 
 namespace Rock.CodeGeneration
 {
@@ -443,7 +444,7 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
-            string pluralizedName = pls.Pluralize( type.Name );
+            string pluralizedName = type.Name.Pluralize();
 
             string baseName = new DirectoryInfo( rootFolder ).Name;
             if ( baseName.EndsWith( ".Rest", StringComparison.OrdinalIgnoreCase ) )
@@ -626,7 +627,7 @@ order by [parentTable], [columnName]
                 case "SByte": return "sbyte";
                 case "Int16": return "short";
                 case "String": return "string";
-                case "DbGeography": return "string";
+                case "DbGeography": return "object";
             }
 
             return typeName;

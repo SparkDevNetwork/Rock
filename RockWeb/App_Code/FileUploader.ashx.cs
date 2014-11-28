@@ -124,7 +124,7 @@ namespace RockWeb
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
             string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
-            byte[] fileContent = GetFileBytes( context, uploadedFile );
+            var fileContent = GetFileContentStream( context, uploadedFile );
 
             // store the content file in the specified physical content folder
             if ( !Directory.Exists( physicalContentFolderName ) )
@@ -137,7 +137,11 @@ namespace RockWeb
                 File.Delete( physicalFilePath );
             }
 
-            File.WriteAllBytes( physicalFilePath, fileContent );
+            using ( var writeStream = File.OpenWrite( physicalFilePath ) )
+            {
+                fileContent.Seek( 0, SeekOrigin.Begin );
+                fileContent.CopyTo( writeStream );
+            }
 
             var response = new
             {
@@ -183,7 +187,7 @@ namespace RockWeb
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
             binaryFile.Data = new BinaryFileData();
-            binaryFile.Data.Content = GetFileBytes( context, uploadedFile );
+            binaryFile.Data.ContentStream = GetFileContentStream( context, uploadedFile );
 
             var binaryFileService = new BinaryFileService( rockContext );
             binaryFileService.Add( binaryFile );
@@ -205,12 +209,10 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public virtual byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
+        public virtual Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
             // NOTE: GetFileBytes can get overridden by a child class (ImageUploader.ashx.cs for example)
-            var bytes = new byte[uploadedFile.ContentLength];
-            uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
-            return bytes;
+            return uploadedFile.InputStream;
         }
 
         /// <summary>

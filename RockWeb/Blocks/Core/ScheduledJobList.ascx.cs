@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "serviceJobId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "serviceJobId", e.RowKeyId );
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var jobService = new ServiceJobService( rockContext );
-            ServiceJob job = jobService.Get( (int)e.RowKeyValue );
+            ServiceJob job = jobService.Get( e.RowKeyId );
 
             string errorMessage;
             if ( !jobService.CanDelete( job, out errorMessage ) )

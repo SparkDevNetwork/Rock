@@ -332,27 +332,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( selectedChannel != null )
             {
-
-                var statusColumn = gContentChannelItems.Columns.OfType<BoundField>().FirstOrDefault( c => c.HeaderText == "Status");
-                if ( statusColumn != null )
-                {
-                    gContentChannelItems.Columns.Remove( statusColumn );
-                }
-
-                gContentChannelItems.Columns[1].HeaderText = selectedChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                gContentChannelItems.Columns[2].Visible = selectedChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
-
-                AddAttributeColumns( selectedChannel );
-
-                if ( selectedChannel.RequiresApproval )
-                {
-                    var statusField = new BoundField();
-                    gContentChannelItems.Columns.Add( statusField );
-                    statusField.DataField = "Status";
-                    statusField.HeaderText = "Status";
-                    statusField.SortExpression = "Status";
-                    statusField.HtmlEncode = false;
-                }
+                AddColumns( selectedChannel );
 
                 var itemQry = itemService.Queryable()
                     .Where( i => i.ContentChannelId == selectedChannel.Id );
@@ -435,25 +415,34 @@ namespace RockWeb.Blocks.Cms
 
         }
 
-        protected void AddAttributeColumns( ContentChannel channel)
+        protected void AddColumns( ContentChannel channel)
         {
-            // Remove attribute columns
-            foreach ( var column in gContentChannelItems.Columns.OfType<AttributeField>().ToList() )
-            {
-                gContentChannelItems.Columns.Remove( column );
-            }
+            // Remove all columns
+            gContentChannelItems.Columns.Clear();
 
             if ( channel != null )
             {
-                // Add attribute columns
+                // Add Title column
+                var titleField = new BoundField();
+                titleField.DataField = "Title";
+                titleField.HeaderText = "Title";
+                titleField.SortExpression = "Title";
+                gContentChannelItems.Columns.Add( titleField );
+
+                // Add Attribute columns
                 int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-                string qualifier = channel.ContentChannelTypeId.ToString();
+                string channelId = channel.Id.ToString();
+                string channelTypeId = channel.ContentChannelTypeId.ToString();
                 foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "ContentTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifier ) )
+                        a.IsGridColumn && ( (
+                            a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( channelTypeId )
+                        ) || (
+                            a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( channelId )
+                        ) ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
@@ -475,7 +464,45 @@ namespace RockWeb.Blocks.Cms
                         gContentChannelItems.Columns.Add( boundField );
                     }
                 }
+
+                // Add Start column
+                var startField = new DateTimeField();
+                startField.DataField = "StartDateTime";
+                startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                startField.SortExpression = "StartDateTime";
+                gContentChannelItems.Columns.Add( startField );
+
+                // Expire column
+                if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                {
+                    var expireField = new DateTimeField();
+                    expireField.DataField = "ExpireDateTime";
+                    expireField.HeaderText = "Expire";
+                    expireField.SortExpression = "ExpireDateTime";
+                    gContentChannelItems.Columns.Add( expireField );
+                }
+
+                // Priority column
+                var priorityField = new BoundField();
+                priorityField.DataField = "Priority";
+                priorityField.HeaderText = "Priority";
+                priorityField.SortExpression = "Priority";
+                priorityField.DataFormatString = "{0:N0}";
+                priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                gContentChannelItems.Columns.Add( priorityField );
+
+                // Status column
+                if ( channel.RequiresApproval )
+                {
+                    var statusField = new BoundField();
+                    gContentChannelItems.Columns.Add( statusField );
+                    statusField.DataField = "Status";
+                    statusField.HeaderText = "Status";
+                    statusField.SortExpression = "Status";
+                    statusField.HtmlEncode = false;
+                }
             }
+
         }
 
         protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)

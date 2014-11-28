@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     [Description( "Writes a message to Workflow log." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write To Log" )]
-    [MemoField( "Message", "The message to write to the log. <span class='tip tip-liquid'></span>", true, "" )]
+    [MemoField( "Message", "The message to write to the log. <span class='tip tip-lava'></span>", true, "" )]
     public class WriteToLog : ActionComponent
     {
         /// <summary>

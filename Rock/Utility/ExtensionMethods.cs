@@ -100,25 +100,95 @@ namespace Rock
         }
 
         /// <summary>
-        /// Liquidizes the children.
+        /// Liquidizes the child properties of an object for displaying debug information about fields available for lava templates
         /// </summary>
         /// <param name="liquidObject">The liquid object.</param>
         /// <returns></returns>
-        public static object LiquidizeChildren( this object liquidObject )
+        public static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0 )
         {
+            // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
+            levelsDeep++;
+            if (levelsDeep > 10)
+            {
+                return string.Empty;
+            }
+
+            if ( liquidObject == null)
+            {
+                return string.Empty;
+            }
+
             if ( liquidObject is string )
             {
-                return liquidObject;
+                return liquidObject.ToString().Truncate( 50 ).EncodeHtml();
             }
+
+            if ( liquidObject is Guid)
+            {
+                return liquidObject.ToString();
+            }
+
+            Type entityType = liquidObject.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
 
             if ( liquidObject is Drop )
             {
                 return ( (ILiquidizable)liquidObject ).ToLiquid();
             }
 
+            if ( entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).Any() )
+            {
+                var result = new Dictionary<string, object>();
+
+                var attr = (LiquidTypeAttribute)entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).First();
+                foreach ( string propName in attr.AllowedMembers )
+                {
+                    var propInfo = entityType.GetProperty( propName );
+                    {
+                        if ( propInfo != null )
+                        {
+                            try
+                            {
+                                result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep ) );
+                            }
+                            catch ( Exception ex )
+                            {
+                                result.Add( propInfo.Name, ex.ToString() );
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            } 
+            
             if ( liquidObject is ILiquidizable )
             {
-                return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();
+                var result = new Dictionary<string, object>();
+
+                bool isEntity = ( liquidObject is IEntity );
+                foreach ( var propInfo in entityType.GetProperties() )
+                {
+                    if ( propInfo.Name != "Attributes" &&
+                        propInfo.Name != "AttributeValues" &&
+                        ( !isEntity ||
+                            propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
+                            propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIncludeAttribute ) ).Count() > 0 ) &&
+                        propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIgnoreAttribute ) ).Count() <= 0 )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep ) );
+                        }
+                        catch ( Exception ex)
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                return result;
             }
 
             if ( liquidObject is IDictionary<string, object> )
@@ -127,7 +197,14 @@ namespace Rock
 
                 foreach ( var keyValue in ( (IDictionary<string, object>)liquidObject ) )
                 {
-                    result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren() );
+                    try
+                    {
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep ) );
+                    }
+                    catch ( Exception ex )
+                    {
+                        result.Add( keyValue.Key, ex.ToString() );
+                    }
                 }
 
                 return result;
@@ -139,13 +216,17 @@ namespace Rock
 
                 foreach ( var value in ( (IEnumerable)liquidObject ) )
                 {
-                    result.Add( value.LiquidizeChildren() );
+                    try
+                    {
+                        result.Add( value.LiquidizeChildren( levelsDeep ) );
+                    }
+                    catch { }
                 }
 
                 return result;
             }
 
-            return liquidObject;
+            return string.Empty;
         }
 
         #endregion
@@ -655,14 +736,7 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                //// NOTE: This means that template filters will also use CSharpNamingConvention
-                //// For example the dotliquid documentation says to do this for formatting dates: 
-                //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template template = Template.Parse( content );
-
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )

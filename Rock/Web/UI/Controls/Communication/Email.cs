@@ -141,7 +141,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
-            tbSubject.Help = "<span class='tip tip-liquid'></span>";
+            tbSubject.Help = "<span class='tip tip-lava'></span>";
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();
@@ -150,6 +150,9 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Clear();
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
+            htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
+            htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
+            htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
             htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             htmlMessage.Help = "<span class='tip tip-liquid'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );

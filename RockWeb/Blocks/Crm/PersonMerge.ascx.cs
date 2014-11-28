@@ -386,7 +386,11 @@ namespace RockWeb.Blocks.Crm
                             var photo = binaryFileService.Get( photoId );
                             if ( photo != null )
                             {
-                                binaryFileService.Delete( photo );
+                                string errorMessages;
+                                if ( binaryFileService.CanDelete( photo, out errorMessages ) )
+                                {
+                                    binaryFileService.Delete( photo );
+                                }
                             }
                         }
                     }

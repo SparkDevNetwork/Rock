@@ -260,7 +260,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [DataMember, IgnoreLiquid]
+        [DataMember, LiquidIgnore]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -274,7 +274,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
         /// </value>
-        [DataMember, IgnoreLiquid]
+        [DataMember, LiquidIgnore]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }

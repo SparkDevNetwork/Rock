@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pledgeId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "pledgeId", e.RowKeyId );
         }
 
         /// <summary>

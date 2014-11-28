@@ -20,6 +20,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
+
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field
@@ -44,5 +46,20 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id );
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        IEntity GetEntity( string value);
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        IEntity GetEntity( string value, RockContext rockContext );
     }
 }

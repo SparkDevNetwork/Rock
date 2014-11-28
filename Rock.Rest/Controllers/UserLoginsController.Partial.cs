@@ -27,26 +27,15 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Users REST API
     /// </summary>
-    public partial class UserLoginsController : IHasCustomRoutes
+    public partial class UserLoginsController
     {
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "UsernameAvailable",
-                routeTemplate: "api/userlogins/available/{username}",
-                defaults: new
-                {
-                    controller = "userlogins",
-                    action = "available"
-                } );
-        }
-
         /// <summary>
         /// Tests if a username is available
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
         [HttpGet]
+        [System.Web.Http.Route( "api/userlogins/available/{username}" )]
         public bool Available( string username )
         {
             return ( (UserLoginService)Service ).GetByUserName( username ) == null;

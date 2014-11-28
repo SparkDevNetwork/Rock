@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCodeConfirm_Click( object sender, EventArgs e )
         {
+            ConfirmationCode = tbConfirmationCode.Text;
             ShowConfirmed();
         }
 
@@ -141,6 +142,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCodeReset_Click( object sender, EventArgs e )
         {
+            ConfirmationCode = tbConfirmationCode.Text;
             ShowResetPassword();
         }
 
@@ -161,6 +163,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCodeDelete_Click( object sender, EventArgs e )
         {
+            ConfirmationCode = tbConfirmationCode.Text;
             ShowDelete();
         }
 

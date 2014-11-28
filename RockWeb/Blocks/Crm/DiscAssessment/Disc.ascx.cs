@@ -15,44 +15,485 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
+using System.Web.UI.HtmlControls;
 
 namespace Rockweb.Blocks.Crm
 {
+    /// <summary>
+    /// Calculates a person's DISC score based on a series of question answers.
+    /// This is used with permission from Greg Wiens: http://www.gregwiens.com/scid/
+    /// </summary>
     [DisplayName( "Disc" )]
     [Category( "CRM > DiscAssessment" )]
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
+    [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
+    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+            <h2>Welcome!</h2>
+            <p>
+                {{ Person.NickName }}, in this assessment you are given a series of questions, each containing four phrases.
+                Select one phrase that MOST describes you and one phrase that LEAST describes you.
+            </p>
+            <p>
+                This assessment is environmentally sensitive, which means that you may score differently
+                in different situations. In other words, you may act differently at home than you
+                do on the job. So, as you complete the assessment you should focus on one environment
+                for which you are seeking to understand yourself. For instance, if you are trying
+                to understand yourself in marriage, you should only think of your responses to situations
+                in the context of your marriage. On the other hand, if you want to know your behavioral
+                needs on the job, then only think of how you would respond in the job context.
+            </p>
+            <p>
+                One final thought as you give your responses. On these kinds of assessments, it
+                is often best and easiest if you respond quickly and do not deliberate too long
+                on each question. Your response on one question will not unduly influence your scores,
+                so simply answer as quickly as possible and enjoy the process. Don't get too hung
+                up, if none of the phrases describe you or if there are some phrases that seem too
+                similar, just go with your instinct.
+            </p>
+            <p>
+                When you are ready, click the 'Start' button to proceed.
+            </p>
+" )]
     public partial class Disc : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        // used for private variables
+        Person _targetPerson = null;
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( CurrentPerson );
 
-            if ( savedScores.LastSaveDate > DateTime.MinValue )
+            string personKey = PageParameter( "rckipid" );
+            if ( !string.IsNullOrEmpty( personKey ) )
             {
-                //build last results table
-                lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString( "MM/dd/yyyy" );
-
-                lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
-                lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
-                lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
-                lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
-
-                lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
-                lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
-                lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
-                lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
+                try
+                {
+                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                }
+                catch ( Exception ex )
+                {
+                    nbError.Visible = true;
+                }
             }
+            else
+            {
+                // otherwise use the currently logged in person
+                if ( CurrentPerson != null )
+                {
+                    _targetPerson = CurrentPerson;
+                }
+                else
+                {
+                    nbError.Visible = true;
+                }
+            }
+
+            if ( _targetPerson != null )
+            {
+                DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( _targetPerson );
+
+                if ( savedScores.LastSaveDate <= DateTime.MinValue )
+                {
+                    ShowInstructions();
+                }
+                else
+                {
+                    ShowResults( savedScores );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+        }
+
+        #endregion
+
+        #region Events
+        /// <summary>
+        /// Handles the Click event of the btnStart button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnStart_Click( object sender, EventArgs e )
+        {
+            pnlInstructions.Visible = false;
+            pnlQuestions.Visible = true;
+            BindRepeater();
+        }
+
+        /// <summary>
+        /// Scores test, and displays results.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnScoreTest_Click( object sender, EventArgs e )
+        {
+            try
+            {
+                int moreN = 0;
+                int moreD = 0;
+                int moreI = 0;
+                int moreS = 0;
+                int moreC = 0;
+                int lessN = 0;
+                int lessD = 0;
+                int lessI = 0;
+                int lessS = 0;
+                int lessC = 0;
+
+                foreach ( RepeaterItem rItem in rQuestions.Items )
+                {
+                    RockRadioButtonList rblMore1 = rItem.FindControl( "rblMore1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore2 = rItem.FindControl( "rblMore2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore3 = rItem.FindControl( "rblMore3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblMore4 = rItem.FindControl( "rblMore4" ) as RockRadioButtonList;
+
+                    RockRadioButtonList rblLess1 = rItem.FindControl( "rblLess1" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess2 = rItem.FindControl( "rblLess2" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess3 = rItem.FindControl( "rblLess3" ) as RockRadioButtonList;
+                    RockRadioButtonList rblLess4 = rItem.FindControl( "rblLess4" ) as RockRadioButtonList;
+
+                    string selectedMoreValue = GetSelectedValue( rblMore1, rblMore2, rblMore3, rblMore4 );
+                    string selectedLessValue = GetSelectedValue( rblLess1, rblLess2, rblLess3, rblLess4 );
+
+                    switch ( selectedMoreValue )
+                    {
+                        case "N":
+                            moreN++;
+                            break;
+                        case "D":
+                            moreD++;
+                            break;
+                        case "I":
+                            moreI++;
+                            break;
+                        case "S":
+                            moreS++;
+                            break;
+                        case "C":
+                            moreC++;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    switch ( selectedLessValue )
+                    {
+                        case "N":
+                            lessN++;
+                            break;
+                        case "D":
+                            lessD++;
+                            break;
+                        case "I":
+                            lessI++;
+                            break;
+                        case "S":
+                            lessS++;
+                            break;
+                        case "C":
+                            lessC++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                // Score the responses and return the results
+                DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
+
+                // Now save the results for this person
+                DiscService.SaveAssessmentResults(
+                    _targetPerson,
+                    results.AdaptiveBehaviorD.ToString(),
+                    results.AdaptiveBehaviorI.ToString(),
+                    results.AdaptiveBehaviorS.ToString(),
+                    results.AdaptiveBehaviorC.ToString(),
+                    results.NaturalBehaviorD.ToString(),
+                    results.NaturalBehaviorI.ToString(),
+                    results.NaturalBehaviorS.ToString(),
+                    results.NaturalBehaviorC.ToString()
+                );
+
+                // Plot graph
+                PlotGraph( results );
+
+                pnlQuestions.Visible = false;
+                pnlResults.Visible = true;
+            }
+            catch ( Exception ex )
+            {
+                nbError.Visible = true;
+                nbError.Title = "We're Sorry...";
+                nbError.Text = "Something went wrong while trying to save your test results.";
+                LogException( ex );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rQuestions repeater control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rQuestions_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                Literal lQuestion1 = e.Item.FindControl( "lQuestion1" ) as Literal;
+                Literal lQuestion2 = e.Item.FindControl( "lQuestion2" ) as Literal;
+                Literal lQuestion3 = e.Item.FindControl( "lQuestion3" ) as Literal;
+                Literal lQuestion4 = e.Item.FindControl( "lQuestion4" ) as Literal;
+
+                lQuestion1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
+                lQuestion2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
+                lQuestion3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
+                lQuestion4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
+
+                RockRadioButtonList rblMore1 = e.Item.FindControl( "rblMore1" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore2 = e.Item.FindControl( "rblMore2" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore3 = e.Item.FindControl( "rblMore3" ) as RockRadioButtonList;
+                RockRadioButtonList rblMore4 = e.Item.FindControl( "rblMore4" ) as RockRadioButtonList;
+
+                RockRadioButtonList rblLess1 = e.Item.FindControl( "rblLess1" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess2 = e.Item.FindControl( "rblLess2" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess3 = e.Item.FindControl( "rblLess3" ) as RockRadioButtonList;
+                RockRadioButtonList rblLess4 = e.Item.FindControl( "rblLess4" ) as RockRadioButtonList;
+
+
+                ListItem m1 = new ListItem();
+                ListItem m2 = new ListItem();
+                ListItem m3 = new ListItem();
+                ListItem m4 = new ListItem();
+                m1.Text = m2.Text = m3.Text = m4.Text = "&nbsp;";
+
+                m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
+                m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
+                m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
+                m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
+
+                rblMore1.Items.Add( m1 );
+                rblMore2.Items.Add( m2 );
+                rblMore3.Items.Add( m3 );
+                rblMore4.Items.Add( m4 );
+
+                ListItem l1 = new ListItem();
+                ListItem l2 = new ListItem();
+                ListItem l3 = new ListItem();
+                ListItem l4 = new ListItem();
+                l1.Text = l2.Text = l3.Text = l4.Text = "&nbsp;";
+
+                l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
+                l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
+                l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
+                l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
+
+                rblLess1.Items.Add( l1 );
+                rblLess2.Items.Add( l2 );
+                rblLess3.Items.Add( l3 );
+                rblLess4.Items.Add( l4 );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRetake control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRetakeTest_Click( object sender, EventArgs e )
+        {
+            btnRetakeTest.Visible = false;
+            ShowInstructions();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the selected value from the given radiobuttonlists.
+        /// </summary>
+        /// <param name="rbl1">The first RadioButtonList.</param>
+        /// <param name="rbl2">The second RadioButtonList.</param>
+        /// <param name="rbl3">The third RadioButtonList.</param>
+        /// <param name="rbl4">The fourth RadioButtonList.</param>
+        /// <returns>the value from the first non-empty RadioButtonList</returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">One of the RadioButtonList must be selected.</exception>
+        private string GetSelectedValue( RadioButtonList rbl1,  RadioButtonList rbl2, RadioButtonList rbl3, RadioButtonList rbl4 )
+        {
+            if ( ! string.IsNullOrEmpty( rbl1.SelectedValue ) )
+            {
+                return rbl1.SelectedValue;
+            }
+            else if (! string.IsNullOrEmpty( rbl2.SelectedValue ))
+            {
+                return rbl2.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl3.SelectedValue ) )
+            {
+                return rbl3.SelectedValue;
+            }
+            else if ( !string.IsNullOrEmpty( rbl4.SelectedValue ) )
+            {
+                return rbl4.SelectedValue;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException( "One of the RadioButtonList must be selected." );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Plots the graphs using the Disc score results.
+        /// </summary>
+        /// <param name="results">The results.</param>
+        private void PlotGraph( DiscService.AssessmentResults results )
+        {
+            // Plot the Natural graph
+            PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
+                results.NaturalBehaviorD, results.NaturalBehaviorI, results.NaturalBehaviorS, results.NaturalBehaviorC, 35 );
+        }
+
+        /// <summary>
+        /// Plots the one DISC graph.
+        /// </summary>
+        /// <param name="barD">The D bar.</param>
+        /// <param name="barI">The I bar.</param>
+        /// <param name="barS">The S bar.</param>
+        /// <param name="barC">The C bar.</param>
+        /// <param name="scoreD">The D score.</param>
+        /// <param name="scoreI">The I score.</param>
+        /// <param name="scoreS">The S score.</param>
+        /// <param name="scoreC">The C score.</param>
+        /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
+        private void PlotOneGraph( HtmlGenericControl barD, HtmlGenericControl barI, HtmlGenericControl barS, HtmlGenericControl barC,
+            int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
+        {
+            barD.RemoveCssClass( "discbar-primary" );
+            barI.RemoveCssClass( "discbar-primary" );
+            barS.RemoveCssClass( "discbar-primary" );
+            barC.RemoveCssClass( "discbar-primary" );
+
+            // find the max value
+            var maxScore = barD;
+            var maxValue = scoreD;
+            if ( scoreI > maxValue )
+            {
+                maxScore = barI;
+                maxValue = scoreI;
+            }
+            if ( scoreS > maxValue )
+            {
+                maxScore = barS;
+                maxValue = scoreS;
+            }
+            if ( scoreC > maxValue )
+            {
+                maxScore = barC;
+                maxValue = scoreC;
+            }
+            maxScore.AddCssClass( "discbar-primary" );
+            var score = Math.Floor( (double)( (double)scoreD / (double)maxScale ) * 100 ).ToString();
+            barD.Style.Add( "height", score + "%" );
+            barD.Attributes["title"] = scoreD.ToString();
+
+            score = Math.Floor( (double)( (double)scoreI / (double)maxScale ) * 100 ).ToString();
+            barI.Style.Add( "height", score + "%" );
+            barI.Attributes["title"] = scoreI.ToString();
+
+            score = Math.Floor( (double)( (double)scoreS / (double)maxScale ) * 100 ).ToString();
+            barS.Style.Add( "height", score + "%" );
+            barS.Attributes["title"] = scoreS.ToString();
+
+            score = Math.Floor( (double)( (double)scoreC / (double)maxScale ) * 100 ).ToString();
+            barC.Style.Add( "height", score + "%" );
+            barC.Attributes["title"] = scoreC.ToString();
+        }
+
+        /// <summary>
+        /// Shows the instructions.
+        /// </summary>
+        private void ShowInstructions()
+        {
+            pnlInstructions.Visible = true;
+            pnlQuestions.Visible = false;
+            pnlResults.Visible = false;
+
+            // Resolve the text field merge fields
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( _targetPerson );
+            if ( _targetPerson != null )
+            {
+                mergeFields.Add( "Person", _targetPerson );
+            }
+
+            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
+                .ToList()
+                .ForEach( v => mergeFields.Add( v.Key, v.Value ) );
+
+            lInstructions.Text = GetAttributeValue( "Instructions" ).ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Shows the results of the assessment test.
+        /// </summary>
+        /// <param name="savedScores">The saved scores.</param>
+        private void ShowResults( DiscService.AssessmentResults savedScores )
+        {
+            pnlInstructions.Visible = false;
+            pnlQuestions.Visible = false;
+            pnlResults.Visible = true;
+
+            // Show re-take test button if MinDaysToRetake has passed...
+            double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
+            if ( savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now )
+            {
+                btnRetakeTest.Visible = true;
+            }
+
+            PlotGraph( savedScores );
 
             BindRepeater();
         }
 
+        /// <summary>
+        /// Binds the question data to the rQuestions repeater control.
+        /// </summary>
         private void BindRepeater()
         {
             String[,] questionData = DiscService.GetResponsesByQuestion();
@@ -83,172 +524,6 @@ namespace Rockweb.Blocks.Crm
             rQuestions.DataBind();
         }
 
-        protected void Page_Load( object sender, EventArgs e )
-        {
-            // 20140926 - Don't think my .js is doing anything any longer
-            //
-            //Checks if RockPage IsPostBack (making the assumption that the PostBack is because the
-            //  'Score Test' button was clicked.
-            //Tell Javascript that the page is posted back or not.
-            // See:  http://stackoverflow.com/questions/59719/how-can-i-check-for-ispostback-in-javascript
-            string script = IsPostBack ? "var isScored = true;" : "var isScored = false;";
-            Page.ClientScript.RegisterStartupScript( GetType(), "IsScored", script, true );
-
-            //Add reference to my JS file
-            RockPage.AddScriptLink( "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
-
-            if ( IsPostBack )
-            {
-                btnSaveResults.Enabled = true;
-            }
-            else
-            {
-                btnSaveResults.Enabled = false;
-            }
-        }
-
-        /// <summary>
-        /// Scores test, and displays results.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnScoreTest_Click( object sender, EventArgs e )
-        {
-            int moreN = 0;
-            int moreD = 0;
-            int moreI = 0;
-            int moreS = 0;
-            int moreC = 0;
-            int lessN = 0;
-            int lessD = 0;
-            int lessI = 0;
-            int lessS = 0;
-            int lessC = 0;
-
-            foreach ( RepeaterItem rItem in rQuestions.Items )
-            {
-                RockRadioButtonList blMore = rItem.FindControl( "rblMore" ) as RockRadioButtonList;
-                RockRadioButtonList blLess = rItem.FindControl( "rblLess" ) as RockRadioButtonList;
-
-                switch ( blMore.SelectedValue )
-                {
-                    case "N":
-                        moreN++;
-                        break;
-                    case "D":
-                        moreD++;
-                        break;
-                    case "I":
-                        moreI++;
-                        break;
-                    case "S":
-                        moreS++;
-                        break;
-                    case "C":
-                        moreC++;
-                        break;
-                    default:
-                        break;
-                }
-
-                switch ( blLess.SelectedValue )
-                {
-                    case "N":
-                        lessN++;
-                        break;
-                    case "D":
-                        lessD++;
-                        break;
-                    case "I":
-                        lessI++;
-                        break;
-                    case "S":
-                        lessS++;
-                        break;
-                    case "C":
-                        lessC++;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // Score the responses and return the results
-            DiscService.AssessmentResults results = DiscService.Score( moreN, moreD, moreI, moreS, moreC, lessN, lessD, lessI, lessS, lessC );
-
-            //Display results out to user
-            lblABd.Text = results.AdaptiveBehaviorD.ToString();
-            lblABi.Text = results.AdaptiveBehaviorI.ToString();
-            lblABs.Text = results.AdaptiveBehaviorS.ToString();
-            lblABc.Text = results.AdaptiveBehaviorC.ToString();
-
-            lblNBd.Text = results.NaturalBehaviorD.ToString();
-            lblNBi.Text = results.NaturalBehaviorI.ToString();
-            lblNBs.Text = results.NaturalBehaviorS.ToString();
-            lblNBc.Text = results.NaturalBehaviorC.ToString();
-        }
-
-        protected void btnSaveResults_Click( object sender, EventArgs e )
-        {
-            DiscService.SaveAssessmentResults(
-                CurrentPerson,
-                lblABd.Text,
-                lblABi.Text,
-                lblABs.Text,
-                lblABc.Text,
-                lblNBd.Text,
-                lblNBi.Text,
-                lblNBs.Text,
-                lblNBc.Text
-            );
-        }
-
-        protected void rQuestions_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                RockRadioButtonList blMore = e.Item.FindControl( "rblMore" ) as RockRadioButtonList;
-
-                ListItem m1 = new ListItem();
-                ListItem m2 = new ListItem();
-                ListItem m3 = new ListItem();
-                ListItem m4 = new ListItem();
-
-                m1.Text = "&nbsp;";
-                m1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 0, 1 );
-                m2.Text = "&nbsp;";
-                m2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 1, 1 );
-                m3.Text = "&nbsp;";
-                m3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 2, 1 );
-                m4.Text = "&nbsp;";
-                m4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[4].ToString().Substring( 3, 1 );
-
-                blMore.Items.Add( m1 );
-                blMore.Items.Add( m2 );
-                blMore.Items.Add( m3 );
-                blMore.Items.Add( m4 );
-
-                RockRadioButtonList blLess = e.Item.FindControl( "rblLess" ) as RockRadioButtonList;
-
-                ListItem l1 = new ListItem();
-                ListItem l2 = new ListItem();
-                ListItem l3 = new ListItem();
-                ListItem l4 = new ListItem();
-
-                l1.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 0, 1 );
-                l1.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[0].ToString();
-                l2.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 1, 1 );
-                l2.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[1].ToString();
-                l3.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 2, 1 );
-                l3.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[2].ToString();
-                l4.Value = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[5].ToString().Substring( 3, 1 );
-                l4.Text = ( (System.Data.DataRowView)( e.Item.DataItem ) ).Row.ItemArray[3].ToString();
-
-                blLess.Items.Add( l1 );
-                blLess.Items.Add( l2 );
-                blLess.Items.Add( l3 );
-                blLess.Items.Add( l4 );
-            }
-        }
+        #endregion
     }
 }

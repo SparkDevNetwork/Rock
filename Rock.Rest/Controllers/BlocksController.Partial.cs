@@ -26,24 +26,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Blocks REST API
     /// </summary>
-    public partial class BlocksController : IHasCustomRoutes 
+    public partial class BlocksController
     {
-        /// <summary>
-        /// Add Custom route needed for block move
-        /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "BlockMove",
-                routeTemplate: "api/blocks/move/{id}",
-                defaults: new
-                {
-                    controller = "blocks",
-                    action = "move"
-                } );
-        }
-
         /// <summary>
         /// Deletes the specified Block with extra logic to flush caches.
         /// </summary>
@@ -58,7 +42,7 @@ namespace Rock.Rest.Controllers
             int? layoutId = null;
 
             var block = this.Get( id );
-            if (block != null)
+            if ( block != null )
             {
                 pageId = block.PageId;
                 layoutId = block.LayoutId;
@@ -74,7 +58,7 @@ namespace Rock.Rest.Controllers
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
             }
 
-            if (pageId.HasValue)
+            if ( pageId.HasValue )
             {
                 Rock.Web.Cache.PageCache.Flush( pageId.Value );
                 var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
@@ -89,6 +73,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPut]
+        [System.Web.Http.Route( "api/blocks/move/{id}" )]
         public void Move( int id, Block block )
         {
             var person = GetPerson();
@@ -98,17 +83,23 @@ namespace Rock.Rest.Controllers
             block.Id = id;
             Block model;
             if ( !Service.TryGet( id, out model ) )
+            {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
 
             CheckCanEdit( model, person );
 
             Rock.Web.Cache.BlockCache.Flush( id );
 
             if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
+            {
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
+            }
 
             if ( block.LayoutId.HasValue )
+            {
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+            }
             else
             {
                 var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
@@ -121,7 +112,7 @@ namespace Rock.Rest.Controllers
 
             if ( model.IsValid )
             {
-                model.Order = ((BlockService)Service).GetMaxOrder( model );
+                model.Order = ( (BlockService)Service ).GetMaxOrder( model );
                 System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }

@@ -32,26 +32,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class CategoriesController : IHasCustomRoutes
+    public partial class CategoriesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "CategoriesGetChildren",
-                routeTemplate: "api/Categories/GetChildren/{id}",
-                defaults: new
-                {
-                    controller = "Categories",
-                    action = "GetChildren",
-                    entityqualifier = RouteParameter.Optional,
-                    entityqualifiervalue = RouteParameter.Optional
-                } );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -64,6 +46,7 @@ namespace Rock.Rest.Controllers
         /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
         public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
         {
             Person currentPerson = GetPerson();
@@ -220,7 +203,7 @@ namespace Rock.Rest.Controllers
 
                     if ( !showUnnamedEntityItems )
                     {
-                        result = result.Where( a => a.Name != "" );
+                        result = result.Where( a => a.Name != string.Empty );
                     }
 
                     return result;
