@@ -29,6 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.Block", "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65", true, true );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.ServiceJob", "52766196-A72F-4F60-997A-78E19508843D", true, true );
+
             Sql( @"
     UPDATE [SystemEmail] SET 
 	    [Body] = REPLACE ( REPLACE ( [Body], ' != '' %}', ' != '''' %}' ), '{% if attribute.Value != '''' %}', '{% if attribute.IsVisible and attribute.Value != '''' %}' )
