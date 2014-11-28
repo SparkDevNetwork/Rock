@@ -25,6 +25,7 @@ using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.ErrorHandling;
 using Rock.Rest.Filters;
 using Rock.Security;
 
@@ -42,6 +43,7 @@ namespace Rock.Rest
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [ODataRouting]
+    [RestApiExceptionFilter]
     public abstract class ApiController<T> : ApiController
         where T : Rock.Data.Entity<T>, new()
     {
@@ -120,18 +122,18 @@ namespace Rock.Rest
 
             if ( !value.IsValid )
             {
-                return ControllerContext.Request.CreateErrorResponse(
-                    HttpStatusCode.BadRequest,
-                    string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new EntityValidationException( value.ValidationResults.Select( r => r.ErrorMessage ) );
             }
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
             Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
 
-            // TODO set response.Headers.Location as per REST POST convention
-            //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
+            // Return the location of the new resource in accordance with REST POST convention.
+            response.Headers.Location = new Uri( Request.RequestUri, value.Id.ToString() );
+
             return response;
         }
 
@@ -202,7 +204,7 @@ namespace Rock.Rest
                 var paramExpression = Service.ParameterExpression;
                 var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
 
-                if ( paramExpression != null)
+                if ( paramExpression != null )
                 {
                     return Service.Get( paramExpression, whereExpression );
                 }
