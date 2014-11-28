@@ -136,6 +136,8 @@
     <Compile Include="CodeGenerated\WorkflowLog.cs" />
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />
+    <Compile Include="ErrorHandling\RestApiConstants.cs" />
+    <Compile Include="ErrorHandling\RestApiErrorDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
