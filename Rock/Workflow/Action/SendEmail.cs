@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Send Email" )]
 
     [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From" )]
-    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "To")]
+    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To" )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
     public class SendEmail : ActionComponent
@@ -175,7 +175,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to, from, subject, body, mergeFields, rockContext );
+                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext );
             }
 
             return true;

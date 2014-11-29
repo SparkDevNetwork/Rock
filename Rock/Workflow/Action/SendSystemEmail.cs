@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata("ComponentName", "Send System Email")]
 
     [SystemEmailField( "System Email", "A system email to send.")]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "Recipient" )]
+    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient" )]
     public class SendSystemEmail : ActionComponent
     {
         /// <summary>
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                recipients.Add( new RecipientData( to, mergeFields ) );
+                recipients.Add( new RecipientData( to.ResolveMergeFields( mergeFields ), mergeFields ) );
             }
 
             if ( recipients.Any() )
