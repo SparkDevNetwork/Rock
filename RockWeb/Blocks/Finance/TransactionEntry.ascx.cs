@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Finance
                 lPersonalInfoTitle.Text = GetAttributeValue( "PersonalInfoTitle" );
                 lPaymentInfoTitle.Text = GetAttributeValue( "PaymentInfoTitle" );
                 lConfirmationTitle.Text = GetAttributeValue( "ConfirmationTitle" );
-                lSuccessTitle.Text = GetAttributeValue( "SucessTitle" );
+                lSuccessTitle.Text = GetAttributeValue( "SuccessTitle" );
                 lSaveAcccountTitle.Text = GetAttributeValue( "SaveAccountTitle" );
             }
 
