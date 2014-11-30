@@ -43,39 +43,47 @@ namespace RockWeb.Blocks.Finance
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
-
-    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 2 )]
-
+    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
+        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 2 )]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 3 )]
     [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
         "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 4 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 5 )]
+    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
-    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
-        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 6 )]
+    // Text Options
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [TextField( "Panel Title", "The text to display in panel heading", false, "Scheduled Transaction", "Text Options", 6 )]
+
+    [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 7 )]
+    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 8 )]
+
+    [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 9 )]
+
+    [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 10 )]
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
-", "Text Options", 7 )]
-
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+", "Text Options", 11 )]
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
-", "Text Options", 8 )]
+", "Text Options", 12 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
 Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
-", "Text Options", 9 )]
-
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
-", "Text Options", 10 )]
+", "Text Options", 13 )]
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+", "Text Options", 14 )]
 
     #endregion
 
@@ -220,6 +228,11 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( !Page.IsPostBack )
             {
+                lPanelTitle.Text = GetAttributeValue( "PanelTitle" );
+                lContributionInfoTitle.Text = GetAttributeValue( "ContributionInfoTitle" );
+                lPaymentInfoTitle.Text = GetAttributeValue( "PaymentInfoTitle" );
+                lConfirmationTitle.Text = GetAttributeValue( "ConfirmationTitle" );
+
                 var scheduledTransaction = GetScheduledTransaction( true );
 
                 if ( scheduledTransaction != null )
