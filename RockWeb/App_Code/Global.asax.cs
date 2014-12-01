@@ -181,6 +181,11 @@ namespace RockWeb
                     sched.Start();
                 }
 
+                // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
+                // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
+                // Date filter.
+                Liquid.UseRubyDateFormat = false;
+
                 //// NOTE: This means that template filters will also use CSharpNamingConvention
                 //// For example the dotliquid documentation says to do this for formatting dates: 
                 //// {{ some_date_value | date:"MMM dd, yyyy" }}

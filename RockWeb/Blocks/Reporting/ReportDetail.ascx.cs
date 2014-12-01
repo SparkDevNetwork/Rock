@@ -1056,12 +1056,12 @@ namespace RockWeb.Blocks.Reporting
 
                         boundField.DataField = string.Format( "Entity_{0}_{1}", entityField.Name, columnIndex );
                         boundField.HeaderText = entityField.Name;
-                        boundField.SortExpression = entityField.Name;
+                        boundField.SortExpression = boundField.DataField;
                         boundField.Visible = showAllColumns || entityField.IsPreviewable;
                         gReport.Columns.Add( boundField );
                     }
-                }
-
+                } 
+                   
                 try
                 {
                     gReport.Visible = true;
