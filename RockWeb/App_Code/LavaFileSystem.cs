@@ -32,32 +32,58 @@ namespace RockWeb
     /// <summary>
     /// 
     /// </summary>
-    public class LiquidFileSystem : IFileSystem
+    public class LavaFileSystem : IFileSystem
     {
         public string Root { get; set; }
 
-        public LiquidFileSystem() {}
+        public LavaFileSystem() {}
 
         public string ReadTemplateFile( Context context, string templateName )
         {
             string templatePath = (string)context[templateName];
-            string fullPath = FullPath( templatePath );
 
-            if ( !File.Exists( fullPath ) )
+            // Try to find exact file specified
+            var file = new FileInfo( FullPath( templatePath ));
+            if ( file.Exists)
             {
-                // Check to see if file name does not have extension and doesn't start with underscore (old format)
-                var fileInfo = new FileInfo(fullPath);
-                if ( !fileInfo.Name.StartsWith("_") && string.IsNullOrWhiteSpace(fileInfo.Extension))
+                return File.ReadAllText(file.FullName);
+            }
+
+            // If requested template file does not include an extension
+            if ( string.IsNullOrWhiteSpace( file.Extension ) )
+            {
+                // Try to find file with .lava extension
+                string filePath = file.FullName + ".lava";
+                if ( File.Exists( filePath) )
                 {
-                    fullPath = Path.Combine( fileInfo.DirectoryName, string.Format("_{0}.liquid", fileInfo.Name));
+                    return File.ReadAllText(filePath);
                 }
-                if ( !File.Exists( fullPath ) )
+
+                // Try to find file with .liquid extension
+                filePath = file.FullName + ".liquid";
+                if ( File.Exists( filePath) )
                 {
-                    throw new FileSystemException( "LiquidFileSystem Template Not Found", templatePath );
+                    return File.ReadAllText(filePath);
+                }
+
+                // If file still not found, try prefixing filename with an underscore
+                if ( !file.Name.StartsWith("_") )
+                {
+                    filePath = Path.Combine( file.DirectoryName, string.Format("_{0}.lava", file.Name));
+                    if ( File.Exists( filePath) )
+                    {
+                        return File.ReadAllText(filePath);
+                    }
+                    filePath = Path.Combine( file.DirectoryName, string.Format( "_{0}.liquid", file.Name ) );
+                    if ( File.Exists( filePath ) )
+                    {
+                        return File.ReadAllText( filePath );
+                    }
                 }
             }
 
-            return File.ReadAllText( fullPath );
+            throw new FileSystemException( "LavaFileSystem Template Not Found", templatePath );
+
         }
 
         public string FullPath( string templatePath )
@@ -80,10 +106,11 @@ namespace RockWeb
 
             if ( templatePath == null )
             {
-                throw new FileSystemException( "LiquidFileSystem Illegal Template Name", templatePath );
+                throw new FileSystemException( "LavaFileSystem Illegal Template Name", templatePath );
             }
 
             return HttpContext.Current.Server.MapPath( templatePath );
         }
+
     }
 }
