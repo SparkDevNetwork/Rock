@@ -301,6 +301,11 @@ namespace Rock.Security.BackgroundCheck
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Saves the results.
+        /// </summary>
+        /// <param name="xResult">The x result.</param>
+        /// <param name="workflow">The workflow.</param>
         public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow)
         {
             var xOrderDetail = xResult.Descendants( "OrderDetail" ).FirstOrDefault();

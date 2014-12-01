@@ -100,7 +100,7 @@ namespace Rockweb.Blocks.Crm
                 {
                     _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
                 }
-                catch ( Exception ex )
+                catch
                 {
                     nbError.Visible = true;
                 }

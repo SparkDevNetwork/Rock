@@ -91,6 +91,13 @@ namespace Rock.Communication
             }
         }
 
+        /// <summary>
+        /// Processes the bounce.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="bounceType">Type of the bounce.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bouncedDateTime">The bounced date time.</param>
         public static void ProcessBounce( string email, BounceType bounceType, string message, DateTime bouncedDateTime )
         {
             // currently only processing hard bounces
@@ -115,8 +122,19 @@ namespace Rock.Communication
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum BounceType {
+
+        /// <summary>
+        /// The hard bounce
+        /// </summary>
         HardBounce = 1,
+
+        /// <summary>
+        /// The soft bounce
+        /// </summary>
         SoftBounce = 2
     };
 

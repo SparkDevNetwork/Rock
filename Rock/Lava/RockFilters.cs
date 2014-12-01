@@ -40,6 +40,7 @@ namespace Rock.Lava
         /// <summary>
         /// DotLiquid Attribute Filter
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>
