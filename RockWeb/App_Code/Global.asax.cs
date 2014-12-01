@@ -192,7 +192,7 @@ namespace RockWeb
                 //// However, if CSharpNamingConvention is enabled, it needs to be: 
                 //// {{ some_date_value | Date:"MMM dd, yyyy" }}
                 Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                Template.FileSystem = new RockWeb.LiquidFileSystem();
+                Template.FileSystem = new RockWeb.LavaFileSystem();
                 Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
                 Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 

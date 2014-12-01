@@ -82,6 +82,10 @@
     <Compile Include="Migrations\201411302316295_DiscWithWorkflow.Designer.cs">
       <DependentUpon>201411302316295_DiscWithWorkflow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412012033427_UpdateLavaIncludes.cs" />
+    <Compile Include="Migrations\201412012033427_UpdateLavaIncludes.Designer.cs">
+      <DependentUpon>201412012033427_UpdateLavaIncludes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1341,6 +1345,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201411302316295_DiscWithWorkflow.resx">
       <DependentUpon>201411302316295_DiscWithWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412012033427_UpdateLavaIncludes.resx">
+      <DependentUpon>201412012033427_UpdateLavaIncludes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
