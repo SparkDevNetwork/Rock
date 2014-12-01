@@ -15,74 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select 0 or more GroupTypes 
     /// </summary>
-    public class EmailTemplateFieldType : FieldType
+    [Obsolete( "Use SystemEmailFieldType instead." )]
+    public class EmailTemplateFieldType : SystemEmailFieldType
     {
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override Control EditControl(Dictionary<string,ConfigurationValue> configurationValues, string id)
-        {
-            var editControl = new RockDropDownList { ID = id };
-
-            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
-            if ( systemEmails.Any() )
-            {
-                foreach ( var systemEmail in systemEmails )
-                {
-                    editControl.Items.Add( new ListItem( systemEmail.Title, systemEmail.Guid.ToString() ) );
-                }
-
-                return editControl;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Reads new values entered by the user for the field
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
-        /// <returns></returns>
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="value">The value.</param>
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( value != null )
-            {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
-            }
-        }
     }
 }

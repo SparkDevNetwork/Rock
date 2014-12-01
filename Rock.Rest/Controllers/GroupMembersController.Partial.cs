@@ -14,28 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Web.Http;
-using System.Web.Http.OData.Query;
+using System.Web.Http.OData;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
     public partial class GroupMembersController 
     {
-
         /// <summary>
         /// Overrides base Get controller method to include deceased GroupMembers
         /// </summary>
         /// <returns>A queryable collection of GroupMembers, including deceased, that match the provided query.</returns>
         [Authenticate, Secured]
-        [Queryable(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery]
         public override IQueryable<GroupMember> Get()
         {
             var queryString = Request.RequestUri.Query;
@@ -51,7 +44,5 @@ namespace Rock.Rest.Controllers
                 return base.Get();
             }
         }
-
-
     }
 }

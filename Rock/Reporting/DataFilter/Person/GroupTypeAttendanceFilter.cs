@@ -276,51 +276,24 @@ namespace Rock.Reporting.DataFilter.Person
 
             DateTime startDate = RockDateTime.Now.AddDays( 0 - ( 7 * weeks ) );
 
-            //// Build expressions for this type of linq statement:
-            //// var result = new PersonService().Queryable()
-            ////    .Where( p =>
-            ////        ( p.Attendances.Count( a =>
-            ////            (
-            ////                (
-            ////                    ( a.Group.GroupTypeId == groupTypeId ) &&
-            ////                    ( a.StartDateTime >= startDate )
-            ////                ) &&
-            ////                ( a.DidAttend == true )
-            ////            )
-            ////        ) >= attended ) );
+            var rockContext = serviceInstance.Context as RockContext;
+            var attendanceQry = new AttendanceService( rockContext ).Queryable();
 
-            ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
+            var qry = new PersonService( rockContext ).Queryable()
+                  .Where( p => attendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id ).Count( a =>
+                            (
+                                (
+                                    ( a.Group.GroupTypeId == groupTypeId ) &&
+                                    ( a.StartDateTime >= startDate )
+                                ) &&
+                                ( a.DidAttend == true )
+                            )
+                        ) == attended );
 
-            MemberExpression groupProperty = Expression.Property( attendanceParameter, "Group" );
-            MemberExpression groupTypeIdProperty = Expression.Property( groupProperty, "GroupTypeId" );
-            Expression groupTypeIdConstant = Expression.Constant( groupTypeId );
-            Expression groupTypeIdComparison = Expression.Equal( groupTypeIdProperty, groupTypeIdConstant );
+            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" ) as BinaryExpression;
+            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
-            MemberExpression startProperty = Expression.Property( attendanceParameter, "StartDateTime" );
-            Expression startConstant = Expression.Constant( startDate );
-            Expression startComparison = Expression.GreaterThanOrEqual( startProperty, startConstant );
-
-            MemberExpression didAttendProperty = Expression.Property( attendanceParameter, "DidAttend" );
-            Expression didAttendConstant = Expression.Constant( true );
-            Expression didAttendComparison = Expression.Equal( didAttendProperty, didAttendConstant );
-
-            Expression groupTypeIdAndStart = Expression.AndAlso( groupTypeIdComparison, startComparison );
-            Expression groupTypeIdAndStartAndDidAttend = Expression.AndAlso( groupTypeIdAndStart, didAttendComparison );
-
-            LambdaExpression attendanceLambda =
-                Expression.Lambda<Func<Rock.Model.Attendance, bool>>( groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter } );
-
-            Expression attendanceCount = Expression.Call(
-                typeof( Enumerable ),
-                "Count",
-                new Type[] { typeof( Rock.Model.Attendance ) },
-                Expression.PropertyOrField( parameterExpression, "Attendances" ),
-                attendanceLambda );
-
-            Expression timesAttendedConstant = Expression.Constant( attended );
-            Expression timesAttendedComparison = Expression.GreaterThanOrEqual( attendanceCount, timesAttendedConstant );
-
-            return timesAttendedComparison;
+            return result;
         }
 
         #endregion

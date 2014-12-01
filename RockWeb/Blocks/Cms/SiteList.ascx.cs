@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "siteId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "siteId", e.RowKeyId );
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
 
             var rockContext = new RockContext();
             SiteService siteService = new SiteService( rockContext );
-            Site site = siteService.Get( (int)e.RowKeyValue );
+            Site site = siteService.Get( e.RowKeyId );
             if ( site != null )
             {
                 string errorMessage;

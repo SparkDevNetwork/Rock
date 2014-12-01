@@ -102,6 +102,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.DateRangeType = source.DateRangeType;
+            target.DisablePriority = source.DisablePriority;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

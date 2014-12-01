@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         void gEntityTypes_EditRow( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)e.RowKeyValue );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>

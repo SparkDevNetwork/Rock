@@ -80,6 +80,11 @@
                     if (data.response().jqXHR && data.response().jqXHR.status == 406) {
                         msg = "file type not allowed";
                     }
+                    if (options.maxUploadBytes && data.total) {
+                        if (data.total >= options.maxUploadBytes) {
+                            msg = "file size is limited to " + (options.maxUploadBytes / 1024 / 1024) + "MB";
+                        }
+                    }
 
                     $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
                         .append('<strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>')

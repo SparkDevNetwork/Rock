@@ -278,6 +278,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // clone the workflow type
                 var newWorkflowType = workflowType.Clone( false );
+                newWorkflowType.CreatedByPersonAlias = null;
+                newWorkflowType.CreatedByPersonAliasId = null;
+                newWorkflowType.CreatedDateTime = RockDateTime.Now;
+                newWorkflowType.ModifiedByPersonAlias = null;
+                newWorkflowType.ModifiedByPersonAliasId = null;
+                newWorkflowType.ModifiedDateTime = RockDateTime.Now;
                 newWorkflowType.Id = 0;
                 newWorkflowType.Guid = Guid.NewGuid();
                 newWorkflowType.IsSystem = false;

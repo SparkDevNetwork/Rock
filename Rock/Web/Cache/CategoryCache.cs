@@ -168,28 +168,24 @@ namespace Rock.Web.Cache
         {
             get
             {
-                List<CategoryCache> categories = new List<CategoryCache>();
-
-                if ( categoryIds != null )
+                if ( categoryIds == null )
                 {
-                    foreach ( int id in categoryIds.ToList() )
-                    {
-                        categories.Add( CategoryCache.Read( id ) );
-                    }
-                }
-                else
-                {
-                    categoryIds = new List<int>();
-
-                    CategoryService categoryService = new CategoryService( new RockContext() );
-                    foreach ( Category category in categoryService.Get( this.Id, this.EntityTypeId ) )
-                    {
-                        categoryIds.Add( category.Id );
-                        categories.Add( CategoryCache.Read( category ) );
-                    }
+                    categoryIds = new Model.CategoryService( new RockContext() )
+                        .Get( this.Id, this.EntityTypeId )
+                        .Select( v => v.Id )
+                        .ToList();
                 }
 
-                return categories;
+                var categories = new List<CategoryCache>();
+                foreach ( int id in categoryIds )
+                {
+                    var category = CategoryCache.Read( id );
+                    if ( category != null )
+                    {
+                        categories.Add( category );
+                    }
+                }
+                return categories; 
             }
         }
         private List<int> categoryIds = null;

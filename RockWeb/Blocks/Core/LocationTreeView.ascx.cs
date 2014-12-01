@@ -156,13 +156,29 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddLocationRoot_Click(object sender, EventArgs e)
         {
-            NavigateToLinkedPage("DetailPage", "LocationId", 0, "ParentLocationId", 0);
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "LocationId", 0.ToString() );
+            qryParams.Add( "ParentLocationId", 0.ToString() );
+            qryParams.Add( "ExpandedIds", hfInitialLocationParentIds.Value );
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddLocationChild control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddLocationChild_Click(object sender, EventArgs e)
         {
-            int LocationId = hfSelectedLocationId.ValueAsInt();
-            NavigateToLinkedPage("DetailPage", "LocationId", 0, "ParentLocationId", LocationId);
+            int locationId = hfSelectedLocationId.ValueAsInt();
+
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "LocationId", 0.ToString() );
+            qryParams.Add( "ParentLocationId", locationId.ToString() );
+            qryParams.Add( "ExpandedIds", hfInitialLocationParentIds.Value );
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         #endregion

@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
             ContentChannelTypeService contentTypeService = new ContentChannelTypeService( rockContext );
-            ContentChannelType contentType = contentTypeService.Get( (int)e.RowKeyValue );
+            ContentChannelType contentType = contentTypeService.Get( e.RowKeyId );
 
             if ( contentType != null )
             {

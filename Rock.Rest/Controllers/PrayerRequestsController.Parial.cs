@@ -16,6 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -25,24 +26,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class PrayerRequestsController : IHasCustomRoutes
+    public partial class PrayerRequestsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "GetByCategory",
-                routeTemplate: "api/PrayerRequests/GetByCategory/{categoryId}",
-                defaults: new
-                {
-                    controller = "PrayerRequests",
-                    action = "GetByCategory"
-                } );
-        }
-
         /// <summary>
         /// Gets Prayer Requests for the specified top-level category
         /// Prayer Requests that are in categories that are decendents of the specified category will also be included
@@ -51,7 +36,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [Queryable]
+        [EnableQuery]
+        [System.Web.Http.Route( "api/PrayerRequests/GetByCategory/{categoryId}" )]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
         {
             var rockContext = ( this.Service.Context as RockContext ) ?? new RockContext();

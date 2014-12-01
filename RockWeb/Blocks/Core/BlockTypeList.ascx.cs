@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "blockTypeId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "blockTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             BlockTypeService blockTypeService = new BlockTypeService( rockContext );
-            BlockType blockType = blockTypeService.Get( (int)e.RowKeyValue );
+            BlockType blockType = blockTypeService.Get( e.RowKeyId );
             if ( blockType != null )
             {
                 string errorMessage;

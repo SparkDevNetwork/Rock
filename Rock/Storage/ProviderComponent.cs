@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.IO;
+
 using System.Web;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Storage
 {
@@ -46,14 +48,31 @@ namespace Rock.Storage
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public abstract byte[] GetFileContent( BinaryFile file, HttpContext context );
+        [Obsolete( "This will be removed post McKinley. Use GetFileContentStream() instead." )]
+        public virtual byte[] GetFileContent( BinaryFile file, HttpContext context )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the file content
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public virtual Stream GetFileContentStream( BinaryFile file, HttpContext context )
+        {
+            // should be overridden, but just in case...
+            return new MemoryStream( GetFileContent( file, context ) );
+        }
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider
+        /// NOTE: This is the storage URL for use by the provider, not the URL that is served to a Rock client
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public abstract string GenerateUrl( BinaryFile file);
+        public abstract string GenerateUrl( BinaryFile file );
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderComponent"/> class.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "scheduleId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "scheduleId", e.RowKeyId );
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             ScheduleService scheduleService = new ScheduleService( rockContext );
-            Schedule schedule = scheduleService.Get( (int)e.RowKeyValue );
+            Schedule schedule = scheduleService.Get( e.RowKeyId );
             if ( schedule != null )
             {
                 string errorMessage;

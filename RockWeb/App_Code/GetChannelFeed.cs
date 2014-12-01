@@ -100,7 +100,7 @@ namespace RockWeb
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
-                        mergeFields.Add( "Channel", channel.ToLiquid() );
+                        mergeFields.Add( "Channel", channel );
 
                         Dictionary<string, object> requestObjects = new Dictionary<string, object>();
                         requestObjects.Add( "Scheme", request.Url.Scheme );
