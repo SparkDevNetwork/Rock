@@ -24,31 +24,45 @@ using Rock.Extension;
 namespace Rock.Reporting
 {
     /// <summary>
-    /// MEF Container class for data filters
+    /// MEF Container class for Binary File DataTransform Components
     /// </summary>
     public class DataTransformContainer : Container<DataTransformComponent, IComponentData>
     {
-        private static DataTransformContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<DataTransformContainer> instance =
+            new Lazy<DataTransformContainer>( () => new DataTransformContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
-
+        /// <value>
+        /// The instance.
+        /// </value>
         public static DataTransformContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                {
-                    instance = new DataTransformContainer();
-                }
-                return instance;
-            }
+            get { return instance.Value; }
         }
 
-        private DataTransformContainer()
+        /// <summary>
+        /// Gets the component with the matching Entity Type Name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static DataTransformComponent GetComponent( string entityType )
         {
-            Refresh();
+            return Instance.GetComponentByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
         }
 
         /// <summary>
@@ -72,25 +86,6 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
-        /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <returns></returns>
-        public static DataTransformComponent GetComponent( string entityTypeName )
-        {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the components that are for transformed a given entity type name
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
@@ -104,11 +99,14 @@ namespace Rock.Reporting
                 .ToList();
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( DataTransformComponent ) )]
         protected override IEnumerable<Lazy<DataTransformComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
 
     }
 }

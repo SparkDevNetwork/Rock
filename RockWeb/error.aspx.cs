@@ -30,6 +30,19 @@ namespace RockWeb
 {
     public partial class Error : System.Web.UI.Page
     {
+        protected void Page_Init( object sender, EventArgs e )
+        {
+            // If this is an API call, set status code and exit
+            if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
+            {
+                Response.StatusCode = 500;
+                Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
+                Response.Flush();
+                Response.End();
+                return;
+            }
+        }
+
         /// <summary>
         /// Handles the Load event of the Page control.
         /// </summary>
@@ -73,14 +86,14 @@ namespace RockWeb
         /// </summary>
         private void ShowException()
         {
-            Exception ex = GetSavedValue("RockLastException") as Exception;
+            Exception ex = GetSavedValue( "RockLastException" ) as Exception;
             if ( ex != null )
             {
                 int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? "" ).ToString().AsIntegerOrNull();
-                if (siteId.HasValue)
+                if ( siteId.HasValue )
                 {
-                    var site = SiteCache.Read(siteId.Value);
-                    if (site != null && !string.IsNullOrWhiteSpace( site.ErrorPage))
+                    var site = SiteCache.Read( siteId.Value );
+                    if ( site != null && !string.IsNullOrWhiteSpace( site.ErrorPage ) )
                     {
                         Context.Response.Redirect( site.ErrorPage, false );
                         Context.ApplicationInstance.CompleteRequest();
@@ -91,15 +104,15 @@ namespace RockWeb
                 pnlSecurity.Visible = false;
                 pnlException.Visible = true;
 
-                int? errorLevel = ( GetSavedValue("RockExceptionOrder") ?? "" ).ToString().AsIntegerOrNull();
+                int? errorLevel = ( GetSavedValue( "RockExceptionOrder" ) ?? "" ).ToString().AsIntegerOrNull();
 
                 ClearSavedValue( "RockExceptionOrder" );
                 ClearSavedValue( "RockLastException" );
 
                 bool showDetails = errorLevel.HasValue && errorLevel.Value == 66;
-                if (!showDetails)
+                if ( !showDetails )
                 {
-                    try 
+                    try
                     {
                         // check to see if the user is an admin, if so allow them to view the error details
                         var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
@@ -107,10 +120,10 @@ namespace RockWeb
                         Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
                         showDetails = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
                     }
-                    catch {}
+                    catch { }
                 }
 
-                if (showDetails)
+                if ( showDetails )
                 {
                     lErrorInfo.Text = "<h3>Exception Log:</h3>";
                     ProcessException( ex, " " );
@@ -144,14 +157,14 @@ namespace RockWeb
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        private object GetSavedValue(string key)
+        private object GetSavedValue( string key )
         {
             object item = null;
-            if ( Context.Session != null)
+            if ( Context.Session != null )
             {
                 item = Context.Session[key];
             }
-            if (item == null)
+            if ( item == null )
             {
                 item = Context.Cache[key];
             }
@@ -162,13 +175,13 @@ namespace RockWeb
         /// Clears the saved value.
         /// </summary>
         /// <param name="key">The key.</param>
-        private void ClearSavedValue(string key)
+        private void ClearSavedValue( string key )
         {
-            if ( Context.Session != null)
+            if ( Context.Session != null )
             {
-                Context.Session.Remove(key);
+                Context.Session.Remove( key );
             }
-            Context.Cache.Remove(key);
+            Context.Cache.Remove( key );
         }
 
     }

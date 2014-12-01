@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Security
         protected void gRestKeyList_RowSelected( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            var restUserId = (int)e.RowKeyValue;
+            var restUserId = e.RowKeyId;
             parms.Add( "restUserId", restUserId.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }

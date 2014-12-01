@@ -31,60 +31,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class FinancialTransactionsController : IHasCustomRoutes
+    public partial class FinancialTransactionsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "FinancialTransactionGetMicr",
-                routeTemplate: "api/FinancialTransactions/PostScanned",
-                defaults: new
-                {
-                    controller = "FinancialTransactions",
-                    action = "PostScanned"
-                } );
-
-            routes.MapHttpRoute(
-                name: "FinancialTransactionAlreadyScanned",
-                routeTemplate: "api/FinancialTransactions/AlreadyScanned",
-                defaults: new
-                {
-                    controller = "FinancialTransactions",
-                    action = "AlreadyScanned"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetContributionPersonGroupAddress",
-                routeTemplate: "api/FinancialTransactions/GetContributionPersonGroupAddress",
-                defaults: new
-                {
-                    controller = "FinancialTransactions",
-                    action = "GetContributionPersonGroupAddress"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetContributionTransactionsGroup",
-                routeTemplate: "api/FinancialTransactions/GetContributionTransactions/{groupId}",
-                defaults: new
-                {
-                    controller = "FinancialTransactions",
-                    action = "GetContributionTransactions"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetContributionTransactionsPerson",
-                routeTemplate: "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}",
-                defaults: new
-                {
-                    controller = "FinancialTransactions",
-                    action = "GetContributionTransactions"
-                } );
-        }
-
         /// <summary>
         /// Posts the scanned.
         /// </summary>
@@ -93,6 +41,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/PostScanned" )]
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
             financialTransactionScannedCheck.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
@@ -107,6 +56,7 @@ namespace Rock.Rest.Controllers
         /// <param name="scannedCheckMicr">The scanned check micr in the format {RoutingNumber}_{AccountNumber}_{CheckNumber}</param>
         /// <returns></returns>
         [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/AlreadyScanned" )]
         public bool AlreadyScanned( [FromBody]string scannedCheckMicr )
         {
             // NOTE: scannedCheckMicr param is [FromBody] so that it will be encrypted when using SSL
@@ -123,6 +73,7 @@ namespace Rock.Rest.Controllers
         /// </exception>
         [Authenticate, Secured]
         [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/GetContributionPersonGroupAddress" )]
         public DataSet GetContributionPersonGroupAddress( [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -173,6 +124,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}" )]
         public DataSet GetContributionTransactions( int groupId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
             return GetContributionTransactions( groupId, null, options );
@@ -188,6 +140,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}" )]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
             var qry = Get()

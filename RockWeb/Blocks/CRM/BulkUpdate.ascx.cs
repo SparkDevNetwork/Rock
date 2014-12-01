@@ -1394,7 +1394,7 @@ namespace RockWeb.Blocks.Crm
                         ddlGroupRole.Label = "Role";
                         ddlGroupRole.Enabled = true;
 
-                        ddlGroupMemberStatus.Label = "Role";
+                        ddlGroupMemberStatus.Label = "Member Status";
                         ddlGroupMemberStatus.Enabled = true;
                     }
                     else

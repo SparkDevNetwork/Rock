@@ -200,7 +200,9 @@ namespace RockWeb.Blocks.WorkFlow
                     var qryParms = new Dictionary<string, string>();
                     qryParms.Add( "WorkflowTypeId", workflowType.Id.ToString() );
 
-                    var aNew = new HtmlGenericControl( workflowType.HasForms ? "a" : "span" );
+                    bool showLinkToEntry = workflowType.HasForms && workflowType.IsActive;
+
+                    var aNew = new HtmlGenericControl( showLinkToEntry ? "a" : "span" );
                     if (workflowType.HasForms)
                     {
                         aNew.Attributes.Add( "href", LinkedPageUrl( "EntryPage", qryParms ) );
@@ -372,6 +374,14 @@ namespace RockWeb.Blocks.WorkFlow
         public bool CanManage { get; set; }
 
         /// <summary>
+        /// Gets or sets whether or not the workflow type is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the workflow type is active, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType"/> class.
         /// </summary>
         public WorkflowNavigationWorkflowType()
@@ -392,6 +402,16 @@ namespace RockWeb.Blocks.WorkFlow
             HasForms = workflowType.HasActiveForms;
             HighlightColor = string.Empty;
             CanManage = canManage;
+
+            if ( workflowType.IsActive.HasValue )
+            {
+                IsActive = workflowType.IsActive.Value;
+            }
+            else
+            {
+                IsActive = true;
+            }
+            
         }
     }
 }

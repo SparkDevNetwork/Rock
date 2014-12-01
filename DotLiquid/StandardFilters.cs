@@ -11,43 +11,43 @@ using Humanizer;
 
 namespace DotLiquid
 {
-	public static class StandardFilters
-	{
-		/// <summary>
-		/// Return the size of an array or of an string
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static int Size(object input)
-		{
-			if (input is string)
-				return ((string) input).Length;
-			if (input is IEnumerable)
-				return ((IEnumerable) input).Cast<object>().Count();
-			return 0;
-		}
+    public static class StandardFilters
+    {
+        /// <summary>
+        /// Return the size of an array or of an string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int Size( object input )
+        {
+            if ( input is string )
+                return ((string)input).Length;
+            if ( input is IEnumerable )
+                return ((IEnumerable)input).Cast<object>().Count();
+            return 0;
+        }
 
-		/// <summary>
-		/// convert a input string to DOWNCASE
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string Downcase(string input)
-		{
-			return input == null ? input : input.ToLower();
-		}
+        /// <summary>
+        /// convert a input string to DOWNCASE
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Downcase( string input )
+        {
+            return input == null ? input : input.ToLower();
+        }
 
-		/// <summary>
-		/// convert a input string to UPCASE
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string Upcase(string input)
-		{
-			return input == null
-				? input
-				: input.ToUpper();
-		}
+        /// <summary>
+        /// convert a input string to UPCASE
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Upcase( string input )
+        {
+            return input == null
+                ? input
+                : input.ToUpper();
+        }
 
         /// <summary>
         /// pluralizes string
@@ -100,21 +100,26 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string HumanizeDateTime( string input )
+        public static string HumanizeDateTime( object input )
         {
             if ( input == null )
-                return input;
-
-            DateTime dateProvided;
-
-            if ( DateTime.TryParse(input.ToString(), out dateProvided ))
+                return string.Empty;
+            
+            DateTime dtInput;
+            
+            if ( input is DateTime )
             {
-                return dateProvided.Humanize( false, RockDateTime.Now );
+                dtInput = (DateTime)input;
             }
             else
             {
-                return input;
+                if ( !DateTime.TryParse( input.ToString(), out dtInput ) ) {
+                    return string.Empty;
+                }
             }
+
+            return dtInput.Humanize( false, RockDateTime.Now );
+
         }
 
         /// <summary>
@@ -122,22 +127,56 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string HumanizeTimeSpan( string sStartDate, string sEndDate, int precision =  1)
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
         {
-            if ( string.IsNullOrWhiteSpace(sStartDate) || string.IsNullOrWhiteSpace(sEndDate) )
-                return "Two dates must be provided";
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
 
-            if ( sEndDate == "Now" )
+            // convert start date if string
+            if ( sStartDate is String )
             {
-                sEndDate = RockDateTime.Now.ToString();
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
             }
 
-            DateTime startDate, endDate;
+            // convert end date if string
+            if ( sEndDate is String )
+            {
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
+            }
 
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse(sEndDate, out endDate ))
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
-                return difference.Humanize(precision);
+                return difference.Humanize( precision );
             }
             else
             {
@@ -150,24 +189,55 @@ namespace DotLiquid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static Int64? DateDiff( string sStartDate, string sEndDate, string unit )
+        public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-            if ( string.IsNullOrWhiteSpace( sStartDate ) || string.IsNullOrWhiteSpace( sEndDate ) )
-                return null;
 
-            if ( sEndDate == "Now" )
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
+            
+            // convert start date if string
+            if ( sStartDate is String )
             {
-                sEndDate = RockDateTime.Now.ToString();
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
             }
 
-            if ( sStartDate == "Now" )
+            // convert end date if string
+            if ( sEndDate is String )
             {
-                sStartDate = RockDateTime.Now.ToString();
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
             }
 
-            DateTime startDate, endDate;
 
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse( sEndDate, out endDate ) )
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
 
@@ -179,6 +249,10 @@ namespace DotLiquid
                         return (Int64)difference.TotalHours;
                     case "m":
                         return (Int64)difference.TotalMinutes;
+                    case "M":
+                        return (Int64)GetMonthsBetween( startDate, endDate );
+                    case "Y":
+                        return (Int64)(endDate.Year - startDate.Year);
                     case "s":
                         return (Int64)difference.TotalSeconds;
                     default:
@@ -188,6 +262,22 @@ namespace DotLiquid
             else
             {
                 return null;
+            }
+        }
+
+        private static int GetMonthsBetween( DateTime from, DateTime to )
+        {
+            if ( from > to ) return GetMonthsBetween( to, from );
+
+            var monthDiff = Math.Abs( (to.Year * 12 + (to.Month - 1)) - (from.Year * 12 + (from.Month - 1)) );
+
+            if ( from.AddMonths( monthDiff ) > to || to.Day < from.Day )
+            {
+                return monthDiff - 1;
+            }
+            else
+            {
+                return monthDiff;
             }
         }
 
@@ -339,291 +429,291 @@ namespace DotLiquid
                 : input.ToQuantity( quantity );
         }
 
-		/// <summary>
-		/// capitalize words in the input sentence
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string Capitalize(string input)
-		{
-			if (input.IsNullOrWhiteSpace())
-				return input;
+        /// <summary>
+        /// capitalize words in the input sentence
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Capitalize( string input )
+        {
+            if ( input.IsNullOrWhiteSpace() )
+                return input;
 
-			return string.IsNullOrEmpty(input)
-				? input
-				: CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input);
-		}
+            return string.IsNullOrEmpty( input )
+                ? input
+                : CultureInfo.CurrentCulture.TextInfo.ToTitleCase( input );
+        }
 
-		public static string Escape(string input)
-		{
-			if (string.IsNullOrEmpty(input))
-				return input;
+        public static string Escape( string input )
+        {
+            if ( string.IsNullOrEmpty( input ) )
+                return input;
 
-			try
-			{
-				return WebUtility.HtmlEncode(input);
-			}
-			catch
-			{
-				return input;
-			}
-		}
+            try
+            {
+                return WebUtility.HtmlEncode( input );
+            }
+            catch
+            {
+                return input;
+            }
+        }
 
-		public static string H(string input)
-		{
-			return Escape(input);
-		}
+        public static string H( string input )
+        {
+            return Escape( input );
+        }
 
-		/// <summary>
-		/// Truncates a string down to x characters
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="length"></param>
-		/// <param name="truncateString"></param>
-		/// <returns></returns>
-		public static string Truncate(string input, int length = 50, string truncateString = "...")
-		{
-			if (string.IsNullOrEmpty(input))
-				return input;
+        /// <summary>
+        /// Truncates a string down to x characters
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="length"></param>
+        /// <param name="truncateString"></param>
+        /// <returns></returns>
+        public static string Truncate( string input, int length = 50, string truncateString = "..." )
+        {
+            if ( string.IsNullOrEmpty( input ) )
+                return input;
 
-			int l = length - truncateString.Length;
+            int l = length - truncateString.Length;
 
-			return input.Length > length
-				? input.Substring(0, l < 0 ? 0 : l) + truncateString
-				: input;
-		}
+            return input.Length > length
+                ? input.Substring( 0, l < 0 ? 0 : l ) + truncateString
+                : input;
+        }
 
-		public static string TruncateWords(string input, int words = 15, string truncateString = "...")
-		{
-			if (string.IsNullOrEmpty(input))
-				return input;
+        public static string TruncateWords( string input, int words = 15, string truncateString = "..." )
+        {
+            if ( string.IsNullOrEmpty( input ) )
+                return input;
 
-			var wordList = input.Split(' ').ToList();
-			int l = words < 0 ? 0 : words;
+            var wordList = input.Split( ' ' ).ToList();
+            int l = words < 0 ? 0 : words;
 
-			return wordList.Count > l
-				? string.Join(" ", wordList.Take(l).ToArray()) + truncateString
-				: input;
-		}
+            return wordList.Count > l
+                ? string.Join( " ", wordList.Take( l ).ToArray() ) + truncateString
+                : input;
+        }
 
-		/// <summary>
-		/// Split input string into an array of substrings separated by given pattern.
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="pattern"></param>
-		/// <returns></returns>
-		public static string[] Split(string input, string pattern)
-		{
-			return input.IsNullOrWhiteSpace()
-				? new[] { input }
-				: input.Split(new[] { pattern }, StringSplitOptions.RemoveEmptyEntries);
-		}
+        /// <summary>
+        /// Split input string into an array of substrings separated by given pattern.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public static string[] Split( string input, string pattern )
+        {
+            return input.IsNullOrWhiteSpace()
+                ? new[] { input }
+                : input.Split( new[] { pattern }, StringSplitOptions.RemoveEmptyEntries );
+        }
 
-		public static string StripHtml(string input)
-		{
-			return input.IsNullOrWhiteSpace()
-				? input
-				: Regex.Replace(input, @"<.*?>", string.Empty);
-		}
+        public static string StripHtml( string input )
+        {
+            return input.IsNullOrWhiteSpace()
+                ? input
+                : Regex.Replace( input, @"<.*?>", string.Empty );
+        }
 
-		/// <summary>
-		/// Remove all newlines from the string
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string StripNewlines(string input)
-		{
-			return input.IsNullOrWhiteSpace()
-				? input
-                : Regex.Replace(input, @"(\r?\n)", String.Empty);
-                
-                //: Regex.Replace(input, Environment.NewLine, string.Empty);
-		}
+        /// <summary>
+        /// Remove all newlines from the string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string StripNewlines( string input )
+        {
+            return input.IsNullOrWhiteSpace()
+                ? input
+                : Regex.Replace( input, @"(\r?\n)", String.Empty );
 
-		/// <summary>
-		/// Join elements of the array with a certain character between them
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="glue"></param>
-		/// <returns></returns>
-		public static string Join(IEnumerable input, string glue = " ")
-		{
-			if (input == null)
-				return null;
+            //: Regex.Replace(input, Environment.NewLine, string.Empty);
+        }
 
-			IEnumerable<object> castInput = input.Cast<object>();
-			return string.Join(glue, castInput);
-		}
+        /// <summary>
+        /// Join elements of the array with a certain character between them
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="glue"></param>
+        /// <returns></returns>
+        public static string Join( IEnumerable input, string glue = " " )
+        {
+            if ( input == null )
+                return null;
 
-		/// <summary>
-		/// Sort elements of the array
-		/// provide optional property with which to sort an array of hashes or drops
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="property"></param>
-		/// <returns></returns>
-		public static IEnumerable Sort(object input, string property = null)
-		{
-			List<object> ary;
-			if (input is IEnumerable)
-				ary = ((IEnumerable) input).Flatten().Cast<object>().ToList();
-			else
-				ary = new List<object>(new[] { input });
-			if (!ary.Any())
-				return ary;
+            IEnumerable<object> castInput = input.Cast<object>();
+            return string.Join( glue, castInput );
+        }
 
-			if (string.IsNullOrEmpty(property))
-				ary.Sort();
-			else if ((ary.All(o => o is IDictionary)) && ((IDictionary) ary.First()).Contains(property))
-				ary.Sort((a, b) => Comparer.Default.Compare(((IDictionary) a)[property], ((IDictionary) b)[property]));
-			else if (ary.All(o => o.RespondTo(property)))
-				ary.Sort((a, b) => Comparer.Default.Compare(a.Send(property), b.Send(property)));
+        /// <summary>
+        /// Sort elements of the array
+        /// provide optional property with which to sort an array of hashes or drops
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable Sort( object input, string property = null )
+        {
+            List<object> ary;
+            if ( input is IEnumerable )
+                ary = ((IEnumerable)input).Flatten().Cast<object>().ToList();
+            else
+                ary = new List<object>( new[] { input } );
+            if ( !ary.Any() )
+                return ary;
 
-			return ary;
-		}
+            if ( string.IsNullOrEmpty( property ) )
+                ary.Sort();
+            else if ( (ary.All( o => o is IDictionary )) && ((IDictionary)ary.First()).Contains( property ) )
+                ary.Sort( ( a, b ) => Comparer.Default.Compare( ((IDictionary)a)[property], ((IDictionary)b)[property] ) );
+            else if ( ary.All( o => o.RespondTo( property ) ) )
+                ary.Sort( ( a, b ) => Comparer.Default.Compare( a.Send( property ), b.Send( property ) ) );
 
-		/// <summary>
-		/// Map/collect on a given property
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="property"></param>
-		/// <returns></returns>
-		public static IEnumerable Map(IEnumerable input, string property)
-		{
-			List<object> ary = input.Cast<object>().ToList();
-			if (!ary.Any())
-				return ary;
+            return ary;
+        }
 
-			if ((ary.All(o => o is IDictionary)) && ((IDictionary) ary.First()).Contains(property))
-				return ary.Select(e => ((IDictionary) e)[property]);
-			if (ary.All(o => o.RespondTo(property)))
-				return ary.Select(e => e.Send(property));
+        /// <summary>
+        /// Map/collect on a given property
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable Map( IEnumerable input, string property )
+        {
+            List<object> ary = input.Cast<object>().ToList();
+            if ( !ary.Any() )
+                return ary;
 
-			return ary;
-		}
+            if ( (ary.All( o => o is IDictionary )) && ((IDictionary)ary.First()).Contains( property ) )
+                return ary.Select( e => ((IDictionary)e)[property] );
+            if ( ary.All( o => o.RespondTo( property ) ) )
+                return ary.Select( e => e.Send( property ) );
 
-		/// <summary>
-		/// Replace occurrences of a string with another
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public static string Replace(string input, string @string, string replacement = "")
-		{
-			if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(@string))
-				return input;
+            return ary;
+        }
 
-			return string.IsNullOrEmpty(input)
-				? input
-				: Regex.Replace(input, @string, replacement);
-		}
+        /// <summary>
+        /// Replace occurrences of a string with another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string Replace( string input, string @string, string replacement = "" )
+        {
+            if ( string.IsNullOrEmpty( input ) || string.IsNullOrEmpty( @string ) )
+                return input;
 
-		/// <summary>
-		/// Replace the first occurence of a string with another
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public static string ReplaceFirst(string input, string @string, string replacement = "")
-		{
-			if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(@string))
-				return input;
+            return string.IsNullOrEmpty( input )
+                ? input
+                : Regex.Replace( input, @string, replacement );
+        }
 
-			bool doneReplacement = false;
-			return Regex.Replace(input, @string, m =>
-			{
-				if (doneReplacement)
-					return m.Value;
+        /// <summary>
+        /// Replace the first occurence of a string with another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string ReplaceFirst( string input, string @string, string replacement = "" )
+        {
+            if ( string.IsNullOrEmpty( input ) || string.IsNullOrEmpty( @string ) )
+                return input;
 
-				doneReplacement = true;
-				return replacement;
-			});
-		}
+            bool doneReplacement = false;
+            return Regex.Replace( input, @string, m =>
+            {
+                if ( doneReplacement )
+                    return m.Value;
 
-		/// <summary>
-		/// Remove a substring
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <returns></returns>
-		public static string Remove(string input, string @string)
-		{
-			return input.IsNullOrWhiteSpace()
-				? input
-				: input.Replace(@string, string.Empty);
-		}
+                doneReplacement = true;
+                return replacement;
+            } );
+        }
 
-		/// <summary>
-		/// Remove the first occurrence of a substring
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <returns></returns>
-		public static string RemoveFirst(string input, string @string)
-		{
-			return input.IsNullOrWhiteSpace()
-				? input
-				: ReplaceFirst(input, @string, string.Empty);
-		}
+        /// <summary>
+        /// Remove a substring
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Remove( string input, string @string )
+        {
+            return input.IsNullOrWhiteSpace()
+                ? input
+                : input.Replace( @string, string.Empty );
+        }
 
-		/// <summary>
-		/// Add one string to another
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <returns></returns>
-		public static string Append(string input, string @string)
-		{
-			return input == null
-				? input
-				: input + @string;
-		}
+        /// <summary>
+        /// Remove the first occurrence of a substring
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string RemoveFirst( string input, string @string )
+        {
+            return input.IsNullOrWhiteSpace()
+                ? input
+                : ReplaceFirst( input, @string, string.Empty );
+        }
 
-		/// <summary>
-		/// Prepend a string to another
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="string"></param>
-		/// <returns></returns>
-		public static string Prepend(string input, string @string)
-		{
-			return input == null
-				? input
-				: @string + input;
-		}
+        /// <summary>
+        /// Add one string to another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Append( string input, string @string )
+        {
+            return input == null
+                ? input
+                : input + @string;
+        }
 
-		/// <summary>
-		/// Add <br /> tags in front of all newlines in input string
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string NewlineToBr(string input)
-		{
+        /// <summary>
+        /// Prepend a string to another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Prepend( string input, string @string )
+        {
+            return input == null
+                ? input
+                : @string + input;
+        }
+
+        /// <summary>
+        /// Add <br /> tags in front of all newlines in input string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NewlineToBr( string input )
+        {
             return input.IsNullOrWhiteSpace()
                     ? input
-                    : Regex.Replace(input, @"(\r?\n)", "<br />$1");
-		}
+                    : Regex.Replace( input, @"(\r?\n)", "<br />$1" );
+        }
 
-		/// <summary>
-		/// Formats a date using a .NET date format string
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="format"></param>
-		/// <returns></returns>
-		public static string Date(object input, string format)
-		{
-			if (input == null)
-				return null;
+        /// <summary>
+        /// Formats a date using a .NET date format string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static string Date( object input, string format )
+        {
+            if ( input == null )
+                return null;
 
             if ( input.ToString() == "Now" )
             {
                 input = RockDateTime.Now.ToString();
             }
 
-			if (format.IsNullOrWhiteSpace())
-				return input.ToString();
+            if ( format.IsNullOrWhiteSpace() )
+                return input.ToString();
 
             // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
             if ( format.Length == 1 )
@@ -631,112 +721,112 @@ namespace DotLiquid
                 format = " " + format;
             }
 
-			DateTime date;
+            DateTime date;
 
-			return DateTime.TryParse(input.ToString(), out date)
-				? Liquid.UseRubyDateFormat ? date.ToStrFTime(format) : date.ToString(format)
-				: input.ToString();
-		}
+            return DateTime.TryParse( input.ToString(), out date )
+                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
+                : input.ToString().Trim();
+        }
 
-		/// <summary>
-		/// Get the first element of the passed in array 
-		/// 
-		/// Example:
-		///   {{ product.images | first | to_img }}
-		/// </summary>
-		/// <param name="array"></param>
-		/// <returns></returns>
-		public static object First(IEnumerable array)
-		{
-			if (array == null)
-				return null;
+        /// <summary>
+        /// Get the first element of the passed in array 
+        /// 
+        /// Example:
+        ///   {{ product.images | first | to_img }}
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static object First( IEnumerable array )
+        {
+            if ( array == null )
+                return null;
 
-			return array.Cast<object>().FirstOrDefault();
-		}
+            return array.Cast<object>().FirstOrDefault();
+        }
 
-		/// <summary>
-		/// Get the last element of the passed in array 
-		/// 
-		/// Example:
-		///   {{ product.images | last | to_img }}
-		/// </summary>
-		/// <param name="array"></param>
-		/// <returns></returns>
-		public static object Last(IEnumerable array)
-		{
-			if (array == null)
-				return null;
+        /// <summary>
+        /// Get the last element of the passed in array 
+        /// 
+        /// Example:
+        ///   {{ product.images | last | to_img }}
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static object Last( IEnumerable array )
+        {
+            if ( array == null )
+                return null;
 
-			return array.Cast<object>().LastOrDefault();
-		}
+            return array.Cast<object>().LastOrDefault();
+        }
 
-		/// <summary>
-		/// Addition
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="operand"></param>
-		/// <returns></returns>
-		public static object Plus(object input, object operand)
-		{
-			return input is string
-				? string.Concat(input, operand)
-				: DoMathsOperation(input, operand, Expression.Add);
-		}
+        /// <summary>
+        /// Addition
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Plus( object input, object operand )
+        {
+            return input is string
+                ? string.Concat( input, operand )
+                : DoMathsOperation( input, operand, Expression.Add );
+        }
 
-		/// <summary>
-		/// Subtraction
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="operand"></param>
-		/// <returns></returns>
-		public static object Minus(object input, object operand)
-		{
-			return DoMathsOperation(input, operand, Expression.Subtract);
-		}
+        /// <summary>
+        /// Subtraction
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Minus( object input, object operand )
+        {
+            return DoMathsOperation( input, operand, Expression.Subtract );
+        }
 
-		/// <summary>
-		/// Multiplication
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="operand"></param>
-		/// <returns></returns>
-		public static object Times(object input, object operand)
-		{
-			return input is string && operand is int
-				? Enumerable.Repeat((string) input, (int) operand)
-				: DoMathsOperation(input, operand, Expression.Multiply);
-		}
+        /// <summary>
+        /// Multiplication
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Times( object input, object operand )
+        {
+            return input is string && operand is int
+                ? Enumerable.Repeat( (string)input, (int)operand )
+                : DoMathsOperation( input, operand, Expression.Multiply );
+        }
 
-		/// <summary>
-		/// Division
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="operand"></param>
-		/// <returns></returns>
-		public static object DividedBy(object input, object operand)
-		{
-			return DoMathsOperation(input, operand, Expression.Divide);
-		}
+        /// <summary>
+        /// Division
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object DividedBy( object input, object operand )
+        {
+            return DoMathsOperation( input, operand, Expression.Divide );
+        }
 
-		public static object Modulo(object input, object operand)
-		{
-			return DoMathsOperation(input, operand, Expression.Modulo);
-		}
+        public static object Modulo( object input, object operand )
+        {
+            return DoMathsOperation( input, operand, Expression.Modulo );
+        }
 
-		private static object DoMathsOperation(object input, object operand, Func<Expression, Expression, BinaryExpression> operation)
-		{
-			return input == null || operand == null
-				? null
-				: ExpressionUtility.CreateExpression(operation, input.GetType(), operand.GetType(), input.GetType(), true)
-					.DynamicInvoke(input, operand);
-		}
-	}
+        private static object DoMathsOperation( object input, object operand, Func<Expression, Expression, BinaryExpression> operation )
+        {
+            return input == null || operand == null
+                ? null
+                : ExpressionUtility.CreateExpression( operation, input.GetType(), operand.GetType(), input.GetType(), true )
+                    .DynamicInvoke( input, operand );
+        }
+    }
 
-	internal static class StringExtensions
-	{
-		public static bool IsNullOrWhiteSpace(this string s)
-		{
-			return string.IsNullOrEmpty(s) || s.Trim().Length == 0;
-		}
-	}
+    internal static class StringExtensions
+    {
+        public static bool IsNullOrWhiteSpace( this string s )
+        {
+            return string.IsNullOrEmpty( s ) || s.Trim().Length == 0;
+        }
+    }
 }

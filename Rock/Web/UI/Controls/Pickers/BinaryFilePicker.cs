@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -34,24 +35,47 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? BinaryFileTypeId
         {
-            get 
-            { 
-                return ViewState["BinaryFileTypeId"] as int?; 
-            }
             set
             {
-                ViewState["BinaryFileTypeId"] = value;
-
                 this.Items.Clear();
                 this.DataTextField = "FileName";
                 this.DataValueField = "Id";
-                this.DataSource = new BinaryFileService( new RockContext() )
-                    .Queryable()
-                    .Where( f => f.BinaryFileTypeId == value && !f.IsTemporary )
-                    .OrderBy( f => f.FileName )
-                    .Select( f => new { f.FileName, f.Id } )
-                    .ToList();
-                this.DataBind();
+                if ( value.HasValue )
+                {
+                    this.DataSource = new BinaryFileService( new RockContext() )
+                        .Queryable()
+                        .Where( f => f.BinaryFileTypeId == value.Value && !f.IsTemporary )
+                        .OrderBy( f => f.FileName )
+                        .Select( f => new { f.FileName, f.Id } )
+                        .ToList();
+                    this.DataBind();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the binary file type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The binary file type unique identifier.
+        /// </value>
+        public Guid? BinaryFileTypeGuid
+        {
+            set
+            {
+                this.Items.Clear();
+                this.DataTextField = "FileName";
+                this.DataValueField = "Id";
+                if ( value.HasValue )
+                {
+                    this.DataSource = new BinaryFileService( new RockContext() )
+                        .Queryable()
+                        .Where( f => f.BinaryFileType.Guid.Equals( value.Value ) && !f.IsTemporary )
+                        .OrderBy( f => f.FileName )
+                        .Select( f => new { f.FileName, f.Id } )
+                        .ToList();
+                    this.DataBind();
+                }
             }
         }
     }

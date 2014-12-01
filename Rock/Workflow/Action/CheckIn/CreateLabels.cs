@@ -52,92 +52,82 @@ namespace Rock.Workflow.Action.CheckIn
 
             if ( checkInState != null )
             {
-                int labelFileTypeId = new BinaryFileTypeService( rockContext )
-                    .Queryable()
-                    .Where( f => f.Guid == new Guid( SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
-                    .Select( f => f.Id )
-                    .FirstOrDefault();
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
+                var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
-                if ( labelFileTypeId != 0 )
+                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
-                    var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-
-                    foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                    foreach ( var person in family.People.Where( p => p.Selected ) )
                     {
-                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
-                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            var mergeObjects = new Dictionary<string, object>();
+                            foreach ( var keyValue in globalMergeValues )
                             {
-                                var mergeObjects = new Dictionary<string, object>();
-                                foreach ( var keyValue in globalMergeValues )
+                                mergeObjects.Add( keyValue.Key, keyValue.Value );
+                            }
+                            mergeObjects.Add( "Person", person );
+                            mergeObjects.Add( "GroupType", groupType );
+
+                            groupType.Labels = new List<CheckInLabel>();
+
+                            GetGroupTypeLabels( groupType.GroupType, groupType.Labels, mergeObjects );
+
+                            var PrinterIPs = new Dictionary<int, string>();
+
+                            foreach ( var label in groupType.Labels )
+                            {
+                                label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
+                                label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
+
+                                if ( label.PrintTo == PrintTo.Default )
                                 {
-                                    mergeObjects.Add( keyValue.Key, keyValue.Value );
+                                    label.PrintTo = groupType.GroupType.AttendancePrintTo;
                                 }
-                                mergeObjects.Add( "Person", person );
-                                mergeObjects.Add( "GroupType", groupType );
 
-                                groupType.Labels = new List<CheckInLabel>();
-
-                                GetGroupTypeLabels( groupType.GroupType, groupType.Labels, labelFileTypeId, mergeObjects );
-
-                                var PrinterIPs = new Dictionary<int, string>();
-
-                                foreach ( var label in groupType.Labels )
+                                if ( label.PrintTo == PrintTo.Kiosk )
                                 {
-                                    label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
-                                    label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
-
-                                    if ( label.PrintTo == PrintTo.Default )
+                                    var device = checkInState.Kiosk.Device;
+                                    if ( device != null )
                                     {
-                                        label.PrintTo = groupType.GroupType.AttendancePrintTo;
+                                        label.PrinterDeviceId = device.PrinterDeviceId;
                                     }
-
-                                    if ( label.PrintTo == PrintTo.Kiosk )
+                                }
+                                else if ( label.PrintTo == PrintTo.Location )
+                                {
+                                    // Should only be one
+                                    var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                    if ( group != null )
                                     {
-                                        var device = checkInState.Kiosk.Device;
-                                        if ( device != null )
+                                        var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                        if ( location != null )
                                         {
-                                            label.PrinterDeviceId = device.PrinterDeviceId;
-                                        }
-                                    }
-                                    else if ( label.PrintTo == PrintTo.Location )
-                                    {
-                                        // Should only be one
-                                        var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                        if ( group != null )
-                                        {
-                                            var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                            if ( location != null )
+                                            var device = location.Location.PrinterDevice;
+                                            if ( device != null )
                                             {
-                                                var device = location.Location.PrinterDevice;
-                                                if ( device != null )
-                                                {
-                                                    label.PrinterDeviceId = device.PrinterDeviceId;
-                                                }
+                                                label.PrinterDeviceId = device.PrinterDeviceId;
                                             }
                                         }
                                     }
+                                }
 
-                                    if ( label.PrinterDeviceId.HasValue )
+                                if ( label.PrinterDeviceId.HasValue )
+                                {
+                                    if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
                                     {
-                                        if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                        label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
+                                    }
+                                    else
+                                    {
+                                        var printerDevice = new DeviceService( rockContext ).Get( label.PrinterDeviceId.Value );
+                                        if ( printerDevice != null )
                                         {
-                                            label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
-                                        }
-                                        else
-                                        {
-                                            var printerDevice = new DeviceService( rockContext ).Get( label.PrinterDeviceId.Value );
-                                            if ( printerDevice != null )
-                                            {
-                                                PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
-                                                label.PrinterAddress = printerDevice.IPAddress;
-                                            }
+                                            PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
+                                            label.PrinterAddress = printerDevice.IPAddress;
                                         }
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -149,14 +139,14 @@ namespace Rock.Workflow.Action.CheckIn
             return false;
         }
 
-        private void GetGroupTypeLabels( GroupType groupType, List<CheckInLabel> labels, int labelFileTypeId, Dictionary<string, object> mergeObjects )
+        private void GetGroupTypeLabels( GroupType groupType, List<CheckInLabel> labels, Dictionary<string, object> mergeObjects )
         {
             //groupType.LoadAttributes();
             foreach ( var attribute in groupType.Attributes )
             {
                 if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
                     attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
-                    attribute.Value.QualifierValues["binaryFileType"].Value == labelFileTypeId.ToString() )
+                    attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
                 {
                     Guid? binaryFileGuid = groupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                     if ( binaryFileGuid != null )

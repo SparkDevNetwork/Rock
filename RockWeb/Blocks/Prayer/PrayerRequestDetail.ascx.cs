@@ -169,7 +169,11 @@ namespace RockWeb.Blocks.Prayer
             lActionTitle.Text = string.Format( "{0} Prayer Request", prayerRequest.FullName ).FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "Name", prayerRequest.FullName.SanitizeHtml() );
+            if ( prayerRequest.RequestedByPersonAlias != null )
+            {
+                descriptionList.Add( "Requested By", prayerRequest.RequestedByPersonAlias.Person.FullName );
+            }
+            descriptionList.Add( "Name", prayerRequest.FullName );
             descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
@@ -200,9 +204,20 @@ namespace RockWeb.Blocks.Prayer
         {
             SetEditMode( true );
 
-            lActionTitle.Text = ( prayerRequest.Id > 0 ) ?
-                ActionTitle.Edit( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle() :
-                ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
+            if ( prayerRequest.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
+                if ( CurrentPersonAlias != null && CurrentPerson != null )
+                {
+                    prayerRequest.RequestedByPersonAlias = CurrentPersonAlias;
+                    prayerRequest.FirstName = CurrentPerson.NickName;
+                    prayerRequest.LastName = CurrentPerson.LastName;
+                }
+            }
 
             pnlDetails.Visible = true;
 
@@ -212,6 +227,15 @@ namespace RockWeb.Blocks.Prayer
             dtbLastName.Text = prayerRequest.LastName;
             dtbText.Text = prayerRequest.Text;
             dtbAnswer.Text = prayerRequest.Answer;
+
+            if ( prayerRequest.RequestedByPersonAlias != null )
+            {
+                ppRequestor.SetValue( prayerRequest.RequestedByPersonAlias.Person );
+            }
+            else
+            {
+                ppRequestor.SetValue( null );
+            }
 
             // If no expiration date is set, then use the default setting.
             if ( !prayerRequest.ExpirationDate.HasValue )
@@ -314,6 +338,11 @@ namespace RockWeb.Blocks.Prayer
             else
             {
                 prayerRequest = prayerRequestService.Get( prayerRequestId );
+            }
+
+            if ( ppRequestor.PersonId.HasValue )
+            {
+                prayerRequest.RequestedByPersonAliasId = ppRequestor.PersonAliasId;
             }
 
             // If changing from NOT-approved to approved, record who and when

@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             ContentChannelItemService contentItemService = new ContentChannelItemService( rockContext );
 
-            ContentChannelItem contentItem = contentItemService.Get( (int)e.RowKeyValue );
+            ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
             if ( contentItem != null )
             {

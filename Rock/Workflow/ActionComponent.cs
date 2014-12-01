@@ -55,7 +55,7 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Executes the specified workflow.
+        /// Executes the action.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The workflow action.</param>

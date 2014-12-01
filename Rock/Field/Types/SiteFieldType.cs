@@ -122,5 +122,33 @@ namespace Rock.Field.Types
         {
             SetEditValue( control, configurationValues, id.ToString() );
         }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            int? id = value.AsIntegerOrNull();
+            if ( id.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new SiteService( rockContext ).Get( id.Value );
+            }
+
+            return null;
+        }
     }
 }

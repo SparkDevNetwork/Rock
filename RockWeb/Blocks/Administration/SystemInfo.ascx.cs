@@ -28,6 +28,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Data;
+using Rock.Model;
 using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
@@ -71,10 +72,40 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
+            // Clear all cached items
             Rock.Web.Cache.RockMemoryCache.Clear();
 
+            // Clear the static object that contains all auth rules (so that it will be refreshed)
             Rock.Security.Authorization.Flush();
 
+            // Check for any unregistered entity types, field types, and block types
+            string webAppPath = Server.MapPath("~");
+            EntityTypeService.RegisterEntityTypes( webAppPath );
+            FieldTypeService.RegisterFieldTypes( webAppPath );
+            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+
+            // Delete all cached files
+            try
+            {
+                var dirInfo = new DirectoryInfo( Path.Combine( webAppPath, "App_Data/Cache" ) );
+                foreach ( var childDir in dirInfo.GetDirectories() )
+                {
+                    childDir.Delete( true );
+                }
+                foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
+                {
+                    file.Delete();
+                }
+            }
+            catch( Exception ex )
+            {
+                nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbMessage.Visible = true;
+                nbMessage.Text = "Cache has been cleared, but following error occurred when attempting to delete cached files: " + ex.Message;
+                return;
+            }
+
+            nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";
         }

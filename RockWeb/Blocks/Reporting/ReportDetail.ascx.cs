@@ -409,10 +409,13 @@ namespace RockWeb.Blocks.Reporting
 
                     string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0, rockContext ).GetEntityType().FullName;
                     DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
-
                     string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
                     var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
-                    reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+
+                    if ( dataSelectComponent != null )
+                    {
+                        reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                    }
                 }
                 else
                 {
@@ -606,6 +609,15 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Attributes["optiongroup"] = "Other";
                     }
 
+                    if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
+                    {
+                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                        if ( attribute != null )
+                        {
+                            listItem.Attributes.Add( "title", attribute.Description );
+                        }
+                    }
+
                     listItems.Add( listItem );
                 }
 
@@ -619,6 +631,13 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
                         listItem.Attributes["optiongroup"] = component.Section;
+
+                        string description = Reflection.GetDescription( component.GetType() );
+                        if ( !string.IsNullOrWhiteSpace( description ) )
+                        {
+                            listItem.Attributes.Add( "title", description );
+                        }
+
                         listItems.Add( listItem );
                     }
                 }
@@ -973,7 +992,8 @@ namespace RockWeb.Blocks.Reporting
                                 reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
 
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.INTEGER.AsGuid() ) ||
-                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) )
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.FILTER_DATE.AsGuid() ) )
                                 {
                                     boundField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
                                     boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;

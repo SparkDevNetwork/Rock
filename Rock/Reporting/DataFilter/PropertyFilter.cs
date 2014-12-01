@@ -146,6 +146,9 @@ namespace Rock.Reporting.DataFilter
 
             var entityFields = GetEntityFields( entityType );
 
+            // add Empty option first
+            ddlProperty.Items.Add(new ListItem());
+                        
             foreach ( var entityField in entityFields )
             {
                 // Add the field to the dropdown of availailable fields
@@ -276,6 +279,7 @@ namespace Rock.Reporting.DataFilter
             {
                 // Date Properties
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     if ( values.Count == 2 )
                     {

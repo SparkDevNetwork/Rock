@@ -120,6 +120,45 @@ namespace Rock.Model
         /// </value>
         public virtual SystemEmail NotificationSystemEmail {get;set;}
 
+        /// <summary>
+        /// Gets or sets the buttons.
+        /// </summary>
+        /// <value>
+        /// The buttons.
+        /// </value>
+        [NotMapped]
+        [LiquidInclude]
+        public virtual List<LiquidButton> Buttons
+        {
+            get
+            {
+                var buttonList = new List<LiquidButton>();
+
+                foreach ( var actionButton in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var button = new LiquidButton();
+                    var details = actionButton.Split( new char[] { '^' } );
+                    if ( details.Length > 0 )
+                    {
+                        button.Name = details[0];
+
+                        if ( details.Length > 1 )
+                        {
+                            var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
+                            if ( definedValue != null )
+                            {
+                                button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
+                            }
+                        }
+                    }
+
+                    buttonList.Add( button );
+                }
+
+                return buttonList;
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -134,49 +173,28 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
-
         /// <summary>
-        /// To the liquid.
+        /// Special class for adding a button field to liquid properties
         /// </summary>
-        /// <param name="debug">if set to <c>true</c> [debug].</param>
-        /// <returns></returns>
-        public override object ToLiquid( bool debug )
+        [DotLiquid.LiquidType( "Name", "Html" )]
+        public class LiquidButton
         {
-            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
-            mergeFields.Add( "Buttons", GetButtonsLiquid() );
-            return mergeFields;
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the HTML.
+            /// </summary>
+            /// <value>
+            /// The HTML.
+            /// </value>
+            public string Html { get; set; }
         }
-
-        private List<Dictionary<string, object>> GetButtonsLiquid()
-        {
-            var buttonList = new List<Dictionary<string, object>>();
-
-            foreach ( var actionButton in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
-            {
-                var button = new Dictionary<string, object>();
-                var details = actionButton.Split( new char[] { '^' } );
-                if ( details.Length > 0 )
-                {
-                    button.Add( "Name", details[0] );
-
-                    if ( details.Length > 1 )
-                    {
-                        var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
-                        if ( definedValue != null )
-                        {
-                            button.Add( "Html", definedValue.GetAttributeValue( "ButtonHTML" ) );
-                        }
-                    }
-                }
-
-                buttonList.Add( button );
-            }
-
-            return buttonList;
-        }
-
-        #endregion
 
     }
 

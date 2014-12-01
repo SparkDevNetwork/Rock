@@ -31,51 +31,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class PersonBadgesController : IHasCustomRoutes
+    public partial class PersonBadgesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "GetFamilyAttendance",
-                routeTemplate: "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}",
-                defaults: new
-                {
-                    controller = "PersonBadges",
-                    action = "GetFamilyAttendance"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetWeeksAttendedInDuration",
-                routeTemplate: "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}",
-                defaults: new
-                {
-                    controller = "PersonBadges",
-                    action = "GetWeeksAttendedInDuration"
-                });
-
-            routes.MapHttpRoute(
-                name: "GetLastVisitOnSite",
-                routeTemplate: "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}",
-                defaults: new
-                {
-                    controller = "PersonBadges",
-                    action = "GetLastVisitOnSite"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GetInGroupOfType",
-                routeTemplate: "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}",
-                defaults: new
-                {
-                    controller = "PersonBadges",
-                    action = "GetInGroupOfType"
-                });
-        }
-
         /// <summary>
         /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
@@ -83,6 +40,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}" )]
         public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeId)
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
@@ -136,6 +94,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}" )]
         public int GetWeeksAttendedInDuration(int personId, int weekCount)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -158,6 +117,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
             PageView mostRecentPageView = new PageViewService( (Rock.Data.RockContext)Service.Context ).Queryable()
@@ -181,6 +141,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}" )]
         public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance(int personId, int monthCount)
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
@@ -196,10 +157,10 @@ namespace Rock.Rest.Controllers
                 foreach (DataRow row in table.Rows)
                 {
                     MonthlyAttendanceSummary item = new MonthlyAttendanceSummary();
-                    item.AttendanceCount = Int32.Parse(row["AttendanceCount"].ToString());
-                    item.SundaysInMonth = Int32.Parse(row["SundaysInMonth"].ToString());
-                    item.Month = Int32.Parse(row["Month"].ToString());
-                    item.Year = Int32.Parse(row["Year"].ToString());
+                    item.AttendanceCount = row["AttendanceCount"].ToString().AsInteger();
+                    item.SundaysInMonth = row["SundaysInMonth"].ToString().AsInteger();
+                    item.Month = row["Month"].ToString().AsInteger();
+                    item.Year = row["Year"].ToString().AsInteger();
 
                     attendanceSummary.Add(item);
                 }
@@ -274,7 +235,6 @@ namespace Rock.Rest.Controllers
             /// </summary>
             /// <value>List of groups that the person is in.</value>
             public List<GroupSummary> GroupList { get; set; }
-
         }
 
         /// <summary>
@@ -306,7 +266,6 @@ namespace Rock.Rest.Controllers
             /// </value>
             public string RoleName { get; set; }
         }
-
 
         /// <summary>
         /// Monthly attendance summary structure
@@ -342,7 +301,6 @@ namespace Rock.Rest.Controllers
             /// </summary>
             /// <value>The year.</value>
             public int Year { get; set; }
-
         }
     }
 }

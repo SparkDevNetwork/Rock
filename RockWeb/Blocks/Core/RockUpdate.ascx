@@ -33,6 +33,9 @@
                         <p>We've expanded the puzzle, let's get you up-to-date.</p>
                     </div>
 
+                    <Rock:NotificationBox runat="server" Title="Remember..." NotificationBoxType="Warning" ID="nbRepoWarning" Visible="false">
+                        You're using a <b>beta</b> or <b>alpha</b> update repository.</Rock:NotificationBox>
+
                     <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
@@ -93,7 +96,7 @@
                                 <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
                         </div>
 
-                        <buton type="button" id="btn-restart" data-loading-text="Restarting..." class="btn btn-success">Restart</buton>
+                        <button type="button" id="btn-restart" data-loading-text="Restarting..." class="btn btn-success">Restart</button>
 
                     </div>
 

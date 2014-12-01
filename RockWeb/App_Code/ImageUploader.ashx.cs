@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,11 +38,11 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public override byte[] GetFileBytes( HttpContext context, HttpPostedFile uploadedFile )
+        public override Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
             if ( uploadedFile.ContentType == "image/svg+xml" )
             {
-                return base.GetFileBytes( context, uploadedFile );
+                return base.GetFileContentStream( context, uploadedFile );
             }
             else
             {
@@ -53,7 +53,9 @@ namespace RockWeb
                 if ( exif["Orientation"] != null )
                 {
                     RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
-                    if ( flip != RotateFlipType.RotateNoneFlipNone ) // don't flip if orientation is correct
+
+                    // don't flip if orientation is correct
+                    if ( flip != RotateFlipType.RotateNoneFlipNone )
                     {
                         bmp.RotateFlip( flip );
                         exif.setTag( 0x112, "1" ); // reset orientation tag
@@ -66,12 +68,9 @@ namespace RockWeb
                     bmp = resizedBmp;
                 }
 
-                using ( var stream = new MemoryStream() )
-                {
-                    bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
-                    byte[] result = stream.ToArray();
-                    return result;
-                }
+                var stream = new MemoryStream();
+                bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
+                return stream;
             }
         }
 
@@ -165,8 +164,8 @@ namespace RockWeb
             int sourceWidth = imgToResize.Width;
             int sourceHeight = imgToResize.Height;
 
-            float nPercentW = ( (float)size.Width / (float)sourceWidth );
-            float nPercentH = ( (float)size.Height / (float)sourceHeight );
+            float nPercentW = (float)size.Width / (float)sourceWidth;
+            float nPercentH = (float)size.Height / (float)sourceHeight;
 
             float nPercent = ( nPercentH < nPercentW ) ? nPercentH : nPercentW;
 
@@ -210,6 +209,7 @@ namespace RockWeb
                     input = (Bitmap)ResizeImage( (Image)input, new Size( newWidth, maxHeight ) );
                 }
             }
+
             return input;
         }
     }

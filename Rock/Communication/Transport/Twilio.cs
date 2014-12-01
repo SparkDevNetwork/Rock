@@ -114,17 +114,24 @@ namespace Rock.Communication.Transport
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
 
-                                    historyService.Add( new History
+                                    try
                                     {
-                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                        EntityTypeId = personEntityTypeId,
-                                        CategoryId = communicationCategoryId,
-                                        EntityId = recipient.PersonAlias.PersonId,
-                                        Summary = "Sent SMS message.",
-                                        Caption = message,
-                                        RelatedEntityTypeId = communicationEntityTypeId,
-                                        RelatedEntityId = communication.Id
-                                    } );
+                                        historyService.Add( new History
+                                        {
+                                            CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                            EntityTypeId = personEntityTypeId,
+                                            CategoryId = communicationCategoryId,
+                                            EntityId = recipient.PersonAlias.PersonId,
+                                            Summary = "Sent SMS message.",
+                                            Caption = message.Truncate( 200 ),
+                                            RelatedEntityTypeId = communicationEntityTypeId,
+                                            RelatedEntityId = communication.Id
+                                        } );
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionLogService.LogException( ex, null );
+                                    }
                                 
                                 }
                                 else

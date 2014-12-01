@@ -17,7 +17,7 @@
 namespace Rock.Rest
 {
     /// <summary>
-    /// Interface for controllers that need to add additional routes beyond the default 
+    /// Interface for controllers that need to add additional routes beyond the default
     /// api/{controller}/{id} route.
     /// </summary>
     public interface IHasCustomRoutes
