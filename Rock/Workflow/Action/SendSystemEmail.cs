@@ -31,13 +31,13 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Email the configured recipient the name of the thing being operated against." )]
+    [Description( "Send a system email " )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Send Email Template")]
+    [ExportMetadata("ComponentName", "Send System Email")]
 
-    [EmailTemplateField( "EmailTemplate", "The email template to send. The email templates must be assigned to the 'Workflow' category in order to be displayed on the list." )]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 1, "Recipient" )]
-    public class SendEmailTemplate : ActionComponent
+    [SystemEmailField( "System Email", "A system email to send.")]
+    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient" )]
+    public class SendSystemEmail : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -54,7 +54,7 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
             var recipients = new List<RecipientData>();
 
-            string to = GetAttributeValue( action, "To" );
+            string to = GetAttributeValue( action, "Recipient" );
 
             Guid? guid = to.AsGuidOrNull();
             if ( guid.HasValue )
@@ -134,12 +134,12 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                recipients.Add( new RecipientData( to, mergeFields ) );
+                recipients.Add( new RecipientData( to.ResolveMergeFields( mergeFields ), mergeFields ) );
             }
 
             if ( recipients.Any() )
             {
-                Email.Send( GetAttributeValue( action, "EmailTemplate" ).AsGuid(), recipients );
+                Email.Send( GetAttributeValue( action, "SystemEmail" ).AsGuid(), recipients );
             }
 
             return true;

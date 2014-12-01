@@ -4,47 +4,8 @@
     ///<summary>
     /// Fade-in effect for the panel.
     ///</summary>
-    function FadePanelIn() {
+    function fadePanelIn() {
         $("[id$='upnlContent']").rockFadeIn();
-    }
-
-    ///<summary>
-    /// Adjust the given color by a certain amount
-    ///</summary>
-    function AdjustColor(col, amt) {
-        var hash = false;
-
-        if (col[0] == "#") {
-            col = col.slice(1);
-            hash = true;
-        }
-
-        var num = parseInt(col, 16);
-
-        var r = (num >> 16) + amt;
-        if (r > 255) r = 255;
-        else if (r < 0) r = 0;
-
-        var g = (num & 0x0000FF) + amt;
-        if (g > 255) g = 255;
-        else if (g < 0) g = 0;
-
-        var b = ((num >> 8) & 0x00FF) + amt;
-        if (b > 255) b = 255;
-        else if (b < 0) b = 0;
-
-        return (hash ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
-    }
-
-    ///<summary>
-    /// Converts an rbg color value to hex.
-    ///</summary>
-    function rgb2hex(rgb) {
-        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        return "#" +
-         ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) +
-         ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
-         ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2);
     }
 
     ///<summary>
@@ -121,26 +82,14 @@
     }
 
     ///<summary>
-    /// Darkens the color of the discbar-primary color to 20% of the label-default
-    ///</summary>
-    function DarkenPrimaryDiscScore() {
-        var bgcolor = $(".label-default").css("background-color");
-        if (bgcolor != null) {
-            var color = rgb2hex(bgcolor);
-            var newColor = AdjustColor(color, -30);
-            $(".discbar-primary").css("background-color", newColor);
-        }
-    }
-    ///<summary>
     /// Standard .Net handler that's called when the page is loaded (including Ajax).
     ///</summary>
     function pageLoad(sender, args) {
         initQuestionValidation();
-        DarkenPrimaryDiscScore();
     }
 
     $(document).ready(function () {
-        FadePanelIn();
+        fadePanelIn();
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
     });
 </script>
@@ -237,29 +186,15 @@
             </ul>
 
             <h3>Description</h3>
+            <asp:Literal ID="lDescription" runat="server"></asp:Literal>
 
             <h3>Strengths</h3>
-            <asp:Literal ID="lStrength" runat="server"></asp:Literal>
+            <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
 
             <h3>Challenges</h3>
             <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
 
-            <h3>Under Pressure</h3>
-            <asp:Literal ID="lUnderPressure" runat="server"></asp:Literal>
-
-            <h3>Motivation</h3>
-            <asp:Literal ID="lMotivation" runat="server"></asp:Literal>
-
-            <h3>Team Contribution</h3>
-            <asp:Literal ID="lTeamContribution" runat="server"></asp:Literal>
-
-            <h3>Leadership Style</h3>
-            <asp:Literal ID="lLeadershipStyle" runat="server"></asp:Literal>
-
-            <h3>Follower Style</h3>
-            <asp:Literal ID="lFollowerStyle" runat="server"></asp:Literal>
-
-            <div class="actions">
+            <div class="actions margin-t-lg">
                 <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
             </div>
 

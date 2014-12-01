@@ -57,14 +57,10 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            // Load Entity Type Filter
-            var entityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
-            entityTypeFilter.EntityTypes = entityTypes;
-            entityTypePicker.EntityTypes = entityTypes;
-
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             BindFilter();
+
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             if ( _canConfigure )
@@ -255,10 +251,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var categories = GetCategories();
+            var rockContext = new RockContext();
+            var categories = GetCategories( rockContext );
             if ( categories != null )
             {
-                var rockContext = new RockContext();
                 new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
             }
@@ -348,6 +344,31 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
+            // Exclude the categories for block and service job attributes, since they are controlled through code attribute decorations
+            var exclusions = new List<Guid>();
+            exclusions.Add( Rock.SystemGuid.EntityType.BLOCK.AsGuid() );
+            exclusions.Add( Rock.SystemGuid.EntityType.SERVICE_JOB.AsGuid() );
+
+            var rockContext = new RockContext();
+            var entityTypes = new EntityTypeService( rockContext ).GetEntities()
+                .Where( t => !exclusions.Contains( t.Guid ) )
+                .OrderBy( t => t.FriendlyName )
+                .ToList();
+
+            entityTypePicker.EntityTypes = entityTypes;
+
+            // Load Entity Type Filter
+            var attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+            var categoryEntities = new CategoryService( rockContext ).Queryable()
+                .Where( c =>
+                    c.EntityTypeId == attributeEntityTypeId &&
+                    c.EntityTypeQualifierColumn == "EntityTypeId" &&
+                    c.EntityTypeQualifierValue != null )
+                .Select( c => c.EntityTypeQualifierValue )
+                .ToList()
+                .Select( c => c.AsInteger() );
+
+            entityTypeFilter.EntityTypes = entityTypes.Where( e => categoryEntities.Contains( e.Id ) ).ToList();
             entityTypeFilter.SelectedValue = rFilter.GetUserPreference( "EntityType" );
         }
 
@@ -356,41 +377,60 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
+            bool filtered = !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "EntityType" ) );
+            nbOrdering.Visible = !filtered;
+
+            rGrid.Columns.OfType<ReorderField>().FirstOrDefault().Visible = filtered;
             rGrid.DataSource = GetCategories().ToList();
             rGrid.DataBind();
         }
 
-        private IQueryable<Category> GetCategories()
+        private IQueryable<Category> GetCategories( RockContext rockContext = null )
         {
-            return GetUnorderedCategories()
+            rockContext = rockContext ?? new RockContext();
+            return GetUnorderedCategories( rockContext )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name );
         }
 
-        private IQueryable<Category> GetUnorderedCategories()
+        private IQueryable<Category> GetUnorderedCategories( RockContext rockContext = null )
         {
+            rockContext = rockContext ?? new RockContext();
+
             string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
             var attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
-            var queryable = new CategoryService( new RockContext() ).Queryable()
-                .Where( c => c.EntityTypeId == attributeEntityTypeId );
+            var queryable = new CategoryService( rockContext ).Queryable()
+                .Where( c => 
+                    c.EntityTypeId == attributeEntityTypeId && 
+                    c.EntityTypeQualifierColumn == "EntityTypeId" );
 
             if ( !string.IsNullOrWhiteSpace( selectedValue ) )
             {
                 if ( selectedValue == "0" )
                 {
-                    queryable = queryable
-                        .Where( c =>
-                            c.EntityTypeQualifierColumn == "EntityTypeId" &&
-                            c.EntityTypeQualifierValue == null );
+                    queryable = queryable.Where( c => c.EntityTypeQualifierValue == null );
                 }
                 else
                 {
-                    queryable = queryable
-                        .Where( c =>
-                            c.EntityTypeQualifierColumn == "EntityTypeId" &&
-                            c.EntityTypeQualifierValue == selectedValue );
+                    queryable = queryable.Where( c => c.EntityTypeQualifierValue == selectedValue );
                 }
+            }
+            else
+            {
+                // Exclude the categories for block and service job attributes, since they are controlled through code attribute decorations
+                var exclusions = new List<Guid>();
+                exclusions.Add( Rock.SystemGuid.EntityType.BLOCK.AsGuid() );
+                exclusions.Add( Rock.SystemGuid.EntityType.SERVICE_JOB.AsGuid() );
+
+                var entities = new EntityTypeService( rockContext ).GetEntities()
+                    .Where( t => !exclusions.Contains( t.Guid ) )
+                    .Select( e => e.Id )
+                    .ToList()
+                    .Select( e => e.ToString() )
+                    .ToList();
+
+                queryable = queryable.Where( c => entities.Contains( c.EntityTypeQualifierValue ) );
             }
 
             return queryable;

@@ -46,51 +46,62 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, 
         Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
-        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
-
-    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
-
+    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
+        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 4 )]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
     [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
         "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 8 )]
-
     [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow",
-        "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
+        "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 8, "AllowScheduled" )]
+    [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 9, "DisplayPhone" )]
+    [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 10, "DisplayEmail" )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
+        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 11 )]
+    [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
+    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
-    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
-        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10 )]
-    [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
-    [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
+    // Text Options
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [TextField( "Panel Title", "The text to display in panel heading", false, "Gifts", "Text Options", 13 )]
+
+    [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 14 )]
+    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 15 )]
+
+    [TextField( "Personal Info Title", "The text to display as heading of section for entering personal information.", false, "Personal Information", "Text Options", 16 )]
+
+    [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 17 )]
+
+    [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 18 )]
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
     Please confirm the information below. Once you have confirmed that the information is 
     accurate click the 'Finish' button to complete your transaction.
 </p>
-", "Text Options", 13 )]
-
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+", "Text Options", 19 )]
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
     By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
     to transfer the amount above from my account. I acknowledge that I may
     update the transaction information at any time by returning to this website. Please 
     call the Finance Office if you have any additional questions.
 </div>
-", "Text Options", 14 )]
+", "Text Options", 20 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></Fspan> <span class='tip tip-html'></span>", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
     Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
     achieve our mission.  We are so grateful for your commitment.
 </p>
-", "Text Options", 15 )]
+", "Text Options", 22 )]
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+", "Text Options", 23 )]
 
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
-", "Text Options", 16 )]
-
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
+    [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
 
     #endregion
 
@@ -213,6 +224,18 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            if ( !Page.IsPostBack )
+            {
+                lPanelTitle1.Text = GetAttributeValue( "PanelTitle" );
+                lPanelTitle2.Text = GetAttributeValue( "PanelTitle" );
+                lContributionInfoTitle.Text = GetAttributeValue( "ContributionInfoTitle" );
+                lPersonalInfoTitle.Text = GetAttributeValue( "PersonalInfoTitle" );
+                lPaymentInfoTitle.Text = GetAttributeValue( "PaymentInfoTitle" );
+                lConfirmationTitle.Text = GetAttributeValue( "ConfirmationTitle" );
+                lSuccessTitle.Text = GetAttributeValue( "SuccessTitle" );
+                lSaveAcccountTitle.Text = GetAttributeValue( "SaveAccountTitle" );
+            }
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             if ( GetAttributeValue( "Impersonation" ).AsBooleanOrNull() ?? false )

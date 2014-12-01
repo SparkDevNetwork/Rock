@@ -103,6 +103,7 @@ namespace Rock
         /// Liquidizes the child properties of an object for displaying debug information about fields available for lava templates
         /// </summary>
         /// <param name="liquidObject">The liquid object.</param>
+        /// <param name="levelsDeep">The levels deep.</param>
         /// <returns></returns>
         public static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0 )
         {
