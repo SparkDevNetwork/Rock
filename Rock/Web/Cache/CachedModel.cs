@@ -371,7 +371,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
-        /// <remarks>
         /// <value>
         /// The <see cref="System.Object"/>.
         /// </value>

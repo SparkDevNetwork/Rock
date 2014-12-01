@@ -55,6 +55,11 @@ namespace Rock.SystemGuid
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
 
         /// <summary>
+        /// Guid for the DISC Results of personalities.
+        /// </summary>
+        public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
+
+        /// <summary>
         /// Guid for External Application
         /// </summary>
         public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";

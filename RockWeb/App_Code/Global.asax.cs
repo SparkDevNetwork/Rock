@@ -108,6 +108,9 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
+                // Clear all cache
+                RockMemoryCache.Clear();
+
                 // Get a db context
                 var rockContext = new RockContext();
 

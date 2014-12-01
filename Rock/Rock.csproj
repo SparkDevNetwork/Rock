@@ -159,6 +159,7 @@
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
@@ -999,7 +1001,7 @@
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
-    <Compile Include="Workflow\Action\SendEmailTemplate.cs" />
+    <Compile Include="Workflow\Action\SendSystemEmail.cs" />
     <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
