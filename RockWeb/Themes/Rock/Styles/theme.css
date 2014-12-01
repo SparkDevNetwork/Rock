@@ -354,8 +354,8 @@ img.jcrop-preview {
   color: #6a6a6a;
 }
 .modal-content .modal-header {
-  background-color: #c2b8a7;
-  color: #231f20;
+  background-color: #282526;
+  color: #d3cec5;
   padding: 5px 15px;
   min-height: 34px;
   border-radius: 4px 4px 0 0;
@@ -375,7 +375,7 @@ img.jcrop-preview {
 .modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
-  color: #231f20;
+  color: #d3cec5;
   text-shadow: none;
 }
 .modal-content .modal-header .label {
@@ -384,7 +384,7 @@ img.jcrop-preview {
 .modal-content .modal-header small {
   margin-top: 12px;
   display: block;
-  color: #080707;
+  color: #bdb6a8;
 }
 .modal-content .modal-body {
   color: #6a6a6a;
@@ -3853,8 +3853,8 @@ iframe.email-body {
   box-shadow: none !important;
   background-image: none !important;
   text-shadow: none !important;
-  background-color: #c2b8a7 !important;
-  color: #231f20 !important;
+  background-color: #282526 !important;
+  color: #d3cec5 !important;
   padding: 10px 15px !important;
   min-height: 24px !important;
   font-weight: 700 !important;
@@ -3869,7 +3869,7 @@ iframe.email-body {
 }
 .cke_dialog_close_button .cke_label {
   display: block !important;
-  color: #c2b8a7 !important;
+  color: #282526 !important;
   font-weight: 900 !important;
   font-size: 20px !important;
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -3877,7 +3877,7 @@ iframe.email-body {
 }
 .cke_dialog_close_button .cke_label:after {
   content: "\f00d";
-  color: #231f20;
+  color: #d3cec5;
   font-family: FontAwesome;
 }
 .cke_dialog_footer {
@@ -4457,7 +4457,7 @@ div.aspNetDisabled {
     content: '' !important;
   }
 }
-/*#region  
+/*#region
 // Fonts                       */
 @font-face {
   font-family: 'OpenSans';
@@ -4491,21 +4491,21 @@ div.aspNetDisabled {
 /*
     Rock Theme Styles
 
-    1. 
+    1.
     2. HTML Overrides
     3. Bootstrap Overides
     4. Rock Overrides
     5. Theme Styling
     6. Utilities
-    7. Responsive Overrides 
+    7. Responsive Overrides
     8. Side Navbar
     9. Person Details
 
 */
-/*#region  
+/*#region
 // 1.         */
 /*#endregion */
-/*#region  
+/*#region
 // 2. HTML Overrides         */
 main {
   display: block;
@@ -4543,7 +4543,7 @@ pre {
   color: #817b72;
 }
 /*#endregion */
-/*#region  
+/*#region
 // 3. Bootstrap Overrides    */
 .panel {
   border-radius: 0;
@@ -4595,7 +4595,7 @@ pre {
   opacity: 0.6;
 }
 /*#endregion */
-/*#region  
+/*#region
 // 4. Rock Overrides         */
 .person-image {
   border-radius: 4px;
@@ -4624,14 +4624,6 @@ pre {
   -moz-border-radius: 17.5px;
   border-radius: 17.5px;
   margin: -8px 4px 0 0;
-}
-.rock-modal .modal-header {
-  background-color: #282526;
-  color: #d3cec5;
-}
-.rock-modal .modal-header small,
-.rock-modal .modal-header .close {
-  color: #a79d8b;
 }
 .personprofilebar-bio .actions a.btn-action {
   background-color: #567d8c;
@@ -4684,7 +4676,7 @@ pre {
   color: #fff;
 }
 /*#endregion */
-/*#region  
+/*#region
 // 5. Theme Styling          */
 #page-wrapper {
   width: 100%;
@@ -4817,7 +4809,7 @@ body#splash.error #content #logo {
   color: #dab751;
 }
 /*#endregion */
-/*#region  
+/*#region
 // 6. Utilities              */
 .navbar-minimize {
   background-color: #ee7624;
@@ -4829,7 +4821,7 @@ body#splash.error #content #logo {
   display: inline-block;
 }
 /*#endregion */
-/*#region 
+/*#region
 // 7. Responsive Overrides  */
 @media (min-width: 768px) {
   body#splash #content {
@@ -4876,7 +4868,7 @@ body#splash.error #content #logo {
   }
 }
 /*#endregion */
-/*#region  
+/*#region
 // 8. Side Navbar             */
 .navbar-static-side {
   background-color: #282526;
@@ -4984,7 +4976,7 @@ body.navbar-side-close #content-wrapper {
   margin-left: 0;
 }
 /*#endregion */
-/*#region 
+/*#region
 // 9. Person Details  */
 .personprofile .personprofilebar-badge,
 .personprofile .personprofilebar-family,
