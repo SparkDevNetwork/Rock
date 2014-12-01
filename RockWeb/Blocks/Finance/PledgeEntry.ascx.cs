@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 " )]
 
-    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
+    [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     public partial class PledgeEntry : RockBlock
     {

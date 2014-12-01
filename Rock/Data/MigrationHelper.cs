@@ -426,6 +426,7 @@ namespace Rock.Data
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="insertAfterPageGuid">The insert after page unique identifier.</param>
         public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "", string insertAfterPageGuid = "" )
         {
             Migration.Sql( string.Format( @"
@@ -1823,6 +1824,16 @@ namespace Rock.Data
 
         #region BinaryFile Methods
 
+        /// <summary>
+        /// Updates the type of the binary file.
+        /// </summary>
+        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="allowCaching">if set to <c>true</c> [allow caching].</param>
+        /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
         public void UpdateBinaryFileType( string storageEntityTypeId, string name, string description,string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
         {
             Migration.Sql( string.Format( @"
@@ -2270,7 +2281,7 @@ INSERT INTO [dbo].[Auth]
         /// <summary>
         /// Deletes the security authentication for page.
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         public void DeleteSecurityAuthForAttribute( string attributeGuid )
         {
             string sql = @"

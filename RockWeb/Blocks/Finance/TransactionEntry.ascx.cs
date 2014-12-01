@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 10, "DisplayEmail" )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 11 )]
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
+    [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
     // Text Options
