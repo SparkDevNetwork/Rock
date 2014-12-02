@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     [Serializable]
     public class WorkflowTextOrAttributeFieldType : FieldType
     {
+        private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
         private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
 
@@ -72,6 +73,74 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( ATTRIBUTE_FIELD_TYPES_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var tbCustomValues = new RockTextBox();
+            controls.Add( tbCustomValues );
+            tbCustomValues.TextMode = TextBoxMode.MultiLine;
+            tbCustomValues.Rows = 3;
+            tbCustomValues.AutoPostBack = true;
+            tbCustomValues.TextChanged += OnQualifierUpdated;
+            tbCustomValues.Label = "Limit Attributes by Field Type";
+            tbCustomValues.Help = "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new ConfigurationValue( "Limit Attributes by Field Type", "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox )
+                {
+                    configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value = ( (RockTextBox)controls[0] ).Text;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
+                {
+                    ( (RockTextBox)controls[0] ).Text = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -81,6 +150,15 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
+            var filteredFieldTypes = new List<string>();
+
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
+            {
+                filteredFieldTypes = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value
+                    .Split( "|".ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
             var editControl = new Rock.Web.UI.Controls.RockTextOrDropDownList { ID = id };
             editControl.ValidateRequestMode = ValidateRequestMode.Disabled;
 
@@ -91,7 +169,11 @@ namespace Rock.Field.Types
             {
                 foreach ( var attribute in attributes )
                 {
-                    editControl.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
+                    var fieldType = FieldTypeCache.Read( attribute.Value.FieldTypeId );
+                    if ( !filteredFieldTypes.Any() || filteredFieldTypes.Contains( fieldType.Class, StringComparer.OrdinalIgnoreCase ) )
+                    {
+                        editControl.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
+                    }
                 }
             }
 

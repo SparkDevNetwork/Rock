@@ -35,9 +35,9 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Add" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to add to the tag.")]
+    [WorkflowAttribute("Person", "Workflow attribute that contains the person to add to the tag.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Organization Tag", "The organization tag to add the person to. If the tag does not exists it will be created. <span class='tip tip-lava'></span>" )]
-
     public class PersonTagAdd : ActionComponent
     {
         /// <summary>
