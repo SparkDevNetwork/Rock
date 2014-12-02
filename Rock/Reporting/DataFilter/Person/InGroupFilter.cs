@@ -121,12 +121,23 @@ function() {
 
                 var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
+                bool includeChildGroups = false;
+                if ( selectionValues.Length >= 3 )
+                {
+                    includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
+                }
+
                 if ( group != null )
                 {
                     result = string.Format( "In group: {0}", group.Name );
+                    if ( includeChildGroups )
+                    {
+                        result += " or child groups";
+                    }
+
                     if ( groupTypeRoles.Count() > 0 )
                     {
-                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => a.Name ).ToList().AsDelimited( "," ) );
+                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => string.Format( "{0} ({1})", a.Name, a.GroupType.Name ) ).ToList().AsDelimited( "," ) );
                     }
                 }
             }
@@ -145,23 +156,35 @@ function() {
         private RockCheckBoxList cblRole = null;
 
         /// <summary>
+        /// The "Include Child Groups" checkbox
+        /// </summary>
+        private RockCheckBox cbChildGroups = null;
+
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             gp = new GroupPicker();
-            gp.ID = filterControl.ID + "_0";
+            gp.ID = filterControl.ID + "_gp";
             gp.Label = "Group";
             gp.SelectItem += gp_SelectItem;
             filterControl.Controls.Add( gp );
 
+            cbChildGroups = new RockCheckBox();
+            cbChildGroups.ID = filterControl.ID + "_cbChildsGroups";
+            cbChildGroups.Text = "Include Child Group(s)";
+            cbChildGroups.AutoPostBack = true;
+            cbChildGroups.CheckedChanged += gp_SelectItem;
+            filterControl.Controls.Add( cbChildGroups );
+
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
-            cblRole.ID = filterControl.ID + "_1";
+            cblRole.ID = filterControl.ID + "_cblRole";
             filterControl.Controls.Add( cblRole );
 
-            return new Control[2] { gp, cblRole };
+            return new Control[3] { gp, cbChildGroups, cblRole };
         }
 
         /// <summary>
@@ -175,15 +198,28 @@ function() {
 
             int groupId = gp.SelectedValueAsId() ?? 0;
             var groupService = new GroupService( rockContext );
+
             var group = groupService.Get( groupId );
+
             if ( group != null )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( rockContext );
-                var list = groupTypeRoleService.Queryable().Where( a => a.GroupTypeId == group.GroupTypeId ).OrderBy( a => a.Order ).ToList();
+                var qryGroupTypeRoles = groupTypeRoleService.Queryable();
+                if ( cbChildGroups.Checked )
+                {
+                    var childGroupTypeIds = groupService.GetAllDescendents( group.Id ).Select( a => a.GroupTypeId ).Distinct().ToList();
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && ( a.GroupTypeId == group.GroupTypeId || childGroupTypeIds.Contains( a.GroupTypeId.Value ) ) );
+                }
+                else
+                {
+                    qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId );
+                }
+
+                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
                 cblRole.Items.Clear();
                 foreach ( var item in list )
                 {
-                    cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
+                    cblRole.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupType.Name ), item.Guid.ToString() ) );
                 }
 
                 cblRole.Visible = list.Count > 0;
@@ -222,8 +258,9 @@ function() {
                 groupGuid = group.Guid;
             }
 
-            var value2 = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
-            return groupGuid.ToString() + "|" + value2;
+            var value2 = ( controls[2] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
+            var value3 = ( controls[1] as CheckBox ).Checked.ToString();
+            return groupGuid.ToString() + "|" + value2 + "|" + value3;
         }
 
         /// <summary>
@@ -244,10 +281,16 @@ function() {
                     ( controls[0] as GroupPicker ).SetValue( group.Id );
                 }
 
+                CheckBox cbChildGroups = controls[1] as CheckBox;
+                if ( selectionValues.Length >= 3 )
+                {
+                    cbChildGroups.Checked = selectionValues[2].AsBooleanOrNull() ?? false;
+                }
+
                 gp_SelectItem( this, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                RockCheckBoxList cblRole = controls[1] as RockCheckBoxList;
+                RockCheckBoxList cblRole = controls[2] as RockCheckBoxList;
 
                 foreach ( var item in cblRole.Items.OfType<ListItem>() )
                 {
@@ -272,13 +315,30 @@ function() {
                 GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
                 int groupId = 0;
                 Guid groupGuid = selectionValues[0].AsGuid();
-                var group = new GroupService( (RockContext)serviceInstance.Context ).Get( groupGuid );
+                var groupService = new GroupService( (RockContext)serviceInstance.Context );
+                var group = groupService.Get( groupGuid );
                 if ( group != null )
                 {
                     groupId = group.Id;
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
+                bool includeChildGroups = false;
+                if ( selectionValues.Length >= 3 )
+                {
+                    includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
+                }
+
+                var groupMemberServiceQry = groupMemberService.Queryable();
+
+                if ( includeChildGroups )
+                {
+                    var childGroupIds = groupService.GetAllDescendents( group.Id ).Select( a => a.Id ).Distinct().ToList();
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId || childGroupIds.Contains( xx.GroupId ) );
+                }
+                else
+                {
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupId == groupId );
+                }
 
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )
