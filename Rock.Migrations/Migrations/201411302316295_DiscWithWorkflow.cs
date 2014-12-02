@@ -48,7 +48,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "A161D12D-FEA7-422F-B00E-A689629680E4", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Min Days To Retake", "MinDaysToRetake", "", "The number of days that must pass before the test can be taken again.", 0, @"30", "3162C5CD-1244-4CB9-9099-BC484CE090D3" );
 
             // Attrib for BlockType: Disc:Instructions
-            RockMigrationHelper.AddBlockTypeAttribute( "A161D12D-FEA7-422F-B00E-A689629680E4", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Instructions", "Instructions", "", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 0, @"
+            RockMigrationHelper.AddBlockTypeAttribute( "A161D12D-FEA7-422F-B00E-A689629680E4", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Instructions", "Instructions", "", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 0, @"
             <h2>Welcome!</h2>
             <p>
                 {{ Person.NickName }}, in this assessment you are given a series of questions, each containing four phrases.
