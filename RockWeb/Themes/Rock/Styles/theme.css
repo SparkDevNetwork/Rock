@@ -3881,12 +3881,14 @@ iframe.email-body {
   font-family: FontAwesome;
 }
 .cke_dialog_footer {
-  background-color: #e3ded7 !important;
+  background-color: #e5e5e5 !important;
   background-image: none !important;
+  color: #555555 !important;
   outline: none !important;
   padding: 8px !important;
   margin-top: 10px !important;
   box-shadow: none !important;
+  border-radius: 0 0 4px 4px;
 }
 a.cke_dialog_ui_button,
 a.cke_dialog_ui_button:focus,
@@ -3900,17 +3902,33 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  font-size: 14px !important;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
+  background-color: transparent !important;
+  color: #478bae !important;
+  font-weight: normal !important;
+  border: none !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
+  color: #316078;
+  text-decoration: underline;
+  background-color: transparent;
 }
 a.cke_dialog_ui_button_ok,
 a.cke_dialog_ui_button_ok:focus,
 a.cke_dialog_ui_button_ok:active {
-  background: #282526 !important;
-  color: #d3cec5 !important;
-  border: 1px solid #0e0c0d !important;
+  background: #ee7624 !important;
+  color: #ffffff !important;
+  border: 1px solid #b7530e !important;
 }
 .ck-folders,
 .ck-files {
