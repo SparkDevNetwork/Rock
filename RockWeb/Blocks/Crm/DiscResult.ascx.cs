@@ -124,6 +124,9 @@ namespace Rockweb.Blocks.Crm
             DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
                 savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 35 );
             ShowExplaination( savedScores.PersonalityType );
+
+            hlAssessmentDate.Text = String.Format( "Assessment Date: {0}", savedScores.LastSaveDate.ToShortDateString() );
+            lPersonName.Text = _targetPerson.FullName;
         }
 
         /// <summary>

@@ -98,15 +98,26 @@
     <ContentTemplate>
         <Rock:NotificationBox id="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
 
-        <asp:Panel ID="pnlInstructions" runat="server">
-            <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
+        <asp:Panel ID="pnlInstructions" CssClass="panel panel-block" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+                   
+             </div>
+             <div class="panel-body">
+                <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
-            <div class="actions">
-                <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                <div class="actions">
+                    <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                </div>
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlQuestions" runat="server">
+        <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
+             <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+                   
+             </div>
+             <div class="panel-body">
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
                         <table class="table table-condensed table-striped table-hover disc-assessment js-disc-questions margin-b-lg">
@@ -162,43 +173,54 @@
                     <asp:LinkButton ID="btnScoreTest" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }"><i class="fa fa-check-circle-o"></i> Score</asp:LinkButton>
                 </div>
 
-                <div>
+                <div class="disc-attribution">
                     <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
                 </div>
-        </asp:Panel>
-
-        <asp:Panel ID="pnlResults" runat="server">
-            <ul class="discchart">
-                <li class="discchart-midpoint"></li>
-                <li style="height: 100%; width:0px;"></li>
-                <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
-                    <div class="discbar-label">D</div>
-                </li>
-                <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
-                    <div class="discbar-label">I</div>
-                </li>
-                <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
-                    <div class="discbar-label">S</div>
-                </li>
-                <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
-                    <div class="discbar-label">C</div>
-                </li>
-            </ul>
-
-            <h3>Description</h3>
-            <asp:Literal ID="lDescription" runat="server"></asp:Literal>
-
-            <h3>Strengths</h3>
-            <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
-
-            <h3>Challenges</h3>
-            <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
-
-            <div class="actions margin-t-lg">
-                <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
             </div>
-
         </asp:Panel>
+
+        <asp:Panel ID="pnlResults" CssClass="panel panel-block" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+            </div>
+            <div class="panel-body">
+                
+                <ul class="discchart">
+                    <li class="discchart-midpoint"></li>
+                    <li style="height: 100%; width:0px;"></li>
+                    <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
+                        <div class="discbar-label">D</div>
+                    </li>
+                    <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
+                        <div class="discbar-label">I</div>
+                    </li>
+                    <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
+                        <div class="discbar-label">S</div>
+                    </li>
+                    <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
+                        <div class="discbar-label">C</div>
+                    </li>
+                </ul>
+
+                <h3>Description</h3>
+                <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+
+                <h3>Strengths</h3>
+                <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
+
+                <h3>Challenges</h3>
+                <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
+
+                <div class="actions margin-t-lg">
+                    <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+                </div>
+
+                <div class="disc-attribution">
+                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
+                </div>
+        </div>
+
+    </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
