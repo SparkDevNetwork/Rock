@@ -462,7 +462,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var group = _groupService.Get( activity.AssignedGroupId.Value);
                     if ( group != null )
                     {
-                        tdAssignedToGroup.Description = activity.AssignedGroup.Name;
+                        tdAssignedToGroup.Description = group.Name;
                     }
                 }
 

@@ -50,25 +50,29 @@ namespace Rock.Security.BackgroundCheck
         /// <summary>
         /// Sends a background request to Protect My Ministry
         /// </summary>
-        /// <remarks>
-        /// Note: This method looks for attributes with the following keys on the workflow parameter:
-        ///     Person (Person):        The person who request should be initiated for.
-        ///     Campus (Campus):        If included, the campus name will be used as the Billing Reference Code for the request (optional)
-        ///     SSN (EncryptedText):    The SSN of the person that the reqeust if for (it is not part of their person record)
-        ///     PackageType:            Value should be the type of PMM package to request ('Basic' will be used by default)
-        ///     ReportStatus:           The status returned by PMM
-        ///     ReportLink:             The location of the background report on PMM server
-        ///     ReportRecommendation:   PMM's recomendataion
-        ///     Report (BinaryFile):    The downloaded background report
-        /// </remarks>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="workflow">The Workflow initiating the request.</param>
+        /// <param name="personAttribute">The person attribute.</param>
+        /// <param name="ssnAttribute">The SSN attribute.</param>
+        /// <param name="requestTypeAttribute">The request type attribute.</param>
+        /// <param name="billingCodeAttribute">The billing code attribute.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>
         /// True/False value of whether the request was successfully sent or not
         /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool SendRequest( RockContext rockContext, Model.Workflow workflow, out List<string> errorMessages )
+        /// <remarks>
+        /// Note: If the associated workflow type does not have attributes with the following keys, they
+        /// will automatically be added to the workflow type configuration in order to store the results
+        /// of the PMM background check request
+        ///     ReportStatus:           The status returned by PMM
+        ///     ReportLink:             The location of the background report on PMM server
+        ///     ReportRecommendation:   PMM's recomendataion
+        ///     Report (BinaryFile):    The downloaded background report
+        /// </remarks>
+        public override bool SendRequest( RockContext rockContext, Model.Workflow workflow,
+            AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute,
+            AttributeCache billingCodeAttribute, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -83,13 +87,16 @@ namespace Rock.Security.BackgroundCheck
 
                 // Get the person that the request is for
                 Person person = null;
-                Guid? personAliasGuid = workflow.GetAttributeValue( "Person" ).AsGuidOrNull();
-                if ( personAliasGuid.HasValue )
+                if ( personAttribute != null )
                 {
-                    person = new PersonAliasService( rockContext ).Queryable()
-                        .Where( p => p.Guid.Equals( personAliasGuid.Value ) )
-                        .Select( p => p.Person )
-                        .FirstOrDefault();
+                    Guid? personAliasGuid = workflow.GetAttributeValue( personAttribute.Key ).AsGuidOrNull();
+                    if ( personAliasGuid.HasValue )
+                    {
+                        person = new PersonAliasService( rockContext ).Queryable()
+                            .Where( p => p.Guid.Equals( personAliasGuid.Value ) )
+                            .Select( p => p.Person )
+                            .FirstOrDefault();
+                    }
                 }
 
                 if ( person == null )
@@ -118,13 +125,16 @@ namespace Rock.Security.BackgroundCheck
                 XElement orderElement = new XElement( "Order" );
                 rootElement.Add( orderElement );
 
-                Guid? campusGuid = workflow.GetAttributeValue( "Campus" ).AsGuidOrNull();
-                if ( campusGuid.HasValue)
+                if ( billingCodeAttribute != null )
                 {
-                    var campus = CampusCache.Read( campusGuid.Value );
-                    if ( campus != null )
+                    Guid? campusGuid = workflow.GetAttributeValue( billingCodeAttribute.Key ).AsGuidOrNull();
+                    if ( campusGuid.HasValue )
                     {
-						orderElement.Add( new XElement( "BillingReferenceCode", campus.Name ) );
+                        var campus = CampusCache.Read( campusGuid.Value );
+                        if ( campus != null )
+                        {
+                            orderElement.Add( new XElement( "BillingReferenceCode", campus.Name ) );
+                        }
                     }
                 }
 
@@ -140,10 +150,13 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( new XElement( "DOB", person.BirthDate.Value.ToString( "MM/dd/yyyy" ) ) );
                 }
 
-                string ssn = Encryption.DecryptString( workflow.GetAttributeValue( "SSN" ) );
-                if ( !string.IsNullOrWhiteSpace( ssn ) )
+                if ( ssnAttribute != null )
                 {
-                    subjectElement.Add( new XElement( "SSN", ssn ) );
+                    string ssn = Encryption.DecryptString( workflow.GetAttributeValue( ssnAttribute.Key ) );
+                    if ( !string.IsNullOrWhiteSpace( ssn ) )
+                    {
+                        subjectElement.Add( new XElement( "SSN", ssn ) );
+                    }
                 }
 
                 if ( person.Gender == Gender.Male )
@@ -190,7 +203,7 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( aliasesElement );
                 }
 
-                string packageType = workflow.GetAttributeValue("PackageType");
+                string packageType = requestTypeAttribute != null ? workflow.GetAttributeValue( requestTypeAttribute.Key ) : string.Empty;
                 if ( string.IsNullOrWhiteSpace(packageType) )
                 {
                     packageType = "Basic";
@@ -209,7 +222,7 @@ namespace Rock.Security.BackgroundCheck
                 {
                     if ( xResult.Root.Descendants().Count() > 0 )
                     {
-                        SaveResults( xResult, workflow );
+                        SaveResults( xResult, workflow, rockContext );
                     }
                     return true;
                 }
@@ -306,7 +319,7 @@ namespace Rock.Security.BackgroundCheck
         /// </summary>
         /// <param name="xResult">The x result.</param>
         /// <param name="workflow">The workflow.</param>
-        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow)
+        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext )
         {
             var xOrderDetail = xResult.Descendants( "OrderDetail" ).FirstOrDefault();
             if ( xOrderDetail != null )
@@ -317,25 +330,72 @@ namespace Rock.Security.BackgroundCheck
                     // Request has been completed
 
                     // Save the status
-                    workflow.SetAttributeValue( "ReportStatus", status == "NO RECORD" ? "Pass" : "Review" );
+                    SaveAttributeValue( workflow, "ReportStatus", status == "NO RECORD" ? "Pass" : "Review",
+                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                        new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
 
                     // Save the report link 
                     string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();
-                    workflow.SetAttributeValue( "ReportLink", reportLink );
+                    SaveAttributeValue( workflow, "ReportLink", reportLink, 
+                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
 
                     // Save the recommendation 
                     string recommendation = ( from o in xResult.Descendants( "Recommendation" ) select o.Value ).FirstOrDefault();
-                    workflow.SetAttributeValue( "ReportRecommendation", recommendation );
+                    SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
+                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                        new Dictionary<string, string> { { "ispassword", "false" } } );
 
                     // Save the report
                     Guid? binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
                     if ( binaryFileGuid.HasValue )
                     {
-                        workflow.SetAttributeValue( "Report", binaryFileGuid.Value.ToString() );
+                        SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
+                            FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
+                            new Dictionary<string, string> { { "binaryFileType", "" } } );
                     }
 
                 }
             }
+        }
+
+        private static void SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
+            FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
+        {
+            if (workflow.Attributes.ContainsKey(key))
+            {
+                workflow.SetAttributeValue( key, value );
+            }
+            else
+            {
+                // If workflow attribute doesn't exist, create it 
+                // ( should only happen first time a background check is processed for given workflow type)
+                var attribute = new Rock.Model.Attribute();
+                attribute.EntityTypeId = workflow.WorkflowType.TypeId;
+                attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
+                attribute.EntityTypeQualifierValue = workflow.WorkflowTypeId.ToString();
+                attribute.Name = key.SplitCase();
+                attribute.Key = key;
+                attribute.FieldTypeId = fieldType.Id;
+
+                if ( qualifiers != null )
+                {
+                    foreach( var keyVal in qualifiers )
+                    {
+                        var qualifier = new Rock.Model.AttributeQualifier();
+                        qualifier.Key = keyVal.Key;
+                        qualifier.Value = keyVal.Value;
+                        attribute.AttributeQualifiers.Add( qualifier );
+                    }
+                }
+
+                // Set the value for this action's instance to the current time
+                var attributeValue = new Rock.Model.AttributeValue();
+                attributeValue.Attribute = attribute;
+                attributeValue.EntityId = workflow.Id;
+                attributeValue.Value = value;
+                new AttributeValueService( rockContext ).Add( attributeValue );
+            }
+
         }
 
         private static Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
