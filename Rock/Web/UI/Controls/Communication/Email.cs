@@ -154,7 +154,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
             htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
             htmlMessage.MergeFields.Add( "UnsubscribeOption" );
-            htmlMessage.Help = "<span class='tip tip-liquid'></span> <span class='tip tip-html'>";
+            htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
             htmlMessage.Height = 600;
