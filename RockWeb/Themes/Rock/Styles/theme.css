@@ -1,12 +1,12 @@
 /*
    Rock's Core CSS
-    
+
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
     3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
     4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
     5. ASP.Net Overrides - Yep they get it wrong too sometimes
-    
+
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -441,7 +441,7 @@ img.jcrop-preview {
 }
 /*
     Used to manage styles related to reusable components / widgets.
-    
+
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
@@ -1431,29 +1431,53 @@ fieldset .actions {
   cursor: pointer;
   display: block;
 }
-.fileupload-group .fileupload-dropzone {
-  margin-top: 2px;
+.fileupload-group .fileupload-dropzone,
+.fileupload-group .fileupload-button {
   height: 30px;
-  border: 1px dotted #b9ad9b;
-  border-radius: 0 0 4px 4px;
   background-color: #567d8c;
   text-align: center;
   padding-top: 8px;
   position: relative;
   line-height: 12px;
 }
-.fileupload-group .fileupload-dropzone input {
+.fileupload-group .fileupload-dropzone ::-webkit-file-upload-button,
+.fileupload-group .fileupload-button ::-webkit-file-upload-button {
+  cursor: pointer;
+}
+.fileupload-group .fileupload-dropzone input,
+.fileupload-group .fileupload-button input {
   opacity: 0;
   height: 100%;
   width: 100%;
   position: absolute;
   left: 0;
   top: 0;
+  cursor: pointer;
 }
-.fileupload-group .fileupload-dropzone span {
+.fileupload-group .fileupload-dropzone span,
+.fileupload-group .fileupload-button span {
   font-size: 13px;
   color: #ffffff;
   width: 100%;
+  padding: 0 .5em;
+}
+.fileupload-group .fileupload-dropzone span:before,
+.fileupload-group .fileupload-button span:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\f093";
+  padding-right: .25em;
+}
+.fileupload-group .fileupload-dropzone {
+  margin-top: 2px;
+  border-radius: 0 0 4px 4px;
+}
+.fileupload-group .fileupload-button {
+  border-radius: 4px;
 }
 .fileupload-group .upload-progress {
   position: absolute;
@@ -3930,23 +3954,42 @@ a.cke_dialog_ui_button_ok:active {
   color: #ffffff !important;
   border: 1px solid #b7530e !important;
 }
-.ck-folders,
-.ck-files {
-  width: 50%;
-  float: left;
+@media (min-width: 480px) {
+  .ck-folders,
+  .ck-files {
+    float: left;
+  }
+}
+.ck-folders .scroll-container-vertical,
+.ck-files .scroll-container-vertical {
+  width: auto;
+}
+.ck-folders .scroll-container-vertical .viewport,
+.ck-files .scroll-container-vertical .viewport {
+  width: auto;
+}
+@media (min-width: 480px) {
+  .ck-folders {
+    width: 40%;
+  }
 }
 .ck-folders .actions {
   margin-bottom: 15px;
 }
-.ck-folders .scroll-container-vertical {
-  width: 450px;
+@media (max-width: 767px) {
+  .ck-folders .scroll-container-vertical .viewport {
+    height: 100px;
+  }
 }
-.ck-folders .scroll-container-vertical .viewport {
-  width: 430px;
+@media (min-width: 480px) {
+  .ck-files {
+    width: 60%;
+  }
 }
-.ck-files .fileupload-group .fileupload-dropzone {
-  height: 35px;
-  padding-top: 9px;
+.ck-files .fileupload-group {
+  display: inline-block;
+  border: none;
+  padding: 0;
 }
 .ck-files img.file-browser-image {
   width: 50px;

@@ -1,4 +1,5 @@
-﻿
+// Note: we're using !important overrides to avoid having to write a custom ck editor theme
+
 // 1. CK Window Styles
 // -------------------------
 
@@ -105,29 +106,45 @@ a.cke_dialog_ui_button_ok:active {
 
 .ck-folders,
 .ck-files {
-    width: 50%;
-    float: left;
+
+    @media (min-width: @screen-xs-min) {
+        float: left;
+    }
+
+    .scroll-container-vertical {
+        width: auto;
+
+        .viewport {
+            width: auto;
+        }
+    }
 }
 
 .ck-folders {
+
+    @media (min-width: @screen-xs-min) {
+        width: 40%;
+    }
+
     .actions {
         margin-bottom: @spacing-md-px;
     }
 
-    .scroll-container-vertical {
-        width: 450px;
-
-        .viewport {
-            width: 430px;
-        }
+    @media (max-width: @screen-xs-max) {
+        .scroll-container-vertical .viewport { height: 100px; }
     }
 }
 
 .ck-files {
 
-    .fileupload-group .fileupload-dropzone {
-        height: 35px;
-        padding-top: 9px;
+    @media (min-width: @screen-xs-min) {
+        width: 60%;
+    }
+
+    .fileupload-group {
+        display: inline-block;
+        border: none;
+        padding: 0;
     }
 
     img.file-browser-image {

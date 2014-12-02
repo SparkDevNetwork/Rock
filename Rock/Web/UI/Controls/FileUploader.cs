@@ -576,17 +576,20 @@ namespace Rock.Web.UI.Controls
                         <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                     </div>" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
-                if ( this.DisplayMode == UploaderDisplayMode.Button )
+                if (this.DisplayMode == UploaderDisplayMode.Button)
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-button" );
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-button");
+                }
+                else
+                {
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-dropzone");
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 if ( this.DisplayMode == UploaderDisplayMode.Button )
                 {
-                    writer.Write( "upload file" );
+                    writer.Write( "Upload File" );
                 }
                 else
                 {
