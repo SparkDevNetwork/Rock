@@ -39,6 +39,8 @@ namespace Rock.Rest
         /// <param name="config">The configuration.</param>
         public static void Register( HttpConfiguration config )
         {
+            config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+            config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
 
             // Add API route for dataviews
@@ -84,7 +86,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -97,7 +99,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -110,7 +112,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -124,7 +126,7 @@ namespace Rock.Rest
                },
                constraints: new
                {
-                   httpMethod = new HttpMethodConstraint( new string[] { "PUT" } ),
+                   httpMethod = new HttpMethodConstraint( new string[] { "PUT", "OPTIONS" } ),
                    controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                } );
 
@@ -139,7 +141,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST", "OPTIONS" } )
                 } );
 
             config.Routes.MapHttpRoute(
@@ -152,7 +154,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 

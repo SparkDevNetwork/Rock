@@ -134,6 +134,9 @@ namespace RockWeb
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
 
+                // Configure Rock Rest API
+                GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
+
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
@@ -193,10 +196,6 @@ namespace RockWeb
 
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
-
-                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
-
-                RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );
 
@@ -557,16 +556,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Registers the filters.
-        /// </summary>
-        /// <param name="filters">The filters.</param>
-        private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
-        {
-            // does validation on IEntity's coming in thru REST
-            filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
-        }
-
-        /// <summary>
         /// Registers the routes.
         /// </summary>
         /// <param name="routes">The routes.</param>
@@ -582,9 +571,6 @@ namespace RockWeb
                 // Create the custom route and save the page id in the DataTokens collection
                 routes.AddPageRoute( pageRoute );
             }
-
-            // Configure Rock Rest API routes
-            GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
