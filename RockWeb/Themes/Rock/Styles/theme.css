@@ -4683,6 +4683,13 @@ pre {
   background-color: #567d8c;
   color: #fff;
 }
+.discchart li {
+  background-color: #f29453;
+  color: #fff;
+}
+.discchart .discbar.discbar-primary {
+  background: #ee7624;
+}
 /*#endregion */
 /*#region  
 // 5. Theme Styling          */
