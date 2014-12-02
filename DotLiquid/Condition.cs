@@ -111,13 +111,21 @@ namespace DotLiquid
 
 			if (left != null && right != null && left.GetType() != right.GetType())
 			{
-				try
-				{
-					right = Convert.ChangeType(right, left.GetType());
-				}
-				catch (Exception)
-				{
-				}
+                try
+                {
+                    right = Convert.ChangeType( right, left.GetType() );
+                }
+                catch ( Exception )
+                {
+                    // If an exception occurred trying to convert right's type to left, try to change the left's type to the right
+                    try
+                    {
+                        left = Convert.ChangeType( left, right.GetType() );
+                    }
+                    catch ( Exception )
+                    {
+                    }
+                }
 			}
 
 			return Equals(left, right);
