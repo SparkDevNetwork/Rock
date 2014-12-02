@@ -222,7 +222,8 @@ namespace Rock.Lava
         /// <summary>
         /// formats string to be appropriate for a quantity
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         public static string ToQuantity( string input, int quantity )
         {
@@ -299,7 +300,9 @@ namespace Rock.Lava
         /// <summary>
         /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="precision">The precision.</param>
         /// <returns></returns>
         public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
         {
@@ -361,7 +364,9 @@ namespace Rock.Lava
         /// <summary>
         /// takes two datetimes and returns the difference in the unit you provide
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="unit">The unit.</param>
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {

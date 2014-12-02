@@ -40,7 +40,7 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="fieldTypeClassNames">The field type class names.</param>
         public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null )
             : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
         {
