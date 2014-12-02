@@ -35,9 +35,9 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Remove" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to remove from the tag.")]
+    [WorkflowAttribute("Person", "Workflow attribute that contains the person to remove from the tag.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Organization Tag", "The organization tag to remove the person from. <span class='tip tip-lava'></span>" )]
-
     public class PersonTagRemove : ActionComponent
     {
         /// <summary>
