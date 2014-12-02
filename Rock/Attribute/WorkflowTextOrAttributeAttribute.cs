@@ -27,7 +27,7 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowTextOrAttributeAttribute : FieldAttribute
     {
-        private const string WORKFLOW_TYPE_KEY = "workflowtype";
+        private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
@@ -40,18 +40,14 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
-        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string workflowTypeGuid = "" )
+        /// <param name="fieldTypeClassNames">The field type class names.</param>
+        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null )
             : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
         {
-            if ( !string.IsNullOrWhiteSpace( workflowTypeGuid ) )
+            if ( fieldTypeClassNames != null && fieldTypeClassNames.Length > 0 )
             {
-                var workflowType = Rock.Web.Cache.DefinedTypeCache.Read( workflowTypeGuid.AsGuid() );
-                if ( workflowType != null )
-                {
-                    var workflowTypeConfigValue = new Field.ConfigurationValue( workflowType.Id.ToString() );
-                    FieldConfigurationValues.Add( WORKFLOW_TYPE_KEY, workflowTypeConfigValue );
-                }
+                var workflowTypeConfigValue = new Field.ConfigurationValue( fieldTypeClassNames.ToList().AsDelimited("|") );
+                FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, workflowTypeConfigValue );
             }
         }
     }

@@ -36,7 +36,8 @@ namespace Rock.Workflow.Action
     [ExportMetadata("ComponentName", "Send System Email")]
 
     [SystemEmailField( "System Email", "A system email to send.")]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient" )]
+    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     public class SendSystemEmail : ActionComponent
     {
         /// <summary>

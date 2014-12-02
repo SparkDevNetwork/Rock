@@ -416,7 +416,7 @@ namespace DotLiquid
 			if (obj is Guid)
 				return obj;
             if ( obj is Enum )
-                return obj.ToString();
+                return obj;
 			if (TypeUtility.IsAnonymousType(obj.GetType()))
 				return obj;
 			if (obj is KeyValuePair<string, object>)

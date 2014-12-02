@@ -1,0 +1,17 @@
+﻿<div class="announcement-list">
+  
+  {% for item in Items -%}
+
+    <div class="announcement">
+      <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
+    </div>
+
+    {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
+    {% if breakNow == 0 -%}
+      </div>
+      <div class="announcement-list">
+    {% endif -%}
+
+  {% endfor -%}
+
+</div>

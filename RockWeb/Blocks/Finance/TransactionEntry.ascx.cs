@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 10, "DisplayEmail" )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 11 )]
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
+    [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
     // Text Options
@@ -72,14 +72,14 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 17 )]
 
     [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 18 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
     Please confirm the information below. Once you have confirmed that the information is 
     accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 19 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
     By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
@@ -90,14 +90,14 @@ namespace RockWeb.Blocks.Finance
 ", "Text Options", 20 )]
 
     [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></Fspan> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>", 
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
     Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
     achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 22 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", 
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", 
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 23 )]
 

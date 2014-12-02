@@ -51,7 +51,11 @@ namespace Rock.Storage
         [Obsolete( "This will be removed post McKinley. Use GetFileContentStream() instead." )]
         public virtual byte[] GetFileContent( BinaryFile file, HttpContext context )
         {
-            return null;
+            var stream = GetFileContentStream( file, context );
+            var result = new byte[stream.Length];
+            stream.Seek( 0, SeekOrigin.Begin );
+            stream.Read( result, 0, result.Length );
+            return result;
         }
 
         /// <summary>
@@ -60,11 +64,7 @@ namespace Rock.Storage
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public virtual Stream GetFileContentStream( BinaryFile file, HttpContext context )
-        {
-            // should be overridden, but just in case...
-            return new MemoryStream( GetFileContent( file, context ) );
-        }
+        public abstract Stream GetFileContentStream( BinaryFile file, HttpContext context );
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider

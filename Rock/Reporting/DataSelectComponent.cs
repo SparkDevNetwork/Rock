@@ -269,6 +269,19 @@ namespace Rock.Reporting
         /// <returns></returns>
         public abstract Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection );
 
+        /// <summary>
+        /// Gets the expression.
+        /// override this for non-RockContext Expressions
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public virtual Expression GetExpression( System.Data.Entity.DbContext context, MemberExpression entityIdProperty, string selection )
+        {
+            return GetExpression( context as RockContext, entityIdProperty, selection );
+        }
+
         #endregion
     }
 }

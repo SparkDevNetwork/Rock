@@ -15,12 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-using Rock;
+using DotLiquid;
+using DotLiquid.Util;
+
+using Humanizer;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -34,12 +35,439 @@ namespace Rock.Lava
     /// </summary>
     public static class RockFilters
     {
+        #region String Filters
+
+        /// <summary>
+        /// pluralizes string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Pluralize( string input )
+        {
+            return input == null
+                ? input
+                : input.Pluralize();
+        }
+
+        /// <summary>
+        /// convert a integer to a string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToString( int input )
+        {
+            return input.ToString();
+        }
+
+        /// <summary>
+        /// singularize string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Singularize( string input )
+        {
+            return input == null
+                ? input
+                : input.Singularize();
+        }
+
+        /// <summary>
+        /// takes computer-readible-formats and makes them human readable
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string Humanize( string input )
+        {
+            return input == null
+                ? input
+                : input.Humanize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'Title Case'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string TitleCase( string input )
+        {
+            return input == null
+                ? input
+                : input.Titleize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'PascalCase'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToPascal( string input )
+        {
+            return input == null
+                ? input
+                : input.Dehumanize();
+        }
+
+        /// <summary>
+        /// returns sentence in 'PascalCase'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ToCssClass( string input )
+        {
+            return input == null
+                ? input
+                : input.ToLower().Replace( " ", "-" );
+        }
+
+        /// <summary>
+        /// returns sentence in 'Sentence case'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string SentenceCase( string input )
+        {
+            return input == null
+                ? input
+                : input.Transform( To.SentenceCase );
+        }
+
+        /// <summary>
+        /// takes 1, 2 and returns 1st, 2nd
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinal( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.Ordinalize();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns one, two
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToWords( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToWords();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns first, second
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinalWords( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToOrdinalWords();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns I, II, IV
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToRomanNumerals( string input )
+        {
+            if ( input == null )
+                return input;
+
+            int number;
+
+            if ( int.TryParse( input, out number ) )
+            {
+                return number.ToRoman();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// formats string to be appropriate for a quantity
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        public static string ToQuantity( string input, int quantity )
+        {
+            return input == null
+                ? input
+                : input.ToQuantity( quantity );
+        }
+
+
+        #endregion
+
+        #region DateTime Filters
+
+        /// <summary>
+        /// Formats a date using a .NET date format string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static string Date( object input, string format )
+        {
+            if ( input == null )
+                return null;
+
+            if ( input.ToString() == "Now" )
+            {
+                input = RockDateTime.Now.ToString();
+            }
+
+            if ( string.IsNullOrWhiteSpace( format ) )
+                return input.ToString();
+
+            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
+            if ( format.Length == 1 )
+            {
+                format = " " + format;
+            }
+
+            DateTime date;
+
+            return DateTime.TryParse( input.ToString(), out date )
+                ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
+                : input.ToString().Trim();
+        }
+
+        /// <summary>
+        /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string HumanizeDateTime( object input )
+        {
+            if ( input == null )
+                return string.Empty;
+
+            DateTime dtInput;
+
+            if ( input is DateTime )
+            {
+                dtInput = (DateTime)input;
+            }
+            else
+            {
+                if ( !DateTime.TryParse( input.ToString(), out dtInput ) )
+                {
+                    return string.Empty;
+                }
+            }
+
+            return dtInput.Humanize( false, RockDateTime.Now );
+
+        }
+
+        /// <summary>
+        /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
+        /// </summary>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="precision">The precision.</param>
+        /// <returns></returns>
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
+        {
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
+
+            // convert start date if string
+            if ( sStartDate is String )
+            {
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
+            }
+
+            // convert end date if string
+            if ( sEndDate is String )
+            {
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
+            }
+
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            {
+                TimeSpan difference = endDate - startDate;
+                return difference.Humanize( precision );
+            }
+            else
+            {
+                return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
+        /// takes two datetimes and returns the difference in the unit you provide
+        /// </summary>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="unit">The unit.</param>
+        /// <returns></returns>
+        public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
+        {
+
+            DateTime startDate = DateTime.MinValue;
+            DateTime endDate = DateTime.MinValue;
+
+            // convert start date if string
+            if ( sStartDate is String )
+            {
+                if ( (string)sStartDate == "Now" )
+                {
+                    startDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sStartDate is DateTime )
+            {
+                startDate = (DateTime)sStartDate;
+            }
+
+            // convert end date if string
+            if ( sEndDate is String )
+            {
+                if ( (string)sEndDate == "Now" )
+                {
+                    endDate = RockDateTime.Now;
+                }
+                else
+                {
+                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if ( sEndDate is DateTime )
+            {
+                endDate = (DateTime)sEndDate;
+            }
+
+
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            {
+                TimeSpan difference = endDate - startDate;
+
+                switch ( unit )
+                {
+                    case "d":
+                        return (Int64)difference.TotalDays;
+                    case "h":
+                        return (Int64)difference.TotalHours;
+                    case "m":
+                        return (Int64)difference.TotalMinutes;
+                    case "M":
+                        return (Int64)GetMonthsBetween( startDate, endDate );
+                    case "Y":
+                        return (Int64)( endDate.Year - startDate.Year );
+                    case "s":
+                        return (Int64)difference.TotalSeconds;
+                    default:
+                        return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static int GetMonthsBetween( DateTime from, DateTime to )
+        {
+            if ( from > to ) return GetMonthsBetween( to, from );
+
+            var monthDiff = Math.Abs( ( to.Year * 12 + ( to.Month - 1 ) ) - ( from.Year * 12 + ( from.Month - 1 ) ) );
+
+            if ( from.AddMonths( monthDiff ) > to || to.Day < from.Day )
+            {
+                return monthDiff - 1;
+            }
+            else
+            {
+                return monthDiff;
+            }
+        }
+
+        #endregion
 
         #region Attribute Filters
 
         /// <summary>
         /// DotLiquid Attribute Filter
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>

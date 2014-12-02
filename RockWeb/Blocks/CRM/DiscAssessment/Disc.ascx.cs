@@ -41,7 +41,7 @@ namespace Rockweb.Blocks.Crm
     [Category( "CRM > DiscAssessment" )]
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
     [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
-    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
             <h2>Welcome!</h2>
             <p>
                 {{ Person.NickName }}, in this assessment you are given a series of questions, each containing four phrases.
@@ -100,7 +100,7 @@ namespace Rockweb.Blocks.Crm
                 {
                     _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
                 }
-                catch ( Exception ex )
+                catch
                 {
                     nbError.Visible = true;
                 }
