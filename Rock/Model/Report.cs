@@ -168,7 +168,6 @@ namespace Rock.Model
         /// <summary>
         /// Gets the data source.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="entityFields">The entity fields.</param>
         /// <param name="attributes">The attributes.</param>
