@@ -3885,10 +3885,12 @@ iframe.email-body {
 .cke_dialog_footer {
   background-color: #ecf0f1 !important;
   background-image: none !important;
+  color: #95a5a6 !important;
   outline: none !important;
   padding: 8px !important;
   margin-top: 10px !important;
   box-shadow: none !important;
+  border-radius: 0 0 4px 4px;
 }
 a.cke_dialog_ui_button,
 a.cke_dialog_ui_button:focus,
@@ -3902,17 +3904,33 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 15px !important;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
+  background-color: transparent !important;
+  color: #18bc9c !important;
+  font-weight: normal !important;
+  border: none !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
+  color: #18bc9c;
+  text-decoration: underline;
+  background-color: transparent;
 }
 a.cke_dialog_ui_button_ok,
 a.cke_dialog_ui_button_ok:focus,
 a.cke_dialog_ui_button_ok:active {
-  background: #18bc9c !important;
+  background: #2c3e50 !important;
   color: #ffffff !important;
-  border: 1px solid #128f76 !important;
+  border: 1px solid #1a242f !important;
 }
 .ck-folders,
 .ck-files {
