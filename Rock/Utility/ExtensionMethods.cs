@@ -2349,6 +2349,22 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Adds an item to a Dictionary if it doesn't already exist in Dictionary
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrIgnore<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
+            if ( !dictionary.ContainsKey( key ) )
+            {
+                dictionary.Add( key, value );
+            }
+        }
+
         #endregion
 
         #region Geography extension methods
