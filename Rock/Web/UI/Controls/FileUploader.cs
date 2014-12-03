@@ -240,8 +240,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                Guid guid;
-                return Guid.TryParse( _hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+                var result = _hfBinaryFileTypeGuid.Value.AsGuid();
+                if ( result.IsEmpty() )
+                {
+                    result = SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                }
+
+                return result;
             }
 
             set
