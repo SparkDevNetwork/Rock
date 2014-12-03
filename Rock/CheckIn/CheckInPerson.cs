@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -26,7 +25,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : DotLiquid.ILiquidizable
+    public class CheckInPerson : DotLiquid.ILiquidizable, DotLiquid.IIndexable
     {
         /// <summary>
         /// Gets or sets the person.
@@ -139,16 +138,47 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = Person.ToLiquid() as Dictionary<string, object>;
-            if ( dictionary != null )
-            {
-                dictionary.Add( "FamilyMember", FamilyMember );
-                dictionary.Add( "LastCheckIn", LastCheckIn );
-                dictionary.Add( "SecurityCode", SecurityCode );
-                return dictionary;
-            }
+            return this;
+        }
 
-            return new Dictionary<string, object>();
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+           get
+            {
+               switch( key.ToStringSafe() )
+               {
+                   case "FamilyMember": return FamilyMember;
+                   case "LastCheckIn": return LastCheckIn;
+                   case "SecurityCode": return SecurityCode;
+                   default: return Person[key];
+               }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalProperties = new List<string> { "FamilyMember", "LastCheckIn", "SecurityCode" };
+            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Person.ContainsKey( key );
+            }
         }
     }
 }
