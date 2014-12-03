@@ -478,7 +478,13 @@ CKEDITOR.replace('{0}', {{
             CKEDITOR.instances.{0}.updateElement();
 
             // update the underlying TextElement when there is a change event in SOURCE mode
-            $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
+            $('#cke_{0}').on( 'change paste', '.cke_source', function(e, data) {{
+                CKEDITOR.instances.{0}.updateElement();
+            }});
+
+            // In IE, clicking the Source button does not cause the .cke_source to lose focus 
+            // and fire the onchange event, so also updateElement when source button is clicked
+            $('#cke_{0} .cke_button__source').click( function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
             }});
 
