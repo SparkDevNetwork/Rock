@@ -23,6 +23,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Newtonsoft.Json;
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -52,6 +53,9 @@ public class Twilio : IHttpHandler
                 case "received":
                     MessageRecieved();
                     break;
+                case "undelivered":
+                    MessageUndelivered();
+                    break;
             }
 
             response.StatusCode = 200;
@@ -63,6 +67,25 @@ public class Twilio : IHttpHandler
 
     }
 
+    private void MessageUndelivered()
+    {
+        string messageSid = string.Empty;
+        
+        if ( !string.IsNullOrEmpty( request.Form["MessageSid"] ) )
+        {
+            messageSid = request.Form["MessageSid"];
+            
+            // get communication from the message side
+            RockContext rockContext = new RockContext();
+            CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
+
+            var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
+            communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+            communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
+            rockContext.SaveChanges();
+        }
+    }
+    
     private void MessageRecieved()
     {
         string fromPhone = string.Empty;
