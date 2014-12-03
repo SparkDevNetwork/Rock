@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Cms
 
                 debugInfo.Append( "<pre>" );
                 debugInfo.Append( "<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>" );
-                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ).LiquidHelpText() + "</pre>" );
+                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ).lavaDebugInfo() + "</pre>" );
 
                 debugInfo.Append( "</div>" );
                 phContent.Controls.Add( new LiteralControl( debugInfo.ToString() ) );

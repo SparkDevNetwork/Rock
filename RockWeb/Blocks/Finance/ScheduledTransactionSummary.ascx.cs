@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Finance
                         <pre>
 {0}
                         </pre>
-                    ", scheduleValues.LiquidHelpText() );
+                    ", scheduleValues.lavaDebugInfo() );
 
                     content += debugInfo;
                 }
