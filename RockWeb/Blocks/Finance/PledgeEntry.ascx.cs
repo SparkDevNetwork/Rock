@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Finance
                 debugInfo.Append( "<pre>" );
 
                 debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                debugInfo.Append( mergeObjects.LiquidHelpText() + "</pre>" );
+                debugInfo.Append( mergeObjects.lavaDebugInfo() + "</pre>" );
 
                 debugInfo.Append( "</div>" );
 
