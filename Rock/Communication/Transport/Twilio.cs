@@ -108,7 +108,10 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message );
+                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message, callbackUrl );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
