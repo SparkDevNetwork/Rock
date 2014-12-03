@@ -84,7 +84,17 @@ namespace RockWeb.Webhooks
                         {
                             workflow.LoadAttributes();
                             Rock.Security.BackgroundCheck.ProtectMyMinistry.SaveResults( xResult, workflow, rockContext );
-                            rockContext.SaveChanges();
+                            
+                            rockContext.WrapTransaction( () =>
+                            {
+                                rockContext.SaveChanges();
+                                workflow.SaveAttributeValues( rockContext );
+                                foreach ( var activity in workflow.Activities )
+                                {
+                                    activity.SaveAttributeValues( rockContext );
+                                }
+                            } );
+
                         }
                     }
 

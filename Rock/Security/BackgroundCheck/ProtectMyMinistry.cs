@@ -406,11 +406,11 @@ namespace Rock.Security.BackgroundCheck
                 binaryFileAttribute.QualifierValues != null &&
                 binaryFileAttribute.QualifierValues.ContainsKey( "binaryFileType" ) )
             {
-                int? fileTypeId = binaryFileAttribute.QualifierValues["binaryFileType"].Value.AsIntegerOrNull();
-                if ( fileTypeId.HasValue )
+                Guid? fileTypeGuid = binaryFileAttribute.QualifierValues["binaryFileType"].Value.AsGuidOrNull();
+                if ( fileTypeGuid.HasValue )
                 {
                     RockContext rockContext = new RockContext();
-                    BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeId.Value );
+                    BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid.Value );
 
                     if ( binaryFileType != null )
                     {
