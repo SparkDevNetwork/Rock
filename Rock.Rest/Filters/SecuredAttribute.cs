@@ -64,8 +64,24 @@ namespace Rock.Rest.Filters
                 var principal = actionContext.Request.GetUserPrincipal();
                 if ( principal != null && principal.Identity != null )
                 {
-                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+                    var rockContext = new RockContext();
+                    string userName =principal.Identity.Name;
+                    UserLogin userLogin = null;
+                    if ( userName.StartsWith( "rckipid=" ) )
+                    {
+                        Rock.Model.PersonService personService = new Model.PersonService( rockContext );
+                        Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
+                        if ( impersonatedPerson != null )
+                        {
+                            userLogin = impersonatedPerson.GetImpersonatedUser();
+                        }
+                    }
+                    else
+                    {
+                        var userLoginService = new Rock.Model.UserLoginService( rockContext );
+                        userLogin = userLoginService.GetByUserName( userName );
+                    }
+
                     if ( userLogin != null )
                     {
                         person = userLogin.Person;
