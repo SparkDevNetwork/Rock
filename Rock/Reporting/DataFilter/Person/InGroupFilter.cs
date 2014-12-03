@@ -180,7 +180,7 @@ function() {
             filterControl.Controls.Add( cbChildGroups );
 
             cblRole = new RockCheckBoxList();
-            cblRole.Label = "with Group Role(s)";
+            cblRole.Label = "with Group Member Role(s) (optional)";
             cblRole.ID = filterControl.ID + "_cblRole";
             filterControl.Controls.Add( cblRole );
 
