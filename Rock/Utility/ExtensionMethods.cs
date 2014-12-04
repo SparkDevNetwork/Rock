@@ -145,10 +145,30 @@ namespace Rock
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            //if ( liquidObject is Drop )
-            //{
-            //    return ( (ILiquidizable)liquidObject ).ToLiquid();
-            //}
+            if ( liquidObject is Drop )
+            {
+                var result = new Dictionary<string, object>();
+
+                foreach( var propInfo in entityType.GetProperties(
+                          BindingFlags.Public | 
+                          BindingFlags.Instance | 
+                          BindingFlags.DeclaredOnly ) )
+                {
+                    if ( propInfo != null )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                return result;
+            }
 
             if ( entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).Any() )
             {
@@ -263,7 +283,7 @@ namespace Rock
                 return result;
             }
 
-            return string.Empty;
+            return liquidObject.ToStringSafe();
         }
 
         private static string formatLavaDebugInfo( object liquidizedObject, int levelsDeep = 0 )
