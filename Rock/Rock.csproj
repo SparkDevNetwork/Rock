@@ -63,8 +63,9 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="Humanizer">
-      <HintPath>..\packages\Humanizer.1.29.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
+    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -158,6 +159,7 @@
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
@@ -225,6 +227,8 @@
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\IChartData.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
+    <Compile Include="Data\LiquidInclude.cs" />
+    <Compile Include="Data\LiquidIgnore.cs" />
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
@@ -233,6 +237,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
@@ -255,6 +260,7 @@
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
@@ -281,6 +287,7 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
@@ -994,7 +1001,7 @@
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
-    <Compile Include="Workflow\Action\SendEmailTemplate.cs" />
+    <Compile Include="Workflow\Action\SendSystemEmail.cs" />
     <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />

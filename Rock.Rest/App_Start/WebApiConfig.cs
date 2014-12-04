@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
 using System.Web.Routing;
@@ -38,6 +39,10 @@ namespace Rock.Rest
         /// <param name="config">The configuration.</param>
         public static void Register( HttpConfiguration config )
         {
+            config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+            config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
+            config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
+
             // Add API route for dataviews
             config.Routes.MapHttpRoute(
                 name: "DataViewApi",
@@ -54,10 +59,17 @@ namespace Rock.Rest
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ) ) )
             {
-                var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
-                if ( controller != null )
+                try
                 {
-                    controller.AddRoutes( RouteTable.Routes );
+                    var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
+                    if ( controller != null )
+                    {
+                        controller.AddRoutes( RouteTable.Routes );
+                    }
+                }
+                catch
+                {
+                    // ignore, and skip adding routes if the controller raises an exception
                 }
             }
 
@@ -74,7 +86,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -87,7 +99,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -100,7 +112,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
@@ -114,7 +126,7 @@ namespace Rock.Rest
                },
                constraints: new
                {
-                   httpMethod = new HttpMethodConstraint( new string[] { "PUT" } ),
+                   httpMethod = new HttpMethodConstraint( new string[] { "PUT", "OPTIONS" } ),
                    controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                } );
 
@@ -129,7 +141,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST", "OPTIONS" } )
                 } );
 
             config.Routes.MapHttpRoute(
@@ -142,7 +154,7 @@ namespace Rock.Rest
                 },
                 constraints: new
                 {
-                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } ),
+                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE", "OPTIONS" } ),
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 

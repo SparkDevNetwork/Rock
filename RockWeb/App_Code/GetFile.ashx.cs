@@ -16,6 +16,7 @@
 //
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Rock;
@@ -160,7 +161,7 @@ namespace RockWeb
                         {
                             if ( binaryFile.Data.ContentStream != null )
                             {
-                                SendFile( context, binaryFile.Data.ContentStream, binaryFile.MimeType, binaryFile.FileName );
+                                SendFile( context, binaryFile.Data.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
                                 return;
                             }
                         }
@@ -175,7 +176,7 @@ namespace RockWeb
                     {
                         string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
                         string fileName = Path.GetFileName( physicalContentFileName );
-                        SendFile( context, fileContents, mimeType, fileName );
+                        SendFile( context, fileContents, mimeType, fileName, "" );
                         return;
                     }
                 }
@@ -207,18 +208,37 @@ namespace RockWeb
         /// <param name="fileContents">The file contents.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="fileName">Name of the file.</param>
-        private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName )
+        /// <param name="eTag">The e tag.</param>
+        private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName, string eTag )
         {
+            int startIndex = 0;
+            int fileLength = (int)fileContents.Length;
+            int responseLength = fileLength;
+
+            // resumable logic from http://stackoverflow.com/a/6475414/1755417
+            if ( context.Request.Headers["Range"] != null && ( context.Request.Headers["If-Range"] == null ) )
+            {
+                var match = Regex.Match( context.Request.Headers["Range"], @"bytes=(\d*)-(\d*)" );
+                startIndex = match.Groups[1].Value.AsInteger();
+                responseLength = (match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
+                context.Response.StatusCode = (int)System.Net.HttpStatusCode.PartialContent;
+                context.Response.Headers["Content-Range"] = "bytes " + startIndex + "-" + ( startIndex + responseLength - 1 ) + "/" + fileLength;
+            }
+            
             context.Response.Clear();
             context.Response.Buffer = false;
+            context.Response.Headers["Accept-Ranges"] = "bytes";
             context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
-            context.Response.AddHeader( "content-length", fileContents.Length.ToString() );
+            context.Response.AddHeader( "content-length", responseLength.ToString() );
+            context.Response.Cache.SetCacheability( HttpCacheability.Public ); // required for etag output
+
+            context.Response.Cache.SetETag( eTag ); // required for IE9 resumable downloads
             context.Response.ContentType = mimeType;
             byte[] buffer = new byte[4096];
 
             if ( context.Response.IsClientConnected )
             {
-                fileContents.Seek( 0, SeekOrigin.Begin );
+                fileContents.Seek( startIndex, SeekOrigin.Begin );
                 while (true)
                 {
                     var bytesRead = fileContents.Read( buffer, 0, buffer.Length );

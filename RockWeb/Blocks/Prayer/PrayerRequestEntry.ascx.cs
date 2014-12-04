@@ -183,10 +183,10 @@ namespace RockWeb.Blocks.Prayer
 
             prayerRequest.CategoryId = categoryId;
             prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
-            prayerRequest.FirstName = dtbFirstName.Text.Trim().SanitizeHtml();
-            prayerRequest.LastName = dtbLastName.Text.Trim().SanitizeHtml();
-            prayerRequest.Email = dtbEmail.Text.Trim();
-            prayerRequest.Text = HttpUtility.HtmlEncode(dtbRequest.Text.Trim());
+            prayerRequest.FirstName = dtbFirstName.Text;
+            prayerRequest.LastName = dtbLastName.Text;
+            prayerRequest.Email = dtbEmail.Text;
+            prayerRequest.Text = dtbRequest.Text;
             
             if ( this.EnableUrgentFlag )
             {

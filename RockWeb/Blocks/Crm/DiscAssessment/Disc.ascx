@@ -1,302 +1,226 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Disc.ascx.cs" Inherits="Rockweb.Blocks.Crm.Disc" ViewStateMode="Enabled" EnableViewState="true" %>
 
+<script type="text/javascript">
+    ///<summary>
+    /// Fade-in effect for the panel.
+    ///</summary>
+    function fadePanelIn() {
+        $("[id$='upnlContent']").rockFadeIn();
+    }
+
+    ///<summary>
+    /// Verifies that both a less and a more were selected, then
+    /// scrolls to the next item.
+    ///</summary>
+    function checkAndMoveToNext($pRow, partialSelector) {
+        var $checkedItem = $pRow.find('input[type=radio][id*="' + partialSelector + '"]:checked');
+        //If both RBLs have a selected item
+        if ($checkedItem.length > 0) {
+            var $nextPanel = $pRow.closest(".disc-assessment").next();
+            if ($nextPanel.length > 0) {
+                $("body").animate({ scrollTop: $nextPanel.offset().top - 20 }, 400);
+            }
+        }
+    }
+
+    ///<summary>
+    /// Returns true if the test is complete.
+    ///</summary>
+    function isComplete() {
+        var $completedQuestions = $('.js-disc-questions input[type=radio]:checked');
+        if ($completedQuestions.length < 60) {
+            $('[id$="divError"]').fadeIn();
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    ///<summary>
+    /// Unchecks the corresponding item from the other rbl
+    /// and moves to next question.
+    ///</summary>
+    function initQuestionValidation() {
+        $('.js-disc-questions input[type=radio]').change(function () {
+            var selectedId = this.id;
+            var selectedIdx = this.id.charAt(this.id.length - 1);
+            var rowIdx = this.id.charAt(this.id.length - 3);
+
+            var $parentTable = $(this).closest("table.disc-assessment");
+
+            // find the other items of the same type (More or Less)
+            var answerType = this.name.substr(length - 9, 7);
+            // so the selector will be like: input[type=radio][id*="_rblMore"]
+            var selector = 'input[type=radio][id*="' + answerType + '"]';
+            var $sameType = $parentTable.find(selector);
+
+            // uncheck each of the same type except the one that was just checked
+            $sameType.each(function (index, element) {
+                if (!$(this).is("#" + selectedId)) {
+                    $(element).removeAttr('checked');
+                }
+            });
+
+            // find the oppositeType
+            // when this name is of the form: name="ctl00$main$ctl23$bid_568$ctl11$ctl00$rQuestions$ctl00$rblMore1"
+            var oppositeType = (answerType == "rblMore") ? "_rblLess" : "_rblMore";
+
+            // if row 1 More was selected, the selector will be like: input[type=radio][id$="_rblLess1_0"]
+            var selector = 'input[type=radio][id$="' + oppositeType + rowIdx + '_' + selectedIdx + '"]';
+
+            // uncheck the corresponding inverse variable
+            var $correspondingItem = $parentTable.find(selector);
+            if ($correspondingItem) {
+                $correspondingItem.removeAttr('checked');
+            }
+
+            $('[id$="divError"]').fadeOut();
+
+            checkAndMoveToNext($parentTable, oppositeType);
+        });
+    }
+
+    ///<summary>
+    /// Standard .Net handler that's called when the page is loaded (including Ajax).
+    ///</summary>
+    function pageLoad(sender, args) {
+        initQuestionValidation();
+    }
+
+    $(document).ready(function () {
+        fadePanelIn();
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlInstructions" runat="server">
-            <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
+        <Rock:NotificationBox id="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You have to be signed in to take the assessment.</Rock:NotificationBox>
 
-            <div class="actions">
-                <asp:Button ID="btnStart" Text="Start" runat="server" CssClass="btn btn-primary" OnClick="btnStart_Click" />
+        <asp:Panel ID="pnlInstructions" CssClass="panel panel-block" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+                   
+             </div>
+             <div class="panel-body">
+                <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                </div>
             </div>
-
         </asp:Panel>
 
-        <asp:Panel ID="pnlQuestions" runat="server">
-            <div class="container">
+        <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
+             <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
+                   
+             </div>
+             <div class="panel-body">
                 <asp:Repeater ID="rQuestions" runat="server" OnItemDataBound="rQuestions_ItemDataBound">
                     <ItemTemplate>
-                        <div class="js-disc-questions panel panel-default">
-                            <div class="panel-heading">
-                                Question <%# Container.ItemIndex + 1 %>
-                            </div>
-                            <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-md-1">
-                                        MORE
-                                    </div>
-                                    <div class="col-md-11">
-                                        LESS
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-1">
-                                        <Rock:RockRadioButtonList ID="rblMore" runat="server" />
-                                    </div>
-                                    <div class="col-md-11">
-                                        <Rock:RockRadioButtonList ID="rblLess" runat="server" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="table table-condensed table-striped table-hover disc-assessment js-disc-questions margin-b-lg">
+                            <thead>
+                                <tr>
+                                    <th class="disc-question">Question <%# Container.ItemIndex + 1 %></th>
+                                    <th class="disc-answer disc-more">Most</th>
+                                    <th class="disc-answer disc-less">Least</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion1" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore1" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess1" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion2" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore2" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess2" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion3" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore3" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess3" runat="server" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="disc-question">
+                                        <asp:Literal ID="lQuestion4" runat="server"></asp:Literal></td>
+                                    <td class="disc-answer disc-more">
+                                        <Rock:RockRadioButtonList ID="rblMore4" runat="server" /></td>
+                                    <td class="disc-answer disc-less">
+                                        <Rock:RockRadioButtonList ID="rblLess4" runat="server" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
                     </ItemTemplate>
                 </asp:Repeater>
                 <div style="display: none" class="alert alert-danger" id="divError">
                     Please answer all questions before scoring.
                 </div>
-                <div class="actions">
-                    <asp:Button ID="btnScoreTest" Text="Score Test" runat="server" CssClass="btn btn-primary" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }" />
+                <div class="actions clearfix">
+                    <asp:LinkButton ID="btnScoreTest" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnScoreTest_Click" OnClientClick="if (!isComplete()) { return false; }"><i class="fa fa-check-circle-o"></i> Score</asp:LinkButton>
+                </div>
+
+                <div class="disc-attribution">
+                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
                 </div>
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlResults" runat="server">
-
-            <h2>Results</h2>
-            <p>Here are the result of your test:</p>
-
-            <style>
-                .disc-chart {
-                    display: table;
-                    table-layout: fixed;
-                    width: 70%;
-                    max-width: 500px;
-                    height: 200px;
-                    //background-image: linear-gradient(to top, rgba(0, 0, 0, 0.1) 2%, rgba(0, 0, 0, 0) 2%);
-                    background-size: 100% 50px;
-                    background-position: left top;
-                    padding: 30px;
-                    border: 1px solid #e1e1e8;
-                    border-radius: 5px;
-                }
-
-                    .disc-chart li {
-                        position: relative;
-                        display: table-cell;
-                        vertical-align: bottom;
-                        height: 200px;
-                    }
-
-                    .disc-chart span {
-                        margin: 0 1em;
-                        display: block;
-                        //background: rgba(209, 236, 250, 0.75);
-                        animation: draw 1s ease-in-out;
-                    }
-
-                    .disc-chart span .discbar-primary {
-                    }
-                        .disc-chart span:before {
-                            position: absolute;
-                            left: 0;
-                            right: 0;
-                            top: 100%;
-                            padding: 5px 1em 0;
-                            display: block;
-                            text-align: center;
-                            content: attr(title);
-                            word-wrap: break-word;
-                        }
-
-                @keyframes draw {
-                    0% {
-                        height: 0;
-                    }
-                }
-            </style>
-
-            <h3>Natural Behavior</h3>
-
-            <ul class="disc-chart">
-                <li>
-                    <span id="discNaturalScore_D" runat="server" title="D" class="label-default discbar-d"></span>
-                </li>
-                <li>
-                    <span id="discNaturalScore_I" runat="server" title="I" class="label-default discbar-i"></span>
-                </li>
-                <li>
-                    <span id="discNaturalScore_S" runat="server" title="S" class="label-default discbar-s"></span>
-                </li>
-                <li>
-                    <span id="discNaturalScore_C" runat="server" title="C" class="label-default discbar-c"></span>
-                </li>
-            </ul>
-
-            <h3>Adaptive Behavior</h3>
-
-            <ul class="disc-chart">
-                <li>
-                    <span id="discAdaptiveScore_D" runat="server" title="D" class="label-default discbar-d"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_I" runat="server" title="I" class="label-default discbar-i"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_S" runat="server" title="S" class="label-default discbar-s"></span>
-                </li>
-                <li>
-                    <span id="discAdaptiveScore_C" runat="server" title="C" class="label-default discbar-c"></span>
-                </li>
-            </ul>
-
-            <div class="actions">
-                <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+        <asp:Panel ID="pnlResults" CssClass="panel panel-block" runat="server">
+            <div class="panel-heading">
+                <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
             </div>
+            <div class="panel-body">
+                
+                <ul class="discchart">
+                    <li class="discchart-midpoint"></li>
+                    <li style="height: 100%; width:0px;"></li>
+                    <li id="discNaturalScore_D" runat="server" class="discbar discbar-d">
+                        <div class="discbar-label">D</div>
+                    </li>
+                    <li id="discNaturalScore_I" runat="server" class="discbar discbar-i">
+                        <div class="discbar-label">I</div>
+                    </li>
+                    <li id="discNaturalScore_S" runat="server" class="discbar discbar-s">
+                        <div class="discbar-label">S</div>
+                    </li>
+                    <li id="discNaturalScore_C" runat="server" class="discbar discbar-c">
+                        <div class="discbar-label">C</div>
+                    </li>
+                </ul>
 
-        </asp:Panel>
+                <h3>Description</h3>
+                <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+
+                <h3>Strengths</h3>
+                <asp:Literal ID="lStrengths" runat="server"></asp:Literal>
+
+                <h3>Challenges</h3>
+                <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
+
+                <div class="actions margin-t-lg">
+                    <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+                </div>
+
+                <div class="disc-attribution">
+                    <small>DISC assessment courtesy of Dr Gregory Wiens at <a href="http://www.healthygrowingleaders.com">healthygrowingleaders.com</a>.</small>
+                </div>
+        </div>
+
+    </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
-
-<!--
-<div id="tabs">
-    <ul id="navTabs" class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#instructions">Instructions</a></li>
-        <li><a data-toggle="tab" href="#questions">Questions</a></li>
-        <li><a data-toggle="tab" href="#results">Results</a></li>
-    </ul>
-    <div class="tab-content">
-
-        <div id="questions" class="tab-pane">
-
-        </div>
-        <div id="results" class="tab-pane">
-            <div class="row">
-                <div class="col-md-3">
-                    <table class="table table-bordered table-condensed table-striped">
-                        <thead>
-                            <tr class="info">
-                                <th colspan="2">Adaptive Behavior
-                                </th>
-                                <th colspan="2">Natural Behavior
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABd" Text="" runat="server" />
-                                </td>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBd" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABi" Text="" runat="server" />
-                                </td>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBi" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABs" Text="" runat="server" />
-                                </td>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBs" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblABc" Text="" runat="server" />
-                                </td>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblNBc" Text="" runat="server" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <h2>Your Saved DISC Assessment Scores
-            </h2>
-            <div>
-                Saved on:
-                <asp:Label ID="lblLastAssessmentDate" Text="" runat="server" />
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    <table class="table table-bordered table-condensed table-striped">
-                        <thead>
-                            <tr class="info">
-                                <th colspan="2">Adaptive Behavior
-                                </th>
-                                <th colspan="2">Natural Behavior
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABd" Text="" runat="server" />
-                                </td>
-                                <td>D:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBd" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABi" Text="" runat="server" />
-                                </td>
-                                <td>I:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBi" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABs" Text="" runat="server" />
-                                </td>
-                                <td>S:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBs" Text="" runat="server" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevABc" Text="" runat="server" />
-                                </td>
-                                <td>C:
-                                </td>
-                                <td>
-                                    <asp:Label ID="lblPrevNBc" Text="" runat="server" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    -->

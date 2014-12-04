@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Security
 Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [EmailTemplateField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
 Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
 ", "", 5 )]
@@ -339,7 +339,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         /// Sends the confirmation.
         /// </summary>
         /// <param name="userLogin">The user login.</param>
-        private void SendConfirmation(UserLogin userLogin)
+        private void SendConfirmation( UserLogin userLogin )
         {
             string url = LinkedPageUrl( "ConfirmationPage" );
             if ( string.IsNullOrWhiteSpace( url ) )
@@ -347,13 +347,12 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = new Dictionary<string, object>();
+            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
-            var personDictionary = userLogin.Person.ToDictionary();
+            var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
             mergeObjects.Add( "Person", personDictionary );
-
-            mergeObjects.Add( "User", userLogin.ToDictionary() );
+            mergeObjects.Add( "User", userLogin );
 
             var recipients = new List<RecipientData>();
             recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );

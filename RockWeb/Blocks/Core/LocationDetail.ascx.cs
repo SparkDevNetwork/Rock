@@ -92,7 +92,15 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "LocationId" ).AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
+                string locationId = PageParameter( "LocationId" );
+                if ( !string.IsNullOrWhiteSpace( locationId ) )
+                {
+                    ShowDetail( locationId.AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
             else
             {
@@ -132,7 +140,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             LocationService locationService = new LocationService( rockContext );
-            Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
+            Location location = locationService.Get( hfLocationId.Value.AsInteger() );
 
             if ( location != null )
             {
@@ -154,6 +162,8 @@ namespace RockWeb.Blocks.Core
             {
                 qryParams["LocationId"] = parentLocationId.ToString();
             }
+
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -258,6 +268,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["LocationId"] = location.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -277,6 +288,7 @@ namespace RockWeb.Blocks.Core
                     // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["LocationId"] = parentLocationId.ToString();
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -301,11 +313,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnStandardize_Click( object sender, EventArgs e )
         {
-            int locationId = int.Parse( hfLocationId.Value );
+            int locationId = hfLocationId.Value.AsInteger();
 
             var rockContext = new RockContext();
             var service = new LocationService( rockContext );
             var location = service.Get( locationId );
+            if (location == null)
+            {
+                // if they are adding a new named location, there won't be a location record yet, so just make a new one for the verification
+                location = new Location();
+            }
+
             acAddress.GetValues( location );
 
             service.Verify( location, true );

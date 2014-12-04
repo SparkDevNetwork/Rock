@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( ppAuthorizedPerson.PersonId.HasValue )
                 {
-                    txn.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppAuthorizedPerson.PersonId.Value );
+                    txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
                 }
 
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;

@@ -232,9 +232,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "o" ) : string.Empty );
-            gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "o" ) : string.Empty );
-
+            gfFilter.SaveUserPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
             BindCommentsGrid();
         }
 
@@ -245,7 +243,22 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The e as DisplayFilterValueArgs (hint: e.Key and e.Value).</param>
         protected void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            // not necessary yet.
+            switch ( e.Key )
+            {
+                case "Date Range":
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                // don't display dead setting
+                case "From Date":
+                    e.Value = string.Empty;
+                    break;
+
+                // don't display dead setting
+                case "To Date":
+                    e.Value = string.Empty;
+                    break;
+            }
         }
 
         #endregion
@@ -319,17 +332,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            string fromDate = gfFilter.GetUserPreference( FilterSetting.FromDate );
-            if ( !string.IsNullOrWhiteSpace( fromDate ) )
-            {
-                drpDateRange.LowerValue = fromDate.AsDateTime();
-            }
-
-            string toDate = gfFilter.GetUserPreference( FilterSetting.ToDate );
-            if ( !string.IsNullOrWhiteSpace( toDate ) )
-            {
-                drpDateRange.UpperValue = toDate.AsDateTime();
-            }
+            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( FilterSetting.DateRange );
         }
 
         #endregion
@@ -339,8 +342,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         public static class FilterSetting
         {
-            public static readonly string FromDate = "From Date";
-            public static readonly string ToDate = "To Date";
+            public static readonly string DateRange = "Date Range";
             public static readonly string ApprovalStatus = "Approval Status";
         }
     }

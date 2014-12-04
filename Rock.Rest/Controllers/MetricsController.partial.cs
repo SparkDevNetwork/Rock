@@ -152,7 +152,7 @@ namespace Rock.Rest.Controllers
                     debugInfo.Append( "<pre>" );
 
                     debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                    debugInfo.Append( mergeValues.LiquidHelpText() + "</pre>" );
+                    debugInfo.Append( mergeValues.lavaDebugInfo() + "</pre>" );
 
                     debugInfo.Append( "</div>" );
 

@@ -22,24 +22,26 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more GroupTypes
+    /// Field Attribute to select a system email
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class EmailTemplateFieldAttribute : FieldAttribute
+    [Obsolete("Use SystemEmailFieldAttribute instead.")]
+    public class EmailTemplateFieldAttribute : SystemEmailFieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmailTemplateFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="EmailTemplateFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultTemplateGuid">The default template unique identifier.</param>
+        /// <param name="defaultSystemEmailGuid">The default system email unique identifier.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultTemplateGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultTemplateGuid, category, order, key, typeof( Rock.Field.Types.EmailTemplateFieldType ).FullName )
+        public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultSystemEmailGuid = "", string category = "", int order = 0, string key = null )
+            : base(name, description, required, defaultSystemEmailGuid, category, order, key )
         {
+
         }
     }
 }

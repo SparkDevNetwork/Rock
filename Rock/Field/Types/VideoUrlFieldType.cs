@@ -26,7 +26,7 @@ namespace Rock.Field.Types
     /// Video Url field type
     /// Stored as URL
     /// </summary>
-    public class VideoUrlFieldType : TextFieldType
+    public class VideoUrlFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -47,23 +47,30 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
                     string htmlFormat = @"
 <video
     src='{0}'
-    class='img img-responsive' 
-    id='{1}'
-    controls='true'
+    controls='controls'
+    preload='auto'
+    style='width:100%;height:100%;'
+    width='100%'
+    height='100%'
+    preload='auto'    
+    {1}
 >
 </video>
                     
 <script>
-    $(document).ready(function() {{
-        Rock.controls.mediaPlayer.initialize({{ id: '{1}' }});
-    }});
+    Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    var html = string.Format( htmlFormat, videoUrl, controlId );
+                    string typeTag = string.Empty;
+                    if (videoUrl.Contains("youtube.com"))
+                    {
+                        typeTag = "type='video/youtube' width=640 height=480";
+                    }
+                    
+                    var html = string.Format( htmlFormat, videoUrl, typeTag );
                     return html;
                 }
 

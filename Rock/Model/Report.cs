@@ -168,7 +168,6 @@ namespace Rock.Model
         /// <summary>
         /// Gets the data source.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="entityFields">The entity fields.</param>
         /// <param name="attributes">The attributes.</param>
@@ -176,17 +175,14 @@ namespace Rock.Model
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public List<object> GetDataSource( RockContext context, Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
+        public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
             if ( entityType != null )
             {
-                Type[] modelType = { entityType };
-                Type genericServiceType = typeof( Rock.Data.Service<> );
-                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } ) as IService;
+                System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+                IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
 
                 if ( serviceInstance != null )
                 {
@@ -194,7 +190,7 @@ namespace Rock.Model
                     MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
 
                     // Get AttributeValue queryable and parameter
-                    var attributeValues = context.Set<AttributeValue>();
+                    var attributeValues = reportDbContext.Set<AttributeValue>();
                     ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
 
                     // Create the dynamic type
@@ -247,7 +243,7 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( context, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression(reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
                         }
                     }
 
@@ -274,6 +270,17 @@ namespace Rock.Model
                         string orderByMethod = "OrderBy";
                         if ( sortProperty != null )
                         {
+                            /*
+                             NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
+                             * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
+                             * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
+                             * Examples:
+                             *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
+                             *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
+                             *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
+                             *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
+                             */
+
                             foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
                                 string propertyName;
@@ -283,7 +290,7 @@ namespace Rock.Model
                                 {
                                     propertyName = column.Left( column.Length - 5 );
 
-                                    // toggle the direction if sortProperty is Descending
+                                    // if the column ends with " desc", toggle the direction if sortProperty is Descending
                                     direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                                 }
                                 else
@@ -291,7 +298,7 @@ namespace Rock.Model
                                     propertyName = column;
                                 }
 
-                                string methodName = direction == SortDirection.Ascending ? orderByMethod + "Descending" : orderByMethod;
+                                string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
 
                                 // Call OrderBy on whatever the Expression is for that Column
                                 var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );

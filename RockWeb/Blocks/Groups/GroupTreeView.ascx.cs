@@ -90,6 +90,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                SetAllowedGroupTypes();
+
                 if ( string.IsNullOrWhiteSpace( _groupId ) )
                 {
                     // If no group was selected, try to find the first group and redirect
@@ -127,37 +129,31 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
-                hfInitialGroupId.Value = _groupId;
-                hfSelectedGroupId.Value = _groupId;
+                List<int> allowedGroupTypes = hfGroupTypes.Value.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
 
                 string key = string.Format( "Group:{0}", _groupId );
-                Group group = RockPage.GetSharedItem( key ) as Group;
-                if ( group == null )
+                Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
+                if ( selectedGroup == null )
                 {
                     int id = _groupId.AsInteger();
-                    group = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                    selectedGroup = new GroupService( new RockContext() ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
-                    RockPage.SaveSharedItem( key, group );
-                }
-
-                if ( group != null )
-                {
-                    // show the Add button if the selected Group's GroupType can have children
-                    lbAddGroupChild.Enabled = canEditBlock && group.GroupType.ChildGroupTypes.Count > 0;
-                }
-                else
-                {
-                    // hide the Add Button when adding a new Group
-                    lbAddGroupChild.Enabled = false;
+                    RockPage.SaveSharedItem( key, selectedGroup );
                 }
 
                 // get the parents of the selected item so we can tell the treeview to expand those
                 int? rootGroupId = hfRootGroupId.Value.AsIntegerOrNull();
                 List<string> parentIdList = new List<string>();
+                var group = selectedGroup;
                 while ( group != null )
                 {
-                    if ( group.Id == rootGroupId )
+                    if ( allowedGroupTypes.Any() && !allowedGroupTypes.Contains( group.GroupTypeId) )
+                    {
+                        group = null;
+                        selectedGroup = null;
+                    }
+                    else if ( group.Id == rootGroupId )
                     {
                         // stop if we are at the root group
                         group = null;
@@ -187,6 +183,21 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                if ( selectedGroup != null )
+                {
+                    hfInitialGroupId.Value = selectedGroup.Id.ToString();
+                    hfSelectedGroupId.Value = selectedGroup.Id.ToString();
+
+                    // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
+                    lbAddGroupChild.Enabled = canEditBlock && selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
+                        ( !allowedGroupTypes.Any() || ( allowedGroupTypes.Any( a => selectedGroup.GroupType.ChildGroupTypes.Any( c => c.Id == a ) ) ) );
+                }
+                else
+                {
+                    // hide the Add Button when adding a new Group
+                    lbAddGroupChild.Enabled = false;
+                }
+
                 hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
             }
             else
@@ -196,9 +207,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // disable add child group if no group is selected
-            int selectedGroupId = hfSelectedGroupId.ValueAsInt();
-
-            if ( selectedGroupId == 0 )
+            if ( hfSelectedGroupId.ValueAsInt() == 0 )
             {
                 lbAddGroupChild.Enabled = false;
             }
@@ -246,14 +255,14 @@ namespace RockWeb.Blocks.Groups
         #region Methods
 
         /// <summary>
-        /// Finds the first group.
+        /// Sets the allowed group types.
         /// </summary>
-        /// <returns></returns>
-        private Group FindFirstGroup()
+        private void SetAllowedGroupTypes()
         {
+            hfGroupTypes.Value = string.Empty;
+
             // limit GroupType selection to what Block Attributes allow
             List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
-            string groupTypeIds = "0";
             if ( groupTypeGuids.Any() )
             {
                 var groupTypeIdList = new List<int>();
@@ -266,12 +275,18 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                groupTypeIds = groupTypeIdList.AsDelimited( "," );
-                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+                hfGroupTypes.Value = groupTypeIdList.AsDelimited( "," );
             }
+        }
 
+        /// <summary>
+        /// Finds the first group.
+        /// </summary>
+        /// <returns></returns>
+        private Group FindFirstGroup()
+        {
             var groupService = new GroupService( new RockContext() );
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
+            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), hfGroupTypes.Value );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

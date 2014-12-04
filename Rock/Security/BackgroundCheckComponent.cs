@@ -18,6 +18,7 @@ using System.Collections.Generic;
 
 using Rock.Data;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -34,11 +35,17 @@ namespace Rock.Security
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="workflow">The Workflow initiating the request.</param>
+        /// <param name="personAttribute">The person attribute.</param>
+        /// <param name="ssnAttribute">The SSN attribute.</param>
+        /// <param name="requestTypeAttribute">The request type attribute.</param>
+        /// <param name="billingCodeAttribute">The billing code attribute.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns>
         /// True/False value of whether the request was successfully sent or not
         /// </returns>
-        public abstract bool SendRequest( RockContext rockContext, Rock.Model.Workflow workflow, out List<string> errorMessages );
+        public abstract bool SendRequest( RockContext rockContext, Rock.Model.Workflow workflow, 
+            AttributeCache personAttribute, AttributeCache ssnAttribute, AttributeCache requestTypeAttribute, 
+            AttributeCache billingCodeAttribute, out List<string> errorMessages );
     }
 
 }

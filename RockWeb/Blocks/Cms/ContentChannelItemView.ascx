@@ -35,12 +35,17 @@
                 <h4><asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h4>
 
                 <div class="grid">
+
                     <Rock:GridFilter ID="gfFilter" runat="server">
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                         <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
                     </Rock:GridFilter>               
+
+                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
                     <Rock:Grid ID="gContentChannelItems" runat="server" OnRowSelected="gContentChannelItems_Edit" />
+
                 </div>
 
             </div>

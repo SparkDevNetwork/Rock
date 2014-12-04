@@ -60,6 +60,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 var micrImageHostPage = new MicrImageHostPage();
                 this.micrImage = micrImageHostPage.micrImage;
+                this.micrImage.MicrDataReceived += micrImage_MicrDataReceived;
             }
             catch
             {
@@ -947,8 +948,7 @@ namespace Rock.Apps.CheckScannerUtility
                     // no MagTek driver
                     return false;
                 }
-
-                micrImage.MicrDataReceived += micrImage_MicrDataReceived;
+                
                 micrImage.CommPort = rockConfig.MICRImageComPort;
                 micrImage.PortOpen = false;
 
