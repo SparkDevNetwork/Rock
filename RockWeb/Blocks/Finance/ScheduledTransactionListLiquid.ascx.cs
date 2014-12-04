@@ -195,13 +195,7 @@ namespace RockWeb.Blocks.Finance
                 // set debug info
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format( @"     
-                        <pre>
-{0}
-                        </pre>
-                    ", schedule.lavaDebugInfo() );
-
-                    lDebug.Text = debugInfo;
+                    lDebug.Text = schedule.lavaDebugInfo();
                 }
             }
         }

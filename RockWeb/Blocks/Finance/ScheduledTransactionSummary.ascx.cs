@@ -239,14 +239,7 @@ namespace RockWeb.Blocks.Finance
                 // show merge fields if needed
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format( @"
-                            
-                        <pre>
-{0}
-                        </pre>
-                    ", scheduleValues.lavaDebugInfo() );
-
-                    content += debugInfo;
+                    content += scheduleValues.lavaDebugInfo();
                 }
 
                 lContent.Text = content;

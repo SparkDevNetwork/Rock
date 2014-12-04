@@ -181,17 +181,7 @@ namespace RockWeb.Blocks.Finance
             // show liquid help for debug
             if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
             {
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
-
-                debugInfo.Append( "<pre>" );
-
-                debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                debugInfo.Append( mergeObjects.lavaDebugInfo() + "</pre>" );
-
-                debugInfo.Append( "</div>" );
-
-                lReceipt.Text += debugInfo.ToString();
+                lReceipt.Text += mergeObjects.lavaDebugInfo();
             }
 
             lReceipt.Visible = true;
