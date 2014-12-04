@@ -90,6 +90,10 @@
     <Compile Include="Migrations\201412032218028_UpdateDiscCharacteristics.Designer.cs">
       <DependentUpon>201412032218028_UpdateDiscCharacteristics.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412041616207_DiscTweaks.cs" />
+    <Compile Include="Migrations\201412041616207_DiscTweaks.Designer.cs">
+      <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1355,6 +1359,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201412032218028_UpdateDiscCharacteristics.resx">
       <DependentUpon>201412032218028_UpdateDiscCharacteristics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412041616207_DiscTweaks.resx">
+      <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
