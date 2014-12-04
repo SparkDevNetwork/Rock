@@ -94,6 +94,10 @@
     <Compile Include="Migrations\201412041616207_DiscTweaks.Designer.cs">
       <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412042158040_PageMenuLavaProperties.cs" />
+    <Compile Include="Migrations\201412042158040_PageMenuLavaProperties.Designer.cs">
+      <DependentUpon>201412042158040_PageMenuLavaProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>
@@ -1362,6 +1366,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201412041616207_DiscTweaks.resx">
       <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412042158040_PageMenuLavaProperties.resx">
+      <DependentUpon>201412042158040_PageMenuLavaProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>

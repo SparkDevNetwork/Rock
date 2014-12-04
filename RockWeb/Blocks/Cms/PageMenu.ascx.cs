@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             var pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+            pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
             string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
             // check for errors

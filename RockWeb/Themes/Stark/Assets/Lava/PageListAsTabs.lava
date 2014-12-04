@@ -1,8 +1,8 @@
-﻿<div class="nav navbar nav-pagelist">
+<div class="nav navbar nav-pagelist">
   <ul class="nav nav-pills">
-    {% for childPage in page.pages %}
-    <li {% if="" childPage.current =""= 'true' %}class='active'{% endif='' %}>
-      <a href="{{ childPage.url }}">{{ childPage.title }}</a>
+    {% for childPage in Page.Pages %}
+    <li {% if="" childPage.Current =""= 'true' %}class='active'{% endif='' %}>
+      <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
     </li>
     {% endfor %}
   </ul>

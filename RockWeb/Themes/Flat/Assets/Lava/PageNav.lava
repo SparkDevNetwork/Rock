@@ -1,11 +1,11 @@
-﻿{% if page.display-child-pages == 'true' and page.pages != empty %}
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
     <ul class="nav navbar-nav">
         
-		<li><a href="{{ page.url }}">{{ page.title }}</a></li>
+		<li><a href="{{ Page.Url }}">{{ Page.Title }}</a></li>
 
-		{% for childPage in page.pages %}
+		{% for childPage in Page.Pages %}
             <li>
-				<a href="{{ childPage.url }}">{{ childPage.title }}</a>
+				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
             </li>
         {% endfor %}
     </ul>
