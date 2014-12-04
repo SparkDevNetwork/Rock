@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Reporting
                             div.Controls.Add( grid );
 
                             AddGridColumns( grid, dataTable );
-                            SetDataKeyNames( grid );
+                            SetDataKeyNames( grid, dataTable );
 
                             if ( setData )
                             {
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Sets the data key names.
         /// </summary>
-        private void SetDataKeyNames(Grid grid)
+        private void SetDataKeyNames(Grid grid, DataTable dataTable )
         {
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
@@ -404,6 +404,13 @@ namespace RockWeb.Blocks.Reporting
                     }
 
                     grid.DataKeyNames = keyNames;
+                }
+            }
+            else
+            {
+                if (dataTable.Columns.Contains("Id"))
+                {
+                    grid.DataKeyNames = new string[1] { "Id" };
                 }
             }
         }

@@ -43,29 +43,40 @@ namespace Rock.Rest.Controllers
 
             if ( id == 0 )
             {
-                qry = Get().Where( f => f.ParentAccount == null );
+                qry = Get().Where( f => 
+                    f.ParentAccountId.HasValue == false );
             }
             else
             {
-                qry = Get().Where( f => f.ParentAccountId == id );
+                qry = Get().Where( f => 
+                    f.ParentAccountId.HasValue && 
+                    f.ParentAccountId.Value == id );
             }
 
-            var accountList = qry.OrderBy( f => f.Order ).ThenBy( f => f.Name ).ToList();
+            var accountList = qry
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .ToList();
+
             var accountItemList = accountList.Select( a => new TreeViewItem
                 {
                     Id = a.Id.ToString(),
                     Name = HttpUtility.HtmlEncode( a.PublicName )
                 } ).ToList();
 
-            var resultIds = accountList.Select( f => f.Id );
-            var qryHasChildren = from f in Get().Select( f => f.ParentAccountId )
-                                 where resultIds.Contains( f.Value )
-                                 select f.Value;
+            var resultIds = accountList.Select( f => f.Id ).ToList();
+
+            var qryHasChildren = Get()
+                .Where( f => 
+                    f.ParentAccountId.HasValue &&
+                    resultIds.Contains( f.ParentAccountId.Value ) )
+                .Select( f => f.ParentAccountId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var accountItem in accountItemList )
             {
                 int accountId = int.Parse( accountItem.Id );
-
                 accountItem.HasChildren = qryHasChildren.Any( f => f == accountId );
                 accountItem.IconCssClass = "fa fa-file-o";
             }

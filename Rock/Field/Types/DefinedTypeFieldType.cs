@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Types
     /// Stored as DefinedType.Guid
     /// </summary>
-    public class DefinedTypeFieldType : FieldType
+    public class DefinedTypeFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -115,6 +115,64 @@ namespace Rock.Field.Types
             {
                 picker.SelectedValue = value.ToUpper();
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = DefinedTypeCache.Read( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            DefinedTypeCache item = null;
+            if ( id.HasValue )
+            {
+                item = DefinedTypeCache.Read( id.Value );
+            }
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, null );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                rockContext = rockContext ?? new RockContext();
+                return new  DefinedTypeService( rockContext ).Get( guid.Value );
+            }
+
+            return null;
         }
     }
 }

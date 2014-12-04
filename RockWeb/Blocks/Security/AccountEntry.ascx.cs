@@ -46,9 +46,11 @@ namespace RockWeb.Blocks.Security
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "Pages", 6 )]
     [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", true, "", "Pages", 7 )]
-    [EmailTemplateField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
-    [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
-    [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
+    [SystemEmailField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
+    [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
+    [SystemEmailField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -349,8 +351,7 @@ namespace RockWeb.Blocks.Security
 
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-                var personDictionaries = new List<IDictionary<string, object>>();
+                var results = new List<IDictionary<string, object>>();
 
                 var users = new List<UserLogin>();
                 var userLoginService = new UserLoginService( rockContext );
@@ -366,22 +367,12 @@ namespace RockWeb.Blocks.Security
                     }
                 }
 
-                if ( users.Count > 0 )
-                {
-                    var personDictionary = person.ToLiquid() as Dictionary<string, object>;
-                    if ( personDictionary.Keys.Contains( "Users" ) )
-                    {
-                        personDictionary["Users"] = users;
-                    }
-                    else
-                    {
-                        personDictionary.Add( "Users", users );
-                    }
+                var resultsDictionary = new Dictionary<string, object>();
+                resultsDictionary.Add( "Person", person );
+                resultsDictionary.Add( "Users", users );
+                results.Add( resultsDictionary );
 
-                    personDictionaries.Add( personDictionary );
-                }
-
-                mergeObjects.Add( "Persons", personDictionaries.ToArray() );
+                mergeObjects.Add( "Results", results.ToArray() );
 
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( person.Email, mergeObjects ) );
@@ -417,9 +408,7 @@ namespace RockWeb.Blocks.Security
 
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-                var personDictionary = person.ToLiquid() as Dictionary<string, object>;
-                mergeObjects.Add( "Person", personDictionary );
+                mergeObjects.Add( "Person", person );
                 mergeObjects.Add( "User", user );
 
                 var recipients = new List<RecipientData>();
@@ -461,9 +450,7 @@ namespace RockWeb.Blocks.Security
 
                         var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-                        var personDictionary = person.ToLiquid() as Dictionary<string, object>;
-                        mergeObjects.Add( "Person", personDictionary );
+                        mergeObjects.Add( "Person", person );
                         mergeObjects.Add( "User", user );
 
                         var recipients = new List<RecipientData>();
@@ -519,11 +506,24 @@ namespace RockWeb.Blocks.Security
             var rockContext = new RockContext();
             Rock.Model.PersonService personService = new PersonService( rockContext );
 
+            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
             Person person = new Person();
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             person.EmailPreference = EmailPreference.EmailAllowed;
+
+            if ( dvcConnectionStatus != null )
+            {
+                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+            }
+
+            if ( dvcRecordStatus != null )
+            {
+                person.RecordStatusValueId = dvcRecordStatus.Id;
+            }
 
             switch ( ddlGender.SelectedValue )
             {

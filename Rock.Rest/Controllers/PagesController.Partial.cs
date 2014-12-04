@@ -66,16 +66,18 @@ namespace Rock.Rest.Controllers
             // try to quickly figure out which items have Children
             List<int> resultIds = pageList.Select( a => a.Id ).ToList();
 
-            var qryHasChildren = from x in Get().Select( a => a.ParentPageId )
-                                 where resultIds.Contains( x.Value )
-                                 select x.Value;
-
-            var qryHasChildrenList = qryHasChildren.ToList();
+            var qryHasChildren = Get()
+                .Where( p =>
+                    p.ParentPageId.HasValue &&
+                    resultIds.Contains( p.ParentPageId.Value ) )
+                .Select( p => p.ParentPageId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var g in pageItemList )
             {
                 int pageId = int.Parse( g.Id );
-                g.HasChildren = qryHasChildrenList.Any( a => a == pageId );
+                g.HasChildren = qryHasChildren.Any( a => a == pageId );
                 g.IconCssClass = "fa fa-file-o";
             }
 

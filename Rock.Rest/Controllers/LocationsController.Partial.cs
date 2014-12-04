@@ -98,9 +98,13 @@ namespace Rock.Rest.Controllers
             // try to quickly figure out which items have Children
             List<int> resultIds = locationList.Select( a => a.Id ).ToList();
 
-            var qryHasChildren = from x in Get().Select( a => a.ParentLocationId )
-                                    where resultIds.Contains( x.Value )
-                                    select x.Value;
+            var qryHasChildren = Get()
+                .Where( l => 
+                    l.ParentLocationId.HasValue &&
+                    resultIds.Contains( l.ParentLocationId.Value ) )
+                .Select( l => l.ParentLocationId.Value )
+                .Distinct()
+                .ToList();
 
             var qryHasChildrenList = qryHasChildren.ToList();
 

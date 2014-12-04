@@ -56,7 +56,7 @@
                                 </h3>
                             </div>
                             <div class="pull-right">
-                                <div class="btn-group btn-group-sm pull-right">
+                                <div class="btn-group btn-group-xs pull-right">
                                     <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton></td>
                                 </div>
                             </div>

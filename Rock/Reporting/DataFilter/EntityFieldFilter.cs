@@ -343,12 +343,22 @@ namespace Rock.Reporting.DataFilter
             ddlEntityField.AddCssClass( "entity-property-selection" );
             ddlEntityField.RenderControl( writer );
             writer.RenderEndTag();
-
-            StringBuilder sb = new StringBuilder();
-            int i = 0;
-
             writer.AddAttribute( "class", "col-md-9" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // generate result for "none"
+            StringBuilder sb = new StringBuilder();
+            string lineFormat = @"
+            case {0}: {1}; break;";
+
+            int fieldIndex = 0;
+            sb.AppendFormat( lineFormat, fieldIndex, "result = ''" );
+            fieldIndex++;
+            
+            // render empty row for "none"
+            writer.AddAttribute( "class", "row field-criteria" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();  // row
 
             foreach ( var entityField in entityFields )
             {
@@ -420,13 +430,10 @@ namespace Rock.Reporting.DataFilter
 
                 if ( clientFormatSelection != string.Empty )
                 {
-                    string lineFormat = @"
-            case {0}: {1}; break;";
-
-                    sb.AppendFormat( lineFormat, i, clientFormatSelection );
+                    sb.AppendFormat( lineFormat, fieldIndex, clientFormatSelection );
                 }
 
-                i++;
+                fieldIndex++;
             }
 
             writer.RenderEndTag();  // col-md-9

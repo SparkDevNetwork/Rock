@@ -230,6 +230,10 @@ namespace RockWeb.Blocks.Communication
                     template.Subject = template.MediumData["Subject"];
                     template.MediumData.Remove( "Subject" );
                 }
+                else
+                {
+                    template.Subject = string.Empty;
+                }
 
                 if ( template != null )
                 {

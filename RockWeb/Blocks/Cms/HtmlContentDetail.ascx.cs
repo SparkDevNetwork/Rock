@@ -164,20 +164,22 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
             htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            htmlEditor.MergeFields.Add( "Campuses" );
+            htmlEditor.MergeFields.Add( "PageParameter" );
+            htmlEditor.MergeFields.Add( "RockVersion" );
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
-            htmlEditor.MergeFields.Add( "Campuses" );
-            htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
             ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            ceHtml.MergeFields.Add( "Campuses" );
+            ceHtml.MergeFields.Add( "RockVersion" );
+            ceHtml.MergeFields.Add( "PageParameter" );
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
-            ceHtml.MergeFields.Add( "Campuses" );
-            ceHtml.MergeFields.Add( "RockVersion" );
 
             var contextObjects = new Dictionary<string, object>();
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
@@ -553,8 +555,6 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
-            
-            
             mdEdit.Hide();
             pnlEditModel.Visible = false;
             upnlHtmlContent.Update();
@@ -586,9 +586,6 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "Person", CurrentPerson );
                         }
 
-                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
-                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
-                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
                         mergeFields.Add( "PageParameter", PageParameters() );

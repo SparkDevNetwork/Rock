@@ -172,6 +172,8 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                groupType.ChildGroupTypes.Clear();
+
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
 
@@ -190,7 +192,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
 
-            var groupTypes = GetGroupTypes();
+            var groupTypes = GetGroupTypes( rockContext );
             if ( groupTypes != null )
             {
                 new GroupTypeService( rockContext ).Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex );
@@ -229,7 +231,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGrid()
         {
-            var selectQry = GetGroupTypes()
+            var selectQry = GetGroupTypes( new RockContext() )
                 .Select( a => new
                 {
                     a.Id,
@@ -248,9 +250,9 @@ namespace RockWeb.Blocks.Groups
         /// Gets the group types.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<GroupType> GetGroupTypes()
+        private IQueryable<GroupType> GetGroupTypes( RockContext rockContext )
         {
-            var qry = new GroupTypeService( new RockContext() ).Queryable();
+            var qry = new GroupTypeService( rockContext ).Queryable();
 
             int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsIntegerOrNull();
             if ( purposeId.HasValue )

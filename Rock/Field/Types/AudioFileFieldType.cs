@@ -61,25 +61,21 @@ namespace Rock.Field.Types
                     else
                     {
                         var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
                         string htmlFormat = @"
 <audio
     src='{0}?guid={1}' 
     class='img img-responsive'
     type='{2}' 
-    id='{3}'
-    controls='true'
+    controls
 >
 </audio>
 
 <script>
-    $(document).ready(function() {{
-        Rock.controls.mediaPlayer.initialize({{ id: '{3}' }});
-    }});
+    Rock.controls.mediaPlayer.initialize();
 </script>
 ";
 
-                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType, controlId );
+                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
                         return html;
                     }
                 }

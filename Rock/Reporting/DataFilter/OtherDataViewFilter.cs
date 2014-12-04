@@ -142,6 +142,9 @@ namespace Rock.Reporting.DataFilter
             ddlDataViews.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlDataViews );
 
+            // add Empty option first
+            ddlDataViews.Items.Add( new ListItem() );
+
             RockPage page = filterControl.Page as RockPage;
             if ( page != null )
             {

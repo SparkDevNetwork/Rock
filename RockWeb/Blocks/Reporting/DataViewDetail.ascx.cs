@@ -594,7 +594,7 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        var qry = dataView.GetQuery( grid.SortProperty, rockContext, out errorMessages );
+                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
 
                         if ( fetchRowCount.HasValue )
                         {

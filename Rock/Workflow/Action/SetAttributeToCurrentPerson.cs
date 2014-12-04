@@ -36,7 +36,8 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute to Current Person" )]
 
-    [WorkflowAttribute( "Person Attribute", "The attribute to set to the currently logged in person." )]
+    [WorkflowAttribute( "Person Attribute", "The attribute to set to the currently logged in person.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
     public class SetAttributeToCurrentPerson : ActionComponent
     {
         /// <summary>

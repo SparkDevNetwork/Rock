@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlPaymentInfo" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-credit-card"></i> Gifts</h1>
+                <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
@@ -17,17 +17,17 @@
                 <% } %>
 
                         <div class="panel panel-default contribution-info">
-                            <div class="panel-heading"><h3 class="panel-title">Contribution Information</h3></div>
+                            <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3></div>
                             <div class="panel-body">
                                 <fieldset>
 
                                     <asp:Repeater ID="rptAccountList" runat="server">
                                         <ItemTemplate>
-                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
+                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
                                         </ItemTemplate>
                                     </asp:Repeater>
                                     <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
-                                        DataTextField="Name" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+                                        DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
                                     <div class="form-group">
                                         <label>Total</label>
@@ -51,7 +51,7 @@
                     <% } %>
 
                         <div class="panel panel-default contribution-personal">
-                            <div class="panel-heading"><h3 class="panel-title">Personal Information</h3></div>
+                            <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPersonalInfoTitle" runat="server" /></h3></div>
                             <div class="panel-body">
                                 <fieldset>
                                     <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
@@ -76,7 +76,7 @@
 
                     <asp:HiddenField ID="hfPaymentTab" runat="server" />
 
-                    <div class="panel-heading"><h3 class="panel-title">Payment Information</h3></div>
+                    <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3></div>
                 
                     <div class="panel-body">   
                         <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
@@ -154,13 +154,13 @@
         <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-credit-card"></i> Gifts</h1>
+                <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <div class="panel panel-default">
 
                     <div class="panel-heading">
-                        <h1 class="panel-title">Confirm Information</h1>
+                        <h1 class="panel-title"><asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
                     </div>
                     <div class="panel-body">
                         <asp:PlaceHolder ID="phConfirmationHeader" runat="server"></asp:PlaceHolder>
@@ -199,7 +199,7 @@
 
         <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
             <div class="well">
-                <legend>Gift Information</legend>
+                <legend><asp:Literal ID="lSuccessTitle" runat="server" /></legend>
                 <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
@@ -230,7 +230,7 @@
 
             <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
                 <div class="well">
-                    <legend>Make Giving Even Easier</legend>
+                    <legend><asp:Literal ID="lSaveAcccountTitle" runat="server" /></legend>
                     <fieldset>
                         <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Text="Save account information for future gifts" CssClass="toggle-input" />
                         <div id="divSaveAccount" runat="server" class="toggle-content">

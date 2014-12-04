@@ -43,7 +43,6 @@
                     window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
                 }
 
-                $("#console ol").append("<li class='highlight'><span>[Rock RMS Installer v2.0]</span></li>");
                 $("#console ol").append("<li class='highlight'><span>Connected to server via: " + window.location.origin + "</span></li>");
             });
 

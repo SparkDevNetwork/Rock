@@ -32,7 +32,7 @@ namespace Rock.Migrations
             // Update the path to liquid include files
             Sql( @"
     UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '{% include ''', '{% include ''~~/Assets/Liquid/' ) WHERE [DefaultValue] like '%{[%] include ''%'
-    UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/AdDetails', '~~/Assets/Liquid/_AdAdDetails.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
+    UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/AdDetails', '~~/Assets/Liquid/_AdDetails.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
     UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/AdList', '~~/Assets/Liquid/_AdList.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
     UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/AdRotator', '~~/Assets/Liquid/_AdRotator.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
     UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/BlogItemDetail', '~~/Assets/Liquid/_BlogItemDetail.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
@@ -46,7 +46,7 @@ namespace Rock.Migrations
     UPDATE [Attribute] SET [DefaultValue] = REPLACE( [DefaultValue], '~~/Assets/Liquid/RSSFeedItem', '~~/Assets/Liquid/_RSSFeedItem.liquid' ) WHERE [DefaultValue] like '%{[%] include%'
 
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '{% include ''', '{% include ''~~/Assets/Liquid/' ) WHERE [Value] like '%{[%] include ''%'
-    UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/AdDetails', '~~/Assets/Liquid/_AdAdDetails.liquid' ) WHERE [Value] like '%{[%] include%'
+    UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/AdDetails', '~~/Assets/Liquid/_AdDetails.liquid' ) WHERE [Value] like '%{[%] include%'
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/AdList', '~~/Assets/Liquid/_AdList.liquid' ) WHERE [Value] like '%{[%] include%'
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/AdRotator', '~~/Assets/Liquid/_AdRotator.liquid' ) WHERE [Value] like '%{[%] include%'
     UPDATE [AttributeValue] SET [Value] = REPLACE( [Value], '~~/Assets/Liquid/BlogItemDetail', '~~/Assets/Liquid/_BlogItemDetail.liquid' ) WHERE [Value] like '%{[%] include%'

@@ -409,7 +409,7 @@ namespace RockWeb.Blocks.Administration
             {
                 var rockContext = new RockContext();
 
-                int? personAliasId = new Rock.Model.PersonAliasService( rockContext ).GetPrimaryAliasId( ppUser.PersonId.Value );
+                int? personAliasId = ppUser.PersonAliasId;
                 if ( personAliasId.HasValue )
                 {
                     bool alreadyExists = false;

@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Finance
                         <pre>
 {0}
                         </pre>
-                    ", schedule.LiquidHelpText() );
+                    ", schedule.lavaDebugInfo() );
 
                     lDebug.Text = debugInfo;
                 }

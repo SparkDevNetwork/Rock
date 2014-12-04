@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -26,9 +27,12 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Show person's name as a link that navigates to the person's record" )]
+    [Description( "Show person's name as a optional link that navigates to the person's record" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person Link" )]
+    [ExportMetadata( "ComponentName", "Select Person Name" )]
+
+    [BooleanField( "Show As Link", "", true )]
+    [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
     public class PersonLinkSelect : DataSelectComponent
     {
         /// <summary>
@@ -98,7 +102,21 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Person Link";
+            return "Person Name";
+        }
+
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get
+            {
+                return "Common";
+            }
         }
 
         /// <summary>
@@ -123,14 +141,37 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Linq.Expressions.Expression GetExpression( Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
         {
-            // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
-            // prepend it with <!--LastName, NickName--> so that Sorting Works as expected
-            var personLinkQuery = new PersonService( context ).Queryable()
-                .Select( p => "<!--" + p.LastName + ", " + p.NickName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+            int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
+            var personQry = new PersonService( context ).Queryable();
+            IQueryable<string> personLinkQuery;
+            
+            if ( showAsLink )
+            {
+                // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
+                // prepend it with <!--LastName, NickName--> so that Sorting Works as expected
+                if ( displayOrder == 0 )
+                {
+                    personLinkQuery = personQry.Select( p => "<!--" + p.NickName + " " + p.LastName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.NickName + " " + p.LastName + "</a>" );
+                }
+                else
+                {
+                    personLinkQuery = personQry.Select( p => "<!--" + p.LastName + ", " + p.NickName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
+                }
+            }
+            else
+            {
+                if ( displayOrder == 0 )
+                {
+                    personLinkQuery = personQry.Select( p => p.NickName + " " + p.LastName );
+                }
+                else
+                {
+                    personLinkQuery = personQry.Select( p => p.LastName + ", " + p.NickName );
+                }
+            }
 
-            var personLinkExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLinkQuery, entityIdProperty, "p" );
-
-            return personLinkExpression;
+            return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLinkQuery, entityIdProperty, "p" );
         }
     }
 }

@@ -457,7 +457,7 @@ namespace Rock.Web.UI
 
             if ( _scriptManager == null )
             {
-                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
+                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager", CombineScripts = false };
                 Page.Trace.Warn( "Adding script manager" );
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
@@ -470,9 +470,6 @@ namespace Rock.Web.UI
 
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
-
-            // add ckeditor (doesn't like to be added during an async postback)
-            _scriptManager.Scripts.Add( new ScriptReference( ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true ) ) );
 
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
@@ -1404,37 +1401,17 @@ namespace Rock.Web.UI
                         {
                             // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
                             // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                            Type serviceType = typeof( Rock.Data.Service<> );
-                            Type contextType = typeof( Rock.Data.RockContext );
-                            if ( modelType.Assembly != serviceType.Assembly )
-                            {
-                                var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                                if ( serviceTypeLookup.Any() )
-                                {
-                                    serviceType = serviceTypeLookup.First().Value;
-                                }
-
-                                var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-
-                                if ( contextTypeLookup.Any() )
-                                {
-                                    contextType = contextTypeLookup.First().Value;
-                                }
-                            }
-
-                            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                            Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                            var serviceInstance = Activator.CreateInstance( service, dbContext );
+                            System.Data.Entity.DbContext dbContext = Reflection.GetDbContextForEntityType( modelType );
+                            IService serviceInstance = Reflection.GetServiceForEntityType( modelType, dbContext );
 
                             if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                             {
-                                MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                             }
                             else
                             {
-                                MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey" );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
                             }
                         }

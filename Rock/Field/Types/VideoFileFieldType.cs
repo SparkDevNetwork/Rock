@@ -61,24 +61,25 @@ namespace Rock.Field.Types
                     else
                     {
                         var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        string controlId = string.Format( "player_{0}", Guid.NewGuid().ToString( "N" ) );
+                        
+                        // NOTE: Flash and Silverlight might crash if we don't set width and height. However, that makes responsive stuff not work
                         string htmlFormat = @"
-<video
+<video 
     src='{0}?guid={1}'
-    class='img img-responsive' 
-    type='{2}' 
-    id='{3}'
-    controls='true'
+    type='{2}'
+    controls='controls'
+    style='width:100%;height:100%;'
+    width='100%'
+    height='100%'
+    preload='auto'
 >
 </video>
                     
 <script>
-    $(document).ready(function() {{
-        Rock.controls.mediaPlayer.initialize({{ id: '{3}' }});
-    }});
+    Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType, controlId );
+                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
                         return html;
                     }
                 }

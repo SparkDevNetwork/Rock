@@ -74,14 +74,22 @@ namespace Rock.Rest.Controllers
                 }
             }
 
+            var groupTypes = new List<int>();
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
+            {
+                groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            }
+
             // try to quickly figure out which items have Children
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-
-            var qryHasChildren = from x in Get().Select( a => a.ParentGroupId )
-                                 where resultIds.Contains( x.Value )
-                                 select x.Value;
-
-            var qryHasChildrenList = qryHasChildren.ToList();
+            var qryHasChildrenList = Get()
+                .Where( g =>
+                    g.ParentGroupId.HasValue &&
+                    resultIds.Contains( g.ParentGroupId.Value ) &&
+                    ( !groupTypes.Any() || groupTypes.Contains( g.GroupTypeId ) ) )
+                .Select( g => g.ParentGroupId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var g in groupNameList )
             {
