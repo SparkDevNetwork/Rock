@@ -3,6 +3,7 @@
 
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
+    3. Lava Debug - Used to style the lava debug panel
 */
 
 
@@ -33,4 +34,58 @@
     .photo img {
         width: 100%;
     }
+}
+
+// 3. Lava Debug
+// -------------------------
+.lava-debug {
+
+    h1 {
+        font-size: 24px;
+        margin-top: 0;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    hr {
+        margin-top: 4px;
+        margin-bottom: 14px;
+    }
+
+    code {
+        background-color: darken(@state-info-bg, 5%);
+        color: @state-info-text;
+    }
+
+    p {
+        margin-bottom: 10px;
+        font-weight: normal !important;
+
+        &.attributes {
+            margin-bottom: 0;
+        }
+    }
+
+    .lava-debug-key {
+        font-weight: @font-weight-semibold;
+    }
+
+    .panel {
+        border: 0;
+
+        .panel-heading {
+            background-color: darken(@state-info-bg, 3%);
+            color: @state-info-text;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .panel-body{
+            background-color: lighten(@state-info-bg, 3%);
+            display: none;
+        }
+    }
+
 }
