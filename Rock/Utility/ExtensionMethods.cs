@@ -108,7 +108,13 @@ namespace Rock
         public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null )
         {
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
-            return formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) );
+            StringBuilder lavaDebugPanel = new StringBuilder();
+            lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
+
+            lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
+            lavaDebugPanel.Append( "</div>" );
+
+            return lavaDebugPanel.ToString() ;
         }
 
         /// <summary>
@@ -117,7 +123,7 @@ namespace Rock
         /// <param name="liquidObject">The liquid object.</param>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <returns></returns>
-        private static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0, RockContext rockContext = null )
+        private static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
         {
             // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
             levelsDeep++;
@@ -145,10 +151,30 @@ namespace Rock
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            //if ( liquidObject is Drop )
-            //{
-            //    return ( (ILiquidizable)liquidObject ).ToLiquid();
-            //}
+            if ( liquidObject is Drop )
+            {
+                var result = new Dictionary<string, object>();
+
+                foreach( var propInfo in entityType.GetProperties(
+                          BindingFlags.Public | 
+                          BindingFlags.Instance | 
+                          BindingFlags.DeclaredOnly ) )
+                {
+                    if ( propInfo != null )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                return result;
+            }
 
             if ( entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).Any() )
             {
@@ -163,7 +189,7 @@ namespace Rock
                         {
                             try
                             {
-                                result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                                result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propName ) );
                             }
                             catch ( Exception ex )
                             {
@@ -192,7 +218,7 @@ namespace Rock
                     {
                         try
                         {
-                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propInfo.Name ) );
                         }
                         catch ( Exception ex )
                         {
@@ -221,7 +247,7 @@ namespace Rock
 
                     if ( objAttrs.Any() )
                     {
-                        result.Add( "Attributes ( Requires use of attribute filter )", objAttrs );
+                        result.Add( string.Format("Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{ {0} | Attribute:'[AttributeKey]' }}</code>.</p>", parentElement), objAttrs );
                     }
                 }
 
@@ -236,7 +262,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext ) );
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
                     }
                     catch ( Exception ex )
                     {
@@ -263,40 +289,98 @@ namespace Rock
                 return result;
             }
 
-            return string.Empty;
+            return liquidObject.ToStringSafe();
         }
-
-        private static string formatLavaDebugInfo( object liquidizedObject, int levelsDeep = 0 )
+        
+        private static string formatLavaDebugInfo( object liquidizedObject, int levelsDeep = 0, string parents = "" )
         {
             if ( liquidizedObject is string )
             {
-                return string.Format( "<span class='lava-debug-value'>{0}</span>", liquidizedObject.ToString() );
+                return string.Format( "<span class='lava-debug-value'> - {0}</span>", liquidizedObject.ToString() );
             }
 
             if ( liquidizedObject is Dictionary<string, object> )
             {
                 var sb = new StringBuilder();
-                sb.AppendFormat( "{0}<ul>{0}", Environment.NewLine );
+
+                bool isTopLevel = levelsDeep == 0;
+
+                if ( !isTopLevel ) { 
+                    sb.AppendFormat( "{0}<ul>{0}", Environment.NewLine );
+                }
+
                 foreach ( var keyVal in (Dictionary<string, object>)liquidizedObject )
                 {
-                    string section = ( keyVal.Value is string ) ? "" : string.Format( " lava-debug-section level-{0}", levelsDeep );
-                    string value = formatLavaDebugInfo( keyVal.Value, levelsDeep + 1 );
-                    sb.AppendFormat( "<li><span class='lava-debug-key{0}'>{1}</span>{2}</li>{3}", section, keyVal.Key, value, Environment.NewLine );
+                    if ( isTopLevel )
+                    {
+                        if ( keyVal.Value is string )
+                        {
+                            // item is a root level property
+                            sb.Append( string.Format("<ul><li><span class='lava-debug-key'>{0}</span> - {1}</li></ul>{2}", keyVal.Key, keyVal.Value.ToString(), Environment.NewLine ));
+                        }
+                        else { 
+                            // item is a root level object                
+
+                            string panelId = Guid.NewGuid().ToString();
+
+                            sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
+
+                            sb.Append( string.Format( "<div class='panel-heading clearfix' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format("<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-down'></i></div>", keyVal.Key ));
+                            sb.Append( "</div>");
+
+                            sb.Append( string.Format( "<div id='collapse-{0}' class='panel-collapse collapse'>", panelId ) );
+                            sb.Append( "<div class='panel-body'>" );
+
+                            if ( keyVal.Key == "GlobalAttribute" )
+                            {
+                                sb.Append( "<p>Global attributes should be accessed using <code>{{ 'Global' | Attribute:'[AttributeKey]' }}</code>.</p>" );
+                            }
+                            else
+                            {
+                                sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                            }
+
+                            string value = formatLavaDebugInfo( keyVal.Value, 1, keyVal.Key );
+                            sb.Append( value );
+
+                            sb.Append( "</div>" );
+                            sb.Append( "</div>" );
+                            sb.Append( "</div>" );
+                        }
+                    }
+                    else
+                    {
+                        string section = (keyVal.Value is string) ? "" : string.Format( " lava-debug-section level-{0}", levelsDeep );
+
+                        string value = formatLavaDebugInfo( keyVal.Value, levelsDeep + 1, parents + "." + keyVal.Key );
+                        sb.AppendFormat( "<li><span class='lava-debug-key{0}'>{1}</span> {2}</li>{3}", section, keyVal.Key, value, Environment.NewLine );
+                    }
+
                 }
-                sb.AppendLine( "</ul>" );
+
+                if ( !isTopLevel )
+                {
+                    sb.AppendLine( "</ul>" );
+                }
+
                 return sb.ToString();
             }
 
             if ( liquidizedObject is List<object> )
             {
                 var sb = new StringBuilder();
-                sb.AppendFormat( "{0}<ul>{0}", Environment.NewLine );
+                sb.AppendFormat( "{0}{{<ul>{0}", Environment.NewLine );
+
+                int i = 0;
+
                 foreach ( var obj in (List<object>)liquidizedObject )
                 {
-                    string value = formatLavaDebugInfo( obj );
-                    sb.AppendFormat( "<li>{0}</li>{1}", value, Environment.NewLine );
+                    string value = formatLavaDebugInfo( obj, 1, parents );
+                    sb.AppendFormat( "<li>[{0}] {1}</li>{2}", i.ToString(), value, Environment.NewLine );
+                    i ++;
                 }
-                sb.AppendLine( "</ul>" );
+                sb.AppendLine( "</ul>}" );
                 return sb.ToString();
             }
 

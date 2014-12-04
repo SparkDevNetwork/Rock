@@ -362,12 +362,7 @@ namespace RockWeb.Blocks.Groups
                     if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                     {
                         lDebug.Visible = true;
-                        StringBuilder debugInfo = new StringBuilder();
-                        debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                        debugInfo.Append( "<p><em>Showing first 5 groups.</em></p>" );
-                        debugInfo.Append( dynamicGroups.Take( 5 ).lavaDebugInfo() );
-                        debugInfo.Append( "</div" );
-                        lDebug.Text = debugInfo.ToString();
+                        lDebug.Text = dynamicGroups.Take( 5 ).lavaDebugInfo();
                     }
                     else
                     {

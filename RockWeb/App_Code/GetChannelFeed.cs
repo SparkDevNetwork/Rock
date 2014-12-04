@@ -148,7 +148,7 @@ namespace RockWeb
                         // show debug info
                         if ( request.QueryString["EnableDebug"] != null )
                         {
-                            response.Write( mergeFields.ToJson() );
+                            response.Write( mergeFields.lavaDebugInfo() );
                         }
 
                         response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );

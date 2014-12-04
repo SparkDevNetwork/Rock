@@ -673,7 +673,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                     {
                         var person = Workflow.InitiatorPersonAlias.Person;
-                        tdInitiator.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                        tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>", ResolveRockUrl("~/Person/"), person.Id, person.FullName );
                     }
                     else
                     {

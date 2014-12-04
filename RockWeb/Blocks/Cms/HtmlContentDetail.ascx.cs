@@ -29,6 +29,7 @@ using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Text;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -51,6 +52,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
+    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 9 )]
 
     [ContextAware]
     public partial class HtmlContentDetail : RockBlock
@@ -580,13 +582,16 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( content.Content.HasMergeFields() )
                     {
+                        
+                        
                         var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         if ( CurrentPerson != null )
                         {
                             mergeFields.Add( "Person", CurrentPerson );
                         }
 
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        
+
                         mergeFields.Add( "Campuses", CampusCache.All() );
                         mergeFields.Add( "PageParameter", PageParameters() );
 
@@ -609,9 +614,16 @@ namespace RockWeb.Blocks.Cms
                         {
                             mergeFields.Add( "Context", contextObjects );
                         }
-                        
+
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
                         html = content.Content.ResolveMergeFields( mergeFields );
+
+                        // show merge fields if enable debug true
+                        if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                        {
+                            html += "<p>" + mergeFields.lavaDebugInfo();
+                        }
                     }
                     else
                     {

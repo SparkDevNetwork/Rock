@@ -146,17 +146,7 @@ namespace Rock.Rest.Controllers
                 // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    StringBuilder debugInfo = new StringBuilder();
-                    debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
-
-                    debugInfo.Append( "<pre>" );
-
-                    debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                    debugInfo.Append( mergeValues.lavaDebugInfo() + "</pre>" );
-
-                    debugInfo.Append( "</div>" );
-
-                    resultHtml += debugInfo.ToString();
+                    resultHtml += mergeValues.lavaDebugInfo();
                 }
 
                 return resultHtml;

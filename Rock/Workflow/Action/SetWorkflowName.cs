@@ -32,8 +32,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Workflow Name" )]
 
-    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-lava'></span>", false, "", "", 1, "NameValue",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-lava'></span>", false, "", "", 1, "NameValue" )]
     public class SetWorkflowName : ActionComponent
     {
         /// <summary>
