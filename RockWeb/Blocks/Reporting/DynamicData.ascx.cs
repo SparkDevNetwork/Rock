@@ -309,6 +309,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
 
+                        int tableId = 0;
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var div = new HtmlGenericControl( "div" );
@@ -316,6 +317,8 @@ namespace RockWeb.Blocks.Reporting
                             phContent.Controls.Add( div );
 
                             var grid = new Grid();
+                            div.Controls.Add( grid );
+                            grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
                             grid.AllowSorting = true;
                             grid.EmptyDataText = "No Results";
                             grid.GridRebind += gReport_GridRebind;
@@ -329,7 +332,6 @@ namespace RockWeb.Blocks.Reporting
                                 grid.PersonIdField = null;
                             }
                             grid.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
-                            div.Controls.Add( grid );
 
                             AddGridColumns( grid, dataTable );
                             SetDataKeyNames( grid, dataTable );
