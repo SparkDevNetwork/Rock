@@ -187,7 +187,7 @@ namespace Rock.Workflow
                 var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
                 if (currentPerson != null)
                 {
-                    mergeFields.Add( "CurrentPerson", currentPerson );
+                    mergeFields.Add( "Person", currentPerson );
                 }
             }
 
