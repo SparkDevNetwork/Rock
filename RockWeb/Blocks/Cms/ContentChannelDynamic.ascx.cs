@@ -454,8 +454,7 @@ $(document).ready(function() {
                 }
             }
 
-            var mergeFields = new Dictionary<string, object>();
-            
+            var mergeFields = new  Dictionary<string, object>();
             mergeFields.Add( "Pagination", pagination );
             mergeFields.Add( "LinkedPages", linkedPages );
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
@@ -465,29 +464,16 @@ $(document).ready(function() {
 
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             
-
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
-                var debugFields = new Dictionary<string, object>();
-                if ( CurrentPerson != null )
-                {
-                    debugFields.Add( "Person", CurrentPerson );
-                }
-                debugFields.Add( "Pagination", pagination );
-                debugFields.Add( "LinkedPages", linkedPages );
-                debugFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                debugFields.Add( "Items", currentPageContent.Take( 5 ).ToList() );
-                debugFields.Add( "Campuses", CampusCache.All() );
-                globalAttributeFields.ToList().ForEach( d => debugFields.Add( d.Key, d.Value ) );
+                mergeFields["Items"] = currentPageContent.Take( 5 ).ToList();
 
                 lDebug.Visible = true;
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Showing first 5 items.</em></p>" );
-                debugInfo.Append( debugFields.lavaDebugInfo() );
-                debugInfo.Append( "</div" );
-                lDebug.Text = debugInfo.ToString();
+                
+                lDebug.Text = mergeFields.lavaDebugInfo();
+
+                mergeFields["Items"] = currentPageContent;
             }
             else
             {

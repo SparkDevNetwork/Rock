@@ -42,24 +42,6 @@
 		    return null;
 		},
         
-        // Utility function to recursive through all nodes and clear any selected values
-        _clearSelectedNodes = function (array) {
-            var currentNode,
-                i;
-            
-            if (!array || typeof array.length !== 'number') {
-                return;
-            }
-
-            for (i = 0; i < array.length; i++) {
-                currentNode = array[i];
-                
-                if (currentNode.hasChildren && currentNode.children) {
-                    _clearSelectedNodes(currentNode.children);
-                }
-            }
-        },
-        
         // Default utility function to attempt to map a Rock.Web.UI.Controls.Pickers.TreeViewItem
         // to a more standard JS object.
 		_mapArrayDefault = function (arr) {
@@ -393,14 +375,12 @@
         // Clears all selected nodes
         clear: function () {
             this.selectedNodes = [];
-            _clearSelectedNodes(this.nodes);
             this.render();
         },
         
         // Sets selected nodes given an array of ids
         setSelected: function (array) {
             this.selectedNodes = [];
-            _clearSelectedNodes(this.nodes);
 
             var currentNode,
                 i;
@@ -476,7 +456,6 @@
                 // If multi-select is disabled, clear all previous selections
                 if (!self.options.multiselect) {
                     $rockTree.find('.selected').removeClass('selected');
-                    _clearSelectedNodes(self.nodes);
                 }
 
                 $item.toggleClass('selected');

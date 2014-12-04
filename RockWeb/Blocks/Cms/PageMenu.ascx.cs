@@ -157,21 +157,17 @@ namespace RockWeb.Blocks.Cms
             // add debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
+                StringBuilder tipInfo = new StringBuilder();
+                tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );
 
-                debugInfo.Append("<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>");
-                debugInfo.Append("<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>");
-                debugInfo.Append("<li>Check the 'Display Settings' on the child pages</li>");
-                debugInfo.Append("<li>Check the security of the child pages</li>");
-                debugInfo.Append("</ul><br /></p>");
+                tipInfo.Append( "<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
+                tipInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
+                tipInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
+                tipInfo.Append( "<li>Check the security of the child pages</li>" );
+                tipInfo.Append( "</ul><br /></p>" );
+                tipInfo.Append( "</div>" );
 
-                debugInfo.Append( "<pre>" );
-                debugInfo.Append( "<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>" );
-                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ).lavaDebugInfo() + "</pre>" );
-
-                debugInfo.Append( "</div>" );
-                phContent.Controls.Add( new LiteralControl( debugInfo.ToString() ) );
+                phContent.Controls.Add( new LiteralControl( tipInfo.ToString() + pageProperties.lavaDebugInfo() ) );
             }
 
         }
