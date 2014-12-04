@@ -1677,7 +1677,7 @@ namespace Rock.Web.UI
         {
             // Add Zone Selection Popup (for moving blocks to another zone)
             ModalDialog modalBlockMove = new ModalDialog();
-            modalBlockMove.ID = "modal-block-move";
+            modalBlockMove.CssClass = "js-modal-block-move";
             modalBlockMove.Title = "Move Block";
             modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );

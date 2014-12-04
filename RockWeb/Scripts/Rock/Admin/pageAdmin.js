@@ -143,7 +143,7 @@
                     $('#block-move-Location_1').prop('checked', !pageBlock);
 
                     // Show the popup block move dialog
-                    $find('modal-block-move').show();
+                    $('.js-modal-block-move .modal').modal('show');
 
                     return false;
 
