@@ -334,7 +334,7 @@ SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03
             RockMigrationHelper.AddAttributeQualifier("A4CB9461-D77F-40E0-8DFF-C7838D78F2EC","fieldtype",@"ddl","3DBE544E-3688-449C-84DA-058D818DC4D2"); // Background Check:Type:fieldtype
             RockMigrationHelper.AddAttributeQualifier("A4CB9461-D77F-40E0-8DFF-C7838D78F2EC","values",@"Basic,Plus","69720270-E209-4110-B2CB-AE887662AB61"); // Background Check:Type:values
             RockMigrationHelper.AddAttributeQualifier("6D5417F5-C6DB-4FCF-90B3-7BEFB4A73F8E","numberofrows",@"4","88C3F07A-BDDA-4083-8B20-C687A62A79C7"); // Background Check:Reason:numberofrows
-            RockMigrationHelper.AddAttributeQualifier( "E6E5CF21-5A49-4630-9E18-531FF354380E", "binaryFileType", @"", "5C701472-8A6B-4BBE-AEC6-EC833C859F2D" ); // Background Check:Report:binaryFileType
+            RockMigrationHelper.AddAttributeQualifier( "E6E5CF21-5A49-4630-9E18-531FF354380E", "binaryFileType", @"5C701472-8A6B-4BBE-AEC6-EC833C859F2D", "90C87FF1-F201-4C0B-9D48-F53B81BB57D9" ); // Background Check:Report:binaryFileType
             RockMigrationHelper.AddAttributeQualifier("F54BC71C-5C93-4EA9-88DF-4B89F457BA5D","ispassword",@"False","C4E82826-62B7-4CF6-9ED3-291E1FFA659B"); // Background Check:Report Recommendation:ispassword
             RockMigrationHelper.AddAttributeQualifier("A2B5C4A7-F550-4DF0-B1A0-A7DEF556D6C3","fieldtype",@"ddl","44DE1B1C-27B0-4F19-969B-4D318BE53F61"); // Background Check:Report Status:fieldtype
             RockMigrationHelper.AddAttributeQualifier("A2B5C4A7-F550-4DF0-B1A0-A7DEF556D6C3","values",@"Pass,Fail,Review","68C6E385-2CA2-4F6E-9109-D999A746E100"); // Background Check:Report Status:values
