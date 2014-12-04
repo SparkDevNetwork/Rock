@@ -53,7 +53,6 @@
 
             for (i = 0; i < array.length; i++) {
                 currentNode = array[i];
-                currentNode.isSelected = false;
                 
                 if (currentNode.hasChildren && currentNode.children) {
                     _clearSelectedNodes(currentNode.children);
@@ -276,7 +275,6 @@
             
             for (i = 0; i < nodeArray.length; i++) {
                 nodeArray[i].isOpen = false;
-                nodeArray[i].isSelected = false;
             }
 
             // If a parent node is supplied, append the result set to the parent node.
@@ -317,9 +315,12 @@
 
 				    $li.append('<span class="rocktree-name"> ' + node.name + '</span>');
 				    
-                    if (node.isSelected) {
-                        $li.find('.rocktree-name').addClass('selected');
-                    }
+				    for (var i = 0; i < self.selectedNodes.length; i++) {
+				        if (self.selectedNodes[i].id == node.id) {
+				            $li.find('.rocktree-name').addClass('selected');
+				            break;
+				        }
+				    }
 
 				    if (node.hasChildren) {
 				        $li.prepend('<i class="rocktree-icon ' + folderCssClass + '"></i>');
@@ -408,7 +409,6 @@
                 currentNode = _findNodeById(array[i], this.nodes);
 
                 if (currentNode) {
-                    currentNode.isSelected = true;
                     this.selectedNodes.push(currentNode);
 
                     // trigger the node as selected
@@ -479,7 +479,6 @@
                     _clearSelectedNodes(self.nodes);
                 }
 
-                node.isSelected = true;
                 $item.toggleClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
