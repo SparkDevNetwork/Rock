@@ -105,30 +105,15 @@ namespace Rock
         /// <param name="lavaObject">The liquid object.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null, string title = "Lava Debug Info", string summary = "" )
+        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null )
         {
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
             StringBuilder lavaDebugPanel = new StringBuilder();
-            lavaDebugPanel.Append(string.Format("<div class='alert alert-info lava-debug'><h1>{0}</h1>", title));
-
-            if ( !string.IsNullOrWhiteSpace(summary) )
-            {
-                lavaDebugPanel.Append( string.Format("<em>{0}</em>", summary) );
-            }
+            lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
 
             lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
             lavaDebugPanel.Append( "</div>" );
 
-            string panelScript = @"<script>
-        Sys.Application.add_load(function () {
-            $('.js-lavadebug-toggle').on('click', function () {
-                $(this).closest('.panel').find('.panel-body').slideToggle();
-                $(this).find('i').toggleClass('fa-chevron-down fa-chevron-up');
-            });
-        });
-    </script>";
-
-            lavaDebugPanel.Append( panelScript );
             return lavaDebugPanel.ToString() ;
         }
 
@@ -336,22 +321,30 @@ namespace Rock
                         else { 
                             // item is a root level object                
 
+                            string panelId = Guid.NewGuid().ToString();
+
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
-                        
-                            sb.Append( "<div class='panel-heading clearfix js-lavadebug-toggle'>" );
-                            sb.Append( string.Format("<h1 class='panel-title pull-left'>{0}</h1> <div class='pull-right'><i class='fa fa-chevron-down'></i></div>", keyVal.Key ));
+
+                            sb.Append( string.Format( "<div class='panel-heading clearfix' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format("<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-down'></i></div>", keyVal.Key ));
                             sb.Append( "</div>");
 
+                            sb.Append( string.Format( "<div id='collapse-{0}' class='panel-collapse collapse'>", panelId ) );
                             sb.Append( "<div class='panel-body'>" );
 
                             if ( keyVal.Key == "GlobalAttribute" )
                             {
                                 sb.Append( "<p>Global attributes should be accessed using <code>{{ 'Global' | Attribute:'[AttributeKey]' }}</code>.</p>" );
                             }
+                            else
+                            {
+                                sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                            }
 
                             string value = formatLavaDebugInfo( keyVal.Value, 1, keyVal.Key );
                             sb.Append( value );
 
+                            sb.Append( "</div>" );
                             sb.Append( "</div>" );
                             sb.Append( "</div>" );
                         }
@@ -383,7 +376,7 @@ namespace Rock
 
                 foreach ( var obj in (List<object>)liquidizedObject )
                 {
-                    string value = formatLavaDebugInfo( obj, -1, parents );
+                    string value = formatLavaDebugInfo( obj, 1, parents );
                     sb.AppendFormat( "<li>[{0}] {1}</li>{2}", i.ToString(), value, Environment.NewLine );
                     i ++;
                 }

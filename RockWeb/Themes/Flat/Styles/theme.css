@@ -2199,16 +2199,8 @@ td.grid-col-actions {
 .my-account .photo img {
   width: 100%;
 }
-.lava-debug h1 {
-  font-size: 24px;
-  margin-top: 0;
-}
-.lava-debug h2 {
-  font-size: 18px;
-}
-.lava-debug hr {
-  margin-top: 4px;
-  margin-bottom: 14px;
+.lava-debug {
+  margin-top: 24px;
 }
 .lava-debug code {
   background-color: #258cd1;
@@ -2235,7 +2227,6 @@ td.grid-col-actions {
 }
 .lava-debug .panel .panel-body {
   background-color: #419fdd;
-  display: none;
 }
 /*
     Used to manage styles for specific blocks.
