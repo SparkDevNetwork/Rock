@@ -81,11 +81,8 @@ namespace RockWeb.Blocks.Cms
             gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
             gContentChannelItems.DataKeyNames = new string[] { "id" };
-            gContentChannelItems.Actions.ShowAdd = true;
-            gContentChannelItems.IsDeleteEnabled = false;
             gContentChannelItems.Actions.AddClick += gContentChannelItems_Add;
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
-             
         }
 
         /// <summary>
@@ -236,7 +233,33 @@ namespace RockWeb.Blocks.Cms
                 NavigateToLinkedPage( "DetailPage", "contentItemId", contentItem.Id );
             }
         }
-        
+
+        /// <summary>
+        /// Handles the Click event of the deleteField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void gContentChannelItems_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var contentItemService = new ContentChannelItemService( rockContext );
+            var contentItem = contentItemService.Get( e.RowKeyId );
+            if ( contentItem != null )
+            {
+                string errorMessage;
+                if ( !contentItemService.CanDelete( contentItem, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                contentItemService.Delete( contentItem );
+                rockContext.SaveChanges();
+            }
+
+            GetData();
+        }
 
         /// <summary>
         /// Handles the GridRebind event of the gContentChannelItems control.
@@ -500,6 +523,17 @@ namespace RockWeb.Blocks.Cms
                     statusField.HeaderText = "Status";
                     statusField.SortExpression = "Status";
                     statusField.HtmlEncode = false;
+                }
+
+                bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                gContentChannelItems.Actions.ShowAdd = canEditChannel;
+                gContentChannelItems.IsDeleteEnabled = canEditChannel;
+                if ( canEditChannel )
+                {
+
+                    var deleteField = new DeleteField();
+                    gContentChannelItems.Columns.Add( deleteField );
+                    deleteField.Click += gContentChannelItems_Delete;
                 }
             }
 
