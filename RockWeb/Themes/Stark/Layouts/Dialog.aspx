@@ -103,7 +103,7 @@
 
 <body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:ScriptManager ID="sManager" runat="server" />
         <asp:UpdatePanel ID="updatePanelDialog" runat="server">
             <ContentTemplate>
                 <div class="modal-content">
