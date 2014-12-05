@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                int? result = this.SelectedValueAsInt();
+                int? result = this.SelectedValueAsInt( NoneAsNull: false );
                 if (result.HasValue)
                 {
                     return (DayOfWeek)result.Value;
