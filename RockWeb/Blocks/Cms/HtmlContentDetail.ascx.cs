@@ -587,10 +587,10 @@ namespace RockWeb.Blocks.Cms
                         var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         if ( CurrentPerson != null )
                         {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "CurrentPerson", CurrentPerson );
                         }
-
-                        
 
                         mergeFields.Add( "Campuses", CampusCache.All() );
                         mergeFields.Add( "PageParameter", PageParameters() );
@@ -622,6 +622,8 @@ namespace RockWeb.Blocks.Cms
                         // show merge fields if enable debug true
                         if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                         {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                            mergeFields.Remove( "Person" );
                             html += "<p>" + mergeFields.lavaDebugInfo();
                         }
                     }

@@ -114,8 +114,9 @@ namespace RockWeb.Blocks.Core
         {
             List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
             var mergeFields = new Dictionary<string, object>();
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
             mergeFields.Add( "Person", CurrentPerson );
-
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             
@@ -139,6 +140,8 @@ namespace RockWeb.Blocks.Core
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
                 lDebug.Visible = true;
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                mergeFields.Remove( "Person" );
                 lDebug.Text = mergeFields.lavaDebugInfo();
             }
         }
