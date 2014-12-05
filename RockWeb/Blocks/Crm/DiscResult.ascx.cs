@@ -127,6 +127,8 @@ namespace Rockweb.Blocks.Crm
 
             hlAssessmentDate.Text = String.Format( "Assessment Date: {0}", savedScores.LastSaveDate.ToShortDateString() );
             lPersonName.Text = _targetPerson.FullName;
+
+            lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
         }
 
         /// <summary>

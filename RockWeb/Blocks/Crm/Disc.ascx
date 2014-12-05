@@ -185,6 +185,8 @@
             </div>
             <div class="panel-body">
                 
+                <asp:Literal ID="lHeading" runat="server"></asp:Literal>
+
                 <ul class="discchart">
                     <li class="discchart-midpoint"></li>
                     <li style="height: 100%; width:0px;"></li>
