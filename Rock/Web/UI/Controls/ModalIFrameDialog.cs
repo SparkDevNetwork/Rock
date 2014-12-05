@@ -1,4 +1,6 @@
-﻿// <copyright>
+﻿using System.Web.UI;
+using System.Web.UI.HtmlControls;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,38 +16,31 @@
 // limitations under the License.
 // </copyright>
 //
-using AjaxControlToolkit;
-using System;
-using System.ComponentModel;
-using System.Security.Permissions;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;  
-using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// A Modal Popup Dialog Window
     /// </summary>
-    [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
-    public class ModalIFrameDialog : ModalPopupExtender, INamingContainer
+    public class ModalIFrameDialog : CompositeControl, INamingContainer
     {
         private Button _dfltShowButton;
         private Panel _dialogPanel;
 
         private Panel _contentPanel;
         private HtmlGenericControl _iFrame;
-        
+
         /// <summary>
-        /// Raises the <see cref="E:Init"/> event.
+        /// Gets or sets the on cancel script.
         /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected override void OnInit( EventArgs e )
+        /// <value>
+        /// The on cancel script.
+        /// </value>
+        public string OnCancelScript
         {
-            base.OnInit( e );
-            this.BackgroundCssClass = "modal-backdrop";
-            this.Y = 50;
+            get { return ViewState["OnCancelScript"] as string ?? string.Empty; }
+            set { ViewState["OnCancelScript"] = value; }
         }
 
         /// <summary>
@@ -56,16 +51,10 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             base.Controls.Clear();
 
-            _dfltShowButton = new Button();
-            base.Controls.Add(_dfltShowButton);
-            _dfltShowButton.ID = "default";
-            _dfltShowButton.Attributes.Add("style","display:none");
-
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "rock-modal-frame";
-            _dialogPanel.Attributes.Add("style","display:none");
+            _dialogPanel.CssClass = "modal container fade modal-content rock-modal rock-modal-frame";
 
             _contentPanel = new Panel();
             _dialogPanel.Controls.Add( _contentPanel );
@@ -76,23 +65,6 @@ namespace Rock.Web.UI.Controls
             _iFrame.ID = "iframe";
             _iFrame.Attributes.Add( "scrolling", "no" );
             _contentPanel.Controls.Add( _iFrame );
-
-            this.PopupControlID = _dialogPanel.ID;
         }
-
-        /// <summary>
-        /// Raises the <see cref="E:PreRender"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected override void OnPreRender( EventArgs e )
-        {
-            // If no target control has been defined, use a hidden default button.
-            if ( this.TargetControlID == string.Empty )
-                this.TargetControlID = _dfltShowButton.ID;
-
-            base.OnPreRender( e );
-        }
-
     }
-
 }

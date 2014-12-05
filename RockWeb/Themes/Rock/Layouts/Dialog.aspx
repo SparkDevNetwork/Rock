@@ -1,4 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
+
 <%@ Import Namespace="System.Web.Optimization" %>
 <%@ Import Namespace="Rock" %>
 
@@ -41,7 +42,7 @@
             hfCloseMessage.Value = value;
         }
     }
-    
+
     /// <summary>
     /// Handles the Click event of the btnSave control.
     /// </summary>
@@ -80,12 +81,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal-bs3patch.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal.css", true) %>" />
 
     <style>
         html, body {
@@ -103,32 +106,21 @@
 
 <body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:ScriptManager ID="sManager" runat="server" />
         <asp:UpdatePanel ID="updatePanelDialog" runat="server">
             <ContentTemplate>
                 <div class="modal-content">
                     <Rock:HiddenFieldWithClass ID="hfCloseMessage" runat="server" CssClass="modal-close-message" />
                     <div class="modal-header">
                         <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">&times;</a>
-                        <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+                        <h3 class="modal-title">
+                            <asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
                         <asp:Literal ID="lSubTitle" runat="server"></asp:Literal>
                     </div>
 
                     <div class="modal-body">
-                        <div id="modal-scroll-container" class="scroll-container scroll-container-vertical">
-                            <div class="scrollbar">
-                                <div class="track">
-                                    <div class="thumb">
-                                        <div class="end"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="viewport">
-                                <div class="overview">
-                                    <Rock:Zone Name="Main" runat="server" />
-                                </div>
-                            </div>
-                        </div>
+
+                        <Rock:Zone Name="Main" runat="server" />
                     </div>
 
                     <div class="modal-footer">
@@ -139,16 +131,5 @@
             </ContentTemplate>
         </asp:UpdatePanel>
     </form>
-
-    <script type="text/javascript">
-        Sys.Application.add_load(function () {
-
-            // use setTimeout so that tinyscrollbar will get initialized after renders
-            setTimeout(function () {
-                $('#modal-scroll-container').tinyscrollbar({ size: 150, sizethumb: 20 });
-            }, 0);
-            
-        });
-    </script>
 </body>
 </html>
