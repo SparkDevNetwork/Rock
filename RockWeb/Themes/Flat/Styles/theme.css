@@ -2200,6 +2200,7 @@ td.grid-col-actions {
   width: 100%;
 }
 .lava-debug {
+  clear: both;
   margin-top: 24px;
 }
 .lava-debug code {
