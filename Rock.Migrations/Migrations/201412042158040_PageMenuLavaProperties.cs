@@ -33,6 +33,23 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+    UPDATE [HtmlContent]
+    SET [Content] = REPLACE( [Content], 'Person.NickName', 'CurrentPerson.NickName' )
+    WHERE [Guid] = '33A47BDE-2CFE-487B-9786-4847CE45C44F'
+
+    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '394C30E6-22EE-4312-9870-EA90336F5778' )
+    
+    UPDATE [Attribute] 
+    SET [DefaultValue] = REPLACE ( [DefaultValue], 'Person.NickName', 'CurrentPerson.NickName' )
+    WHERE [Id] = @AttributeId
+
+    UPDATE [AttributeValue] 
+    SET [Value] = REPLACE ( [Value], 'Person.NickName', 'CurrentPerson.NickName' )
+    WHERE [AttributeId] = @AttributeId
+
+" );
+
+            Sql( @"
     DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '1322186A-862A-4CF1-B349-28ECB67229BA' )
     UPDATE [AttributeValue] 
 	    SET [Value] = 
