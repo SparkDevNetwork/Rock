@@ -123,6 +123,8 @@ namespace Rock
         /// </summary>
         /// <param name="liquidObject">The liquid object.</param>
         /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
         private static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
         {
@@ -2366,7 +2368,7 @@ namespace Rock
         /// <returns></returns>
         public static int RouteId( this Route route )
         {
-            if ( route.DataTokens != null )
+            if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
             {
                 return int.Parse( route.DataTokens["RouteId"] as string );
             }
