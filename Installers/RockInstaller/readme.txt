@@ -52,8 +52,9 @@ ___ 2. Run 'update-database' in Visual Studio package manager so that a new data
 ___ 3. Open SQL Server Manager
 
 ___ 4. Run the SQL below to purge old migrations out (this greatly reduces the size of the SQL script)
-          DELETE FROM [__MigrationHistory] 
-          WHERE [MigrationId] != (SELECT MAX(MigrationId) FROM [__MigrationHistory])
+       UPDATE [__MigrationHistory] 
+       SET [Model] = 0x
+       WHERE [MigrationId] != (SELECT MAX(MigrationId) FROM [__MigrationHistory])
 
 ___ 5. Right-click on the new database and select 'Tasks > Generate Scripts'
 
