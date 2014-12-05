@@ -2224,6 +2224,9 @@ td.grid-col-actions {
   border: 0;
   cursor: pointer;
 }
+.lava-debug .panel .panel-heading.collapsed i:before {
+  content: "\f078";
+}
 .lava-debug .panel .panel-body {
   background-color: #e6f3fa;
 }
