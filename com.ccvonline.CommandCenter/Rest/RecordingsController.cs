@@ -36,6 +36,7 @@ namespace com.ccvonline.CommandCenter.Rest
         [HttpGet]
         [Authenticate]
         [System.Web.Http.Route( "api/Recordings/Start/{campusId}/{venue}/{label}/{app}/{stream}/{recording}" )]
+        [Secured]
         public Recording Start( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
@@ -61,6 +62,7 @@ namespace com.ccvonline.CommandCenter.Rest
         [HttpGet]
         [Authenticate]
         [System.Web.Http.Route( "api/Recordings/Stop/{campusId}/{venue}/{label}/{app}/{stream}/{recording}")]
+        [Secured]
         public Recording Stop( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
@@ -81,6 +83,7 @@ namespace com.ccvonline.CommandCenter.Rest
         [HttpGet]
         [Authenticate]
         [System.Web.Http.Route( "api/Recordings/dates/{qualifier}" )]
+        [Secured]
         public IEnumerable<DateTime> Dates( string qualifier )
         {
             var dates = Service.Queryable()
