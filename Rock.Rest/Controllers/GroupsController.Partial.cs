@@ -47,6 +47,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var qry = ( (GroupService)Service ).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
             List<Group> groupList = new List<Group>();
@@ -111,6 +114,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}" )]
         public IQueryable<MapItem> GetMapInfo( int groupId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -157,6 +163,9 @@ namespace Rock.Rest.Controllers
 
             var mapItems = new List<MapItem>();
 
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             foreach ( var group in ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.ParentGroupId == groupId ) )
             {
@@ -185,6 +194,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members" )]
         public IQueryable<MapItem> GetMemberMapInfo( int groupId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "Members" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -239,6 +251,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -313,6 +328,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Groups/GetMapInfoWindow/{groupId}/{locationId}" )]
         public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             // Use new service with new context so properties can be navigated by liquid
             var group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
                 .Where( g => g.Id == groupId )
