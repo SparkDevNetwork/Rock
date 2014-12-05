@@ -32,7 +32,6 @@ ___ 7. Delete the following files from the RockWeb directory
 
 ___ 8. Zip up the RockWeb directory
 
-
 ___ 9. Rename zip file 'rock-install-latest.zip'
 
 ___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
@@ -52,18 +51,22 @@ ___ 2. Run 'update-database' in Visual Studio package manager so that a new data
 
 ___ 3. Open SQL Server Manager
 
-___ 4. Right-click on the new database and select 'Tasks > Generate Scripts'
+___ 4. Run the SQL below to purge old migrations out (this greatly reduces the size of the SQL script)
+          DELETE FROM [__MigrationHistory] 
+          WHERE [MigrationId] != (SELECT MAX(MigrationId) FROM [__MigrationHistory])
 
-___ 5. Click 'Next' until you see the screen with the 'Advanced' button.
+___ 5. Right-click on the new database and select 'Tasks > Generate Scripts'
 
-___ 6. Save the file as 'sql-install.sql'
+___ 6. Click 'Next' until you see the screen with the 'Advanced' button.
 
-___ 7. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
+___ 7. Save the file as 'sql-install.sql'
+
+___ 8. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
        'schema and data'.
 
-___ 8. Click 'Next' then 'Finished'
+___ 9. Click 'Next' then 'Finished'
 
-___ 9. Open the SQL file and make the following edits:
+___ 10. Open the SQL file and make the following edits:
          * delete from the start of the file to the beginning of the first comment of the first stored proc
          * remove the follow four lines from the end of the script
               USE [master]
@@ -75,10 +78,10 @@ ___ 9. Open the SQL file and make the following edits:
             'ON [PRIMARY]'
 
 
-___ 10. Zip the file into a new file named 'sql-latest.zip'
+___ 11. Zip the file into a new file named 'sql-latest.zip'
 
-___ 11. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
+___ 12. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
         it will be in source control
 
-___ 12. Overwrite with snapshot zip file to Azure Blog storage
+___ 13. Overwrite with snapshot zip file to Azure Blog storage
         (rockrms/install/<version>/Data)
