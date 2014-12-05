@@ -334,7 +334,7 @@ namespace Rock.Web
 
             foreach ( Route route in RouteTable.Routes )
             {
-                if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == RouteId.ToString() )
+                if ( route.DataTokens != null && route.DataTokens.ContainsKey( "RouteId" ) && route.DataTokens["RouteId"].ToString() == RouteId.ToString() )
                 {
                     routeUrl = route.Url;
                     break;
