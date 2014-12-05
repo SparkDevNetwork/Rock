@@ -32,6 +32,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Update core lava templates to use 'CurrentPerson' instead of 'Person'
             Sql( @"
     UPDATE [HtmlContent]
     SET [Content] = REPLACE( [Content], 'Person.NickName', 'CurrentPerson.NickName' )
@@ -83,6 +84,16 @@ namespace Rock.Migrations
                     FixPageLavaTemplates( rockDir.GetFiles( "*.liquid", SearchOption.AllDirectories ) );
                 }
             }
+
+            // Update Social Media attributes to be url fields
+            Sql( @"
+    DECLARE @UrlFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = 'C0D0D7E2-C3B0-4004-ABEA-4BBFAD10D5D2' )
+    UPDATE A SET [FieldTypeId] = @UrlFieldTypeId
+    FROM [Category] C
+    INNER JOIN [AttributeCategory] AC ON AC.[CategoryId] = C.[Id]
+    INNER JOIN [Attribute] A ON A.[Id] = AC.[AttributeId]
+    WHERE C.[Guid] = 'DD8F467D-B83C-444F-B04C-C681167046A1'
+" );
         }
         
         /// <summary>
