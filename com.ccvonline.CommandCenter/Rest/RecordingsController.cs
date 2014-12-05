@@ -15,36 +15,12 @@ namespace com.ccvonline.CommandCenter.Rest
     /// Recordings REST API
     /// </summary>
     /// 
-    public partial class RecordingsController : Rock.Rest.ApiController<Recording>, IHasCustomRoutes
+    public partial class RecordingsController : Rock.Rest.ApiController<Recording>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RecordingsController" /> class.
         /// </summary>
         public RecordingsController() : base( new RecordingService( new Data.CommandCenterContext() ) ) { }
-
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "com.ccvonline.CommandCenter.Recording",
-                routeTemplate: "api/Recordings/{action}/{campusId}/{venue}/{label}/{app}/{stream}/{recording}",
-                defaults: new
-                {
-                    controller = "recordings"
-                } );
-
-            routes.MapHttpRoute(
-                name: "com.ccvonline.CommandCenter.RecordingDate",
-                routeTemplate: "api/Recordings/dates/{qualifier}",
-                defaults: new
-                {
-                    controller = "recordings",
-                    action = "dates"
-                } );
-        }
 
         /// <summary>
         /// Starts the specified campus id.
@@ -59,6 +35,7 @@ namespace com.ccvonline.CommandCenter.Rest
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpGet]
         [Authenticate]
+        [System.Web.Http.Route( "api/Recordings/Start/{campusId}/{venue}/{label}/{app}/{stream}/{recording}" )]
         public Recording Start( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
@@ -83,6 +60,7 @@ namespace com.ccvonline.CommandCenter.Rest
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpGet]
         [Authenticate]
+        [System.Web.Http.Route( "api/Recordings/Stop/{campusId}/{venue}/{label}/{app}/{stream}/{recording}")]
         public Recording Stop( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
@@ -102,6 +80,7 @@ namespace com.ccvonline.CommandCenter.Rest
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpGet]
         [Authenticate]
+        [System.Web.Http.Route( "api/Recordings/dates/{qualifier}" )]
         public IEnumerable<DateTime> Dates( string qualifier )
         {
             var dates = Service.Queryable()
