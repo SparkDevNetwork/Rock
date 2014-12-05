@@ -3381,6 +3381,9 @@ tr.inactive td {
 .disc-assessment .disc-answer {
   width: 100px;
 }
+.disc-heading {
+  text-align: center;
+}
 .discchart {
   clear: both;
   padding: 0;

@@ -452,7 +452,7 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Workflow", _workflow );
                 if ( CurrentPerson != null )
                 {
-                    mergeFields.Add( "Person", CurrentPerson );
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );

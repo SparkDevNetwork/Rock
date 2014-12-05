@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
 <div class=""row margin-b-md"">
 
     <div class=""col-md-6"">
-        <h1 class=""condensed"">Hello, {{Person.NickName}}</h1>
+        <h1 class=""condensed"">Hello, {{CurrentPerson.NickName}}</h1>
     </div>
 
     <div class=""col-md-6"">
@@ -232,13 +232,17 @@ namespace RockWeb.Blocks.Finance
                 var scheduleValues = new Dictionary<string, object>();
                 scheduleValues.Add( "ScheduledTransactions", scheduleSummaries.ToList() );
                 scheduleValues.Add( "LinkedPages", linkedPages );
-                scheduleValues.Add( "Person", CurrentPerson );  
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                scheduleValues.Add( "Person", CurrentPerson );
+                scheduleValues.Add( "CurrentPerson", CurrentPerson );  
 
                 string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
 
                 // show merge fields if needed
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
+                    // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                    scheduleValues.Remove( "Person" );
                     content += scheduleValues.lavaDebugInfo();
                 }
 
