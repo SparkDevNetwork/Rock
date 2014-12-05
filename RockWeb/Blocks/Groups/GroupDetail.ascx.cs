@@ -675,15 +675,12 @@ namespace RockWeb.Blocks.Groups
         {
             Group group = null;
 
+            bool viewAllowed = true;
             bool editAllowed = true;
 
             if ( !groupId.Equals( 0 ) )
             {
                 group = GetGroup( groupId );
-                if (group != null)
-                {
-                    editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
             }
 
             if ( group == null )
@@ -692,7 +689,13 @@ namespace RockWeb.Blocks.Groups
                 wpGeneral.Expanded = true;
             }
 
-            pnlDetails.Visible = true;
+            if (group != null)
+            {
+                viewAllowed = group.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+
+            pnlDetails.Visible = viewAllowed;
 
             hfGroupId.Value = group.Id.ToString();
 

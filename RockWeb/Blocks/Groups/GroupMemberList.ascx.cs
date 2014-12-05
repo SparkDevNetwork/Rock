@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Groups
 
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
+        private bool _canView = false;
 
         #endregion
 
@@ -76,8 +77,10 @@ namespace RockWeb.Blocks.Groups
                     RockPage.SaveSharedItem( key, _group );
                 }
 
-                if ( _group != null )
+                if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
+                    _canView = true;
+
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
@@ -114,7 +117,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            pnlContent.Visible = _canView;
+
+            if ( !Page.IsPostBack && _canView )
             {
                 BindFilter();
 
