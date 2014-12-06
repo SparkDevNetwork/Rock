@@ -110,6 +110,7 @@ namespace Rock
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
             StringBuilder lavaDebugPanel = new StringBuilder();
             lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
+            lavaDebugPanel.Append( "<p>Below is a listing of available merge fields for this block. Find out more on Lava at <a href='http://www.rockrms.com/lava' target='_blank'>rockrms.com/lava</a>." );
 
             lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
             lavaDebugPanel.Append( "</div>" );
@@ -122,6 +123,8 @@ namespace Rock
         /// </summary>
         /// <param name="liquidObject">The liquid object.</param>
         /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
         private static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
         {
@@ -325,8 +328,8 @@ namespace Rock
 
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
 
-                            sb.Append( string.Format( "<div class='panel-heading clearfix' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
-                            sb.Append( string.Format("<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-down'></i></div>", keyVal.Key ));
+                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format("<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-up'></i></div>", keyVal.Key ));
                             sb.Append( "</div>");
 
                             sb.Append( string.Format( "<div id='collapse-{0}' class='panel-collapse collapse'>", panelId ) );
@@ -334,7 +337,7 @@ namespace Rock
 
                             if ( keyVal.Key == "GlobalAttribute" )
                             {
-                                sb.Append( "<p>Global attributes should be accessed using <code>{{ 'Global' | Attribute:'[AttributeKey]' }}</code>.</p>" );
+                                sb.Append( "<p>Global attributes should be accessed using <code>{{ 'Global' | Attribute:'[AttributeKey]' }}</code>. Find out more about using Global Attributes in Lava at <a href='http://www.rockrms.com/lava/globalattributes' target='_blank'>rockrms.com/lava/globalattributes</a>.</p>" );
                             }
                             else
                             {
@@ -344,7 +347,16 @@ namespace Rock
                                 }
                                 else
                                 {
-                                    sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                                    if ( keyVal.Key == "CurrentPerson" )
+                                    {
+                                        sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>. Find out more about using 'Person' fields in Lava at <a href='http://www.rockrms.com/lava/person' target='_blank'>rockrms.com/lava/person</a>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                                    }
+                                    else
+                                    {
+                                        sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                                    }
+                                    
+                                    
                                 }
                             }
 
@@ -2350,7 +2362,7 @@ namespace Rock
         /// <returns></returns>
         public static int RouteId( this Route route )
         {
-            if ( route.DataTokens != null )
+            if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
             {
                 return int.Parse( route.DataTokens["RouteId"] as string );
             }

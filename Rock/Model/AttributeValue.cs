@@ -81,7 +81,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a double
-        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) &lt; 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
+        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as (case when len([value]) &lt; (100) AND isnumeric([value])=(1) AND NOT [value] like %[^0-9.]%' AND NOT [value] like '%[.]%' then CONVERT([numeric](38,10),[value])  end
         /// </summary>
         /// <value>
         /// </value>
