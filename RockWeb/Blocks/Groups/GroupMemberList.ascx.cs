@@ -87,14 +87,12 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-                    gGroupMembers.Actions.ShowAdd = true;
-                    gGroupMembers.IsDeleteEnabled = true;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
 
-                    // make sure they have Auth to the block AND Edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    // make sure they have Auth to edit the block OR edit to the Group
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
