@@ -293,6 +293,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Dictionary<string, object> GetMergeFields( Person currentPerson )
         {
+            var configValues = new Dictionary<string, object>();
+
             // Add any global attribute values that user has authorization to view
             var globalAttributeValues = new Dictionary<string, object>();
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -303,14 +305,20 @@ namespace Rock.Web.Cache
                     globalAttributeValues.Add( attributeCache.Key, globalAttributes.GetValueFormatted( attributeCache.Key ) );
                 }
             }
+            configValues.Add( "GlobalAttribute", globalAttributeValues );
 
             // Recursively resolve any of the config values that may have other merge codes as part of their value
-            foreach ( var item in globalAttributeValues )
+            foreach ( var collection in configValues.ToList() )
             {
-                globalAttributeValues[item.Key] = ResolveConfigValue( item.Value as string, configValues );
+                var collectionDictionary = collection.Value as Dictionary<string, object>;
+                foreach ( var item in collectionDictionary.ToList() )
+                {
+                    collectionDictionary[item.Key] = ResolveConfigValue( item.Value as string, configValues );
+                }
             }
 
-            return new Dictionary<string, object> { { "GlobalAttribute", globalAttributeValues } };
+            return configValues;
+
         }
 
         /// <summary>
