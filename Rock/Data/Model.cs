@@ -102,7 +102,7 @@ namespace Rock.Data
         /// <value>
         /// The created by person identifier.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual int? CreatedByPersonId
         {
             get
@@ -121,7 +121,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the created by person.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual string CreatedByPersonName
         {
             get
@@ -139,7 +139,7 @@ namespace Rock.Data
         /// <value>
         /// The modified by person identifier.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual int? ModifiedByPersonId
         {
             get
@@ -158,7 +158,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the modified by person.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual string ModifiedByPersonName
         {
             get
