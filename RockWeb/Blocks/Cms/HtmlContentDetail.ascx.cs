@@ -580,10 +580,10 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    if ( content.Content.HasMergeFields() )
+                    bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+
+                    if ( content.Content.HasMergeFields() || enableDebug )
                     {
-                        
-                        
                         var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         if ( CurrentPerson != null )
                         {
@@ -620,11 +620,11 @@ namespace RockWeb.Blocks.Cms
                         html = content.Content.ResolveMergeFields( mergeFields );
 
                         // show merge fields if enable debug true
-                        if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                        if ( enableDebug )
                         {
                             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Remove( "Person" );
-                            html += "<p>" + mergeFields.lavaDebugInfo();
+                            html += mergeFields.lavaDebugInfo();
                         }
                     }
                     else
