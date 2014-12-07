@@ -235,14 +235,21 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.ParentGroup != null )
-                {
-                    return this.ParentGroup;
-                }
-                else
-                {
-                    return this.GroupType;
-                }
+                return this.ParentGroup;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent authority2.
+        /// </summary>
+        /// <value>
+        /// The parent authority2.
+        /// </value>
+        public override Security.ISecured ParentAuthorityPre
+        {
+            get
+            {
+                return this.GroupType;
             }
         }
 
