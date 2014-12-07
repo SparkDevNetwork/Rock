@@ -227,8 +227,8 @@
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\IChartData.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
-    <Compile Include="Data\LiquidInclude.cs" />
-    <Compile Include="Data\LiquidIgnore.cs" />
+    <Compile Include="Data\LavaIncludeAttribute.cs" />
+    <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
