@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( formAttribute.IsReadOnly )
                     {
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( formAttribute.HideLabel )
                         {
