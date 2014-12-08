@@ -2181,6 +2181,7 @@ td.grid-col-actions {
 
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
+    3. Lava Debug - Used to style the lava debug panel
 */
 .htmlcontent-edit-header {
   padding: 7.5px 15px 0 15px;
@@ -2197,6 +2198,39 @@ td.grid-col-actions {
 }
 .my-account .photo img {
   width: 100%;
+}
+.lava-debug {
+  clear: both;
+  margin-top: 24px;
+}
+.lava-debug code {
+  background-color: #258cd1;
+  color: #ffffff;
+}
+.lava-debug p {
+  margin-bottom: 10px;
+  font-weight: normal !important;
+}
+.lava-debug p.attributes {
+  margin-bottom: 0;
+}
+.lava-debug .lava-debug-key {
+  font-weight: 600;
+}
+.lava-debug .panel {
+  border: 0;
+}
+.lava-debug .panel .panel-heading {
+  background-color: #2791d9;
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+}
+.lava-debug .panel .panel-heading.collapsed i:before {
+  content: "\f078";
+}
+.lava-debug .panel .panel-body {
+  background-color: #419fdd;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3350,6 +3384,9 @@ tr.inactive td {
 }
 .disc-assessment .disc-answer {
   width: 100px;
+}
+.disc-heading {
+  text-align: center;
 }
 .discchart {
   clear: both;
