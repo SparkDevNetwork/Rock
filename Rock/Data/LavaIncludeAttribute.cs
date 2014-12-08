@@ -21,7 +21,7 @@ namespace Rock.Data
     /// <summary>
     /// Attribute so that the dotLiquid knows to include this column ( Only used when [DataMember] can't be used due to serialization )
     /// </summary>
-    public class LiquidIncludeAttribute : System.Attribute
+    public class LavaIncludeAttribute : System.Attribute
     {
     }
 }

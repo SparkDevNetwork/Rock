@@ -92,7 +92,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -101,14 +101,14 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual ISecured ParentAuthority
         {
             get
@@ -136,7 +136,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
-        [LiquidIgnore]
+        [LavaIgnore]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual Dictionary<string, string> AttributeValueDefaults
         {
             get { return null; }
@@ -385,7 +385,7 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LiquidIgnore]
+        [LavaIgnore]
         public object this[object key]
         {
             get
@@ -398,7 +398,7 @@ namespace Rock.Web.Cache
                 if ( propInfo != null &&
                     propInfo.Name != "Attributes" &&
                     propInfo.Name != "AttributeValues" &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIgnoreAttribute ) ).Count() <= 0 )
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 
@@ -479,7 +479,7 @@ namespace Rock.Web.Cache
             if ( propInfo != null &&
                 propInfo.Name != "Attributes" &&
                 propInfo.Name != "AttributeValues" &&
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIgnoreAttribute ) ).Count() <= 0 )
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
             {
                 return true;
             }
