@@ -1,0 +1,120 @@
+﻿/*
+    Used to manage styles related to Rock's store
+    /* NOTE: This less file is not included in the core since it is only used
+             internally. It must be included in the theme.
+    
+    1. Promo Rotator
+    2. Package Summary
+    3. 
+    4. 
+    5. 
+    6. 
+    7. 
+*/
+
+// 1. Promo Rotator
+// -------------------------
+.promotionrotator {
+	margin-bottom: 48px;
+
+    .carousel-inner {
+        img {
+            width: 100%;
+        }
+    }
+
+    .carousel-indicators {
+		bottom: -35px;
+
+        li {
+		    border-color: #6A6A6A;
+	    }
+
+        .active {
+		    background-color: #6A6A6A;
+	    }
+	}
+
+    .carousel-control {
+        .fa-chevron-right {
+		    right: 20px;
+	    }
+
+        .fa-chevron-left {
+		    left: 20px;
+	    }
+    }
+}
+
+// 2. Package Summary
+// -------------------------
+.packagesummary {
+    height: 260px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-bottom: 24px;
+    background-color: #efefef;
+
+    .packagesummary-image-hover {
+        background-color: #000;
+        opacity: 0;
+        width: 100%;
+        height: 140px;
+        content: '';
+        -webkit-transition: opacity .5s ease-in;
+        -moz-transition: opacity .5s ease-in;
+        -o-transition: opacity .5s ease-in;
+        -ms-transition: opacity .5s ease-in;
+        transition: opacity .5s ease-in;
+    }
+
+    &:hover .packagesummary-image-hover {
+        opacity: 0.5;
+    }
+
+    .packagesummary-body {
+        padding: 8px;
+
+        h2 {
+            line-height: 1.3em;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: @font-weight-semibold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vendor {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    
+}
+
+
+// 3. 
+// -------------------------
+
+
+
+// 4.
+// -------------------------
+
+
+// 5. 
+// -------------------------
+
+
+// 5. 
+// -------------------------
+
+
+// 6. 
+// -------------------------
+
+
+// 7. 
+// -------------------------
