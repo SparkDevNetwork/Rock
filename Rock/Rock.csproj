@@ -304,6 +304,15 @@
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
+    <Compile Include="Store\Package.cs" />
+    <Compile Include="Store\PackageCategory.cs" />
+    <Compile Include="Store\PackageCategoryService.cs" />
+    <Compile Include="Store\PackageService.cs" />
+    <Compile Include="Store\Promo.cs" />
+    <Compile Include="Store\PromoService.cs" />
+    <Compile Include="Store\StoreImage.cs" />
+    <Compile Include="Store\StoreModel.cs" />
+    <Compile Include="Store\StoreService.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
