@@ -61,6 +61,17 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual string FormatValueAsHtml( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return FormatValue( null, value, configurationValues, false );
+        }
+
+        /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
         /// <param name="value">The value.</param>

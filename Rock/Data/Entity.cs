@@ -319,8 +319,8 @@ namespace Rock.Data
                     propInfo.Name != "Attributes" &&
                     propInfo.Name != "AttributeValues" &&
                     ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIncludeAttribute ) ).Count() > 0 ) &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIgnoreAttribute ) ).Count() <= 0 )
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 
@@ -354,8 +354,8 @@ namespace Rock.Data
                 propInfo.Name != "Attributes" &&
                 propInfo.Name != "AttributeValues" &&
                 ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIncludeAttribute ) ).Count() > 0 ) &&
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LiquidIgnoreAttribute ) ).Count() <= 0 )
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
             {
                 return true;
             }
