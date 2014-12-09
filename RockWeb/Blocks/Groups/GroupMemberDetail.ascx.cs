@@ -34,7 +34,6 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
-    [LinkedPage("Person Profile Page", "The person profile page to link to.")]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -298,21 +297,6 @@ namespace RockWeb.Blocks.Groups
             if ( !groupMemberId.Equals( 0 ) )
             {
                 groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-                if ( groupMember != null )
-                {
-                    groupMember.LoadAttributes();
-
-                    if ( !string.IsNullOrWhiteSpace(GetAttributeValue("PersonProfilePage")) )
-                    {
-                        var personPageParams = new Dictionary<string, string>();
-                        personPageParams.Add( "PersonId", groupMember.Person.Id.ToString() );
-                        var personProfilePage = LinkedPageUrl( "PersonProfilePage", personPageParams );
-
-                        hlProfilePage.NavigateUrl = personProfilePage;
-                        hlProfilePage.Visible = true;
-                    }
-                    
-                }
             }
             else
             {
