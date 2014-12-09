@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for showing a LinkButton in a grid
     /// </summary>
     [ToolboxData( "<{0}:LinkButtonField runat=server></{0}:LinkButtonField>" )]
-    public class LinkButtonField : TemplateField, INotRowSelectedField
+    public class LinkButtonField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkButtonField"/> class.

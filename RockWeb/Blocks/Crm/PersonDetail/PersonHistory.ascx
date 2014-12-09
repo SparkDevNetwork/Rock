@@ -18,14 +18,14 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gHistory" runat="server" AllowSorting="true" RowItemText="Change">
                         <Columns>
-                            <asp:BoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
+                            <Rock:RockBoundField DataField="Category" SortExpression="Category" HeaderText="Category" />
                             <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="CreatedByPersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
-                            <asp:TemplateField HeaderText="Did" SortExpression="Summary">
+                            <Rock:RockTemplateField HeaderText="Did" SortExpression="Summary">
                                 <ItemTemplate><%# FormatSummary( (int)Eval("EntityTypeId"), (int)Eval( "EntityId" ), Eval( "Summary" ).ToString() ) %></ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="What">
+                            </Rock:RockTemplateField>
+                            <Rock:RockTemplateField HeaderText="What">
                                 <ItemTemplate><%# FormatCaption( (int)Eval("CategoryId"), Eval( "Caption" ).ToString(), (int)Eval( "RelatedEntityId" ) ) %></ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                         </Columns>
                     </Rock:Grid>

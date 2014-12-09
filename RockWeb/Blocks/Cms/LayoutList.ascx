@@ -17,11 +17,11 @@
                         <div class="grid grid-panel">
                             <Rock:Grid ID="gLayouts" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLayouts_Edit">
                                 <Columns>
-                                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                                    <asp:TemplateField HeaderText="Layout File" SortExpression="FileName">
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                                    <Rock:RockTemplateField HeaderText="Layout File" SortExpression="FileName">
                                         <ItemTemplate><%# GetFilePath( Eval( "FileName" ).ToString() ) %></ItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                                     <Rock:SecurityField TitleField="Name" />
                                     <Rock:DeleteField OnClick="DeleteLayout_Click" />

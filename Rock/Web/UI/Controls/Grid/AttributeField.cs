@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class AttributeField : BoundField
+    public class AttributeField : RockBoundField
     {
         /// <summary>
         /// Retrieves the value of the field bound to the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.

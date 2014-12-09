@@ -65,7 +65,7 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
                                             <Columns>
-                                                <asp:BoundField DataField="Value" />
+                                                <Rock:RockBoundField DataField="Value" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
                                             </Columns>
                                         </Rock:Grid>
@@ -99,7 +99,7 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Location Type">
                                             <Columns>
-                                                <asp:BoundField DataField="Value" />
+                                                <Rock:RockBoundField DataField="Value" />
                                                 <Rock:DeleteField OnClick="gLocationTypes_Delete" />
                                             </Columns>
                                         </Rock:Grid>
@@ -116,15 +116,15 @@
                             <Rock:Grid ID="gGroupTypeRoles" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Role">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
-                                    <asp:BoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
-                                    <asp:BoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
-                                    <asp:TemplateField HeaderText="Default">
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
+                                    <Rock:RockBoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
+                                    <Rock:RockTemplateField HeaderText="Default">
                                         <ItemTemplate>
                                             <input type="radio" value='<%# Eval( "Guid" ) %>' name="GroupTypeDefaultRole" <%# ((Guid)Eval("Guid")).Equals(DefaultRoleGuid) ? "checked" : "" %> />
                                         </ItemTemplate>
-                                    </asp:TemplateField>
+                                    </Rock:RockTemplateField>
                                     <Rock:EditField OnClick="gGroupTypeRoles_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeRoles_Delete" />
                                 </Columns>
@@ -139,11 +139,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -152,8 +152,8 @@
                             <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
@@ -169,11 +169,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Group Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -182,8 +182,8 @@
                             <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
@@ -199,11 +199,11 @@
                             <div class="grid">
                                 <Rock:Grid ID="gGroupTypeAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Group Type Attribute">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <asp:BoundField DataField="Description" />
-                                        <asp:TemplateField>
+                                        <Rock:RockBoundField DataField="Name" />
+                                        <Rock:RockBoundField DataField="Description" />
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                        </asp:TemplateField>
+                                        </Rock:RockTemplateField>
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -212,8 +212,8 @@
                             <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Type Attribute">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gGroupTypeAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeAttributes_Delete" />

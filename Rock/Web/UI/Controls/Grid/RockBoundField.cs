@@ -39,6 +39,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the column priority.
+        /// </summary>
+        /// <value>
+        /// The priority of the column.
+        /// </value>
+        public ColumnPriority ColumnPriority
+        {
+            get {
+                object t = ViewState["ColumnPriority"];
+                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
+            }
+            set { ViewState["ColumnPriority"] = value; }
+        }
+
+        /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="dataValue">The field value to format.</param>
@@ -54,6 +69,20 @@ namespace Rock.Web.UI.Controls
             }
 
             return base.FormatDataValue( dataValue, encode );
+        }
+
+        /// <summary>
+        /// Performs basic instance initialization for a data control field.
+        /// </summary>
+        /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+        /// <returns>
+        /// Always returns false.
+        /// </returns>
+        public override bool Initialize( bool sortingEnabled, Control control )
+        {
+            
+            return base.Initialize( sortingEnabled, control );
         }
     }
 }

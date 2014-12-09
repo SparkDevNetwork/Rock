@@ -14,16 +14,32 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A Template field with the INotRowSelectedField interface to prevent clicks on this field from selecting row
+    /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
-    [ToolboxData( "<{0}:TemplateFieldUnselected runat=server></{0}:TemplateFieldUnselected>" )]
-    public class TemplateFieldUnselected : RockTemplateField, INotRowSelectedField
+    [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
+    public class RockTemplateField : TemplateField
     {
+
+        /// <summary>
+        /// Gets or sets the column priority.
+        /// </summary>
+        /// <value>
+        /// The priority of the column.
+        /// </value>
+        public ColumnPriority ColumnPriority
+        {
+            get {
+                object t = ViewState["ColumnPriority"];
+                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
+            }
+            set { ViewState["ColumnPriority"] = value; }
+        }
     }
 }
