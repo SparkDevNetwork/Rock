@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Store
             var categories = packageCategoryService.GetCategories();
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );

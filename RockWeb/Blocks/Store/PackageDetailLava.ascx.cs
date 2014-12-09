@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Store
             var package = packageService.GetPackage( packageId );
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             // add link to detail page
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
