@@ -163,12 +163,7 @@ namespace RockWeb.Blocks.Store
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
                 lDebug.Visible = true;
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Available Merge Fields</em></p>" );
-                debugInfo.Append( "<pre>" + mergeFields.ToJson() + "</pre>" );
-                debugInfo.Append( "</div" );
-                lDebug.Text = debugInfo.ToString();
+                lDebug.Text = mergeFields.lavaDebugInfo();
             }
         }
 
