@@ -19,14 +19,14 @@
                         <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
                             <Columns>
                                 <Rock:ReorderField />
-                                <asp:BoundField DataField="Name" HeaderText="Category" />
-                                <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                                <asp:TemplateField>
+                                <Rock:RockBoundField DataField="Name" HeaderText="Category" />
+                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon Class" />
+                                <Rock:RockTemplateField>
                                     <HeaderTemplate>Entity Type</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
                                     </ItemTemplate>
-                                </asp:TemplateField>
+                                </Rock:RockTemplateField>
                                 <Rock:DeleteField OnClick="rGrid_Delete" />
                             </Columns>
                         </Rock:Grid>

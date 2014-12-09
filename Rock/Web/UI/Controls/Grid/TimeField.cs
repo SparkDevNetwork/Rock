@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:TimeField runat=server></{0}:DateField>" )]
-    public class TimeField : BoundField
+    public class TimeField : RockBoundField
     {
         /// <summary>
         /// Gets or sets a value indicating whether value should be displayed as an elapsed time (i.e. "3 days ago").

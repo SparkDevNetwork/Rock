@@ -18,8 +18,8 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gEntityTypes" runat="server" AllowSorting="true">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
-                            <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
                             <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
                             <Rock:TemplateFieldUnselected>
                                 <HeaderStyle CssClass="span1" />

@@ -106,15 +106,15 @@
         <div class="grid">
             <Rock:Grid ID="gDuplicates" runat="server">
                 <Columns>
-                    <asp:TemplateField>
+                    <Rock:RockTemplateField>
                         <HeaderTemplate>You?</HeaderTemplate>
                         <ItemTemplate>
                             <input type="radio" value='<%# Eval("Id") %>' name="DuplicatePerson" />
                         </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:BoundField DataField="FullName" HeaderText="Name" />
-                    <asp:BoundField DataField="Gender" HeaderText="Gender" />
-                    <asp:BoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="{0:MMMM d}" />
+                    </Rock:RockTemplateField>
+                    <Rock:RockBoundField DataField="FullName" HeaderText="Name" />
+                    <Rock:RockBoundField DataField="Gender" HeaderText="Gender" />
+                    <Rock:RockBoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="{0:MMMM d}" />
                 </Columns>
             </Rock:Grid>
         </div>

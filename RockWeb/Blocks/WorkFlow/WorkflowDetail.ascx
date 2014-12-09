@@ -76,10 +76,10 @@
                                         <legend>Actions</legend>
                                         <Rock:Grid ID="gridActions" runat="server" DisplayType="Light" AllowSorting="false">
                                             <Columns>
-                                                <asp:BoundField DataField="Name" HeaderText="Action" />
-                                                <asp:BoundField DataField="LastProcessed" HeaderText="Last Processed" />
+                                                <Rock:RockBoundField DataField="Name" HeaderText="Action" />
+                                                <Rock:RockBoundField DataField="LastProcessed" HeaderText="Last Processed" />
                                                 <Rock:BoolField DataField="Completed" HeaderText="Completed" />
-                                                <asp:BoundField DataField="CompletedWhen" />
+                                                <Rock:RockBoundField DataField="CompletedWhen" />
                                             </Columns>
                                         </Rock:Grid>
                                     </fieldset>
@@ -135,8 +135,8 @@
                                 <Rock:Grid ID="gLog" runat="server" AllowSorting="false" RowItemText="Entry">
                                     <Columns>
                                         <Rock:DateTimeField DataField="LogDateTime" HeaderText="When" FormatAsElapsedTime="true" />
-                                        <asp:BoundField DataField="LogText" HeaderText="Message" />
-                                        <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
+                                        <Rock:RockBoundField DataField="LogText" HeaderText="Message" />
+                                        <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
