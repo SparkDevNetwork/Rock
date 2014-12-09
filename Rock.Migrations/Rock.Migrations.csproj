@@ -50,49 +50,57 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201411052043158_UpdateLiquidIncludes.cs" />
-    <Compile Include="Migrations\201411052043158_UpdateLiquidIncludes.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411061819546_MediaFileFieldType.cs" />
-    <Compile Include="Migrations\201411061819546_MediaFileFieldType.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411061819546_MediaFileFieldType.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411061819546_MediaFileFieldType.Designer.cs">
       <DependentUpon>201411061819546_MediaFileFieldType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411080039598_AudioVideoFieldTypes.cs" />
-    <Compile Include="Migrations\201411080039598_AudioVideoFieldTypes.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411080039598_AudioVideoFieldTypes.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411080039598_AudioVideoFieldTypes.Designer.cs">
       <DependentUpon>201411080039598_AudioVideoFieldTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411101915314_BackgroundCheck.cs" />
-    <Compile Include="Migrations\201411101915314_BackgroundCheck.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411101915314_BackgroundCheck.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411101915314_BackgroundCheck.Designer.cs">
       <DependentUpon>201411101915314_BackgroundCheck.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411222343453_DiscDefinedType.cs" />
-    <Compile Include="Migrations\201411222343453_DiscDefinedType.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411222343453_DiscDefinedType.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411222343453_DiscDefinedType.Designer.cs">
       <DependentUpon>201411222343453_DiscDefinedType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411231414133_UpdateLiquid.cs" />
-    <Compile Include="Migrations\201411231414133_UpdateLiquid.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411231414133_UpdateLiquid.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411231414133_UpdateLiquid.Designer.cs">
       <DependentUpon>201411231414133_UpdateLiquid.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411271243135_SystemEmailField.cs" />
-    <Compile Include="Migrations\201411271243135_SystemEmailField.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411271243135_SystemEmailField.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411271243135_SystemEmailField.Designer.cs">
       <DependentUpon>201411271243135_SystemEmailField.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201411302316295_DiscWithWorkflow.cs" />
-    <Compile Include="Migrations\201411302316295_DiscWithWorkflow.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411302316295_DiscWithWorkflow.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411302316295_DiscWithWorkflow.Designer.cs">
       <DependentUpon>201411302316295_DiscWithWorkflow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412012033427_UpdateLavaIncludes.cs" />
-    <Compile Include="Migrations\201412012033427_UpdateLavaIncludes.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412012033427_UpdateLavaIncludes.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412012033427_UpdateLavaIncludes.Designer.cs">
       <DependentUpon>201412012033427_UpdateLavaIncludes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412032218028_UpdateDiscCharacteristics.cs" />
-    <Compile Include="Migrations\201412032218028_UpdateDiscCharacteristics.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412032218028_UpdateDiscCharacteristics.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412032218028_UpdateDiscCharacteristics.Designer.cs">
       <DependentUpon>201412032218028_UpdateDiscCharacteristics.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201412041616207_DiscTweaks.cs" />
-    <Compile Include="Migrations\201412041616207_DiscTweaks.Designer.cs">
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412041616207_DiscTweaks.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412041616207_DiscTweaks.Designer.cs">
       <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412042158040_PageMenuLavaProperties.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412042158040_PageMenuLavaProperties.Designer.cs">
+      <DependentUpon>201412042158040_PageMenuLavaProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412061329400_AddMigrationRollups.cs" />
+    <Compile Include="Migrations\Version 2.0\Version 1.2.0\201412061329400_AddMigrationRollups.Designer.cs">
+      <DependentUpon>201412061329400_AddMigrationRollups.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.cs" />
     <Compile Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.Designer.cs">
@@ -1330,38 +1338,44 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201411052043158_UpdateLiquidIncludes.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411061819546_MediaFileFieldType.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411061819546_MediaFileFieldType.resx">
       <DependentUpon>201411061819546_MediaFileFieldType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411080039598_AudioVideoFieldTypes.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411080039598_AudioVideoFieldTypes.resx">
       <DependentUpon>201411080039598_AudioVideoFieldTypes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411101915314_BackgroundCheck.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411101915314_BackgroundCheck.resx">
       <DependentUpon>201411101915314_BackgroundCheck.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411222343453_DiscDefinedType.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411222343453_DiscDefinedType.resx">
       <DependentUpon>201411222343453_DiscDefinedType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411231414133_UpdateLiquid.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411231414133_UpdateLiquid.resx">
       <DependentUpon>201411231414133_UpdateLiquid.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411271243135_SystemEmailField.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411271243135_SystemEmailField.resx">
       <DependentUpon>201411271243135_SystemEmailField.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201411302316295_DiscWithWorkflow.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411302316295_DiscWithWorkflow.resx">
       <DependentUpon>201411302316295_DiscWithWorkflow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412012033427_UpdateLavaIncludes.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201412012033427_UpdateLavaIncludes.resx">
       <DependentUpon>201412012033427_UpdateLavaIncludes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412032218028_UpdateDiscCharacteristics.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201412032218028_UpdateDiscCharacteristics.resx">
       <DependentUpon>201412032218028_UpdateDiscCharacteristics.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201412041616207_DiscTweaks.resx">
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201412041616207_DiscTweaks.resx">
       <DependentUpon>201412041616207_DiscTweaks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201412042158040_PageMenuLavaProperties.resx">
+      <DependentUpon>201412042158040_PageMenuLavaProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201412061329400_AddMigrationRollups.resx">
+      <DependentUpon>201412061329400_AddMigrationRollups.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 1.0\Version 1.1.2\201410272234402_StaticMapSsl-DynamicContent.resx">
       <DependentUpon>201410272234402_StaticMapSsl-DynamicContent.cs</DependentUpon>

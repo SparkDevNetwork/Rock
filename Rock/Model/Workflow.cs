@@ -132,7 +132,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>

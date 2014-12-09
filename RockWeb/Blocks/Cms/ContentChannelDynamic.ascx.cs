@@ -439,7 +439,9 @@ $(document).ready(function() {
                 var itemMergeFields = new Dictionary<string, object>();
                 if ( CurrentPerson != null )
                 {
+                    // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                     itemMergeFields.Add( "Person", CurrentPerson );
+                    itemMergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
                 globalAttributeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
 
@@ -457,13 +459,13 @@ $(document).ready(function() {
             var mergeFields = new  Dictionary<string, object>();
             mergeFields.Add( "Pagination", pagination );
             mergeFields.Add( "LinkedPages", linkedPages );
-            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
             mergeFields.Add( "Items", currentPageContent );
             mergeFields.Add( "Campuses", CampusCache.All() );
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
@@ -480,6 +482,9 @@ $(document).ready(function() {
                 lDebug.Visible = false;
                 lDebug.Text = string.Empty;
             }
+
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+            mergeFields.Add( "Person", CurrentPerson );
 
             // set page title
             if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )

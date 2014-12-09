@@ -2200,6 +2200,7 @@ td.grid-col-actions {
   width: 100%;
 }
 .lava-debug {
+  clear: both;
   margin-top: 24px;
 }
 .lava-debug code {
@@ -2224,6 +2225,9 @@ td.grid-col-actions {
   color: #ffffff;
   border: 0;
   cursor: pointer;
+}
+.lava-debug .panel .panel-heading.collapsed i:before {
+  content: "\f078";
 }
 .lava-debug .panel .panel-body {
   background-color: #419fdd;
@@ -3380,6 +3384,9 @@ tr.inactive td {
 }
 .disc-assessment .disc-answer {
   width: 100px;
+}
+.disc-heading {
+  text-align: center;
 }
 .discchart {
   clear: both;

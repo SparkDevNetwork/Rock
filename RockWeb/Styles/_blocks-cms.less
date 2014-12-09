@@ -39,7 +39,7 @@
 // 3. Lava Debug
 // -------------------------
 .lava-debug {
-    
+    clear: both;
     margin-top: 24px;
 
     code {
@@ -68,6 +68,10 @@
             color: @state-info-text;
             border: 0;
             cursor: pointer;
+
+            &.collapsed i:before {
+                content: "\f078";
+            }
         }
 
         .panel-body{
