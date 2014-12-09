@@ -203,7 +203,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [DataMember]
-        [LiquidIgnore]
+        [LavaIgnore]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>

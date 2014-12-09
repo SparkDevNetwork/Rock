@@ -349,7 +349,9 @@ namespace RockWeb.Blocks.Reporting
                         var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         if ( CurrentPerson != null )
                         {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "CurrentPerson", CurrentPerson );
                         }
 
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );

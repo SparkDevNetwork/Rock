@@ -118,7 +118,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> instance that is performing this WorkflowActivity.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [LiquidInclude]
+        [LavaInclude]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>

@@ -37,8 +37,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Page Menu")]
     [Category("CMS")]
     [Description("Renders a page menu based on a root page and liquid template.")]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Liquid/_PageNav.liquid' %}" )]
+    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
@@ -128,24 +128,10 @@ namespace RockWeb.Blocks.Cms
             }
 
             var pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+            pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
             string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
             // check for errors
-            if ( content.Contains( "No such template" ) )
-            {
-                // get template name
-                Match match = Regex.Match( GetAttributeValue( "Template" ), @"'([^']*)" );
-                if ( match.Success )
-                {
-                    content = String.Format( "<div class='alert alert-warning'><h4>Warning</h4>Could not find the template _{1}.liquid in {0}.</div>", ResolveRockUrl( "~~/Assets/Liquid" ), match.Groups[1].Value );
-                }
-                else
-                {
-                    content = "<div class='alert alert-warning'><h4>Warning</h4>Unable to parse the template name from settings.</div>";
-                }
-            }
-
             if ( content.Contains( "error" ) )
             {
                 content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";

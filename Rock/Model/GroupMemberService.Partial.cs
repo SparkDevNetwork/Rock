@@ -28,6 +28,26 @@ namespace Rock.Model
     public partial class GroupMemberService 
     {
         /// <summary>
+        /// Gets the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override GroupMember Get( int id )
+        {
+            return this.Queryable( true ).FirstOrDefault( m => m.Id == id );
+        }
+
+        /// <summary>
+        /// Gets the specified unique identifier.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public override GroupMember Get( Guid guid )
+        {
+            return this.Queryable( true ).FirstOrDefault( m => m.Guid == guid );
+        }
+
+        /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see>, excluding 
         /// deceased group members
         /// </summary>

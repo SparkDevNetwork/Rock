@@ -102,6 +102,7 @@ namespace Rock.Data
         /// <value>
         /// The created by person identifier.
         /// </value>
+        [LavaInclude]
         public virtual int? CreatedByPersonId
         {
             get
@@ -115,11 +116,30 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the name of the created by person.
+        /// </summary>
+        /// <value>
+        /// The name of the created by person.
+        /// </value>
+        [LavaInclude]
+        public virtual string CreatedByPersonName
+        {
+            get
+            {
+                if ( CreatedByPersonAlias != null && CreatedByPersonAlias.Person != null )
+                {
+                    return CreatedByPersonAlias.Person.FullName;
+                }
+                return string.Empty;
+            }
+        }
+        /// <summary>
         /// Gets the modified by person identifier.
         /// </summary>
         /// <value>
         /// The modified by person identifier.
         /// </value>
+        [LavaInclude]
         public virtual int? ModifiedByPersonId
         {
             get
@@ -129,6 +149,25 @@ namespace Rock.Data
                     return ModifiedByPersonAlias.PersonId;
                 }
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the modified by person.
+        /// </summary>
+        /// <value>
+        /// The name of the modified by person.
+        /// </value>
+        [LavaInclude]
+        public virtual string ModifiedByPersonName
+        {
+            get
+            {
+                if ( ModifiedByPersonAlias != null && ModifiedByPersonAlias.Person != null )
+                {
+                    return ModifiedByPersonAlias.Person.FullName;
+                }
+                return string.Empty;
             }
         }
 
@@ -168,6 +207,15 @@ namespace Rock.Data
                     return new T();
                 }
             }
+        }
+
+        /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public virtual Security.ISecured ParentAuthorityPre
+        {
+            get { return null; }
         }
 
         /// <summary>
