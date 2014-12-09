@@ -35,13 +35,13 @@
                                     <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name"  />
+                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop"  />
                             <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false"  />
+                            <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop"  />
                             <Rock:DeleteField OnClick="gBatchList_Delete" />
                         </Columns>
                     </Rock:Grid>
