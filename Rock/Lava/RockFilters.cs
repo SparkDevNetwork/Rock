@@ -15,13 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Util;
-
 using Humanizer;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -232,6 +231,123 @@ namespace Rock.Lava
                 : input.ToQuantity( quantity );
         }
 
+        /// <summary>
+        /// Replace occurrences of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string Replace( object input, string @string, string replacement = "" )
+        {
+            string inputAsString = input.ToString();
+
+            // escape common regex meta characters
+            var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
+            if ( listOfRegExChars.Contains( @string ) )
+            {
+                @string = @"\" + @string;
+            }
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+                return inputAsString;
+
+            return string.IsNullOrEmpty( inputAsString )
+                ? inputAsString
+                : Regex.Replace( inputAsString, @string, replacement );
+        }
+
+        /// <summary>
+        /// Replace the first occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string ReplaceFirst( object input, string @string, string replacement = "" )
+        {
+            string inputAsString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+                return inputAsString;
+
+            // escape common regex meta characters
+            var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
+            if ( listOfRegExChars.Contains( @string ) )
+            {
+                @string = @"\" + @string;
+            }
+
+            bool doneReplacement = false;
+            return Regex.Replace( inputAsString, @string, m =>
+            {
+                if ( doneReplacement )
+                    return m.Value;
+
+                doneReplacement = true;
+                return replacement;
+            } );
+        }
+
+        /// <summary>
+        /// Remove a substring - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Remove( object input, string @string )
+        {
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? inputAsString
+                : inputAsString.Replace( @string, string.Empty );
+        }
+
+        /// <summary>
+        /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string RemoveFirst( object input, string @string )
+        {
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? inputAsString
+                : ReplaceFirst( inputAsString, @string, string.Empty );
+        }
+
+        // <summary>
+        /// Add one string to another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Append( object input, string @string )
+        {
+            string inputAsString = input.ToString();
+
+            return inputAsString == null
+                ? inputAsString
+                : inputAsString + @string;
+        }
+
+        /// <summary>
+        /// Prepend a string to another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Prepend( object input, string @string )
+        {
+            string inputAsString = input.ToString();
+
+            return inputAsString == null
+                ? inputAsString
+                : @string + inputAsString;
+        }
 
         #endregion
 
