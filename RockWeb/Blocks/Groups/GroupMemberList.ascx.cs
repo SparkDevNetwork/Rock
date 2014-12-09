@@ -296,6 +296,7 @@ namespace RockWeb.Blocks.Groups
         private void AddLinkColumn()
         {
             HyperLinkField hyperLinkField = new HyperLinkField();
+
             hyperLinkField.DataNavigateUrlFields = new String[1] { "PersonId" };
             hyperLinkField.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
             hyperLinkField.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
