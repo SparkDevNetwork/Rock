@@ -349,6 +349,21 @@ namespace Rock.Lava
                 : @string + inputAsString;
         }
 
+        /// <summary>
+        /// Returns the passed default value if the value is undefined or empty, otherwise the value of the variable
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Default( object input, string defaultString )
+        {
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? defaultString
+                : inputAsString;
+        }
+
         #endregion
 
         #region DateTime Filters
