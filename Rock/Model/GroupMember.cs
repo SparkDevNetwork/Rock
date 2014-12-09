@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -29,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupMember" )]
     [DataContract]
-    public partial class GroupMember : Model<GroupMember>
+    public partial class GroupMember : Model<GroupMember>, IEquatable<GroupMember>
     {
 
         #region Entity Properties
@@ -189,8 +190,24 @@ namespace Rock.Model
             base.PreSaveChanges( dbContext, state );
         }
 
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.
+        /// </returns>
+        public bool Equals( GroupMember other )
+        {
+            return ( 
+                this.GroupId == other.GroupId && 
+                this.PersonId == other.PersonId && 
+                this.GroupRoleId == other.GroupRoleId 
+           );
+        }
+
         #endregion
-    
+
     }
 
     #region Entity Configuration
