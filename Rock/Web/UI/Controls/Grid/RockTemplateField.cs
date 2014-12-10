@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
-    public class RockTemplateField : TemplateField
+    public class RockTemplateField : TemplateField, IPriorityColumn
     {
 
         /// <summary>

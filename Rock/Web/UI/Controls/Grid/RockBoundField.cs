@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:RockBoundField runat=server></{0}:RockBoundField>" )]
-    public class RockBoundField : BoundField
+    public class RockBoundField : BoundField, IPriorityColumn
     {
         /// <summary>
         /// Gets or sets the length of the truncate.
