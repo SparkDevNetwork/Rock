@@ -13,11 +13,12 @@
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal-bs3patch.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal.css", true) %>" />
 
     <style>
         html, body {
-            height: 100%;
-            min-height: 100%;
+            height: auto;
             width: 100%;
             min-width: 100%;
             background-color: #ffffff;

@@ -41,36 +41,48 @@
                 $('#modal-popup').fadeTo(0, 1);
                 var newHeight = $(this.contentWindow.document).height();
                 $(this).height(newHeight);
-                
-                $('#modal-popup').modal('layout');
-                
 
-                $(this.contentWindow ).on('resize', function () {
+                $('#modal-popup').modal('layout');
+
+
+                $(this.contentWindow).on('resize', function () {
                     var newHeight = $(this.document.body).height();
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
                     $modalPopupIFrame.height(newHeight);
                     $modalPopup.modal('layout');
                 });
-                
+
             });
 
             // Use the anchor tag's href attribute as the source for the iframe
             // this will trigger the load event (above) which will show the popup
-            $('#modal-popup').fadeTo(0,0);
+            $('#modal-popup').fadeTo(0, 0);
             $modalPopupIFrame.attr('src', popupUrl);
             $('#modal-popup').modal('show');
-            
+
         },
 
         exports = {
+            updateSize: function (innerWindow) {
+                var newHeight = $('#dialog').height() + 'px';
+                $(innerWindow).height(newHeight);
+
+                $(innerWindow).on('resize', function () {
+                    var newHeight = $('#dialog').height() + 'px';
+                    $(innerWindow).height(newHeight);
+                });
+
+                var $modalPopupIFrame = $(innerWindow.parent.document).find('iframe');
+                $modalPopupIFrame.height(newHeight);
+            },
             close: function (msg) {
                 // do a setTimeout so this fires after the postback
                 $('#modal-popup').hide();
                 setTimeout(function () {
                     $('#modal-popup iframe').attr('src', '');
                     $('#modal-popup').modal('hide');
-                    
+
                 }, 0);
 
                 if (msg && msg != '') {
@@ -84,7 +96,7 @@
                     }
                 }
             },
-            show: function (sender, popupUrl, detailsId, postbackUrl ) {
+            show: function (sender, popupUrl, detailsId, postbackUrl) {
                 _showModalPopup(sender, popupUrl);
             },
 

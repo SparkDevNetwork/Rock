@@ -228,7 +228,7 @@ namespace Rock.Web.UI.Controls
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "modal_dialog_panel";
             //_dialogPanel.CssClass = "modal container hide fade";
-            _dialogPanel.CssClass = "modal container fade modal-content rock-modal rock-modal-frame";
+            _dialogPanel.CssClass = "modal container modal-content rock-modal rock-modal-frame";
 
             _hfModalVisible = new HiddenFieldWithClass();
             _hfModalVisible.CssClass = "js-modal-visible";
@@ -335,6 +335,9 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
+ 
+$.fn.modal.defaults.manager = '{3}'
+
 if ($('#{0}').find('.js-modal-visible').val() == '1') {{
     $('#{0}').modal('show');
 }} 
@@ -368,7 +371,11 @@ $('#{0}').find('.js-modaldialog-save-link').click(function () {{
 
 ";
 
-            var script = string.Format( scriptFormat, _dialogPanel.ClientID, this.OnCancelScript, this.OnOkScript );
+
+
+            var parentPanel = this.ParentUpdatePanel();
+            var modalManager = parentPanel != null ? "#" +parentPanel.ClientID : "body";
+            var script = string.Format( scriptFormat, _dialogPanel.ClientID, this.OnCancelScript, this.OnOkScript, modalManager );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-show-" + this.ClientID, script, true );
             
