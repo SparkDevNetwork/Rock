@@ -240,6 +240,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Replace( object input, string @string, string replacement = "" )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             // escape common regex meta characters
@@ -266,6 +271,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ReplaceFirst( object input, string @string, string replacement = "" )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
@@ -297,6 +307,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Remove( object input, string @string )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             return string.IsNullOrWhiteSpace( inputAsString )
@@ -312,6 +327,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string RemoveFirst( object input, string @string )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             return string.IsNullOrWhiteSpace( inputAsString )
@@ -327,6 +347,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Append( object input, string @string )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             return inputAsString == null
@@ -342,6 +367,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Prepend( object input, string @string )
         {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
             string inputAsString = input.ToString();
 
             return inputAsString == null
@@ -357,6 +387,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Default( object input, string defaultString )
         {
+
+            if ( input == null ) {
+                return defaultString;
+            }
+
             string inputAsString = input.ToString();
 
             return string.IsNullOrWhiteSpace( inputAsString )

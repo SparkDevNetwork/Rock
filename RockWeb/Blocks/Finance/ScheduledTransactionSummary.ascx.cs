@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using DotLiquid;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -239,7 +240,7 @@ namespace RockWeb.Blocks.Finance
                 string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
 
                 // show merge fields if needed
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                     scheduleValues.Remove( "Person" );
