@@ -665,7 +665,9 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockTemplateField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockTemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />

@@ -782,17 +782,13 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // get data priority from column
-                var type = column.GetType();
-                var priorityProperty = type.GetProperty( "ColumnPriority" );
-
-                if ( priorityProperty != null )
+                if ( column is IPriorityColumn )
                 {
-                    var priorityValue = priorityProperty.GetValue( column );
-                    _columnDataPriorities.Add( i, ((int)priorityValue).ToString());
+                    _columnDataPriorities.Add( i, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
                 }
                 else
                 {
-                    _columnDataPriorities.Add(i, "1");
+                    _columnDataPriorities.Add( i, "1" );
                 }
             }
 
@@ -923,9 +919,10 @@ namespace Rock.Web.UI.Controls
                 // Remove the sort css classes and add the data priority
                 for ( int i = 0; i < e.Row.Cells.Count ; i++)
                 {
-                    e.Row.Cells[i].RemoveCssClass( asc );
-                    e.Row.Cells[i].RemoveCssClass( desc );
-                    e.Row.Cells[i].Attributes.Add( "data-priority", _columnDataPriorities[i]);
+                    var cell = e.Row.Cells[i];
+                    cell.RemoveCssClass( asc );
+                    cell.RemoveCssClass( desc );
+                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i]);
                 }
 
                 // Add the new sort css class
