@@ -15,20 +15,20 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gLayoutBlocks" runat="server" DisplayType="Full">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:TemplateField HeaderText="Type" >
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockTemplateField HeaderText="Type" >
                                 <ItemTemplate>
                                     <%# Eval("BlockType.Name") %><br />
                                     <small><%# Eval("BlockType.Path") %></small>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="Zone" HeaderText="Zone" SortExpression="Zone" />
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="Zone" HeaderText="Zone" SortExpression="Zone" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                            <asp:TemplateField ItemStyle-HorizontalAlign="Center">
+                            <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <%# CreateConfigIcon( Eval("Id").ToString() ) %>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="DeleteBlock_Click" />
                         </Columns>

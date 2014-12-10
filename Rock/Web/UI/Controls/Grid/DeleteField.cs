@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for deleting a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:DeleteField runat=server></{0}:DeleteField>" )]
-    public class DeleteField : TemplateField, INotRowSelectedField
+    public class DeleteField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteField" /> class.

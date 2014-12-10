@@ -12,8 +12,8 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gActions" runat="server" AllowSorting="true">
                         <Columns>
-                            <asp:BoundField DataField="Method" HeaderText="Method" SortExpression="Method" />
-                            <asp:BoundField DataField="Path" HeaderText="Relative Path" SortExpression="Path" />
+                            <Rock:RockBoundField DataField="Method" HeaderText="Method" SortExpression="Method" />
+                            <Rock:RockBoundField DataField="Path" HeaderText="Relative Path" SortExpression="Path" />
                             <Rock:SecurityField TitleField="Method" />
                         </Columns>
                     </Rock:Grid>

@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// A Template field with the INotRowSelectedField interface to prevent clicks on this field from selecting row
     /// </summary>
     [ToolboxData( "<{0}:TemplateFieldUnselected runat=server></{0}:TemplateFieldUnselected>" )]
-    public class TemplateFieldUnselected : TemplateField, INotRowSelectedField
+    public class TemplateFieldUnselected : RockTemplateField, INotRowSelectedField
     {
     }
 }

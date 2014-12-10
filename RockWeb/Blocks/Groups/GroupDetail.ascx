@@ -69,9 +69,9 @@
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
-                                        <asp:BoundField DataField="Location" HeaderText="Location" />
-                                        <asp:BoundField DataField="Type" HeaderText="Type" />
-                                        <asp:BoundField DataField="Schedules" HeaderText="Schedule(s)" />
+                                        <Rock:RockBoundField DataField="Location" HeaderText="Location" />
+                                        <Rock:RockBoundField DataField="Type" HeaderText="Type" />
+                                        <Rock:RockBoundField DataField="Schedules" HeaderText="Schedule(s)" />
                                         <Rock:EditField OnClick="gLocations_Edit" />
                                         <Rock:DeleteField OnClick="gLocations_Delete" />
                                     </Columns>
@@ -90,11 +90,11 @@
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
                                         <Columns>
-                                            <asp:BoundField DataField="Name" />
-                                            <asp:BoundField DataField="Description" />
-                                            <asp:TemplateField>
+                                            <Rock:RockBoundField DataField="Name" />
+                                            <Rock:RockBoundField DataField="Description" />
+                                            <Rock:RockTemplateField>
                                                 <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
-                                            </asp:TemplateField>
+                                            </Rock:RockTemplateField>
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -104,8 +104,8 @@
                                 <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute" ShowConfirmDeleteDialog="false">
                                     <Columns>
                                         <Rock:ReorderField />
-                                        <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                        <asp:BoundField DataField="Description" HeaderText="Description" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                        <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                         <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                         <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                         <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />

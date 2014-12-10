@@ -18,19 +18,19 @@
                     <Rock:Grid ID="gList" AllowSorting="false" runat="server" EmptyDataText="No Scheduled Transactions Found" 
                         ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="gList_Edit">
                         <Columns>
-                            <asp:BoundField DataField="AuthorizedPersonAlias.Person" HeaderText="Contributor" />
-                            <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                            <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
+                            <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person" HeaderText="Contributor" />
+                            <Rock:RockBoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starting" />
                             <Rock:DateField DataField="EndDate" HeaderText="Ending" />
                             <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" />
-                            <asp:TemplateField HeaderText="Currency Type" >
+                            <Rock:RockTemplateField HeaderText="Currency Type" >
                                 <ItemTemplate>
                                     <asp:Literal ID="lCurrencyType" runat="server" />
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
-                            <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" />
+                            <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Refresh" />
                         </Columns>

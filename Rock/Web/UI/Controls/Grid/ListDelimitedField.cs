@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// Displays a BoundField as a Delimited List when the underlying datatype is enumerable
     /// </summary>
     [ToolboxData( "<{0}:ListDelimitedField runat=server></{0}:ListDelimitedField>" )]
-    public class ListDelimitedField : BoundField
+    public class ListDelimitedField : RockBoundField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ListDelimitedField" /> class.

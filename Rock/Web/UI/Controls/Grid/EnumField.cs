@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:EnumField runat=server></{0}:EnumField>" )]
-    public class EnumField : BoundField
+    public class EnumField : RockBoundField
     {
         /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
