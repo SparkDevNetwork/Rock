@@ -29,43 +29,49 @@
                 $secondaryBtn.hide();
             }
 
-            // If the anchor tag specifies a modal height, set the dialog's height
-            /*
-            if (sender.attr('height') != undefined) {
-                $('#modal-popup_panel div.modal-body').css('height', sender.attr('height'));
-                $('#modal-popup_contentPanel.iframe').css('height', sender.attr('height'));
-            }
-            else {
-                $('#modal-popup_panel div.modal-body').css('height', '');
-                $('#modal-popup_contentPanel.iframe').css('height', '500px');
-            }
-            */
+            var $modalPopup = $('#modal-popup');
+            var $modalPopupIFrame = $modalPopup.find('iframe');
 
             // Use the anchor tag's title attribute as the title of the dialog box
             if (sender.attr('title') != undefined) {
                 $('#modal-popup_panel h3').html(sender.attr('title') + ' <small></small>');
             }
-            
-            $('#modal-popup_iframe').on('load', function () {
 
-                // set opacity to 1% (instead of invisible) so that ModalIFrameDialog can position correctly
-                $('#modal-popup_contentPanel').fadeTo(0, 1);
-                $('#modal-popup_iframe').off('load');
-                // popup the dialog box
-                $('#modal-popup_contentPanel').show();
+            $modalPopupIFrame.one('load', function () {
+                $('#modal-popup').fadeTo(0, 1);
+                var newHeight = $(this.contentWindow.document).height();
+                $(this).height(newHeight);
+                
+                $('#modal-popup').modal('layout');
+                
 
-                $('#modal-popup .modal').modal('show');
+                $(this.contentWindow ).on('resize', function () {
+                    var newHeight = $(this.document.body).height();
+                    var $modalPopup = $('#modal-popup');
+                    var $modalPopupIFrame = $modalPopup.find('iframe');
+                    $modalPopupIFrame.height(newHeight);
+                    $modalPopup.modal('layout');
+                });
+                
             });
 
             // Use the anchor tag's href attribute as the source for the iframe
             // this will trigger the load event (above) which will show the popup
-            $('#modal-popup_iframe').attr('src', popupUrl);
+            $('#modal-popup').fadeTo(0,0);
+            $modalPopupIFrame.attr('src', popupUrl);
+            $('#modal-popup').modal('show');
+            
         },
 
         exports = {
             close: function (msg) {
-                $('#modal-popup_iframe').attr('src', '');
-                $('#modal-popup .modal').modal('show');
+                // do a setTimeout so this fires after the postback
+                $('#modal-popup').hide();
+                setTimeout(function () {
+                    $('#modal-popup iframe').attr('src', '');
+                    $('#modal-popup').modal('hide');
+                    
+                }, 0);
 
                 if (msg && msg != '') {
 
