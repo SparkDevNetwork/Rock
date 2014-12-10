@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             foreach ( var childGroupType in groupType.ChildGroupTypes
-                .Where( t => t.Id != groupType.Id)
+                .Where( t => t.Guid != groupType.Guid)
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
