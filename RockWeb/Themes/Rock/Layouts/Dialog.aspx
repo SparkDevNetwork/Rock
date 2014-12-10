@@ -92,8 +92,7 @@
 
     <style>
         html, body {
-            height: 100%;
-            min-height: 100%;
+            height: auto;
             width: 100%;
             min-width: 100%;
             margin: 0 0 0 0;
@@ -132,4 +131,22 @@
         </asp:UpdatePanel>
     </form>
 </body>
+
+
 </html>
+<script>
+    Sys.Application.add_load(function (a, b, c) {
+        var newHeight = $('#dialog').height() + 'px';
+        
+        $(window).height(newHeight);
+
+        $(window).on('resize', function (a, b, c) {
+            var newHeight = $('#dialog').height() + 'px';
+            $(window).height(newHeight);
+        });
+
+        var $modalPopupIFrame = $(window.parent.document).find('iframe');
+        $modalPopupIFrame.height(newHeight);
+    });
+
+</script>

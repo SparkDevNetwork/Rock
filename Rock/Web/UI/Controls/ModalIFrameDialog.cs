@@ -23,10 +23,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A Modal Popup Dialog Window
     /// </summary>
-    public class ModalIFrameDialog : CompositeControl, INamingContainer
+    public class ModalIFrameDialog : Panel, INamingContainer
     {
         private Button _dfltShowButton;
-        private Panel _dialogPanel;
 
         private Panel _contentPanel;
         private HtmlGenericControl _iFrame;
@@ -50,14 +49,11 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             base.Controls.Clear();
-
-            _dialogPanel = new Panel();
-            base.Controls.Add( _dialogPanel );
-            _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "modal container fade modal-content rock-modal rock-modal-frame";
+            
+            this.CssClass = "modal container modal-content rock-modal rock-modal-frame";
 
             _contentPanel = new Panel();
-            _dialogPanel.Controls.Add( _contentPanel );
+            this.Controls.Add( _contentPanel );
             _contentPanel.ID = "contentPanel";
             _contentPanel.CssClass = "iframe";
 
