@@ -15,17 +15,20 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A Template field with the INotRowSelectedField interface to prevent clicks on this field from selecting row
+    /// Column specifies a column priority for controlling visibility based on screen size
     /// </summary>
-    [Obsolete("Use RockTemplateFieldUnselected instead.")]
-    [ToolboxData( "<{0}:TemplateFieldUnselected runat=server></{0}:TemplateFieldUnselected>" )]
-    public class TemplateFieldUnselected : RockTemplateFieldUnselected
+    public interface IPriorityColumn
     {
+        /// <summary>
+        /// Gets or sets the column priority.
+        /// </summary>
+        /// <value>
+        /// The column priority.
+        /// </value>
+        ColumnPriority ColumnPriority { get; set; }
     }
 }
