@@ -53,11 +53,11 @@
                                 <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
                                     OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <asp:TemplateField>
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                        <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                        <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                         <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                     </Columns>
                                 </Rock:Grid>
@@ -96,11 +96,11 @@
 
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
                                 <Columns>
-                                    <asp:TemplateField HeaderText="Accounts">
+                                    <Rock:RockTemplateField HeaderText="Accounts">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                    <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                    <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                 </Columns>
                             </Rock:Grid>
 

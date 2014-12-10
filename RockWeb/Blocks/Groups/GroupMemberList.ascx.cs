@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Groups
 
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Person Profile Page", "", true, "08DBD8A5-2C35-4146-B4A8-0F7652348B25", "", 2, "PersonProfilePage" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -98,6 +99,9 @@ namespace RockWeb.Blocks.Groups
 
                     // Add attribute columns
                     AddAttributeColumns();
+
+                    //Add Link to Profile Page Column
+                    AddLinkColumn();
 
                     // Add delete column
                     var deleteField = new DeleteField();
@@ -284,6 +288,20 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Adds the link to profile page column
+        /// </summary>
+        private void AddLinkColumn()
+        {
+            HyperLinkField hyperLinkField = new HyperLinkField();
+
+            hyperLinkField.DataNavigateUrlFields = new String[1] { "PersonId" };
+            hyperLinkField.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
+            hyperLinkField.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hyperLinkField.DataTextField = "PersonId";
+            gGroupMembers.Columns.Add( hyperLinkField );
         }
 
         /// <summary>

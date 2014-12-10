@@ -13,10 +13,10 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gBinaryFileType" runat="server" AllowSorting="true" OnRowSelected="gBinaryFileType_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <asp:BoundField DataField="StorageEntityType" HeaderText="Storage Type" SortExpression="StorageEntityType" />
-                            <asp:BoundField DataField="BinaryFileCount" HeaderText="File Count" SortExpression="BinaryFileCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="StorageEntityType" HeaderText="Storage Type" SortExpression="StorageEntityType" />
+                            <Rock:RockBoundField DataField="BinaryFileCount" HeaderText="File Count" SortExpression="BinaryFileCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="AllowCaching" HeaderText="Allows Caching" SortExpression="AllowCaching" />
                             <Rock:BoolField DataField="RequiresViewSecurity" HeaderText="Requires View Security" SortExpression="RequiresViewSecurity" />

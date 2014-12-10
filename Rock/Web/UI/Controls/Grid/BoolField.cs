@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:BoolField runat=server></{0}:BoolField>" )]
-    public class BoolField : BoundField
+    public class BoolField : RockBoundField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BoolField" /> class.
