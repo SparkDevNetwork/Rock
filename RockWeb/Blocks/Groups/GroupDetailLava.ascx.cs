@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -118,7 +119,7 @@ namespace RockWeb.Blocks.Groups
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
 
-                var group = groupService.Queryable( "GroupLocations" ).Where( g => g.Id == groupId ).FirstOrDefault();
+                var group = groupService.Queryable( "GroupLocations,Members,Members.Person" ).Where( g => g.Id == groupId ).FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );
@@ -129,7 +130,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaTemplate" );
 
                 // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
                     lDebug.Text = mergeFields.lavaDebugInfo();

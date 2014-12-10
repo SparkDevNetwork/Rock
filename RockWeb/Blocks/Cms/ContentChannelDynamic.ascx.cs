@@ -467,7 +467,7 @@ $(document).ready(function() {
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
             // enable showing debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 mergeFields["Items"] = currentPageContent.Take( 5 ).ToList();
 

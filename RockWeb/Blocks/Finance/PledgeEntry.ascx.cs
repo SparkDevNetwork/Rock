@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -179,7 +180,7 @@ namespace RockWeb.Blocks.Finance
             lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
             // show liquid help for debug
-            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lReceipt.Text += mergeObjects.lavaDebugInfo();
             }
