@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 <script runat="server">
-    
+
     // keep code below to call base class init method
 
     /// <summary>
@@ -13,8 +13,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
-    }    
-    
+    }
+
 </script>
 
 <html class="no-js">
@@ -23,7 +23,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-    
+
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
@@ -33,9 +33,7 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -45,7 +43,7 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
-    
+
 </head>
 <body>
 
@@ -53,7 +51,7 @@
 
         <!-- Page Header -->
         <header>
-        
+
             <!-- Brand Bar -->
             <nav class="navbar navbar-inverse navbar-static-top">
                 <div class="container">
@@ -62,26 +60,26 @@
                             <i class="fa fa-bars"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
-			        </div>	
-                    <div class="navbar-collapse collapse">   
+			        </div>
+                    <div class="navbar-collapse collapse">
                         <!-- Main Navigation -->
                         <div class="pull-right">
                             <Rock:Zone Name="Login" runat="server" />
                         </div>
                         <Rock:Zone Name="Navigation" runat="server" />
-			        </div>	
+			        </div>
                 </div>
             </nav>
 
         </header>
-		
+
         <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
 	    <footer>
             <div class="container">
-		    
+
                 <hr />
 
                 <div class="row">
@@ -92,7 +90,7 @@
 
             </div>
 	    </footer>
-        
+
         <%-- controls for scriptmanager and update panel --%>
         <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
         <asp:UpdateProgress id="updateProgress" runat="server">

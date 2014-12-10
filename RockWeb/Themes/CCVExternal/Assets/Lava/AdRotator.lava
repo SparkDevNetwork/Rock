@@ -1,4 +1,4 @@
-﻿<div id="announcement-rotator" class="carousel slide" data-ride="carousel">
+﻿<div class="announcement-rotator carousel slide" data-ride="carousel">
   <!-- Wrapper for slides -->
   <div class="carousel-inner">
     {% for item in Items %}
