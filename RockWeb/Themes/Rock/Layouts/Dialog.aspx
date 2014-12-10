@@ -135,18 +135,7 @@
 
 </html>
 <script>
-    Sys.Application.add_load(function (a, b, c) {
-        var newHeight = $('#dialog').height() + 'px';
-        
-        $(window).height(newHeight);
-
-        $(window).on('resize', function (a, b, c) {
-            var newHeight = $('#dialog').height() + 'px';
-            $(window).height(newHeight);
-        });
-
-        var $modalPopupIFrame = $(window.parent.document).find('iframe');
-        $modalPopupIFrame.height(newHeight);
+    Sys.Application.add_load(function () {
+        Rock.controls.modal.updateSize(window);
     });
-
 </script>
