@@ -284,7 +284,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( value.LiquidizeChildren( levelsDeep ) );
+                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, parentElement ) );
                     }
                     catch { }
                 }
@@ -918,7 +918,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-                return "Error resolving Liquid merge fields: " + ex.Message;
+                return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
 
