@@ -269,6 +269,25 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the mergfields.
         /// </summary>
+        /// <remarks>
+        /// Format should be one of the following formats
+        ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
+        ///     "FieldName|LabelName"
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///                                       FieldName (i.e. "Field Name")
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes.    
+        ///                                  
+        /// Supports the following "special" field names
+        ///     "GlobalAttribute"               - Provides navigable list of global attributes
+        ///     "Campuses"                      - Will return an array of all campuses
+        ///     "Date"                          - Will return lava syntax for displaying current date
+        ///     "Time"                          - Will return lava syntax for displaying current time
+        ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///                                       (query string and/or route parameter value)
+        /// </remarks>
         /// <value>
         /// The mergfields.
         /// </value>
