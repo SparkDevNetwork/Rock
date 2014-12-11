@@ -1,6 +1,4 @@
-﻿using System.Web.UI;
-using System.Web.UI.HtmlControls;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +14,8 @@ using System.Web.UI.HtmlControls;
 // limitations under the License.
 // </copyright>
 //
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
