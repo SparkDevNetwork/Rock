@@ -24,24 +24,24 @@
                     <Rock:Grid ID="gBatchList" runat="server" RowItemText="Batch" OnRowSelected="gBatchList_Edit" AllowSorting="true">
                         <Columns>
                             <Rock:SelectField />
-                            <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:DateField DataField="BatchStartDateTime" HeaderText="Date" SortExpression="BatchStartDateTime" />
-                            <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                            <asp:BoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
-                            <asp:BoundField DataField="TransactionCount" HeaderText="Transactions" SortExpression="TransactionCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                            <asp:BoundField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
-                            <asp:TemplateField HeaderText="Control Variance" ItemStyle-HorizontalAlign="Right">
+                            <Rock:RockBoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
+                            <Rock:RockBoundField DataField="TransactionCount" HeaderText="Transactions" SortExpression="TransactionCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockTemplateField HeaderText="Control Variance" ItemStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name"  />
-                            <asp:TemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop"  />
+                            <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="Notes" HeaderText="Note" HtmlEncode="false"  />
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop"  />
                             <Rock:DeleteField OnClick="gBatchList_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for reordering rows in a grid
     /// </summary>
     [ToolboxData( "<{0}:ReorderField runat=server></{0}:ReorderField>" )]
-    public class ReorderField : TemplateField, INotRowSelectedField
+    public class ReorderField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReorderField" /> class.

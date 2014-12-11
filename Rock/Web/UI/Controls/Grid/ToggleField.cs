@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for toggling the bool/checkbox value of a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:ToggleField BoundField=server runat=server></{0}:ToggleField>" )]
-    public class ToggleField : TemplateField, INotRowSelectedField
+    public class ToggleField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ToggleField" /> class.

@@ -20,12 +20,12 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gHistory" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Attendance Found" OnRowDataBound="gHistory_RowDataBound">
                         <Columns>
-                            <asp:BoundField DataField="Location" HeaderText="Location" SortExpression="Location" />
-                            <asp:BoundField DataField="Schedule" HeaderText="Schedule" SortExpression="Schedule" />
-                            <asp:BoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                            <asp:BoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
-                            <asp:BoundField DataField="StartDateTime" HeaderText="Start Date Time" SortExpression="StartDateTime" />
-                            <asp:BoundField DataField="EndDateTime" HeaderText="End Date Time" SortExpression="EndDateTime" />
+                            <Rock:RockBoundField DataField="Location" HeaderText="Location" SortExpression="Location" />
+                            <Rock:RockBoundField DataField="Schedule" HeaderText="Schedule" SortExpression="Schedule" />
+                            <Rock:RockBoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
+                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
+                            <Rock:RockBoundField DataField="StartDateTime" HeaderText="Start Date Time" SortExpression="StartDateTime" />
+                            <Rock:RockBoundField DataField="EndDateTime" HeaderText="End Date Time" SortExpression="EndDateTime" />
                         </Columns>
                     </Rock:Grid>
                 </div>

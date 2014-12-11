@@ -40,8 +40,8 @@
                         <Rock:Grid ID="gChannelAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Channel Attribute" ShowConfirmDeleteDialog="false">
                             <Columns>
                                 <Rock:ReorderField />
-                                <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                <asp:BoundField DataField="Description" HeaderText="Description" />
+                                <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                 <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                 <Rock:EditField OnClick="gChannelAttributes_Edit" />
                                 <Rock:DeleteField OnClick="gChannelAttributes_Delete" />
@@ -55,8 +55,8 @@
                         <Rock:Grid ID="gItemAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Item Attribute" ShowConfirmDeleteDialog="false">
                             <Columns>
                                 <Rock:ReorderField />
-                                <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                                <asp:BoundField DataField="Description" HeaderText="Description" />
+                                <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                 <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                 <Rock:EditField OnClick="gItemAttributes_Edit" />
                                 <Rock:DeleteField OnClick="gItemAttributes_Delete" />

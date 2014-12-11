@@ -13,9 +13,9 @@
             <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
                 <Columns>
                     <Rock:ReorderField />
-                    <asp:BoundField DataField="Id" HeaderText="Id" />
+                    <Rock:RockBoundField DataField="Id" HeaderText="Id" />
                     <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="InternalName" HeaderText="Name" Target="_parent" />
-                    <asp:BoundField DataField="Layout.Name" HeaderText="Layout"  />
+                    <Rock:RockBoundField DataField="Layout.Name" HeaderText="Layout"  />
                     <Rock:DeleteField OnClick="rGrid_Delete" />
                 </Columns>
             </Rock:Grid>
