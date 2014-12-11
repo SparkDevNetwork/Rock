@@ -2526,19 +2526,19 @@ td.grid-col-actions {
 .lava-debug .lava-debug-key {
   font-weight: 600;
 }
-.lava-debug .panel {
+.lava-debug .panel.panel-lavadebug {
   border: 0;
 }
-.lava-debug .panel .panel-heading {
+.lava-debug .panel.panel-lavadebug .panel-heading {
   background-color: #2791d9;
   color: #ffffff;
   border: 0;
   cursor: pointer;
 }
-.lava-debug .panel .panel-heading.collapsed i:before {
+.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
   content: "\f078";
 }
-.lava-debug .panel .panel-body {
+.lava-debug .panel.panel-lavadebug .panel-body {
   background-color: #419fdd;
 }
 /*
