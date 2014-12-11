@@ -25,8 +25,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class ModalIFrameDialog : Panel, INamingContainer
     {
-        private Button _dfltShowButton;
-
         private Panel _contentPanel;
         private HtmlGenericControl _iFrame;
 
