@@ -7,7 +7,9 @@
       {% else -%}
       <div class="item">
         {% endif -%}
-        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
+        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+          <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
+        </a>
       </div>
       {% endfor %}
     </div>
