@@ -339,11 +339,11 @@ namespace Rock.Lava
                 : ReplaceFirst( inputAsString, @string, string.Empty );
         }
 
-        // <summary>
-        /// Add one string to another - this is a Rock version on this filter which takes any object
+        /// <summary>
+        /// Appends the specified input.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="string"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="string">The string.</param>
         /// <returns></returns>
         public static string Append( object input, string @string )
         {
@@ -382,8 +382,8 @@ namespace Rock.Lava
         /// <summary>
         /// Returns the passed default value if the value is undefined or empty, otherwise the value of the variable
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="string"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="defaultString">The default string.</param>
         /// <returns></returns>
         public static string Default( object input, string defaultString )
         {
@@ -638,7 +638,7 @@ namespace Rock.Lava
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>
         /// <returns></returns>
-        public static string Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
+        public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
             if ( input == null || attributeKey == null )
             {
@@ -703,7 +703,14 @@ namespace Rock.Lava
                     IEntity entity = ( (Rock.Field.IEntityFieldType)field ).GetEntity( rawValue );
                     if (entity != null)
                     {
-                        return entity.GetPropertyValue(qualifier).ToStringSafe();
+                        if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
+                        {
+                            return entity;
+                        }
+                        else
+                        {
+                            return entity.GetPropertyValue( qualifier ).ToStringSafe();
+                        }
                     }
                 }
 
@@ -711,6 +718,23 @@ namespace Rock.Lava
                 return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
             }
 
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Properties the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="propertyKey">The property key.</param>
+        /// <param name="qualifier">The qualifier.</param>
+        /// <returns></returns>
+        public static object Property( DotLiquid.Context context, object input, string propertyKey, string qualifier = "" )
+        {
+            if ( input != null )
+            {
+                return input.GetPropertyValue(propertyKey);
+            }
             return string.Empty;
         }
 
