@@ -27,6 +27,7 @@ using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -141,7 +142,7 @@ namespace RockWeb.Blocks.Cms
             phContent.Controls.Add( new LiteralControl( content ) );
 
             // add debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 StringBuilder tipInfo = new StringBuilder();
                 tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );

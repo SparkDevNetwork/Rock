@@ -17,11 +17,11 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnRowSelected="gEmailTemplates_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
-                            <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                            <asp:BoundField DataField="FromName" HeaderText="From Name" SortExpression="FromName" />
-                            <asp:BoundField DataField="From" HeaderText="From Address" SortExpression="From" />
-                            <asp:BoundField DataField="Subject" HeaderText="Subject" SortExpression="Subject" />
+                            <Rock:RockBoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
+                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                            <Rock:RockBoundField DataField="FromName" HeaderText="From Name" SortExpression="FromName" />
+                            <Rock:RockBoundField DataField="From" HeaderText="From Address" SortExpression="From" />
+                            <Rock:RockBoundField DataField="Subject" HeaderText="Subject" SortExpression="Subject" />
                             <Rock:DeleteField OnClick="gEmailTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>
