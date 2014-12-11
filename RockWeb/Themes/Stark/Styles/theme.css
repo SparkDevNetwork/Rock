@@ -431,6 +431,7 @@ img.jcrop-preview {
   height: 100%;
   width: 100%;
   border: 0;
+  display: block;
 }
 /* Bootbox Modal Overrides */
 .modal.bootbox {
