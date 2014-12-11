@@ -6,7 +6,7 @@
 
         $('#show-cache-objects').click(function () {
             $('#cache-objects').toggle('slow', function () {
-                Rock.controls.modal.updateSize(window);
+                Rock.controls.modal.updateSize();
             });
         });
 
@@ -15,7 +15,7 @@
             $(this).parent().attr('class', 'active');
             $('div.tabContent > div').hide('slow');
             $('#' + $(this).attr('pill')).show('slow', function () {
-                Rock.controls.modal.updateSize(window);
+                Rock.controls.modal.updateSize();
             });
         });
 
