@@ -30,6 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Store
 {
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Store
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
             // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();

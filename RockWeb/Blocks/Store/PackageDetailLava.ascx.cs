@@ -30,6 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Store
 {
@@ -121,17 +122,12 @@ namespace RockWeb.Blocks.Store
             var package = packageService.GetPackage( packageId );
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-            // add link to detail page
-            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
-            mergeFields.Add( "LinkedPages", linkedPages );
+            mergeFields.Add( "Package", package );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-            mergeFields.Add( "Package", package );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
@@ -144,7 +140,7 @@ namespace RockWeb.Blocks.Store
             }
 
             // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
