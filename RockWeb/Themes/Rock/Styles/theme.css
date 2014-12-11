@@ -4541,6 +4541,79 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
+/*
+    Used to manage styles related to Rock's store
+    /* NOTE: This less file is not included in the core since it is only used
+             internally. It must be included in the theme.
+    
+    1. Promo Rotator
+    2. Package Summary
+    3. 
+    4. 
+    5. 
+    6. 
+    7. 
+*/
+.promotionrotator {
+  margin-bottom: 48px;
+}
+.promotionrotator .carousel-inner img {
+  width: 100%;
+}
+.promotionrotator .carousel-indicators {
+  bottom: -35px;
+}
+.promotionrotator .carousel-indicators li {
+  border-color: #6A6A6A;
+}
+.promotionrotator .carousel-indicators .active {
+  background-color: #6A6A6A;
+}
+.promotionrotator .carousel-control .fa-chevron-right {
+  right: 20px;
+}
+.promotionrotator .carousel-control .fa-chevron-left {
+  left: 20px;
+}
+.packagesummary {
+  height: 260px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  margin-bottom: 24px;
+  background-color: #efefef;
+}
+.packagesummary .packagesummary-image-hover {
+  background-color: #000;
+  opacity: 0;
+  width: 100%;
+  height: 140px;
+  content: '';
+  -webkit-transition: opacity 0.5s ease-in;
+  -moz-transition: opacity 0.5s ease-in;
+  -o-transition: opacity 0.5s ease-in;
+  -ms-transition: opacity 0.5s ease-in;
+  transition: opacity 0.5s ease-in;
+}
+.packagesummary:hover .packagesummary-image-hover {
+  opacity: 0.5;
+}
+.packagesummary .packagesummary-body {
+  padding: 8px;
+}
+.packagesummary .packagesummary-body h2 {
+  line-height: 1.3em;
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.packagesummary .packagesummary-body .vendor {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 @media print {
   @page {
     margin: .5in;

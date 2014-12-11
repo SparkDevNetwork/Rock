@@ -114,8 +114,14 @@ namespace Rock.Store
         /// A <see cref="Rock.Store.StoreImage"/> representing the icon of the package.
         /// </value>
         public StoreImage PackageIconBinaryFile { get; set; }
-        
-        // todo type
+
+        /// <summary>
+        /// Gets or sets the package versions 
+        /// </summary>
+        /// <value>
+        /// A <see cref="List<Rock.Store.PackageVersion>"/> representing the packages versions.
+        /// </value>
+        public List<PackageVersion> Versions { get; set; }
     }
 
     /// <summary>

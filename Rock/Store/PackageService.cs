@@ -22,39 +22,6 @@ namespace Rock.Store
         public PackageService() : base()
         {}
 
-
-        /*/// <summary>
-        /// Gets a list of packages from the store with the ability to provide custom OData filters.
-        /// </summary>
-        /// <returns>a <see cref="T:IEumerable<Promos>"/> of promos.</returns>
-        public List<Package> GetPackages( int? categoryId, List<Parameter> requestParms )
-        {
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-
-            var request = new RestRequest( "Api/Packages", Method.GET );
-            request.AddParameter( "$expand", "PrimaryCategory,SecondaryCategory,PackageTypeValue,Vendor,PackageIconBinaryFile", ParameterType.QueryString );
-
-            if ( categoryId.HasValue )
-            {
-                request.AddParameter( "$filter", String.Format( "(PrimaryCategoryId eq {0}) or (SecondaryCategoryId eq {0})", categoryId.Value.ToString() ) );
-            }
-            else
-            {
-                request.AddParameter( "$filter", "(PrimaryCategoryId eq null) or (SecondaryCategoryId eq null)" );
-            }
-
-            foreach ( var parm in requestParms )
-            {
-                requestParms.Add( parm );
-            }
-
-            // deserialize to list of packages
-            var packages = client.Execute<List<Package>>( request ).Data;
-
-            return packages;
-        }*/
-
         /// <summary>
         /// Gets a list of packages from the store.
         /// </summary>
@@ -92,7 +59,7 @@ namespace Rock.Store
             var client = new RestClient( _rockStoreUrl );
             var request = new RestRequest();
             request.Method = Method.GET;
-            request.Resource = string.Format( "Api/Packages/{0}", packageId.ToString() );
+            request.Resource = string.Format( "api/Packages/GetPackageDetails/{0}", packageId.ToString() );
 
             var package = client.Execute<Package>( request ).Data;
             return package;
