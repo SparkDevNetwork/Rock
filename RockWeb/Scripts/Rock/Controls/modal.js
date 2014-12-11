@@ -44,9 +44,8 @@
 
                 $('#modal-popup').modal('layout');
 
-
                 $(this.contentWindow).on('resize', function () {
-                    var newHeight = $(this.document.body).height();
+                    var newHeight = $(this.document.body).prop('scrollHeight')
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
                     $modalPopupIFrame.height(newHeight);
@@ -64,17 +63,33 @@
         },
 
         exports = {
-            updateSize: function (innerWindow) {
-                var newHeight = $('#dialog').height() + 'px';
-                $(innerWindow).height(newHeight);
+            updateSize: function (controlId) {
+                var $dialog = $('#dialog');
+                if ($dialog.length) {
+                    var innerWindow = window;
+                    var modalBodyScrollHeight = $('#dialog .modal-body').prop('scrollHeight') + 'px';
+                    $('#dialog .modal-body').innerHeight(modalBodyScrollHeight);
 
-                $(innerWindow).on('resize', function () {
-                    var newHeight = $('#dialog').height() + 'px';
+                    var newHeight = $dialog.prop('scrollHeight') + 'px';
                     $(innerWindow).height(newHeight);
-                });
 
-                var $modalPopupIFrame = $(innerWindow.parent.document).find('iframe');
-                $modalPopupIFrame.height(newHeight);
+                    $(innerWindow).on('resize', function () {
+                        var newHeight = $dialog.prop('scrollHeight') + 'px';
+                        $(innerWindow).height(newHeight);
+                    });
+
+                    var $modalPopupIFrame = $(innerWindow.parent.document).find('iframe');
+                    $modalPopupIFrame.height(newHeight);
+                }
+                else {
+                    
+                    var $modalBody = $('#' + controlId).closest('.modal-body');
+                    if ($modalBody.length) {
+                        $modalBody.height("auto");
+                        var modalBodyScrollHeight = $modalBody.prop('scrollHeight') + 'px';
+                        $modalBody.innerHeight(modalBodyScrollHeight);
+                    }
+                }
             },
             close: function (msg) {
                 // do a setTimeout so this fires after the postback

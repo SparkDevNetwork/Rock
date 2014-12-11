@@ -136,6 +136,6 @@
 </html>
 <script>
     Sys.Application.add_load(function () {
-        Rock.controls.modal.updateSize(window);
+        Rock.controls.modal.updateSize();
     });
 </script>
