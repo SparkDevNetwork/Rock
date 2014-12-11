@@ -335,11 +335,12 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
- 
-$.fn.modal.defaults.manager = '{3}'
 
 if ($('#{0}').find('.js-modal-visible').val() == '1') {{
-    $('#{0}').modal('show');
+    $('#{0}').modal({{
+        show: true,
+        manager: '{3}'
+    }});
 }} 
 else {{
     $('#{0}').modal('hide');
