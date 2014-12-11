@@ -50,8 +50,9 @@
             var $parentTable = $(this).closest("table.disc-assessment");
 
             // find the other items of the same type (More or Less)
-            var answerType = this.name.substr(length - 9, 7);
-            // so the selector will be like: input[type=radio][id*="_rblMore"]
+            // answerType will be rblMore or rblLess
+            var answerType = this.name.substr(this.name.length - 8, 7);
+            // so the selector will be like: input[type=radio][id*="rblMore"]
             var selector = 'input[type=radio][id*="' + answerType + '"]';
             var $sameType = $parentTable.find(selector);
 
@@ -90,7 +91,7 @@
 
     $(document).ready(function () {
         fadePanelIn();
-        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(fadePanelIn);
     });
 </script>
 

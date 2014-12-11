@@ -28,23 +28,19 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using System.Text;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// Takes a defined type and returns all defined values and merges them with a liquid template
+    /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Defined Value List Liquid" )]
-    [Category( "Core" )]
-    [Description( "Takes a defined type and returns all defined values and merges them with a liquid template." )]
-    [DefinedTypeField("Defined Type", "The defined type to load values for merge fields.")]
-    [CodeEditorField("Liquid Template", "Liquid template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
-    {{ definedValue.Value }}
-{% endfor %}")]
-    [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.")]
-    public partial class DefinedValueListLiquid : Rock.Web.UI.RockBlock
+    [DisplayName( "Group Detail Lava" )]
+    [Category( "Groups" )]
+    [Description( "Presents the details of a group using Lava" )]
+    [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false)]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}" )]
+    public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -85,7 +81,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                LoadContent();
+                DisplayConent();
             }
         }
 
@@ -102,49 +98,51 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadContent();
+            DisplayConent();
         }
-
-        
 
         #endregion
 
         #region Methods
 
-        protected void LoadContent()
-        {
-            List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
-            var mergeFields = new Dictionary<string, object>();
-            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-            mergeFields.Add( "Person", CurrentPerson );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            
-            string selectedDefinedType = GetAttributeValue("DefinedType");
-            
-            if (! string.IsNullOrWhiteSpace(selectedDefinedType)) {
-                var dtItem = DefinedTypeCache.Read( Guid.Parse(selectedDefinedType) );
+        private void DisplayConent() {
 
-                foreach ( var item in dtItem.DefinedValues )
+            int groupId = -1;
+            
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            {
+                groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
+            }
+
+            if ( groupId != -1 )
+            {
+                RockContext rockContext = new RockContext();
+                GroupService groupService = new GroupService( rockContext );
+
+                var group = groupService.Queryable( "GroupLocations,Members,Members.Person" ).Where( g => g.Id == groupId ).FirstOrDefault();
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Group", group );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                string template = GetAttributeValue( "LavaTemplate" );
+
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    definedValues.Add( item );
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
                 }
 
-                mergeFields.Add( "DefinedValues", definedValues );
-
-                string template = GetAttributeValue("LiquidTemplate");
                 lContent.Text = template.ResolveMergeFields( mergeFields );
             }
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            else
             {
-                lDebug.Visible = true;
-                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                mergeFields.Remove( "Person" );
-                lDebug.Text = mergeFields.lavaDebugInfo();
+                lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
+
         }
 
         #endregion

@@ -620,7 +620,7 @@ namespace RockWeb.Blocks.Cms
                         html = content.Content.ResolveMergeFields( mergeFields );
 
                         // show merge fields if enable debug true
-                        if ( enableDebug )
+                        if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                         {
                             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Remove( "Person" );
