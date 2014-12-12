@@ -168,14 +168,14 @@ namespace Rock.Transactions
 
                     //  Add any current friends that do not exist in Rock yet
                     foreach ( var groupMember in currentFriends
-                        .Where( f => !existingFriends.Contains( f ) ) )
+                        .Where( f => !existingFriends.Any( e => e.IsEqualTo( f ) ) ) )
                     {
                         groupMemberService.Add( groupMember );
                     }
 
                     // Delete any existing friends that are no longer facebook friends
                     foreach ( var groupMember in existingFriends
-                        .Where( f => !currentFriends.Contains( f ) ) )
+                        .Where( f => !currentFriends.Any( e => e.IsEqualTo( f ) ) ) )
                     {
                         groupMemberService.Delete( groupMember );
                     }
