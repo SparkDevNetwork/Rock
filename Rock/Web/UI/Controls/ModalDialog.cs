@@ -99,6 +99,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _title.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -124,6 +125,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _subtitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -221,13 +223,12 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-            base.Controls.Clear();
+            Controls.Clear();
 
             // main container
             _dialogPanel = new Panel();
-            base.Controls.Add( _dialogPanel );
+            Controls.Add( _dialogPanel );
             _dialogPanel.ID = "modal_dialog_panel";
-            //_dialogPanel.CssClass = "modal container hide fade";
             _dialogPanel.CssClass = "modal container modal-content rock-modal rock-modal-frame";
 
             _hfModalVisible = new HiddenFieldWithClass();
@@ -310,20 +311,13 @@ namespace Rock.Web.UI.Controls
             _serverSaveLink.InnerText = SaveButtonText;
             _serverSaveLink.ValidationGroup = this.ValidationGroup;
 
-            _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
+            _saveLink.Visible = SaveClick == null && !string.IsNullOrWhiteSpace( OnOkScript );
             _saveLink.InnerText = SaveButtonText;
             _saveLink.ValidationGroup = this.ValidationGroup;
 
-            if ( !_serverSaveLink.Visible )
+            if ( !_serverSaveLink.Visible && !_saveLink.Visible )
             {
-                if ( _saveLink.Visible )
-                {
-                   //this.OkControlID = _saveLink.ID;
-                }
-                else
-                {
-                    _cancelLink.InnerText = "Ok";
-                }
+                _cancelLink.InnerText = "Ok";
             }
 
             base.OnPreRender( e );
@@ -335,7 +329,6 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
-
 if ($('#{0}').find('.js-modal-visible').val() == '1') {{
     $('#{0}').modal({{
         show: true,
@@ -346,20 +339,10 @@ else {{
     $('#{0}').modal('hide');
 }}
 
-$('#{0}').find('.js-modaldialog-close-link').click(function () {{
+$('#{0}').find('.js-modaldialog-close-link, .js-modaldialog-cancel-link').click(function () {{
     {1}
-
     $('#{0}').find('.js-modal-visible').val('0')    
     $('#{0}').modal('hide');
-    
-}});
-
-$('#{0}').find('.js-modaldialog-cancel-link').click(function () {{
-    {1}
-
-    $('#{0}').find('.js-modal-visible').val('0')    
-    $('#{0}').modal('hide');
-    
 }});
 
 $('#{0}').find('.js-modaldialog-save-link').click(function () {{
@@ -371,15 +354,11 @@ $('#{0}').find('.js-modaldialog-save-link').click(function () {{
 }});
 
 ";
-
-
-
             var parentPanel = this.ParentUpdatePanel();
-            var modalManager = parentPanel != null ? "#" +parentPanel.ClientID : "body";
+            var modalManager = parentPanel != null ? "#" + parentPanel.ClientID : "body";
             var script = string.Format( scriptFormat, _dialogPanel.ClientID, this.OnCancelScript, this.OnOkScript, modalManager );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-show-" + this.ClientID, script, true );
-            
         }
 
         /// <summary>
@@ -387,7 +366,7 @@ $('#{0}').find('.js-modaldialog-save-link').click(function () {{
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void SaveLink_ServerClick( object sender, EventArgs e )
+        public void SaveLink_ServerClick( object sender, EventArgs e )
         {
             if ( SaveClick != null )
             {
