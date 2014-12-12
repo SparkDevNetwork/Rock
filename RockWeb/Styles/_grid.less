@@ -10,6 +10,7 @@
     7. Reusable classes
     8. Column Types
     9. Row Types
+    10. Responsive Overrides
 
 */
 
@@ -309,3 +310,17 @@ td.grid-col-actions {
     }
     
  }
+
+// 10. Responsive Overrides
+// -------------------------
+
+// RWD changes it so whitespace never wraps... yuck
+
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th, 
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th, 
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > th, 
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > td, 
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > td, 
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > td {
+    white-space: inherit;
+}
