@@ -3285,8 +3285,6 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-disc ul.badge-disc-chart li span {
   display: block;
   background: #99bbd9;
-  position: absolute;
-  bottom: 0;
   width: 10px;
   min-height: 2px;
 }
