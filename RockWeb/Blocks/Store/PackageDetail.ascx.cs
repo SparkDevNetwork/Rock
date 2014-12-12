@@ -29,21 +29,18 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
-using System.Text;
-using Rock.Security;
+using NuGet;
+using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Store
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Package Detail Lava" )]
+    [DisplayName( "Package Detail" )]
     [Category( "Store" )]
-    [Description( "Displays details for a specific package." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageDetail.lava' %}", "", 2 )]
-    [BooleanField("Enable Debug", "Display a list of merge fields available for lava.", false, "", 3)]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
-    public partial class PackageDetailLava : Rock.Web.UI.RockBlock
+    [Description( "Manages the details of a package." )]
+    public partial class PackageDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -84,7 +81,7 @@ namespace RockWeb.Blocks.Store
 
             if ( !Page.IsPostBack )
             {
-                DisplayPackage();
+                ShowPackage();
             }
         }
 
@@ -101,14 +98,14 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            DisplayPackage();
+            ShowPackage();
         }
 
         #endregion
 
         #region Methods
 
-        private void DisplayPackage()
+        private void ShowPackage()
         {
             // get package id
             int packageId = -1;
@@ -121,30 +118,19 @@ namespace RockWeb.Blocks.Store
             PackageService packageService = new PackageService();
             var package = packageService.GetPackage( packageId );
 
-            var mergeFields = new Dictionary<string, object>();
+            lPackageName.Text = package.Name;
+            lPackageDescription.Text = package.Description;
+            lVendorName.Text = package.Vendor.Name;
+            imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
 
-            mergeFields.Add( "Package", package );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+            // get latest version
+            PackageVersion latestVersion = new PackageVersion();
+            if ( package.Versions != null )
             {
-                string pageTitle = package.Name;
-                RockPage.PageTitle = pageTitle;
-                RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                SemanticVersion rockVersion = new SemanticVersion( VersionInfo.GetRockProductVersionNumber() );
+                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
             }
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion
