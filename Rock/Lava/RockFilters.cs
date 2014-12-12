@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Util;
@@ -749,7 +750,7 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="addressType">Type of the address.</param>
         /// <returns></returns>
-        public static string Address( DotLiquid.Context context, object input, string addressType )
+        public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
             if ( input != null && input is Person )
             {
@@ -770,7 +771,84 @@ namespace Rock.Lava
 
                 if (location != null)
                 {
-                    return location.GetFullStreetAddress();
+                    if ( qualifier == "" )
+                    {
+                        return location.GetFullStreetAddress();
+                    }
+                    else
+                    {
+                        var matches = Regex.Matches(qualifier, @"\[\[([^\]]+)\]\]");
+                        foreach ( var match in matches )
+                        {
+                            string propertyKey = match.ToString().Replace("[", "");
+                            propertyKey = propertyKey.ToString().Replace( "]", "" );
+                            propertyKey = propertyKey.ToString().Replace( " ", "" );
+
+                            switch ( propertyKey )
+                            {
+                                case "Street1":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Street1 );
+                                    break;
+                                case "Street2":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Street2 );
+                                    break;
+                                case "City":
+                                    qualifier = qualifier.Replace( match.ToString(), location.City );
+                                    break;
+                                case "State":
+                                    qualifier = qualifier.Replace( match.ToString(), location.State );
+                                    break;
+                                case "PostalCode":
+                                case "Zip":
+                                    qualifier = qualifier.Replace( match.ToString(), location.PostalCode );
+                                    break;
+                                case "Country":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Country );
+                                    break;
+                                case "GeoPoint":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), string.Format("{0},{1}", location.GeoPoint.Latitude.ToString(), location.GeoPoint.Longitude.ToString()) );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "Latitude":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Latitude.ToString() );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "Longitude":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Longitude.ToString() );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "FormattedAddress":
+                                    qualifier = qualifier.Replace( match.ToString(), location.FormattedAddress );
+                                    break;
+                                case "FormattedHtmlAddress":
+                                    qualifier = qualifier.Replace( match.ToString(), location.FormattedHtmlAddress );
+                                    break;
+                                default:
+                                    qualifier = qualifier.Replace( match.ToString(), "" );
+                                    break;
+                            }
+                        }
+
+                        return qualifier;
+                    }
                 }
             }
 
