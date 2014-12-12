@@ -30,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupMember" )]
     [DataContract]
-    public partial class GroupMember : Model<GroupMember>, IEquatable<GroupMember>
+    public partial class GroupMember : Model<GroupMember>
     {
 
         #region Entity Properties
@@ -197,7 +197,7 @@ namespace Rock.Model
         /// <returns>
         /// true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.
         /// </returns>
-        public bool Equals( GroupMember other )
+        public bool IsEqualTo( GroupMember other )
         {
             return ( 
                 this.GroupId == other.GroupId && 
