@@ -1,5 +1,4 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
-
 <%@ Import Namespace="System.Web.Optimization" %>
 <%@ Import Namespace="Rock" %>
 
@@ -87,8 +86,6 @@
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal-bs3patch.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/bootstrap-modal/bootstrap-modal.css", true) %>" />
 
     <style>
         html, body {
