@@ -106,10 +106,16 @@
 }
 
 
-/* Bootbox Modal Overrides */
+// Bootbox Modal Overrides
 .modal.bootbox {
-    left: 0;
-    top: 0;
     width: auto;
-    background-color: transparent;
+}
+.bootbox .modal-dialog {
+    margin: 0;
+    @media (max-width: @screen-sm-max) {
+        width: auto;
+    }
+}
+.bootbox .modal-body {
+    padding-top: 20px;
 }
