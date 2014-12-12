@@ -274,6 +274,12 @@
                 background: @persondetails-badge-color;
                 width: 8px;
                 min-height: 1px;
+
+                @media screen and (-webkit-min-device-pixel-ratio:0) { // needed for chrome but kills ie
+                    position: absolute;
+                    bottom: 0;
+                }
+
             }
         }
     }
@@ -308,6 +314,12 @@
                 background: lighten(#4f89bd, 20%);
                 width: 10px;
                 min-height: 2px;
+
+                @media screen and (-webkit-min-device-pixel-ratio:0) { // needed for chrome but kills ie
+                    position: absolute;
+                    bottom: 0;
+                }
+
             }
 
             &.badge-disc-primary {
