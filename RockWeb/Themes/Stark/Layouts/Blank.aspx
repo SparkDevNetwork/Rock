@@ -16,8 +16,7 @@
 
     <style>
         html, body {
-            height: 100%;
-            min-height: 100%;
+            height: auto;
             width: 100%;
             min-width: 100%;
             background-color: #ffffff;
