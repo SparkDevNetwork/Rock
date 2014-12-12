@@ -434,12 +434,19 @@ img.jcrop-preview {
   border: 0;
   display: block;
 }
-/* Bootbox Modal Overrides */
 .modal.bootbox {
-  left: 0;
-  top: 0;
   width: auto;
-  background-color: transparent;
+}
+.bootbox .modal-dialog {
+  margin: 0;
+}
+@media (max-width: 991px) {
+  .bootbox .modal-dialog {
+    width: auto;
+  }
+}
+.bootbox .modal-body {
+  padding-top: 20px;
 }
 /*
     Used to manage styles related to reusable components / widgets.
