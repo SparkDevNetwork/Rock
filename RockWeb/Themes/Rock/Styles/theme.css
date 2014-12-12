@@ -2524,19 +2524,19 @@ td.grid-col-actions {
 .lava-debug .lava-debug-key {
   font-weight: 700;
 }
-.lava-debug .panel {
+.lava-debug .panel.panel-lavadebug {
   border: 0;
 }
-.lava-debug .panel .panel-heading {
+.lava-debug .panel.panel-lavadebug .panel-heading {
   background-color: #cce7f4;
   color: #3a87ad;
   border: 0;
   cursor: pointer;
 }
-.lava-debug .panel .panel-heading.collapsed i:before {
+.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
   content: "\f078";
 }
-.lava-debug .panel .panel-body {
+.lava-debug .panel.panel-lavadebug .panel-body {
   background-color: #e6f3fa;
 }
 /*
@@ -3248,8 +3248,6 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
   background: #817b72;
-  position: absolute;
-  bottom: 0;
   width: 8px;
   min-height: 1px;
 }
