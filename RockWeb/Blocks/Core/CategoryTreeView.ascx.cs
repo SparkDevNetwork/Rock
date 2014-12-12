@@ -65,9 +65,6 @@ namespace RockWeb.Blocks.Core
 
             // hide all the actions if user doesn't have EDIT to the block
             divTreeviewActions.Visible = canEditBlock;
-
-            RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
-
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
 
             // Get EntityTypeName
