@@ -5,30 +5,6 @@
 
     Rock.controls.modal = (function () {
         var _showModalPopup = function (sender, popupUrl) {
-            var $primaryBtn = $('#modal-popup_panel div.modal-footer a.btn.primary');
-            if (sender.attr('primary-button') !== undefined) {
-                $primaryBtn.text(sender.attr('primary-button'));
-            } else {
-                $primaryBtn.text('Save');
-            }
-            if ($primaryBtn.text() !== '') {
-                $primaryBtn.show();
-            } else {
-                $primaryBtn.hide();
-            }
-
-            var $secondaryBtn = $('#modal-popup_panel div.modal-footer a.btn.secondary');
-            if (sender.attr('secondary-button') !== undefined) {
-                $secondaryBtn.text(sender.attr('secondary-button'));
-            } else {
-                $secondaryBtn.text('Cancel');
-            }
-            if ($secondaryBtn.text() !== '') {
-                $secondaryBtn.show();
-            } else {
-                $secondaryBtn.hide();
-            }
-
             var $modalPopup = $('#modal-popup');
             var $modalPopupIFrame = $modalPopup.find('iframe');
 
@@ -39,8 +15,12 @@
 
             $modalPopupIFrame.one('load', function () {
                 $('#modal-popup').fadeTo(0, 1);
+                Rock.controls.modal.updateSize();
+                
                 var newHeight = $(this.contentWindow.document).height();
-                $(this).height(newHeight);
+                if ($(this).height() != newHeight) {
+                    $(this).height(newHeight);
+                }
 
                 $('#modal-popup').modal('layout');
 
@@ -48,15 +28,16 @@
                     var newHeight = $(this.document.body).prop('scrollHeight')
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
-                    $modalPopupIFrame.height(newHeight);
-                    $modalPopup.modal('layout');
+                    if ($modalPopupIFrame.height() != newHeight) {
+                        $modalPopupIFrame.height(newHeight);
+                    }
                 });
-
             });
 
             // Use the anchor tag's href attribute as the source for the iframe
             // this will trigger the load event (above) which will show the popup
             $('#modal-popup').fadeTo(0, 0);
+            $modalPopupIFrame[0].style.height = 'auto';
             $modalPopupIFrame.attr('src', popupUrl);
             $('#modal-popup').modal('show');
 
@@ -64,31 +45,10 @@
 
         exports = {
             updateSize: function (controlId) {
-                var $dialog = $('#dialog');
-                if ($dialog.length) {
-                    var innerWindow = window;
-                    var modalBodyScrollHeight = $('#dialog .modal-body').prop('scrollHeight') + 'px';
-                    $('#dialog .modal-body').innerHeight(modalBodyScrollHeight);
-
-                    var newHeight = $dialog.prop('scrollHeight') + 'px';
-                    $(innerWindow).height(newHeight);
-
-                    $(innerWindow).on('resize', function () {
-                        var newHeight = $dialog.prop('scrollHeight') + 'px';
-                        $(innerWindow).height(newHeight);
-                    });
-
-                    var $modalPopupIFrame = $(innerWindow.parent.document).find('iframe');
-                    $modalPopupIFrame.height(newHeight);
-                }
-                else {
-                    
-                    var $modalBody = $('#' + controlId).closest('.modal-body');
-                    if ($modalBody.length) {
-                        $modalBody.height("auto");
-                        var modalBodyScrollHeight = $modalBody.prop('scrollHeight') + 'px';
-                        $modalBody.innerHeight(modalBodyScrollHeight);
-                    }
+                var $modalPopupIFrame = $(window.parent.document).find('iframe');
+                if ($modalPopupIFrame[0].style.height != 'auto') {
+                    $modalPopupIFrame[0].style.height = 'auto';
+                    $modalPopupIFrame.height('auto');
                 }
             },
             close: function (msg) {

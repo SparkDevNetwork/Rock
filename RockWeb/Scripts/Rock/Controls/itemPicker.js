@@ -75,8 +75,9 @@
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
-                    $control.find('.picker-menu').first().toggle();
-                    self.updateScrollbar();
+                    $control.find('.picker-menu').first().toggle(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 $control.find('.picker-cancel').click(function () {

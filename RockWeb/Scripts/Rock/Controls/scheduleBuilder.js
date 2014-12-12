@@ -224,7 +224,6 @@
 
             // validate on Save.  Make sure they have at least a StartDate and Time set
             $modal.find('.js-modaldialog-save-link').on('click', function (event) {
-                debugger
                 var $datetimepicker = $modal.find('[id*="dpStartDateTime"]').find('input'),
                     startDateValue = Date.parse($datetimepicker.first().val()) || -1,
                     startTimeValue = $datetimepicker.last().val();

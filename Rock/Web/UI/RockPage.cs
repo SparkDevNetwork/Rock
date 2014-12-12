@@ -478,7 +478,7 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            // add Google Maps API (doesn't like to be added during an async postback )
+            // add Google Maps API (doesn't like to be added during an async postback.  even tried adding it to head manually as needed  )
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace(googleAPIKey) ? "" : string.Format("key={0}&", googleAPIKey);
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter ) ) );
@@ -1519,7 +1519,6 @@ namespace Rock.Web.UI
         {
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
         }
 

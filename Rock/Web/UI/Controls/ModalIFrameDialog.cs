@@ -29,18 +29,6 @@ namespace Rock.Web.UI.Controls
         private HtmlGenericControl _iFrame;
 
         /// <summary>
-        /// Gets or sets the on cancel script.
-        /// </summary>
-        /// <value>
-        /// The on cancel script.
-        /// </value>
-        public string OnCancelScript
-        {
-            get { return ViewState["OnCancelScript"] as string ?? string.Empty; }
-            set { ViewState["OnCancelScript"] = value; }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -58,6 +46,7 @@ namespace Rock.Web.UI.Controls
             _iFrame = new HtmlGenericControl( "iframe" );
             _iFrame.ID = "iframe";
             _iFrame.Attributes.Add( "scrolling", "no" );
+            _iFrame.Style["height"] = "auto";
             _contentPanel.Controls.Add( _iFrame );
         }
     }
