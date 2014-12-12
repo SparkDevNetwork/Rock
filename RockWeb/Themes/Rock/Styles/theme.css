@@ -4548,7 +4548,7 @@ div.aspNetDisabled {
     
     1. Promo Rotator
     2. Package Summary
-    3. 
+    3. Package Detail
     4. 
     5. 
     6. 
@@ -4613,6 +4613,9 @@ div.aspNetDisabled {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.packagedetail .packagedetail-image {
+  width: 100%;
 }
 @media print {
   @page {
@@ -4716,6 +4719,36 @@ pre {
 /*#endregion */
 /*#region
 // 3. Bootstrap Overrides    */
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small,
+.h1 small,
+.h2 small,
+.h3 small,
+.h4 small,
+.h5 small,
+.h6 small,
+h1 .small,
+h2 .small,
+h3 .small,
+h4 .small,
+h5 .small,
+h6 .small,
+.h1 .small,
+.h2 .small,
+.h3 .small,
+.h4 .small,
+.h5 .small,
+.h6 .small {
+  font-weight: inherit;
+}
+h4,
+.h4 {
+  font-weight: 500;
+}
 .panel {
   border-radius: 0;
   border-top-width: 0;

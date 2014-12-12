@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet;
 
 namespace Rock.Store
 {
@@ -42,6 +43,18 @@ namespace Rock.Store
         /// A <see cref="System.string"/> representing the versions lable.
         /// </value>
         public string VersionLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version's rock semantic version. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="Nuget.SemanticVersion"/> representing the versions rock semantic version.
+        /// </value>
+        public SemanticVersion RequiredRockSemanticVersion { 
+            get {
+                return new SemanticVersion( this.RequiredRockVersion );
+            } 
+        }
 
         /// <summary>
         /// Gets or sets the required Rock version. 
