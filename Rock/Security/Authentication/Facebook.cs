@@ -139,8 +139,9 @@ namespace Rock.Security.ExternalAuthentication
                         dynamic me = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content, converter);
 
                         string facebookId = me.id;
-                        string userName = "FACEBOOK_" + facebookId;
+                        string facebookLink = me.link;
 
+                        string userName = "FACEBOOK_" + facebookId;
                         UserLogin user = null;
 
                         var rockContext = new RockContext();
@@ -271,6 +272,15 @@ namespace Rock.Security.ExternalAuthentication
                                                 }
                                             }
                                         }
+                                    }
+
+                                    // Save the facebook social media link
+                                    var facebookAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid(), rockContext );
+                                    if ( facebookAttribute != null )
+                                    {
+                                        person.LoadAttributes( rockContext );
+                                        person.SetAttributeValue( facebookAttribute.Key, facebookLink );
+                                        person.SaveAttributeValues( rockContext );
                                     }
 
                                     if ( GetAttributeValue( "SyncFriends" ).AsBoolean() )
