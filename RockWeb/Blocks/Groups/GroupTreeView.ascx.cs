@@ -71,6 +71,20 @@ namespace RockWeb.Blocks.Groups
                     hfRootGroupId.Value = group.Id.ToString();
                 }
             }
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upGroupType );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string,string>() );
         }
 
         /// <summary>
