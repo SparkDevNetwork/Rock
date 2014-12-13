@@ -1,14 +1,14 @@
 ﻿<div class="row announcement-list">
   {% for item in Items %}
-  <div class="col-md-4 col-sm-6 announcement">
+  <div class="col-md-4 col-xs-6 announcement">
     <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
       <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
     </a>
-    <h2 class="announcement-title">{{ item.Title }}</h2>
-    <p class="announcement-text">{{ item.SummaryText }}</p>
-    <p>
+    <!-- <h2 class="announcement-title">{{ item.Title }}</h2> -->
+    <!-- <p class="announcement-text">{{ item.SummaryText }}</p> -->
+    <!-- <p>
       <a class="view-details btn btn-default" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" role="button">View details »</a>
-    </p>
+    </p> -->
   </div>
   {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
   {% if breakNow == 0 -%}

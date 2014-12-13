@@ -1,25 +1,28 @@
-﻿<div class="announcement-rotator carousel slide" data-ride="carousel">
-  <!-- Wrapper for slides -->
-  <div class="carousel-inner">
-    {% for item in Items %}
-    {% if forloop.index == 1 -%}
-    <div class="item active">
-      {% else -%}
-      <div class="item">
-        {% endif -%}
-        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
-          <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
-        </a>
-      </div>
-      {% endfor %}
+﻿<div class="announcement-rotator">
+
+    <div class="flexslider">
+      <ul class="slides">
+
+        {% for item in Items -%}
+          <li>
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+              <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
+            </a>
+          </li>
+        {% endfor -%}
+
+      </ul>
     </div>
 
-    <!-- Controls -->
-    <a class="left carousel-control" href="#announcement-rotator" data-slide="prev">
-      <span class="fa fa-chevron-left"></span>
-    </a>
-    <a class="right carousel-control" href="#announcement-rotator" data-slide="next">
-      <span class="fa fa-chevron-right"></span>
-    </a>
+  <div class="slide-control">
+    <ul>
 
+      {% for item in Items -%}
+        <li>{{ item.Title }}</li>
+      {% endfor -%}
+
+    </ul>
+    <div class="tipper"></div>
   </div>
+
+</div>

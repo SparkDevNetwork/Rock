@@ -12514,6 +12514,184 @@ div.aspNetDisabled {
     content: '' !important;
   }
 }
+.slide-control {
+  margin-top: -1px;
+}
+.slide-control ul {
+  padding-left: 0;
+  list-style: none;
+  text-align: center;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+.slide-control ul > li {
+  display: block;
+}
+@media (min-width: 768px) {
+  .slide-control ul > li {
+    display: inline-block;
+  }
+}
+.promotion-slider.loading {
+  min-height: 702px;
+}
+.promotion-slider.loading .flex-viewport ul.slides li {
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+.promotion-slider.loading .flex-viewport ul.slides li:nth-child(2) {
+  opacity: 100;
+  filter: alpha(opacity=10000);
+}
+.promotion-slider.loading .slide-control {
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+.promotion-slider .slide-control,
+.promotion-slider ul.slides li {
+  -webkit-transition: opacity 0.3s;
+  -o-transition: opacity 0.3s;
+  transition: opacity 0.3s;
+}
+.slide-control {
+  color: #fff;
+  background: #555555;
+  overflow: auto;
+  position: relative;
+}
+@media (min-width: 768px) {
+  .slide-control {
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+  }
+}
+.slide-control .tipper {
+  opacity: 0;
+  filter: alpha(opacity=0);
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #fff;
+}
+@media (max-width: 767px) {
+  .slide-control .tipper {
+    visibility: hidden;
+  }
+}
+.slide-control .tipper.loaded {
+  opacity: 1;
+  filter: alpha(opacity=100);
+  -webkit-transition: opacity .25s ease-in,left .5s;
+  -o-transition: opacity .25s ease-in,left .5s;
+  transition: opacity .25s ease-in,left .5s;
+}
+.slide-control li {
+  text-align: center;
+  padding: 0 7.5px;
+  margin: 15px 0;
+  height: 100%;
+  cursor: pointer;
+  -webkit-transition: opacity 0.6s;
+  -o-transition: opacity 0.6s;
+  transition: opacity 0.6s;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+@media (min-width: 768px) {
+  .slide-control li {
+    font-size: 1em;
+  }
+}
+.slide-control li.flex-active {
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+/*
+ * jQuery FlexSlider v2.2.0
+ * http://www.woothemes.com/flexslider/
+ *
+ * Copyright 2012 WooThemes
+ * Free to use under the GPLv2 license.
+ * http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * Contributing author: Tyler Smith (@mbmufffin)
+ */
+/* Browser Resets
+*********************************/
+.flex-container a:active,
+.flexslider a:active,
+.flex-container a:focus,
+.flexslider a:focus {
+  outline: none;
+}
+.slides,
+.flex-control-nav,
+.flex-direction-nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* FlexSlider Necessary Styles
+*********************************/
+.flexslider {
+  margin: 0;
+  padding: 0;
+}
+.flexslider .slides > li {
+  display: none;
+  -webkit-backface-visibility: hidden;
+}
+/* Hide the slides before the JS is loaded. Avoids image jumping */
+.flexslider .slides img {
+  width: 100%;
+  display: block;
+}
+.flex-pauseplay span {
+  text-transform: capitalize;
+}
+/* Clearfix for the .slides element */
+.slides:after {
+  content: "\0020";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0;
+}
+html[xmlns] .slides {
+  display: block;
+}
+* html .slides {
+  height: 1%;
+}
+/* No JavaScript Fallback */
+/* If you are not using another script, such as Modernizr, make sure you
+ * include js that eliminates this class on page load */
+.no-js .slides > li:first-child {
+  display: block;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  text-transform: uppercase;
+}
 img {
   display: block;
   width: 100% \9;
