@@ -191,7 +191,7 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _hfCheckListBoxId = new HiddenField();
-            _hfCheckListBoxId.ID = this.ID + "_hfCheckListBoxId";
+            _hfCheckListBoxId.ID = "hf";
             _hfCheckListBoxId.Value = "1";
 
             Controls.Add( _hfCheckListBoxId );
