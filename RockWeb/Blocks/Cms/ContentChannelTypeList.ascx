@@ -15,7 +15,7 @@
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gContentChannelType" runat="server" AllowSorting="true" OnRowSelected="gContentChannelType_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:BadgeField InfoMin="1" DataField="Channels" HeaderText="Channels" SortExpression="Channels" />
                             <Rock:DeleteField OnClick="gContentChannelType_Delete" />
                         </Columns>

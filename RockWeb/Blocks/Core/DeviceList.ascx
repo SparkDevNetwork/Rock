@@ -23,12 +23,12 @@
         
                     <Rock:Grid ID="gDevice" runat="server" AllowSorting="true" OnRowSelected="gDevice_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="DeviceTypeName" HeaderText="Device Type" SortExpression="DeviceTypeName" />
-                            <asp:BoundField DataField="IPAddress" HeaderText="IP Address" SortExpression="IPAddress"/>
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="DeviceTypeName" HeaderText="Device Type" SortExpression="DeviceTypeName" />
+                            <Rock:RockBoundField DataField="IPAddress" HeaderText="IP Address" SortExpression="IPAddress"/>
                             <Rock:EnumField DataField="PrintToOverride" HeaderText="Print To" SortExpression="PrintToOverride" />
                             <Rock:EnumField DataField="PrintFrom" HeaderText="Print From" SortExpression="PrintFrom" />
-                            <asp:BoundField DataField="PrinterDeviceName" HeaderText="Printer" SortExpression="PrinterDeviceName" />
+                            <Rock:RockBoundField DataField="PrinterDeviceName" HeaderText="Printer" SortExpression="PrinterDeviceName" />
                             <Rock:DeleteField OnClick="gDevice_Delete" />
                         </Columns>
                     </Rock:Grid>

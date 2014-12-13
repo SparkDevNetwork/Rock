@@ -31,13 +31,13 @@
                     <Rock:Grid ID="rGridAccount" runat="server"  RowItemText="Account" OnRowSelected="rGridAccount_Edit" TooltipField="Description">
                         <Columns>
                             <Rock:ReorderField />
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="PublicName" HeaderText="Public Name" SortExpression="PublicName" />
-                            <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" Visible="false" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="PublicName" HeaderText="Public Name" SortExpression="PublicName" />
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" Visible="false" />
                             <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                            <asp:BoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
-                            <asp:BoundField DataField="EndDate" HeaderText="Ends On" SortExpression="EndDate" DataFormatString="{0:d}" />
+                            <Rock:RockBoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
+                            <Rock:RockBoundField DataField="EndDate" HeaderText="Ends On" SortExpression="EndDate" DataFormatString="{0:d}" />
                             <Rock:DeleteField OnClick="rGridAccount_Delete" />
                         </Columns>
                     </Rock:Grid>

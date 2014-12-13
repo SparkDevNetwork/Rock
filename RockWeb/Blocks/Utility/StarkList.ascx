@@ -13,9 +13,9 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true">
                         <Columns>
-                            <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                            <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
-                            <asp:BoundField DataField="Email" HeaderText="Email" SortExpression="Email" />
+                            <Rock:RockBoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
+                            <Rock:RockBoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
+                            <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" />
                         </Columns>
                     </Rock:Grid>
                 </div>

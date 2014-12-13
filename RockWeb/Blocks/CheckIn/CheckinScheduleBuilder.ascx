@@ -19,13 +19,13 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
                         <Columns>
-		                    <asp:TemplateField HeaderText="Group" SortExpression="Group.Name">
+		                    <Rock:RockTemplateField HeaderText="Group" SortExpression="Group.Name">
 		                        <ItemTemplate>
 		                            <%#Eval("GroupName")%><br />
 		                            <small><%#Eval("Path")%></small>
 		                        </ItemTemplate>
-		                    </asp:TemplateField>
-                            <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="Location.Name" />
+		                    </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="Location.Name" />
                         </Columns>
                     </Rock:Grid>
                 </div>
