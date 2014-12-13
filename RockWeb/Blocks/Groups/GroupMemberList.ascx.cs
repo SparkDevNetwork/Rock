@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Groups
 
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -98,6 +99,12 @@ namespace RockWeb.Blocks.Groups
 
                     // Add attribute columns
                     AddAttributeColumns();
+
+                    // Add Link to Profile Page Column
+                    if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
+                    {
+                        AddPersonProfileLinkColumn();
+                    }
 
                     // Add delete column
                     var deleteField = new DeleteField();
@@ -284,6 +291,22 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Adds the column with a link to profile page.
+        /// </summary>
+        private void AddPersonProfileLinkColumn()
+        {
+            HyperLinkField hlPersonProfileLink = new HyperLinkField();
+            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.DataNavigateUrlFields = new String[1] { "PersonId" };
+            hlPersonProfileLink.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
+            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextField = "PersonId";
+            gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
 
         /// <summary>

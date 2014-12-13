@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column for editing a row in a grid
     /// </summary>
     [ToolboxData( "<{0}:EditField runat=server></{0}:EditField>" )]
-    public class EditField : TemplateField, INotRowSelectedField
+    public class EditField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
         /// Gets or sets the icon CSS class.

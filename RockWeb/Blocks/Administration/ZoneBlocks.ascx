@@ -18,13 +18,13 @@
                 <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnRowSelected="gPageBlocks_Edit">
                     <Columns>
                         <Rock:ReorderField />
-                        <asp:BoundField DataField="Name" HeaderText="Name" />
-                        <asp:TemplateField HeaderText="Type" >
+                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                        <Rock:RockTemplateField HeaderText="Type" >
                             <ItemTemplate>
                                 <%# Eval("BlockType.Name") %><br />
                                 <small><%# Eval("BlockType.Path") %></small>
                             </ItemTemplate>
-                        </asp:TemplateField>
+                        </Rock:RockTemplateField>
                         <Rock:DeleteField OnClick="gPageBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -38,13 +38,13 @@
                 <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
                     <Columns>
                         <Rock:ReorderField />
-                        <asp:BoundField DataField="Name" HeaderText="Name" />
-                        <asp:TemplateField HeaderText="Type" >
+                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                        <Rock:RockTemplateField HeaderText="Type" >
                             <ItemTemplate>
                                 <%# Eval("BlockType.Name") %><br />
                                 <small><%# Eval("BlockType.Path") %></small>
                             </ItemTemplate>
-                        </asp:TemplateField>
+                        </Rock:RockTemplateField>
                         <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>

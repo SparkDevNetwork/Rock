@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using DotLiquid;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -96,7 +97,7 @@ namespace RockWeb.Blocks.Finance
             // set initial debug info
             if ( !IsPostBack )
             {
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Text = "<pre>At least one scheduled transaction needs to exist for the current user in order to display debug information.</pre>";
                 }
@@ -193,7 +194,7 @@ namespace RockWeb.Blocks.Finance
                 lLiquidContent.Text = GetAttributeValue( "Template" ).ResolveMergeFields( schedule );
 
                 // set debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Text = schedule.lavaDebugInfo();
                 }

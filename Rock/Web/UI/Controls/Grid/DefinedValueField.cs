@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// Control for selecting a defined value
     /// </summary>
     [ToolboxData("<{0}:DefinedValueField runat=server></{0}:DefinedValueField>")]
-    public class DefinedValueField : BoundField
+    public class DefinedValueField : RockBoundField
     {
         /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.

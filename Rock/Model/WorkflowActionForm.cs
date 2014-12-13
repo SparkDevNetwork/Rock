@@ -127,7 +127,7 @@ namespace Rock.Model
         /// The buttons.
         /// </value>
         [NotMapped]
-        [LiquidInclude]
+        [LavaInclude]
         public virtual List<LiquidButton> Buttons
         {
             get

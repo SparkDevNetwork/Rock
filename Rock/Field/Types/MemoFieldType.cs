@@ -30,6 +30,17 @@ namespace Rock.Field.Types
         private const string NUMBER_OF_ROWS = "numberofrows";
 
         /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return base.FormatValueAsHtml( value, configurationValues ).ConvertCrLfToHtmlBr();
+        }
+
+        /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
         /// <returns></returns>

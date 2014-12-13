@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     string content = String.Empty;
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                     {
                         content = LoadDebugData( feedDictionary );
                     }

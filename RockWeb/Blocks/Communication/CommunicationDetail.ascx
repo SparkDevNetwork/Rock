@@ -66,7 +66,7 @@
                                 <Rock:Grid ID="gPending" runat="server" AllowSorting="true">
                                     <Columns>
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                                        <asp:BoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
+                                        <Rock:RockBoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -76,16 +76,16 @@
                     <section id="sDelivered" runat="server" class="js-communication-recipients panel panel-widget">
                         <header class="panel-heading clearfix">Delivered Recipients</header>
                         <div class="panel-body">
-                            <div class="grid">
+                            <div class="grid grid-panel">
                                 <Rock:Grid ID="gDelivered" runat="server" AllowSorting="true" ShowActionRow="false">
                                     <Columns>
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                                         <Rock:EnumField HeaderText="Status" DataField="Status" SortExpression="Status" />
-                                        <asp:BoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
+                                        <Rock:RockBoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
                                         <Rock:DateTimeField HeaderText="Opened" DataField="OpenedDateTime" SortExpression="OpenedDateTime" />
-                                        <asp:BoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" />
-                                        <asp:BoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" />
-                                        <asp:BoundField HeaderText="Activity" ItemStyle-CssClass="wrap-contents" DataField="ActivityList" HtmlEncode="false" />
+                                        <Rock:RockBoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" />
+                                        <Rock:RockBoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" ColumnPriority="DesktopLarge" />
+                                        <Rock:RockBoundField HeaderText="Activity" ItemStyle-CssClass="wrap-contents" DataField="ActivityListHtml" HtmlEncode="false" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -95,11 +95,11 @@
                     <section id="sFailed" runat="server" class="js-communication-recipients panel panel-widget">
                         <header class="panel-heading clearfix">Failed Recipients</header>
                         <div class="panel-body">
-                            <div class="grid">
+                            <div class="grid grid-panel">
                                 <Rock:Grid ID="gFailed" runat="server" AllowSorting="true">
                                     <Columns>
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                                        <asp:BoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
+                                        <Rock:RockBoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -109,11 +109,11 @@
                     <section id="sCancelled" runat="server" class="js-communication-recipients panel panel-widget">
                         <header class="panel-heading clearfix">Cancelled Recipients</header>
                         <div class="panel-body">
-                            <div class="grid">
+                            <div class="grid grid-panel">
                                 <Rock:Grid ID="gCancelled" runat="server" AllowSorting="true">
                                     <Columns>
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                                        <asp:BoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
+                                        <Rock:RockBoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -123,15 +123,15 @@
                     <section id="sOpened" runat="server" class="js-communication-recipients panel panel-widget">
                         <header class="panel-heading clearfix">Opened Recipients</header>
                         <div class="panel-body">
-                            <div class="grid">
+                            <div class="grid grid-panel">
                                 <Rock:Grid ID="gOpened" runat="server" AllowSorting="true">
                                     <Columns>
                                         <Rock:PersonField HeaderText="Name" DataField="PersonAlias.Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                                        <asp:BoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
+                                        <Rock:RockBoundField HeaderText="Note" DataField="StatusNote" SortExpression="StatusNote" />
                                         <Rock:DateTimeField HeaderText="Opened" DataField="OpenedDateTime" SortExpression="OpenedDateTime" />
-                                        <asp:BoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" />
-                                        <asp:BoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" />
-                                        <asp:BoundField HeaderText="Activity" DataField="ActivityList" HtmlEncode="false" />
+                                        <Rock:RockBoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" ColumnPriority="Desktop" />
+                                        <Rock:RockBoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" ColumnPriority="DesktopLarge" />
+                                        <Rock:RockBoundField HeaderText="Activity" DataField="ActivityListHtml" HtmlEncode="false" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -144,17 +144,15 @@
 
                     <Rock:PanelWidget ID="wpEvents" runat="server" Title="Activity" Expanded="false">
                         <div class="grid grid-panel">
-                            <div class="grid">
-                                <Rock:Grid ID="gActivity" runat="server" AllowSorting="true" RowItemText="Activity">
-                                    <Columns>
-                                        <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
-                                        <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.PersonAlias.Person" 
-                                            SortExpression="CommunicationRecipient.PersonAlias.Person.LastName,CommunicationRecipient.PersonAlias.Person.NickName" />
-                                        <asp:BoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
-                                        <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
+                            <Rock:Grid ID="gActivity" runat="server" AllowSorting="true" RowItemText="Activity">
+                                <Columns>
+                                    <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
+                                    <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.PersonAlias.Person" 
+                                        SortExpression="CommunicationRecipient.PersonAlias.Person.LastName,CommunicationRecipient.PersonAlias.Person.NickName" />
+                                    <Rock:RockBoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
+                                    <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
+                                </Columns>
+                            </Rock:Grid>
                         </div>
                     </Rock:PanelWidget>
 

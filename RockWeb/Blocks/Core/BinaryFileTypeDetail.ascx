@@ -7,7 +7,8 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-file-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                    <h1 class="panel-title"><i class="fa fa-file-o"></i>
+                        <asp:Literal ID="lActionTitle" runat="server" /></h1>
                 </div>
                 <div class="panel-body">
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -23,7 +24,7 @@
                                 <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
                                 <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Text="Yes" Help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
                                 <Rock:RockCheckBox ID="cbRequiresViewSecurity" runat="server" Label="Requires View Security" Text="Yes" Help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
-                                <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true"/>
+                                <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true" />
                             </div>
                             <div class="col-md-6">
 
@@ -31,7 +32,7 @@
                                 <p>
                                     Attributes allow for providing different values for each binary file of this type.
                                 </p>
-                        
+
                                 <div class="grid">
                                     <Rock:Grid ID="gBinaryFileAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
                                         <Columns>
@@ -42,6 +43,20 @@
                                     </Rock:Grid>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
+                            <h3>Preferred File Settings</h3>
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
+                                <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />
+                                <Rock:RockDropDownList ID="ddlPreferredColorDepth" runat="server" Label="Preferred Color Depth" Required="true" />
+                                <Rock:RockCheckBox ID="cbPreferredRequired" runat="server" Label="Preferred Settings Required" Help="Should the preferred settings for this file type be the required settings?" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlPreferredFormat" runat="server" Label="Preferred Format" Required="true" />
+                                <Rock:RockDropDownList ID="ddlPreferredResolution" runat="server" Label="Preferred Resolution" Required="true" />
+                            </div>
+
                         </div>
                         <div class="row">
                             <div class="col-md-12">
@@ -60,7 +75,7 @@
             </div>
 
 
-            
+
 
         </asp:Panel>
 
