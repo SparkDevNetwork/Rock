@@ -111,13 +111,21 @@ namespace Rock.Model
 
             //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
             
+            var knownSunday = new DateTime(1966, 1, 30);    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
             var qryWithSundayDate = qry.Select( a => new
             {
                 Attendance = a,
-                SundayDate = SqlFunctions.DateAdd(
+                SundayDate = SqlFunctions.DateAdd( 
                         "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "weekday", a.StartDateTime ) + 1 + 1 + 6, a.StartDateTime ) ),
-                        "1900-01-01" )
+                        SqlFunctions.DateDiff( "day", 
+                            "1900-01-01", 
+                            SqlFunctions.DateAdd( "day", 
+                                ((( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", a.StartDateTime ) ) % 7),
+                                a.StartDateTime 
+                            ) 
+                        ),
+                        "1900-01-01" 
+                    )
             } );
 
             var summaryQry = qryWithSundayDate.Select( a => new

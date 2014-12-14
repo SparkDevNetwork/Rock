@@ -2939,10 +2939,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
   background: #817b72;
-  position: absolute;
-  bottom: 0;
   width: 8px;
   min-height: 1px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-attendance ul.badge-attendance-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-attendance.annimate ul.badge-attendance-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
@@ -2967,10 +2971,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-disc ul.badge-disc-chart li span {
   display: block;
   background: #99bbd9;
-  position: absolute;
-  bottom: 0;
   width: 10px;
   min-height: 2px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-disc ul.badge-disc-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-disc ul.badge-disc-chart li.badge-disc-primary span {
   background: #4f89bd;
