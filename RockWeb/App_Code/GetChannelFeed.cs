@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 using System.Xml;
 using System.Text;
+using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -79,14 +80,33 @@ namespace RockWeb
 
                 rssTemplate = dvRssTemplate.GetAttributeValue( "Template" );
 
-                if ( string.IsNullOrWhiteSpace( dvRssTemplate.GetAttributeValue( "MimeType" ) ) )
+
+                if ( request.QueryString["EnableDebug"] != null )
                 {
-                    response.ContentType = "application/rss+xml";
+                    // when in debug mode we need to export as html and linkin styles so that the debug info will be displayed
+                    string appPath = HttpContext.Current.Request.ApplicationPath;
+                    
+                    response.Write( "<html>" );
+                    response.Write( "<head>" );
+                    response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/bootstrap.css'>", appPath ) );
+                    response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/theme.css'>", appPath ) );
+                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.10.2.min.js'></script>", appPath ) );
+                    response.Write( string.Format( "<script src='{0}Scripts/bootstrap.min.js'></script>", appPath ) );
+                    response.Write( "</head>" );
+                    response.Write( "<body style='padding: 24px;'>" );
                 }
                 else
                 {
-                    response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
+                    if ( string.IsNullOrWhiteSpace( dvRssTemplate.GetAttributeValue( "MimeType" ) ) )
+                    {
+                        response.ContentType = "application/rss+xml";
+                    }
+                    else
+                    {
+                        response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
+                    }
                 }
+                
                 
                 ContentChannelService channelService = new ContentChannelService( rockContext );
 
@@ -98,7 +118,6 @@ namespace RockWeb
                     {
                         // load merge fields
                         var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
                         mergeFields.Add( "Channel", channel );
 
@@ -145,13 +164,22 @@ namespace RockWeb
 
                         mergeFields.Add( "Items", content );
 
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
                         // show debug info
                         if ( request.QueryString["EnableDebug"] != null )
                         {
-                            response.Write( mergeFields.ToJson() );
+                            response.Write( mergeFields.lavaDebugInfo() );
+                            response.Write( "<pre>" );
+                            response.Write( WebUtility.HtmlEncode(rssTemplate.ResolveMergeFields( mergeFields )) );
+                            response.Write( "</pre>" );
+                            response.Write( "</body>" );
+                            response.Write( "</html" );
                         }
-
-                        response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
+                        else
+                        {
+                            response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
+                        }
                     }
                     else
                     {

@@ -29,6 +29,7 @@ using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Text;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -51,6 +52,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
+    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 9 )]
 
     [ContextAware]
     public partial class HtmlContentDetail : RockBlock
@@ -163,7 +165,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
-            htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            htmlEditor.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
             htmlEditor.MergeFields.Add( "Campuses" );
             htmlEditor.MergeFields.Add( "PageParameter" );
             htmlEditor.MergeFields.Add( "RockVersion" );
@@ -173,7 +175,7 @@ namespace RockWeb.Blocks.Cms
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            ceHtml.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
             ceHtml.MergeFields.Add( "Campuses" );
             ceHtml.MergeFields.Add( "RockVersion" );
             ceHtml.MergeFields.Add( "PageParameter" );
@@ -578,15 +580,18 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    if ( content.Content.HasMergeFields() )
+                    bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+
+                    if ( content.Content.HasMergeFields() || enableDebug )
                     {
                         var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                         if ( CurrentPerson != null )
                         {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "CurrentPerson", CurrentPerson );
                         }
 
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                         mergeFields.Add( "Campuses", CampusCache.All() );
                         mergeFields.Add( "PageParameter", PageParameters() );
 
@@ -609,9 +614,18 @@ namespace RockWeb.Blocks.Cms
                         {
                             mergeFields.Add( "Context", contextObjects );
                         }
-                        
+
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
                         html = content.Content.ResolveMergeFields( mergeFields );
+
+                        // show merge fields if enable debug true
+                        if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+                        {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                            mergeFields.Remove( "Person" );
+                            html += mergeFields.lavaDebugInfo();
+                        }
                     }
                     else
                     {

@@ -111,6 +111,11 @@ namespace Rock.SystemGuid
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_PREVIOUS_SPOUSE = "60C6142E-8E00-4678-BC2F-983BB7BDE80B";
 
         /// <summary>
+        /// Role to identify facebook friends
+        /// </summary>
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_FACEBOOK_FRIEND = "AB69816C-4DFA-4A7A-86A5-9BFCBA6FED1E";
+
+        /// <summary>
         /// Role to identify contacts related to a business.
         /// </summary>
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT = "102E6AF5-62C2-4767-B473-C9C228D75FB6";

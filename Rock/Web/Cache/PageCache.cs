@@ -699,17 +699,17 @@ namespace Rock.Web.Cache
                 }
 
                 var properties = new Dictionary<string, object>();
-                properties.Add( "id", this.Id );
-                properties.Add( "title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
-                properties.Add( "current", isCurrentPage.ToString().ToLower() );
-                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
-                properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
-                properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
-                properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
-                properties.Add( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() );
-                properties.Add( "icon-css-class", this.IconCssClass ?? string.Empty );
-                properties.Add( "description", this.Description ?? "" );
-                properties.Add( "icon-url", iconUrl );
+                properties.Add( "Id", this.Id );
+                properties.Add( "Title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
+                properties.Add( "Current", isCurrentPage.ToString().ToLower() );
+                properties.Add( "IsParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
+                properties.Add( "Url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
+                properties.Add( "DisplayDescription", this.MenuDisplayDescription.ToString().ToLower() );
+                properties.Add( "DisplayIcon", this.MenuDisplayIcon.ToString().ToLower() );
+                properties.Add( "DisplayChildPages", this.MenuDisplayChildPages.ToString().ToLower() );
+                properties.Add( "IconCssClass", this.IconCssClass ?? string.Empty );
+                properties.Add( "Description", this.Description ?? "" );
+                properties.Add( "IconUrl", iconUrl );
 
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages )
                 {
@@ -729,7 +729,7 @@ namespace Rock.Web.Cache
 
                     if ( childPages.Any() )
                     {
-                        properties.Add( "pages", childPages );
+                        properties.Add( "Pages", childPages );
                     }
                 }
 

@@ -52,6 +52,7 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
+        private Dictionary<int, string> _columnDataPriorities;
 
         #endregion
 
@@ -645,6 +646,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+
+            if ( this.DataSource != null )
+            {
+                writer.AddAttribute( "data-pattern", "priority-columns" );
+                writer.AddAttribute( "data-add-focus-btn", "false" );
+                writer.AddAttribute( "data-add-display-all-btn", "false" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+            
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
 
@@ -666,6 +678,11 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
+
+            if ( this.DataSource != null )
+            {
+                writer.RenderEndTag();
+            }
         }
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
@@ -761,12 +778,24 @@ namespace Rock.Web.UI.Controls
         {
             // Get the css class for any column that does not implement the INotRowSelectedField
             RowSelectedColumns = new Dictionary<int, string>();
+            _columnDataPriorities = new Dictionary<int, string>();
+
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
                 if ( !( column is INotRowSelectedField ) && !( column is HyperLinkField ) )
                 {
                     RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                }
+
+                // get data priority from column
+                if ( column is IPriorityColumn )
+                {
+                    _columnDataPriorities.Add( i, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
+                }
+                else
+                {
+                    _columnDataPriorities.Add( i, "1" );
                 }
             }
 
@@ -894,11 +923,13 @@ namespace Rock.Web.UI.Controls
                 string asc = SortDirection.Ascending.ToString();
                 string desc = SortDirection.Descending.ToString();
 
-                // Remove the sort css classes
-                foreach ( TableCell cell in e.Row.Cells )
+                // Remove the sort css classes and add the data priority
+                for ( int i = 0; i < e.Row.Cells.Count ; i++)
                 {
+                    var cell = e.Row.Cells[i];
                     cell.RemoveCssClass( asc );
                     cell.RemoveCssClass( desc );
+                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i]);
                 }
 
                 // Add the new sort css class
@@ -917,10 +948,20 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            if ( e.Row.RowType == DataControlRowType.DataRow || e.Row.RowType == DataControlRowType.Footer )
+            {
+                // add the data priority
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                {
+                    e.Row.Cells[i].Attributes.Add( "data-priority", _columnDataPriorities[i] );
+                }
+            }
+
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 if ( e.Row.DataItem != null )
                 {
+
                     e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
 
                     if ( this.DataKeys != null && this.DataKeys.Count > 0 )
@@ -2309,6 +2350,42 @@ namespace Rock.Web.UI.Controls
         Light
     }
 
+
+    /// <summary>
+    /// Column Prioritiy Values
+    /// </summary>
+    public enum ColumnPriority
+    {
+        /// <summary>
+        /// Always Visible
+        /// </summary>
+        AlwaysVisible = 1,
+
+        /// <summary>
+        /// Devices Devices with screensize > 480px
+        /// </summary>
+        TabletSmall = 2,
+
+        /// <summary>
+        /// Devices with screensize > 640px
+        /// </summary>
+        Tablet = 3,
+
+        /// <summary>
+        /// Devices with screensize > 800px
+        /// </summary>
+        DesktopSmall = 4,
+
+        /// <summary>
+        /// Devices with screensize > 960px
+        /// </summary>
+        Desktop = 5,
+
+        /// <summary>
+        /// Devices with screensize > 1120px
+        /// </summary>
+        DesktopLarge = 6
+    }
 
     #endregion
 

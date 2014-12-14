@@ -228,7 +228,13 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            return LocationPickerMode.Named;
+            // Couldn't determine best picker, so return the first allowed type
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Named ) == LocationPickerMode.Named ) return LocationPickerMode.Named;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address ) return LocationPickerMode.Address;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point ) return LocationPickerMode.Point;
+            if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon ) return LocationPickerMode.Polygon;
+
+            return LocationPickerMode.None;
         }
 
         /// <summary>

@@ -27,6 +27,7 @@ using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -37,8 +38,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Page Menu")]
     [Category("CMS")]
     [Description("Renders a page menu based on a root page and liquid template.")]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Liquid/_PageNav.liquid' %}" )]
+    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
@@ -128,24 +129,10 @@ namespace RockWeb.Blocks.Cms
             }
 
             var pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+            pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
             string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
             // check for errors
-            if ( content.Contains( "No such template" ) )
-            {
-                // get template name
-                Match match = Regex.Match( GetAttributeValue( "Template" ), @"'([^']*)" );
-                if ( match.Success )
-                {
-                    content = String.Format( "<div class='alert alert-warning'><h4>Warning</h4>Could not find the template _{1}.liquid in {0}.</div>", ResolveRockUrl( "~~/Assets/Liquid" ), match.Groups[1].Value );
-                }
-                else
-                {
-                    content = "<div class='alert alert-warning'><h4>Warning</h4>Unable to parse the template name from settings.</div>";
-                }
-            }
-
             if ( content.Contains( "error" ) )
             {
                 content = "<div class='alert alert-warning'><h4>Warning</h4>" + content + "</div>";
@@ -155,23 +142,19 @@ namespace RockWeb.Blocks.Cms
             phContent.Controls.Add( new LiteralControl( content ) );
 
             // add debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
+                StringBuilder tipInfo = new StringBuilder();
+                tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );
 
-                debugInfo.Append("<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>");
-                debugInfo.Append("<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>");
-                debugInfo.Append("<li>Check the 'Display Settings' on the child pages</li>");
-                debugInfo.Append("<li>Check the security of the child pages</li>");
-                debugInfo.Append("</ul><br /></p>");
+                tipInfo.Append( "<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
+                tipInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
+                tipInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
+                tipInfo.Append( "<li>Check the security of the child pages</li>" );
+                tipInfo.Append( "</ul><br /></p>" );
+                tipInfo.Append( "</div>" );
 
-                debugInfo.Append( "<pre>" );
-                debugInfo.Append( "<p /><strong>Page Data</strong> (referenced as 'page.' in Liquid)<br>" );
-                debugInfo.Append( rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ).lavaDebugInfo() + "</pre>" );
-
-                debugInfo.Append( "</div>" );
-                phContent.Controls.Add( new LiteralControl( debugInfo.ToString() ) );
+                phContent.Controls.Add( new LiteralControl( tipInfo.ToString() + pageProperties.lavaDebugInfo() ) );
             }
 
         }

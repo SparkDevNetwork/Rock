@@ -175,11 +175,13 @@ namespace RockWeb.Blocks.Crm
 
         }});
         
-        // Update the hidden field with the client if of each selected control
+        // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
         var newValue = '';
         $('div.bulk-item-selected').each(function( index ) {{
             $(this).find('[id]').each(function() {{
-                newValue += $(this).prop('id') + '|';
+                var re = /_hf$/;
+                var ctrlId = $(this).prop('id').replace(re, '');
+                newValue += ctrlId + '|';
             }});
         }});
         $('#{0}').val(newValue);            
@@ -228,10 +230,10 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnLoad( e );
 
+            var rockContext = new RockContext();
+
             if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-
                 cpCampus.Campuses = CampusCache.All( rockContext );
                 cpCampus.Required = true;
 
@@ -241,35 +243,40 @@ namespace RockWeb.Blocks.Crm
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
                 if ( setId.HasValue )
                 {
-                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                    var selectedPersonIds = new EntitySetItemService( rockContext )
                         .GetByEntitySetId( setId.Value )
                         .Select( i => i.EntityId )
                         .Distinct()
                         .ToList();
 
                     // Get the people selected
-                    foreach ( var person in new PersonService( rockContext ).Queryable( "CreatedByPersonAlias.Person,Users" )
-                        .Where( p => selectedPersonIds.Contains( p.Id ) ) )
+                    foreach ( var person in new PersonService( rockContext ).Queryable( true )
+                        .Where( p => selectedPersonIds.Contains( p.Id ) )
+                        .Select( p => new
+                        {
+                            p.Id,
+                            FullName = p.NickName + " " + p.LastName
+                        } ) )
                     {
-                        Individuals.Add( new Individual( person ) );
+                        Individuals.Add( new Individual( person.Id, person.FullName ) );
                     }
                 }
 
                 SetControlSelection();
-                BuildAttributes( true );
+                BuildAttributes( rockContext, true );
             }
             else
             {
                 SetControlSelection();
-                BuildAttributes();
+                BuildAttributes( rockContext );
 
-                if (ddlGroupAction.SelectedValue == "Update")
+                if ( ddlGroupAction.SelectedValue == "Update" )
                 {
                     SetControlSelection( ddlGroupRole, "Role" );
                     SetControlSelection( ddlGroupMemberStatus, "Member Status" );
                 }
 
-                BuildGroupAttributes();
+                BuildGroupAttributes( rockContext );
             }
 
         }
@@ -1297,9 +1304,8 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        private void BuildAttributes( bool setValues = false )
+        private void BuildAttributes( RockContext rockContext, bool setValues = false )
         {
-            var rockContext = new RockContext();
             var selectedCategories = new List<CategoryCache>();
             foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues() )
             {
@@ -1427,11 +1433,10 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        private void BuildGroupAttributes()
+        private void BuildGroupAttributes(RockContext rockContext)
         {
             if ( GroupId.HasValue )
             {
-                var rockContext = new RockContext();
                 var group = new GroupService( rockContext ).Get( GroupId.Value );
                 BuildGroupAttributes( group, rockContext, false );
             }
@@ -1592,6 +1597,17 @@ namespace RockWeb.Blocks.Crm
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Individual"/> class.
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <param name="name">The name.</param>
+            public Individual( int id, string name)
+            {
+                PersonId = id;
+                PersonName = name;
             }
 
         }
