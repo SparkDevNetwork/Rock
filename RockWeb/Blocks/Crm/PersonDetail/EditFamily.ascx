@@ -69,39 +69,39 @@
                         <div class="grid grid-panel">
                             <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
                                 <Columns>
-                                    <asp:TemplateField HeaderText="Type">
+                                    <Rock:RockTemplateField HeaderText="Type">
                                         <ItemTemplate>
                                             <%# Eval("LocationTypeName") %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Value" DataValueField="Id" />
                                         </EditItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:TemplateField HeaderText="Address">
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Address">
                                         <ItemTemplate>
                                             <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <Rock:AddressControl ID="acAddress" runat="server" />
                                         </EditItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                                         <ItemTemplate>
                                             <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
                                         </EditItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:TemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
                                         <ItemTemplate>
                                             <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
                                         </EditItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
                                         <ItemTemplate>
                                             <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
                                         </ItemTemplate>
@@ -109,7 +109,7 @@
                                             <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
                                             <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="fa fa-minus"></i></asp:LinkButton>
                                         </EditItemTemplate>
-                                    </asp:TemplateField>
+                                    </Rock:RockTemplateField>
                                     <Rock:DeleteField OnClick="gLocation_RowDelete" />
                                 </Columns>
                             </Rock:Grid>

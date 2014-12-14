@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -114,8 +115,9 @@ namespace RockWeb.Blocks.Core
         {
             List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
             var mergeFields = new Dictionary<string, object>();
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
             mergeFields.Add( "Person", CurrentPerson );
-
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             
@@ -136,15 +138,12 @@ namespace RockWeb.Blocks.Core
             }
 
             // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lDebug.Visible = true;
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Available Merge Fields</em></p>" );
-                debugInfo.Append( "<pre>" + mergeFields.ToJson() + "</pre>" );
-                debugInfo.Append( "</div" );
-                lDebug.Text = debugInfo.ToString();
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                mergeFields.Remove( "Person" );
+                lDebug.Text = mergeFields.lavaDebugInfo();
             }
         }
 

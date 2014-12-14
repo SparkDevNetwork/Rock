@@ -25,10 +25,10 @@
 
                     <Rock:Grid ID="gItems" runat="server" EmptyDataText="No Items Found" RowItemText="Item" AllowSorting="true" OnRowSelected="gItems_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                             <Rock:DateTimeField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                            <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
                 </div>

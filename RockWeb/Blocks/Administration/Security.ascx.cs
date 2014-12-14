@@ -464,6 +464,7 @@ namespace RockWeb.Blocks.Administration
             rGrid.DataBind();
 
             var parentRules = new List<MyAuthRule>();
+            AddParentRules( itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction );
             AddParentRules( itemRules, parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();

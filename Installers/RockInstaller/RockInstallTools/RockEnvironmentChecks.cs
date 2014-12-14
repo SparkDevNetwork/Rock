@@ -291,7 +291,7 @@ namespace RockInstallTools
             else
             {
                 // setup connection
-                string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", dbUsername, dbPassword, dbServer );
+                string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=4", dbUsername, dbPassword, dbServer );
                 SqlConnection testConnection = new SqlConnection( connectionString );
 
                 // try connection
@@ -329,7 +329,7 @@ namespace RockInstallTools
             
 
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", username, password, servername );
+            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=4", username, password, servername );
             SqlConnection testConnection = new SqlConnection( connectionString );
 
             // try connection
@@ -375,7 +375,7 @@ namespace RockInstallTools
         {
 
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", dbUsername, dbPassword, dbServer );
+            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=4", dbUsername, dbPassword, dbServer );
             SqlConnection testConnection = new SqlConnection( connectionString );
 
             // try connection
@@ -415,7 +415,7 @@ namespace RockInstallTools
         private static bool CheckSqlPermissionsCreateDatabase( string dbServer, string dbUsername, string dbPassword )
         {
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", dbUsername, dbPassword, dbServer );
+            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=4", dbUsername, dbPassword, dbServer );
             SqlConnection testConnection = new SqlConnection( connectionString );
 
             // try connection
@@ -458,7 +458,7 @@ namespace RockInstallTools
             bool permissionsCorrect = false;
 
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database );
+            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=4", username, password, servername, database );
             SqlConnection testConnection = new SqlConnection( connectionString );
 
             // try connection
@@ -495,7 +495,7 @@ namespace RockInstallTools
             result.Message = "Database meets size requirements";
            
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database );
+            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=4", username, password, servername, database );
             SqlConnection testConnection = new SqlConnection( connectionString );
             SqlDataReader reader;
 
@@ -552,7 +552,7 @@ namespace RockInstallTools
         {
 
             // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database );
+            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=4", username, password, servername, database );
             SqlConnection testConnection = new SqlConnection( connectionString );
 
             // try connection

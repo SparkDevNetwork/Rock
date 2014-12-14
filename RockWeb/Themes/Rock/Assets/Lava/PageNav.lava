@@ -1,22 +1,22 @@
-﻿{% if page.display-child-pages == 'true' and page.pages != empty %}
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
     <ul class="nav nav-stacked navbar-side">
-		{% for childPage in page.pages %}
-            {% if childPage.current == 'true' %}
+		{% for childPage in Page.Pages %}
+            {% if childPage.Current == 'true' %}
 				<li class="current">
 			{% else %}
 				<li>
 			{% endif %}
-				<i class="{{ childPage.icon-css-class }}"></i>
+				<i class="{{ childPage.IconCssClass }}"></i>
 
-				{% if childPage.display-child-pages == 'true' and childPage.pages != empty %}
+				{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
                     <ul class="nav nav-childpages">
-                        <li class="title">{{ childPage.title }}</li>
-						{% for grandchildPage in childPage.pages %}
-                            <li class="header">{{ grandchildPage.title }}</li>
-                            {% if grandchildPage.display-child-pages == 'true' %}
-                                {% for greatgrandchildPage in grandchildPage.pages %}
+                        <li class="title">{{ childPage.Title }}</li>
+						{% for grandchildPage in childPage.Pages %}
+                            <li class="header">{{ grandchildPage.Title }}</li>
+                            {% if grandchildPage.DisplayChildPages == 'true' %}
+                                {% for greatgrandchildPage in grandchildPage.Pages %}
                                     <li>
-                                        <a role="menu-item" href="{{ greatgrandchildPage.url }}">{{ greatgrandchildPage.title }}</a>
+                                        <a role="menu-item" href="{{ greatgrandchildPage.Url }}">{{ greatgrandchildPage.Title }}</a>
                                     </li>
                                 {% endfor %}
                             {% endif %}

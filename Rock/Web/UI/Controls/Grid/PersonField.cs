@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// Control for selecting a defined value
     /// </summary>
     [ToolboxData("<{0}:PersonField runat=server></{0}:PersonField>")]
-    public class PersonField : BoundField
+    public class PersonField : RockBoundField
     {
 
         /// <summary>

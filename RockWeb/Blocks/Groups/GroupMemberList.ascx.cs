@@ -36,12 +36,14 @@ namespace RockWeb.Blocks.Groups
 
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
 
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
+        private bool _canView = false;
 
         #endregion
 
@@ -76,27 +78,33 @@ namespace RockWeb.Blocks.Groups
                     RockPage.SaveSharedItem( key, _group );
                 }
 
-                if ( _group != null )
+                if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
+                    _canView = true;
+
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-                    gGroupMembers.Actions.ShowAdd = true;
-                    gGroupMembers.IsDeleteEnabled = true;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
 
-                    // make sure they have Auth to the block AND Edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    // make sure they have Auth to edit the block OR edit to the Group
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
                     // Add attribute columns
                     AddAttributeColumns();
+
+                    // Add Link to Profile Page Column
+                    if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
+                    {
+                        AddPersonProfileLinkColumn();
+                    }
 
                     // Add delete column
                     var deleteField = new DeleteField();
@@ -114,7 +122,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            pnlContent.Visible = _canView;
+
+            if ( !Page.IsPostBack && _canView )
             {
                 BindFilter();
 
@@ -281,6 +291,22 @@ namespace RockWeb.Blocks.Groups
             }
 
             cblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Adds the column with a link to profile page.
+        /// </summary>
+        private void AddPersonProfileLinkColumn()
+        {
+            HyperLinkField hlPersonProfileLink = new HyperLinkField();
+            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.DataNavigateUrlFields = new String[1] { "PersonId" };
+            hlPersonProfileLink.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
+            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextField = "PersonId";
+            gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
 
         /// <summary>

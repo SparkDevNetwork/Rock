@@ -72,10 +72,19 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upGroupType );
+        }
 
-            // hide all the actions if user doesn't have EDIT to the block
-            divTreeviewActions.Visible = canEditBlock;
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string,string>() );
         }
 
         /// <summary>
@@ -85,8 +94,6 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             if ( !Page.IsPostBack )
             {
@@ -126,6 +133,9 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
+
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+            bool canAddChildGroup = false;
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
@@ -189,13 +199,31 @@ namespace RockWeb.Blocks.Groups
                     hfSelectedGroupId.Value = selectedGroup.Id.ToString();
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
-                    lbAddGroupChild.Enabled = canEditBlock && selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( !allowedGroupTypes.Any() || ( allowedGroupTypes.Any( a => selectedGroup.GroupType.ChildGroupTypes.Any( c => c.Id == a ) ) ) );
-                }
-                else
-                {
-                    // hide the Add Button when adding a new Group
-                    lbAddGroupChild.Enabled = false;
+                    if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
+                        ( !allowedGroupTypes.Any() || ( allowedGroupTypes.Any( a => selectedGroup.GroupType.ChildGroupTypes.Any( c => c.Id == a ) ) ) ) )
+                    {
+                        canAddChildGroup = canEditBlock;
+
+                        if ( !canAddChildGroup )
+                        {
+                            canAddChildGroup = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                            if ( !canAddChildGroup )
+                            {
+                                var groupType = GroupTypeCache.Read( selectedGroup.GroupTypeId );
+                                if ( groupType != null )
+                                {
+                                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                                    {
+                                        if ( childGroupType != null && childGroupType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                                        {
+                                            canAddChildGroup = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
@@ -205,6 +233,10 @@ namespace RockWeb.Blocks.Groups
                 // let the Add button be visible if there is nothing selected (if authorized)
                 lbAddGroupChild.Enabled = canEditBlock;
             }
+
+            divTreeviewActions.Visible = canEditBlock || canAddChildGroup;
+            lbAddGroupRoot.Enabled = canEditBlock;
+            lbAddGroupChild.Enabled = canAddChildGroup;
 
             // disable add child group if no group is selected
             if ( hfSelectedGroupId.ValueAsInt() == 0 )

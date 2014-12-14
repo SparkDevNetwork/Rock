@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -179,19 +180,9 @@ namespace RockWeb.Blocks.Finance
             lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
             // show liquid help for debug
-            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
-
-                debugInfo.Append( "<pre>" );
-
-                debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                debugInfo.Append( mergeObjects.lavaDebugInfo() + "</pre>" );
-
-                debugInfo.Append( "</div>" );
-
-                lReceipt.Text += debugInfo.ToString();
+                lReceipt.Text += mergeObjects.lavaDebugInfo();
             }
 
             lReceipt.Visible = true;

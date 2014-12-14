@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -673,7 +673,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                     {
                         var person = Workflow.InitiatorPersonAlias.Person;
-                        tdInitiator.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName );
+                        tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>", ResolveRockUrl("~/Person/"), person.Id, person.FullName );
                     }
                     else
                     {
@@ -705,7 +705,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = Workflow.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {

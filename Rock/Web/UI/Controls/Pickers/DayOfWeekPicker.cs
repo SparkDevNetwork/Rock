@@ -45,27 +45,26 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected day of week.
         /// </value>
-        public DayOfWeek SelectedDayOfWeek
+        public DayOfWeek? SelectedDayOfWeek
         {
             get
             {
-                int? result = this.SelectedValueAsInt();
+                int? result = this.SelectedValueAsInt( NoneAsNull: false );
                 if (result.HasValue)
                 {
                     return (DayOfWeek)result.Value;
                 }
                 else
                 {
-                    return DayOfWeek.Sunday;
+                    return null;
                 }
             }
             set
             {
-                int id = value.ConvertToInt();
-                var li = this.Items.FindByValue( id.ToString() );
-                if ( li != null )
+                if ( value != null )
                 {
-                    li.Selected = true;
+                    int id = value.ConvertToInt();
+                    this.SetValue( id.ToString() );
                 }
             }
         }
