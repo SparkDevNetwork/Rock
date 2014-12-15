@@ -6,9 +6,7 @@
 
         $('#show-cache-objects').click(function () {
             $('#cache-objects').toggle('slow', function () {
-                if ($('#modal-scroll-container').length) {
-                    $('#modal-scroll-container').tinyscrollbar_update('relative');
-                }
+                Rock.controls.modal.updateSize();
             });
         });
 
@@ -17,9 +15,7 @@
     	    $(this).parent().attr('class', 'active');
     	    $('div.tabContent > div').hide('slow');
     	    $('#' + $(this).attr('pill')).show('slow', function () {
-    	        if ($('#modal-scroll-container').length) {
-    	            $('#modal-scroll-container').tinyscrollbar_update('relative');
-    	        }
+    	        Rock.controls.modal.updateSize();
     	    });
         });
 

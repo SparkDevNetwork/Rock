@@ -17,7 +17,7 @@
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
                             <asp:HiddenField ID="hfVersion" runat="server" />
-                            <asp:Panel ID="pnlEdit" runat="server" Visible="false" Height="440">
+                            <asp:Panel ID="pnlEdit" runat="server" Visible="false">
 
                                 <!-- Approval -->
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">

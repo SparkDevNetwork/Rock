@@ -1006,16 +1006,10 @@ namespace Rock
         /// <returns></returns>
         public static string SanitizeHtml( this string html, bool strict = true )
         {
-            if ( strict )
-            {
-                var allowedElements = new Dictionary<string, string[]>();
-                var allowedAttributes = new Dictionary<string, string[]>();
-                return new AjaxControlToolkit.Sanitizer.HtmlAgilityPackSanitizerProvider().GetSafeHtmlFragment( html, allowedElements, allowedAttributes );
-            }
-            else
-            {
-                return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
-            }
+            // TODO deal with strict mode
+
+
+            return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
         }
 
         /// <summary>

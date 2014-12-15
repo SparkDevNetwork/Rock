@@ -7,7 +7,7 @@
     width: 750px;
     -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
     -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
-    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
+    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
 }
 
 .modal-content {
@@ -16,13 +16,13 @@
     color: @modal-body-text-color;
 
     .modal-header {
-        background-color: @modal-header-bg;  
+        background-color: @modal-header-bg;
         color: @modal-header-text-color;
         padding: 5px 15px;
         min-height: 34px;
         border-radius: @border-radius-base @border-radius-base 0 0;
         .clearfix();
-        
+
         h3 {
             float: left;
             margin-right: 12px;
@@ -58,7 +58,7 @@
             width: 720px;
 
             > .viewport {
-                width: 670px; 
+                width: 670px;
             }
         }
 
@@ -80,7 +80,6 @@
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 12000;
   width: 750px;
   margin-left: 0px;
   background-color: @body-bg;
@@ -103,13 +102,20 @@
     height: 100%;
     width: 100%;
     border: 0;
+    display: block;
 }
 
 
-/* Bootbox Modal Overrides */
+// Bootbox Modal Overrides
 .modal.bootbox {
-    left: 0;
-    top: 0;
     width: auto;
-    background-color: transparent;
+}
+.bootbox .modal-dialog {
+    margin: 0;
+    @media (max-width: @screen-sm-max) {
+        width: auto;
+    }
+}
+.bootbox .modal-body {
+    padding-top: 20px;
 }
