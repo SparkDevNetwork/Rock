@@ -302,8 +302,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
             }
-            catch ( Exception ex )
-            {}
+            catch {}
 
             return databaseResults.ToString();
         }

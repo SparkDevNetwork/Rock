@@ -318,6 +318,12 @@ namespace Rock.Field.Types
             return filterConfig;
         }
 
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
@@ -325,6 +331,12 @@ namespace Rock.Field.Types
             return item != null ? item.Id : (int?)null;
         }
 
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
             DefinedValueCache item = null;
@@ -336,11 +348,22 @@ namespace Rock.Field.Types
             SetEditValue( control, configurationValues, guidValue );
         }
 
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         public IEntity GetEntity( string value )
         {
             return GetEntity( value, null );
         }
 
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
             Guid? guid = value.AsGuidOrNull();
