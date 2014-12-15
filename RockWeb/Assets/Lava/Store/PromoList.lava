@@ -19,11 +19,6 @@
 
 					<div class="packagesummary-footer">
 						<div class="rating pull-left rating-{{ promo.PackageRating | Replace:'.','' }}">
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
-							<i class="fa fa-star"></i>
 						</div>
 						<div class="cost pull-right">
 							{% if promo.PackagePrice == 0 %}

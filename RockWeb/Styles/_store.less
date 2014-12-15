@@ -6,7 +6,7 @@
     1. Promo Rotator
     2. Package Summary
     3. Package Detail
-    4. 
+    4. Components
     5. 
     6. 
     7. 
@@ -49,7 +49,7 @@
 // 2. Package Summary
 // -------------------------
 .packagesummary {
-    height: 260px;
+    height: 250px;
     cursor: pointer;
     border: 1px solid #ccc;
     margin-bottom: 24px;
@@ -61,11 +61,11 @@
         width: 100%;
         height: 140px;
         content: '';
-        -webkit-transition: opacity .5s ease-in;
-        -moz-transition: opacity .5s ease-in;
-        -o-transition: opacity .5s ease-in;
-        -ms-transition: opacity .5s ease-in;
-        transition: opacity .5s ease-in;
+        -webkit-transition: opacity .25s ease-in;
+        -moz-transition: opacity .25s ease-in;
+        -o-transition: opacity .25s ease-in;
+        -ms-transition: opacity .25s ease-in;
+        transition: opacity .25s ease-in;
     }
 
     &:hover .packagesummary-image-hover {
@@ -77,7 +77,7 @@
         
         h2 {
             line-height: 1.3em;
-            margin-top: 15px;
+            margin: 15px 0 0;
             font-size: 18px;
             font-weight: @font-weight-semibold;
             white-space: nowrap;
@@ -104,12 +104,96 @@
         width: 100%;
     }
 
+    .packagedetail-additionalversions {
+        display: none;
+    }
+
+    .btn-install {
+        width: 100%;
+    }
 }
 
 
 // 4.
 // -------------------------
 
+// @fa-var-star: "\f005";
+// @fa-var-star-half: "\f089";
+// @fa-var-star-o: "\f006";
+
+.rating {
+    font-family: FontAwesome;
+
+    &.rating-0:before {
+        content: "\f006  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-05:before {
+        content: "\f089  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-1:before {
+        content: "\f005  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-15:before {
+        content: "\f005  \f089  \f006  \f006  \f006";
+    }
+
+    &.rating-2:before {
+        content: "\f005  \f005  \f006  \f006  \f006";
+    }
+
+    &.rating-25:before {
+        content: "\f005  \f005  \f089  \f006  \f006";
+    }
+
+    &.rating-3:before {
+        content: "\f005  \f005  \f005  \f006  \f006";
+    }
+
+    &.rating-35:before {
+        content: "\f005  \f005  \f005  \f089  \f006";
+    }
+
+    &.rating-4:before {
+        content: "\f005  \f005  \f005  \f005  \f006";
+    }
+
+    &.rating-45:before {
+        content: "\f005  \f005  \f005  \f005  \f089";
+    }
+
+    &.rating-5:before {
+        content: "\f005  \f005  \f005  \f005  \f005";
+    }
+}
+
+.pricelabel {
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    border-radius: @border-radius-base;
+    text-align: center;
+
+    &.cost {
+       background-color: @alert-success-bg;
+       border-color: @alert-success-border;
+       color: @alert-success-text;
+    }
+
+    &.free {
+        background-color: @alert-info-bg;
+        border-color: @alert-info-border;
+        color: @alert-info-text;
+    }
+
+    h4 {
+        font-size: 24px;
+        font-weight: @font-weight-bold;
+        color: inherit;
+    }
+}
 
 // 5. 
 // -------------------------
