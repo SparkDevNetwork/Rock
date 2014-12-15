@@ -643,7 +643,7 @@ namespace Rock.Migrations
 </body>
 </html>
 '
-    WHERE [Guid] = 'EBC67F76-7305-4108-AD32-E2531EAB1637'
+    WHERE [Guid] = 'ED326066-4A91-412A-805C-40DEDAE8F61A'
     AND [DefaultValue] NOT LIKE '%<h5%'
 " );
         }
