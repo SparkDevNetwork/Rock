@@ -651,12 +651,7 @@ namespace Rock.Web.UI.Controls
             }
             catch { } // oh well...
 
-            // add Google Maps API (doesn't like to be added during an async postback.  even tried adding it to head manually as needed  )
-            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-            string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            var apiSource = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter );
-
-            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}, apiSource: '{4}'", this.ClientID, this.DrawingMode, markerColor, mapStyle, apiSource );
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
 
             DbGeography centerPoint = CenterPoint;
             if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )

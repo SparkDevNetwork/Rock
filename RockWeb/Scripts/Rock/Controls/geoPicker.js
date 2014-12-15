@@ -722,38 +722,15 @@
         };
 
         var exports = {
-            apiLoaded: function () {
-                debugger
-                $(this).trigger("gMapsLoaded");
-                $('#googleMapsApiJs').data('api-loaded', '1');
-            },
             geoPickers: {},
             findControl: function (controlId) {
                 return exports.geoPickers[controlId];
             },
             initialize: function (options) {
-                debugger
                 if (!options.controlId) throw '`controlId` is required.';
-
-                // ensure that js for google maps api is added to page
-                if (!$('#googleMapsApiJs').length) {
-                    // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
-                    $.ajaxSetup({ cache: true });
-                    $('head').prepend("<script id='googleMapsApiJs' src='" + options.apiSource + "&callback=Rock.controls.geoPicker.apiLoaded' data-api-loaded='0'/>");
-                }
-                else
-                {
-                    if ($('#googleMapsApiJs').data('api-loaded') == '1') {
-                        $(this).trigger("gMapsLoaded");
-                    }
-                }
-
-                $(this).on('gMapsLoaded', function () {
-                    debugger
-                    var geoPicker = new GeoPicker(options);
-                    exports.geoPickers[options.controlId] = geoPicker;
-                    geoPicker.initialize();
-                });
+                var geoPicker = new GeoPicker(options);
+                exports.geoPickers[options.controlId] = geoPicker;
+                geoPicker.initialize();
             }
         };
 
