@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -48,20 +46,11 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.Items.Clear();
-
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                }
-
+                this.Items.Add( new ListItem() );
                 foreach ( GroupType groupType in value )
                 {
-                    ListItem groupTypeItem = new ListItem();
-                    groupTypeItem.Value = groupType.Id.ToString();
-                    groupTypeItem.Text = groupType.Name;
-                    this.Items.Add( groupTypeItem );
+                    this.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
                 }
-
             }
         }
 
@@ -75,8 +64,9 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.SelectedValueAsInt();
+                return this.SelectedValueAsId();
             }
+
             set
             {
                 int id = value.HasValue ? value.Value : 0;
@@ -88,6 +78,5 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-
     }
 }
