@@ -92,7 +92,7 @@
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
 
                 // Bind the block instance delete anchor
@@ -160,7 +160,7 @@
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '9001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '9000' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
             },
             exports = {
