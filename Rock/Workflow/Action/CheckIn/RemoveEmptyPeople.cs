@@ -28,7 +28,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes any person that does not have any group types
     /// </summary>
     [Description( "Removes any person that does not have any group types" )]
-    [Export(typeof(ActionComponent))]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Remove Empty People" )]
     public class RemoveEmptyPeople : CheckInActionComponent
     {
@@ -54,11 +54,14 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             family.People.Remove( person );
                         }
+                        else if ( person.GroupTypes.All( t => t.ExcludedByFilter ) )
+                        {
+                            person.ExcludedByFilter = true;
+                        }
                     }
                 }
 
                 return true;
-
             }
 
             return false;
