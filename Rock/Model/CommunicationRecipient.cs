@@ -227,6 +227,33 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a list of activities.
+        /// </summary>
+        /// <value>
+        /// The activity list.
+        /// </value>
+        [NotMapped]
+        public virtual string ActivityListHtml
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append( "<ul>" );
+                foreach ( var activity in Activities )
+                {
+                    sb.AppendFormat( "<li>{0} <small>({1} {2})</small>: {3}</li>",
+                        activity.ActivityType,
+                        activity.ActivityDateTime.ToShortDateString(),
+                        activity.ActivityDateTime.ToShortTimeString(),
+                        activity.ActivityDetail );
+                }
+                sb.Append( "</ul>" );
+
+                return sb.ToString();
+            }
+        }
+
         #endregion
 
         #region Public Methods

@@ -782,7 +782,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     rockContext.SaveChanges();
 
-                    groupTypeDB.SaveAttributeValues();
+                    groupTypeDB.SaveAttributeValues( rockContext );
 
                     // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
                     groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );

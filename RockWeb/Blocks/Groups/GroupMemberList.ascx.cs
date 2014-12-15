@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Groups
 
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
-    [LinkedPage( "Person Profile Page", "", true, "08DBD8A5-2C35-4146-B4A8-0F7652348B25", "", 2, "PersonProfilePage" )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -100,8 +100,11 @@ namespace RockWeb.Blocks.Groups
                     // Add attribute columns
                     AddAttributeColumns();
 
-                    //Add Link to Profile Page Column
-                    AddLinkColumn();
+                    // Add Link to Profile Page Column
+                    if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
+                    {
+                        AddPersonProfileLinkColumn();
+                    }
 
                     // Add delete column
                     var deleteField = new DeleteField();
@@ -291,17 +294,19 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Adds the link to profile page column
+        /// Adds the column with a link to profile page.
         /// </summary>
-        private void AddLinkColumn()
+        private void AddPersonProfileLinkColumn()
         {
-            HyperLinkField hyperLinkField = new HyperLinkField();
-
-            hyperLinkField.DataNavigateUrlFields = new String[1] { "PersonId" };
-            hyperLinkField.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
-            hyperLinkField.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
-            hyperLinkField.DataTextField = "PersonId";
-            gGroupMembers.Columns.Add( hyperLinkField );
+            HyperLinkField hlPersonProfileLink = new HyperLinkField();
+            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.DataNavigateUrlFields = new String[1] { "PersonId" };
+            hlPersonProfileLink.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
+            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextField = "PersonId";
+            gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
 
         /// <summary>

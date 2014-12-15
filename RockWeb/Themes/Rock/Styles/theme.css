@@ -1047,7 +1047,7 @@ div.tagsinput .tags_clear {
 .smartsearch input {
   border: 0;
   background: transparent;
-  color: #231f20;
+  color: #616161;
   border-radius: 0;
   width: 150px;
   margin: 0;
@@ -1067,7 +1067,7 @@ div.tagsinput .tags_clear {
 }
 .smartsearch input.searchinput {
   padding: 4px 4px 4px 25px;
-  color: #231f20;
+  color: #616161;
   width: 100%;
   border: 0 !important;
   box-shadow: none !important;
@@ -1091,10 +1091,10 @@ div.tagsinput .tags_clear {
   left: auto;
 }
 .smartsearch input:-moz-placeholder {
-  color: #000000;
+  color: #212121;
 }
 .smartsearch input::-webkit-input-placeholder {
-  color: #000000;
+  color: #212121;
 }
 .smartsearch .nav > li > a {
   padding: 4px 15px;
@@ -1984,6 +1984,7 @@ dl:not(.dl-horizontal) dd {
     7. Reusable classes
     8. Column Types
     9. Row Types
+    10. Responsive Overrides
 
 */
 .dropdown-menu > li.checkbox-row {
@@ -2489,6 +2490,14 @@ td.grid-col-actions {
 }
 .table > tbody > tr.grid-section-header:hover > td {
   background-color: #e3ded7 !important;
+}
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > td {
+  white-space: inherit;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3255,10 +3264,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
   background: #817b72;
-  position: absolute;
-  bottom: 0;
   width: 8px;
   min-height: 1px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-attendance ul.badge-attendance-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-attendance.annimate ul.badge-attendance-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
@@ -3283,10 +3296,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-disc ul.badge-disc-chart li span {
   display: block;
   background: #99bbd9;
-  position: absolute;
-  bottom: 0;
   width: 10px;
   min-height: 2px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-disc ul.badge-disc-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-disc ul.badge-disc-chart li.badge-disc-primary span {
   background: #4f89bd;
@@ -5529,7 +5546,7 @@ body#splash.error #content #logo {
     height: 50px;
     background-color: #c2b8a7;
     border-color: #b8ac98;
-    color: #231f20;
+    color: #616161;
   }
   #content-wrapper header .navbar-default .navbar-mobile-logo {
     display: none;
@@ -5554,7 +5571,7 @@ body#splash.error #content #logo {
     background-color: #bcb19e;
   }
   #content-wrapper .smartsearch input.searchinput {
-    color: #231f20;
+    color: #616161;
   }
 }
 /*#endregion */
