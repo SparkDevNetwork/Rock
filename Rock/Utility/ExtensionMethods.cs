@@ -999,17 +999,24 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sanitizes the HTML by removing tags.  If Scrict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
+        /// Sanitizes the HTML by removing tags.  If strict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
         /// </summary>
         /// <param name="html">The HTML.</param>
         /// <param name="strict">if set to <c>true</c> [strict].</param>
         /// <returns></returns>
         public static string SanitizeHtml( this string html, bool strict = true )
         {
-            // TODO deal with strict mode
-
-
-            return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
+            if ( strict )
+            {
+                // from http://stackoverflow.com/a/18154152/
+                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml( html );
+                return doc.DocumentNode.InnerText;
+            }
+            else
+            {
+                return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
+            }
         }
 
         /// <summary>
