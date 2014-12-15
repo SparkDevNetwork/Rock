@@ -23,8 +23,8 @@
                         <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
                             <Columns>
                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                <asp:BoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
-                                <asp:BoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
+                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
                             </Columns>
                         </Rock:Grid>
                     </div>

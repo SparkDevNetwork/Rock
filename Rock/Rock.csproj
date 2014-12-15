@@ -57,9 +57,6 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="Facebook">
-      <HintPath>..\packages\Facebook.6.4.2\lib\net45\Facebook.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -300,10 +297,15 @@
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Security\Authentication\Facebook.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
+    <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
@@ -664,6 +666,9 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockTemplateField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RockTemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
@@ -968,9 +973,6 @@
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
     <Compile Include="Security\Encryption.cs" />
-    <Compile Include="Security\Authentication\Facebook.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Security\GlobalDefault.cs" />
     <Compile Include="Security\AuthenticationComponent.cs" />
     <Compile Include="Security\AuthenticationContainer.cs" />

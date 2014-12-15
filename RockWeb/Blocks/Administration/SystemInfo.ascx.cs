@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Administration
             response.Charset = "";
 
             ResponseWrite( "Version:", lRockVersion.Text, response );
-            ResponseWrite( "Database:", lDatabase.Text, response );
+            ResponseWrite( "Database:", lDatabase.Text.Replace("<br />", Environment.NewLine.ToString()), response );
             ResponseWrite( "Execution Location:", lExecLocation.Text, response );
             ResponseWrite( "Cache:", lCacheOverview.Text, response ); ;
             ResponseWrite( "Routes:", lRoutes.Text, response );
@@ -177,11 +177,11 @@ namespace RockWeb.Blocks.Administration
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "<p>Cache Items: {0}</p>", cache.Count() );
-            sb.AppendFormat( "<p>Approximate Current Size: {0:N0} (bytes)</p>", totalSize );
-            sb.AppendFormat( "<p>Cache Memory Limit: {0:N0} (bytes)</p>", cache.CacheMemoryLimit );
-            sb.AppendFormat( "<p>Physical Memory Limit: {0} %</p>", cache.PhysicalMemoryLimit );
-            sb.AppendFormat( "<p>Polling Interval: {0}</p>", cache.PollingInterval );
+            sb.AppendFormat( "<p><strong>Cache Items:</strong><br /> {0}</p>", cache.Count() );
+            sb.AppendFormat( "<p><strong>Approximate Current Size:</strong><br /> {0:N0} (bytes)</p>", totalSize );
+            sb.AppendFormat( "<p><strong>Cache Memory Limit:</strong><br /> {0:N0} (bytes)</p>", cache.CacheMemoryLimit );
+            sb.AppendFormat( "<p><strong>Physical Memory Limit:</strong><br /> {0} %</p>", cache.PhysicalMemoryLimit );
+            sb.AppendFormat( "<p><strong>Polling Interval:</strong><br /> {0}</p>", cache.PollingInterval );
 
             //Type type = cache.GetType();
 
@@ -248,13 +248,63 @@ namespace RockWeb.Blocks.Administration
 
         private string GetDbInfo()
         {
+            StringBuilder databaseResults = new StringBuilder();
+            
             var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
             object dataSource, catalog = string.Empty;
             if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
             {
-                return string.Format( "{0} @ {1}", catalog, dataSource );
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", catalog, dataSource ));
             }
-            return string.Empty;
+
+            try
+            {
+                // get database version
+                var reader = DbService.GetDataReader( "SELECT SERVERPROPERTY('productversion'), @@Version ", System.Data.CommandType.Text, null );
+                if ( reader != null )
+                {
+                    string version = "";
+                    string versionInfo = "";
+                    
+                    while ( reader.Read() )
+                    {
+                        version = reader[0].ToString();
+                        versionInfo = reader[1].ToString();
+                    }
+
+                    databaseResults.Append( string.Format( "<br />Database Version: {0}", versionInfo ) );
+                }
+                
+                // get database size
+                reader = DbService.GetDataReader( "sp_helpdb " + catalog, System.Data.CommandType.Text, null );
+                if ( reader != null )
+                {
+                    // get second data table
+                    reader.NextResult();
+                    reader.Read();
+
+                    string size = reader.GetValue( 5 ).ToString();
+                    if ( size != "Unlimited" )
+                    {
+                        if ( size.Contains( "KB" ) )
+                        {
+                            size = size.Replace( " KB", "" );
+                            int sizeInKB = Int32.Parse( size );
+
+                            int sizeInMB = sizeInKB / 1024;
+
+                            databaseResults.Append( string.Format("<br />Database Size: {0}", sizeInMB) );
+                        }
+                    }
+                    else
+                    {
+                        databaseResults.Append( "<br />Database Size: Unlimited" );
+                    }
+                }
+            }
+            catch {}
+
+            return databaseResults.ToString();
         }
 
         // method from Rick Strahl http://weblog.west-wind.com/posts/2006/Oct/08/Recycling-an-ASPNET-Application-from-within

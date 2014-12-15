@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using DotLiquid;
 using System.Dynamic;
 using Rock.Web;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -359,7 +360,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // enable showing debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                     {
                         lDebug.Visible = true;
                         lDebug.Text = dynamicGroups.Take( 5 ).lavaDebugInfo();

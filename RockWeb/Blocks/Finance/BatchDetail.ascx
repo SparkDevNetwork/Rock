@@ -56,8 +56,8 @@
                             <div class="grid">
                                 <Rock:Grid ID="gAccounts" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Account" AllowSorting="false">
                                     <Columns>
-                                        <asp:BoundField DataField="Name" HeaderText="Account Totals" />
-                                        <asp:BoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Account Totals" />
+                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>

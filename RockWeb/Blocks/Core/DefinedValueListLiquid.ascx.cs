@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -137,7 +138,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 lDebug.Visible = true;
                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line

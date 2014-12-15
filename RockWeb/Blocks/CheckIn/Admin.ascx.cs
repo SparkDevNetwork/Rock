@@ -50,22 +50,42 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
+                // Set the check-in state from values passed on query string
+                CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
 
-                // Inject script used for geo location determiniation
-                if ( enableLocationSharing )
+                CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
+                    .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                    .ToList()
+                    .Select( s => s.AsInteger() )
+                    .ToList();
+
+                // If valid parameters were used, set state and navigate to welcome page
+                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() )
                 {
-                    lbRetry.Visible = true;
-                    AddGeoLocationScript();
+                    // Save the check-in state
+                    SaveState();
+
+                    // Navigate to the check-in home (welcome) page
+                    NavigateToNextPage();
                 }
                 else
                 {
-                    pnlManualConfig.Visible = true;
-                    lbOk.Visible = true;
-                    AttemptKioskMatchByIpOrName();
-                }
+                    bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
 
-                string script = string.Format( @"
+                    // Inject script used for geo location determiniation
+                    if ( enableLocationSharing )
+                    {
+                        lbRetry.Visible = true;
+                        AddGeoLocationScript();
+                    }
+                    else
+                    {
+                        pnlManualConfig.Visible = true;
+                        lbOk.Visible = true;
+                        AttemptKioskMatchByIpOrName();
+                    }
+
+                    string script = string.Format( @"
                     <script>
                         $(document).ready(function (e) {{
                             if (localStorage) {{
@@ -83,31 +103,32 @@ namespace RockWeb.Blocks.CheckIn
                         }});
                     </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                phScript.Controls.Add( new LiteralControl( script ) );
+                    phScript.Controls.Add( new LiteralControl( script ) );
 
-                ddlTheme.Items.Clear();
-                DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
-                foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
-                {
-                    ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
-                }
-                ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
-
-                Guid kioskDeviceType = Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid();
-                ddlKiosk.Items.Clear();
-                ddlKiosk.DataSource = new DeviceService( new RockContext() ).Queryable()
-                    .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
-                    .ToList();
-                ddlKiosk.DataBind();
-                ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
-                if ( CurrentKioskId.HasValue )
-                {
-                    ListItem item = ddlKiosk.Items.FindByValue( CurrentKioskId.Value.ToString() );
-                    if ( item != null )
+                    ddlTheme.Items.Clear();
+                    DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
+                    foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
                     {
-                        item.Selected = true;
-                        BindGroupTypes();
+                        ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
+                    }
+                    ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
+
+                    Guid kioskDeviceType = Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid();
+                    ddlKiosk.Items.Clear();
+                    ddlKiosk.DataSource = new DeviceService( new RockContext() ).Queryable()
+                        .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
+                        .ToList();
+                    ddlKiosk.DataBind();
+                    ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+                    if ( CurrentKioskId.HasValue )
+                    {
+                        ListItem item = ddlKiosk.Items.FindByValue( CurrentKioskId.Value.ToString() );
+                        if ( item != null )
+                        {
+                            item.Selected = true;
+                            BindGroupTypes();
+                        }
                     }
                 }
             }

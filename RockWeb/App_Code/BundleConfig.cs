@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,6 +61,7 @@ public class BundleConfig
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
             "~/Scripts/jcrop.min.js",
+            "~/Scripts/rwd-table.min.js",
             "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(

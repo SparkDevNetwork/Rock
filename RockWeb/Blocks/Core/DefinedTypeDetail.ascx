@@ -83,7 +83,7 @@
                                 <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
                                     <Columns>
                                         <Rock:ReorderField />
-                                        <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Attributes for Defined Type" />
                                         <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
                                         <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
                                     </Columns>

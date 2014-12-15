@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -705,7 +705,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = Workflow.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {

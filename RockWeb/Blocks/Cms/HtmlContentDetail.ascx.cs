@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
-            htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            htmlEditor.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
             htmlEditor.MergeFields.Add( "Campuses" );
             htmlEditor.MergeFields.Add( "PageParameter" );
             htmlEditor.MergeFields.Add( "RockVersion" );
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Cms
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
+            ceHtml.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
             ceHtml.MergeFields.Add( "Campuses" );
             ceHtml.MergeFields.Add( "RockVersion" );
             ceHtml.MergeFields.Add( "PageParameter" );
@@ -620,7 +620,7 @@ namespace RockWeb.Blocks.Cms
                         html = content.Content.ResolveMergeFields( mergeFields );
 
                         // show merge fields if enable debug true
-                        if ( enableDebug )
+                        if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                         {
                             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                             mergeFields.Remove( "Person" );

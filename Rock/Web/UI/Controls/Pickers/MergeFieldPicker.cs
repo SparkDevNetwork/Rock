@@ -273,7 +273,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public static string FormatSelectedValue(string selectedValue)
         {
-            var idParts = selectedValue.SplitDelimitedValues().ToList();
+            var idParts = selectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( idParts.Count > 0 )
             {
                 if ( idParts.Count == 2 && idParts[0] == "GlobalAttribute" )
@@ -331,8 +331,17 @@ namespace Rock.Web.UI.Controls
                 EntityTypeCache entityType = null;
                 while ( entityType == null && pathPointer < idParts.Count() )
                 {
-                    entityType = EntityTypeCache.Read( idParts[pathPointer], false );
-                    workingParts.Add( entityType != null ? entityType.FriendlyName.Replace( " ", string.Empty) : idParts[pathPointer] );
+                    string item = idParts[pathPointer];
+                    string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                    string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
+                    string itemType = itemParts.Length > 1 ? itemParts[1] : item;
+
+                    entityType = EntityTypeCache.Read( itemType, false );
+
+                    workingParts.Add( entityType != null ? 
+                        ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :
+                        idParts[pathPointer] );
                     pathPointer++;
                 }
                 
@@ -344,7 +353,7 @@ namespace Rock.Web.UI.Controls
 
                     // Traverse the Property path
                     bool itemIsCollection = false;
-                    bool lastItemIsProperty = false;
+                    bool lastItemIsProperty = true;
 
                     while ( idParts.Count > pathPointer )
                     {

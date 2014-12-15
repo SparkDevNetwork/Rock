@@ -13,8 +13,8 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" AutoGenerateColumns="False" OnRowSelected="gList_RowSelected">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                         </Columns>
                     </Rock:Grid>
                 </div>

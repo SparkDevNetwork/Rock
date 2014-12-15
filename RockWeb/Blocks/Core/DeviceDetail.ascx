@@ -71,7 +71,7 @@
                     <h3>Locations</h3>
                     <Rock:Grid ID="gLocations" runat="server" DisplayType="Light" RowItemText="Location" ShowConfirmDeleteDialog="false">
                         <Columns>
-                            <asp:BoundField DataField="LocationPath" HeaderText="Name" />
+                            <Rock:RockBoundField DataField="LocationPath" HeaderText="Name" />
                             <Rock:DeleteField OnClick="gLocations_Delete" />
                         </Columns>
                     </Rock:Grid>
