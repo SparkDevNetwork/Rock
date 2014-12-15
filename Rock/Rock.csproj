@@ -308,6 +308,7 @@
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Store\Package.cs" />
+    <Compile Include="Store\PackageVersionService.cs" />
     <Compile Include="Store\PackageVersionRating.cs" />
     <Compile Include="Store\PackageVersion.cs" />
     <Compile Include="Store\PackageCategory.cs" />

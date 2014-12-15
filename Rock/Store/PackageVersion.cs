@@ -86,7 +86,7 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date the version was added.
         /// </value>
-        public DateTime DateAdded { get; set; }
+        public DateTime AddedDate { get; set; }
 
         /// <summary>
         /// Gets or sets the version ratings. 

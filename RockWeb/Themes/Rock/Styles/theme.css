@@ -4875,7 +4875,7 @@ div.aspNetDisabled {
     1. Promo Rotator
     2. Package Summary
     3. Package Detail
-    4. 
+    4. Components
     5. 
     6. 
     7. 
@@ -4902,7 +4902,7 @@ div.aspNetDisabled {
   left: 20px;
 }
 .packagesummary {
-  height: 260px;
+  height: 250px;
   cursor: pointer;
   border: 1px solid #ccc;
   margin-bottom: 24px;
@@ -4914,11 +4914,11 @@ div.aspNetDisabled {
   width: 100%;
   height: 140px;
   content: '';
-  -webkit-transition: opacity 0.5s ease-in;
-  -moz-transition: opacity 0.5s ease-in;
-  -o-transition: opacity 0.5s ease-in;
-  -ms-transition: opacity 0.5s ease-in;
-  transition: opacity 0.5s ease-in;
+  -webkit-transition: opacity 0.25s ease-in;
+  -moz-transition: opacity 0.25s ease-in;
+  -o-transition: opacity 0.25s ease-in;
+  -ms-transition: opacity 0.25s ease-in;
+  transition: opacity 0.25s ease-in;
 }
 .packagesummary:hover .packagesummary-image-hover {
   opacity: 0.5;
@@ -4928,7 +4928,7 @@ div.aspNetDisabled {
 }
 .packagesummary .packagesummary-body h2 {
   line-height: 1.3em;
-  margin-top: 15px;
+  margin: 15px 0 0;
   font-size: 18px;
   font-weight: 700;
   white-space: nowrap;
@@ -4942,6 +4942,70 @@ div.aspNetDisabled {
 }
 .packagedetail .packagedetail-image {
   width: 100%;
+}
+.packagedetail .packagedetail-additionalversions {
+  display: none;
+}
+.packagedetail .btn-install {
+  width: 100%;
+}
+.rating {
+  font-family: FontAwesome;
+}
+.rating.rating-0:before {
+  content: "\f006  \f006  \f006  \f006  \f006";
+}
+.rating.rating-05:before {
+  content: "\f089  \f006  \f006  \f006  \f006";
+}
+.rating.rating-1:before {
+  content: "\f005  \f006  \f006  \f006  \f006";
+}
+.rating.rating-15:before {
+  content: "\f005  \f089  \f006  \f006  \f006";
+}
+.rating.rating-2:before {
+  content: "\f005  \f005  \f006  \f006  \f006";
+}
+.rating.rating-25:before {
+  content: "\f005  \f005  \f089  \f006  \f006";
+}
+.rating.rating-3:before {
+  content: "\f005  \f005  \f005  \f006  \f006";
+}
+.rating.rating-35:before {
+  content: "\f005  \f005  \f005  \f089  \f006";
+}
+.rating.rating-4:before {
+  content: "\f005  \f005  \f005  \f005  \f006";
+}
+.rating.rating-45:before {
+  content: "\f005  \f005  \f005  \f005  \f089";
+}
+.rating.rating-5:before {
+  content: "\f005  \f005  \f005  \f005  \f005";
+}
+.pricelabel {
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  text-align: center;
+}
+.pricelabel.cost {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847;
+}
+.pricelabel.free {
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+  color: #3a87ad;
+}
+.pricelabel h4 {
+  font-size: 24px;
+  font-weight: 900;
+  color: inherit;
 }
 @media print {
   @page {

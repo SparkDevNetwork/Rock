@@ -122,13 +122,79 @@ namespace RockWeb.Blocks.Store
             lPackageDescription.Text = package.Description;
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
+            lbPackageLink.PostBackUrl = package.SupportUrl;
+            lRatingSummary.Text = string.Format( "<div class='rating rating-{0}'><small>{1}</small></div>", package.Rating.ToString().Replace( ".", "" ) );
+
+            lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
+
+            if ( package.IsFree )
+            {
+                lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
+            }
+            else
+            {
+                lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
+            }
 
             // get latest version
-            PackageVersion latestVersion = new PackageVersion();
-            if ( package.Versions != null )
+            PackageVersion latestVersion = null;
+            if ( package.Versions.Count > 0 )
             {
                 SemanticVersion rockVersion = new SemanticVersion( VersionInfo.GetRockProductVersionNumber() );
                 latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
+            }
+
+            if ( latestVersion != null )
+            {
+                lLatestVersionLabel.Text = latestVersion.VersionLabel;
+                lLatestVersionDescription.Text = latestVersion.Description;
+
+                // alert the user if a newer version exists but requires a rock update
+                if ( package.Versions.Where( v => v.Id > latestVersion.Id ).Count() > 0 )
+                {
+                    var lastVersion = package.Versions.OrderByDescending( v => v.RequiredRockSemanticVersion ).FirstOrDefault();
+                    lVersionWarning.Text = string.Format( "<div class='alert alert-info'>A newer version of this item is available but requires Rock v{0}.{1}.</div>",
+                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                }
+
+                lLastUpdate.Text = latestVersion.DateAdded.ToShortDateString();
+                lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
+                                                latestVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
+                                                latestVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString());
+                lDocumenationLink.Text = string.Format( "<a href='{0}'>Support Link</a>", latestVersion.DocumentationUrl );
+
+                // fill in previous version info
+                rptAdditionalVersions.DataSource = package.Versions.Where( v => v.Id < latestVersion.Id );
+                rptAdditionalVersions.DataBind();
+
+                // get the details for the latest version
+                PackageVersion = new PackageVersionService().GetPackageVersion( latestVersion.Id );
+            }
+            else
+            {
+                // display info on what Rock version you need to be on to run this package
+                if ( package.Versions.Count > 0 )
+                {
+                    var firstVersion = package.Versions.OrderBy( v => v.RequiredRockSemanticVersion ).FirstOrDefault();
+                    var lastVersion = package.Versions.OrderByDescending( v => v.RequiredRockSemanticVersion ).FirstOrDefault();
+
+                    if ( firstVersion == lastVersion )
+                    {
+                        lVersionWarning.Text = string.Format( "<div class='alert alert-warning'>This item requires Rock version v{0}.{1}.</div>",
+                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                    }
+                    else
+                    {
+                        lVersionWarning.Text = string.Format( "<div class='alert alert-warning'>This item requires at least Rock version v{0}.{1} but the latest version requires v{2}.{3}.</div>",
+                                                    firstVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
+                                                    firstVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                    }
+                }
+                
             }
 
         }
