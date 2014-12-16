@@ -787,6 +787,9 @@
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
+    <Compile Include="Web\UI\RockBlockCustomSettings.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
