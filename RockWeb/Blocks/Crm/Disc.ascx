@@ -185,7 +185,8 @@
                 <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i> DISC Assessment</h1>
             </div>
             <div class="panel-body">
-                
+
+                <asp:Literal ID="lPrintTip" runat="server" Text="<div class='alert alert-success' role='alert'><strong>Tip!</strong> Consider printing this page out for future reference.</div>" Visible="false"></asp:Literal>
                 <asp:Literal ID="lHeading" runat="server"></asp:Literal>
 
                 <ul class="discchart">
