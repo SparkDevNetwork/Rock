@@ -493,7 +493,7 @@ namespace Rock.Reporting.DataFilter
                             }
                             else if ( dtp.SelectedDate.HasValue )
                             {
-                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                                values.Add( dtp.SelectedDate.Value.ToString("o") );
                             }
                             else
                             {
@@ -506,7 +506,7 @@ namespace Rock.Reporting.DataFilter
                         var dtp = control as DateTimePicker;
                         if ( dtp != null && dtp.SelectedDateTime.HasValue )
                         {
-                            values.Add( dtp.SelectedDateTime.Value.ToShortDateString() );
+                            values.Add( dtp.SelectedDateTime.Value.ToString( "o" ) );
                         }
                         else
                         {
@@ -518,7 +518,7 @@ namespace Rock.Reporting.DataFilter
                         var dtp = control as TimePicker;
                         if ( dtp != null && dtp.SelectedTime.HasValue )
                         {
-                            values.Add( dtp.SelectedTime.Value.ToString() );
+                            values.Add( dtp.SelectedTime.Value.ToString( "o" ) );
                         }
                         else
                         {

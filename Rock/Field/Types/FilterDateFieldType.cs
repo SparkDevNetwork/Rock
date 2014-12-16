@@ -41,14 +41,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            if ( !string.IsNullOrWhiteSpace(value) )
             {
-                return "Current Date";
-            }
+                if ( value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return "Current Date";
+                }
+                else
+                {
+                    var dateValue = value.AsDateTime();
+                    if (dateValue.HasValue)
+                    {
+                        return dateValue.Value.ToShortDateString();
+                    }
+                }
+            } 
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return base.FormatValue( parentControl, value, null, condensed );
         }
 
         /// <summary>

@@ -15,13 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Extension;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -43,16 +40,13 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["ContainerType"] as string; 
             }
+
             set
             {
                 ViewState["ContainerType"] = value;
 
                 this.Items.Clear();
-
-                if ( !Required )
-                {
-                    this.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                }
+                this.Items.Add( new ListItem() );
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
