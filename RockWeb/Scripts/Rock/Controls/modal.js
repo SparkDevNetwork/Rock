@@ -48,7 +48,16 @@
                 var $modalPopupIFrame = $(window.parent.document).find('iframe');
                 if ($modalPopupIFrame[0].style.height != 'auto') {
                     $modalPopupIFrame[0].style.height = 'auto';
+                    var contentsHeight = $modalPopupIFrame.contents().height();
+
+                    // shrink the iframe in case the contents got smaller
                     $modalPopupIFrame.height('auto');
+                    var iFrameHeight = $modalPopupIFrame.height();
+                    if (contentsHeight > iFrameHeight)
+                    {
+                        // if the contents are larger than the iFrame, grow the iframe to fit
+                        $modalPopupIFrame.height(contentsHeight);
+                    }
                 }
             },
             close: function (msg) {
