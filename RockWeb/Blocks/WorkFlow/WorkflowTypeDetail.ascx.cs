@@ -1801,7 +1801,19 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void BindAttributesGrid()
         {
-            gAttributes.DataSource = AttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gAttributes.DataSource = AttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Guid,
+                    a.Name,
+                    a.Description,
+                    FieldType = FieldTypeCache.GetName(a.FieldTypeId),
+                    a.IsRequired
+                } )
+                .ToList();
             gAttributes.DataBind();
         }
 

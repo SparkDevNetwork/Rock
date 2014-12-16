@@ -8,8 +8,8 @@
 	<returns>
 		* BinaryFile record
 	</returns>
-	<param name="Id" datatype="int">The binary id to use</param>
-	<param name="Guid" datatype="uniqueidentifier">The binaryfile guid to use</param>
+	<param name='Id' datatype='int'>The binary id to use</param>
+	<param name='Guid' datatype='uniqueidentifier'>The binaryfile guid to use</param>
 	<remarks>	
 	</remarks>
 	<code>
@@ -31,7 +31,6 @@ BEGIN
         , bf.[IsSystem]
         , bf.[BinaryFileTypeId]
 		, bft.[RequiresViewSecurity]
-        , bf.[Url]
         , bf.[FileName] 
         , bf.[MimeType]
         , bf.[ModifiedDateTime]

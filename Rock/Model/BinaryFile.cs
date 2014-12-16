@@ -60,19 +60,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? BinaryFileTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Url that the provider can use as needed to store a URL reference to a file
-        /// NOTE: when generating the URL for a Rock Client, don't use this. 
-        /// Use ~/GetFile.ashx?guid={guid}, ~/GetImage.ashx?guid={guid} instead
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Url to the file.
-        /// </value>
-        [MaxLength( 255 )]
-        [DataMember]
-        public string Url { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
@@ -142,6 +130,28 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType StorageEntityType { get; set; }
+
+        /// <summary>
+        /// Gets the URL that can be used to retrieve the file. A prefix of "~" represents the Application Root path
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [DataMember]
+        public virtual string Url
+        {
+            get
+            {
+                Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( new RockContext(), this );
+                if (storageProvider != null)
+                {
+                    return storageProvider.GenerateUrl( this );
+                }
+
+                return null;
+            }
+        }
+        
 
         #endregion
 

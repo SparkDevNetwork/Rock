@@ -43,8 +43,7 @@ namespace Rock.Storage.Provider
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveFile( BinaryFile file, HttpContext context )
         {
-            var url = GenerateUrl( file );
-            var physicalPath = GetPhysicalPath( url, context );
+            var physicalPath = GetPhysicalPath( file, context );
             var directoryName = Path.GetDirectoryName( physicalPath );
 
             if ( !Directory.Exists( directoryName ) )
@@ -74,7 +73,6 @@ namespace Rock.Storage.Provider
             // Set Data to null after successful OS save so the the binary data is not 
             // written into the database.
             file.Data = null;
-            file.Url = url;
         }
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace Rock.Storage.Provider
         /// <param name="context">The context.</param>
         public override void RemoveFile( BinaryFile file, HttpContext context )
         {
-            var physicalPath = GetPhysicalPath( file.Url, context );
+            var physicalPath = GetPhysicalPath( file, context );
 
             if ( File.Exists( physicalPath ) )
             {
@@ -100,7 +98,7 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
         {
-            var physicalPath = GetPhysicalPath( file.Url, context );
+            var physicalPath = GetPhysicalPath( file, context );
 
             if ( File.Exists( physicalPath ) )
             {
@@ -112,41 +110,6 @@ namespace Rock.Storage.Provider
             {
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Generate a URL for the file based on the rules of the StorageProvider
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns></returns>
-        public override string GenerateUrl( BinaryFile file )
-        {
-            if ( string.IsNullOrWhiteSpace( file.FileName ) )
-            {
-                return null;
-            }
-
-            var urlBuilder = new StringBuilder();
-
-            string rootPath = GetRootPath( file.BinaryFileTypeId ?? 0 );
-
-            urlBuilder.Append( rootPath );
-
-            if ( !rootPath.EndsWith( "/" ) )
-            {
-                urlBuilder.Append( "/" );
-            }
-
-            // if the file doesn't have a folderPath, prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
-            if ( Path.GetDirectoryName( file.FileName ) == string.Empty )
-            {
-                urlBuilder.Append( file.Guid + "_" );
-            }
-
-            string urlFileName = file.FileName.Replace( "\\", "/" ).TrimStart( new char[] { '/' } );
-
-            urlBuilder.Append( urlFileName );
-            return urlBuilder.ToString();
         }
 
         /// <summary>
@@ -175,8 +138,30 @@ namespace Rock.Storage.Provider
         /// <param name="path">The path.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string GetPhysicalPath( string path, HttpContext context )
+        private string GetPhysicalPath( BinaryFile binaryFile, HttpContext context )
         {
+            if ( string.IsNullOrWhiteSpace( binaryFile.FileName ) )
+            {
+                return null;
+            }
+
+            var urlBuilder = new StringBuilder();
+
+            string rootPath = GetRootPath( binaryFile.BinaryFileTypeId ?? 0 );
+
+            urlBuilder.Append( rootPath.EnsureTrailingForwardslash() );
+
+            // if the file doesn't have a folderPath, prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
+            if ( Path.GetDirectoryName( binaryFile.FileName ) == string.Empty )
+            {
+                urlBuilder.Append( binaryFile.Guid + "_" );
+            }
+
+            string urlFileName = binaryFile.FileName.Replace( "\\", "/" ).TrimStart( new char[] { '/' } );
+
+            urlBuilder.Append( urlFileName );
+            
+            var path = urlBuilder.ToString();
             if ( Regex.Match(path, @"^[A-Z,a-z]:\\").Success  || path.StartsWith( "\\\\" ) )
             {
                 return path;
