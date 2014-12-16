@@ -182,7 +182,6 @@ namespace Rock.Model
                 // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
                 requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
 
-                binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;
                 binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
