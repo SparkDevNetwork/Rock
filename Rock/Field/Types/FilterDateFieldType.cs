@@ -43,8 +43,18 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace(value) )
             {
-                if ( value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                 {
+                    var valueParts = value.Split( ':' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        int daysOffset = valueParts[1].AsInteger();
+                        if ( daysOffset != 0)
+                        {
+                            return "Current Date " + ( daysOffset > 0 ? " plus " : " minus " ) + Math.Abs(daysOffset).ToString() + " days";
+                        }
+                    }
+
                     return "Current Date";
                 }
                 else
@@ -160,9 +170,9 @@ namespace Rock.Field.Types
             if (control != null)
             {
                 var dtp = control as DatePicker;
-                if (dtp != null && dtp.CurrentDate )
+                if (dtp != null && dtp.IsCurrentDateOffset )
                 {
-                    return "CURRENT";
+                    return string.Format("CURRENT:{0}", dtp.CurrentDateOffsetDays) ;
                 }
             }
 
@@ -182,9 +192,14 @@ namespace Rock.Field.Types
                 var dtp = control as DatePicker;
                 if ( dtp != null )
                 {
-                    if ( dtp.DisplayCurrentOption && value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                    if ( dtp.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        dtp.CurrentDate = true;
+                        dtp.IsCurrentDateOffset = true;
+                        var valueParts = value.Split(':');
+                        if ( valueParts.Length > 1 )
+                        {
+                            dtp.CurrentDateOffsetDays = valueParts[1].AsIntegerOrNull() ?? 0;
+                        }
                     }
                     else
                     {

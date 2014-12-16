@@ -409,7 +409,27 @@ namespace Rock.Reporting.DataFilter
                         break;
 
                     case SystemGuid.FieldType.FILTER_DATE:
-                        clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
+                        var format = @"
+var useCurrentDateOffset = $('.js-current-date-checkbox', $selectedContent).is(':checked');
+var dateValue = '';
+if (useCurrentDateOffset) {{
+    var daysOffset = $('.js-current-date-offset', $selectedContent).val();
+    if (daysOffset > 0) {{
+        dateValue = 'Current Date plus ' + daysOffset + ' days'; 
+    }}
+    else if (daysOffset < 0) {{
+        dateValue = 'Current Date minus ' + -daysOffset + ' days'; 
+    }}
+    else {{
+        dateValue = 'Current Date';
+    }}
+}}
+else {{
+   dateValue = ( $('input', $selectedContent).filter(':visible').length ?  (' ' +  $('input', $selectedContent).filter(':visible').val()  + ' ') : '' );
+}}
+result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue";
+
+                        clientFormatSelection = string.Format( format, entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DECIMAL:
@@ -487,9 +507,9 @@ namespace Rock.Reporting.DataFilter
                         var dtp = control as DatePicker;
                         if ( dtp != null )
                         {
-                            if ( dtp.CurrentDate )
+                            if ( dtp.IsCurrentDateOffset )
                             {
-                                values.Add( "CURRENT" );
+                                values.Add( string.Format( "CURRENT:{0}", dtp.CurrentDateOffsetDays ) );
                             }
                             else if ( dtp.SelectedDate.HasValue )
                             {
@@ -592,9 +612,14 @@ namespace Rock.Reporting.DataFilter
                             if ( control is DatePicker )
                             {
                                 var dtp = control as DatePicker;
-                                if ( selectedValue != null && selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                                if ( selectedValue != null && selectedValue.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                                 {
-                                    dtp.CurrentDate = true;
+                                    dtp.IsCurrentDateOffset = true;
+                                    var valueParts = selectedValue.Split( ':' );
+                                    if ( valueParts.Length > 1 )
+                                    {
+                                        dtp.CurrentDateOffsetDays = valueParts[1].AsIntegerOrNull() ?? 0;
+                                    }
                                 }
                                 else
                                 {
@@ -688,7 +713,7 @@ namespace Rock.Reporting.DataFilter
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
                             DateTime dateValue = DateTime.Today;
-                            if ( values[1] == null || ( !values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                            if ( values[1] == null || ( !values[1].StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
                             {
                                 dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                             }
