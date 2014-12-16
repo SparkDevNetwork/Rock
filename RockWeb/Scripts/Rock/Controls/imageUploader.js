@@ -99,13 +99,17 @@
             $('#' + options.aRemove).click(function () {
                 $(this).hide();
                 var $el = $('#' + options.imgThumbnail);
-                $('#' + options.hfFileId).val('0');
                 var noPictureUrl = options.noPictureUrl || Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg';
                 if ($el.is('img')) {
                     $el.attr('src', noPictureUrl);
                 }
                 else {
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
+                }
+                if (options.postbackRemovedScript) {
+                    eval(options.postbackRemovedScript);
+                } else {
+                    $('#' + options.hfFileId).val('0');
                 }
                 return false;
             });
