@@ -32,13 +32,12 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a person or a business in Rock.  
+    /// Represents a person or a business in Rock.
     /// </summary>
     [Table( "Person" )]
     [DataContract]
     public partial class Person : Model<Person>
     {
-
         #region Constants
 
         /// <summary>
@@ -135,6 +134,7 @@ namespace Rock.Model
                 }
             }
         }
+
         private bool _isDeceased = false;
 
         /// <summary>
@@ -276,10 +276,10 @@ namespace Rock.Model
         public DateTime? AnniversaryDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Person's projected or actual high school graduation date. The month and date will match the "Grade Transition Date" global attribute. This value is used to determine what grade a student is in. 
+        /// Gets or sets the date of the Person's projected or actual high school graduation date. The month and date will match the "Grade Transition Date" global attribute. This value is used to determine what grade a student is in.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the Person's projected or actual high school graduation date.  This value will be null if a Graduation Date is an adult, not known, not applicable or the 
+        /// A <see cref="System.DateTime"/> representing the Person's projected or actual high school graduation date.  This value will be null if a Graduation Date is an adult, not known, not applicable or the
         /// Person has not entered school.
         /// </value>
         [DataMember]
@@ -503,7 +503,6 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
         /// </summary>
@@ -530,7 +529,6 @@ namespace Rock.Model
                 return fullName.ToString();
             }
         }
-
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -653,10 +651,11 @@ namespace Rock.Model
             get { return _users; }
             set { _users = value; }
         }
+
         private ICollection<UserLogin> _users;
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 
+        /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see>
         /// </summary>
         /// <value>
         /// A collection of <see cref="Rock.Model.PhoneNumber"/> entities representing the phone numbers that are associated with this Person.
@@ -667,6 +666,7 @@ namespace Rock.Model
             get { return _phoneNumbers; }
             set { _phoneNumbers = value; }
         }
+
         private ICollection<PhoneNumber> _phoneNumbers;
 
         /// <summary>
@@ -681,6 +681,7 @@ namespace Rock.Model
             get { return _members; }
             set { _members = value; }
         }
+
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -694,6 +695,7 @@ namespace Rock.Model
             get { return _aliases; }
             set { _aliases = value; }
         }
+
         private ICollection<PersonAlias> _aliases;
 
         /// <summary>
@@ -709,7 +711,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's connection status
         /// </summary>
         /// <value>
-        /// A <see cref="DefinedValue"/> object representing the Person's connection status. 
+        /// A <see cref="DefinedValue"/> object representing the Person's connection status.
         /// </value>
         [DataMember]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
@@ -778,7 +780,7 @@ namespace Rock.Model
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group.  The 
+        /// Gets or sets the giving group.
         /// </summary>
         /// <value>
         /// The giving group.
@@ -906,7 +908,7 @@ namespace Rock.Model
         /// Gets the Person's precise age (includes the fraction of the year).
         /// </summary>
         /// <value>
-        /// A <see cref="System.Double"/> representing the Person's age (including fraction of year) 
+        /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
         public virtual double? AgePrecise
@@ -1070,7 +1072,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an anchor tag to send person a communication 
+        /// Gets an anchor tag to send person a communication
         /// </summary>
         /// <value>
         /// The email tag.
@@ -1115,7 +1117,6 @@ namespace Rock.Model
 
             return string.Empty;
         }
-
 
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
@@ -1166,7 +1167,6 @@ namespace Rock.Model
 
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-
         }
 
         /// <summary>
@@ -1270,7 +1270,6 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? RecordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
-
             string virtualPath = String.Empty;
             if ( photoId.HasValue )
             {
@@ -1473,7 +1472,6 @@ namespace Rock.Model
                     }
                 }
 
-
                 if ( maxWidth.HasValue || maxHeight.HasValue )
                 {
                     styleString = string.Format( " style='{0}{1}'",
@@ -1487,7 +1485,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
-        /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in' 
+        /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the Person.</param>
@@ -1501,7 +1499,7 @@ namespace Rock.Model
             var knownRelationshipGroup = groupMemberService.Queryable()
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                 .Select( m => m.Group )
                 .FirstOrDefault();
 
@@ -1509,7 +1507,7 @@ namespace Rock.Model
             {
                 int? canCheckInRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                     .Where( r =>
-                        r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 if ( canCheckInRoleId.HasValue )
@@ -1526,23 +1524,23 @@ namespace Rock.Model
                         canCheckInMember.GroupId = knownRelationshipGroup.Id;
                         canCheckInMember.PersonId = relatedPersonId;
                         canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
+                        groupMemberService.Add( canCheckInMember );
                         rockContext.SaveChanges();
                     }
 
                     var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
                     if ( inverseGroupMember != null )
                     {
+                        groupMemberService.Add( inverseGroupMember );
                         rockContext.SaveChanges();
                     }
 
                     rockContext.SaveChanges();
                 }
             }
-
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -1745,9 +1743,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
         }
-
     }
 
     #endregion
-
 }
