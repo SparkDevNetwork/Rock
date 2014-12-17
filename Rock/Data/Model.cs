@@ -338,10 +338,21 @@ namespace Rock.Data
                         this.LoadAttributes();
                     }
 
+                    string attributeKey = key.ToStringSafe();
+
+                    if ( attributeKey == "Attributes")
+                    {
+                        return Attributes.Select( a => a.Value ).ToList();
+                    }
+
+                    if ( attributeKey == "AttributeValues")
+                    {
+                        return AttributeValues.Select( a => a.Value ).ToList();
+                    }
+
                     bool unformatted = false;
                     bool url = false;
 
-                    string attributeKey = key.ToStringSafe();
                     if ( attributeKey.EndsWith("_unformatted"))
                     {
                         attributeKey = attributeKey.Replace("_unformatted", "");
@@ -393,6 +404,13 @@ namespace Rock.Data
         /// <returns></returns>
         public override bool ContainsKey( object key )
         {
+            string attributeKey = key.ToStringSafe();
+
+            if ( attributeKey == "Attributes" || attributeKey == "AttributeValues" )
+            {
+                return true;
+            }
+
             bool containsKey = base.ContainsKey( key );
 
             if (!containsKey)
@@ -402,7 +420,6 @@ namespace Rock.Data
                     this.LoadAttributes();
                 }
 
-                string attributeKey = key.ToStringSafe();
                 if ( attributeKey.EndsWith("_unformatted"))
                 {
                     attributeKey = attributeKey.Replace("_unformatted", "");
