@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Core
 
             if ( _canConfigure )
             {
-                rGrid.DataKeyNames = new string[] { "id" };
+                rGrid.DataKeyNames = new string[] { "Id" };
                 rGrid.Actions.ShowAdd = true;
 
                 rGrid.Actions.AddClick += rGrid_Add;

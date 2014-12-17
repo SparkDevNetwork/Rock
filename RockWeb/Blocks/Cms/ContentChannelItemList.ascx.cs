@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Cms
             gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
             gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
-            gItems.DataKeyNames = new string[] { "id" };
+            gItems.DataKeyNames = new string[] { "Id" };
             gItems.Actions.ShowAdd = canAddEditDelete;
             gItems.IsDeleteEnabled = canAddEditDelete;
             gItems.Actions.AddClick += gItems_Add;

@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gContactList.DataKeyNames = new string[] { "id" };
+            gContactList.DataKeyNames = new string[] { "Id" };
             gContactList.Actions.ShowAdd = canEdit;
             gContactList.Actions.AddClick += gContactList_AddClick;
             gContactList.GridRebind += gContactList_GridRebind;

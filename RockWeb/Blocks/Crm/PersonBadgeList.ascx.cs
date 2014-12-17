@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
            
-            gPersonBadge.DataKeyNames = new string[] { "id" };
+            gPersonBadge.DataKeyNames = new string[] { "Id" };
             gPersonBadge.Actions.ShowAdd = true;
             gPersonBadge.Actions.AddClick += gPersonBadge_Add;
             gPersonBadge.GridReorder += gPersonBadge_GridReorder;

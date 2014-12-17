@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Core
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            rGrid.DataKeyNames = new string[] { "id" };
+            rGrid.DataKeyNames = new string[] { "Id" };
             rGrid.Actions.ShowAdd = true;
             rGrid.Actions.AddClick += rGrid_Add;
             rGrid.GridReorder += rGrid_GridReorder;
