@@ -56,7 +56,6 @@
     <Node Id="Rock.Migrations" Label="Rock.Migrations" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
     <Node Id="Rock" Label="Rock" Category="Project" />
-    <Node Id="AjaxMin 5.8.5172.27710" Label="AjaxMin 5.8.5172.27710" Category="Package" />
     <Node Id="CronExpressionDescriptor 1.9.1" Label="CronExpressionDescriptor 1.9.1" Category="Package" />
     <Node Id="DDay.iCal 1.0.2.575" Label="DDay.iCal 1.0.2.575" Category="Package" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
@@ -67,14 +66,10 @@
     <Node Id="Microsoft.AspNet.WebApi.Client 5.2.2" Label="Microsoft.AspNet.WebApi.Client 5.2.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Core 5.2.2" Label="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.WebHost 5.2.2" Label="Microsoft.AspNet.WebApi.WebHost 5.2.2" Category="Package" />
-    <Node Id="Microsoft.Data.Edm 5.6.3" Label="Microsoft.Data.Edm 5.6.3" Category="Package" />
-    <Node Id="Microsoft.Data.OData 5.6.3" Label="Microsoft.Data.OData 5.6.3" Category="Package" />
-    <Node Id="Microsoft.Data.Services.Client 5.6.3" Label="Microsoft.Data.Services.Client 5.6.3" Category="Package" />
     <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
     <Node Id="Newtonsoft.Json 6.0.6" Label="Newtonsoft.Json 6.0.6" Category="Package" />
     <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
     <Node Id="RestSharp 104.4.0" Label="RestSharp 104.4.0" Category="Package" />
-    <Node Id="System.Spatial 5.6.3" Label="System.Spatial 5.6.3" Category="Package" />
     <Node Id="Twilio 3.6.11" Label="Twilio 3.6.11" Category="Package" />
   </Nodes>
   <Links>
@@ -151,12 +146,8 @@
     <Link Source="Microsoft.AspNet.WebApi.Client 5.2.2" Target="Newtonsoft.Json 6.0.6" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Core 5.2.2" Target="Microsoft.AspNet.WebApi.Client 5.2.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.WebHost 5.2.2" Target="Microsoft.AspNet.WebApi.Core 5.2.2" Category="Package Dependency" />
-    <Link Source="Microsoft.Data.OData 5.6.3" Target="System.Spatial 5.6.3" Category="Package Dependency" />
-    <Link Source="Microsoft.Data.OData 5.6.3" Target="Microsoft.Data.Edm 5.6.3" Category="Package Dependency" />
-    <Link Source="Microsoft.Data.Services.Client 5.6.3" Target="Microsoft.Data.OData 5.6.3" Category="Package Dependency" />
     <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" />
     <Link Source="Twilio 3.6.11" Target="RestSharp 104.4.0" Category="Package Dependency" />
-    <Link Source="Rock" Target="AjaxMin 5.8.5172.27710" Category="Installed Package" />
     <Link Source="Rock" Target="CronExpressionDescriptor 1.9.1" Category="Installed Package" />
     <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" />
     <Link Source="Rock" Target="EntityFramework 6.1.0" Category="Installed Package" />
@@ -164,7 +155,6 @@
     <Link Source="Rock" Target="Humanizer 1.31.0" Category="Installed Package" />
     <Link Source="Rock" Target="ImageResizer 3.4.3" Category="Installed Package" />
     <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.2.2" Category="Installed Package" />
-    <Link Source="Rock" Target="Microsoft.Data.Services.Client 5.6.3" Category="Installed Package" />
     <Link Source="Rock" Target="NuGet.Core 2.8.1" Category="Installed Package" />
     <Link Source="Rock" Target="Twilio 3.6.11" Category="Installed Package" />
   </Links>

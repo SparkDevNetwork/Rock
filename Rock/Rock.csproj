@@ -36,9 +36,6 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AjaxMin">
-      <HintPath>..\packages\AjaxMin.5.8.5172.27710\lib\net40\AjaxMin.dll</HintPath>
-    </Reference>
     <Reference Include="CronExpressionDescriptor">
       <HintPath>..\packages\CronExpressionDescriptor.1.9.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
