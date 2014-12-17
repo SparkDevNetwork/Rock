@@ -135,7 +135,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Gets the physical path.
         /// </summary>
-        /// <param name="path">The path.</param>
+        /// <param name="binaryFile">The binary file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
         private string GetPhysicalPath( BinaryFile binaryFile, HttpContext context )
