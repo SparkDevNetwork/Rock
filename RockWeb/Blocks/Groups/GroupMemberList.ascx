@@ -30,6 +30,7 @@
                             </Rock:GridFilter>
                             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit">
                                 <Columns>
+                                    <Rock:SelectField />
                                     <Rock:RockBoundField DataField="NickName" HeaderText="First Name" SortExpression="Person.NickName" />
                                     <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
