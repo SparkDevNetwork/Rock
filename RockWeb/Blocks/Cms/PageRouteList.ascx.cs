@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pageRouteId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "pageRouteId", e.RowKeyId );
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
             PageRouteService pageRouteService = new PageRouteService( rockContext );
-            PageRoute pageRoute = pageRouteService.Get( (int)e.RowKeyValue );
+            PageRoute pageRoute = pageRouteService.Get( e.RowKeyId );
 
             if ( pageRoute != null )
             {

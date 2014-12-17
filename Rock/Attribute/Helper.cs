@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -301,15 +303,18 @@ namespace Rock.Attribute
 
                     if ( entity is GroupMember )
                     {
-                        var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext ).Get( ( (GroupMember)entity ).GroupId );
+                        var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext )
+                            .Queryable().AsNoTracking().FirstOrDefault(g => g.Id == ( (GroupMember)entity ).GroupId );
                         if ( group != null )
                         {
-                            groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
+                            groupType = group.GroupType ?? groupTypeService
+                                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == group.GroupTypeId );
                         }
                     }
                     else if ( entity is Group )
                     {
-                        groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
+                        groupType = ( (Group)entity ).GroupType ?? groupTypeService
+                            .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == ( (Group)entity ).GroupTypeId );
                     }
                     else
                     {
@@ -323,7 +328,8 @@ namespace Rock.Attribute
                         // Check for inherited group type id's
                         if ( groupType.InheritedGroupTypeId.HasValue )
                         {
-                            groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
+                            groupType = groupType.InheritedGroupType ?? groupTypeService
+                                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == ( groupType.InheritedGroupTypeId ?? 0 ) );
                         }
                         else
                         {
@@ -353,7 +359,14 @@ namespace Rock.Attribute
 
                 // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
-                foreach ( var attribute in attributeService.Queryable().Where( a => a.EntityTypeId == entityTypeId ).Select( a => new { a.Id, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue } ) )
+                foreach ( var attribute in attributeService.Queryable()
+                    .AsNoTracking()
+                    .Where( a => a.EntityTypeId == entityTypeId )
+                    .Select( a => new { 
+                        a.Id, 
+                        a.EntityTypeQualifierColumn, 
+                        a.EntityTypeQualifierValue } 
+                    ) )
                 {
                     // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
                     if ( groupTypeIds.Any() && (
@@ -403,7 +416,7 @@ namespace Rock.Attribute
 
                     // Read this item's value(s) for each attribute 
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                    foreach ( var attributeValue in attributeValueService.Queryable()
+                    foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
                         .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                     {
                         var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
@@ -948,7 +961,7 @@ namespace Rock.Attribute
                             value = item.AttributeValues[attribute.Key].Value;
                         }
 
-                        string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( value, attribute.QualifierValues );
                         
                         if ( string.IsNullOrWhiteSpace( controlHtml ) )
                         {

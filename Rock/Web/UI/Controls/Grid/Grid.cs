@@ -52,6 +52,7 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
+        private Dictionary<int, string> _columnDataPriorities;
 
         #endregion
 
@@ -398,6 +399,91 @@ namespace Rock.Web.UI.Controls
                 return new List<object>();
             }
         }
+        /// <summary>
+        /// This property returns the personIds that are in the grid either using only the items
+        /// selected or, if none are, using all rows. This assumes a PersonIdField property
+        /// was set on the grid by the block developer.
+        /// </summary>
+        public List<int> SelectedPersonIds
+        {
+            get
+            {
+                List<int> peopleIdList = new List<int>();
+                if ( this.PersonIdField != null )
+                {
+                    // The ToList() is potentially needed for Linq cases.
+                    var keysSelected = SelectedKeys.ToList();
+
+                    if ( this.DataSource is DataTable || this.DataSource is DataView )
+                    {
+                        DataTable data = null;
+
+                        if ( this.DataSource is DataTable )
+                        {
+                            data = (DataTable)this.DataSource;
+                        }
+                        else if ( this.DataSource is DataView )
+                        {
+                            data = ( (DataView)this.DataSource ).Table;
+                        }
+
+                        foreach ( DataRow row in data.Rows )
+                        {
+                            int? personId = null;
+                            for ( int i = 0; i < data.Columns.Count; i++ )
+                            {
+                                if ( data.Columns[i].ColumnName == this.PersonIdField )
+                                {
+                                    personId = row[i] as int?;
+                                }
+                            }
+                            // Add the personId if none are selected or if it's one of the selected items.
+                            if ( personId.HasValue && ( !keysSelected.Any() || keysSelected.Contains( personId.Value ) ) )
+                            {
+                                peopleIdList.Add( personId.Value );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // get access to the List<> and its properties
+                        IList data = (IList)this.DataSource;
+                        if ( data != null )
+                        {
+                            Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                            PropertyInfo personIdProp = oType.GetProperty( this.PersonIdField );
+                            PropertyInfo idProp = oType.GetProperty( this.DataKeyNames.FirstOrDefault() );
+
+                            foreach ( var item in data )
+                            {
+                                if ( personIdProp == null )
+                                {
+                                    personIdProp = item.GetType().GetProperty( this.PersonIdField );
+                                }
+                                if ( idProp == null )
+                                {
+                                    idProp = item.GetType().GetProperty( this.DataKeyNames.FirstOrDefault() );
+                                }
+
+                                if ( personIdProp != null && idProp != null )
+                                {
+                                    int personId = (int)personIdProp.GetValue( item, null );
+                                    int id = (int)idProp.GetValue( item, null );
+
+                                    // Add the personId if none are selected or if it's one of the selected items.
+                                    if ( !keysSelected.Any() || keysSelected.Contains( id ) )
+                                    {
+                                        peopleIdList.Add( personId );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return peopleIdList;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a dictionary of objects that can be used independently of the actual objects that grid
@@ -645,6 +731,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+
+            if ( this.DataSource != null )
+            {
+                writer.AddAttribute( "data-pattern", "priority-columns" );
+                writer.AddAttribute( "data-add-focus-btn", "false" );
+                writer.AddAttribute( "data-add-display-all-btn", "false" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
 
@@ -666,6 +763,11 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
+
+            if ( this.DataSource != null )
+            {
+                writer.RenderEndTag();
+            }
         }
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
@@ -761,12 +863,24 @@ namespace Rock.Web.UI.Controls
         {
             // Get the css class for any column that does not implement the INotRowSelectedField
             RowSelectedColumns = new Dictionary<int, string>();
+            _columnDataPriorities = new Dictionary<int, string>();
+
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 var column = this.Columns[i];
                 if ( !( column is INotRowSelectedField ) && !( column is HyperLinkField ) )
                 {
                     RowSelectedColumns.Add( i, this.Columns[i].ItemStyle.CssClass );
+                }
+
+                // get data priority from column
+                if ( column is IPriorityColumn )
+                {
+                    _columnDataPriorities.Add( i, ( (IPriorityColumn)column ).ColumnPriority.ConvertToInt().ToString() );
+                }
+                else
+                {
+                    _columnDataPriorities.Add( i, "1" );
                 }
             }
 
@@ -894,11 +1008,13 @@ namespace Rock.Web.UI.Controls
                 string asc = SortDirection.Ascending.ToString();
                 string desc = SortDirection.Descending.ToString();
 
-                // Remove the sort css classes
-                foreach ( TableCell cell in e.Row.Cells )
+                // Remove the sort css classes and add the data priority
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
+                    var cell = e.Row.Cells[i];
                     cell.RemoveCssClass( asc );
                     cell.RemoveCssClass( desc );
+                    cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
                 // Add the new sort css class
@@ -917,10 +1033,20 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            if ( e.Row.RowType == DataControlRowType.DataRow || e.Row.RowType == DataControlRowType.Footer )
+            {
+                // add the data priority
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
+                {
+                    e.Row.Cells[i].Attributes.Add( "data-priority", _columnDataPriorities[i] );
+                }
+            }
+
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 if ( e.Row.DataItem != null )
                 {
+
                     e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
 
                     if ( this.DataKeys != null && this.DataKeys.Count > 0 )
@@ -1047,8 +1173,6 @@ namespace Rock.Web.UI.Controls
         {
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
-                var peopleSelected = SelectedKeys.ToList();
-
                 // Set Sender
                 var rockPage = Page as RockPage;
                 if ( rockPage != null )
@@ -1067,6 +1191,7 @@ namespace Rock.Web.UI.Controls
                     var recipients = new Dictionary<int, Dictionary<string, string>>();
 
                     OnGridRebind( e );
+                    var peopleSelected = this.SelectedPersonIds;
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
                     {
@@ -1103,7 +1228,8 @@ namespace Rock.Web.UI.Controls
                             // If valid personid and either no people were selected or this person was selected add them as a recipient
                             if ( personId.HasValue && ( !peopleSelected.Any() || peopleSelected.Contains( personId.Value ) ) )
                             {
-                                recipients.Add( personId.Value, mergeValues );
+                                // only add the PersonId to the recipients if they already haven't been added or ready (just in case there are duplicate Person Ids in the dataset)
+                                recipients.AddOrIgnore( personId.Value, mergeValues );
                             }
                         }
                     }
@@ -1291,7 +1417,7 @@ namespace Rock.Web.UI.Controls
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + ".")) && prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) ) && prop.GetGetMethod().IsVirtual )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
@@ -1303,7 +1429,7 @@ namespace Rock.Web.UI.Controls
                 // print column headings
                 foreach ( PropertyInfo prop in props )
                 {
-                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith(prop.Name + "."));
+                    var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
                     if ( gridDataField != null )
                     {
                         worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
@@ -1312,7 +1438,7 @@ namespace Rock.Web.UI.Controls
                     {
                         worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                     }
-                    
+
                     columnCounter++;
                 }
 
@@ -1558,73 +1684,12 @@ namespace Rock.Web.UI.Controls
             return columns;
         }
 
-        private List<object> GetAllPersonIds()
-        {
-            var personIds = new List<object>();
-
-            if ( this.DataSource is DataTable || this.DataSource is DataView )
-            {
-                DataTable data = null;
-                if ( this.DataSource is DataTable )
-                {
-                    data = (DataTable)this.DataSource;
-                }
-                else if ( this.DataSource is DataView )
-                {
-                    data = ( (DataView)this.DataSource ).Table;
-                }
-
-                if ( data != null )
-                {
-                    foreach ( DataRow row in data.Rows )
-                    {
-                        object idObj = row[this.PersonIdField];
-                        if ( idObj != null )
-                        {
-                            int? personId = idObj as int?;
-                            if ( personId.HasValue )
-                            {
-                                personIds.Add( personId.Value );
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // get access to the List<> and its properties
-                IList data = (IList)this.DataSource;
-                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-
-                PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
-                foreach ( var item in data )
-                {
-                    if ( idProp == null )
-                    {
-                        idProp = item.GetType().GetProperty( this.PersonIdField );
-                    }
-                    if ( idProp != null )
-                    {
-                        int personId = (int)idProp.GetValue( item, null );
-                        personIds.Add( personId );
-                    }
-                }
-            }
-
-            return personIds;
-        }
-
         private int? GetPersonEntitySet()
         {
             if ( !string.IsNullOrWhiteSpace( PersonIdField ) )
             {
-                var keys = SelectedKeys.ToList();
-
-                if ( !keys.Any() )
-                {
-                    OnGridRebind( new EventArgs() );
-                    keys = GetAllPersonIds();
-                }
+                OnGridRebind( new EventArgs() );
+                var keys = this.SelectedPersonIds;
 
                 if ( keys.Any() )
                 {
@@ -2308,6 +2373,42 @@ namespace Rock.Web.UI.Controls
         Light
     }
 
+
+    /// <summary>
+    /// Column Prioritiy Values
+    /// </summary>
+    public enum ColumnPriority
+    {
+        /// <summary>
+        /// Always Visible
+        /// </summary>
+        AlwaysVisible = 1,
+
+        /// <summary>
+        /// Devices Devices with screensize > 480px
+        /// </summary>
+        TabletSmall = 2,
+
+        /// <summary>
+        /// Devices with screensize > 640px
+        /// </summary>
+        Tablet = 3,
+
+        /// <summary>
+        /// Devices with screensize > 800px
+        /// </summary>
+        DesktopSmall = 4,
+
+        /// <summary>
+        /// Devices with screensize > 960px
+        /// </summary>
+        Desktop = 5,
+
+        /// <summary>
+        /// Devices with screensize > 1120px
+        /// </summary>
+        DesktopLarge = 6
+    }
 
     #endregion
 

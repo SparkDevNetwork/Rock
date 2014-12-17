@@ -70,6 +70,63 @@ namespace Rock.Extension
         public Container()
         {
             IsDisposed = false;
+            Refresh();
+        }
+
+        /// <summary>
+        /// Gets the component.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        protected T GetComponentByEntity( string entityType )
+        {
+            foreach ( var serviceEntry in this.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
+                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    if ( component.IsActive )
+                    {
+                        return component;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the name of the component.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        protected string GetComponentNameByEntity( string entityType )
+        {
+            foreach ( var serviceEntry in this.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
+                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    if ( component.IsActive )
+                    {
+                        return serviceEntry.Value.Metadata.ComponentName;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -89,14 +146,14 @@ namespace Rock.Extension
             string dir = Path.GetDirectoryName( path );
             if ( Directory.Exists( dir ) )
             {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir ) );
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir, typeof( T ) ) );
             }
 
             // Add all the assemblies in the 'Plugins' subdirectory
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
             if ( Directory.Exists( pluginsFolder ) )
             {
-                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder ) );
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder, typeof( T ) ) );
             }
 
             // Create the container from the catalog

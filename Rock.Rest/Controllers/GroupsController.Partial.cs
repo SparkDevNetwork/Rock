@@ -33,69 +33,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class GroupsController : IHasCustomRoutes
+    public partial class GroupsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "GroupsGetChildren",
-                routeTemplate: "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}",
-                defaults: new
-                {
-                    controller = "Groups",
-                    action = "GetChildren"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GroupsMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{groupId}",
-                defaults: new
-                {
-                    controller = "Groups",
-                    action = "GetMapInfo"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GroupsChildMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Children",
-                defaults: new
-                {
-                    controller = "Groups",
-                    action = "GetChildMapInfo"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GroupsMemberMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Members",
-                defaults: new
-                {
-                    controller = "Groups",
-                    action = "GetMemberMapInfo"
-                } );
-
-            routes.MapHttpRoute(
-                name: "GroupsFamiliesMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Families/{statusId}",
-                defaults: new
-                {
-                    controller = "Groups",
-                    action = "GetFamiliesMapInfo"
-                } );
-
-            routes.MapHttpRoute(
-               name: "GroupsMapInfoWindow",
-               routeTemplate: "api/Groups/GetMapInfoWindow/{groupId}/{locationId}",
-               defaults: new
-               {
-                   controller = "Groups",
-                   action = "GetMapInfoWindow"
-               } );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -105,8 +44,12 @@ namespace Rock.Rest.Controllers
         /// <param name="groupTypeIds">The group type ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var qry = ( (GroupService)Service ).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
             List<Group> groupList = new List<Group>();
@@ -134,14 +77,22 @@ namespace Rock.Rest.Controllers
                 }
             }
 
+            var groupTypes = new List<int>();
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
+            {
+                groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            }
+
             // try to quickly figure out which items have Children
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-
-            var qryHasChildren = from x in Get().Select( a => a.ParentGroupId )
-                                 where resultIds.Contains( x.Value )
-                                 select x.Value;
-
-            var qryHasChildrenList = qryHasChildren.ToList();
+            var qryHasChildrenList = Get()
+                .Where( g =>
+                    g.ParentGroupId.HasValue &&
+                    resultIds.Contains( g.ParentGroupId.Value ) &&
+                    ( !groupTypes.Any() || groupTypes.Contains( g.GroupTypeId ) ) )
+                .Select( g => g.ParentGroupId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var g in groupNameList )
             {
@@ -160,8 +111,12 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}" )]
         public IQueryable<MapItem> GetMapInfo( int groupId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -201,11 +156,15 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Children" )]
         public IQueryable<MapItem> GetChildMapInfo( int groupId )
         {
             var person = GetPerson();
 
             var mapItems = new List<MapItem>();
+
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
 
             foreach ( var group in ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.ParentGroupId == groupId ) )
@@ -225,7 +184,6 @@ namespace Rock.Rest.Controllers
                             mapItems.Add( mapItem );
                         }
                     }
-
                 }
             }
 
@@ -233,8 +191,12 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members" )]
         public IQueryable<MapItem> GetMemberMapInfo( int groupId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "Members" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -286,8 +248,12 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
@@ -313,7 +279,7 @@ namespace Rock.Rest.Controllers
                                 l.Location.GeoPoint.Intersects( location.GeoFence ) &&
                                 l.Group.Members.Any( m =>
                                     m.Person.RecordStatusValue != null &&
-                                    m.Person.RecordStatusValue.Guid.Equals(activeGuid) &&
+                                    m.Person.RecordStatusValue.Guid.Equals( activeGuid ) &&
                                     m.Person.ConnectionStatusValueId.HasValue &&
                                     m.Person.ConnectionStatusValueId.Value == statusId ) )
                             .Select( l => new
@@ -359,8 +325,12 @@ namespace Rock.Rest.Controllers
 
         [Authenticate, Secured]
         [HttpPost]
+        [System.Web.Http.Route( "api/Groups/GetMapInfoWindow/{groupId}/{locationId}" )]
         public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
         {
+            // Enable proxy creation since security is being checked and need to navigate parent authorities
+            SetProxyCreation( true );
+
             // Use new service with new context so properties can be navigated by liquid
             var group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
                 .Where( g => g.Id == groupId )
@@ -399,7 +369,7 @@ namespace Rock.Rest.Controllers
                         dynGroup.MapPageUrl = groupMapUrl;
 
                         var dictCampus = new Dictionary<string, object>();
-                        dictCampus.Add( "Name", group.Campus != null ? group.Campus.Name : "" );
+                        dictCampus.Add( "Name", group.Campus != null ? group.Campus.Name : string.Empty );
                         dynGroup.Campus = dictCampus;
 
                         var dictGroupType = new Dictionary<string, object>();
@@ -429,10 +399,11 @@ namespace Rock.Rest.Controllers
                             dictMember.Add( "Role", member.GroupRole.Name );
                             dictMember.Add( "NickName", member.Person.NickName );
                             dictMember.Add( "LastName", member.Person.LastName );
-                            dictMember.Add( "PhotoUrl", member.Person.PhotoId.HasValue ? member.Person.PhotoUrl : "" );
+                            dictMember.Add( "PhotoUrl", member.Person.PhotoId.HasValue ? member.Person.PhotoUrl : string.Empty );
                             dictMember.Add( "PhotoId", member.Person.PhotoId );
-                            dictMember.Add( "ConnectionStatus", member.Person.ConnectionStatusValue != null ?
-                                member.Person.ConnectionStatusValue.Value : "" );
+                            dictMember.Add(
+                                "ConnectionStatus",
+                                member.Person.ConnectionStatusValue != null ? member.Person.ConnectionStatusValue.Value : string.Empty );
                             dictMember.Add( "Email", member.Person.Email );
 
                             var phoneTypes = new List<Dictionary<string, object>>();
@@ -473,21 +444,22 @@ namespace Rock.Rest.Controllers
         public class InfoWindowRequest
         {
             public string GroupPage { get; set; }
+
             public string PersonProfilePage { get; set; }
+
             public string MapPage { get; set; }
+
             public string Template { get; set; }
         }
 
         public class InfoWindowResult
         {
             public string Result { get; set; }
+
             public InfoWindowResult( string result )
             {
                 Result = result;
             }
         }
-
     }
 }
-
-

@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
@@ -38,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "The group to add people to", true )]
     [TextField( "Save Button Text", "The text to use for the Save button", false, "Save" )]
     [TextField( "Success Message", "The message to display when user is succesfully added to the group", false, "Please check your email to verify your registration" )]
-    [EmailTemplateField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
+    [SystemEmailField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
     [LinkedPage( "Confirmation Page", "The page that user should be directed to to confirm their registration" )]
     public partial class GroupSimpleRegister : RockBlock
     {
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Groups
                                     // Send the confirmation
                                     if ( confirmationEmailTemplateGuid != Guid.Empty )
                                     {
-                                        var mergeObjects = new Dictionary<string, object>();
+                                        var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                                         mergeObjects.Add( "Member", member );
 
                                         var pageParams = new Dictionary<string, string>();

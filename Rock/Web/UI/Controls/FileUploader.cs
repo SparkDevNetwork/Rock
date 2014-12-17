@@ -16,7 +16,9 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -238,8 +240,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                Guid guid;
-                return Guid.TryParse( _hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+                var result = _hfBinaryFileTypeGuid.Value.AsGuid();
+                if ( result.IsEmpty() )
+                {
+                    result = SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                }
+
+                return result;
             }
 
             set
@@ -554,7 +561,7 @@ namespace Rock.Web.UI.Controls
                     _hfBinaryFileId.RenderControl( writer );
                     _hfBinaryFileTypeGuid.RenderControl( writer );
                     _aFileName.RenderControl( writer );
-                
+
 
                     writer.AddAttribute( "class", "fileupload-remove" );
                     if ( !ShowDeleteButton )
@@ -574,17 +581,20 @@ namespace Rock.Web.UI.Controls
                         <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                     </div>" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-dropzone" );
-                if ( this.DisplayMode == UploaderDisplayMode.Button )
+                if (this.DisplayMode == UploaderDisplayMode.Button)
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-button" );
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-button");
+                }
+                else
+                {
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "fileupload-dropzone");
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 if ( this.DisplayMode == UploaderDisplayMode.Button )
                 {
-                    writer.Write( "upload file" );
+                    writer.Write( "Upload File" );
                 }
                 else
                 {
@@ -607,7 +617,22 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterStartupScript()
         {
-            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
+            int? maxUploadBytes = null;
+            try
+            {
+                HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
+                if ( section != null )
+                {
+                    // MaxRequestLength is in KB
+                    maxUploadBytes = section.MaxRequestLength * 1024;
+                }
+            }
+            catch
+            {
+                // intentionally ignore and don't tell the fileUploader the limit
+            }
+
+            var postBackScript = this.FileUploaded != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true ) : "";
             postBackScript = postBackScript.Replace( '\'', '"' );
             var script = string.Format(
 @"
@@ -628,7 +653,8 @@ Rock.controls.fileUploader.initialize({{
     }},
     doneFunction: function (e, data) {{
         {11}
-    }}
+    }},
+    maxUploadBytes: {12}
 }});",
                 _fileUpload.ClientID,
                 this.BinaryFileId,
@@ -641,7 +667,8 @@ Rock.controls.fileUploader.initialize({{
                 Rock.Security.Encryption.EncryptString( this.RootFolder ),
                 this.UploadUrl,
                 this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript );
+                this.DoneFunctionClientScript,
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 

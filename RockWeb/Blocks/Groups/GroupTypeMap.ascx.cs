@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using DotLiquid;
 using System.Dynamic;
 using Rock.Web;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -359,15 +360,10 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // enable showing debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                     {
                         lDebug.Visible = true;
-                        StringBuilder debugInfo = new StringBuilder();
-                        debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                        debugInfo.Append( "<p><em>Showing first 5 groups.</em></p>" );
-                        debugInfo.Append( "<pre>" + dynamicGroups.Take( 5 ).LiquidizeChildren().ToJson() + "</pre>" );
-                        debugInfo.Append( "</div" );
-                        lDebug.Text = debugInfo.ToString();
+                        lDebug.Text = dynamicGroups.Take( 5 ).lavaDebugInfo();
                     }
                     else
                     {
@@ -434,11 +430,11 @@ namespace RockWeb.Blocks.Groups
                                                     var showInfoWindow = {1}; 
                                                     var mapStyle = {2};
                                                     var pinColor = '{3}';
-                                                    var pinImage = new google.maps.MarkerImage('//chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                    var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
                                                         new google.maps.Size(21, 34),
                                                         new google.maps.Point(0,0),
                                                         new google.maps.Point(10, 34));
-                                                    var pinShadow = new google.maps.MarkerImage('//chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                    var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
                                                         new google.maps.Size(40, 37),
                                                         new google.maps.Point(0, 0),
                                                         new google.maps.Point(12, 35));

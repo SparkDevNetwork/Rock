@@ -4,6 +4,8 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
+            <Rock:NotificationBox ID="nbOrdering" runat="server" NotificationBoxType="Info" Text="Note: Select a specific entity type filter in order to reorder categories." Dismissable="true" Visible="false" />
+                    
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-folder"></i> Attribute Categories</h1>
@@ -17,14 +19,14 @@
                         <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
                             <Columns>
                                 <Rock:ReorderField />
-                                <asp:BoundField DataField="Name" HeaderText="Category" />
-                                <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                                <asp:TemplateField>
+                                <Rock:RockBoundField DataField="Name" HeaderText="Category" />
+                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon Class" />
+                                <Rock:RockTemplateField>
                                     <HeaderTemplate>Entity Type</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
                                     </ItemTemplate>
-                                </asp:TemplateField>
+                                </Rock:RockTemplateField>
                                 <Rock:DeleteField OnClick="rGrid_Delete" />
                             </Columns>
                         </Rock:Grid>

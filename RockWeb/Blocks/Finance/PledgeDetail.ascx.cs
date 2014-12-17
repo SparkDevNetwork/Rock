@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
 
             if (ppPerson.PersonId.HasValue)
             {
-                pledge.PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( ppPerson.PersonId.Value );
+                pledge.PersonAliasId = ppPerson.PersonAliasId;
             }
 
             pledge.AccountId = apAccount.SelectedValue.AsIntegerOrNull();

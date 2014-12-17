@@ -29,9 +29,13 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+
+using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -104,6 +108,9 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
+                // Clear all cache
+                RockMemoryCache.Clear();
+
                 // Get a db context
                 var rockContext = new RockContext();
 
@@ -126,6 +133,9 @@ namespace RockWeb
                 }
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
+
+                // Configure Rock Rest API
+                GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
@@ -174,12 +184,23 @@ namespace RockWeb
                     sched.Start();
                 }
 
+                // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
+                // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
+                // Date filter.
+                Liquid.UseRubyDateFormat = false;
+
+                //// NOTE: This means that template filters will also use CSharpNamingConvention
+                //// For example the dotliquid documentation says to do this for formatting dates: 
+                //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                Template.FileSystem = new RockWeb.LavaFileSystem();
+                Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
-
-                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
-
-                RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );
 
@@ -540,16 +561,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Registers the filters.
-        /// </summary>
-        /// <param name="filters">The filters.</param>
-        private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
-        {
-            // does validation on IEntity's coming in thru REST
-            filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
-        }
-
-        /// <summary>
         /// Registers the routes.
         /// </summary>
         /// <param name="routes">The routes.</param>
@@ -565,84 +576,6 @@ namespace RockWeb
                 // Create the custom route and save the page id in the DataTokens collection
                 routes.AddPageRoute( pageRoute );
             }
-
-            // Add API route for dataviews
-            routes.MapHttpRoute(
-                name: "DataViewApi",
-                routeTemplate: "api/{controller}/DataView/{id}",
-                defaults: new
-                {
-                    action = "DataView"
-                }
-            );
-
-            // Add any custom api routes
-            foreach ( var type in Rock.Reflection.FindTypes(
-                typeof( Rock.Rest.IHasCustomRoutes ) ) )
-            {
-                var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
-                if ( controller != null )
-                    controller.AddRoutes( routes );
-            }
-
-            // Add Default API Service routes
-            // Instead of being able to use one default route that gets action from http method, have to 
-            // have a default route for each method so that other actions do not match the default (i.e. DataViews)
-            routes.MapHttpRoute(
-                name: "DefaultApiGet",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "GET",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } )
-                }
-            );
-
-            routes.MapHttpRoute(
-               name: "DefaultApiPut",
-               routeTemplate: "api/{controller}/{id}",
-               defaults: new
-               {
-                   action = "PUT",
-                   id = System.Web.Http.RouteParameter.Optional
-               },
-               constraints: new
-               {
-                   httpMethod = new HttpMethodConstraint( new string[] { "PUT" } )
-               }
-           );
-
-            routes.MapHttpRoute(
-                name: "DefaultApiPost",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "POST",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
-                }
-            );
-
-            routes.MapHttpRoute(
-                name: "DefaultApiDelete",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new
-                {
-                    action = "DELETE",
-                    id = System.Web.Http.RouteParameter.Optional
-                },
-                constraints: new
-                {
-                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } )
-                }
-            );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
@@ -748,7 +681,7 @@ namespace RockWeb
                 }
 
                 // setup merge codes for email
-                var mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                 mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
                 // get email addresses to send to

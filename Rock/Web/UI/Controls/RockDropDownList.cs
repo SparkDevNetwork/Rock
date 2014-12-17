@@ -88,28 +88,14 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
+            get
+            {
+                return ViewState["Required"] as bool? ?? false;
+            }
 
-            set 
-            { 
-                var li = this.Items.FindByValue( string.Empty );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                    }
-                }
-
-                ViewState["Required"] = value; 
+            set
+            {
+                ViewState["Required"] = value;
             }
         }
 
@@ -234,7 +220,7 @@ namespace Rock.Web.UI.Controls
         /// Renders any data validator.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer)
+        protected virtual void RenderDataValidator( HtmlTextWriter writer )
         {
         }
 

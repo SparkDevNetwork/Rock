@@ -36,8 +36,10 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Send SMS" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
-    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to", true, "", "", 1, "To" )]
-    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-liquid'></span>", true, "", "", 2, "Message" )]
+    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 2, "Message",
+        new string[] { "Rock.Field.Types.TextFieldType" } )]
     public class SendSms : ActionComponent
     {
         /// <summary>
@@ -51,6 +53,8 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+
+            var mergeFields = GetMergeFields( action );
 
             int? fromId = null;
             Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
@@ -143,7 +147,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( toValue );
+                    recipients.Add( toValue.ResolveMergeFields( mergeFields ) );
                 }
             }
 
@@ -167,8 +171,6 @@ namespace Rock.Workflow.Action
 
             if ( recipients.Any() && fromId.HasValue && !string.IsNullOrWhiteSpace(message) )
             {
-                var mergeFields = GetMergeFields( action );
-
                 var mediumData = new Dictionary<string, string>();
                 mediumData.Add( "FromValue", fromId.Value.ToString());
                 mediumData.Add( "Message", message.ResolveMergeFields( mergeFields ) );

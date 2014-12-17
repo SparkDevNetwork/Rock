@@ -273,9 +273,57 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public static string FormatSelectedValue(string selectedValue)
         {
-            var idParts = selectedValue.SplitDelimitedValues().ToList();
+            var idParts = selectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( idParts.Count > 0 )
             {
+                if ( idParts.Count == 2 && idParts[0] == "GlobalAttribute" )
+                {
+                    return string.Format( "{{{{ 'Global' | Attribute:'{0}' }}}}", idParts[1] );
+                }
+
+                if ( idParts.Count == 1 )
+                {
+                    if ( idParts[0] == "Campuses" )
+                    {
+                        return @"
+{% for campus in Campuses %}
+<p>
+    Name: {{ campus.Name }}<br/>
+    Description: {{ campus.Description }}<br/>
+    Is Active: {{ campus.IsActive }}<br/>
+    Short Code: {{ campus.ShortCode }}<br/>
+    Url: {{ campus.Url }}<br/>
+    Phone Number: {{ campus.PhoneNumber }}<br/>
+    Service Times:
+    {% for serviceTime in campus.ServiceTimes %}
+        {{ serviceTime.Day }} {{ serviceTime.Time }},
+    {% endfor %}
+    <br/>
+{% endfor %}
+";
+                    }
+
+                    if ( idParts[0] == "Date" )
+                    {
+                        return "{{ 'Now' | Date:'MM/dd/yyyy' }}";
+                    }
+
+                    if ( idParts[0] == "Time" )
+                    {
+                        return "{{ 'Now' | Date:'hh:mm:ss tt' }}";
+                    }
+
+                    if ( idParts[0] == "DayOfWeek" )
+                    {
+                        return "{{ 'Now' | Date:'dddd' }}";
+                    }
+
+                    if ( idParts[0] == "PageParameter" )
+                    {
+                        return "{{ PageParameter.[Enter Page Parameter Name Here] }}";
+                    }
+                }
+
                 var workingParts = new List<string>();
 
                 // Get the root type
@@ -283,8 +331,17 @@ namespace Rock.Web.UI.Controls
                 EntityTypeCache entityType = null;
                 while ( entityType == null && pathPointer < idParts.Count() )
                 {
-                    entityType = EntityTypeCache.Read( idParts[pathPointer], false );
-                    workingParts.Add( entityType != null ? entityType.FriendlyName.Replace( " ", string.Empty) : idParts[pathPointer] );
+                    string item = idParts[pathPointer];
+                    string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                    string itemName = itemParts.Length > 1 ? itemParts[0] : string.Empty;
+                    string itemType = itemParts.Length > 1 ? itemParts[1] : item;
+
+                    entityType = EntityTypeCache.Read( itemType, false );
+
+                    workingParts.Add( entityType != null ? 
+                        ( itemName != string.Empty ? itemName : entityType.FriendlyName.Replace( " ", string.Empty) ) :
+                        idParts[pathPointer] );
                     pathPointer++;
                 }
                 
@@ -296,6 +353,7 @@ namespace Rock.Web.UI.Controls
 
                     // Traverse the Property path
                     bool itemIsCollection = false;
+                    bool lastItemIsProperty = true;
 
                     while ( idParts.Count > pathPointer )
                     {
@@ -305,6 +363,7 @@ namespace Rock.Web.UI.Controls
                         var childProperty = type.GetProperty( propertyName );
                         if ( childProperty != null )
                         {
+                            lastItemIsProperty = true;
                             type = childProperty.PropertyType;
 
                             if ( type.IsGenericType &&
@@ -325,16 +384,35 @@ namespace Rock.Web.UI.Controls
                             {
                                 itemIsCollection = false;
                             }
-
                         }
+                        else
+                        {
+                            lastItemIsProperty = false;
+                        }
+
                         pathPointer++;
                     }
 
-                    string itemString = itemIsCollection ? "" : string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
+                    string itemString = string.Empty;
+                    if ( !itemIsCollection )
+                    {
+                        if ( lastItemIsProperty )
+                        {
+                            itemString = string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
+                        }
+                        else
+                        {
+                            string partPath = workingParts.Take( workingParts.Count - 1 ).ToList().AsDelimited( "." );
+                            itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, workingParts.Last() );
+                        }
+
+                    }
+
                     return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
                 }
 
                 return string.Format( "{{{{ {0} }}}}", idParts.AsDelimited( "." ) );
+
             }
 
             return string.Empty;

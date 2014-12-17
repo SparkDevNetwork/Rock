@@ -16,6 +16,8 @@
             + new function getParentScrollContainerNode()
         + Proper functionality now requires the scroll container to have css class 'scroll-container'
         + function wheel( event ) now only adjust the content when the scrollbar is vertical (axis == 'y')
+        + touch events now only get attached when the content when the scrollbar is vertical (axis == 'y')
+        + if a scroll position is specified, it now will only scroll if there is a scrollbar visible
  */
 ;( function( $ ) 
 {
@@ -94,8 +96,8 @@
         
             oScrollbar.ratio = options.sizethumb === 'auto' ? ( oContent[ options.axis ] / oTrack[ options.axis ] ) : ( oContent[ options.axis ] - oViewport[ options.axis ] ) / ( oTrack[ options.axis ] - oThumb[ options.axis ] );
             
-            iScroll = ( sScroll === 'relative' && oContent.ratio <= 1 ) ? Math.min( ( oContent[ options.axis ] - oViewport[ options.axis ] ), Math.max( 0, iScroll )) : 0;
-            iScroll = ( sScroll === 'bottom' && oContent.ratio <= 1 ) ? ( oContent[ options.axis ] - oViewport[ options.axis ] ) : isNaN( parseInt( sScroll, 10 ) ) ? iScroll : parseInt( sScroll, 10 );
+            iScroll = (sScroll === 'relative' && oContent.ratio <= 1) ? Math.min((oContent[options.axis] - oViewport[options.axis]), Math.max(0, iScroll)) : 0;
+            iScroll = (sScroll === 'bottom' && oContent.ratio <= 1) ? (oContent[options.axis] - oViewport[options.axis]) : isNaN(parseInt(sScroll, 10)) || oScrollbar.obj.hasClass("disable") ? iScroll : parseInt(sScroll, 10);
             
             setSize();
         };
@@ -162,7 +164,12 @@
             }
             else
             {
-                document.ontouchmove = function( event )
+                if (options.axis == 'x') {
+                    // don't hook to document.ontouchmove when in X mode
+                    return true;
+                }
+
+                document.ontouchmove = function (event)
                 {
                     event.preventDefault();
                     drag( event.touches[ 0 ] );
@@ -221,6 +228,11 @@
         {
             if (getParentScrollContainerNode(oScrollbar.obj[0]) != getParentScrollContainerNode(event.target)) {
                 // do nothing if this event target was for another scroll-container 
+                return true;
+            }
+
+            if (options.axis == 'x') {
+                // do nothing if the scrollbar is horizontal
                 return true;
             }
 

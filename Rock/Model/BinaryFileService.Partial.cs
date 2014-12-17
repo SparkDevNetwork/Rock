@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -62,7 +63,7 @@ namespace Rock.Model
             if ( storageProvider != null )
             {
                 binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
-                binaryFile.Data.Content = storageProvider.GetFileContent( binaryFile, HttpContext.Current );
+                binaryFile.Data.ContentStream = storageProvider.GetFileContentStream( binaryFile, HttpContext.Current );
             }
         }
 
@@ -76,7 +77,7 @@ namespace Rock.Model
         {
             Rock.Storage.ProviderComponent storageProvider = null;
 
-            if ( item != null && item.StorageEntityTypeId.HasValue)
+            if ( item != null && item.StorageEntityTypeId.HasValue )
             {
                 var storageEntityType = EntityTypeCache.Read( item.StorageEntityTypeId.Value, rockContext );
                 if ( storageEntityType != null )
@@ -180,8 +181,7 @@ namespace Rock.Model
 
                 // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
                 requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
-                
-                binaryFile.Url = reader["Url"] as string;
+
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;
                 binaryFile.ModifiedDateTime = reader["ModifiedDateTime"] as DateTime?;
@@ -199,15 +199,16 @@ namespace Rock.Model
                 binaryFile.Data = new BinaryFileData();
 
                 // read the fileContent from the database just in case it's stored in the database, otherwise, the Provider will get it
-                var content = reader["Content"];
+                // TODO do as a stream instead
+                var content = reader["Content"] as byte[];
                 if ( content != null )
                 {
-                    binaryFile.Data.Content = content as byte[];
+                    binaryFile.Data.ContentStream = new System.IO.MemoryStream( content );
                 }
 
                 Rock.Storage.ProviderComponent provider = Rock.Storage.ProviderContainer.GetComponent( entityTypeName );
 
-                binaryFile.Data.Content = provider.GetFileContent( binaryFile, context );
+                binaryFile.Data.ContentStream = provider.GetFileContentStream( binaryFile, context );
 
                 return binaryFile;
             }

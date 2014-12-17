@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
+using Humanizer;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,6 +32,7 @@ namespace Rock.Communication
     /// </summary>
     public static class Email
     {
+
         /// <summary>
         /// Sends the specified email template unique identifier.
         /// </summary>
@@ -58,7 +62,7 @@ namespace Rock.Communication
                                     {
                                         transport.Send( template, recipients, appRoot, themeRoot );
                                     }
-                                    catch(Exception ex1)
+                                    catch ( Exception ex1 )
                                     {
                                         throw new Exception( string.Format( "Error sending System Email ({0}).", template.Title ), ex1 );
                                     }
@@ -89,5 +93,119 @@ namespace Rock.Communication
                 ExceptionLogService.LogException( ex, HttpContext.Current );
             }
         }
+
+        /// <summary>
+        /// Processes the bounce.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="bounceType">Type of the bounce.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bouncedDateTime">The bounced date time.</param>
+        public static void ProcessBounce( string email, BounceType bounceType, string message, DateTime bouncedDateTime )
+        {
+            // currently only processing hard bounces
+            if ( bounceType == BounceType.HardBounce )
+            {
+                // get people who have those emails
+
+                RockContext rockContext = new RockContext();
+                PersonService personService = new PersonService( rockContext );
+
+                var peopleWithEmail = personService.GetByEmail( email );
+
+                foreach ( var person in peopleWithEmail )
+                {
+                    person.IsEmailActive = false;
+
+                    person.EmailNote = String.Format( "Email experienced a {0} on {1} ({2}).", bounceType.Humanize(), bouncedDateTime.ToShortDateString(), message );
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Notifies the admins.
+        /// </summary>
+        /// <param name="subject">The subject.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <exception cref="System.Exception">
+        /// Error sending System Email: Could not read Email Medium Entity Type
+        /// </exception>
+        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "" )
+        {
+            try
+            {
+                Guid adminGroup = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
+                var recipients = new GroupMemberService( new RockContext() ).Queryable()
+                    .Where( m =>
+                        m.Group.Guid.Equals( adminGroup ) &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        m.Person.Email != null &&
+                        m.Person.Email != "" )
+                    .Select( m => m.Person.Email )
+                    .ToList();
+
+                if ( recipients != null && recipients.Any() )
+                {
+                    var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+                    if ( mediumEntity != null )
+                    {
+                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        if ( medium != null && medium.IsActive )
+                        {
+                            var transport = medium.Transport;
+                            if ( transport != null && transport.IsActive )
+                            {
+                                try
+                                {
+                                    transport.Send( recipients, null, subject, message, appRoot, themeRoot );
+                                }
+                                catch ( Exception ex1 )
+                                {
+                                    throw new Exception( string.Format( "Error sending System Email ({0}).", subject ), ex1 );
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName ) );
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name ) );
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception( "Error sending System Email: Could not read Email Medium Entity Type" );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+            }
+        }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum BounceType
+    {
+
+        /// <summary>
+        /// The hard bounce
+        /// </summary>
+        HardBounce = 1,
+
+        /// <summary>
+        /// The soft bounce
+        /// </summary>
+        SoftBounce = 2
+    };
+
 }

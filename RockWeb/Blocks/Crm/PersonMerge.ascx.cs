@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Crm
                         .ToList();
 
                     // Get the people selected
-                    var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
+                    var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
 
@@ -386,7 +386,11 @@ namespace RockWeb.Blocks.Crm
                             var photo = binaryFileService.Get( photoId );
                             if ( photo != null )
                             {
-                                binaryFileService.Delete( photo );
+                                string errorMessages;
+                                if ( binaryFileService.CanDelete( photo, out errorMessages ) )
+                                {
+                                    binaryFileService.Delete( photo );
+                                }
                             }
                         }
                     }

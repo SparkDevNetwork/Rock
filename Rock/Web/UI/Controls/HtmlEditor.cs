@@ -335,6 +335,25 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
+        /// <remarks>
+        /// Format should be one of the following formats
+        ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
+        ///     "FieldName|LabelName"
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///                                       FieldName (i.e. "Field Name")
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
+        ///                                       properties and attributes.    
+        ///                                  
+        /// Supports the following "special" field names
+        ///     "GlobalAttribute"               - Provides navigable list of global attributes
+        ///     "Campuses"                      - Will return an array of all campuses
+        ///     "Date"                          - Will return lava syntax for displaying current date
+        ///     "Time"                          - Will return lava syntax for displaying current time
+        ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///                                       (query string and/or route parameter value)
+        /// </remarks>
         /// <value>
         /// The merge fields.
         /// </value>
@@ -428,6 +447,16 @@ namespace Rock.Web.UI.Controls
             // NOTE: Some of the plugins in the Full (72 plugin) build of CKEditor are buggy, so we are just using the Standard edition. 
             // This is why some of the items don't appear in the RockCustomConfiguFull toolbar (like the Justify commands)
             string ckeditorInitScriptFormat = @"
+// ensure that ckEditor.js link is added to page
+if (!$('#ckeditorJsLib').length) {{
+    // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
+    $.ajaxSetup({{ cache: true }});
+    $('head').prepend(""<script id='ckeditorJsLib' src='{12}' />"");
+}}
+
+// allow i tags to be empty (for font awesome)
+CKEDITOR.dtd.$removeEmpty['i'] = false
+
 // In IE, the CKEditor doesn't accept keyboard input when loading again within the same page instance.  Destroy fixes it, but destroy throws an exception in Chrome
 if (CKEDITOR.instances.{0}) {{
     try
@@ -446,6 +475,7 @@ CKEDITOR.replace('{0}', {{
     toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{1},
     removeButtons: '',
     baseFloatZIndex: 200000,  // set zindex to be 200000 so it will be on top of our modals (100000)
+    entities: false, // stop CKEditor from using HTML entities in the editor output. Prevents single quote from getting escaped, etc
     htmlEncodeOutput: true,
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
@@ -467,7 +497,13 @@ CKEDITOR.replace('{0}', {{
             CKEDITOR.instances.{0}.updateElement();
 
             // update the underlying TextElement when there is a change event in SOURCE mode
-            $('#cke_{0}').on( 'change', '.cke_source', function(e, data) {{
+            $('#cke_{0}').on( 'change paste', '.cke_source', function(e, data) {{
+                CKEDITOR.instances.{0}.updateElement();
+            }});
+
+            // In IE, clicking the Source button does not cause the .cke_source to lose focus 
+            // and fire the onchange event, so also updateElement when source button is clicked
+            $('#cke_{0} .cke_button__source').click( function(e, data) {{
                 CKEDITOR.instances.{0}.updateElement();
             }});
 
@@ -535,6 +571,8 @@ CKEDITOR.replace('{0}', {{
                 this.AdditionalConfigurations = this.AdditionalConfigurations.Trim() + ",";
             }
 
+            string ckEditorLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true );
+
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, 
                 this.ClientID,                                                  // {0}
                 this.Toolbar.ConvertToString(),                                 // {1}
@@ -547,7 +585,8 @@ CKEDITOR.replace('{0}', {{
                 imageFileTypeWhiteList,                                         // {8}
                 fileTypeBlackList,                                              // {9}
                 this.MergeFields.AsDelimited( "," ),                            // {10}
-                this.AdditionalConfigurations );                                // {11}
+                this.AdditionalConfigurations,                                  // {11}
+                ckEditorLib );                                                  // {12}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

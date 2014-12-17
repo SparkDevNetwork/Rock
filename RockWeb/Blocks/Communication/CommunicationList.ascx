@@ -23,17 +23,17 @@
                         <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
                     </Rock:GridFilter>
 
-                    <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound" >
+                    <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
-                            <asp:BoundField DataField="Communication.Subject" SortExpression="Communication.Subject" HeaderText="Subject" />
-                            <asp:BoundField DataField="MediumName" SortExpression="MediumName" HeaderText="Medium" />
-                            <asp:BoundField DataField="Communication.SenderPersonAlias.Person.FullName" HeaderText="Created By"
+                            <Rock:RockBoundField DataField="Communication.Subject" SortExpression="Communication.Subject" TruncateLength="28" HeaderText="Subject" />
+                            <Rock:RockBoundField DataField="MediumName" SortExpression="MediumName" HeaderText="Medium" />
+                            <Rock:RockBoundField DataField="Communication.SenderPersonAlias.Person.FullName" HeaderText="Created By"
                                 SortExpression="Communication.SenderPersonAlias.Person.LastName,Communication.SenderPersonAlias.Person.NickName" />
-                            <asp:BoundField DataField="Communication.ReviewerPersonAlias.Person.FullName" HeaderText="Reviewed By"
+                            <Rock:RockBoundField DataField="Communication.ReviewerPersonAlias.Person.FullName" HeaderText="Reviewed By" ColumnPriority="DesktopLarge"
                                 SortExpression="Communication.ReviewerPersonAlias.Person.LastName,Communication.ReviewerPersonAlias.Person.NickName"  />
-                            <Rock:DateTimeField DataField="Communication.ReviewedDateTime" SortExpression="Communication.ReviewedDateTime" HeaderText="Date Reviewed" />
+                            <Rock:DateTimeField DataField="Communication.ReviewedDateTime" SortExpression="Communication.ReviewedDateTime" ColumnPriority="DesktopLarge" HeaderText="Date Reviewed" />
                             <Rock:EnumField DataField="Communication.Status" SortExpression="Communication.Status" HeaderText="Communication Status" />
-                            <asp:TemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
+                            <Rock:RockTemplateField HeaderText="Recipients" ItemStyle-HorizontalAlign="Center" SortExpression="Recipients">
                                 <ItemTemplate>
                                     <Rock:Badge ID="bOpened" runat="server" Tooltip="Opened" BadgeType="Success"></Rock:Badge>
                                     <Rock:Badge ID="bDelivered" runat="server" ToolTip="Delivered" BadgeType="info"></Rock:Badge>
@@ -41,7 +41,7 @@
                                     <Rock:Badge ID="bCancelled" runat="server" ToolTip="Cancelled" BadgeType="Warning"></Rock:Badge>
                                     <Rock:Badge ID="bFailed" runat="server" Tooltip="Failed" BadgeType="Danger"></Rock:Badge>
                                 </ItemTemplate>
-                            </asp:TemplateField>
+                            </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
                         </Columns>
                     </Rock:Grid>

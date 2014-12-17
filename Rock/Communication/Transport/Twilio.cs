@@ -108,23 +108,33 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message );
+                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message, callbackUrl );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
 
-                                    historyService.Add( new History
+                                    try
                                     {
-                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                        EntityTypeId = personEntityTypeId,
-                                        CategoryId = communicationCategoryId,
-                                        EntityId = recipient.PersonAlias.PersonId,
-                                        Summary = "Sent SMS message.",
-                                        Caption = message,
-                                        RelatedEntityTypeId = communicationEntityTypeId,
-                                        RelatedEntityId = communication.Id
-                                    } );
+                                        historyService.Add( new History
+                                        {
+                                            CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                            EntityTypeId = personEntityTypeId,
+                                            CategoryId = communicationCategoryId,
+                                            EntityId = recipient.PersonAlias.PersonId,
+                                            Summary = "Sent SMS message.",
+                                            Caption = message.Truncate( 200 ),
+                                            RelatedEntityTypeId = communicationEntityTypeId,
+                                            RelatedEntityId = communication.Id
+                                        } );
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionLogService.LogException( ex, null );
+                                    }
                                 
                                 }
                                 else
@@ -218,5 +228,53 @@ namespace Rock.Communication.Transport
             }
         }
 
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
+        {
+            try
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                string fromPhone = from;
+                if ( !string.IsNullOrWhiteSpace( fromPhone ) )
+                {
+                    string accountSid = GetAttributeValue( "SID" );
+                    string authToken = GetAttributeValue( "Token" );
+                    var twilio = new TwilioRestClient( accountSid, authToken );
+
+                    string message = body;
+                    if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                    {
+                        message = message.Replace( "~~/", themeRoot );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                    {
+                        message = message.Replace( "~/", appRoot );
+                        message = message.Replace( @" src=""/", @" src=""" + appRoot );
+                        message = message.Replace( @" href=""/", @" href=""" + appRoot );
+                    }
+
+                    foreach ( var recipient in recipients )
+                    {
+                        var response = twilio.SendMessage( fromPhone, recipient, message );
+                    }
+                }
+            }
+
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
     }
 }

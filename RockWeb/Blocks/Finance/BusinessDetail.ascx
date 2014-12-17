@@ -84,7 +84,7 @@
                 <div class="grid margin-t-md">
                     <Rock:Grid ID="gContactList" runat="server" RowItemText="Contact" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowSelected="gContactList_RowSelected" ShowConfirmDeleteDialog="false" >
                         <Columns>
-                            <asp:BoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
+                            <Rock:RockBoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
                             <Rock:DeleteField OnClick="gContactList_Delete" />
                         </Columns>
                     </Rock:Grid>

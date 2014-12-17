@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BinaryFileId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "BinaryFileId", e.RowKeyId );
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            BinaryFile binaryFile = binaryFileService.Get( (int)e.RowKeyValue );
+            BinaryFile binaryFile = binaryFileService.Get( e.RowKeyId );
 
             if ( binaryFile != null )
             {

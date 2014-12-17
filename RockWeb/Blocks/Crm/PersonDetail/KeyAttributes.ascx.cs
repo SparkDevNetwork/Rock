@@ -393,8 +393,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgKeyAttribute_SaveClick( object sender, EventArgs e )
         {
-            SelectedAttributes.Where( a => !AttributeList.Contains( a ) ).ToList().ForEach( a => AttributeList.Add( a ) );
-            SetUserPreference( _preferenceKey, AttributeList.AsDelimited( "," ) );
+            // Re: bug #721
+            // I can't see why this next line was in there because by the time we get
+            // here the SelectedAttributes list has all the right items. So I changed
+            // the SetUserPreference line to just use the SelectedAttributes instead of AttributeList.
+            //SelectedAttributes.Where( a => !AttributeList.Contains( a ) ).ToList().ForEach( a => AttributeList.Add( a ) );
+            SetUserPreference( _preferenceKey, SelectedAttributes.AsDelimited( "," ) );
             BindAttributes();
             CreateControls( true );
 

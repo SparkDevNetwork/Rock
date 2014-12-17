@@ -75,8 +75,9 @@
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
-                    $control.find('.picker-menu').first().toggle();
-                    self.updateScrollbar();
+                    $control.find('.picker-menu').first().toggle(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 $control.find('.picker-cancel').click(function () {
@@ -134,10 +135,10 @@
 
                 if ($container.is(':visible')) {
                     $container.tinyscrollbar_update('relative');
-
-                    // update the outer modal scrollbar
-                    Rock.dialogs.updateModalScrollBar(this.options.controlId);
                 }
+
+                // update the outer modal  
+                Rock.dialogs.updateModalScrollBar(this.options.controlId);
             }
         };
 

@@ -53,6 +53,16 @@ namespace Rock.Security
         ISecured ParentAuthority { get; }
 
         /// <summary>
+        /// An optional parent authority to check prior to checking main ParentAuthority.  
+        /// (i.e for Groups, the GroupType is a checked prior to the main parent
+        /// authority of parent group type, entity, globaldefault
+        /// </summary>
+        /// <value>
+        /// The parent authority pre.
+        /// </value>
+        ISecured ParentAuthorityPre { get; }
+
+        /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         Dictionary<string, string> SupportedActions { get; }

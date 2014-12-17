@@ -43,7 +43,6 @@
                     window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
                 }
 
-                $("#console ol").append("<li class='highlight'><span>[Rock RMS Installer v2.0]</span></li>");
                 $("#console ol").append("<li class='highlight'><span>Connected to server via: " + window.location.origin + "</span></li>");
             });
 
@@ -507,7 +506,7 @@
                         <h1>Email Server Settings</h1>
 						
 					    <p>Email is an essential part of the Rock RMS.  Please provide a few details about your email environment.  You can change 
-					    these values at an time inside the app. 
+					    these values at any time inside the app. 
 					    </p>
 
 					    <div class="form-group">
@@ -635,7 +634,7 @@
 <script language="CS" runat="server">
     
     const string baseStorageUrl = "//rockrms.blob.core.windows.net/install/";
-    const string baseVersion = "2_0_0";
+    const string baseVersion = "2_6_0";
 
     string storageUrl = string.Empty;
     bool isDebug = false;

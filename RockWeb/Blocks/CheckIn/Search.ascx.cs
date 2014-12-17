@@ -45,6 +45,16 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( !Page.IsPostBack )
+            {
+                tbPhone.Focus();
+                this.Page.Form.DefaultButton = lbSearch.UniqueID;
+            }
+        }
+
         protected void lbSearch_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )

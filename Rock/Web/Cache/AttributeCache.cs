@@ -473,6 +473,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public virtual Security.ISecured ParentAuthorityPre
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         public virtual Dictionary<string, string> SupportedActions { get; private set; }

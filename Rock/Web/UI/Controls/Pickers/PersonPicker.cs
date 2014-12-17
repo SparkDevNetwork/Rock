@@ -19,6 +19,8 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -244,6 +246,25 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfPersonId.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets the person's primary alias identifier.
+        /// </summary>
+        /// <value>
+        /// The person alias identifier.
+        /// </value>
+        public int? PersonAliasId
+        {
+            get
+            {
+                if (PersonId.HasValue)
+                {
+                    return new PersonAliasService( new RockContext() ).GetPrimaryAliasId ( PersonId.Value );
+                }
+
+                return null;
             }
         }
 

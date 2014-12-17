@@ -65,9 +65,6 @@ namespace RockWeb.Blocks.Core
 
             // hide all the actions if user doesn't have EDIT to the block
             divTreeviewActions.Visible = canEditBlock;
-
-            RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
-
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
 
             // Get EntityTypeName
@@ -204,10 +201,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddItem_Click( object sender, EventArgs e )
         {
-            int parentCategoryId = 0;
-            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( PageParameterName, 0.ToString() );
+            int parentCategoryId = hfSelectedCategoryId.Value.AsInteger();
+            if (parentCategoryId > 0)
             {
-                NavigateToLinkedPage( "DetailPage", PageParameterName, 0, "parentCategoryId", parentCategoryId );
+                qryParams.Add( "parentCategoryId", hfSelectedCategoryId.Value );
+                qryParams.Add( "ExpandedIds", hfInitialCategoryParentIds.Value );
+                NavigateToLinkedPage( "DetailPage", qryParams );
             }
         }
 
@@ -218,15 +219,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryChild_Click( object sender, EventArgs e )
         {
-            int parentCategoryId = 0;
-            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
+            int parentCategoryId = hfSelectedCategoryId.ValueAsInt();
+
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "CategoryId", 0.ToString() );
+            if ( parentCategoryId > 0 )
             {
-                NavigateToLinkedPage( "DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId );
+                qryParams.Add( "parentCategoryId", parentCategoryId.ToString() );
             }
-            else
-            {
-                NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
-            }
+            qryParams.Add( "ExpandedIds", hfInitialCategoryParentIds.Value );
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         /// <summary>
@@ -236,7 +239,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
+            int parentCategoryId = hfSelectedCategoryId.ValueAsInt();
+
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "CategoryId", 0.ToString() );
+            qryParams.Add( "ExpandedIds", hfInitialCategoryParentIds.Value );
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
     }
 }

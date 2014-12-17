@@ -28,24 +28,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class PagesController : IHasCustomRoutes
+    public partial class PagesController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "PagesGetChildren",
-                routeTemplate: "api/Pages/GetChildren/{id}",
-                defaults: new
-                {
-                    controller = "Pages",
-                    action = "GetChildren"
-                } );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -53,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <param name="hidePageIds">List of pages that should not be included in results</param>
         /// <returns></returns>
         [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Pages/GetChildren/{id}" )]
         public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null)
         {
             IQueryable<Page> qry;
@@ -81,16 +66,18 @@ namespace Rock.Rest.Controllers
             // try to quickly figure out which items have Children
             List<int> resultIds = pageList.Select( a => a.Id ).ToList();
 
-            var qryHasChildren = from x in Get().Select( a => a.ParentPageId )
-                                 where resultIds.Contains( x.Value )
-                                 select x.Value;
-
-            var qryHasChildrenList = qryHasChildren.ToList();
+            var qryHasChildren = Get()
+                .Where( p =>
+                    p.ParentPageId.HasValue &&
+                    resultIds.Contains( p.ParentPageId.Value ) )
+                .Select( p => p.ParentPageId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var g in pageItemList )
             {
                 int pageId = int.Parse( g.Id );
-                g.HasChildren = qryHasChildrenList.Any( a => a == pageId );
+                g.HasChildren = qryHasChildren.Any( a => a == pageId );
                 g.IconCssClass = "fa fa-file-o";
             }
 

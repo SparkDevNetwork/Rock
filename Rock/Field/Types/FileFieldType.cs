@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Model;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -43,7 +44,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new Rock.Web.UI.Controls.FileUploader { ID = id }; 
+            var control = new Rock.Web.UI.Controls.FileUploader { ID = id };
+
+            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
+            {
+                control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
+            }
+
+            return control;
         }
 
         /// <summary>

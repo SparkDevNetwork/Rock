@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Cms
             if ( site != null )
             {
                 string errorMessage;
-                canDelete = siteService.CanDelete( site, out errorMessage );
+                canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
                 if ( !canDelete )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );

@@ -52,5 +52,10 @@ namespace Rock.SystemGuid
         /// The Content Channel Item Image file type guid
         /// </summary>
         public const string CONTENT_CHANNEL_ITEM_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
+
+        /// <summary>
+        /// The Media File file type guid
+        /// </summary>
+        public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
     }
 }

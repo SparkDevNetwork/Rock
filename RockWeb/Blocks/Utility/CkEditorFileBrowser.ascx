@@ -63,7 +63,10 @@
                         var selectedFileId = $(this).closest('li').attr('data-id');
                         Rock.dialogs.confirm("Are you sure you want to delete this file?", function (confirmResult, data) {
                             if (confirmResult) {
-                                __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
+                                setTimeout(function () {
+                                    __doPostBack('<%=upnlFiles.ClientID %>', 'file-delete:' + selectedFileId + '');
+                                });
                             }
                         });
                     });
@@ -73,7 +76,10 @@
                     $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
                         var relativeFolderPath = data;
                         $('#<%=hfSelectedFolder.ClientID%>').val(data);
-                        __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        // use setTimeout so that the doPostBack happens later (to avoid javascript exception that occurs due to timing)
+                        setTimeout(function () {
+                            __doPostBack('<%=upnlFiles.ClientID %>', 'folder-selected:' + relativeFolderPath + '');
+                        });
                     });
 
                     // js for when a file is selected
@@ -118,7 +124,7 @@
         <ContentTemplate>
             <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" Dismissable="true" />
 
-            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false">
+            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false" >
                 <Content>
                     <Rock:RockTextBox runat="server" ID="tbOrigFolderName" Label="Folder Name" ReadOnly="true" />
                     <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder"  />
@@ -127,7 +133,8 @@
 
             <Rock:ModalDialog runat="server" Title="Create Folder" ID="mdCreateFolder" OnSaveClick="mdCreateFolder_SaveClick" ValidationGroup="vgCreateFolder" ScrollbarEnabled="false">
                 <Content>
-                    <Rock:RockTextBox runat="server" ID="tbNewFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgCreateFolder" />
+                    <!-- prevent carriage return from making mdRenameFolder popup when you press enter( on FF and Chrome) -->
+                    <Rock:RockTextBox runat="server" ID="tbNewFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgCreateFolder" onkeypress="if (event.keyCode == 13) { event.preventDefault(); }"  />
                 </Content>
             </Rock:ModalDialog>
 

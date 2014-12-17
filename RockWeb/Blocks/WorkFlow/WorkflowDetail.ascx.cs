@@ -462,7 +462,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var group = _groupService.Get( activity.AssignedGroupId.Value);
                     if ( group != null )
                     {
-                        tdAssignedToGroup.Description = activity.AssignedGroup.Name;
+                        tdAssignedToGroup.Description = group.Name;
                     }
                 }
 
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -662,74 +662,78 @@ namespace RockWeb.Blocks.WorkFlow
             pnlViewDetails.Visible = true;
             pnlEditDetails.Visible = false;
 
-            if ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( Workflow != null )
             {
-                tdName.Description = Workflow.Name;
-                tdStatus.Description = Workflow.Status;
 
-                if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
+                if ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    var person = Workflow.InitiatorPersonAlias.Person;
-                    tdInitiator.Description = string.Format( "<a href='~/Person/{0}'>{1}</a>", person.Id, person.FullName);
-                }
-                else
-                {
-                    tdInitiator.Description = string.Empty;
-                }
+                    tdName.Description = Workflow.Name;
+                    tdStatus.Description = Workflow.Status;
 
-                if ( Workflow.ActivatedDateTime.HasValue )
-                {
-                    tdActivatedWhen.Description = string.Format( "{0} {1} ({2})",
-                        Workflow.ActivatedDateTime.Value.ToShortDateString(),
-                        Workflow.ActivatedDateTime.Value.ToShortTimeString(),
-                        Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
-                }
-                if ( Workflow.CompletedDateTime.HasValue )
-                {
-                    tdCompletedWhen.Description = string.Format( "{0} {1} ({2})",
-                        Workflow.CompletedDateTime.Value.ToShortDateString(),
-                        Workflow.CompletedDateTime.Value.ToShortTimeString(),
-                        Workflow.CompletedDateTime.Value.ToRelativeDateString() );
-                }
-
-                phViewAttributes.Controls.Clear();
-                foreach( var attribute in Workflow.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
-                {
-                    var td = new TermDescription();
-                    td.ID = "tdViewAttribute_" + attribute.Key;
-                    td.Term = attribute.Name;
-
-                    string value = Workflow.GetAttributeValue( attribute.Key );
-
-                    var field = attribute.FieldType.Field;
-                    string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
-
-                    if ( field is Rock.Field.ILinkableFieldType )
+                    if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null )
                     {
-                        var linkableField = field as Rock.Field.ILinkableFieldType;
-                        td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
-                            ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
+                        var person = Workflow.InitiatorPersonAlias.Person;
+                        tdInitiator.Description = string.Format( "<a href='{0}{1}'>{2}</a>", ResolveRockUrl("~/Person/"), person.Id, person.FullName );
                     }
                     else
                     {
-                        td.Description = formattedValue;
+                        tdInitiator.Description = string.Empty;
                     }
-                    phViewAttributes.Controls.Add( td );
+
+                    if ( Workflow.ActivatedDateTime.HasValue )
+                    {
+                        tdActivatedWhen.Description = string.Format( "{0} {1} ({2})",
+                            Workflow.ActivatedDateTime.Value.ToShortDateString(),
+                            Workflow.ActivatedDateTime.Value.ToShortTimeString(),
+                            Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
+                    }
+                    if ( Workflow.CompletedDateTime.HasValue )
+                    {
+                        tdCompletedWhen.Description = string.Format( "{0} {1} ({2})",
+                            Workflow.CompletedDateTime.Value.ToShortDateString(),
+                            Workflow.CompletedDateTime.Value.ToShortTimeString(),
+                            Workflow.CompletedDateTime.Value.ToRelativeDateString() );
+                    }
+
+                    phViewAttributes.Controls.Clear();
+                    foreach ( var attribute in Workflow.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
+                    {
+                        var td = new TermDescription();
+                        td.ID = "tdViewAttribute_" + attribute.Key;
+                        td.Term = attribute.Name;
+
+                        string value = Workflow.GetAttributeValue( attribute.Key );
+
+                        var field = attribute.FieldType.Field;
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+
+                        if ( field is Rock.Field.ILinkableFieldType )
+                        {
+                            var linkableField = field as Rock.Field.ILinkableFieldType;
+                            td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                                ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
+                        }
+                        else
+                        {
+                            td.Description = formattedValue;
+                        }
+                        phViewAttributes.Controls.Add( td );
+                    }
+
+                    var rockContext = new RockContext();
+                    _personAliasService = new PersonAliasService( rockContext );
+                    _groupService = new GroupService( rockContext );
+                    rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
+                    rptrActivities.DataBind();
+
+                    btnEdit.Visible = _canEdit;
+
                 }
-
-                var rockContext = new RockContext();
-                _personAliasService = new PersonAliasService( rockContext );
-                _groupService = new GroupService( rockContext );
-                rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
-                rptrActivities.DataBind();
-
-                btnEdit.Visible = _canEdit;
-
-            }
-            else
-            {
-                nbNotAuthorized.Visible = true;
-                pnlDetails.Visible = false;
+                else
+                {
+                    nbNotAuthorized.Visible = true;
+                    pnlDetails.Visible = false;
+                }
             }
         }
 

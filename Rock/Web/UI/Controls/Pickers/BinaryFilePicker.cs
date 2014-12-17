@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -27,31 +28,58 @@ namespace Rock.Web.UI.Controls
     public class BinaryFilePicker : RockDropDownList
     {
         /// <summary>
-        /// Gets or sets the binary file type id.
+        /// Loads the BinaryFilePicker with files of the specified BinaryFileType.Id
         /// </summary>
         /// <value>
         /// The binary file type id.
         /// </value>
         public int? BinaryFileTypeId
         {
-            get 
-            { 
-                return ViewState["BinaryFileTypeId"] as int?; 
-            }
             set
             {
-                ViewState["BinaryFileTypeId"] = value;
-
                 this.Items.Clear();
-                this.DataTextField = "FileName";
-                this.DataValueField = "Id";
-                this.DataSource = new BinaryFileService( new RockContext() )
-                    .Queryable()
-                    .Where( f => f.BinaryFileTypeId == value && !f.IsTemporary )
-                    .OrderBy( f => f.FileName )
-                    .Select( f => new { f.FileName, f.Id } )
-                    .ToList();
-                this.DataBind();
+                this.Items.Add( new ListItem() );
+                if ( value.HasValue )
+                {
+                    var qry = new BinaryFileService( new RockContext() )
+                            .Queryable()
+                            .Where( f => f.BinaryFileTypeId == value.Value && !f.IsTemporary )
+                            .OrderBy( f => f.FileName )
+                            .Select( f => new { f.FileName, f.Id } );
+
+                    foreach ( var item in qry.ToList() )
+                    {
+                        this.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads the BinaryFilePicker with files of the specified BinaryFileType.Guid
+        /// </summary>
+        /// <value>
+        /// The binary file type unique identifier.
+        /// </value>
+        public Guid? BinaryFileTypeGuid
+        {
+            set
+            {
+                this.Items.Clear();
+                if ( value.HasValue )
+                {
+                    this.Items.Add( new ListItem() );
+                    var qry = new BinaryFileService( new RockContext() )
+                            .Queryable()
+                            .Where( f => f.BinaryFileType.Guid == value.Value && !f.IsTemporary )
+                            .OrderBy( f => f.FileName )
+                            .Select( f => new { f.FileName, f.Id } );
+
+                    foreach ( var item in qry.ToList() )
+                    {
+                        this.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                    }
+                }
             }
         }
     }

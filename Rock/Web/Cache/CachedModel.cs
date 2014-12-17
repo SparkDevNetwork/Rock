@@ -33,7 +33,8 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
-    public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes, DotLiquid.ILiquidizable
+    public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes,
+        DotLiquid.IIndexable, DotLiquid.ILiquidizable
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
         /// <summary>
@@ -77,8 +78,8 @@ namespace Rock.Web.Cache
                 if ( attributeModel.Attributes != null )
                 {
                     this.Attributes = attributeModel.Attributes;
+                    this.AttributeValues = attributeModel.AttributeValues;
                 }
-                this.AttributeValues = attributeModel.AttributeValues;
             }
         }
 
@@ -91,7 +92,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
-        [IgnoreLiquid]
+        [LavaIgnore]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -100,14 +101,14 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
-        [IgnoreLiquid]
+        [LavaIgnore]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        [IgnoreLiquid]
+        [LavaIgnore]
         public virtual ISecured ParentAuthority
         {
             get
@@ -124,9 +125,18 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public virtual Security.ISecured ParentAuthorityPre
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        [IgnoreLiquid]
+        [LavaIgnore]
         public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
@@ -233,14 +243,14 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
-        [IgnoreLiquid]
+        [LavaIgnore]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        public Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -248,7 +258,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
-        [IgnoreLiquid]
+        [LavaIgnore]
         public virtual Dictionary<string, string> AttributeValueDefaults
         {
             get { return null; }
@@ -364,76 +374,147 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public object ToLiquid()
         {
-            return ToLiquid( false );
+            return this;
         }
 
         /// <summary>
-        /// To the liquid.
+        /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
-        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
         /// <returns></returns>
-        public virtual object ToLiquid( bool debug )
+        [LavaIgnore]
+        public object this[object key]
         {
-            var dictionary = new Dictionary<string, object>();
-
-            Type entityType = this.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                entityType = entityType.BaseType;
-
-            foreach ( var propInfo in entityType.GetProperties() )
+            get
             {
-                if ( propInfo.Name != "Attributes" &&
+                Type entityType = this.GetType();
+                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                    entityType = entityType.BaseType;
+
+                var propInfo = entityType.GetProperty( key.ToStringSafe() );
+                if ( propInfo != null &&
+                    propInfo.Name != "Attributes" &&
                     propInfo.Name != "AttributeValues" &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
 
                     if ( propValue is Guid )
                     {
-                        propValue = ( (Guid)propValue ).ToString();
-                    }
-
-                    if ( debug && propValue is IEntity )
-                    {
-                        dictionary.Add( propInfo.Name, ( (IEntity)propValue ).ToLiquid( true ) );
-                    }
-                    else if ( debug && propValue is DotLiquid.ILiquidizable )
-                    {
-                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
+                        return ( (Guid)propValue ).ToString();
                     }
                     else
                     {
-                        dictionary.Add( propInfo.Name, propValue );
+                        return propValue;
                     }
                 }
-            }
 
-            if ( this.Attributes != null )
-            {
-                foreach ( var attribute in this.Attributes )
+                // The remainder of this method is only neccessary to support the old way of getting attribute 
+                // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+                // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+                // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                // can be removed
+
+                if ( this.Attributes != null )
                 {
-                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
-                    {
-                        int keySuffix = 0;
-                        string key = attribute.Key;
-                        while ( dictionary.ContainsKey( key ) )
-                        {
-                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
-                        }
+                    bool unformatted = false;
+                    bool url = false;
 
-                        var field = attribute.Value.FieldType.Field;
-                        string value = GetAttributeValue( attribute.Key );
-                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                        dictionary.Add( key + "_unformatted", value );
-                        if ( field is Rock.Field.ILinkableFieldType )
+                    string attributeKey = key.ToStringSafe();
+                    if ( attributeKey.EndsWith( "_unformatted" ) )
+                    {
+                        attributeKey = attributeKey.Replace( "_unformatted", "" );
+                        unformatted = true;
+                    }
+                    else if ( attributeKey.EndsWith( "_url" ) )
+                    {
+                        attributeKey = attributeKey.Replace( "_url", "" );
+                        url = true;
+                    }
+
+                    if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        var attribute = this.Attributes[attributeKey];
+                        if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                         {
-                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                            var field = attribute.FieldType.Field;
+                            string value = GetAttributeValue( attribute.Key );
+
+                            if ( unformatted )
+                            {
+                                return value;
+                            }
+
+                            if ( url && field is Rock.Field.ILinkableFieldType )
+                            {
+                                return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                            }
+
+                            return field.FormatValue( null, value, attribute.QualifierValues, false );
                         }
                     }
                 }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            Type entityType = this.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
+
+            var propInfo = entityType.GetProperty( key.ToStringSafe() );
+            if ( propInfo != null &&
+                propInfo.Name != "Attributes" &&
+                propInfo.Name != "AttributeValues" &&
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+            {
+                return true;
             }
 
-            return dictionary;
+            // The remainder of this method is only neccessary to support the old way of getting attribute 
+            // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+            // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+            // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+            // can be removed
+
+            if ( this.Attributes == null )
+            {
+                this.LoadAttributes();
+            }
+
+            string attributeKey = key.ToStringSafe();
+            if ( attributeKey.EndsWith( "_unformatted" ) )
+            {
+                attributeKey = attributeKey.Replace( "_unformatted", "" );
+            }
+            else if ( attributeKey.EndsWith( "_url" ) )
+            {
+                attributeKey = attributeKey.Replace( "_url", "" );
+            }
+
+            if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+            {
+                var attribute = this.Attributes[attributeKey];
+                if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion

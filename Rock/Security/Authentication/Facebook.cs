@@ -20,11 +20,12 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Security;
-
-using Facebook;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -38,8 +39,10 @@ namespace Rock.Security.ExternalAuthentication
     [Description( "Facebook Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
+
     [TextField( "App ID", "The Facebook App ID" )]
     [TextField( "App Secret", "The Facebook App Secret" )]
+    [BooleanField( "Sync Friends", "Should the person's Facebook friends whe are also in Rock be added as a known relationship?", true )]
     public class Facebook : AuthenticationComponent
     {
         /// <summary>
@@ -84,19 +87,13 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
-            var returnUrl = request.QueryString["returnurl"];
-            var redirectUri = new Uri( GetRedirectUrl( request ));
+            string returnUrl = request.QueryString["returnurl"];
+            string redirectUri = GetRedirectUrl( request );
 
-            dynamic parameters = new ExpandoObject();
-            parameters.client_id = GetAttributeValue( "AppID" );
-            parameters.display = "popup";
-            parameters.redirect_uri = redirectUri.AbsoluteUri;
-            parameters.scope = "user_birthday,email,read_stream,read_friendlists";
-            parameters.state = returnUrl ?? FormsAuthentication.DefaultUrl;
-
-
-            var fbClient = new FacebookClient();
-            return fbClient.GetLoginUrl(parameters);
+            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email,user_friends",
+                GetAttributeValue( "AppID" ),
+                HttpUtility.UrlEncode( redirectUri ),
+                HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );
         }
 
         /// <summary>
@@ -108,136 +105,223 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
         {
-            var fbClient = new FacebookClient();
-            FacebookOAuthResult oAuthResult;
+            username = string.Empty;
+            returnUrl = request.QueryString["State"];
+            string redirectUri = GetRedirectUrl( request );
 
-            if ( fbClient.TryParseOAuthCallbackUrl( request.Url, out oAuthResult ) && oAuthResult.IsSuccess )
+            try
             {
-                try
+                // Get a new Facebook Access Token for the 'code' that was returned from the Facebook login redirect
+                var restClient = new RestClient(
+                    string.Format( "https://graph.facebook.com/oauth/access_token?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}",
+                        GetAttributeValue( "AppID" ),
+                        HttpUtility.UrlEncode( redirectUri ),
+                        GetAttributeValue( "AppSecret" ),
+                        request.QueryString["code"] ) );
+                var restRequest = new RestRequest( Method.GET );
+                var restResponse = restClient.Execute( restRequest );
+
+                if ( restResponse.StatusCode == HttpStatusCode.OK )
                 {
-                    var redirectUri = new Uri( GetRedirectUrl( request ) );
+                    string accessToken = HttpUtility.ParseQueryString( "?" + restResponse.Content )["access_token"];
 
-                    dynamic parameters = new ExpandoObject();
-                    parameters.client_id = GetAttributeValue( "AppID" );
-                    parameters.client_secret = GetAttributeValue( "AppSecret" );
-                    parameters.redirect_uri = redirectUri.AbsoluteUri; 
-                    parameters.code = oAuthResult.Code;
+                    // Get information about the person who logged in using Facebook
+                    restRequest = new RestRequest( Method.GET );
+                    restRequest.AddParameter( "access_token", accessToken );
+                    restRequest.RequestFormat = DataFormat.Json;
+                    restRequest.AddHeader( "Accept", "application/json" );
+                    restClient = new RestClient( "https://graph.facebook.com/v2.2/me" );
+                    restResponse = restClient.Execute( restRequest );
 
-                    dynamic result = fbClient.Post( "oauth/access_token", parameters );
-
-                    string accessToken = result.access_token;
-
-                    fbClient = new FacebookClient( accessToken );
-                    dynamic me = fbClient.Get( "me" );
-                    string facebookId = "FACEBOOK_" + me.id.ToString();
-
-                    UserLogin user = null;
-
-                    var rockContext = new RockContext();
-                    rockContext.WrapTransaction( () =>
+                    if ( restResponse.StatusCode == HttpStatusCode.OK )
                     {
-                        // query for matching id in the user table 
-                        var userLoginService = new UserLoginService( rockContext );
-                        user = userLoginService.GetByUserName( facebookId );
+                        var converter = new ExpandoObjectConverter();
+                        dynamic me = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content, converter);
 
-                        // if no user was found see if we can find a match in the person table
+                        string facebookId = me.id;
+                        string facebookLink = me.link;
+
+                        string userName = "FACEBOOK_" + facebookId;
+                        UserLogin user = null;
+
+                        var rockContext = new RockContext();
+
+                        // Query for an existing user 
+                        var userLoginService = new UserLoginService( rockContext );
+                        user = userLoginService.GetByUserName( userName );
+
+                        // If no user was found, see if we can find a match in the person table
                         if ( user == null )
                         {
-                            try
+                            // Get name/email from Facebook login
+                            string lastName = me.last_name.ToString();
+                            string firstName = me.first_name.ToString();
+                            string email = string.Empty;
+                            try { email = me.email.ToString(); } catch {}
+
+                            Person person = null;
+
+                            // If person had an email, get the first person with the same name and email address.
+                            if ( string.IsNullOrWhiteSpace(email))
                             {
-
-                                var familyChanges = new List<string>();
-                                var familyMemberChanges = new List<string>();
-                                var PersonChanges = new List<string>();
-
-                                // determine if we can find a match and if so add an user login record
-
-                                // get properties from Facebook dynamic object
-                                string lastName = me.last_name.ToString();
-                                string firstName = me.first_name.ToString();
-                                string email = me.email.ToString();
-
                                 var personService = new PersonService( rockContext );
-                                var person = personService.Queryable( "Aliases" ).FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+                                person = personService.Queryable( "Aliases" )
+                                    .FirstOrDefault( u => 
+                                        u.LastName == lastName && 
+                                        u.FirstName == firstName && 
+                                        u.Email == email );
+                            }
 
-                                if ( person != null )
-                                {
-                                    // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                    DateTime birthdate = Convert.ToDateTime( me.birthday.ToString(), new System.Globalization.CultureInfo("en-US") );
-
-                                    if ( person.BirthDay == null )
-                                    {
-                                        History.EvaluateChange( PersonChanges, "Birth Date", person.BirthDate, person.BirthDate );
-                                        person.BirthDate = birthdate;
-
-                                        rockContext.SaveChanges();
-                                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                            person.Id, PersonChanges );
-                                    }
-                                }
-                                else
+                            rockContext.WrapTransaction( () =>
+                            {
+                                if ( person == null )
                                 {
                                     person = new Person();
                                     person.IsSystem = false;
                                     person.RecordTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                                     person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
-                                    person.FirstName = me.first_name.ToString();
-                                    person.LastName = me.last_name.ToString();
-                                    person.Email = me.email.ToString();
-                                    if ( me.gender.ToString() == "male" )
-                                        person.Gender = Gender.Male;
-                                    else if ( me.gender.ToString() == "female" )
-                                        person.Gender = Gender.Female;
-                                    else
-                                        person.Gender = Gender.Unknown;
-                                    person.BirthDate = Convert.ToDateTime( me.birthday.ToString(), new System.Globalization.CultureInfo( "en-US" ) );
+                                    person.FirstName = firstName;
+                                    person.LastName = lastName;
+                                    person.Email = email;
                                     person.EmailPreference = EmailPreference.EmailAllowed;
+                                    try {
+                                        if ( me.gender.ToString() == "male" )
+                                        {
+                                            person.Gender = Gender.Male;
+                                        }
+                                        else if ( me.gender.ToString() == "female" )
+                                        {
+                                            person.Gender = Gender.Female;
+                                        }
+                                        else
+                                        {
+                                            person.Gender = Gender.Unknown;
+                                        }
+                                    } catch {}
 
-                                    GroupService.SaveNewFamily( rockContext, person, null, false );
+                                    if ( person != null )
+                                    {
+                                        GroupService.SaveNewFamily( rockContext, person, null, false );
+                                    }
                                 }
 
-                                user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
+                                if ( person != null )
+                                {
+                                    user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, this.TypeId, userName, "fb", true );
+                                }
 
-                            }
-                            catch ( Exception ex )
-                            {
-                                string msg = ex.Message;
-                                // TODO: probably should report something...
-                            }
+                            } );
                         }
-                        else
+
+                        if ( user != null )
                         {
-                            // TODO: Show label indicating inability to find user corresponding to facebook id
+                            username = user.UserName;
+
+                            if ( user.PersonId.HasValue )
+                            {
+                                var personService = new PersonService( rockContext );
+                                var person = personService.Get( user.PersonId.Value );
+                                if ( person != null )
+                                {
+                                    // If person does not have a photo, try to get their Facebook photo
+                                    if ( !person.PhotoId.HasValue )
+                                    {
+                                        restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
+                                        restRequest = new RestRequest( Method.GET );
+                                        restRequest.RequestFormat = DataFormat.Json;
+                                        restRequest.AddHeader( "Accept", "application/json" );
+                                        restResponse = restClient.Execute( restRequest );
+                                        if ( restResponse.StatusCode == HttpStatusCode.OK )
+                                        {
+                                            dynamic picData = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content, converter );
+                                            bool isSilhouette = picData.data.is_silhouette;
+                                            string url = picData.data.url;
+
+                                            // If Facebook returned a photo url
+                                            if ( !isSilhouette && !string.IsNullOrWhiteSpace( url ) )
+                                            {
+                                                // Download the photo from the url provided
+                                                restClient = new RestClient( url );
+                                                restRequest = new RestRequest( Method.GET );
+                                                restResponse = restClient.Execute( restRequest );
+                                                if ( restResponse.StatusCode == HttpStatusCode.OK )
+                                                {
+                                                    var bytes = restResponse.RawBytes;
+
+                                                    // Create and save the image
+                                                    BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+                                                    if ( fileType != null )
+                                                    {
+                                                        BinaryFile binaryFile = new BinaryFile();
+                                                        binaryFile.IsTemporary = false;
+                                                        binaryFile.BinaryFileType = fileType;
+                                                        binaryFile.MimeType = "image/jpeg";
+                                                        binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
+
+                                                        binaryFile.Data = new BinaryFileData();
+                                                        binaryFile.Data.Content = bytes;
+
+                                                        var binaryFileService = new BinaryFileService( rockContext );
+                                                        binaryFileService.Add( binaryFile );
+
+                                                        rockContext.SaveChanges();
+
+                                                        person.PhotoId = binaryFile.Id;
+                                                        rockContext.SaveChanges();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Save the facebook social media link
+                                    var facebookAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_FACEBOOK.AsGuid(), rockContext );
+                                    if ( facebookAttribute != null )
+                                    {
+                                        person.LoadAttributes( rockContext );
+                                        person.SetAttributeValue( facebookAttribute.Key, facebookLink );
+                                        person.SaveAttributeValues( rockContext );
+                                    }
+
+                                    if ( GetAttributeValue( "SyncFriends" ).AsBoolean() )
+                                    {
+                                        // Get the friend list (only includes friends who have also authorized this app)
+                                        restRequest = new RestRequest( Method.GET );
+                                        restRequest.AddParameter( "access_token", accessToken );
+                                        restRequest.RequestFormat = DataFormat.Json;
+                                        restRequest.AddHeader( "Accept", "application/json" );
+
+                                        restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/friends", facebookId ) );
+                                        restResponse = restClient.Execute( restRequest );
+
+                                        if ( restResponse.StatusCode == HttpStatusCode.OK )
+                                        {
+                                            // Get a list of the facebook ids for each friend
+                                            dynamic friends = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content, converter );
+                                            var facebookIds = new List<string>();
+                                            foreach ( var friend in friends.data )
+                                            {
+                                                facebookIds.Add( friend.id );
+                                            }
+
+                                            // Queue a transaction to add/remove friend relationships in Rock
+                                            var transaction = new Rock.Transactions.UpdateFacebookFriends( person.Id, facebookIds );
+                                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    } );
-
-                    if ( user != null )
-                    {
-                        username = user.UserName;
-                        returnUrl = oAuthResult.State;
-                        return true;
                     }
-                    else
-                    {
-                        username = string.Empty;
-                        returnUrl = string.Empty;
-                        return false;
-                    }
-
-                }
-                catch ( FacebookOAuthException oae )
-                {
-                    string msg = oae.Message;
-                    // TODO: Add error handeling
-                    // Error validating verification code. (usually from wrong return url very picky with formatting)
-                    // Error validating client secret.
-                    // Error validating application.
                 }
             }
 
-            username = null;
-            returnUrl = null;
-            return false;
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+            }
+
+            return !string.IsNullOrWhiteSpace( username );
         }
 
         /// <summary>
@@ -308,5 +392,6 @@ namespace Rock.Security.ExternalAuthentication
             warningMessage = "not supported";
             return false;
         }
+
     }
 }

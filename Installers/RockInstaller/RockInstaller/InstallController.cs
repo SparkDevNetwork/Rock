@@ -13,7 +13,6 @@ using System.Data.SqlClient;
 using System.IO;
 using RockInstallTools;
 using System.Text;
-using Subtext.Scripting;
 using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
@@ -576,10 +575,10 @@ namespace RockInstaller
                 string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", installData.ConnectionString.Username, installData.ConnectionString.Password, installData.ConnectionString.Server, installData.ConnectionString.Database );
                 conn = new SqlConnection( connectionString );
                 conn.Open();
-            
-                SqlScriptRunner runner = new SqlScriptRunner( sql );
 
-                int sqlScriptCount = runner.ScriptCollection.Count;
+                RockScriptParser scriptParser = new RockScriptParser(sql);
+
+                int sqlScriptCount = scriptParser.ScriptCount;
                 int scriptsRun = 0;
                 int scriptNextConsolePercentile = consoleMessageReportFrequency;
                 int scriptNextProgressbarPercentile = progressbarEventFrequency;
@@ -591,9 +590,10 @@ namespace RockInstaller
 
                 using ( SqlTransaction transaction = conn.BeginTransaction() )
                 {
-                    foreach ( var script in runner.ScriptCollection )
+                    foreach ( var script in scriptParser.ScriptCollection )
                     {
-                        script.Execute( transaction );
+                        SqlCommand command = new SqlCommand( script, conn, transaction );
+                        command.ExecuteNonQuery();
 
                         scriptsRun++;
 

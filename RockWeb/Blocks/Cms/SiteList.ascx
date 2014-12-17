@@ -12,12 +12,12 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gSites" runat="server" AllowSorting="true" OnRowSelected="gSites_Edit">
                         <Columns>
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
-                            <asp:TemplateField HeaderText="Domain(s)">
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
+                            <Rock:RockTemplateField HeaderText="Domain(s)">
                                 <ItemTemplate><%# GetDomains( (int)Eval("Id") ) %></ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField HeaderText="Theme" DataField="Theme" SortExpression="Theme" />
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField HeaderText="Theme" DataField="Theme" SortExpression="Theme" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gSites_Delete" />

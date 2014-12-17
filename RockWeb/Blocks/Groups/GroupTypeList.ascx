@@ -22,9 +22,9 @@
                     <Rock:Grid ID="gGroupType" runat="server" RowItemText="Group Type" OnRowSelected="gGroupType_Edit" TooltipField="Description">
                         <Columns>
                             <Rock:ReorderField />
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
-                            <asp:BoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
+                            <Rock:RockBoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gGroupType_Delete" />

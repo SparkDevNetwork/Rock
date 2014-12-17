@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -45,7 +46,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
     [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as your circumstances change.", Order = 8 )]
 
-    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt. <span class='tip tip-liquid'></span> <span class='tip tip-html'>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
+    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
         @"
 <h1>Thank You!</h1>
 <p>
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 " )]
 
-    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
+    [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     public partial class PledgeEntry : RockBlock
     {
@@ -179,19 +180,9 @@ namespace RockWeb.Blocks.Finance
             lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
             // show liquid help for debug
-            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
-
-                debugInfo.Append( "<pre>" );
-
-                debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                debugInfo.Append( mergeObjects.LiquidHelpText() + "</pre>" );
-
-                debugInfo.Append( "</div>" );
-
-                lReceipt.Text += debugInfo.ToString();
+                lReceipt.Text += mergeObjects.lavaDebugInfo();
             }
 
             lReceipt.Visible = true;

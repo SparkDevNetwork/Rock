@@ -27,8 +27,6 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowActivityTypeAttribute : FieldAttribute
     {
-        private const string WORKFLOW_TYPE_KEY = "Workflowtype";
-
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActivityTypeAttribute" /> class.
         /// </summary>

@@ -14,8 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
 using System.Web;
 using Rock.Model;
 
@@ -46,51 +50,25 @@ namespace Rock.Storage.Provider
         /// <param name="context">The context.</param>
         public override void SaveFile( BinaryFile file, HttpContext context )
         {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save, but we do need to set the Url
-            file.Url = GenerateUrl( file );
+            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save
         }
 
         /// <summary>
-        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public override byte[] GetFileContent( BinaryFile file, HttpContext context )
+        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
         {
-            if (file.Data != null)
+            if ( file.Data != null )
             {
-                return file.Data.Content;
+                return file.Data.ContentStream;
             }
             else
             {
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Generate a URL for the file based on the rules of the StorageProvider
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns></returns>
-        public override string GenerateUrl( BinaryFile file)
-        {
-            string urlPath;
-
-            switch ( file.MimeType.ToLower() )
-            {
-                case "image/jpeg":
-                case "image/gif":
-                case "image/png":
-                case "image/bmp":
-                    urlPath = "~/GetImage.ashx";
-                    break;
-                default:
-                    urlPath = "~/GetFile.ashx";
-                    break;
-            }
-
-            return string.Format( "{0}?guid={1}", urlPath, file.Guid );
         }
     }
 }
