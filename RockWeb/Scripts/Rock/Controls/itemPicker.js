@@ -81,7 +81,9 @@
                 });
 
                 $control.find('.picker-cancel').click(function () {
-                    $(this).closest('.picker-menu').slideUp();
+                    $(this).closest('.picker-menu').slideUp(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 // have the X appear on hover if something is selected
