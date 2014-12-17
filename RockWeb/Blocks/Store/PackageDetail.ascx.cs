@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Store
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             lbPackageLink.PostBackUrl = package.SupportUrl;
-            lRatingSummary.Text = string.Format( "<div class='rating rating-{0}'><small>{1}</small></div>", package.Rating.ToString().Replace( ".", "" ) );
+            lRatingSummary.Text = string.Format( "<div class='rating rating-{0}'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
 
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Store
                                                     lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
                 }
 
-                lLastUpdate.Text = latestVersion.DateAdded.ToShortDateString();
+                lLastUpdate.Text = latestVersion.AddedDate.ToShortDateString();
                 lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
                                                 latestVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
                                                 latestVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString());
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Store
                 rptAdditionalVersions.DataBind();
 
                 // get the details for the latest version
-                PackageVersion = new PackageVersionService().GetPackageVersion( latestVersion.Id );
+                PackageVersion latestVersionDetails = new PackageVersionService().GetPackageVersion( latestVersion.Id );
             }
             else
             {
