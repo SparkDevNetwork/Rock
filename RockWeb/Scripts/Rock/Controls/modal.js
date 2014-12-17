@@ -59,6 +59,16 @@
                         $modalPopupIFrame.height(contentsHeight);
                     }
                 }
+
+                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
+                if ($control && $control.length) {
+                    var $modalBody = $control.closest('.modal-body');
+                    if ($modalBody.is(':visible')) {
+                        // shrink, then set min height based on scrollHeight so that Modal resizes
+                        $modalBody[0].style.minHeight = 'auto'
+                        $modalBody[0].style.minHeight = $modal.prop('scrollHeight') + "px";
+                    }
+                }
             },
             close: function (msg) {
                 // do a setTimeout so this fires after the postback
