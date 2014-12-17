@@ -52,6 +52,24 @@ namespace Rock.Client
         public bool RequiresViewSecurity { get; set; }
 
         /// <summary />
+        public int? MaxWidth { get; set; }
+
+        /// <summary />
+        public int? MaxHeight { get; set; }
+
+        /// <summary />
+        public int /* PreferredFormat*/ PreferredFormat { get; set; }
+
+        /// <summary />
+        public int /* PreferredResolution*/ PreferredResolution { get; set; }
+
+        /// <summary />
+        public int /* PreferredColorDepth*/ PreferredColorDepth { get; set; }
+
+        /// <summary />
+        public bool PreferredRequired { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
