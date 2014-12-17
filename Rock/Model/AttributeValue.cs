@@ -135,6 +135,74 @@ namespace Rock.Model
         [DataMember]
         public virtual Attribute Attribute { get; set; }
 
+        /// <summary>
+        /// Gets the value formatted.
+        /// </summary>
+        /// <value>
+        /// The value formatted.
+        /// </value>
+        [LavaInclude]
+        public virtual string ValueFormatted
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.FormatValue( null, Value, attribute.QualifierValues, false);
+                }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute 
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// The name of the attribute.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeName
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.Name;
+                }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute key.
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// The attribute key.
+        /// </value>
+        [LavaInclude]
+        public virtual string AttributeKey
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.Key;
+                }
+                return Value;
+            }
+        }
+
         #endregion
 
         #region Public Methods
