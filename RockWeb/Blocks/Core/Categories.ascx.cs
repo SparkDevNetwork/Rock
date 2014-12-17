@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
                             _parentCategoryId = parentCategoryId;
                         }
 
-                        gCategories.DataKeyNames = new string[] { "id" };
+                        gCategories.DataKeyNames = new string[] { "Id" };
                         gCategories.Actions.ShowAdd = true;
 
                         gCategories.Actions.AddClick += gCategories_Add;

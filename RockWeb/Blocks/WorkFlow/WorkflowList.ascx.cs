@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.WorkFlow
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlSettings );
 
-                gWorkflows.DataKeyNames = new string[] { "id" };
+                gWorkflows.DataKeyNames = new string[] { "Id" };
                 gWorkflows.Actions.ShowAdd = true;
                 gWorkflows.Actions.AddClick += gWorkflows_Add;
                 gWorkflows.GridRebind += gWorkflows_GridRebind;

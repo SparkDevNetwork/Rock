@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Core
                         if ( !Page.IsPostBack )
                             _container.Refresh();
 
-                        rGrid.DataKeyNames = new string[] { "id" };
+                        rGrid.DataKeyNames = new string[] { "Id" };
                         rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
                         rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;

@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
-            gBatchList.DataKeyNames = new string[] { "id" };
+            gBatchList.DataKeyNames = new string[] { "Id" };
             gBatchList.Actions.ShowAdd = true;
             gBatchList.Actions.AddClick += gBatchList_Add;
             gBatchList.GridRebind += gBatchList_GridRebind;
