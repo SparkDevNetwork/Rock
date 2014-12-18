@@ -1,7 +1,16 @@
-{{ Group.Name }}
+<h1>{{ Group.Name }}</h1>
+
+{{ Group.Description }}
 
 <p>
-	<strong>Leaders:</strong>
+	<h4>Group Details:</h4>
+	{% for attribute in Group.AttributeValues %}
+		<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+	{% endfor %}
+</p>
+
+<p>
+	<h4>Leaders:</h4>
 	<ul>
 	{% for member in Group.Members %}
 	
@@ -14,7 +23,7 @@
 
 
 <p>
-	<strong>Roster:</strong>
+	<h4>Roster:</h4>
 	<ul>
 	{% for member in Group.Members %}
 
