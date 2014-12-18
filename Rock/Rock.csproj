@@ -303,6 +303,7 @@
     <Compile Include="Store\PackageCategory.cs" />
     <Compile Include="Store\PackageCategoryService.cs" />
     <Compile Include="Store\PackageService.cs" />
+    <Compile Include="Store\InstalledPackage.cs" />
     <Compile Include="Store\Promo.cs" />
     <Compile Include="Store\PromoService.cs" />
     <Compile Include="Store\StoreImage.cs" />
