@@ -32,35 +32,11 @@ namespace Rock.Web.UI.Controls
         public BinaryFileTypePicker()
         {
             this.Items.Clear();
-            this.DataTextField = "Name";
-            this.DataValueField = "Id";
-            this.DataSource = new BinaryFileTypeService( new RockContext() ).Queryable().OrderBy( f => f.Name ).ToList();
-            this.DataBind();
-        }
-
-        /// <summary>
-        /// Selects the value as int.
-        /// </summary>
-        /// <returns></returns>
-        public int? SelectedValueAsInt( bool NoneAsNull = true )
-        {
-            if ( NoneAsNull )
+            this.Items.Add( new ListItem() );
+            foreach( var item in new BinaryFileTypeService( new RockContext() ).Queryable().OrderBy( f => f.Name ).Select(a => new { a.Id, a.Name }).ToList())
             {
-                if ( this.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( string.IsNullOrWhiteSpace( this.SelectedValue ) )
-            {
-                return null;
-            }
-            else
-            {
-                return int.Parse( this.SelectedValue );
+                this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
         }
-
     }
 }

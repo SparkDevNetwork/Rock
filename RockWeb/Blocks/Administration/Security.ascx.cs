@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
 
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.DataKeyNames = new string[] { "Id" };
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                     rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Administration
                     rGrid.EmptyDataText = string.Empty;
                     rGrid.ShowActionRow = false;
 
-                    rGridParentRules.DataKeyNames = new string[] { "id" };
+                    rGridParentRules.DataKeyNames = new string[] { "Id" };
                     rGridParentRules.ShowHeaderWhenEmpty = false;
                     rGridParentRules.EmptyDataText = string.Empty;
                     rGridParentRules.ShowActionRow = false;

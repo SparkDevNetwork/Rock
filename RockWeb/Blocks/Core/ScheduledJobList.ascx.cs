@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            gScheduledJobs.DataKeyNames = new string[] { "id" };
+            gScheduledJobs.DataKeyNames = new string[] { "Id" };
             gScheduledJobs.Actions.ShowAdd = true;
             gScheduledJobs.Actions.AddClick += gScheduledJobs_Add;
             gScheduledJobs.GridRebind += gScheduledJobs_GridRebind;

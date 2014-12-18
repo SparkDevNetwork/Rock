@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Core
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gAuditInformationList.DataKeyNames = new string[] { "id" };
+            gAuditInformationList.DataKeyNames = new string[] { "Id" };
             gAuditInformationList.GridRebind += gAuditInformationList_GridRebind;
         }
 

@@ -40,9 +40,6 @@ namespace Rock.Client
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary />
-        public string Url { get; set; }
-
-        /// <summary />
         public string FileName { get; set; }
 
         /// <summary />

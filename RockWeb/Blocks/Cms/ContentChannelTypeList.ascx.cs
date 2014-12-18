@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Cms
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
 
-            gContentChannelType.DataKeyNames = new string[] { "id" };
+            gContentChannelType.DataKeyNames = new string[] { "Id" };
             gContentChannelType.Actions.AddClick += gContentChannelType_Add;
             gContentChannelType.GridRebind += gContentChannelType_GridRebind;
             gContentChannelType.Actions.ShowAdd = canAddEditDelete;

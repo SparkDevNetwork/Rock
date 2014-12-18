@@ -21,6 +21,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -35,7 +36,7 @@ public partial class Http404Error : System.Web.UI.Page
     protected void Page_Init(object sender, EventArgs e)
     {
         // Check to see if exception should be logged
-        if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+        if ( GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
             ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0}", Request.Url.AbsoluteUri ) ), Context );
         }

@@ -285,6 +285,21 @@ namespace Rock.Web.Cache
             cache.Remove( "Rock:FieldType:All" );
         }
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static string GetName( int id )
+        {
+            var fieldType = Read( id );
+            if (fieldType != null)
+            {
+                return fieldType.Name;
+            }
+            return string.Empty;
+        }
+
         #endregion
     }
 }

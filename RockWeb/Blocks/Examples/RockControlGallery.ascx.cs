@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Examples
             base.OnInit( e );
             InitSyntaxHighlighting();
 
-            gExample.DataKeyNames = new string[] { "id" };
+            gExample.DataKeyNames = new string[] { "Id" };
             gExample.GridRebind += gExample_GridRebind;
 
             geopExamplePoint.SelectGeography += geoPicker_SelectGeography;

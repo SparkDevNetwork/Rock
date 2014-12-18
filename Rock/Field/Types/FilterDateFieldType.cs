@@ -41,14 +41,33 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            if ( !string.IsNullOrWhiteSpace(value) )
             {
-                return "Current Date";
-            }
+                if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    var valueParts = value.Split( ':' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        int daysOffset = valueParts[1].AsInteger();
+                        if ( daysOffset != 0)
+                        {
+                            return "Current Date " + ( daysOffset > 0 ? " plus " : " minus " ) + Math.Abs(daysOffset).ToString() + " days";
+                        }
+                    }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+                    return "Current Date";
+                }
+                else
+                {
+                    var dateValue = value.AsDateTime();
+                    if (dateValue.HasValue)
+                    {
+                        return dateValue.Value.ToShortDateString();
+                    }
+                }
+            } 
+
+            return base.FormatValue( parentControl, value, null, condensed );
         }
 
         /// <summary>
@@ -151,9 +170,9 @@ namespace Rock.Field.Types
             if (control != null)
             {
                 var dtp = control as DatePicker;
-                if (dtp != null && dtp.CurrentDate )
+                if (dtp != null && dtp.IsCurrentDateOffset )
                 {
-                    return "CURRENT";
+                    return string.Format("CURRENT:{0}", dtp.CurrentDateOffsetDays) ;
                 }
             }
 
@@ -173,9 +192,14 @@ namespace Rock.Field.Types
                 var dtp = control as DatePicker;
                 if ( dtp != null )
                 {
-                    if ( dtp.DisplayCurrentOption && value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                    if ( dtp.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        dtp.CurrentDate = true;
+                        dtp.IsCurrentDateOffset = true;
+                        var valueParts = value.Split(':');
+                        if ( valueParts.Length > 1 )
+                        {
+                            dtp.CurrentDateOffsetDays = valueParts[1].AsIntegerOrNull() ?? 0;
+                        }
                     }
                     else
                     {
