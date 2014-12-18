@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -77,6 +78,36 @@ namespace Rock.Client
 
         /// <summary />
         public string FacebookAppSecret { get; set; }
+
+        /// <summary />
+        public ICollection<Layout> Layouts { get; set; }
+
+        /// <summary />
+        public ICollection<SiteDomain> SiteDomains { get; set; }
+
+        /// <summary />
+        public Page DefaultPage { get; set; }
+
+        /// <summary />
+        public PageRoute DefaultPageRoute { get; set; }
+
+        /// <summary />
+        public Page LoginPage { get; set; }
+
+        /// <summary />
+        public PageRoute LoginPageRoute { get; set; }
+
+        /// <summary />
+        public Page RegistrationPage { get; set; }
+
+        /// <summary />
+        public PageRoute RegistrationPageRoute { get; set; }
+
+        /// <summary />
+        public Page PageNotFoundPage { get; set; }
+
+        /// <summary />
+        public PageRoute PageNotFoundPageRoute { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

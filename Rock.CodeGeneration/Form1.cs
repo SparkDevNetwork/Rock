@@ -708,7 +708,10 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
-            var dataMembers = type.GetProperties().Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null );
+            var dataMembers = type.GetProperties()
+                .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
+                .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null );
+                
             if (!dataMembers.Any())
             {
                 return;

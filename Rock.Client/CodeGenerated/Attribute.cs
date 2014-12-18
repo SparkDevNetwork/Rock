@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -71,6 +72,18 @@ namespace Rock.Client
 
         /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
+
+        /// <summary />
+        public FieldType FieldType { get; set; }
+
+        /// <summary />
+        public ICollection<Category> Categories { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

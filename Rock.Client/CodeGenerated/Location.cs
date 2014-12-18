@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -101,6 +102,21 @@ namespace Rock.Client
 
         /// <summary />
         public int? ImageId { get; set; }
+
+        /// <summary />
+        public bool IsNamedLocation { get; set; }
+
+        /// <summary />
+        public DefinedValue LocationTypeValue { get; set; }
+
+        /// <summary />
+        public ICollection<Location> ChildLocations { get; set; }
+
+        /// <summary />
+        public Device PrinterDevice { get; set; }
+
+        /// <summary />
+        public BinaryFile Image { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

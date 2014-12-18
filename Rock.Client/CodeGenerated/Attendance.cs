@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -68,6 +69,18 @@ namespace Rock.Client
 
         /// <summary />
         public string Note { get; set; }
+
+        /// <summary />
+        public Device Device { get; set; }
+
+        /// <summary />
+        public DefinedValue SearchTypeValue { get; set; }
+
+        /// <summary />
+        public AttendanceCode AttendanceCode { get; set; }
+
+        /// <summary />
+        public DefinedValue Qualifier { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

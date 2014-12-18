@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -55,10 +56,16 @@ namespace Rock.Client
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary />
+        public DefinedValue NumberTypeValue { get; set; }
+
+        /// <summary />
         public bool IsUnlisted { get; set; }
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public string NumberFormattedWithCountryCode { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

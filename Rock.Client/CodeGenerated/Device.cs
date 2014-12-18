@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -31,13 +32,13 @@ namespace Rock.Client
     public partial class Device
     {
         /// <summary />
+        public int DeviceTypeValueId { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public int DeviceTypeValueId { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }
@@ -53,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public int /* PrintTo*/ PrintToOverride { get; set; }
+
+        /// <summary />
+        public DefinedValue DeviceType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

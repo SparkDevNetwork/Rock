@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -44,6 +45,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

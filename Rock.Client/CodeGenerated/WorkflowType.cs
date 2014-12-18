@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -62,6 +63,12 @@ namespace Rock.Client
 
         /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public ICollection<WorkflowActivityType> ActivityTypes { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

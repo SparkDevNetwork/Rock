@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -119,6 +120,69 @@ namespace Rock.Client
 
         /// <summary />
         public int? ViewedCount { get; set; }
+
+        /// <summary />
+        public int? PrimaryAliasId { get; set; }
+
+        /// <summary />
+        public string FullName { get; set; }
+
+        /// <summary />
+        public string BirthdayDayOfWeek { get; set; }
+
+        /// <summary />
+        public string BirthdayDayOfWeekShort { get; set; }
+
+        /// <summary />
+        public string PhotoUrl { get; set; }
+
+        /// <summary />
+        public ICollection<UserLogin> Users { get; set; }
+
+        /// <summary />
+        public ICollection<PhoneNumber> PhoneNumbers { get; set; }
+
+        /// <summary />
+        public DefinedValue MaritalStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue ReviewReasonValue { get; set; }
+
+        /// <summary />
+        public DefinedValue RecordStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue RecordStatusReasonValue { get; set; }
+
+        /// <summary />
+        public DefinedValue RecordTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue SuffixValue { get; set; }
+
+        /// <summary />
+        public DefinedValue TitleValue { get; set; }
+
+        /// <summary />
+        public BinaryFile Photo { get; set; }
+
+        /// <summary />
+        public DateTime? BirthDate { get; set; }
+
+        /// <summary />
+        public int? Age { get; set; }
+
+        /// <summary />
+        public int DaysToBirthday { get; set; }
+
+        /// <summary />
+        public int? Grade { get; set; }
+
+        /// <summary />
+        public string GradeFormatted { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

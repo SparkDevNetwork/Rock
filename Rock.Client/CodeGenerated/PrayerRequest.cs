@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -86,6 +87,15 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ApprovedOnDateTime { get; set; }
+
+        /// <summary />
+        public PersonAlias RequestedByPersonAlias { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

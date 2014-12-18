@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -47,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public Guid? ActionAttributeGuid { get; set; }
+
+        /// <summary />
+        public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
