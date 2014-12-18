@@ -42,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [LavaIgnore]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -64,6 +65,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public int? EntityId { get; set; }
         
         /// <summary>
@@ -87,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
@@ -98,6 +101,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public DateTime? ValueAsDateTime { get; private set; }
         
         /// <summary>
@@ -133,6 +137,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
