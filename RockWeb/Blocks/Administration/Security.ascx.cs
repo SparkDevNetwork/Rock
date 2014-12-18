@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Administration
             GridViewRow selectedRow = rblAllowDeny.NamingContainer as GridViewRow;
             if ( selectedRow != null )
             {
-                int id = e.RowKeyId;
+                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["Id"];
 
                 var rockContext = new RockContext();
                 var authService = new Rock.Model.AuthService( rockContext );
