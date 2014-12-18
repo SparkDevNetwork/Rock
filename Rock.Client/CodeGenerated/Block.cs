@@ -68,9 +68,6 @@ namespace Rock.Client
         public BlockType BlockType { get; set; }
 
         /// <summary />
-        public int /* BlockLocation*/ BlockLocation { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

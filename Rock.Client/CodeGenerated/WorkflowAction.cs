@@ -47,9 +47,6 @@ namespace Rock.Client
         public string FormAction { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

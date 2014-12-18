@@ -47,9 +47,6 @@ namespace Rock.Client
         public EntityType EntityType { get; set; }
 
         /// <summary />
-        public bool Expanded { get; set; }
-
-        /// <summary />
         public ICollection<DataViewFilter> ChildFilters { get; set; }
 
         /// <summary />
