@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -35,6 +36,9 @@ namespace Rock.Client
 
         /// <summary />
         public string RefundReasonSummary { get; set; }
+
+        /// <summary />
+        public DefinedValue RefundReasonValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

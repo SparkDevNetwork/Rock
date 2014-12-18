@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -50,6 +51,18 @@ namespace Rock.Client
 
         /// <summary />
         public int? TransformEntityTypeId { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public DataViewFilter DataViewFilter { get; set; }
+
+        /// <summary />
+        public EntityType TransformEntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

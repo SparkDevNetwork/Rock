@@ -21,59 +21,27 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for MarketingCampaignAd
+    /// Simple Client Model for GroupTypeLocationType
     /// </summary>
-    public partial class MarketingCampaignAd
+    public partial class GroupTypeLocationType
     {
         /// <summary />
-        public int MarketingCampaignId { get; set; }
+        public int GroupTypeId { get; set; }
 
         /// <summary />
-        public int MarketingCampaignAdTypeId { get; set; }
+        public int LocationTypeValueId { get; set; }
 
         /// <summary />
-        public int Priority { get; set; }
+        public GroupType GroupType { get; set; }
 
         /// <summary />
-        public int /* MarketingCampaignAdStatus*/ MarketingCampaignAdStatus { get; set; }
-
-        /// <summary />
-        public int? MarketingCampaignStatusPersonId { get; set; }
-
-        /// <summary />
-        public DateTime StartDate { get; set; }
-
-        /// <summary />
-        public DateTime EndDate { get; set; }
-
-        /// <summary />
-        public string Url { get; set; }
-
-        /// <summary />
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
-
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
+        public DefinedValue LocationTypeValue { get; set; }
 
     }
 }

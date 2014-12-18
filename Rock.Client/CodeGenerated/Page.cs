@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -104,6 +105,18 @@ namespace Rock.Client
 
         /// <summary />
         public bool IncludeAdminFooter { get; set; }
+
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
+        /// <summary />
+        public ICollection<Page> Pages { get; set; }
+
+        /// <summary />
+        public ICollection<PageRoute> PageRoutes { get; set; }
+
+        /// <summary />
+        public ICollection<PageContext> PageContexts { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -31,16 +32,19 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction
     {
         /// <summary />
-        public int AuthorizedPersonAliasId { get; set; }
-
-        /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
+        public int TransactionFrequencyValueId { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
+        /// <summary />
+        public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }
@@ -61,9 +65,6 @@ namespace Rock.Client
         public bool IsActive { get; set; }
 
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
         public string TransactionCode { get; set; }
 
         /// <summary />
@@ -74,6 +75,24 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? LastRemindedDate { get; set; }
+
+        /// <summary />
+        public EntityType GatewayEntityType { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionFrequencyValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CreditCardTypeValue { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialTransaction> Transactions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

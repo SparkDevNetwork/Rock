@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -30,6 +31,9 @@ namespace Rock.Client
     /// </summary>
     public partial class WorkflowActionType
     {
+        /// <summary />
+        public int? WorkflowFormId { get; set; }
+
         /// <summary />
         public int ActivityTypeId { get; set; }
 
@@ -49,9 +53,6 @@ namespace Rock.Client
         public bool IsActivityCompletedOnSuccess { get; set; }
 
         /// <summary />
-        public int? WorkflowFormId { get; set; }
-
-        /// <summary />
         public Guid? CriteriaAttributeGuid { get; set; }
 
         /// <summary />
@@ -59,6 +60,12 @@ namespace Rock.Client
 
         /// <summary />
         public string CriteriaValue { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowActionForm WorkflowForm { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

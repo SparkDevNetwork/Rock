@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -41,6 +42,9 @@ namespace Rock.Client
 
         /// <summary />
         public int Quantity { get; set; }
+
+        /// <summary />
+        public Tag Tag { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
