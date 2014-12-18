@@ -39,6 +39,15 @@ namespace Rock.VersionInfo
             return GetFileVersionInfo().FileVersion;
         }
 
+        /// <summary>
+        /// Provides the semantic version number of the Rock currently in use.
+        /// </summary>
+        /// <returns>the semantic Rock version number (ex. 1.0.0)</returns>
+        public static string GetRockSemanticVersionNumber()
+        {
+            return string.Format( "{0}.{1}.{2}", GetFileVersionInfo().FileMajorPart.ToString(), GetFileVersionInfo().FileMinorPart.ToString(), GetFileVersionInfo().FileBuildPart.ToString() );
+        }
+
         private static FileVersionInfo GetFileVersionInfo()
         {
             Assembly rockVersionDLL = Assembly.GetExecutingAssembly();
