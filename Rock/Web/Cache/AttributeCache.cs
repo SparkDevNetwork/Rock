@@ -42,7 +42,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AttributeCache : ISecured, DotLiquid.IIndexable, DotLiquid.ILiquidizable
+    public class AttributeCache : ISecured, Lava.ILiquidizable
     {
         #region constructors
 
@@ -696,6 +696,31 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string>();
+
+                foreach ( var propInfo in GetType().GetProperties() )
+                {
+                    if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+                    {
+                        availableKeys.Add( propInfo.Name );
+                    }
+                }
+
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -708,8 +733,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                Type entityType = this.GetType();
-                var propInfo = entityType.GetProperty( key.ToStringSafe() );
+                var propInfo = GetType().GetProperty( key.ToStringSafe() );
                 if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
@@ -736,8 +760,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            Type entityType = this.GetType();
-            var propInfo = entityType.GetProperty( key.ToStringSafe() );
+            var propInfo = GetType().GetProperty( key.ToStringSafe() );
             if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
             {
                 return true;
