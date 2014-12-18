@@ -59,13 +59,7 @@ namespace Rock.Client
         public int? InitiatorPersonAliasId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
         public ICollection<WorkflowActivity> Activities { get; set; }
-
-        /// <summary />
-        public bool IsPersisted { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

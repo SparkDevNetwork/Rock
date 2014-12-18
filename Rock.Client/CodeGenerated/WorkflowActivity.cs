@@ -56,9 +56,6 @@ namespace Rock.Client
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
         public ICollection<WorkflowAction> Actions { get; set; }
 
         /// <summary />

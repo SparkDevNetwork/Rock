@@ -104,9 +104,6 @@ namespace Rock.Client
         public int? ImageId { get; set; }
 
         /// <summary />
-        public bool IsNamedLocation { get; set; }
-
-        /// <summary />
         public DefinedValue LocationTypeValue { get; set; }
 
         /// <summary />

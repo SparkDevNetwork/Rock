@@ -65,9 +65,6 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public string NumberFormattedWithCountryCode { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

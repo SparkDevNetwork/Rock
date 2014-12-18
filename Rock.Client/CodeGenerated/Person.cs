@@ -122,21 +122,6 @@ namespace Rock.Client
         public int? ViewedCount { get; set; }
 
         /// <summary />
-        public int? PrimaryAliasId { get; set; }
-
-        /// <summary />
-        public string FullName { get; set; }
-
-        /// <summary />
-        public string BirthdayDayOfWeek { get; set; }
-
-        /// <summary />
-        public string BirthdayDayOfWeekShort { get; set; }
-
-        /// <summary />
-        public string PhotoUrl { get; set; }
-
-        /// <summary />
         public ICollection<UserLogin> Users { get; set; }
 
         /// <summary />
@@ -171,18 +156,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? BirthDate { get; set; }
-
-        /// <summary />
-        public int? Age { get; set; }
-
-        /// <summary />
-        public int DaysToBirthday { get; set; }
-
-        /// <summary />
-        public int? Grade { get; set; }
-
-        /// <summary />
-        public string GradeFormatted { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
