@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var authService = new Rock.Model.AuthService( rockContext );
-            Rock.Model.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Auth auth = authService.Get( e.RowKeyId );
             if ( auth != null )
             {
                 authService.Delete( auth );
@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Administration
             GridViewRow selectedRow = rblAllowDeny.NamingContainer as GridViewRow;
             if ( selectedRow != null )
             {
-                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["id"];
+                int id = e.RowKeyId;
 
                 var rockContext = new RockContext();
                 var authService = new Rock.Model.AuthService( rockContext );

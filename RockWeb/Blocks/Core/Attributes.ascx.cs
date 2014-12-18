@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -299,11 +299,11 @@ namespace RockWeb.Blocks.Core
         {
             if ( _displayValueEdit )
             {
-                ShowEditValue( (int)rGrid.DataKeys[e.RowIndex]["id"], true );
+                ShowEditValue( e.RowKeyId, true );
             }
             else
             {
-                ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+                ShowEdit( e.RowKeyId );
             }
         }
 
@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var attributeService = new Rock.Model.AttributeService( rockContext );
 
-            Rock.Model.Attribute attribute = attributeService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Attribute attribute = attributeService.Get( e.RowKeyId );
             if ( attribute != null )
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
