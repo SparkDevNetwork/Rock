@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// returns EntityType.Guid
     /// </summary>
     [Serializable]
     public class EntityTypeFieldType : FieldType, IEntityFieldType
