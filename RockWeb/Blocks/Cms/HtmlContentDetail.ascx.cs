@@ -403,12 +403,12 @@ namespace RockWeb.Blocks.Cms
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                     if ( type != null )
                     {
-                        string mergeField = string.Format( "{0}|Current {1} (Context)|Context", type.FullName, type.Name );
+                        string mergeField = string.Format( "Context.{0}^{1}|Current {0} (Context)|Context", type.Name, type.FullName );
                         htmlEditor.MergeFields.Add( mergeField );
                         ceHtml.MergeFields.Add( mergeField );
                     }

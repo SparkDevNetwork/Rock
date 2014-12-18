@@ -329,8 +329,9 @@ namespace Rock.Data
         {
             get
             {
-                object item = base[key];
+                string keyString = key.ToStringSafe();
 
+                object item = base[key];
                 if ( item == null )
                 {
                     if (this.Attributes == null)
@@ -338,51 +339,54 @@ namespace Rock.Data
                         this.LoadAttributes();
                     }
 
-                    string attributeKey = key.ToStringSafe();
-
-                    if ( attributeKey == "Attributes")
-                    {
-                        return Attributes.Select( a => a.Value ).ToList();
-                    }
-
-                    if ( attributeKey == "AttributeValues")
+                    if ( keyString == "AttributeValues" )
                     {
                         return AttributeValues.Select( a => a.Value ).ToList();
                     }
 
-                    bool unformatted = false;
-                    bool url = false;
+                    // The remainder of this method is only neccessary to support the old way of getting attribute 
+                    // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+                    // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+                    // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                    // can be removed
 
-                    if ( attributeKey.EndsWith("_unformatted"))
+                    if ( this.Attributes != null )
                     {
-                        attributeKey = attributeKey.Replace("_unformatted", "");
-                        unformatted = true;
-                    }
-                    else if ( attributeKey.EndsWith("_url"))
-                    {
-                        attributeKey = attributeKey.Replace("_url", "");
-                        url = true;
-                    }
+                        string attributeKey = keyString;
+                        bool unformatted = false;
+                        bool url = false;
 
-                    if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
-                    {
-                        var attribute = this.Attributes[attributeKey];
-                        if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
+                        if ( attributeKey.EndsWith( "_unformatted" ) )
                         {
-                            var field = attribute.FieldType.Field;
-                            string value = GetAttributeValue( attribute.Key );
+                            attributeKey = attributeKey.Replace( "_unformatted", "" );
+                            unformatted = true;
+                        }
+                        else if ( attributeKey.EndsWith( "_url" ) )
+                        {
+                            attributeKey = attributeKey.Replace( "_url", "" );
+                            url = true;
+                        }
 
-                            if ( unformatted )
+                        if ( this.Attributes.ContainsKey( attributeKey ) )
+                        {
+                            var attribute = this.Attributes[attributeKey];
+                            if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
-                                return value;
-                            }
+                                var field = attribute.FieldType.Field;
+                                string value = GetAttributeValue( attribute.Key );
 
-                            if ( url && field is Rock.Field.ILinkableFieldType )
-                            {
-                                return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
-                            }
+                                if ( unformatted )
+                                {
+                                    return value;
+                                }
 
-                            return field.FormatValue( null, value, attribute.QualifierValues, false );
+                                if ( url && field is Rock.Field.ILinkableFieldType )
+                                {
+                                    return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                }
+
+                                return field.FormatValue( null, value, attribute.QualifierValues, false );
+                            }
                         }
                     }
                 }
@@ -406,27 +410,27 @@ namespace Rock.Data
         {
             string attributeKey = key.ToStringSafe();
 
-            if ( attributeKey == "Attributes" || attributeKey == "AttributeValues" )
+            if ( attributeKey == "AttributeValues")
             {
                 return true;
             }
 
             bool containsKey = base.ContainsKey( key );
 
-            if (!containsKey)
+            if ( !containsKey )
             {
-                if (this.Attributes == null)
+                if ( this.Attributes == null )
                 {
                     this.LoadAttributes();
                 }
 
-                if ( attributeKey.EndsWith("_unformatted"))
+                if ( attributeKey.EndsWith( "_unformatted" ) )
                 {
-                    attributeKey = attributeKey.Replace("_unformatted", "");
+                    attributeKey = attributeKey.Replace( "_unformatted", "" );
                 }
-                else if ( attributeKey.EndsWith("_url"))
+                else if ( attributeKey.EndsWith( "_url" ) )
                 {
-                    attributeKey = attributeKey.Replace("_url", "");
+                    attributeKey = attributeKey.Replace( "_url", "" );
                 }
 
                 if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
@@ -434,7 +438,7 @@ namespace Rock.Data
                     var attribute = this.Attributes[attributeKey];
                     if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                     {
-                        containsKey = true;
+                        return true;
                     }
                 }
             }
@@ -459,6 +463,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
+        [LavaIgnore]
         public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -469,6 +474,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
+        [LavaIgnore]
         public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
