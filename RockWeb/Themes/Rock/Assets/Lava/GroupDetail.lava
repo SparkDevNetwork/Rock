@@ -1,1 +1,25 @@
 {{ Group.Name }}
+
+<p>
+	<strong>Leaders:</strong>
+	<ul>
+	{% for member in Group.Members %}
+	
+		{% if member.GroupRole.IsLeader %}
+			<li>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+</p>
+
+
+<p>
+	<strong>Roster:</strong>
+	<ul>
+	{% for member in Group.Members %}
+
+		<li><img src="{{ member.Person.PhotoUrl }}" height="20" /> {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></li>
+		
+	{% endfor %}
+	</ul>
+</p>
