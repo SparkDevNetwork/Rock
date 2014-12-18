@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Store
             PackageVersion latestVersion = null;
             if ( package.Versions.Count > 0 )
             {
-                RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockProductVersionNumber() );
+                RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
                 latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
             }
 
