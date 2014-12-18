@@ -579,6 +579,49 @@ namespace Rock.Model
             return str.ToString();
         }
 
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string keyName = key.ToStringSafe();
+                switch ( keyName )
+                {
+                    case "GeoPoint":
+                        {
+                            if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
+                            {
+                                return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
+                            }
+                            break;
+                        }
+                    case "GeoFence":
+                        {
+                            if ( GeoFence != null )
+                            {
+                                return GeoFence.Coordinates()
+                                    .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
+                                    .ToList()
+                                    .AsDelimited("|");
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            return base[key];
+                        }
+                }
+
+                return string.Empty;
+            }
+        }
         #endregion
 
     }

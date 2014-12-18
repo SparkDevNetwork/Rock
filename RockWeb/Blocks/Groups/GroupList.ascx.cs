@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Groups
             gfSettings.Visible = ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean();
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
-            gGroups.DataKeyNames = new string[] { "id" };
+            gGroups.DataKeyNames = new string[] { "Id" };
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;

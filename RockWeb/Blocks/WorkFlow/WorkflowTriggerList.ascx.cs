@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.WorkFlow
             BindFilter();
             gfWorkflowTrigger.ApplyFilterClick += gfWorkflowTrigger_ApplyFilterClick;
 
-            gWorkflowTrigger.DataKeyNames = new string[] { "id" };
+            gWorkflowTrigger.DataKeyNames = new string[] { "Id" };
             gWorkflowTrigger.Actions.ShowAdd = true;
             gWorkflowTrigger.Actions.AddClick += gWorkflowTrigger_Add;
             gWorkflowTrigger.GridRebind += gWorkflowTrigger_GridRebind;

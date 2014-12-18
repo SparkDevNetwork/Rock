@@ -48,8 +48,7 @@ namespace RockWeb.Blocks.Finance
         #region Properties
 
         private List<FinancialTransactionDetail> TransactionDetailsState { get; set; }
-        private List<FinancialTransactionImage> TransactionImagesState { get; set; }
-        private List<int> BinaryFileIds { get; set; }
+        private List<int> TransactionImagesState { get; set; }
 
         private Dictionary<int, string> _accountNames = null;
         private Dictionary<int, string> AccountNames
@@ -81,8 +80,6 @@ namespace RockWeb.Blocks.Finance
         {
             base.LoadViewState( savedState );
 
-            BinaryFileIds = ViewState["BinaryFileIds"] as List<int>;
-
             string json = ViewState["TransactionDetailsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -93,15 +90,12 @@ namespace RockWeb.Blocks.Finance
                 TransactionDetailsState = JsonConvert.DeserializeObject<List<FinancialTransactionDetail>>( json );
             }
 
-            json = ViewState["TransactionImagesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            TransactionImagesState = ViewState["TransactionImagesState"] as List<int>;
+            if ( TransactionImagesState == null )
             {
-                TransactionImagesState = new List<FinancialTransactionImage>();
+                TransactionImagesState = new List<int>();
             }
-            else
-            {
-                TransactionImagesState = JsonConvert.DeserializeObject<List<FinancialTransactionImage>>( json );
-            }
+
         }
 
         /// <summary>
@@ -153,34 +147,12 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                if ( pnlEditDetails.Visible )
-                {
-                    foreach ( DataListItem item in dlImages.Items )
-                    {
-                        var hfImageGuid = item.FindControl( "hfImageGuid" ) as HiddenField;
-                        var imgupImage = item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
-
-                        if ( hfImageGuid != null && imgupImage != null )
-                        {
-                            var txnImage = TransactionImagesState
-                                .Where( i => i.Guid.Equals( hfImageGuid.Value.AsGuid() ) )
-                                .FirstOrDefault();
-                            if ( txnImage != null )
-                            {
-                                txnImage.BinaryFileId = imgupImage.BinaryFileId ?? 0;
-                            }
-                        }
-                    }
-                }
-
                 ShowDialog();
             }
         }
 
         protected override object SaveViewState()
         {
-            ViewState["BinaryFileIds"] = BinaryFileIds;
-
             var jsonSetting = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -188,7 +160,7 @@ namespace RockWeb.Blocks.Finance
             };
 
             ViewState["TransactionDetailsState"] = JsonConvert.SerializeObject( TransactionDetailsState, Formatting.None, jsonSetting );
-            ViewState["TransactionImagesState"] = JsonConvert.SerializeObject( TransactionImagesState, Formatting.None, jsonSetting );
+            ViewState["TransactionImagesState"] = TransactionImagesState;
 
             return base.SaveViewState();
         }
@@ -287,14 +259,6 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                foreach ( var txnImage in TransactionImagesState )
-                {
-                    if ( !txnImage.IsValid )
-                    {
-                        return;
-                    }
-                }
-
                 rockContext.WrapTransaction( () =>
                 {
                     // Save the transaction
@@ -328,50 +292,40 @@ namespace RockWeb.Blocks.Finance
                     }
                     rockContext.SaveChanges();
 
-                    // Remove any images that do not have a binary file
-                    foreach ( var txnImage in TransactionImagesState.Where( i => i.BinaryFileId == 0 ).ToList() )
-                    {
-                        TransactionImagesState.Remove( txnImage );
-                    }
-
                     // Delete any transaction images that were removed
+                    var orphanedBinaryFileIds = new List<int>();
                     var txnImagesInDB = txnImageService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
-                    var deletedImages = from txnImage in txnImagesInDB
-                                        where !TransactionImagesState.Select( d => d.Guid ).Contains( txnImage.Guid )
-                                        select txnImage;
-                    deletedImages.ToList().ForEach( txnImage =>
+                    foreach ( var txnImage in txnImagesInDB.Where( i => !TransactionImagesState.Contains( i.BinaryFileId ) ) )
                     {
+                        orphanedBinaryFileIds.Add( txnImage.BinaryFileId );
                         txnImageService.Delete( txnImage );
-                    } );
-                    rockContext.SaveChanges();
+                    }
 
                     // Save Transaction Images
                     int imageOrder = 0;
-                    foreach ( var editorTxnImage in TransactionImagesState )
+                    foreach ( var binaryFileId in TransactionImagesState )
                     {
                         // Add or Update the activity type
-                        var txnImage = txn.Images.FirstOrDefault( d => d.Guid.Equals( editorTxnImage.Guid ) );
+                        var txnImage = txnImagesInDB.FirstOrDefault( i => i.BinaryFileId == binaryFileId );
                         if ( txnImage == null )
                         {
                             txnImage = new FinancialTransactionImage();
-                            txnImage.Guid = editorTxnImage.Guid;
+                            txnImage.TransactionId = txn.Id;
                             txn.Images.Add( txnImage );
                         }
-                        txnImage.BinaryFileId = editorTxnImage.BinaryFileId;
+                        txnImage.BinaryFileId = binaryFileId;
                         txnImage.Order = imageOrder;
                         imageOrder++;
                     }
                     rockContext.SaveChanges();
 
                     // Make sure updated binary files are not temporary
-                    var savedBinaryFileIds = txn.Images.Select( i => i.BinaryFileId ).ToList();
-                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => savedBinaryFileIds.Contains( f.Id ) ) )
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => TransactionImagesState.Contains( f.Id ) ) )
                     {
                         binaryFile.IsTemporary = false;
                     }
 
                     // Delete any orphaned images
-                    var orphanedBinaryFileIds = BinaryFileIds.Where( f => !savedBinaryFileIds.Contains( f ) );
                     foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
                     {
                         binaryFileService.Delete( binaryFile );
@@ -526,45 +480,41 @@ namespace RockWeb.Blocks.Finance
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                var txnImage = e.Item.DataItem as FinancialTransactionImage;
                 var imgupImage = e.Item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
-                if ( txnImage != null )
+                if ( imgupImage != null )
                 {
-                    if ( txnImage.BinaryFileId != 0 )
-                    {
-                        imgupImage.BinaryFileId = txnImage.BinaryFileId;
-                    }
-                    else
-                    {
-                        imgupImage.BinaryFileId = null;
-                    }
+                    imgupImage.BinaryFileId = (int)e.Item.DataItem;
                 }
             }
         }
 
+
         /// <summary>
-        /// Handles the FileSaved event of the imageEditor control.
+        /// Handles the ImageRemoved event of the imgupImage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void imageEditor_FileSaved( object sender, EventArgs e )
+        /// <param name="e">The <see cref="ImageUploaderEventArgs"/> instance containing the event data.</param>
+        protected void imgupImage_ImageRemoved( object sender, ImageUploaderEventArgs e )
         {
-            var imageEditor = sender as ImageEditor;
-            if ( imageEditor != null && imageEditor.BinaryFileId.HasValue )
+            if ( e.BinaryFileId.HasValue )
             {
-                BinaryFileIds.Add( imageEditor.BinaryFileId.Value );
+                TransactionImagesState.Remove( e.BinaryFileId.Value );
+                BindImages();
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddImage control.
+        /// Handles the ImageUploaded event of the imgupImage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddImage_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="ImageUploaderEventArgs"/> instance containing the event data.</param>
+        protected void imgupImage_ImageUploaded( object sender, ImageUploaderEventArgs e )
         {
-            TransactionImagesState.Add( new FinancialTransactionImage { Guid = Guid.NewGuid() } );
-            BindImages();
+            if ( e.BinaryFileId.HasValue )
+            {
+                TransactionImagesState.Add( e.BinaryFileId.Value );
+                BindImages();
+            }
         }
 
         #endregion
@@ -798,12 +748,10 @@ namespace RockWeb.Blocks.Finance
                 SetCreditCardVisibility();
 
                 TransactionDetailsState = txn.TransactionDetails.ToList();
-                TransactionImagesState = txn.Images.ToList();
+                TransactionImagesState = txn.Images.OrderBy( i => i.Order ).Select( i => i.BinaryFileId ).ToList();
 
                 BindAccountsEditGrid();
                 tbSummary.Text = txn.Summary;
-
-                BinaryFileIds = txn.Images.Select( i => i.BinaryFileId ).ToList();
 
                 BindImages();
             }
@@ -873,7 +821,10 @@ namespace RockWeb.Blocks.Finance
 
         private void BindImages()
         {
-            dlImages.DataSource = TransactionImagesState;
+            var ds = TransactionImagesState.ToList();
+            ds.Add( 0 );
+
+            dlImages.DataSource = ds;
             dlImages.DataBind();
         }
 
@@ -966,5 +917,5 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-    }
+}
 }

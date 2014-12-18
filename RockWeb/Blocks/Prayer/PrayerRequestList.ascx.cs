@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Prayer
 
             BindFilter();
 
-            gPrayerRequests.DataKeyNames = new string[] { "id" };
+            gPrayerRequests.DataKeyNames = new string[] { "Id" };
             gPrayerRequests.Actions.AddClick += gPrayerRequests_Add;
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
 

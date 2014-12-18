@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( RockPage.Layout.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                gLayoutBlocks.DataKeyNames = new string[] { "id" };
+                gLayoutBlocks.DataKeyNames = new string[] { "Id" };
                 gLayoutBlocks.Actions.ShowAdd = false;
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
                 //SecurityField securityField = gLayoutBlocks.Columns[4] as SecurityField;

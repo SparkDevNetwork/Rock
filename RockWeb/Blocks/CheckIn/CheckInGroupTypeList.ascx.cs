@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            gGroupType.DataKeyNames = new string[] { "id" };
+            gGroupType.DataKeyNames = new string[] { "Id" };
             gGroupType.Actions.ShowAdd = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridRebind += gGroupType_GridRebind;

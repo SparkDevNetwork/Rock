@@ -46,7 +46,7 @@ Additional custom actions (will be displayed after the list of workflow actions)
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
 <pre>
-    &lt;li&gt;&lt;a href='~/LaunchWorkflow/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
@@ -210,7 +210,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 var workflowType = workflowTypeService.Get( guid.Value );
                                 if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson, rockContext ) )
                                 {
-                                    string url = string.Format( "~/LaunchWorkflow/{0}?PersonId={1}", workflowType.Id, Person.Id );
+                                    string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                     sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
                                         ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
                                     sbActions.AppendLine();

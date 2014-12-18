@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Security
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gRestKeyList.DataKeyNames = new string[] { "id" };
+            gRestKeyList.DataKeyNames = new string[] { "Id" };
             gRestKeyList.Actions.ShowAdd = canEdit;
             gRestKeyList.Actions.AddClick += gRestKeyList_AddClick;
             gRestKeyList.GridRebind += gRestKeyList_GridRebind;

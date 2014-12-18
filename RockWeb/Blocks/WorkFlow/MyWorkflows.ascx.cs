@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             rptWorkflowTypes.ItemCommand += rptWorkflowTypes_ItemCommand;
 
-            gWorkflows.DataKeyNames = new string[] { "id" };
+            gWorkflows.DataKeyNames = new string[] { "Id" };
             gWorkflows.Actions.ShowAdd = false;
             gWorkflows.IsDeleteEnabled = false;
             gWorkflows.GridRebind += gWorkflows_GridRebind;

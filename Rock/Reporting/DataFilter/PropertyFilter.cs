@@ -284,11 +284,26 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        DateTime dateValue = DateTime.Today;
-                        if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                        DateTime dateValue;
+                        bool useCurrentDate = values[1] != null && values[1].StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase );
+                        if ( useCurrentDate )
+                        {
+                            var valueParts = values[1].Split( ':' );
+                            if ( valueParts.Length > 1 )
+                            {
+                                int daysOffset = valueParts[1].AsInteger();
+                                dateValue = RockDateTime.Today.AddDays( daysOffset );
+                            }
+                            else
+                            {
+                                dateValue = RockDateTime.Today;
+                            }
+                        }
+                        else
                         {
                             dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
                         }
+
                         ConstantExpression constantExpression = Expression.Constant( dateValue );
                         return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }

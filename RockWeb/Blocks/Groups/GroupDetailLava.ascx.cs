@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 using Rock;
 using Rock.Data;
@@ -119,8 +120,8 @@ namespace RockWeb.Blocks.Groups
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
 
-                var group = groupService.Queryable( "GroupLocations,Members,Members.Person" ).Where( g => g.Id == groupId ).FirstOrDefault();
-
+                var group = groupService.Queryable( "GroupLocations,Members,Members.Person" ).Where( g => g.Id == groupId ).AsNoTracking().FirstOrDefault();
+                
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );

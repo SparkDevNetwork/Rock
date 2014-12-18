@@ -5,69 +5,79 @@
 
     Rock.controls.modal = (function () {
         var _showModalPopup = function (sender, popupUrl) {
-            var $primaryBtn = $('#modal-popup_panel div.modal-footer a.btn.primary');
-            if (sender.attr('primary-button') !== undefined) {
-                $primaryBtn.text(sender.attr('primary-button'));
-            } else {
-                $primaryBtn.text('Save');
-            }
-            if ($primaryBtn.text() !== '') {
-                $primaryBtn.show();
-            } else {
-                $primaryBtn.hide();
-            }
-
-            var $secondaryBtn = $('#modal-popup_panel div.modal-footer a.btn.secondary');
-            if (sender.attr('secondary-button') !== undefined) {
-                $secondaryBtn.text(sender.attr('secondary-button'));
-            } else {
-                $secondaryBtn.text('Cancel');
-            }
-            if ($secondaryBtn.text() !== '') {
-                $secondaryBtn.show();
-            } else {
-                $secondaryBtn.hide();
-            }
-
-            // If the anchor tag specifies a modal height, set the dialog's height
-            if (sender.attr('height') != undefined) {
-                $('#modal-popup_panel div.modal-body').css('height', sender.attr('height'));
-                $('#modal-popup_contentPanel.iframe').css('height', sender.attr('height'));
-            }
-            else {
-                $('#modal-popup_panel div.modal-body').css('height', '');
-                $('#modal-popup_contentPanel.iframe').css('height', '500px');
-            }
+            var $modalPopup = $('#modal-popup');
+            var $modalPopupIFrame = $modalPopup.find('iframe');
 
             // Use the anchor tag's title attribute as the title of the dialog box
             if (sender.attr('title') != undefined) {
                 $('#modal-popup_panel h3').html(sender.attr('title') + ' <small></small>');
             }
 
-            // to avoid flicker, first hide the contents, then load the iframe.  After loading, then show the contents
-            $('#modal-popup_contentPanel').hide(0, function () {
+            $modalPopupIFrame.one('load', function () {
+                $('#modal-popup').fadeTo(0, 1);
+                Rock.controls.modal.updateSize();
+                
+                var newHeight = $(this.contentWindow.document).height();
+                if ($(this).height() != newHeight) {
+                    $(this).height(newHeight);
+                }
 
-                $('#modal-popup_iframe').on('load', function () {
+                $('#modal-popup').modal('layout');
 
-                    // set opacity to 1% (instead of invisible) so that ModalIFrameDialog can position correctly
-                    $('#modal-popup_contentPanel').fadeTo(0, 1);
-                    $('#modal-popup_iframe').off('load');
-                    // popup the dialog box
-                    $find('modal-popup').show();
-                    $('#modal-popup_contentPanel').show();
+                $(this.contentWindow).on('resize', function () {
+                    var newHeight = $(this.document.body).prop('scrollHeight')
+                    var $modalPopup = $('#modal-popup');
+                    var $modalPopupIFrame = $modalPopup.find('iframe');
+                    if ($modalPopupIFrame.height() != newHeight) {
+                        $modalPopupIFrame.height(newHeight);
+                    }
                 });
-
-                // Use the anchor tag's href attribute as the source for the iframe
-                // this will trigger the load event (above) which will show the popup
-                $('#modal-popup_iframe').attr('src', popupUrl);
             });
+
+            // Use the anchor tag's href attribute as the source for the iframe
+            // this will trigger the load event (above) which will show the popup
+            $('#modal-popup').fadeTo(0, 0);
+            $modalPopupIFrame[0].style.height = 'auto';
+            $modalPopupIFrame.attr('src', popupUrl);
+            $('#modal-popup').modal('show');
 
         },
 
         exports = {
+            updateSize: function (controlId) {
+                var $modalPopupIFrame = $(window.parent.document).find('iframe');
+                if ($modalPopupIFrame[0].style.height != 'auto') {
+                    $modalPopupIFrame[0].style.height = 'auto';
+                    var contentsHeight = $modalPopupIFrame.contents().height();
+
+                    // shrink the iframe in case the contents got smaller
+                    $modalPopupIFrame.height('auto');
+                    var iFrameHeight = $modalPopupIFrame.height();
+                    if (contentsHeight > iFrameHeight)
+                    {
+                        // if the contents are larger than the iFrame, grow the iframe to fit
+                        $modalPopupIFrame.height(contentsHeight);
+                    }
+                }
+
+                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
+                if ($control && $control.length) {
+                    var $modalBody = $control.closest('.modal-body');
+                    if ($modalBody.is(':visible')) {
+                        // shrink, then set min height based on scrollHeight so that Modal resizes
+                        $modalBody[0].style.minHeight = '0px'
+                        $modalBody[0].style.minHeight = $modalBody.prop('scrollHeight') + "px";
+                    }
+                }
+            },
             close: function (msg) {
-                $('#modal-popup_iframe').attr('src', '');
-                $find('modal-popup').hide();
+                // do a setTimeout so this fires after the postback
+                $('#modal-popup').hide();
+                setTimeout(function () {
+                    $('#modal-popup iframe').attr('src', '');
+                    $('#modal-popup').modal('hide');
+
+                }, 0);
 
                 if (msg && msg != '') {
 
@@ -80,7 +90,7 @@
                     }
                 }
             },
-            show: function (sender, popupUrl, detailsId, postbackUrl ) {
+            show: function (sender, popupUrl, detailsId, postbackUrl) {
                 _showModalPopup(sender, popupUrl);
             },
 

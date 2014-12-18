@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gHistory.DataKeyNames = new string[] { "id" };
+            gHistory.DataKeyNames = new string[] { "Id" };
             gHistory.GridRebind += gHistory_GridRebind;
         }
 

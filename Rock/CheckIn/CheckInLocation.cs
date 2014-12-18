@@ -53,6 +53,7 @@ namespace Rock.CheckIn
         /// The current count.
         /// </value>
         [DataMember]
+        [Obsolete( "Not Used. This will be removed post McKinley." )]
         public int CurrentCount { get; set; }
 
         /// <summary>
@@ -157,7 +158,6 @@ namespace Rock.CheckIn
                 switch ( key.ToStringSafe() )
                 {
                     case "LastCheckIn": return LastCheckIn;
-                    case "CurrentCount": return CurrentCount;
                     case "Schedules": return Schedules.Where( s => s.Selected ).ToList();
                     default: return Location[key];
                 }
@@ -171,7 +171,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalProperties = new List<string> { "LastCheckIn", "CurrentCount", "Schedules" };
+            var additionalProperties = new List<string> { "LastCheckIn", "Schedules" };
             if ( additionalProperties.Contains( key.ToStringSafe() ) )
             {
                 return true;
