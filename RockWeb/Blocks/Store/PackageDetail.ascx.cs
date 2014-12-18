@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Store;
-using NuGet;
+using Rock.Utility;
 using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Store
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Store
             PackageVersion latestVersion = null;
             if ( package.Versions.Count > 0 )
             {
-                SemanticVersion rockVersion = new SemanticVersion( VersionInfo.GetRockProductVersionNumber() );
+                RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockProductVersionNumber() );
                 latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
             }
 
@@ -154,14 +154,14 @@ namespace RockWeb.Blocks.Store
                 {
                     var lastVersion = package.Versions.OrderByDescending( v => v.RequiredRockSemanticVersion ).FirstOrDefault();
                     lVersionWarning.Text = string.Format( "<div class='alert alert-info'>A newer version of this item is available but requires Rock v{0}.{1}.</div>",
-                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
-                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                                                    lastVersion.RequiredRockSemanticVersion.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Patch.ToString() );
                 }
 
                 lLastUpdate.Text = latestVersion.AddedDate.ToShortDateString();
                 lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
-                                                latestVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
-                                                latestVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString());
+                                                latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
+                                                latestVersion.RequiredRockSemanticVersion.Patch.ToString());
                 lDocumenationLink.Text = string.Format( "<a href='{0}'>Support Link</a>", latestVersion.DocumentationUrl );
 
                 // fill in previous version info
@@ -182,16 +182,16 @@ namespace RockWeb.Blocks.Store
                     if ( firstVersion == lastVersion )
                     {
                         lVersionWarning.Text = string.Format( "<div class='alert alert-warning'>This item requires Rock version v{0}.{1}.</div>",
-                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
-                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                                                    lastVersion.RequiredRockSemanticVersion.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Patch.ToString() );
                     }
                     else
                     {
                         lVersionWarning.Text = string.Format( "<div class='alert alert-warning'>This item requires at least Rock version v{0}.{1} but the latest version requires v{2}.{3}.</div>",
-                                                    firstVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
-                                                    firstVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString(),
-                                                    lastVersion.RequiredRockSemanticVersion.Version.Minor.ToString(),
-                                                    lastVersion.RequiredRockSemanticVersion.Version.MinorRevision.ToString() );
+                                                    firstVersion.RequiredRockSemanticVersion.Minor.ToString(),
+                                                    firstVersion.RequiredRockSemanticVersion.Patch.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Minor.ToString(),
+                                                    lastVersion.RequiredRockSemanticVersion.Patch.ToString() );
                     }
                 }
                 
