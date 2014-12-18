@@ -1741,6 +1741,17 @@ namespace Rock.Data
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="value">The value.</param>
+        public void UpdateDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
+        {
+            this.AddDefinedValueAttributeValue( definedValueGuid, attributeGuid, value);
+        }
+
+        /// <summary>
+        /// Adds the defined value attribute value.
+        /// </summary>
+        /// <param name="definedValueGuid">The defined value unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
         public void AddDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
         {
             Migration.Sql( string.Format( @"
