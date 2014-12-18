@@ -65,8 +65,8 @@
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
                         // shrink, then set min height based on scrollHeight so that Modal resizes
-                        $modalBody[0].style.minHeight = 'auto'
-                        $modalBody[0].style.minHeight = $modal.prop('scrollHeight') + "px";
+                        $modalBody[0].style.minHeight = '0px'
+                        $modalBody[0].style.minHeight = $modalBody.prop('scrollHeight') + "px";
                     }
                 }
             },

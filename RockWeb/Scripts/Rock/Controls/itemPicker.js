@@ -66,7 +66,7 @@
                     })
                     .on('rockTree:itemClicked', function (e) {
                         if (!self.options.allowMultiSelect) {
-                            $control.find('.picker-btn').get(0).click();
+                            $control.find('.picker-btn').trigger('click');
                         }
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
@@ -113,7 +113,9 @@
 
                     $spanNames.text(selectedNames.join(', '));
 
-                    $(this).closest('.picker-menu').slideUp();
+                    $(this).closest('.picker-menu').slideUp(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 $control.find('.picker-select-none').click(function (e) {
