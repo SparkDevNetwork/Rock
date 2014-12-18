@@ -295,7 +295,7 @@
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
-    <Compile Include="Utility\RockSemanticVersioncs.cs" />
+    <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
