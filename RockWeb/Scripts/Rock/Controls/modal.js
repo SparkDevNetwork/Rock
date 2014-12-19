@@ -64,8 +64,7 @@
                 if ($control && $control.length) {
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
-                        // shrink, then set min height based on scrollHeight so that Modal resizes
-                        $modalBody[0].style.minHeight = '0px'
+                        // make modal-modal big enough to fit.  Intentionally leave it stretched-out even if needed space shrinks
                         $modalBody[0].style.minHeight = $modalBody.prop('scrollHeight') + "px";
                     }
                 }
