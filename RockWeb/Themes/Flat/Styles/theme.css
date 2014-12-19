@@ -436,6 +436,7 @@ img.jcrop-preview {
 }
 .modal.bootbox {
   width: auto;
+  z-index: 1060;
 }
 .bootbox .modal-dialog {
   margin: 0;

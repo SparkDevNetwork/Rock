@@ -285,10 +285,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryRoot_Click( object sender, EventArgs e )
         {
-            int parentCategoryId = hfSelectedCategoryId.ValueAsInt();
+            // if a rootCategory is set, set that as the parentCategory when they select "add top-level"
+            var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+            int parentCategoryId = rootCategory != null ? rootCategory.Id : 0;
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( "CategoryId", 0.ToString() );
+            if ( parentCategoryId > 0 )
+            {
+                qryParams.Add( "parentCategoryId", parentCategoryId.ToString() );
+            }
+
             qryParams.Add( "ExpandedIds", hfInitialCategoryParentIds.Value );
 
             NavigateToLinkedPage( "DetailPage", qryParams );
