@@ -27,7 +27,8 @@
                             <asp:Literal ID="lCost" runat="server" />
 
                             <p>
-                                <asp:LinkButton ID="lInstall" runat="server" CssClass="btn btn-primary btn-install">Install</asp:LinkButton>
+                                <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary btn-install">Install</asp:LinkButton>
+                                <asp:Literal ID="lInstallNotes" runat="server" />
                             </p>
 
                             <p>

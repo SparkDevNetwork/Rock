@@ -31,7 +31,7 @@ namespace Rock.Store
 
             // setup REST call
             var client = new RestClient(_rockStoreUrl);
-            string requestUrl = "Api/PackageCategories/List";
+            string requestUrl = "api/PackageCategories/List";
             var request = new RestRequest(requestUrl, Method.GET);
 
             // deserialize to list of packages

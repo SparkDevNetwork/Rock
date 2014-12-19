@@ -144,6 +144,42 @@ namespace RockWeb.Blocks.Store
                 latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
             }
 
+            // determine the state of the install button (install, update, buy or installed)
+            InstalledPackage installedPackage = InstalledPackageService.InstalledPackageVersion( package.Id );
+
+            if ( installedPackage == null )
+            {
+                // it's not installed
+                // todo add logic that it's not installed but has been purchased
+                if ( package.IsFree )
+                {
+                    // the package is free
+                    lbInstall.Text = "Install";
+                }
+                else
+                {
+                    // payup!
+                    lbInstall.Text = "Buy";
+                }
+            }
+            else
+            {
+                if ( installedPackage.VersionId == latestVersion.Id )
+                {
+                    // have the latest version installed
+                    lbInstall.Text = "Installed";
+                    lbInstall.Enabled = false;
+                    lbInstall.CssClass = "btn btn-default btn-install";
+                    lbInstall.Attributes.Add( "disabled", "disabled" );
+                }
+                else
+                {
+                    // have a previous version installed
+                    lbInstall.Text = "Update";
+                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel);
+                }
+            }
+
             if ( latestVersion != null )
             {
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
@@ -173,6 +209,9 @@ namespace RockWeb.Blocks.Store
             }
             else
             {
+                // hide install button
+                lbInstall.Visible = false;
+                
                 // display info on what Rock version you need to be on to run this package
                 if ( package.Versions.Count > 0 )
                 {

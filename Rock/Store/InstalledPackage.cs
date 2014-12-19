@@ -44,6 +44,22 @@ namespace Rock.Store
         public string VersionLabel { get; set; }
 
         /// <summary>
+        /// Gets or sets the VendorId of the installation. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the VendorId.
+        /// </value>
+        public int VendorId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the vendor name of the installation. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the vendor name.
+        /// </value>
+        public string VendorName { get; set; }
+
+        /// <summary>
         /// Gets or sets the install date/time. 
         /// </summary>
         /// <value>
