@@ -734,15 +734,30 @@
         };
 
         var exports = {
+            googleMapsLoadCallback: function()
+            {
+                // callback for when google maps api is done loading (if it wasn't loaded already)
+                $.each(this.geoPickerOptions, function (a, options) {
+                    var geoPicker = new GeoPicker(options);
+                    exports.geoPickers[options.controlId] = geoPicker;
+                    geoPicker.initialize();
+                });
+            },
             geoPickers: {},
+            geoPickerOptions: {},
             findControl: function (controlId) {
                 return exports.geoPickers[controlId];
             },
             initialize: function (options) {
                 if (!options.controlId) throw '`controlId` is required.';
-                var geoPicker = new GeoPicker(options);
-                exports.geoPickers[options.controlId] = geoPicker;
-                geoPicker.initialize();
+                exports.geoPickerOptions[options.controlId] = options;
+
+                // if the google maps api isn't loaded uet, googleMapsLoadCallback will take care of it
+                if (typeof (google) != "undefined") {
+                    var geoPicker = new GeoPicker(options);
+                    exports.geoPickers[options.controlId] = geoPicker;
+                    geoPicker.initialize();
+                }
             }
         };
 

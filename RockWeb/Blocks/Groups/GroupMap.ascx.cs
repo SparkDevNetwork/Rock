@@ -134,6 +134,8 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            this.RockPage.LoadGoogleMapsApi();
+
             lMessages.Text = string.Empty;
             pnlMap.Visible = true;
 
