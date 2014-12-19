@@ -2770,6 +2770,7 @@ INSERT INTO [dbo].[Auth]
                 -- Delete the group type and any dangling bits
                 DECLARE @GroupTypeId int = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
                 UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId
+                DELETE [GroupTypeAssociation] WHERE [ChildGroupTypeId] = @GroupTypeId OR [GroupTypeId] = @GroupTypeId
                 DELETE [GroupTypeRole] WHERE [GroupTypeId] = @GroupTypeId
                 DELETE [GroupType] WHERE [Guid] = '{0}'
 ",
