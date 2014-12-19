@@ -31,7 +31,6 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their last name." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
-
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByLastName : CheckInActionComponent
     {
@@ -57,10 +56,10 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
 
-                foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
+                foreach ( var person in family.People.Where( p => p.Person.LastName.Length > 0 ) )
                 {
                     char lastInitial = char.Parse( person.Person.LastName.Substring( 0, 1 ).ToUpper() );
-                    foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
+                    foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
