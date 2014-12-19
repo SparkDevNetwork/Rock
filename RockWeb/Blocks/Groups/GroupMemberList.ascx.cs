@@ -451,8 +451,7 @@ namespace RockWeb.Blocks.Groups
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        NickName = m.Person.NickName,
-                        LastName = m.Person.LastName,
+                        Name = m.Person.NickName + " " + m.Person.LastName,
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus
                     } ).ToList();
