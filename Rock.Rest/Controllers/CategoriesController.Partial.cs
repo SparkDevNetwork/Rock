@@ -56,7 +56,7 @@ namespace Rock.Rest.Controllers
             {
                 if ( rootCategoryId != 0 )
                 {
-                    qry = qry.Where( a => a.Id == rootCategoryId || a.ParentCategoryId == rootCategoryId );
+                    qry = qry.Where( a => a.ParentCategoryId == rootCategoryId );
                 }
                 else
                 {
@@ -120,7 +120,10 @@ namespace Rock.Rest.Controllers
 
             if ( getCategorizedItems )
             {
-                var items = GetCategorizedItems( serviceInstance, id, showUnnamedEntityItems ).ToList();
+                // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
+                int parentItemId = id == 0 ? rootCategoryId : id;
+                
+                var items = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems ).ToList();
                 if ( items != null )
                 {
                     foreach ( var categorizedItem in items.OrderBy( i => i.Name ) )
