@@ -414,13 +414,16 @@ namespace Rock.Attribute
                         attributeValues.Add( attribute.Key, null );
                     }
 
-                    // Read this item's value(s) for each attribute 
-                    List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                    foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                        .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                    // If loading attributes for a saved item, read the item's value(s) for each attribute 
+                    if ( entity.Id != 0 )
                     {
-                        var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
-                        attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                        List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
+                        foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
+                            .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                        {
+                            var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
+                            attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                        }
                     }
 
                     // Look for any attributes that don't have a value and create a default value entry
