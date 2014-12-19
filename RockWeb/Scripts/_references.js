@@ -19,3 +19,4 @@
 /// <reference path="mediaelementjs/mediaelement-and-player.js" />
 /// <reference path="bootstrap-modal.js" />
 /// <reference path="bootstrap-modalmanager.js" />
+/// <reference path="Rock/Controls/geoPicker.js" />
