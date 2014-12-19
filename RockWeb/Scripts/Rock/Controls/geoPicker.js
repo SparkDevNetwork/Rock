@@ -734,13 +734,16 @@
         };
 
         var exports = {
-            googleMapsLoadCallback: function()
-            {
+            googleMapsLoadCallback: function () {
                 // callback for when google maps api is done loading (if it wasn't loaded already)
-                $.each(this.geoPickerOptions, function (a, options) {
-                    var geoPicker = new GeoPicker(options);
-                    exports.geoPickers[options.controlId] = geoPicker;
-                    geoPicker.initialize();
+                $.each(Rock.controls.geoPicker.geoPickerOptions, function (a, options) {
+                    var geoPicker = Rock.controls.geoPicker.geoPickers[options.controlId];
+                    if (!geoPicker) {
+
+                        geoPicker = new GeoPicker(options);
+                        Rock.controls.geoPicker.geoPickers[options.controlId] = geoPicker;
+                        geoPicker.initialize();
+                    }
                 });
             },
             geoPickers: {},
@@ -752,11 +755,13 @@
                 if (!options.controlId) throw '`controlId` is required.';
                 exports.geoPickerOptions[options.controlId] = options;
 
+                $(window).on('googleMapsIsLoaded', this.googleMapsLoadCallback);
+
                 // if the google maps api isn't loaded uet, googleMapsLoadCallback will take care of it
                 if (typeof (google) != "undefined") {
-                    var geoPicker = new GeoPicker(options);
-                    exports.geoPickers[options.controlId] = geoPicker;
-                    geoPicker.initialize();
+                    // null it out just in case, to force it to get recreated
+                    exports.geoPickers[options.controlId] = null;
+                    $(window).trigger('googleMapsIsLoaded');
                 }
             }
         };

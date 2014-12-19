@@ -1046,31 +1046,30 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the google maps javascript API to the page
         /// </summary>
-        /// <param name="callbackFunctionName">Name of the javascript callback function.  For example: Rock.controls.geoPicker.googleMapsLoadCallback</param>
-        public void LoadGoogleMapsApi(Control control = null, string callbackFunctionName = null)
+        public void LoadGoogleMapsApi()
         {
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            
-            string callbackParameter = string.IsNullOrWhiteSpace(callbackFunctionName) ? "" : string.Format("callback={0}&", callbackFunctionName);
-            if (!this.IsPostBack)
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter);
+
+            // first, add it to the page to handle cases where the api is needed on first page load
+            if (this.Page != null && this.Page.Header != null)
             {
-                callbackParameter = "";
+                var control = new LiteralControl();
+                control.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+
+                // note: ID must match the what it is called in \RockWeb\Scripts\Rock\Controls\util.js
+                control.ID = "googleMapsApi";
+                control.Text = string.Format("<script id=\"googleMapsApi\" src=\"{0}\" ></script>", scriptUrl);
+                if ( !this.Page.Header.Controls.OfType<LiteralControl>().Any( a => a.ID == control.ID ) )
+                {
+                    this.Page.Header.Controls.Add( control );
+                }
             }
 
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}{1}sensor=false&libraries=drawing", keyParameter, callbackParameter );
-            
-            //this.AddScriptLink( scriptUrl, false );
-            if ( false )//control != null )
-            {
-                
-                ScriptManager.RegisterClientScriptInclude( control, control.GetType(), "googleMapsApi", scriptUrl );
-            }
-            else
-            {
-                //this.AddScriptLink( scriptUrl, false );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "googleMapsApi", scriptUrl );
-            }
+            // also, do this in cases where the api is added on a postback, and the above didn't end up getting rendered
+            string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
         }
 
         /// <summary>
