@@ -5805,6 +5805,9 @@ body#splash.error #content #logo {
   padding: 6px;
   color: #d3cec5;
 }
+.navbar-static-side .navbar-side > li .nav-childpages li a:focus {
+  background-color: #353133;
+}
 .navbar-static-side .navbar-side > li .nav-childpages li a:hover {
   background-color: #1b1919;
 }
