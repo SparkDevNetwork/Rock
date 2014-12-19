@@ -444,6 +444,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             var sm = ScriptManager.GetCurrent( this.Page );
+            this.RockBlock().RockPage.LoadGoogleMapsApi( this, "Rock.controls.geoPicker.googleMapsLoadCallback" );
 
             if ( sm != null )
             {

@@ -478,11 +478,6 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            // add Google Maps API (doesn't like to be added during an async postback.  even tried adding it to head manually as needed  )
-            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-            string keyParameter = string.IsNullOrWhiteSpace(googleAPIKey) ? "" : string.Format("key={0}&", googleAPIKey);
-            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter ) ) );
-
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -1045,6 +1040,36 @@ namespace Rock.Web.UI
                 {
                     Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the google maps javascript API to the page
+        /// </summary>
+        /// <param name="callbackFunctionName">Name of the javascript callback function.  For example: Rock.controls.geoPicker.googleMapsLoadCallback</param>
+        public void LoadGoogleMapsApi(Control control = null, string callbackFunctionName = null)
+        {
+            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+            string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
+            
+            string callbackParameter = string.IsNullOrWhiteSpace(callbackFunctionName) ? "" : string.Format("callback={0}&", callbackFunctionName);
+            if (!this.IsPostBack)
+            {
+                callbackParameter = "";
+            }
+
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}{1}sensor=false&libraries=drawing", keyParameter, callbackParameter );
+            
+            //this.AddScriptLink( scriptUrl, false );
+            if ( false )//control != null )
+            {
+                
+                ScriptManager.RegisterClientScriptInclude( control, control.GetType(), "googleMapsApi", scriptUrl );
+            }
+            else
+            {
+                //this.AddScriptLink( scriptUrl, false );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "googleMapsApi", scriptUrl );
             }
         }
 
