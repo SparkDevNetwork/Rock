@@ -726,6 +726,10 @@ body#splash {
                     padding: 6px;
                     color: @accent-bold-text-color;
 
+                    &:focus {
+                        background-color: lighten(@accent-bold-color, 5%);
+                    }
+
                     &:hover {
                         background-color: darken(@accent-bold-color, 5%);
                     }
