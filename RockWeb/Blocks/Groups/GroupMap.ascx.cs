@@ -124,6 +124,8 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            this.LoadGoogleMapsApi();
         }
 
         /// <summary>
@@ -133,8 +135,6 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            this.RockPage.LoadGoogleMapsApi();
 
             lMessages.Text = string.Empty;
             pnlMap.Visible = true;
