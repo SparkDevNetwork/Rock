@@ -451,7 +451,10 @@
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
                 var $control = $('#' + controlId)
-                $control.find('.picker-menu').first().toggle();
+                $control.find('.picker-menu').first().toggle(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
+
                 if ( $control.find('.picker-menu').first().is(":visible") ) {
                     google.maps.event.trigger(self.map, "resize");
                     // now we can safely fit the map to any polygon boundary
@@ -531,13 +534,18 @@
                 google.maps.event.trigger(self.map, 'resize');
                 self.fitBounds();
 
+                Rock.dialogs.updateModalScrollBar(self.controlId);
+
             });
 
             /**
             * Handle the Cancel button click by hiding the overlay.
             */
             $('#btnCancel_' + controlId).click(function () {
-                $(this).closest('.picker-menu').slideUp();
+                $(this).closest('.picker-menu').slideUp(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
+
                 self.path = self.pathTemp;
 
                 if ( self.selectedShape ) {
@@ -581,7 +589,9 @@
                 //clear out any old map positioning
                 self.initMinMaxLatLng();
 
-                $(this).closest('.picker-menu').slideUp();
+                $(this).closest('.picker-menu').slideUp(function () {
+                    Rock.dialogs.updateModalScrollBar(controlId);
+                });
             });
 
 
@@ -719,6 +729,8 @@
             });
 
             self.initializeEventHandlers();
+
+            Rock.dialogs.updateModalScrollBar(self.controlId);
         };
 
         var exports = {
