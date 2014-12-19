@@ -8000,6 +8000,9 @@ body {
   padding-top: 28px;
 }
 /* bootbox modal styles */
+.bootbox {
+  z-index: 1060;
+}
 .bootbox .modal-content {
   background-color: #dbc189;
 }
