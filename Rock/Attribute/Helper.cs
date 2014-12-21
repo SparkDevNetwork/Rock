@@ -358,10 +358,12 @@ namespace Rock.Attribute
                 var attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
+                var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType);
+
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
                 foreach ( var attribute in attributeService.Queryable()
                     .AsNoTracking()
-                    .Where( a => a.EntityTypeId == entityTypeId )
+                    .Where( a => a.EntityTypeId == entityTypeCache.Id )
                     .Select( a => new { 
                         a.Id, 
                         a.EntityTypeQualifierColumn, 
@@ -415,7 +417,7 @@ namespace Rock.Attribute
                     }
 
                     // If loading attributes for a saved item, read the item's value(s) for each attribute 
-                    if ( entity.Id != 0 )
+                    if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                     {
                         List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                         foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
