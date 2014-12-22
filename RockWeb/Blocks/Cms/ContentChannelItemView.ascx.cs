@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Cms
             gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
             gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
-            gContentChannelItems.DataKeyNames = new string[] { "id" };
+            gContentChannelItems.DataKeyNames = new string[] { "Id" };
             gContentChannelItems.Actions.AddClick += gContentChannelItems_Add;
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
         }

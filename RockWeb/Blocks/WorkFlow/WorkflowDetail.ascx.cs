@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            gLog.DataKeyNames = new string[] { "id" };
+            gLog.DataKeyNames = new string[] { "Id" };
             gLog.Actions.ShowAdd = false;
             gLog.IsDeleteEnabled = false;
             gLog.GridRebind += gLog_GridRebind;

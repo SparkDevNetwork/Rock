@@ -96,7 +96,9 @@
                 });
 
             $('#' + controlId + '_btnCancel').click(function () {
-                $(this).closest('.picker-menu').slideUp();
+                $(this).closest('.picker-menu').slideUp(function () {
+                    exports.personPickers[controlId].updateScrollbar();
+                });
             });
 
             $('#' + controlId + '_btnSelectNone').click(function (e) {

@@ -100,6 +100,12 @@ namespace Rock.Model
             target.StorageEntityTypeId = source.StorageEntityTypeId;
             target.AllowCaching = source.AllowCaching;
             target.RequiresViewSecurity = source.RequiresViewSecurity;
+            target.MaxWidth = source.MaxWidth;
+            target.MaxHeight = source.MaxHeight;
+            target.PreferredFormat = source.PreferredFormat;
+            target.PreferredResolution = source.PreferredResolution;
+            target.PreferredColorDepth = source.PreferredColorDepth;
+            target.PreferredRequired = source.PreferredRequired;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

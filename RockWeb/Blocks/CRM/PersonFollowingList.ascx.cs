@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm
 
             base.OnInit( e );
 
-            gFollowings.DataKeyNames = new string[] { "id" };
+            gFollowings.DataKeyNames = new string[] { "Id" };
             gFollowings.IsDeleteEnabled = true;
             gFollowings.GridRebind += gFollowings_GridRebind;
             gFollowings.RowSelected += gFollowings_Selected;

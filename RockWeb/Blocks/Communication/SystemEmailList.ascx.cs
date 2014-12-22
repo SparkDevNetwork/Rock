@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Communication
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
-                gEmailTemplates.DataKeyNames = new string[] { "id" };
+                gEmailTemplates.DataKeyNames = new string[] { "Id" };
                 gEmailTemplates.Actions.ShowAdd = true;
                 gEmailTemplates.Actions.AddClick += gEmailTemplates_AddClick;
                 gEmailTemplates.GridRebind += gEmailTemplates_GridRebind;
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             SystemEmailService emailTemplateService = new SystemEmailService( rockContext );
-            SystemEmail emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+            SystemEmail emailTemplate = emailTemplateService.Get( e.RowKeyId );
             if ( emailTemplate != null )
             {
                 emailTemplateService.Delete( emailTemplate );

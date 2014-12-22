@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            gPeople.DataKeyNames = new string[] { "id" };
+            gPeople.DataKeyNames = new string[] { "Id" };
             gPeople.Actions.ShowAdd = false;
             gPeople.GridRebind += gPeople_GridRebind;
             gPeople.RowDataBound += gPeople_RowDataBound;

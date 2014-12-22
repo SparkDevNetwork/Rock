@@ -108,7 +108,6 @@ namespace Rock.Model
             target.IsTemporary = source.IsTemporary;
             target.IsSystem = source.IsSystem;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
-            target.Url = source.Url;
             target.FileName = source.FileName;
             target.MimeType = source.MimeType;
             target.Description = source.Description;

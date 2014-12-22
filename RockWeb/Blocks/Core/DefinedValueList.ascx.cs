@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Core
 
             if ( _definedType != null )
             {
-                gDefinedValues.DataKeyNames = new string[] { "id" };
+                gDefinedValues.DataKeyNames = new string[] { "Id" };
                 gDefinedValues.Actions.ShowAdd = true;
                 gDefinedValues.Actions.AddClick += gDefinedValues_Add;
                 gDefinedValues.GridRebind += gDefinedValues_GridRebind;

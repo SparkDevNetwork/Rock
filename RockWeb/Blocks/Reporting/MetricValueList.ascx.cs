@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting
             gfMetricValues.ApplyFilterClick += gfMetricValues_ApplyFilterClick;
             gfMetricValues.DisplayFilterValue += gfMetricValues_DisplayFilterValue;
 
-            gMetricValues.DataKeyNames = new string[] { "id" };
+            gMetricValues.DataKeyNames = new string[] { "Id" };
             gMetricValues.Actions.AddClick += gMetricValues_Add;
             gMetricValues.GridRebind += gMetricValues_GridRebind;
 

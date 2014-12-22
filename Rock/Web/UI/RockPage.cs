@@ -457,7 +457,7 @@ namespace Rock.Web.UI
 
             if ( _scriptManager == null )
             {
-                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
+                _scriptManager = new  ScriptManager { ID = "sManager" };
                 Page.Trace.Warn( "Adding script manager" );
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
@@ -477,11 +477,6 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
-
-            // add Google Maps API (doesn't like to be added during an async postback )
-            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-            string keyParameter = string.IsNullOrWhiteSpace(googleAPIKey) ? "" : string.Format("key={0}&", googleAPIKey);
-            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter ) ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -1049,6 +1044,35 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Adds the google maps javascript API to the page
+        /// </summary>
+        public void LoadGoogleMapsApi()
+        {
+            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+            string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter);
+
+            // first, add it to the page to handle cases where the api is needed on first page load
+            if (this.Page != null && this.Page.Header != null)
+            {
+                var control = new LiteralControl();
+                control.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+
+                // note: ID must match the what it is called in \RockWeb\Scripts\Rock\Controls\util.js
+                control.ID = "googleMapsApi";
+                control.Text = string.Format("<script id=\"googleMapsApi\" src=\"{0}\" ></script>", scriptUrl);
+                if ( !this.Page.Header.Controls.OfType<LiteralControl>().Any( a => a.ID == control.ID ) )
+                {
+                    this.Page.Header.Controls.Add( control );
+                }
+            }
+
+            // also, do this in cases where the api is added on a postback, and the above didn't end up getting rendered
+            string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -1519,7 +1543,6 @@ namespace Rock.Web.UI
         {
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
         }
 
@@ -1677,7 +1700,7 @@ namespace Rock.Web.UI
         {
             // Add Zone Selection Popup (for moving blocks to another zone)
             ModalDialog modalBlockMove = new ModalDialog();
-            modalBlockMove.ID = "modal-block-move";
+            modalBlockMove.CssClass = "js-modal-block-move";
             modalBlockMove.Title = "Move Block";
             modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );

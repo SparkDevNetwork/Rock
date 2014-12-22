@@ -32,7 +32,7 @@
                 </asp:LinkButton>
 
             </div>
-
+            <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
 
                 <div class="viewport">
@@ -79,6 +79,11 @@
                     }, 1000);
                 }
             });
+
+            if ('<%= RestParms %>' == '') {
+                // EntityType not set
+                $('#treeview-content').hide();
+            }
 
             $(function () {
                 var $selectedId = $('#hfSelectedCategoryId'),
@@ -164,5 +169,16 @@
 
         </script>
 
+    </ContentTemplate>
+</asp:UpdatePanel>
+
+<asp:UpdatePanel ID="upCategoryTreeConfig" runat="server">
+    <ContentTemplate>
+        <Rock:ModalDialog ID="mdCategoryTreeConfig" runat="server" OnSaveClick="mdCategoryTreeConfig_SaveClick">
+            <Content>
+                <Rock:NotificationBox ID="nbRootCategoryEntityTypeWarning" runat="server" Text="Entity Type must be set in Block Settings before setting Root Category." NotificationBoxType="Warning" />
+                <Rock:CategoryPicker ID="cpRootCategory" runat="server" Label="Root Category" />
+            </Content>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>
