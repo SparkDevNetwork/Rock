@@ -88,9 +88,10 @@ namespace Rock.Model
         /// <param name="id">The identifier.</param>
         /// <param name="rootGroupId">The root group identifier.</param>
         /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIncludedIds">The group type included ids.</param>
+        /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
         /// <returns></returns>
-        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
+        public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds )
         {
             var qry = Queryable();
 
@@ -115,11 +116,10 @@ namespace Rock.Model
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
-            {
-                List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
-            }
+            var rockContext = this.Context as RockContext;
+
+            var qryIncludedGroupType = new GroupTypeService( rockContext ).Queryable().WhereIncludedExcluded( groupTypeIncludedIds, groupTypeExcludedIds ).Select( a => a.Id ).ToList();
+            qry = qry.Where( a => qryIncludedGroupType.Contains( a.GroupTypeId ) );
 
             qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
 

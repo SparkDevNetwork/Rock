@@ -35,11 +35,12 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
-    [TextField( "Treeview Title", "Group Tree View", false )]
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
-    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
-    [BooleanField( "Limit to Security Role Groups" )]
-    [LinkedPage( "Detail Page" )]
+    [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
+    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, key: "GroupTypes", order: 2 )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 3 )]
+    [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
+    [BooleanField( "Limit to Security Role Groups", order: 5 )]
+    [LinkedPage( "Detail Page", order: 6 )]
     public partial class GroupTreeView : RockBlock
     {
         #region Fields
@@ -139,14 +140,13 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
-                List<int> allowedGroupTypes = hfGroupTypes.Value.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-
                 string key = string.Format( "Group:{0}", _groupId );
+                var rockContext = new RockContext();
                 Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
                 if ( selectedGroup == null )
                 {
                     int id = _groupId.AsInteger();
-                    selectedGroup = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                    selectedGroup = new GroupService( rockContext ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, selectedGroup );
@@ -156,9 +156,14 @@ namespace RockWeb.Blocks.Groups
                 int? rootGroupId = hfRootGroupId.Value.AsIntegerOrNull();
                 List<string> parentIdList = new List<string>();
                 var group = selectedGroup;
+
+                List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+                List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExcluded" ).SplitDelimitedValues().AsGuidList();
+                var allowedGroupTypeIds = new GroupTypeService( rockContext ).Queryable().WhereIncludedExcluded( groupTypeIncludeGuids, groupTypeExcludeGuids ).Select( a => a.Id );
+
                 while ( group != null )
                 {
-                    if ( allowedGroupTypes.Any() && !allowedGroupTypes.Contains( group.GroupTypeId) )
+                    if ( allowedGroupTypeIds.Contains( group.GroupTypeId  ) )
                     {
                         group = null;
                         selectedGroup = null;
@@ -199,8 +204,9 @@ namespace RockWeb.Blocks.Groups
                     hfSelectedGroupId.Value = selectedGroup.Id.ToString();
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
-                    if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( !allowedGroupTypes.Any() || ( allowedGroupTypes.Any( a => selectedGroup.GroupType.ChildGroupTypes.Any( c => c.Id == a ) ) ) ) )
+                    var allowedChildGroupTypeIds = selectedGroup.GroupType.ChildGroupTypes.AsQueryable().WhereIncludedExcluded( groupTypeIncludeGuids, groupTypeExcludeGuids ).Select( a => a.Id ).ToList();
+
+                    if ( allowedChildGroupTypeIds.Any())
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -261,7 +267,6 @@ namespace RockWeb.Blocks.Groups
             qryParams.Add( "ParentGroupId", hfRootGroupId.Value );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
-
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -291,23 +296,41 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void SetAllowedGroupTypes()
         {
-            hfGroupTypes.Value = string.Empty;
-
             // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
-            if ( groupTypeGuids.Any() )
+            
+            hfGroupTypesInclude.Value = string.Empty;
+            List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            
+            if ( groupTypeIncludeGuids.Any() )
             {
-                var groupTypeIdList = new List<int>();
-                foreach ( Guid guid in groupTypeGuids )
+                var groupTypeIdIncludeList = new List<int>();
+                foreach ( Guid guid in groupTypeIncludeGuids )
                 {
                     var groupType = GroupTypeCache.Read( guid );
                     if ( groupType != null )
                     {
-                        groupTypeIdList.Add( groupType.Id );
+                        groupTypeIdIncludeList.Add( groupType.Id );
                     }
                 }
 
-                hfGroupTypes.Value = groupTypeIdList.AsDelimited( "," );
+                hfGroupTypesInclude.Value = groupTypeIdIncludeList.AsDelimited( "," );
+            }
+
+            hfGroupTypesExclude.Value = string.Empty;
+            List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            if ( groupTypeExcludeGuids.Any() )
+            {
+                var groupTypeIdExcludeList = new List<int>();
+                foreach ( Guid guid in groupTypeExcludeGuids )
+                {
+                    var groupType = GroupTypeCache.Read( guid );
+                    if ( groupType != null )
+                    {
+                        groupTypeIdExcludeList.Add( groupType.Id );
+                    }
+                }
+
+                hfGroupTypesExclude.Value = groupTypeIdExcludeList.AsDelimited( "," );
             }
         }
 
@@ -318,7 +341,9 @@ namespace RockWeb.Blocks.Groups
         private Group FindFirstGroup()
         {
             var groupService = new GroupService( new RockContext() );
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), hfGroupTypes.Value );
+            var includedGroupTypeIds = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList();
+            var excludedGroupTypeIds = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList();
+            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {
