@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  *  Font Awesome 4.2.0 by @davegandy - http://fontawesome.io - @fontawesome
  *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
  */
@@ -6,8 +6,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.2.0');
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.2.0') format('embedded-opentype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.2.0') format('woff'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.2.0') format('truetype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular') format('svg');
+  src: url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.2.0');
+  src: url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.2.0') format('embedded-opentype'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.2.0') format('woff'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.2.0') format('truetype'), url('../../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -1923,8 +1923,8 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../fonts/glyphicons-halflings-regular.eot');
-  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+  src: url('../../../Styles/fonts/glyphicons-halflings-regular.eot');
+  src: url('../../../Styles/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../../../Styles/fonts/glyphicons-halflings-regular.woff') format('woff'), url('../../../Styles/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../../../Styles/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
 }
 .glyphicon {
   position: relative;
@@ -7874,13 +7874,13 @@ button.close {
 }
 /*
    Rock's Core CSS
-    
+
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
     3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
     4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
     5. ASP.Net Overrides - Yep they get it wrong too sometimes
-    
+
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -8079,7 +8079,7 @@ img.jcrop-preview {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 9000;
+  z-index: 1000;
   right: auto;
 }
 .zone-configuration p {
@@ -8113,7 +8113,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 9000;
+  z-index: 1000;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -8165,7 +8165,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 26px;
-  z-index: 9999;
+  z-index: 1001;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -8294,7 +8294,6 @@ img.jcrop-preview {
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 12000;
   width: 750px;
   margin-left: 0px;
   background-color: #ffffff;
@@ -8313,17 +8312,26 @@ img.jcrop-preview {
   height: 100%;
   width: 100%;
   border: 0;
+  display: block;
 }
-/* Bootbox Modal Overrides */
 .modal.bootbox {
-  left: 0;
-  top: 0;
   width: auto;
-  background-color: transparent;
+  z-index: 1060;
+}
+.bootbox .modal-dialog {
+  margin: 0;
+}
+@media (max-width: 991px) {
+  .bootbox .modal-dialog {
+    width: auto;
+  }
+}
+.bootbox .modal-body {
+  padding-top: 20px;
 }
 /*
     Used to manage styles related to reusable components / widgets.
-    
+
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
@@ -9329,29 +9337,53 @@ fieldset .actions {
   cursor: pointer;
   display: block;
 }
-.fileupload-group .fileupload-dropzone {
-  margin-top: 2px;
+.fileupload-group .fileupload-dropzone,
+.fileupload-group .fileupload-button {
   height: 30px;
-  border: 1px dotted #bbbbbb;
-  border-radius: 0 0 4px 4px;
   background-color: #777777;
   text-align: center;
   padding-top: 8px;
   position: relative;
   line-height: 12px;
 }
-.fileupload-group .fileupload-dropzone input {
+.fileupload-group .fileupload-dropzone ::-webkit-file-upload-button,
+.fileupload-group .fileupload-button ::-webkit-file-upload-button {
+  cursor: pointer;
+}
+.fileupload-group .fileupload-dropzone input,
+.fileupload-group .fileupload-button input {
   opacity: 0;
   height: 100%;
   width: 100%;
   position: absolute;
   left: 0;
   top: 0;
+  cursor: pointer;
 }
-.fileupload-group .fileupload-dropzone span {
+.fileupload-group .fileupload-dropzone span,
+.fileupload-group .fileupload-button span {
   font-size: 13px;
   color: #ffffff;
   width: 100%;
+  padding: 0 .5em;
+}
+.fileupload-group .fileupload-dropzone span:before,
+.fileupload-group .fileupload-button span:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\f093";
+  padding-right: .25em;
+}
+.fileupload-group .fileupload-dropzone {
+  margin-top: 2px;
+  border-radius: 0 0 4px 4px;
+}
+.fileupload-group .fileupload-button {
+  border-radius: 4px;
 }
 .fileupload-group .upload-progress {
   position: absolute;
@@ -9859,15 +9891,317 @@ dl:not(.dl-horizontal) dd {
     Used to manage styles related to Rock's internal grid component
     
     1. Bootstrap Overrides
-    2. Filter
-    3. Column Header
-    4. Footer
-    5. Light Style - Used for small grids
-    5. Reusable classes
-    6. Column Types
-    7. Row Types
+    2. Core Table
+    3. Filter
+    4. Column Header
+    5. Footer
+    6. Light Style - Used for small grids
+    7. Reusable classes
+    8. Column Types
+    9. Row Types
+    10. Responsive Overrides
 
 */
+.dropdown-menu > li.checkbox-row {
+  padding: 5px 20px;
+}
+.dropdown-menu li.checkbox-row {
+  display: block;
+  clear: both;
+  font-weight: normal;
+  line-height: 23px;
+  color: #333333;
+  white-space: nowrap;
+}
+.dropdown-menu li.checkbox-row label {
+  font-weight: normal;
+}
+.dropdown-menu li.checkbox-row:hover,
+.dropdown-menu li.checkbox-row input:hover,
+.dropdown-menu li.checkbox-row label:hover {
+  cursor: pointer;
+}
+.no-touch .dropdown-menu > .checkbox-row:hover,
+.no-touch .dropdown-menu > .checkbox-row:active {
+  text-decoration: none;
+  color: #262626;
+  background-color: #f5f5f5;
+}
+.btn-toolbar {
+  margin-bottom: 23px;
+}
+.lt-ie8 .btn-toolbar {
+  display: none;
+}
+.table-responsive {
+  border-radius: 3px;
+  border: 1px solid #dddddd;
+  margin-bottom: 23px;
+}
+.table-responsive > .table {
+  margin-bottom: 0;
+}
+.table-responsive > .table-bordered {
+  border: 0;
+}
+.table-responsive > .table-bordered > thead > tr > th:first-child,
+.table-responsive > .table-bordered > tbody > tr > th:first-child,
+.table-responsive > .table-bordered > tfoot > tr > th:first-child,
+.table-responsive > .table-bordered > thead > tr > td:first-child,
+.table-responsive > .table-bordered > tbody > tr > td:first-child,
+.table-responsive > .table-bordered > tfoot > tr > td:first-child {
+  border-left: 0;
+}
+.table-responsive > .table-bordered > thead > tr > th:last-child,
+.table-responsive > .table-bordered > tbody > tr > th:last-child,
+.table-responsive > .table-bordered > tfoot > tr > th:last-child,
+.table-responsive > .table-bordered > thead > tr > td:last-child,
+.table-responsive > .table-bordered > tbody > tr > td:last-child,
+.table-responsive > .table-bordered > tfoot > tr > td:last-child {
+  border-right: 0;
+}
+.table-responsive > .table-bordered > tbody > tr:last-child > th,
+.table-responsive > .table-bordered > tfoot > tr:last-child > th,
+.table-responsive > .table-bordered > tbody > tr:last-child > td,
+.table-responsive > .table-bordered > tfoot > tr:last-child > td {
+  border-bottom: 0;
+}
+.table-responsive[data-pattern="priority-columns"] {
+  position: relative;
+  width: 100%;
+  margin-bottom: 23px;
+  overflow-y: hidden;
+  overflow-x: auto;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  border-radius: 3px;
+  border: 1px solid #dddddd;
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive[data-pattern="priority-columns"] > .table {
+  margin-bottom: 0;
+}
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > td {
+  white-space: nowrap;
+}
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+  border: 0;
+}
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > thead > tr > th:first-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr > th:first-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr > th:first-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > thead > tr > td:first-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr > td:first-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr > td:first-child {
+  border-left: 0;
+}
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > thead > tr > th:last-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr > th:last-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr > th:last-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > thead > tr > td:last-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr > td:last-child,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr > td:last-child {
+  border-right: 0;
+}
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr:last-child > th,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr:last-child > th,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tbody > tr:last-child > td,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered > tfoot > tr:last-child > td {
+  border-bottom: 0;
+}
+.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority],
+.mq.js.lt-ie10 .sticky-table-header th[data-priority],
+.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority],
+.mq.js.lt-ie10 .sticky-table-header td[data-priority] {
+  display: none;
+}
+.lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="1"],
+.lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="1"],
+.lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="1"],
+.lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="1"] {
+  display: inline;
+}
+.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="1"],
+.mq.js.lt-ie10 .sticky-table-header th[data-priority="1"],
+.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="1"],
+.mq.js.lt-ie10 .sticky-table-header td[data-priority="1"] {
+  display: table-cell;
+}
+@media screen and (min-width: 480px) {
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="2"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="2"],
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="2"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="2"] {
+    display: inline;
+  }
+  .mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="2"],
+  .mq.js.lt-ie10 .sticky-table-header th[data-priority="2"],
+  .mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="2"],
+  .mq.js.lt-ie10 .sticky-table-header td[data-priority="2"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 640px) {
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="3"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="3"],
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="3"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="3"] {
+    display: inline;
+  }
+  .mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="3"],
+  .mq.js.lt-ie10 .sticky-table-header th[data-priority="3"],
+  .mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="3"],
+  .mq.js.lt-ie10 .sticky-table-header td[data-priority="3"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 800px) {
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="4"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="4"],
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="4"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="4"] {
+    display: inline;
+  }
+  .mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="4"],
+  .mq.js.lt-ie10 .sticky-table-header th[data-priority="4"],
+  .mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="4"],
+  .mq.js.lt-ie10 .sticky-table-header td[data-priority="4"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 960px) {
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="5"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="5"],
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="5"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="5"] {
+    display: inline;
+  }
+  .mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="5"],
+  .mq.js.lt-ie10 .sticky-table-header th[data-priority="5"],
+  .mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="5"],
+  .mq.js.lt-ie10 .sticky-table-header td[data-priority="5"] {
+    display: table-cell;
+  }
+}
+@media screen and (min-width: 1120px) {
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="6"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header th[data-priority="6"],
+  .lt-ie9.mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="6"],
+  .lt-ie9.mq.js.lt-ie10 .sticky-table-header td[data-priority="6"] {
+    display: inline;
+  }
+  .mq.js .table-responsive[data-pattern="priority-columns"] th[data-priority="6"],
+  .mq.js.lt-ie10 .sticky-table-header th[data-priority="6"],
+  .mq.js .table-responsive[data-pattern="priority-columns"] td[data-priority="6"],
+  .mq.js.lt-ie10 .sticky-table-header td[data-priority="6"] {
+    display: table-cell;
+  }
+}
+table.table-small-font {
+  font-size: 16px;
+  -webkit-text-size-adjust: none;
+  line-height: 1.5em;
+}
+table.focus-on tbody tr:hover {
+  cursor: pointer;
+}
+table.focus-on tbody tr.unfocused th,
+table.focus-on tbody tr.unfocused td {
+  color: #777777;
+  color: rgba(0, 0, 0, 0.4);
+}
+table.focus-on tbody tr.focused th,
+table.focus-on tbody tr.focused td {
+  background-color: #5bc0de;
+  color: #000;
+}
+table th.col-hide,
+table td.col-hide {
+  display: none;
+}
+table th.col-show,
+table td.col-show {
+  display: inline;
+}
+.lt-ie9 table th.col-show,
+.lt-ie9 table td.col-show {
+  display: table-cell;
+}
+.lt-ie9 table.display-all th,
+.lt-ie9 table.display-all td {
+  display: inline !important;
+}
+table.display-all th,
+table.display-all td {
+  display: table-cell !important;
+}
+.sticky-table-header {
+  background-color: #fff;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  z-index: 990;
+  overflow: hidden;
+  min-width: 100%;
+}
+.sticky-table-header.fixed-solution {
+  min-width: 0;
+  position: fixed;
+}
+.lt-ie10 .sticky-table-header.fixed-solution {
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  box-sizing: content-box;
+  border-bottom: none;
+}
+.sticky-table-header.border-radius-fix {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.sticky-table-header > .table {
+  margin-bottom: 0;
+}
+.sticky-table-header > .table > thead > tr > th,
+.sticky-table-header > .table > tbody > tr > th,
+.sticky-table-header > .table > tfoot > tr > th,
+.sticky-table-header > .table > thead > tr > td,
+.sticky-table-header > .table > tbody > tr > td,
+.sticky-table-header > .table > tfoot > tr > td {
+  white-space: nowrap;
+}
+.sticky-table-header > .table-bordered {
+  border: 0;
+}
+.sticky-table-header > .table-bordered > thead > tr > th:first-child,
+.sticky-table-header > .table-bordered > tbody > tr > th:first-child,
+.sticky-table-header > .table-bordered > tfoot > tr > th:first-child,
+.sticky-table-header > .table-bordered > thead > tr > td:first-child,
+.sticky-table-header > .table-bordered > tbody > tr > td:first-child,
+.sticky-table-header > .table-bordered > tfoot > tr > td:first-child {
+  border-left: 0;
+}
+.sticky-table-header > .table-bordered > thead > tr > th:last-child,
+.sticky-table-header > .table-bordered > tbody > tr > th:last-child,
+.sticky-table-header > .table-bordered > tfoot > tr > th:last-child,
+.sticky-table-header > .table-bordered > thead > tr > td:last-child,
+.sticky-table-header > .table-bordered > tbody > tr > td:last-child,
+.sticky-table-header > .table-bordered > tfoot > tr > td:last-child {
+  border-right: 0;
+}
+.sticky-table-header > .table-bordered > tbody > tr:last-child > th,
+.sticky-table-header > .table-bordered > tfoot > tr:last-child > th,
+.sticky-table-header > .table-bordered > tbody > tr:last-child > td,
+.sticky-table-header > .table-bordered > tfoot > tr:last-child > td {
+  border-bottom: 0;
+}
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: rgba(0, 0, 0, 0.03);
@@ -9888,6 +10222,14 @@ td.wrap-contents {
 }
 .grid {
   margin-bottom: 20px;
+}
+.table-responsive[data-pattern="priority-columns"] {
+  margin-bottom: inherit;
+  border: inherit;
+  border-radius: inherit;
+}
+.table-wrapper .btn-toolbar {
+  display: none;
 }
 .grid-filter {
   background-color: #d5d5d5;
@@ -9928,9 +10270,9 @@ td.wrap-contents {
   color: #333333;
   border-color: #bbbbbb;
 }
-.grid-filter + div .grid-table {
-  margin-top: -12px;
-}
+/*.grid-filter +  div .grid-table {
+    margin-top: -12px;   
+}*/
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
 }
@@ -10064,11 +10406,20 @@ td.grid-col-actions {
 .table > tbody > tr.grid-section-header:hover > td {
   background-color: #eeeeee !important;
 }
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > th,
+.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > td,
+.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > td {
+  white-space: inherit;
+}
 /*
     Used to manage styles for specific blocks.
 
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
+    3. Lava Debug - Used to style the lava debug panel
 */
 .htmlcontent-edit-header {
   padding: 7.5px 15px 0 15px;
@@ -10085,6 +10436,39 @@ td.grid-col-actions {
 }
 .my-account .photo img {
   width: 100%;
+}
+.lava-debug {
+  clear: both;
+  margin-top: 24px;
+}
+.lava-debug code {
+  background-color: #c4e3f3;
+  color: #31708f;
+}
+.lava-debug p {
+  margin-bottom: 10px;
+  font-weight: normal !important;
+}
+.lava-debug p.attributes {
+  margin-bottom: 0;
+}
+.lava-debug .lava-debug-key {
+  font-weight: 600;
+}
+.lava-debug .panel.panel-lavadebug {
+  border: 0;
+}
+.lava-debug .panel.panel-lavadebug .panel-heading {
+  background-color: #cce7f4;
+  color: #31708f;
+  border: 0;
+  cursor: pointer;
+}
+.lava-debug .panel.panel-lavadebug .panel-heading.collapsed i:before {
+  content: "\f078";
+}
+.lava-debug .panel.panel-lavadebug .panel-body {
+  background-color: #e6f3fa;
 }
 /*
     Used to manage styles for specific blocks.
@@ -10530,7 +10914,7 @@ table.attribute-grid tr th:nth-child(3) {
   overflow: hidden;
   text-align: left;
   text-indent: -999px;
-  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+  background: url(../../../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
 }
 .card-mastercard {
   background-position: -55px 0;
@@ -10811,10 +11195,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
   background: #817b72;
-  position: absolute;
-  bottom: 0;
   width: 8px;
   min-height: 1px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-attendance ul.badge-attendance-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-attendance.annimate ul.badge-attendance-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
@@ -10839,10 +11227,14 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-disc ul.badge-disc-chart li span {
   display: block;
   background: #99bbd9;
-  position: absolute;
-  bottom: 0;
   width: 10px;
   min-height: 2px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-disc ul.badge-disc-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
 }
 .badge-disc ul.badge-disc-chart li.badge-disc-primary span {
   background: #4f89bd;
@@ -11262,6 +11654,9 @@ tr.inactive td {
 }
 .disc-assessment .disc-answer {
   width: 100px;
+}
+.disc-heading {
+  text-align: center;
 }
 .discchart {
   clear: both;
@@ -11821,10 +12216,12 @@ iframe.email-body {
 .cke_dialog_footer {
   background-color: #eeeeee !important;
   background-image: none !important;
+  color: #555555 !important;
   outline: none !important;
   padding: 8px !important;
   margin-top: 10px !important;
   box-shadow: none !important;
+  border-radius: 0 0 4px 4px;
 }
 a.cke_dialog_ui_button,
 a.cke_dialog_ui_button:focus,
@@ -11838,39 +12235,343 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: "DINWebCondensed", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "DINWebCondensed", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 18px !important;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
+  background-color: transparent !important;
+  color: #428bca !important;
+  font-weight: normal !important;
+  border: none !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
+  color: #2a6496;
+  text-decoration: underline;
+  background-color: transparent;
 }
 a.cke_dialog_ui_button_ok,
 a.cke_dialog_ui_button_ok:focus,
 a.cke_dialog_ui_button_ok:active {
   background: #428bca !important;
-  color: #ecf0f3 !important;
-  border: 1px solid #3071a9 !important;
+  color: #ffffff !important;
+  border: 1px solid #2a6496 !important;
 }
-.ck-folders,
-.ck-files {
-  width: 50%;
-  float: left;
+@media (min-width: 480px) {
+  .ck-folders,
+  .ck-files {
+    float: left;
+  }
+}
+.ck-folders .scroll-container-vertical,
+.ck-files .scroll-container-vertical {
+  width: auto;
+}
+.ck-folders .scroll-container-vertical .viewport,
+.ck-files .scroll-container-vertical .viewport {
+  width: auto;
+}
+@media (min-width: 480px) {
+  .ck-folders {
+    width: 40%;
+  }
 }
 .ck-folders .actions {
   margin-bottom: 15px;
 }
-.ck-folders .scroll-container-vertical {
-  width: 450px;
+@media (max-width: 767px) {
+  .ck-folders .scroll-container-vertical .viewport {
+    height: 100px;
+  }
 }
-.ck-folders .scroll-container-vertical .viewport {
-  width: 430px;
+@media (min-width: 480px) {
+  .ck-files {
+    width: 60%;
+  }
 }
-.ck-files .fileupload-group .fileupload-dropzone {
-  height: 35px;
-  padding-top: 9px;
+.ck-files .fileupload-group {
+  display: inline-block;
+  border: none;
+  padding: 0;
 }
 .ck-files img.file-browser-image {
   width: 50px;
   height: 50px;
+}
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Boostrap 3 patch for for bootstrap-modal. Include BEFORE bootstrap-modal.css!
+ */
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+  margin-right: 0;
+}
+.modal {
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  padding: 0;
+  width: 500px;
+  margin-left: -250px;
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+}
+.modal.container {
+  max-width: none;
+}
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+.modal-open {
+  overflow: hidden;
+}
+/* add a scroll bar to stop page from jerking around */
+.modal-open.page-overflow .page-container,
+.modal-open.page-overflow .page-container .navbar-fixed-top,
+.modal-open.page-overflow .page-container .navbar-fixed-bottom,
+.modal-open.page-overflow .modal-scrollable {
+  overflow-y: scroll;
+}
+@media (max-width: 979px) {
+  .modal-open.page-overflow .page-container .navbar-fixed-top,
+  .modal-open.page-overflow .page-container .navbar-fixed-bottom {
+    overflow-y: visible;
+  }
+}
+.modal-scrollable {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+.modal {
+  outline: none;
+  position: absolute;
+  margin-top: 0;
+  top: 50%;
+  overflow: visible;
+  /* allow content to popup out (i.e tooltips) */
+}
+.modal.fade {
+  top: -100%;
+  -webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+}
+.modal.fade.in {
+  top: 50%;
+}
+.modal-body {
+  max-height: none;
+  overflow: visible;
+}
+.modal.modal-absolute {
+  position: absolute;
+  z-index: 950;
+}
+.modal .loading-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 6px;
+}
+.modal-backdrop.modal-absolute {
+  position: absolute;
+  z-index: 940;
+}
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: #fff;
+}
+.modal.container {
+  width: 940px;
+  margin-left: -470px;
+}
+/* Modal Overflow */
+.modal-overflow.modal {
+  top: 1%;
+}
+.modal-overflow.modal.fade {
+  top: -100%;
+}
+.modal-overflow.modal.fade.in {
+  top: 1%;
+}
+.modal-overflow .modal-body {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Responsive */
+@media (min-width: 1200px) {
+  .modal.container {
+    width: 1170px;
+    margin-left: -585px;
+  }
+}
+@media (max-width: 979px) {
+  .modal,
+  .modal.container,
+  .modal.modal-overflow {
+    top: 1%;
+    right: 1%;
+    left: 1%;
+    bottom: auto;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .modal.fade.in,
+  .modal.container.fade.in,
+  .modal.modal-overflow.fade.in {
+    top: 1%;
+    bottom: auto;
+  }
+  .modal-body,
+  .modal-overflow .modal-body {
+    position: static;
+    margin: 0;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .modal-footer,
+  .modal-overflow .modal-footer {
+    position: static;
+  }
+}
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -12px 0 0 -12px;
+}
+/*
+Animate.css - http://daneden.me/animate
+Licensed under the ☺ license (http://licence.visualidiot.com/)
+
+Copyright (c) 2012 Dan Eden*/
+.animated {
+  -webkit-animation-duration: 1s;
+  -moz-animation-duration: 1s;
+  -o-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  -moz-animation-fill-mode: both;
+  -o-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+@-webkit-keyframes shake {
+  0%,
+  100% {
+    -webkit-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -webkit-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -webkit-transform: translateX(10px);
+  }
+}
+@-moz-keyframes shake {
+  0%,
+  100% {
+    -moz-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -moz-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -moz-transform: translateX(10px);
+  }
+}
+@-o-keyframes shake {
+  0%,
+  100% {
+    -o-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -o-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -o-transform: translateX(10px);
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+.shake {
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -o-animation-name: shake;
+  animation-name: shake;
 }
 ::selection {
   background: #5279a0;
