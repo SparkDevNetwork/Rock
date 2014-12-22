@@ -2181,63 +2181,6 @@ namespace Rock
             return queryable;
         }
 
-        /// <summary>
-        /// Filters the results based on includedIds and excludedId lists.
-        /// IncludedIds is ignored if it is empty, and 0s are ignored
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="qry">The qry.</param>
-        /// <param name="includedIds">The included ids.</param>
-        /// <param name="excludedIds">The excluded ids.</param>
-        /// <returns></returns>
-        public static IQueryable<GroupType> WhereIncludedExcluded( this IQueryable<GroupType> qry, List<int> includedIds, List<int> excludedIds )
-        {
-            var result = qry;
-            includedIds = includedIds.Except( new List<int> { 0 } ).ToList();
-
-            if ( includedIds.Any() )
-            {
-                result = result.Where( a => includedIds.Contains( a.Id ) );
-            }
-
-            // If an Id is in BOTH the Excluded and Included, include it
-            excludedIds = excludedIds.Except( includedIds ).ToList();
-            if ( excludedIds.Any() )
-            {
-                result = result.Where( a => !excludedIds.Contains( a.Id ) );
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Filters the results based on includedGuids and excludedGuids lists.
-        /// IncludedGuids is ignored if it is empty
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="qry">The qry.</param>
-        /// <param name="includedGuids">The included guids.</param>
-        /// <param name="excludedGuids">The excluded guids.</param>
-        /// <returns></returns>
-        public static IQueryable<GroupType> WhereIncludedExcluded( this IQueryable<GroupType> qry, List<Guid> includedGuids, List<Guid> excludedGuids )
-        {
-            var result = qry;
-
-            if ( includedGuids.Any() )
-            {
-                result = result.Where( a => includedGuids.Any() && includedGuids.Contains( a.Guid ) );
-            }
-
-            // If an Guid is in BOTH the Excluded and Included, include it
-            excludedGuids = excludedGuids.Except( includedGuids ).ToList();
-            if ( excludedGuids.Any() )
-            {
-                result = result.Where( a => !excludedGuids.Contains( a.Guid ) );
-            }
-
-            return result;
-        }
-
         #endregion
 
         /// <summary>

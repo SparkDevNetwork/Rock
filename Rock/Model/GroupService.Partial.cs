@@ -116,10 +116,14 @@ namespace Rock.Model
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            var rockContext = this.Context as RockContext;
-
-            var qryIncludedGroupType = new GroupTypeService( rockContext ).Queryable().WhereIncludedExcluded( groupTypeIncludedIds, groupTypeExcludedIds ).Select( a => a.Id ).ToList();
-            qry = qry.Where( a => qryIncludedGroupType.Contains( a.GroupTypeId ) );
+            if ( groupTypeIncludedIds.Any() )
+            {
+                qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
+            }
+            else if (groupTypeExcludedIds.Any() )
+            {
+                qry = qry.Where( a => !groupTypeExcludedIds.Contains( a.GroupTypeId ) );
+            }
 
             qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
 

@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
     [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
-    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, key: "GroupTypes", order: 2 )]
+    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 2 )]
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 3 )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
@@ -140,6 +140,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
+                
+
                 string key = string.Format( "Group:{0}", _groupId );
                 var rockContext = new RockContext();
                 Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
@@ -156,14 +158,9 @@ namespace RockWeb.Blocks.Groups
                 int? rootGroupId = hfRootGroupId.Value.AsIntegerOrNull();
                 List<string> parentIdList = new List<string>();
                 var group = selectedGroup;
-
-                List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
-                List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExcluded" ).SplitDelimitedValues().AsGuidList();
-                var allowedGroupTypeIds = new GroupTypeService( rockContext ).Queryable().WhereIncludedExcluded( groupTypeIncludeGuids, groupTypeExcludeGuids ).Select( a => a.Id );
-
                 while ( group != null )
                 {
-                    if ( allowedGroupTypeIds.Contains( group.GroupTypeId  ) )
+                    if ( !IsGroupTypeIncluded( group.GroupTypeId ) )
                     {
                         group = null;
                         selectedGroup = null;
@@ -204,9 +201,8 @@ namespace RockWeb.Blocks.Groups
                     hfSelectedGroupId.Value = selectedGroup.Id.ToString();
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
-                    var allowedChildGroupTypeIds = selectedGroup.GroupType.ChildGroupTypes.AsQueryable().WhereIncludedExcluded( groupTypeIncludeGuids, groupTypeExcludeGuids ).Select( a => a.Id ).ToList();
-
-                    if ( allowedChildGroupTypeIds.Any())
+                    if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
+                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded(c.Id) ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -248,6 +244,31 @@ namespace RockWeb.Blocks.Groups
             if ( hfSelectedGroupId.ValueAsInt() == 0 )
             {
                 lbAddGroupChild.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [is group type included] [the specified group type identifier].
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        private bool IsGroupTypeIncluded( int groupTypeId )
+        {
+            List<int> includeGroupTypes = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            List<int> excludeGroupTypes = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList();
+            if (includeGroupTypes.Any())
+            {
+                //// if includedGroupTypes has values, only include groupTypes from the includedGroupTypes list
+                return ( includeGroupTypes.Contains( groupTypeId ) ) ;
+            }
+            else if ( excludeGroupTypes.Any())
+            {
+                //// if includedGroupTypes doesn't have anything, exclude groupTypes that are in the excludeGroupTypes list
+                return !excludeGroupTypes.Contains( groupTypeId );
+            }
+            else
+            {
+                return true;
             }
         }
 

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group." )]
-    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, key: "GroupTypes", order: 0 )]
+    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 0 )]
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 1 )]
     [BooleanField( "Show Edit", "", true, "", 2 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
@@ -648,7 +648,23 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
+            var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+            if ( currentGroup != null )
+            {
+                ShowReadonlyDetails( currentGroup );
+            }
+            else
+            {
+                string groupId = PageParameter( "GroupId" );
+                if ( !string.IsNullOrWhiteSpace( groupId ) )
+                {
+                    ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
         }
 
         #endregion
@@ -1103,9 +1119,20 @@ namespace RockWeb.Blocks.Groups
             rockContext = rockContext ?? new RockContext();
 
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            
+
+            var groupTypeQry = groupTypeService.Queryable();
+
             // limit GroupType selection to what Block Attributes allow
-            var groupTypeQry = groupTypeService.Queryable().WhereIncludedExcluded( GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList(), GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList() );
+            List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            if ( groupTypeIncludeGuids.Any() )
+            {
+                groupTypeQry = groupTypeQry.Where( a => groupTypeIncludeGuids.Contains( a.Guid ) );
+            }
+            else if (groupTypeExcludeGuids.Any())
+            {
+                groupTypeQry = groupTypeQry.Where( a => !groupTypeExcludeGuids.Contains( a.Guid ) );
+            }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
             if ( parentGroup != null )
