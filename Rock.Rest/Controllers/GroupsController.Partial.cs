@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
     public partial class GroupsController
     {
         /// <summary>
-        /// Gets the children.
+        /// Gets the children (obsolete, use the other GetChildren method)
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="rootGroupId">The root group id.</param>
@@ -45,12 +45,29 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
+        [Obsolete("use the other GetChildren")]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
+        {
+            return GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds, "" );
+        }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rootGroupId">The root group identifier.</param>
+        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+        /// <param name="includedGroupTypeIds">The included group type ids.</param>
+        /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
+        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId = 0, bool limitToSecurityRoleGroups = false, string includedGroupTypeIds = "", string excludedGroupTypeIds = "" )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
 
-            var qry = ( (GroupService)Service ).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
+            var groupService = (GroupService)Service;
+            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIds.SplitDelimitedValues().AsIntegerList(), excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList() );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -77,22 +94,18 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            var groupTypes = new List<int>();
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
-            {
-                groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-            }
-
             // try to quickly figure out which items have Children
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-            var qryHasChildrenList = Get()
+            var allowedGroupTypes = new GroupTypeService( this.Service.Context as RockContext ).Queryable().WhereIncludedExcluded( includedGroupTypeIds.SplitDelimitedValues().AsIntegerList(), excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList() );
+
+            var qryHasChildren = Get().Where( a => allowedGroupTypes.Contains( a.GroupType ) )
                 .Where( g =>
                     g.ParentGroupId.HasValue &&
-                    resultIds.Contains( g.ParentGroupId.Value ) &&
-                    ( !groupTypes.Any() || groupTypes.Contains( g.GroupTypeId ) ) )
+                    resultIds.Contains( g.ParentGroupId.Value ))
                 .Select( g => g.ParentGroupId.Value )
-                .Distinct()
-                .ToList();
+                .Distinct();
+
+            var qryHasChildrenList = qryHasChildren.ToList();
 
             foreach ( var g in groupNameList )
             {

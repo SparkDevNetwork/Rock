@@ -4,7 +4,8 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfRootGroupId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupId" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfGroupTypes" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfGroupTypesInclude" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfGroupTypesExclude" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server" ClientIDMode="Static" />
@@ -98,7 +99,10 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/groups/getchildren/" ) %>',
-                        restParams: '/' + ($('#hfRootGroupId').val() || 0) + '/' + ($('#hfLimitToSecurityRoleGroups').val() || false) + '/' + ($('#hfGroupTypes').val() || 0),
+                        restParams: '?rootGroupId=' + ($('#hfRootGroupId').val() || 0)
+                            + '&limitToSecurityRoleGroups=' + ($('#hfLimitToSecurityRoleGroups').val() || false)
+                            + '&includedGroupTypeIds=' + ($('#hfGroupTypesInclude').val() || '0')
+                            + '&excludedGroupTypeIds=' + ($('#hfGroupTypesExclude').val() || '0'),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
