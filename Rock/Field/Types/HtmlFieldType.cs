@@ -31,6 +31,10 @@ namespace Rock.Field.Types
         private const string IMAGE_FOLDER_ROOT = "imagefolderroot";
         private const string USER_SPECIFIC_ROOT = "userspecificroot";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
