@@ -26,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.Group"/> objects.
     /// </summary>
-    public partial class GroupService 
+    public partial class GroupService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Group"/> entities that by their <see cref="Rock.Model.GroupType"/> Id.
@@ -133,7 +133,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
-            return this.ExecuteQuery( 
+            return this.ExecuteQuery(
                 @"
                 with CTE as (
                 select * from [Group] where [ParentGroupId]={0}
@@ -159,7 +159,7 @@ namespace Rock.Model
             groupMember.Person = person;
 
             var adultRole = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
-            if (adultRole != null)
+            if ( adultRole != null )
             {
                 groupMember.GroupRoleId = adultRole.Id;
             }
@@ -246,7 +246,7 @@ namespace Rock.Model
                         familyDemographicChanges.Add( person.Guid, demographicChanges );
 
                         var memberChanges = new List<string>();
-                        
+
                         string roleName = familyGroupType.Roles
                             .Where( r => r.Id == familyMember.GroupRoleId )
                             .Select( r => r.Name )
@@ -269,7 +269,7 @@ namespace Rock.Model
                     if ( savePersonAttributes )
                     {
                         var newValues = person.AttributeValues;
-                        
+
                         person.LoadAttributes();
                         foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
                         {
@@ -314,13 +314,13 @@ namespace Rock.Model
                             rockContext.SaveChanges();
                         }
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                             person.Id, changes );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
                             person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
                             person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id );
                     }
                 }
@@ -344,13 +344,13 @@ namespace Rock.Model
         /// <param name="postalCode">The postal code.</param>
         /// <param name="country">The country.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
                  !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( postalCode ) || 
+                 !String.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
                 var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid.AsGuid() );
@@ -359,7 +359,7 @@ namespace Rock.Model
                     var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
                     if ( location != null )
                     {
-                        var groupLocationService = new GroupLocationService(rockContext);
+                        var groupLocationService = new GroupLocationService( rockContext );
                         if ( !groupLocationService.Queryable()
                             .Where( gl =>
                                 gl.GroupId == family.Id &&
@@ -375,10 +375,10 @@ namespace Rock.Model
                                 var prevLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
                                 if ( prevLocationType != null )
                                 {
-                                    foreach( var prevLoc in groupLocationService.Queryable()
+                                    foreach ( var prevLoc in groupLocationService.Queryable()
                                         .Where( gl =>
                                             gl.GroupId == family.Id &&
-                                            gl.GroupLocationTypeValueId == locationType.Id ))
+                                            gl.GroupLocationTypeValueId == locationType.Id ) )
                                     {
                                         History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
                                         prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
@@ -395,7 +395,7 @@ namespace Rock.Model
                                     gl.GroupId == family.Id &&
                                     gl.LocationId == location.Id )
                                 .FirstOrDefault();
-                            if (groupLocation == null)
+                            if ( groupLocation == null )
                             {
                                 groupLocation = new GroupLocation();
                                 groupLocation.Location = location;
