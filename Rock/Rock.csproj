@@ -62,18 +62,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.3\lib\net40\Microsoft.Data.Edm.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.3\lib\net40\Microsoft.Data.OData.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Services.Client.5.6.3\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Web.XmlTransform">
       <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
@@ -98,7 +86,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
-    <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
@@ -116,7 +103,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Spatial.5.6.3\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -273,6 +259,7 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
@@ -454,7 +441,6 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
-    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
