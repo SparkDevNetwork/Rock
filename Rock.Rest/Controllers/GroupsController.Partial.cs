@@ -45,7 +45,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
-        [Obsolete("use the other GetChildren")]
+        [Obsolete( "use the other GetChildren" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
             return GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds, "" );
@@ -66,8 +66,11 @@ namespace Rock.Rest.Controllers
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
 
+            var includedGroupTypeIdList = includedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedGroupTypeIdList = excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+
             var groupService = (GroupService)Service;
-            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIds.SplitDelimitedValues().AsIntegerList(), excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList() );
+            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -96,16 +99,24 @@ namespace Rock.Rest.Controllers
 
             // try to quickly figure out which items have Children
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-            var allowedGroupTypes = new GroupTypeService( this.Service.Context as RockContext ).Queryable().WhereIncludedExcluded( includedGroupTypeIds.SplitDelimitedValues().AsIntegerList(), excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList() );
-
-            var qryHasChildren = Get().Where( a => allowedGroupTypes.Contains( a.GroupType ) )
+            var qryHasChildren = Get()
                 .Where( g =>
                     g.ParentGroupId.HasValue &&
-                    resultIds.Contains( g.ParentGroupId.Value ))
-                .Select( g => g.ParentGroupId.Value )
-                .Distinct();
+                    resultIds.Contains( g.ParentGroupId.Value ) );
 
-            var qryHasChildrenList = qryHasChildren.ToList();
+            if ( includedGroupTypeIdList.Any() )
+            {
+                qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIdList.Contains( a.GroupTypeId ) );
+            }
+            else if ( excludedGroupTypeIdList.Any() )
+            {
+                qryHasChildren = qryHasChildren.Where( a => !excludedGroupTypeIdList.Contains( a.GroupTypeId ) );
+            }
+
+            var qryHasChildrenList = qryHasChildren
+                .Select( g => g.ParentGroupId.Value )
+                .Distinct()
+                .ToList();
 
             foreach ( var g in groupNameList )
             {
