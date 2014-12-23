@@ -30,6 +30,7 @@
                         <div class="col-md-6">
                             <dl class="dl-horizontal margin-b-md">
                                 <Rock:TermDescription ID="tdActivatedWhen" runat="server" Term="Activated" />
+                                <Rock:TermDescription ID="tdLastProcessed" runat="server" Term="Last Processed" />
                                 <Rock:TermDescription ID="tdCompletedWhen" runat="server" Term="Completed" />
                             </dl>
                             <dl class="dl-horizontal margin-b-md">
