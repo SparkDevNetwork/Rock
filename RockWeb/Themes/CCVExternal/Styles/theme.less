@@ -17,13 +17,21 @@
 @import "_din-1-4-7";
 @ccv-font-path: "../Assets/Fonts/DIN/";
 
-@import "_variables.less";
-@import "_print.less";
-@import "_slider.less";
+@import "_variables";
+@import "_print";
+@import "_masthead";
+@import "_slider";
 
 
 // Styles that should be moved later
 // -------------------------
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {

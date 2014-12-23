@@ -1,0 +1,53 @@
+.masthead {
+  margin-bottom: @grid-gutter-width;
+}
+
+  .masthead-upper {
+    .clearfix();
+    background-color: #1d1d1d;
+    padding: @grid-gutter-width 0;
+
+    a { color: #fff; }
+  }
+
+    .masthead-brand {
+      float: left;
+      overflow: hidden;
+    }
+
+      .masthead-logo {
+        // position: relative;
+        // z-index: 1;
+        display: block;
+        float: left;
+        background-image: url(../assets/logo.svg);
+        min-height: 50px;
+        min-width: 235px;
+        margin-left: -@grid-gutter-width/2;
+      }
+
+    .masthead-nav {
+    }
+
+      .masthead-navitems {
+        margin: 0;
+        list-style-type: none;
+        text-align: right;
+        text-transform: uppercase;
+        padding: 0 @grid-gutter-width;
+        line-height: 50px;
+      }
+
+        .masthead-navitem {
+          display: inline-block;
+          padding: 0 @grid-gutter-width/2;
+
+          a {
+            text-decoration: none;
+          }
+        }
+
+  .masthead-lower {
+    .clearfix();
+    background-color: #e9e9e9;
+  }

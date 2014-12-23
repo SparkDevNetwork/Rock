@@ -13117,6 +13117,78 @@ div.aspNetDisabled {
     content: '' !important;
   }
 }
+.masthead {
+  margin-bottom: 30px;
+}
+.masthead-upper {
+  background-color: #1d1d1d;
+  padding: 30px 0;
+}
+.masthead-upper:before,
+.masthead-upper:after {
+  content: " ";
+  display: table;
+}
+.masthead-upper:after {
+  clear: both;
+}
+.masthead-upper:before,
+.masthead-upper:after {
+  content: " ";
+  display: table;
+}
+.masthead-upper:after {
+  clear: both;
+}
+.masthead-upper a {
+  color: #fff;
+}
+.masthead-brand {
+  float: left;
+  overflow: hidden;
+}
+.masthead-logo {
+  display: block;
+  float: left;
+  background-image: url(../assets/logo.svg);
+  min-height: 50px;
+  min-width: 235px;
+  margin-left: -15px;
+}
+.masthead-navitems {
+  margin: 0;
+  list-style-type: none;
+  text-align: right;
+  text-transform: uppercase;
+  padding: 0 30px;
+  line-height: 50px;
+}
+.masthead-navitem {
+  display: inline-block;
+  padding: 0 15px;
+}
+.masthead-navitem a {
+  text-decoration: none;
+}
+.masthead-lower {
+  background-color: #e9e9e9;
+}
+.masthead-lower:before,
+.masthead-lower:after {
+  content: " ";
+  display: table;
+}
+.masthead-lower:after {
+  clear: both;
+}
+.masthead-lower:before,
+.masthead-lower:after {
+  content: " ";
+  display: table;
+}
+.masthead-lower:after {
+  clear: both;
+}
 .slide-control {
   margin-top: -1px;
 }
@@ -13280,6 +13352,14 @@ html[xmlns] .slides {
  * include js that eliminates this class on page load */
 .no-js .slides > li:first-child {
   display: block;
+}
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
 }
 h1,
 h2,
