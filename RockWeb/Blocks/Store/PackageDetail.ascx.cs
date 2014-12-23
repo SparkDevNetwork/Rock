@@ -125,6 +125,8 @@ namespace RockWeb.Blocks.Store
 
         private void ShowPackage()
         {
+            string errorResponse = string.Empty;
+            
             // get package id
             int packageId = -1;
 
@@ -134,7 +136,10 @@ namespace RockWeb.Blocks.Store
             }
 
             PackageService packageService = new PackageService();
-            var package = packageService.GetPackage( packageId );
+            var package = packageService.GetPackage( packageId, out errorResponse );
+
+            // check for errors
+            ErrorCheck( errorResponse );
 
             lPackageName.Text = package.Name;
             lPackageDescription.Text = package.Description;
@@ -231,7 +236,10 @@ namespace RockWeb.Blocks.Store
                 rptAdditionalVersions.DataBind();
 
                 // get the details for the latest version
-                PackageVersion latestVersionDetails = new PackageVersionService().GetPackageVersion( latestVersion.Id );
+                PackageVersion latestVersionDetails = new PackageVersionService().GetPackageVersion( latestVersion.Id, out errorResponse );
+
+                // check for errors
+                ErrorCheck( errorResponse );
             }
             else
             {
@@ -261,7 +269,16 @@ namespace RockWeb.Blocks.Store
                 }
                 
             }
+        }
 
+        private void ErrorCheck( string errorResponse )
+        {
+            if ( errorResponse != string.Empty )
+            {
+                pnlPackageDetails.Visible = false;
+                pnlError.Visible = true;
+                lErrorMessage.Text = errorResponse;
+            }
         }
 
         #endregion

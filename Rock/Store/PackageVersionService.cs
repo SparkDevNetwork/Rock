@@ -26,16 +26,35 @@ namespace Rock.Store
         /// Gets a package version.
         /// </summary>
         /// <returns>a <see cref="T:PackageVersion"/> package version.</returns>
-        public PackageVersion GetPackageVersion(int versionId)
+        public PackageVersion GetPackageVersion( int versionId )
         {
+            string error = null;
+            return GetPackageVersion( versionId, out error );
+        }
+
+        public PackageVersion GetPackageVersion( int versionId, out string errorResponse )
+        {
+            errorResponse = string.Empty;
+            
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
+            client.Timeout = _clientTimeout;
             var request = new RestRequest();
             request.Method = Method.GET;
             request.Resource = string.Format( "api/Packages/GetPackageVersionDetails/{0}", versionId.ToString() );
 
-            var version = client.Execute<PackageVersion>( request ).Data;
-            return version;
+            var response = client.Execute<PackageVersion>( request );
+
+            if ( response.ResponseStatus == ResponseStatus.Completed )
+            {
+                return response.Data;
+            }
+            else
+            {
+                errorResponse = response.ErrorMessage;
+                return new PackageVersion();
+            }
+
         }
     }
 }
