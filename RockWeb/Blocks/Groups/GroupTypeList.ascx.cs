@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Groups
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
-            gGroupType.DataKeyNames = new string[] { "id" };
+            gGroupType.DataKeyNames = new string[] { "Id" };
             gGroupType.Actions.ShowAdd = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridReorder += gGroupType_GridReorder;

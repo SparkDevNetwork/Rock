@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gSites.DataKeyNames = new string[] { "id" };
+            gSites.DataKeyNames = new string[] { "Id" };
             gSites.Actions.AddClick += gSites_Add;
             gSites.GridRebind += gSites_GridRebind;
 

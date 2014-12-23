@@ -527,7 +527,7 @@ $(document).ready(function() {
                 if ( isPersonDataSet )
                 {
                     gReport.PersonIdField = "Id";
-                    gReport.DataKeyNames = new string[] { "id" };
+                    gReport.DataKeyNames = new string[] { "Id" };
                 }
                 else
                 {

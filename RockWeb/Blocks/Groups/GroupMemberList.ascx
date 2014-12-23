@@ -28,12 +28,12 @@
                                 <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                                 <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit">
+                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" >
                                 <Columns>
-                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="Person.NickName" />
-                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
-                                    <asp:BoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
-                                    <asp:BoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
+                                    <Rock:SelectField></Rock:SelectField>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
+                                    <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
+                                    <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

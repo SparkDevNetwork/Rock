@@ -19,12 +19,12 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="rGrid" runat="server" RowItemText="Location" OnRowSelected="rGrid_Edit" TooltipField="Description">
                         <Columns>
-                            <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
-                            <asp:BoundField DataField="Street1" HeaderText="Street Address" />
-                            <asp:BoundField DataField="City" HeaderText="City" />
-                            <asp:BoundField DataField="State" HeaderText="State" />
-                            <asp:BoundField DataField="PostalCode" HeaderText="Postal Code" />
-                            <asp:BoundField DataField="Country" HeaderText="Country" />
+                            <Rock:RockBoundField DataField="Id" HeaderText="Id" Visible="false" />
+                            <Rock:RockBoundField DataField="Street1" HeaderText="Street Address" />
+                            <Rock:RockBoundField DataField="City" HeaderText="City" />
+                            <Rock:RockBoundField DataField="State" HeaderText="State" />
+                            <Rock:RockBoundField DataField="PostalCode" HeaderText="Postal Code" />
+                            <Rock:RockBoundField DataField="Country" HeaderText="Country" />
                         </Columns>
                     </Rock:Grid>
                 </div>

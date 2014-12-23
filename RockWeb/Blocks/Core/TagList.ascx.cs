@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Core
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            rGrid.DataKeyNames = new string[] { "id" };
+            rGrid.DataKeyNames = new string[] { "Id" };
             rGrid.Actions.ShowAdd = true;
             rGrid.Actions.AddClick += rGrid_Add;
             rGrid.GridReorder += rGrid_GridReorder;
@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             var tagService = new Rock.Model.TagService( rockContext );
-            var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var tag = tagService.Get( e.RowKeyId );
 
             if ( tag != null )
             {

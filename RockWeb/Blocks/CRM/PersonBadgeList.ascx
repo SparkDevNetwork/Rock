@@ -15,8 +15,8 @@
                     <Rock:Grid ID="gPersonBadge" runat="server" AllowSorting="false" OnRowSelected="gPersonBadge_Edit">
                         <Columns>
                             <Rock:ReorderField />
-                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gPersonBadge_Delete" />
                         </Columns>

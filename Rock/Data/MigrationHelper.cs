@@ -1741,6 +1741,17 @@ namespace Rock.Data
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="value">The value.</param>
+        public void UpdateDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
+        {
+            this.AddDefinedValueAttributeValue( definedValueGuid, attributeGuid, value);
+        }
+
+        /// <summary>
+        /// Adds the defined value attribute value.
+        /// </summary>
+        /// <param name="definedValueGuid">The defined value unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
         public void AddDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
         {
             Migration.Sql( string.Format( @"
@@ -2759,6 +2770,7 @@ INSERT INTO [dbo].[Auth]
                 -- Delete the group type and any dangling bits
                 DECLARE @GroupTypeId int = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
                 UPDATE [GroupType] SET [InheritedGroupTypeId] = NULL, [DefaultGroupRoleId] = NULL WHERE [InheritedGroupTypeId] = @GroupTypeId
+                DELETE [GroupTypeAssociation] WHERE [ChildGroupTypeId] = @GroupTypeId OR [GroupTypeId] = @GroupTypeId
                 DELETE [GroupTypeRole] WHERE [GroupTypeId] = @GroupTypeId
                 DELETE [GroupType] WHERE [Guid] = '{0}'
 ",

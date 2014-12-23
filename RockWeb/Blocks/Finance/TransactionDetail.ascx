@@ -53,11 +53,11 @@
                                 <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
                                     OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <asp:TemplateField>
+                                        <Rock:RockTemplateField>
                                             <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                        </asp:TemplateField>
-                                        <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                        <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                        <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                         <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                     </Columns>
                                 </Rock:Grid>
@@ -66,11 +66,9 @@
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
-                                    <asp:HiddenField ID="hfImageGuid" runat="server" Value='<%# Eval("Guid") %>' />
-                                    <Rock:ImageUploader ID="imgupImage" runat="server" />
+                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" OnImageUploaded="imgupImage_ImageUploaded" />
                                 </ItemTemplate>
                             </asp:DataList>
-                            <asp:LinkButton ID="lbAddImage" runat="server" CssClass="btn btn-default btn-sm margin-t-sm" OnClick="lbAddImage_Click"><i class="fa fa-plus"></i> Add New Image</asp:LinkButton>
 
                             <Rock:RockLiteral ID="lScheduledTransaction" runat="server" Label="Scheduled Transaction" Visible="false" />
                             <Rock:RockLiteral ID="lProcessedBy" runat="server" Label="Matched By" Visible="false" />
@@ -96,11 +94,11 @@
 
                             <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
                                 <Columns>
-                                    <asp:TemplateField HeaderText="Accounts">
+                                    <Rock:RockTemplateField HeaderText="Accounts">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                    </asp:TemplateField>
-                                    <asp:BoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
-                                    <asp:BoundField DataField="Summary" SortExpression="Summary" />
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                    <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                 </Columns>
                             </Rock:Grid>
 

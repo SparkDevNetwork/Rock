@@ -17,7 +17,7 @@
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
                             <asp:HiddenField ID="hfVersion" runat="server" />
-                            <asp:Panel ID="pnlEdit" runat="server" Visible="false" Height="440">
+                            <asp:Panel ID="pnlEdit" runat="server" Visible="false">
 
                                 <!-- Approval -->
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">
@@ -61,11 +61,11 @@
                                 <div class="grid">
                                     <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Light" ShowActionRow="false">
                                         <Columns>
-                                            <asp:BoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
-                                            <asp:BoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
-                                            <asp:BoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
+                                            <Rock:RockBoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
+                                            <Rock:RockBoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
+                                            <Rock:RockBoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
                                             <Rock:BoolField DataField="Approved" HeaderText="Approved" SortExpression="Approved" />
-                                            <asp:BoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
+                                            <Rock:RockBoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
                                             <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                                             <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
                                             <Rock:LinkButtonField Text="Select" OnClick="SelectVersion_Click" />

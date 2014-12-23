@@ -475,6 +475,69 @@ namespace Rock.Communication.Transport
         }
 
         /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
+        {
+            try
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                if ( string.IsNullOrWhiteSpace( from ) )
+                {
+                    from = globalAttributes.GetValue( "OrganizationEmail" );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( from ) )
+                {
+                    MailMessage message = new MailMessage();
+                    message.From = new MailAddress( from );
+
+                    CheckSafeSender( message, globalAttributes );
+
+                    message.IsBodyHtml = true;
+                    message.Priority = MailPriority.Normal;
+
+                    var smtpClient = GetSmtpClient();
+
+                    message.To.Clear();
+                    recipients.ForEach( r => message.To.Add( r ) );
+
+                    if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                    {
+                        subject = subject.Replace( "~~/", themeRoot );
+                        body = body.Replace( "~~/", themeRoot );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                    {
+                        subject = subject.Replace( "~/", appRoot );
+                        body = body.Replace( "~/", appRoot );
+                        body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                        body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                    }
+
+                    message.Subject = subject;
+                    message.Body = body;
+
+                    smtpClient.Send( message );
+                }
+            }
+
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+
+        /// <summary>
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>

@@ -45,25 +45,26 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display dynamic content channel items." )]
 
+    // Block Properties
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 0 )]
 
-    [ContentChannelField( "Channel", "The channel to display items from.", false, "", "Advanced", 1 )]
-    [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "Advanced", 2 )]
-    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"", "Advanced", 3 )]
-    [IntegerField( "Count", "The maximum number of items to display.", false, 5, "Advanced", 4 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "Advanced", 5 )]
-    [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "Advanced", 6 )]
-    [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "Advanced", 7 )]
-    [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "Advanced", 8 )]
-    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "Advanced", 9 )]
-    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "Advanced", 10 )]
+    // Custom Settings
+    [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
+    [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "CustomSetting" )]
+    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
+    [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "CustomSetting" )]
+    [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "CustomSetting" )]
+    [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
+    [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
+    [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
+    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "CustomSetting" )]
+    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "CustomSetting" )]
+    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "CustomSetting" )]
+    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
+    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "CustomSetting" )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "Advanced", 11 )]
-    [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "Advanced", 12 )]
-    [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "Advanced", 13 )]
-    [TextField( "Meta Image Attribute", "Attribute to use for storing the image attribute.", false, "", "Advanced", 14 )]
-
-    public partial class ContentChannelDynamic : RockBlock
+    public partial class ContentChannelDynamic : RockBlockCustomSettings
     {
         #region Fields
 
@@ -75,7 +76,27 @@ namespace RockWeb.Blocks.Cms
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the channel unique identifier.
+        /// </summary>
+        /// <value>
+        /// The channel unique identifier.
+        /// </value>
         public Guid? ChannelGuid { get; set; }
+
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Edit Criteria";
+            }
+        }
 
         #endregion
 
@@ -154,97 +175,9 @@ $(document).ready(function() {
             return base.SaveViewState();
         }
 
-        /// <summary>
-        /// Adds icons to the configuration area of a <see cref="Rock.Model.Block" /> instance.  Can be overridden to
-        /// add additional icons
-        /// </summary>
-        /// <param name="canConfig">A <see cref="System.Boolean" /> flag that indicates if the user can configure the <see cref="Rock.Model.Block" /> instance.
-        /// This value will be <c>true</c> if the user is allowed to configure the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
-        /// <param name="canEdit">A <see cref="System.Boolean" /> flag that indicates if the user can edit the <see cref="Rock.Model.Block" /> instance.
-        /// This value will be <c>true</c> if the user is allowed to edit the <see cref="Rock.Model.Block" /> instance; otherwise <c>false</c>.</param>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.List{Control}" /> containing all the icon <see cref="System.Web.UI.Control">controls</see>
-        /// that will be available to the user in the configuration area of the block instance.
-        /// </returns>
-        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
-        {
-            List<Control> configControls = new List<Control>();
-
-            if ( IsUserAuthorized( Authorization.EDIT ) )
-            {
-                LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit";
-                lbEdit.ToolTip = "Edit Criteria";
-                lbEdit.Click += lbEdit_Click;
-                configControls.Add( lbEdit );
-                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
-                lbEdit.Controls.Add( iEdit );
-                lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-pencil-square-o" );
-
-                // will toggle the block config so they are no longer showing
-                lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";
-
-                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
-            }
-
-            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
-
-            return configControls;
-        }
-
         #endregion
 
         #region Events
-
-        protected void lbEdit_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
-                .OrderBy( c => c.Name )
-                .Select( c => new { c.Guid, c.Name } )
-                .ToList();
-            ddlChannel.DataBind();
-            ddlChannel.Items.Insert( 0, new ListItem( "", "" ) );
-            ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
-            ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
-
-            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
-            {
-                var li = cblStatus.Items.FindByValue( status );
-                if ( li != null )
-                {
-                    li.Selected = true;
-                }
-            }
-
-            cbDebug.Checked = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
-            cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
-            cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
-            ceQuery.Text = GetAttributeValue( "Template" );
-            nbCount.Text = GetAttributeValue( "Count" );
-            nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
-            hfDataFilterId.Value = GetAttributeValue( "FilterId" );
-            cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
-
-            var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
-
-            var directions = new Dictionary<string, string>();
-            directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
-            directions.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
-            kvlOrder.CustomValues = directions;
-            kvlOrder.Value = GetAttributeValue( "Order" );
-            kvlOrder.Required = true;
-
-            pnlView.Visible = false;
-            pnlEdit.Visible = true;
-
-            ShowEdit();
-
-            upnlContent.Update();
-        }
 
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
@@ -293,7 +226,7 @@ $(document).ready(function() {
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "EnableDebug", cbDebug.Checked.ToString() );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
-            SetAttributeValue( "Template", ceQuery.Text );
+            SetAttributeValue( "Template", ceTemplate.Text );
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
@@ -312,11 +245,10 @@ $(document).ready(function() {
             FlushCacheItem( CONTENT_CACHE_KEY );
             FlushCacheItem( TEMPLATE_CACHE_KEY );
 
-            ShowView();
-        }
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+            upnlContent.Update();
 
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
             ShowView();
         }
 
@@ -382,12 +314,64 @@ $(document).ready(function() {
         #region Internal Methods
 
         /// <summary>
+        /// Shows the settings.
+        /// </summary>
+        protected override void ShowSettings()
+        {
+            pnlEditModal.Visible = true;
+            upnlContent.Update();
+            mdEdit.Show();
+
+            var rockContext = new RockContext();
+            ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
+                .OrderBy( c => c.Name )
+                .Select( c => new { c.Guid, c.Name } )
+                .ToList();
+            ddlChannel.DataBind();
+            ddlChannel.Items.Insert( 0, new ListItem( "", "" ) );
+            ddlChannel.SetValue( GetAttributeValue( "Channel" ) );
+            ChannelGuid = ddlChannel.SelectedValue.AsGuidOrNull();
+
+            foreach ( string status in GetAttributeValue( "Status" ).SplitDelimitedValues() )
+            {
+                var li = cblStatus.Items.FindByValue( status );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                }
+            }
+
+            cbDebug.Checked = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
+            cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
+            cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            ceTemplate.Text = GetAttributeValue( "Template" );
+            nbCount.Text = GetAttributeValue( "Count" );
+            nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
+            hfDataFilterId.Value = GetAttributeValue( "FilterId" );
+            cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
+
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
+
+            var directions = new Dictionary<string, string>();
+            directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
+            directions.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
+            kvlOrder.CustomValues = directions;
+            kvlOrder.Value = GetAttributeValue( "Order" );
+            kvlOrder.Required = true;
+
+
+            ShowEdit();
+
+            upnlContent.Update();
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void ShowView()
         {
-            pnlEdit.Visible = false;
-            pnlView.Visible = true;
             nbContentError.Visible = false;
             upnlContent.Update();
 
@@ -467,7 +451,7 @@ $(document).ready(function() {
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
             // enable showing debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
                 mergeFields["Items"] = currentPageContent.Take( 5 ).ToList();
 

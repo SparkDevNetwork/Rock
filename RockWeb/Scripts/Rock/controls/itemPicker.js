@@ -66,7 +66,7 @@
                     })
                     .on('rockTree:itemClicked', function (e) {
                         if (!self.options.allowMultiSelect) {
-                            $control.find('.picker-btn').get(0).click();
+                            $control.find('.picker-btn').trigger('click');
                         }
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
@@ -75,12 +75,15 @@
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
-                    $control.find('.picker-menu').first().toggle();
-                    self.updateScrollbar();
+                    $control.find('.picker-menu').first().toggle(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 $control.find('.picker-cancel').click(function () {
-                    $(this).closest('.picker-menu').slideUp();
+                    $(this).closest('.picker-menu').slideUp(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 // have the X appear on hover if something is selected
@@ -110,7 +113,9 @@
 
                     $spanNames.text(selectedNames.join(', '));
 
-                    $(this).closest('.picker-menu').slideUp();
+                    $(this).closest('.picker-menu').slideUp(function () {
+                        self.updateScrollbar();
+                    });
                 });
 
                 $control.find('.picker-select-none').click(function (e) {
@@ -134,10 +139,10 @@
 
                 if ($container.is(':visible')) {
                     $container.tinyscrollbar_update('relative');
-
-                    // update the outer modal scrollbar
-                    Rock.dialogs.updateModalScrollBar(this.options.controlId);
                 }
+
+                // update the outer modal  
+                Rock.dialogs.updateModalScrollBar(this.options.controlId);
             }
         };
 

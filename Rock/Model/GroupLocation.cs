@@ -137,6 +137,7 @@ namespace Rock.Model
         /// <value>
         /// The group member person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias GroupMemberPersonAlias { get; set; }
 
         /// <summary>

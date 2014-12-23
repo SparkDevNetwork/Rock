@@ -18,7 +18,6 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Model;
-using Rock.Rest.Filters;
 using Rock.Security;
 
 namespace Rock.Rest.Controllers
@@ -59,5 +58,27 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
         }
+
+        /// <summary>
+        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
+        /// </summary>
+        /// <param name="loginParameters">The login parameters.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [HttpPost]
+        [System.Web.Http.Route( "api/Auth/FacebookLogin" )]
+        public void FacebookLogin( [FromBody]Rock.Security.ExternalAuthentication.Facebook.FacebookUser facebookUser )
+        {
+            string userName = Rock.Security.ExternalAuthentication.Facebook.GetFacebookUserName( facebookUser );
+            if ( !string.IsNullOrWhiteSpace( userName ) )
+            {
+                Rock.Security.Authorization.SetAuthCookie( userName, false, false );
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
+
     }
+
 }

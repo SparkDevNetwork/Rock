@@ -175,11 +175,13 @@ namespace RockWeb.Blocks.Crm
 
         }});
         
-        // Update the hidden field with the client if of each selected control
+        // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
         var newValue = '';
         $('div.bulk-item-selected').each(function( index ) {{
             $(this).find('[id]').each(function() {{
-                newValue += $(this).prop('id') + '|';
+                var re = /_hf$/;
+                var ctrlId = $(this).prop('id').replace(re, '');
+                newValue += ctrlId + '|';
             }});
         }});
         $('#{0}').val(newValue);            

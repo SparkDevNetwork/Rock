@@ -6,9 +6,7 @@
 
         $('#show-cache-objects').click(function () {
             $('#cache-objects').toggle('slow', function () {
-                if ($('#modal-scroll-container').length) {
-                    $('#modal-scroll-container').tinyscrollbar_update('relative');
-                }
+                Rock.controls.modal.updateSize();
             });
         });
 
@@ -17,9 +15,7 @@
     	    $(this).parent().attr('class', 'active');
     	    $('div.tabContent > div').hide('slow');
     	    $('#' + $(this).attr('pill')).show('slow', function () {
-    	        if ($('#modal-scroll-container').length) {
-    	            $('#modal-scroll-container').tinyscrollbar_update('relative');
-    	        }
+    	        Rock.controls.modal.updateSize();
     	    });
         });
 
@@ -61,11 +57,25 @@
     <div id="diagnostics-tab" style="display:none">
         
         <h4>Details</h4>
-        <p>Database: <asp:Literal ID="lDatabase" runat="server"></asp:Literal></p>
-        <p>System Date Time: <%= DateTime.Now.ToString("G") + " " + DateTime.Now.ToString("zzz") %></p>
-        <p>Rock Time: <%= Rock.RockDateTime.Now.ToString("G") + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset %></p>
+        <p>
+           <strong>Database:</strong><br />
+           <asp:Literal ID="lDatabase" runat="server"></asp:Literal>
+        </p>
+        
+        <p>
+            <strong>System Date Time:</strong><br />
+            <%= DateTime.Now.ToString("G") + " " + DateTime.Now.ToString("zzz") %>
+        </p>
 
-        <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
+        <p>
+            <strong>Rock Time:</strong><br /> 
+            <%= Rock.RockDateTime.Now.ToString("G") + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset %>
+        </p>
+
+        <p>
+            <strong>Executing Location:</strong><br />
+             <asp:Literal ID="lExecLocation" runat="server"></asp:Literal>
+        </p>
 
         <h4>Cache</h4>
         <div id="cache-details">
@@ -83,7 +93,7 @@
         <h4>Routes</h4>
         <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
 
-        <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
+        <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action margin-t-lg" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
             <i class="fa fa-download"></i> Download Diagnostics File
         </asp:LinkButton>
 

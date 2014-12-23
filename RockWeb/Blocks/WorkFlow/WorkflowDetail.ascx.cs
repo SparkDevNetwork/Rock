@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            gLog.DataKeyNames = new string[] { "id" };
+            gLog.DataKeyNames = new string[] { "Id" };
             gLog.Actions.ShowAdd = false;
             gLog.IsDeleteEnabled = false;
             gLog.GridRebind += gLog_GridRebind;
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -705,7 +705,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = Workflow.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValue( phViewAttributes, value, attribute.QualifierValues, false );
+                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {

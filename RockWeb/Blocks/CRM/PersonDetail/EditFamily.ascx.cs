@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.SaveClick += modalAddPerson_SaveClick;
             modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfActiveTab.ClientID );
 
-            gLocations.DataKeyNames = new string[] { "id" };
+            gLocations.DataKeyNames = new string[] { "Id" };
             gLocations.RowDataBound += gLocations_RowDataBound;
             gLocations.RowEditing += gLocations_RowEditing;
             gLocations.RowUpdating += gLocations_RowUpdating;

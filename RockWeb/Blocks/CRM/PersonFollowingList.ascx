@@ -13,13 +13,13 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gFollowings" runat="server" AllowSorting="true" RowItemText="Following">
                         <Columns>
-                            <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
-                            <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
-                            <Rock:DateField DataField="BirthDate" HeaderText="Birthdate" SortExpression="BirthDate" />
-                            <asp:BoundField DataField="Email" HeaderText="Email" SortExpression="Email" />
-                            <asp:BoundField DataField="HomePhone" HeaderText="Home Phone" SortExpression="HomePhone" />
-                            <asp:BoundField DataField="CellPhone" HeaderText="Cell Phone" SortExpression="CellPhone" />
-                            <asp:BoundField DataField="SpouseName" HeaderText="Spouse's Name" SortExpression="SpouseName" />
+                            <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                            <Rock:RockBoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
+                            <Rock:DateField DataField="BirthDate" HeaderText="Birthdate" SortExpression="BirthDate" ColumnPriority="Desktop" />
+                            <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" ColumnPriority="DesktopLarge" />
+                            <Rock:RockBoundField DataField="HomePhone" HeaderText="Home Phone" SortExpression="HomePhone" ColumnPriority="DesktopLarge" />
+                            <Rock:RockBoundField DataField="CellPhone" HeaderText="Cell Phone" SortExpression="CellPhone" ColumnPriority="DesktopLarge" />
+                            <Rock:RockBoundField DataField="SpouseName" HeaderText="Spouse's Name" SortExpression="SpouseName" ColumnPriority="Desktop" />
                             <Rock:DeleteField OnClick="gFollowings_Delete" />
                         </Columns>
                     </Rock:Grid>

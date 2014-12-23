@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
-
+using System.Reflection;
+using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Util;
-
 using Humanizer;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -232,6 +232,173 @@ namespace Rock.Lava
                 : input.ToQuantity( quantity );
         }
 
+        /// <summary>
+        /// Replace occurrences of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string Replace( object input, string @string, string replacement = "" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            // escape common regex meta characters
+            var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
+            if ( listOfRegExChars.Contains( @string ) )
+            {
+                @string = @"\" + @string;
+            }
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+                return inputAsString;
+
+            return string.IsNullOrEmpty( inputAsString )
+                ? inputAsString
+                : Regex.Replace( inputAsString, @string, replacement );
+        }
+
+        /// <summary>
+        /// Replace the first occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string ReplaceFirst( object input, string @string, string replacement = "" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+                return inputAsString;
+
+            // escape common regex meta characters
+            var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
+            if ( listOfRegExChars.Contains( @string ) )
+            {
+                @string = @"\" + @string;
+            }
+
+            bool doneReplacement = false;
+            return Regex.Replace( inputAsString, @string, m =>
+            {
+                if ( doneReplacement )
+                    return m.Value;
+
+                doneReplacement = true;
+                return replacement;
+            } );
+        }
+
+        /// <summary>
+        /// Remove a substring - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Remove( object input, string @string )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? inputAsString
+                : inputAsString.Replace( @string, string.Empty );
+        }
+
+        /// <summary>
+        /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string RemoveFirst( object input, string @string )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? inputAsString
+                : ReplaceFirst( inputAsString, @string, string.Empty );
+        }
+
+        /// <summary>
+        /// Appends the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="string">The string.</param>
+        /// <returns></returns>
+        public static string Append( object input, string @string )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            return inputAsString == null
+                ? inputAsString
+                : inputAsString + @string;
+        }
+
+        /// <summary>
+        /// Prepend a string to another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        public static string Prepend( object input, string @string )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+            
+            string inputAsString = input.ToString();
+
+            return inputAsString == null
+                ? inputAsString
+                : @string + inputAsString;
+        }
+
+        /// <summary>
+        /// Returns the passed default value if the value is undefined or empty, otherwise the value of the variable
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="defaultString">The default string.</param>
+        /// <returns></returns>
+        public static string Default( object input, string defaultString )
+        {
+
+            if ( input == null ) {
+                return defaultString;
+            }
+
+            string inputAsString = input.ToString();
+
+            return string.IsNullOrWhiteSpace( inputAsString )
+                ? defaultString
+                : inputAsString;
+        }
 
         #endregion
 
@@ -472,7 +639,7 @@ namespace Rock.Lava
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>
         /// <returns></returns>
-        public static string Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
+        public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
             if ( input == null || attributeKey == null )
             {
@@ -537,7 +704,14 @@ namespace Rock.Lava
                     IEntity entity = ( (Rock.Field.IEntityFieldType)field ).GetEntity( rawValue );
                     if (entity != null)
                     {
-                        return entity.GetPropertyValue(qualifier).ToStringSafe();
+                        if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
+                        {
+                            return entity;
+                        }
+                        else
+                        {
+                            return entity.GetPropertyValue( qualifier ).ToStringSafe();
+                        }
                     }
                 }
 
@@ -545,6 +719,23 @@ namespace Rock.Lava
                 return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
             }
 
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Properties the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="propertyKey">The property key.</param>
+        /// <param name="qualifier">The qualifier.</param>
+        /// <returns></returns>
+        public static object Property( DotLiquid.Context context, object input, string propertyKey, string qualifier = "" )
+        {
+            if ( input != null )
+            {
+                return input.GetPropertyValue(propertyKey);
+            }
             return string.Empty;
         }
 
@@ -558,8 +749,9 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="addressType">Type of the address.</param>
+        /// <param name="qualifier">The qualifier.</param>
         /// <returns></returns>
-        public static string Address( DotLiquid.Context context, object input, string addressType )
+        public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
             if ( input != null && input is Person )
             {
@@ -580,7 +772,84 @@ namespace Rock.Lava
 
                 if (location != null)
                 {
-                    return location.GetFullStreetAddress();
+                    if ( qualifier == "" )
+                    {
+                        return location.GetFullStreetAddress();
+                    }
+                    else
+                    {
+                        var matches = Regex.Matches(qualifier, @"\[\[([^\]]+)\]\]");
+                        foreach ( var match in matches )
+                        {
+                            string propertyKey = match.ToString().Replace("[", "");
+                            propertyKey = propertyKey.ToString().Replace( "]", "" );
+                            propertyKey = propertyKey.ToString().Replace( " ", "" );
+
+                            switch ( propertyKey )
+                            {
+                                case "Street1":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Street1 );
+                                    break;
+                                case "Street2":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Street2 );
+                                    break;
+                                case "City":
+                                    qualifier = qualifier.Replace( match.ToString(), location.City );
+                                    break;
+                                case "State":
+                                    qualifier = qualifier.Replace( match.ToString(), location.State );
+                                    break;
+                                case "PostalCode":
+                                case "Zip":
+                                    qualifier = qualifier.Replace( match.ToString(), location.PostalCode );
+                                    break;
+                                case "Country":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Country );
+                                    break;
+                                case "GeoPoint":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), string.Format("{0},{1}", location.GeoPoint.Latitude.ToString(), location.GeoPoint.Longitude.ToString()) );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "Latitude":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Latitude.ToString() );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "Longitude":
+                                    if ( location.GeoPoint != null )
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Longitude.ToString() );
+                                    }
+                                    else
+                                    {
+                                        qualifier = qualifier.Replace( match.ToString(), "" );
+                                    }
+                                    break;
+                                case "FormattedAddress":
+                                    qualifier = qualifier.Replace( match.ToString(), location.FormattedAddress );
+                                    break;
+                                case "FormattedHtmlAddress":
+                                    qualifier = qualifier.Replace( match.ToString(), location.FormattedHtmlAddress );
+                                    break;
+                                default:
+                                    qualifier = qualifier.Replace( match.ToString(), "" );
+                                    break;
+                            }
+                        }
+
+                        return qualifier;
+                    }
                 }
             }
 

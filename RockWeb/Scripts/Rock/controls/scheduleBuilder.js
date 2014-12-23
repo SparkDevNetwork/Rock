@@ -19,13 +19,9 @@
                 var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
                 if (recurrenceState === 'schedule-onetime') {
-                    $('#schedule-recurrence-panel_' + id).slideUp(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    $('#schedule-recurrence-panel_' + id).slideUp();
                 } else {
-                    $('#schedule-recurrence-panel_' + id).slideDown(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    $('#schedule-recurrence-panel_' + id).slideDown();
                 }
             });
 
@@ -37,9 +33,7 @@
 
                     $modal.find('.recurrence-pattern-type').not(recurrencePattern).hide();
 
-                    $(recurrencePattern).fadeIn(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
+                    $(recurrencePattern).fadeIn();
                 }
             });
 
@@ -48,9 +42,7 @@
             // show datepicker, ok, cancel so that new date can be added to the list
             $modal.find('.add-specific-date').click(function () {
                 $(this).hide();
-                $('#add-specific-date-group_' + id).show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $('#add-specific-date-group_' + id).show(100);
             });
 
             // add new date to list when ok is clicked
@@ -105,17 +97,13 @@
                 });
 
                 $modal.find('#add-specific-date-group_' + id).hide();
-                $modal.find('.add-specific-date').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('.add-specific-date').show(100);
             });
 
             // cancel out of adding a new date
             $modal.find('.add-specific-date-cancel').click(function () {
                 $modal.find('#add-specific-date-group_' + id).hide();
-                $modal.find('.add-specific-date').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('.add-specific-date').show(100);
             });
 
             // fadeIn/fadeOut the X buttons to delete dates
@@ -148,8 +136,6 @@
                 // remove date from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
-
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             /** Exclusion DateRanges Scripts **/
@@ -157,9 +143,7 @@
             // show dateRangepicker, ok, cancel so that new dateRange can be added to the list
             $modal.find('.add-exclusion-daterange').click(function () {
                 $(this).hide();
-                $modal.find('#add-exclusion-daterange-group_' + id).show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('#add-exclusion-daterange-group_' + id).show(100);
             });
 
             // add new date to list when ok is clicked
@@ -197,19 +181,13 @@
                 });
 
                 $modal.find('#add-exclusion-daterange-group_' + id).hide();
-                $modal.find('.add-exclusion-daterange').show(100, function (e) {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
-
-
+                $modal.find('.add-exclusion-daterange').show(100);
             });
 
             // cancel out of adding a new dateRange
             $modal.find('.add-exclusion-daterange-cancel').click(function () {
                 $modal.find('#add-exclusion-daterange-group' + id).hide();
-                $modal.find('.add-exclusion-daterange').show(100, function () {
-                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                });
+                $modal.find('.add-exclusion-daterange').show(100);
             });
 
             // fadeIn/fadeOut the X buttons to delete dateRanges
@@ -242,12 +220,10 @@
                 // remove dateRange from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
-
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             // validate on Save.  Make sure they have at least a StartDate and Time set
-            $modal.find('.modaldialog-save-button').on('click', function (event) {
+            $modal.find('.js-modaldialog-save-link').on('click', function (event) {
                 var $datetimepicker = $modal.find('[id*="dpStartDateTime"]').find('input'),
                     startDateValue = Date.parse($datetimepicker.first().val()) || -1,
                     startTimeValue = $datetimepicker.last().val();
