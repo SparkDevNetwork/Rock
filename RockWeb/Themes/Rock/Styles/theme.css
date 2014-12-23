@@ -5153,7 +5153,7 @@ div.aspNetDisabled {
     2. Package Summary
     3. Package Detail
     4. Components
-    5. 
+    5. Purchased Package
     6. 
     7. 
 */
@@ -5283,6 +5283,21 @@ div.aspNetDisabled {
   font-size: 24px;
   font-weight: 900;
   color: inherit;
+}
+.purchasedpackage {
+  margin-bottom: 24px;
+}
+.purchasedpackage h1 {
+  margin-top: 0;
+  line-height: 1.3em;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.purchasedpackage .purchasedpackage-install a {
+  width: 100%;
 }
 @media print {
   @page {

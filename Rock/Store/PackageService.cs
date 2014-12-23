@@ -55,14 +55,38 @@ namespace Rock.Store
         /// <returns>a <see cref="Package"/> of the package.</returns>
         public Package GetPackage( int packageId )
         {
+
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            string storeKey = globalAttributes.GetValue( "RockStoreKey" );
+            
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
             var request = new RestRequest();
             request.Method = Method.GET;
-            request.Resource = string.Format( "api/Packages/GetPackageDetails/{0}", packageId.ToString() );
+            request.Resource = string.Format( "api/Packages/GetPackageDetails/{0}/{1}", packageId.ToString(), storeKey );
 
             var package = client.Execute<Package>( request ).Data;
             return package;
+        }
+
+        /// <summary>
+        /// Gets a package from the store.
+        /// </summary>
+        /// <returns>a <see cref="Package"/> of the package.</returns>
+        public List<Package> GetPurchasedPackages( )
+        {
+
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            string storeKey = globalAttributes.GetValue( "RockStoreKey" );
+
+            // setup REST call
+            var client = new RestClient( _rockStoreUrl );
+            var request = new RestRequest();
+            request.Method = Method.GET;
+            request.Resource = string.Format( "api/Packages/GetPurchasedPackages/{0}", storeKey );
+
+            var packages = client.Execute<List<Package>>( request ).Data;
+            return packages;
         }
     }
 }
