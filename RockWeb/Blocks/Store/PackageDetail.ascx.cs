@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Store
             if ( !Page.IsPostBack )
             {
                 ShowPackage();
+                
             }
         }
 
@@ -102,7 +103,7 @@ namespace RockWeb.Blocks.Store
             ShowPackage();
         }
 
-        protected void lbPackageLink_Click( object sender, EventArgs e )
+        protected void lbInstall_Click( object sender, EventArgs e )
         {
             // get package id
             int packageId = -1;
