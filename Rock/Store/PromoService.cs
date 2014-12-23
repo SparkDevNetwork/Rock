@@ -27,11 +27,19 @@ namespace Rock.Store
         /// Gets a list of featured package categories from the store.
         /// </summary>
         /// <returns>a <see cref="T:IEumerable<Promos>"/> of promos.</returns>
-        public List<Promo> GetPromos(int? categoryId, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false)
+        public List<Promo> GetPromos( int? categoryId, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false )
         {
+            string error = null;
+            return GetPromos(categoryId, out error, isTopFree, isFeatured, isTopPaid);
+        }
+        
+        public List<Promo> GetPromos(int? categoryId, out string errorResponse, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false)
+        {
+            errorResponse = string.Empty;
 
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
+            client.Timeout = _clientTimeout;
             var request = new RestRequest();
             request.Method = Method.GET;
             
@@ -71,8 +79,17 @@ namespace Rock.Store
             }
 
             // deserialize to list of packages
-            var promos = client.Execute<List<Promo>>( request ).Data;
-            return promos;          
+            var response = client.Execute<List<Promo>>( request );
+
+            if ( response.ResponseStatus == ResponseStatus.Completed )
+            {
+                return response.Data;
+            }
+            else
+            {
+                errorResponse = response.ErrorMessage;
+                return new List<Promo>();
+            }
         }
     }
 }
