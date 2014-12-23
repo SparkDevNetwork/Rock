@@ -398,17 +398,17 @@ namespace RockWeb.Blocks.WorkFlow
                             // Save action updates
                             rockContext.SaveChanges();
 
-
                         }
 
                     } );
 
-                    var errorMessages = new List<string>();
-                    service.Process( dbWorkflow, out errorMessages );
-
                 }
 
                 Workflow = service.Get( Workflow.Id );
+
+                var errorMessages = new List<string>();
+                service.Process( Workflow, out errorMessages );
+
             }
 
             ShowReadonlyDetails();
