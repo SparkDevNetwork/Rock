@@ -28,16 +28,32 @@ namespace Rock.Store
         /// <returns>a <see cref="T:IEumerable<Category>"/> of package categories.</returns>
         public IEnumerable<PackageCategory> GetCategories()
         {
+            string error = null;
+            return GetCategories( out error );
+        }
+        
+        public IEnumerable<PackageCategory> GetCategories(out string errorResponse)
+        {
+            errorResponse = string.Empty;
 
             // setup REST call
             var client = new RestClient(_rockStoreUrl);
+            client.Timeout = _clientTimeout;
             string requestUrl = "api/PackageCategories/List";
             var request = new RestRequest(requestUrl, Method.GET);
 
             // deserialize to list of packages
-            var categories = client.Execute<List<PackageCategory>>(request).Data;
+            var response = client.Execute<List<PackageCategory>>(request);
 
-            return categories;
+            if ( response.ResponseStatus == ResponseStatus.Completed )
+            {
+                return response.Data;
+            }
+            else
+            {
+                errorResponse = response.ErrorMessage;
+                return new List<PackageCategory>();
+            }
         }
     }
 }
