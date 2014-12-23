@@ -25,7 +25,7 @@
                 $('#modal-popup').modal('layout');
 
                 $(this.contentWindow).on('resize', function () {
-                    var newHeight = $(this.document.body).prop('scrollHeight')
+                    var newHeight = $(this.document.body).prop('offsetHeight')
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
                     if ($modalPopupIFrame.height() != newHeight) {
