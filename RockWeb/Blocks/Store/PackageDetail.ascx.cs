@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Package Detail" )]
     [Category( "Store" )]
     [Description( "Manages the details of a package." )]
+    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
     public partial class PackageDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -101,6 +102,22 @@ namespace RockWeb.Blocks.Store
             ShowPackage();
         }
 
+        protected void lbPackageLink_Click( object sender, EventArgs e )
+        {
+            // get package id
+            int packageId = -1;
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
+            {
+                packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams = new Dictionary<string, string>();
+                queryParams.Add( "PackageId", packageId.ToString() );
+                NavigateToLinkedPage( "InstallPage", queryParams );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -158,8 +175,16 @@ namespace RockWeb.Blocks.Store
                 }
                 else
                 {
-                    // payup!
-                    lbInstall.Text = "Buy";
+                    if ( package.IsPurchased )
+                    {
+                        // payup!
+                        lbInstall.Text = "Install";
+                        lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString());
+                    }
+                    else
+                    {
+                        lbInstall.Text = "Buy";
+                    }
                 }
             }
             else
@@ -239,5 +264,6 @@ namespace RockWeb.Blocks.Store
         }
 
         #endregion
-    }
+        
+}
 }

@@ -122,6 +122,30 @@ namespace Rock.Store
         /// A <see cref="List<Rock.Store.PackageVersion>"/> representing the packages versions.
         /// </value>
         public List<PackageVersion> Versions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the determination if the package is purchased 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> fact if the package is purchased or not.
+        /// </value>
+        public bool IsPurchased { get; set; }
+
+        /// <summary>
+        /// Gets or sets the purchase date 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> of the date the package was purchased.
+        /// </value>
+        public DateTime PurchasedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the purchaser 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.string"/> of the person who purchased the package.
+        /// </value>
+        public string Purchaser { get; set; }
     }
 
     /// <summary>
