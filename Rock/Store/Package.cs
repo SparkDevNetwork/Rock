@@ -146,6 +146,15 @@ namespace Rock.Store
         /// A <see cref="System.string"/> of the person who purchased the package.
         /// </value>
         public string Purchaser { get; set; }
+
+        public Package()
+        {
+            this.PrimaryCategory = new PackageCategory();
+            this.SecondaryCategory = new PackageCategory();
+            this.Vendor = new PackageVendor();
+            this.PackageIconBinaryFile = new StoreImage();
+            this.Versions = new List<PackageVersion>();
+        }
     }
 
     /// <summary>

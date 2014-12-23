@@ -112,6 +112,7 @@ namespace RockWeb.Blocks.Store
 
         private void LoadPromos()
         {
+            string errorResponse = string.Empty;
 
             PromoService promoService = new PromoService();
             var promos = new List<Promo>();
@@ -143,7 +144,10 @@ namespace RockWeb.Blocks.Store
                     break;
             }
 
-            promos = promoService.GetPromos( categoryId, isTopFree, isFeatured, isTopPaid );
+            promos = promoService.GetPromos( categoryId, out errorResponse, isTopFree, isFeatured, isTopPaid );
+            
+            // check for errors
+            ErrorCheck( errorResponse );
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "CurrentPerson", CurrentPerson );
@@ -165,6 +169,16 @@ namespace RockWeb.Blocks.Store
             {
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+        }
+
+        private void ErrorCheck( string errorResponse )
+        {
+            if ( errorResponse != string.Empty )
+            {
+                pnlPromos.Visible = false;
+                pnlError.Visible = true;
+                lErrorMessage.Text = errorResponse;
             }
         }
 

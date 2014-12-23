@@ -163,14 +163,27 @@ namespace RockWeb.Blocks.Store
 
         private void DisplayPackages()
         {
-            StringBuilder output = new StringBuilder();
+            string errorResponse = string.Empty;
             
             PackageService packageService = new PackageService();
-            var purchases = packageService.GetPurchasedPackages();
+            var purchases = packageService.GetPurchasedPackages( out errorResponse );
+
+            // check errors
+            ErrorCheck( errorResponse );
 
             rptPurchasedProducts.DataSource = purchases;
             rptPurchasedProducts.DataBind();
 
+        }
+
+        private void ErrorCheck( string errorResponse )
+        {
+            if ( errorResponse != string.Empty )
+            {
+                pnlPackages.Visible = false;
+                pnlError.Visible = true;
+                lErrorMessage.Text = errorResponse;
+            }
         }
 
         #endregion

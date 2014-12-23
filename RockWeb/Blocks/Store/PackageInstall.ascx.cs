@@ -45,8 +45,10 @@ namespace RockWeb.Blocks.Store
         #region Fields
 
         // used for private variables
-        private string _installPurchaseMessage = "";
-        private string _updateMessage = "";
+        private string _installPurchaseMessage = "Login below with your Rock Store account. Your credit card on file will be charged ${0}.";
+        private string _installFreeMessage = "Login below with your Rock Store account to install this free package.";
+        private string _updateMessage = "Login below with your Rock Store account to upgrade this package.";
+        private string _installPreviousPurchase = "Login below with your Rock Store account to install this previously purchased package.";
 
         #endregion
 
@@ -115,6 +117,7 @@ namespace RockWeb.Blocks.Store
 
         private void DisplayPackageInfo()
         {
+            string errorResponse = string.Empty;
 
             // get package id
             int packageId = -1;
@@ -125,7 +128,10 @@ namespace RockWeb.Blocks.Store
             }
 
             PackageService packageService = new PackageService();
-            var package = packageService.GetPackage( packageId );
+            var package = packageService.GetPackage( packageId, out errorResponse );
+
+            // check for errors
+            ErrorCheck( errorResponse );
 
             lPackageName.Text = package.Name;
             lPackageDescription.Text = package.Description;
@@ -135,6 +141,47 @@ namespace RockWeb.Blocks.Store
                                 width: 100%;
                                 height: 140px;"">
                                 </div>", package.PackageIconBinaryFile.ImageUrl);
+
+            if ( package.IsFree )
+            {
+                lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
+                lInstallMessage.Text = _installFreeMessage;
+            }
+            else
+            {
+                lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
+                lInstallMessage.Text = string.Format(_installPurchaseMessage, package.Price.ToString());
+            }
+
+            if ( package.IsPurchased )
+            {
+                // check if it's installed
+                // determine the state of the install button (install, update, buy or installed)
+                InstalledPackage installedPackage = InstalledPackageService.InstalledPackageVersion( package.Id );
+
+                if ( installedPackage == null )
+                {
+                    lCost.Visible = false;
+                    lInstallMessage.Text = _installPreviousPurchase;
+                }
+                else
+                {
+                    lCost.Visible = false;
+                    lInstallMessage.Text = _updateMessage;
+                    btnInstall.Text = "Update";
+                }
+                
+            }
+        }
+
+        private void ErrorCheck( string errorResponse )
+        {
+            if ( errorResponse != string.Empty )
+            {
+                pnlInstall.Visible = false;
+                pnlError.Visible = true;
+                lErrorMessage.Text = errorResponse;
+            }
         }
 
         #endregion

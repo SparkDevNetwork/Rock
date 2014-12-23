@@ -10,41 +10,48 @@
             </div>
             <div class="panel-body">
 
-                <asp:Literal ID="lPurchasedProducts" runat="server" />
-
-                <asp:Repeater ID="rptPurchasedProducts" runat="server" OnItemDataBound="rptPurchasedProducts_ItemDataBound" OnItemCommand="rptPurchasedProducts_ItemCommand">
-                    <ItemTemplate>
-                        <div class="purchasedpackage row">
-                            <div class="col-md-4">
-                                <div class="margin-b-md" style="
-                                    background: url('<%# Eval( "PackageIconBinaryFile.ImageUrl" ) %>') no-repeat center;
-                                    width: 100%;
-                                    height: 140px;">
-                                    </div>
-                            </div>
-                            <div class="col-md-6 margin-b-md">
-                                <h1><%# Eval( "Name" ) %></h1>
-
-                                <div class="clearfix margin-b-sm">
-                                    <div class="pull-left"><strong>Purchased: </strong><br><%# string.Format("{0:M/d/yyyy}", Eval("PurchasedDate"))%></div>
-                                    <div class="pull-right"><strong>Purchased by: </strong><br><%# Eval( "Purchaser" ) %></div>
+                <asp:Panel ID="pnlPackages" runat="server">
+                    <asp:Repeater ID="rptPurchasedProducts" runat="server" OnItemDataBound="rptPurchasedProducts_ItemDataBound" OnItemCommand="rptPurchasedProducts_ItemCommand">
+                        <ItemTemplate>
+                            <div class="purchasedpackage row">
+                                <div class="col-md-4">
+                                    <div class="margin-b-md" style="
+                                        background: url('<%# Eval( "PackageIconBinaryFile.ImageUrl" ) %>') no-repeat center;
+                                        width: 100%;
+                                        height: 140px;">
+                                        </div>
                                 </div>
+                                <div class="col-md-6 margin-b-md">
+                                    <h1><%# Eval( "Name" ) %></h1>
 
-                                <%# Eval( "Description" ) %>
+                                    <div class="clearfix margin-b-sm">
+                                        <div class="pull-left"><strong>Purchased: </strong><br><%# string.Format("{0:M/d/yyyy}", Eval("PurchasedDate"))%></div>
+                                        <div class="pull-right"><strong>Purchased by: </strong><br><%# Eval( "Purchaser" ) %></div>
+                                    </div>
 
-                                <p class="margin-t-md">
-                                    <asp:LinkButton ID="lbPackageDetails" runat="server" CssClass="btn btn-default btn-sm margin-b-sm" CommandName="PackageDetails" CommandArgument='<%#Eval("Id") %>'>Package Details</asp:LinkButton>
-                                </p>
-                            </div>
-                            <div class="col-md-2 purchasedpackage-install">
-                                <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary margin-b-md" CommandName="Install" CommandArgument='<%#Eval("Id") %>'>Install</asp:LinkButton>
+                                    <%# Eval( "Description" ) %>
+
+                                    <p class="margin-t-md">
+                                        <asp:LinkButton ID="lbPackageDetails" runat="server" CssClass="btn btn-default btn-sm margin-b-sm" CommandName="PackageDetails" CommandArgument='<%#Eval("Id") %>'>Package Details</asp:LinkButton>
+                                    </p>
+                                </div>
+                                <div class="col-md-2 purchasedpackage-install">
+                                    <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary margin-b-md" CommandName="Install" CommandArgument='<%#Eval("Id") %>'>Install</asp:LinkButton>
                             
-                                <asp:Literal ID="lVersionNotes" runat="server"></asp:Literal>
+                                    <asp:Literal ID="lVersionNotes" runat="server"></asp:Literal>
+                                </div>
                             </div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </asp:Panel>
 
+                <asp:Panel ID="pnlError" runat="server" Visible="false">
+                    <div class="alert alert-warning">
+                        <h4>Store Currently Not Available</h4>
+                        <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+                        <small><em><asp:Literal ID="lErrorMessage" runat="server" /></em></small>
+                    </div>
+                </asp:Panel>
             </div>
         
         </asp:Panel>

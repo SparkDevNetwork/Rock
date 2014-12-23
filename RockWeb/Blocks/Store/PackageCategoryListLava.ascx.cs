@@ -110,8 +110,13 @@ namespace RockWeb.Blocks.Store
 
         private void LoadCategories()
         {
+            string errorResponse = string.Empty;
+            
             PackageCategoryService packageCategoryService = new PackageCategoryService();
-            var categories = packageCategoryService.GetCategories();
+            var categories = packageCategoryService.GetCategories(out errorResponse);
+
+            // check for errors
+            ErrorCheck( errorResponse );
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "CurrentPerson", CurrentPerson );
@@ -133,6 +138,16 @@ namespace RockWeb.Blocks.Store
             {
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+        }
+
+        private void ErrorCheck( string errorResponse )
+        {
+            if ( errorResponse != string.Empty )
+            {
+                pnlCategories.Visible = false;
+                pnlError.Visible = true;
+                lErrorMessage.Text = errorResponse;
             }
         }
 

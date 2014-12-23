@@ -10,31 +10,44 @@
             </div>
             <div class="panel-body">
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <asp:Literal ID="lPackageImage" runat="server" />
+                <asp:Panel ID="pnlInstall" runat="server">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <asp:Literal ID="lPackageImage" runat="server" />
 
-                        <h1><asp:Literal id="lPackageName" runat="server" /></h1>
+                            <h1><asp:Literal id="lPackageName" runat="server" /></h1>
 
-                        <h4>Package Description</h4>
-                        <p class="margin-b-lg">
-                            <asp:Literal ID="lPackageDescription" runat="server" />
-                        </p>
+                            <h4>Package Description</h4>
+                            <p class="margin-b-lg">
+                                <asp:Literal ID="lPackageDescription" runat="server" />
+                            </p>
+
+                            <asp:Literal ID="lCost" runat="server" />
+                        </div>
+                        <div class="col-md-8">
+
+                            <p>
+                                <asp:Literal ID="lInstallMessage" runat="server" />
+                            </p>
+
+                            <Rock:RockTextBox ID="txtUsername" runat="server" Label="Store Username" />
+                            <Rock:RockTextBox ID="txtPassword" runat="server" Label="Store Password" />
+
+                            <Rock:RockCheckBox ID="cbAgreeToTerms" runat="server" Label="I have read and agree to the terms of the Rock Store <small><a href='http://www.rockrms.com/Store/Terms'>(read terms)</a></small>" AutoPostBack="true" OnCheckedChanged="cbAgreeToTerms_CheckedChanged" />
+
+                            <asp:Button ID="btnInstall" CssClass="btn btn-primary" runat="server" Text="Install" Enabled="false" />
+                        </div>
                     </div>
-                    <div class="col-md-8">
-
-                        <asp:Literal ID="lInstallMessage" runat="server" />
-
-                        <Rock:RockTextBox ID="txtUsername" runat="server" Label="Store Username" />
-                        <Rock:RockTextBox ID="txtPassword" runat="server" Label="Store Password" />
-
-                        <Rock:RockCheckBox ID="cbAgreeToTerms" runat="server" Label="I agree to the terms of the Rock Store" AutoPostBack="true" OnCheckedChanged="cbAgreeToTerms_CheckedChanged" />
-
-                        <asp:Button ID="btnInstall" CssClass="btn btn-primary" runat="server" Text="Install" Enabled="false" />
-                    </div>
-                </div>
-
+                </asp:Panel>
                 
+                <asp:Panel ID="pnlError" runat="server" Visible="false">
+                    <div class="alert alert-warning">
+                        <h4>Store Currently Not Available</h4>
+                        <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+                        <small><em><asp:Literal ID="lErrorMessage" runat="server" /></em></small>
+                    </div>
+                </asp:Panel>
+
             </div>
         
         </asp:Panel>
