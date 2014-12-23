@@ -27,7 +27,7 @@
                             <asp:Literal ID="lCost" runat="server" />
 
                             <p>
-                                <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary btn-install">Install</asp:LinkButton>
+                                <asp:LinkButton ID="lbInstall" runat="server" OnClick="lbInstall_Click" CssClass="btn btn-primary btn-install">Install</asp:LinkButton>
                                 <asp:Literal ID="lInstallNotes" runat="server" />
                             </p>
 
@@ -60,7 +60,7 @@
                             </p>
 
                             <p class="clearfix">
-                                <asp:LinkButton ID="lbPackageLink" runat="server" OnClick="lbPackageLink_Click" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:LinkButton>
+                                <asp:LinkButton ID="lbPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:LinkButton>
                             </p>
 
                             <asp:Literal ID="lVersionWarning" runat="server" />
