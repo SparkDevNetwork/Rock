@@ -362,9 +362,9 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
             }
 
-            // user has to have EDIT Auth to both the Block and the group
+            // user has to have EDIT Auth to the Block OR the group
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) || !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );

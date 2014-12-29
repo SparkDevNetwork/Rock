@@ -21,6 +21,7 @@ using System.Web;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Humanizer;
 
 namespace Rock.Communication
 {
@@ -89,5 +90,52 @@ namespace Rock.Communication
                 ExceptionLogService.LogException( ex, HttpContext.Current );
             }
         }
+
+        /// <summary>
+        /// Processes the bounce.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="bounceType">Type of the bounce.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bouncedDateTime">The bounced date time.</param>
+        public static void ProcessBounce( string email, BounceType bounceType, string message, DateTime bouncedDateTime )
+        {
+            // currently only processing hard bounces
+            if ( bounceType == BounceType.HardBounce )
+            {
+                // get people who have those emails
+
+                RockContext rockContext = new RockContext();
+                PersonService personService = new PersonService( rockContext );
+
+                var peopleWithEmail = personService.GetByEmail( email );
+
+                foreach ( var person in peopleWithEmail )
+                {
+                    person.IsEmailActive = false;
+
+                    person.EmailNote = String.Format( "Email experienced a {0} on {1} ({2}).", bounceType.Humanize(), bouncedDateTime.ToShortDateString(), message );
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum BounceType {
+
+        /// <summary>
+        /// The hard bounce
+        /// </summary>
+        HardBounce = 1,
+
+        /// <summary>
+        /// The soft bounce
+        /// </summary>
+        SoftBounce = 2
+    };
+
 }

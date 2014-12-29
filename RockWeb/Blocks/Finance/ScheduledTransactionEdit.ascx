@@ -6,7 +6,7 @@
         <div class=" panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i> Scheduled Transaction</h1>
+                <h1 class="panel-title"><i class="fa fa-calendar"></i> <asp:Literal ID="lPanelTitle" runat="server" />/h1>
             </div>
             <div class="panel-body">
 
@@ -20,7 +20,7 @@
 
                             <div class="panel panel-default contribution-info">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">Contribution Information</h3>
+                                    <h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3>
                                 </div>
                                 <div class="panel-body">
                                     <fieldset>
@@ -59,7 +59,7 @@
                                 <asp:HiddenField ID="hfPaymentTab" runat="server" />
 
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">Payment Information</h3>
+                                    <h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                 </div>
 
                                 <div class="panel-body">
@@ -132,7 +132,7 @@
 
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h1 class="panel-title">Confirm Information</h1>
+                            <h1 class="panel-title"><asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
                         </div>
                         <div class="panel-body">
                             <asp:Literal ID="lConfirmationHeader" runat="server"></asp:Literal>

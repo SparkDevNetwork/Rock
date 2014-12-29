@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -27,7 +26,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup : DotLiquid.ILiquidizable
+    public class CheckInGroup : DotLiquid.ILiquidizable, DotLiquid.IIndexable
     {
         /// <summary>
         /// Gets or sets the group.
@@ -122,15 +121,46 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = Group.ToLiquid() as Dictionary<string, object>;
-            if ( dictionary != null )
-            {
-                dictionary.Add( "LastCheckIn", LastCheckIn );
-                dictionary.Update( "Locations", Locations.Where( l => l.Selected ).ToList() );
-                return dictionary;
-            }
+            return this;
+        }
 
-            return new Dictionary<string, object>();
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                switch ( key.ToStringSafe() )
+                {
+                    case "LastCheckIn": return LastCheckIn;
+                    case "Locations": return Locations.Where( l => l.Selected ).ToList();
+                    default: return Group[key];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalProperties = new List<string> { "LastCheckIn", "Locations" };
+            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Group.ContainsKey( key );
+            }
         }
     }
 }

@@ -108,23 +108,33 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message );
+                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message, callbackUrl );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
 
-                                    historyService.Add( new History
+                                    try
                                     {
-                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                        EntityTypeId = personEntityTypeId,
-                                        CategoryId = communicationCategoryId,
-                                        EntityId = recipient.PersonAlias.PersonId,
-                                        Summary = "Sent SMS message.",
-                                        Caption = message,
-                                        RelatedEntityTypeId = communicationEntityTypeId,
-                                        RelatedEntityId = communication.Id
-                                    } );
+                                        historyService.Add( new History
+                                        {
+                                            CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                            EntityTypeId = personEntityTypeId,
+                                            CategoryId = communicationCategoryId,
+                                            EntityId = recipient.PersonAlias.PersonId,
+                                            Summary = "Sent SMS message.",
+                                            Caption = message.Truncate( 200 ),
+                                            RelatedEntityTypeId = communicationEntityTypeId,
+                                            RelatedEntityId = communication.Id
+                                        } );
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionLogService.LogException( ex, null );
+                                    }
                                 
                                 }
                                 else

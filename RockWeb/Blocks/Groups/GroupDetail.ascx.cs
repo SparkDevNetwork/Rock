@@ -180,6 +180,8 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                nbNotAllowedToEdit.Visible = false;
+                
                 ShowDialog();
             }
 
@@ -353,8 +355,6 @@ namespace RockWeb.Blocks.Groups
 
             int groupId = int.Parse( hfGroupId.Value );
 
-            
-
             if ( groupId == 0 )
             {
                 group = new Group();
@@ -424,6 +424,19 @@ namespace RockWeb.Blocks.Groups
             group.LoadAttributes();
 
             Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
+
+            group.GroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+            if ( group.ParentGroupId.HasValue )
+            {
+                group.ParentGroup = groupService.Get( group.ParentGroupId.Value );
+            }
+
+            // Check to see if user is still allowed to edit with selected group type and parent group
+            if ( !group.IsAuthorized( Authorization.EDIT, CurrentPerson ))
+            {
+                nbNotAllowedToEdit.Visible = true;
+                return;
+            }
 
             if ( !Page.IsValid )
             {
@@ -569,30 +582,15 @@ namespace RockWeb.Blocks.Groups
         protected void ddlParentGroup_SelectedIndexChanged( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            var groupTypeQry = groupTypeService.Queryable();
-
-            // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-            if ( groupTypeGuids.Count > 0 )
-            {
-                groupTypeQry = groupTypeQry.Where( a => groupTypeGuids.Contains( a.Guid ) );
-            }
-
-            // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
             int? parentGroupId = gpParentGroup.SelectedValueAsInt();
-            if ( ( parentGroupId ?? 0 ) != 0 )
+            Group parentGroup = null;
+            if ( parentGroupId.HasValue )
             {
-                Group parentGroup = new GroupService( rockContext ).Queryable( "GroupType" ).Where( g => g.Id == parentGroupId.Value ).FirstOrDefault();
-                List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
-                groupTypeQry = groupTypeQry.Where( a => allowedChildGroupTypeIds.Contains( a.Id ) );
+                parentGroup = new GroupService( rockContext ).Queryable( "GroupType" )
+                    .Where( g => g.Id == parentGroupId.Value )
+                    .FirstOrDefault();
             }
-
-            // limit to GroupTypes where ShowInNavigation=True depending on block setting
-            if ( GetAttributeValue( "LimitToShowInNavigationGroupTypes" ).AsBoolean() )
-            {
-                groupTypeQry = groupTypeQry.Where( a => a.ShowInNavigation );
-            }
+            var groupTypeQry = GetAllowedGroupTypes(parentGroup, rockContext);
 
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
             if ( groupTypes.Count() > 1 )
@@ -675,24 +673,65 @@ namespace RockWeb.Blocks.Groups
         {
             Group group = null;
 
-            bool editAllowed = true;
+            bool viewAllowed = false;
+            bool editAllowed = IsUserAuthorized( Authorization.EDIT );
+
+            RockContext rockContext = null;
 
             if ( !groupId.Equals( 0 ) )
             {
-                group = GetGroup( groupId );
-                if (group != null)
-                {
-                    editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
+                group = GetGroup( groupId, rockContext );
             }
 
             if ( group == null )
             {
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
                 wpGeneral.Expanded = true;
+
+                if ( parentGroupId.HasValue )
+                {
+                    rockContext = rockContext ?? new RockContext();
+
+                    // Set the new group's parent group (so security checks work)
+                    var parentGroup = new GroupService( rockContext ).Get(parentGroupId.Value);
+                    if ( parentGroup != null )
+                    {
+                        // Start by setting the group type to the same as the parent
+                        group.ParentGroup = parentGroup;
+                        group.GroupTypeId = parentGroup.GroupTypeId;
+                        group.GroupType = parentGroup.GroupType;
+
+                        if ( !editAllowed )
+                        {
+                            // If user is not allowed to edit this new group (with paren't group type),
+                            // check to see if they'd be allowed to edit any other of the allowed
+                            // child group types
+                            editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                            if ( !editAllowed )
+                            {
+                                foreach( var groupType in GetAllowedGroupTypes( parentGroup, rockContext )
+                                    .Where( g => g.Id != parentGroup.GroupTypeId ) )
+                                {
+                                    group.GroupTypeId = groupType.Id;
+                                    group.GroupType = groupType;
+                                    if ( group.IsAuthorized(Authorization.EDIT, CurrentPerson))
+                                    {
+                                        // Once a group type is found that allows user to edit, keep that
+                                        // group type by default
+                                        editAllowed = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            pnlDetails.Visible = true;
+            viewAllowed = editAllowed || group.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            editAllowed = IsUserAuthorized( Authorization.EDIT ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+            pnlDetails.Visible = viewAllowed;
 
             hfGroupId.Value = group.Id.ToString();
 
@@ -700,7 +739,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !editAllowed  )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -802,7 +841,7 @@ namespace RockWeb.Blocks.Groups
             ddlParentGroup_SelectedIndexChanged( null, null );
             gpParentGroup.Label = "Parent Group";
 
-            if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
+            if ( group.Id == 0 && group.GroupType == null && ddlGroupType.Items.Count > 1 )
             {
                 if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean() )
                 {
@@ -911,7 +950,8 @@ namespace RockWeb.Blocks.Groups
             if ( group.GroupType != null )
             {
                 groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
-                    groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+                    string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+                hlType.Text = group.GroupType.Name;
             }
 
             hfGroupId.SetValue( group.Id );
@@ -919,7 +959,6 @@ namespace RockWeb.Blocks.Groups
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
             hlInactive.Visible = !group.IsActive;
-            hlType.Text = group.GroupType.Name;
 
             lGroupDescription.Text = group.Description;
 
@@ -1037,19 +1076,50 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <returns></returns>
-        private Group GetGroup( int groupId )
+        private Group GetGroup( int groupId, RockContext rockContext = null )
         {
             string key = string.Format( "Group:{0}", groupId );
             Group group = RockPage.GetSharedItem( key ) as Group;
             if ( group == null )
             {
-                group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Schedules" )
+                rockContext = rockContext ?? new RockContext();
+                group = new GroupService( rockContext ).Queryable( "GroupType,GroupLocations.Schedules" )
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, group );
             }
 
             return group;
+        }
+
+        private IQueryable<GroupType> GetAllowedGroupTypes ( Group parentGroup, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeQry = groupTypeService.Queryable();
+
+            // limit GroupType selection to what Block Attributes allow
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+            if ( groupTypeGuids.Count > 0 )
+            {
+                groupTypeQry = groupTypeQry.Where( a => groupTypeGuids.Contains( a.Guid ) );
+            }
+
+            // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
+            if ( parentGroup != null )
+            {
+                List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
+                groupTypeQry = groupTypeQry.Where( a => allowedChildGroupTypeIds.Contains( a.Id ) );
+            }
+
+            // limit to GroupTypes where ShowInNavigation=True depending on block setting
+            if ( GetAttributeValue( "LimitToShowInNavigationGroupTypes" ).AsBoolean() )
+            {
+                groupTypeQry = groupTypeQry.Where( a => a.ShowInNavigation );
+            }
+
+            return groupTypeQry;
         }
 
         /// <summary>

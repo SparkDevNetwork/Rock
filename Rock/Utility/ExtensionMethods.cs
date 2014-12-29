@@ -100,25 +100,161 @@ namespace Rock
         }
 
         /// <summary>
-        /// Liquidizes the children.
+        /// Returns an html representation of object that is available to lava.
+        /// </summary>
+        /// <param name="lavaObject">The liquid object.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null )
+        {
+            //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
+            StringBuilder lavaDebugPanel = new StringBuilder();
+            lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
+            lavaDebugPanel.Append( "<p>Below is a listing of available merge fields for this block. Find out more on Lava at <a href='http://www.rockrms.com/lava' target='_blank'>rockrms.com/lava</a>." );
+
+            lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
+            lavaDebugPanel.Append( "</div>" );
+
+            return lavaDebugPanel.ToString() ;
+        }
+
+        /// <summary>
+        /// Liquidizes the child properties of an object for displaying debug information about fields available for lava templates
         /// </summary>
         /// <param name="liquidObject">The liquid object.</param>
+        /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
-        public static object LiquidizeChildren( this object liquidObject )
+        private static object LiquidizeChildren( this object liquidObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
         {
+            // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
+            levelsDeep++;
+            if ( levelsDeep > 10 )
+            {
+                return string.Empty;
+            }
+
+            if ( liquidObject == null )
+            {
+                return string.Empty;
+            }
+
             if ( liquidObject is string )
             {
-                return liquidObject;
+                return liquidObject.ToString().Truncate( 50 ).EncodeHtml();
             }
+
+            if ( liquidObject is Guid )
+            {
+                return liquidObject.ToString();
+            }
+
+            Type entityType = liquidObject.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
 
             if ( liquidObject is Drop )
             {
-                return ( (ILiquidizable)liquidObject ).ToLiquid();
+                var result = new Dictionary<string, object>();
+
+                foreach( var propInfo in entityType.GetProperties(
+                          BindingFlags.Public | 
+                          BindingFlags.Instance | 
+                          BindingFlags.DeclaredOnly ) )
+                {
+                    if ( propInfo != null )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            if ( entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).Any() )
+            {
+                var result = new Dictionary<string, object>();
+
+                var attr = (LiquidTypeAttribute)entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).First();
+                foreach ( string propName in attr.AllowedMembers )
+                {
+                    var propInfo = entityType.GetProperty( propName );
+                    {
+                        if ( propInfo != null )
+                        {
+                            try
+                            {
+                                result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propName ) );
+                            }
+                            catch ( Exception ex )
+                            {
+                                result.Add( propInfo.Name, ex.ToString() );
+                            }
+                        }
+                    }
+                }
+
+                return result;
             }
 
             if ( liquidObject is ILiquidizable )
             {
-                return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();
+                var result = new Dictionary<string, object>();
+
+                bool isEntity = ( liquidObject is IEntity );
+                foreach ( var propInfo in entityType.GetProperties() )
+                {
+                    if ( propInfo.Name != "Attributes" &&
+                        propInfo.Name != "AttributeValues" &&
+                        ( !isEntity ||
+                            propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
+                            propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
+                        propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( liquidObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propInfo.Name ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                // Add the attributes if this object has attributes
+                if ( liquidObject is Rock.Attribute.IHasAttributes )
+                {
+                    var objWithAttrs = (Rock.Attribute.IHasAttributes)liquidObject;
+                    if ( objWithAttrs.Attributes == null )
+                    {
+                        rockContext = rockContext ?? new RockContext();
+                        objWithAttrs.LoadAttributes( rockContext );
+                    }
+
+                    var objAttrs = new Dictionary<string, object>();
+                    foreach ( var objAttr in objWithAttrs.Attributes )
+                    {
+                        var attributeCache = objAttr.Value;
+                        string value = attributeCache.FieldType.Field.FormatValue( null, objWithAttrs.GetAttributeValue( attributeCache.Key ), attributeCache.QualifierValues, false );
+                        objAttrs.Add( attributeCache.Key, value.Truncate( 50 ).EncodeHtml() );
+                    }
+
+                    if ( objAttrs.Any() )
+                    {
+                        result.Add( string.Format("Attributes <p class='attributes'>Below is a list of attributes that can be retrieved using <code>{{ {0} | Attribute:'[AttributeKey]' }}</code>.</p>", parentElement), objAttrs );
+                    }
+                }
+
+                return result;
             }
 
             if ( liquidObject is IDictionary<string, object> )
@@ -127,7 +263,14 @@ namespace Rock
 
                 foreach ( var keyValue in ( (IDictionary<string, object>)liquidObject ) )
                 {
-                    result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren() );
+                    try
+                    {
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                    }
+                    catch ( Exception ex )
+                    {
+                        result.Add( keyValue.Key, ex.ToString() );
+                    }
                 }
 
                 return result;
@@ -139,13 +282,128 @@ namespace Rock
 
                 foreach ( var value in ( (IEnumerable)liquidObject ) )
                 {
-                    result.Add( value.LiquidizeChildren() );
+                    try
+                    {
+                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, parentElement ) );
+                    }
+                    catch { }
                 }
 
                 return result;
             }
 
-            return liquidObject;
+            return liquidObject.ToStringSafe();
+        }
+        
+        private static string formatLavaDebugInfo( object liquidizedObject, int levelsDeep = 0, string parents = "" )
+        {
+            if ( liquidizedObject is string )
+            {
+                return string.Format( "<span class='lava-debug-value'> - {0}</span>", liquidizedObject.ToString() );
+            }
+
+            if ( liquidizedObject is Dictionary<string, object> )
+            {
+                var sb = new StringBuilder();
+
+                bool isTopLevel = levelsDeep == 0;
+
+                if ( !isTopLevel ) { 
+                    sb.AppendFormat( "{0}<ul>{0}", Environment.NewLine );
+                }
+
+                foreach ( var keyVal in (Dictionary<string, object>)liquidizedObject )
+                {
+                    if ( isTopLevel )
+                    {
+                        if ( keyVal.Value is string )
+                        {
+                            // item is a root level property
+                            sb.Append( string.Format("<ul><li><span class='lava-debug-key'>{0}</span> - {1}</li></ul>{2}", keyVal.Key, keyVal.Value.ToString(), Environment.NewLine ));
+                        }
+                        else { 
+                            // item is a root level object                
+
+                            string panelId = Guid.NewGuid().ToString();
+
+                            sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
+
+                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format("<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-up'></i></div>", keyVal.Key ));
+                            sb.Append( "</div>");
+
+                            sb.Append( string.Format( "<div id='collapse-{0}' class='panel-collapse collapse'>", panelId ) );
+                            sb.Append( "<div class='panel-body'>" );
+
+                            if ( keyVal.Key == "GlobalAttribute" )
+                            {
+                                sb.Append( "<p>Global attributes should be accessed using <code>{{ 'Global' | Attribute:'[AttributeKey]' }}</code>. Find out more about using Global Attributes in Lava at <a href='http://www.rockrms.com/lava/globalattributes' target='_blank'>rockrms.com/lava/globalattributes</a>.</p>" );
+                            }
+                            else
+                            {
+                                if ( keyVal.Value is List<object> )
+                                {
+                                    sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{% for {2} in {1} %}}{{{{ {2}.[PropertyKey] }}}}{{% endfor %}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key, keyVal.Key.Singularize() ) );
+                                }
+                                else
+                                {
+                                    if ( keyVal.Key == "CurrentPerson" )
+                                    {
+                                        sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>. Find out more about using 'Person' fields in Lava at <a href='http://www.rockrms.com/lava/person' target='_blank'>rockrms.com/lava/person</a>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                                    }
+                                    else
+                                    {
+                                        sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{{{ {1}.[PropertyKey] }}}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key ) );
+                                    }
+                                    
+                                    
+                                }
+                            }
+
+                            string value = formatLavaDebugInfo( keyVal.Value, 1, keyVal.Key );
+                            sb.Append( value );
+
+                            sb.Append( "</div>" );
+                            sb.Append( "</div>" );
+                            sb.Append( "</div>" );
+                        }
+                    }
+                    else
+                    {
+                        string section = (keyVal.Value is string) ? "" : string.Format( " lava-debug-section level-{0}", levelsDeep );
+
+                        string value = formatLavaDebugInfo( keyVal.Value, levelsDeep + 1, parents + "." + keyVal.Key );
+                        sb.AppendFormat( "<li><span class='lava-debug-key{0}'>{1}</span> {2}</li>{3}", section, keyVal.Key, value, Environment.NewLine );
+                    }
+
+                }
+
+                if ( !isTopLevel )
+                {
+                    sb.AppendLine( "</ul>" );
+                }
+
+                return sb.ToString();
+            }
+
+            if ( liquidizedObject is List<object> )
+            {
+                var sb = new StringBuilder();
+                sb.AppendFormat( "{0}{{<ul>{0}", Environment.NewLine );
+
+                int i = 0;
+
+                foreach ( var obj in (List<object>)liquidizedObject )
+                {
+                    string value = formatLavaDebugInfo( obj, 1, parents );
+                    sb.AppendFormat( "<li>[{0}] {1}</li>{2}", i.ToString(), value, Environment.NewLine );
+                    i ++;
+                }
+                sb.AppendLine( "</ul>}" );
+                return sb.ToString();
+            }
+
+            return string.Empty;
         }
 
         #endregion
@@ -655,19 +913,12 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                //// NOTE: This means that template filters will also use CSharpNamingConvention
-                //// For example the dotliquid documentation says to do this for formatting dates: 
-                //// {{ some_date_value | date:"MMM dd, yyyy" }}
-                //// However, if CSharpNamingConvention is enabled, it needs to be: 
-                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                 Template template = Template.Parse( content );
-
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
             {
-                return "Error resolving Liquid merge fields: " + ex.Message;
+                return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
 
@@ -2117,7 +2368,7 @@ namespace Rock
         /// <returns></returns>
         public static int RouteId( this Route route )
         {
-            if ( route.DataTokens != null )
+            if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
             {
                 return int.Parse( route.DataTokens["RouteId"] as string );
             }
@@ -2240,16 +2491,6 @@ namespace Rock
             }
         }
 
-        /// <summary>
-        /// Returns a Json representation of the merge fields available to Liquid.
-        /// </summary>
-        /// <param name="mergeFields">The merge fields.</param>
-        /// <returns></returns>
-        public static string LiquidHelpText( this Dictionary<string, object> mergeFields )
-        {
-            return mergeFields.LiquidizeChildren().ToJson();
-        }
-
         #endregion
 
         #region Dictionary<TKey, TValue> extension methods
@@ -2271,6 +2512,22 @@ namespace Rock
             else
             {
                 dictionary[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Adds an item to a Dictionary if it doesn't already exist in Dictionary
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrIgnore<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
+            if ( !dictionary.ContainsKey( key ) )
+            {
+                dictionary.Add( key, value );
             }
         }
 

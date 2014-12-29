@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Workflow Name" )]
 
-    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-liquid'></span>", false, "", "", 1, "NameValue" )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-lava'></span>", false, "", "", 1, "NameValue" )]
     public class SetWorkflowName : ActionComponent
     {
         /// <summary>
@@ -56,6 +56,9 @@ namespace Rock.Workflow.Action
             else
             {
                 nameValue = action.GetWorklowAttributeValue( guid, true, true );
+                
+                // HtmlDecode the name since we are storing it in the database and it might be formatted to be shown in HTML
+                nameValue = System.Web.HttpUtility.HtmlDecode( nameValue );
             }
 
             if ( !string.IsNullOrWhiteSpace( nameValue ) )

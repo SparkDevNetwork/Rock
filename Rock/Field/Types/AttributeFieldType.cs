@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -52,7 +55,7 @@ namespace Rock.Field.Types
                 var names = new List<string>();
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
                 {
-                    var attribute = Rock.Web.Cache.AttributeCache.Read( guid );
+                    var attribute = AttributeCache.Read( guid );
                     if ( attribute != null )
                     {
                         names.Add( attribute.Name );
@@ -88,18 +91,15 @@ namespace Rock.Field.Types
 
             // build a drop down list of enity types (the one that gets selected is
             // used to build a list of attributes) 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Label = "Entity Type";
-            ddl.Help = "The Entity Type to select attributes for.";
+            var etp = new EntityTypePicker();
+            controls.Add( etp );
+            etp.AutoPostBack = true;
+            etp.SelectedIndexChanged += OnQualifierUpdated;
+            etp.Label = "Entity Type";
+            etp.Help = "The Entity Type to select attributes for.";
 
-            Rock.Model.EntityTypeService entityTypeService = new Model.EntityTypeService( new RockContext() );
-            foreach ( var entityType in entityTypeService.Queryable().OrderBy( a => a.Name ) )
-            {
-                ddl.Items.Add( new ListItem( entityType.Name, entityType.Id.ToString() ) );
-            }
+            var entityTypeList = new Model.EntityTypeService( new RockContext() ).GetEntities().ToList();
+            etp.EntityTypes = entityTypeList;
 
             // Add checkbox for deciding if the defined values list is renedered as a drop
             // down list or a checkbox list.
@@ -126,9 +126,19 @@ namespace Rock.Field.Types
 
             if ( controls != null && controls.Count == 2 )
             {
-                if ( controls[0] != null && controls[0] is DropDownList )
+                if ( controls[0] != null && controls[0] is EntityTypePicker )
                 {
-                    configurationValues[ENTITY_TYPE_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                    string value = string.Empty;
+                    int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValue.AsIntegerOrNull();
+                    if ( entityTypeId.HasValue )
+                    {
+                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        if ( entityType != null )
+                        {
+                            value = entityType.Guid.ToString();
+                        }
+                    }
+                    configurationValues[ENTITY_TYPE_KEY].Value = value;
                 }
 
                 if ( controls[1] != null && controls[1] is CheckBox )
@@ -149,9 +159,19 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 2 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( ENTITY_TYPE_KEY ) )
+                if ( controls[0] != null && controls[0] is EntityTypePicker && configurationValues.ContainsKey( ENTITY_TYPE_KEY ) )
                 {
-                    ( (DropDownList)controls[0] ).SelectedValue = configurationValues[ENTITY_TYPE_KEY].Value;
+                    string value = string.Empty;
+                    Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
+                    if ( entityTypeGuid.HasValue )
+                    {
+                        var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                        if ( entityType != null)
+                        {
+                            value = entityType.Id.ToString();
+                        }
+                    }
+                    ( (EntityTypePicker)controls[0] ).SelectedValue = value;
                 }
 
                 if ( controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
@@ -175,30 +195,34 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id }; 
+                editControl = new RockCheckBoxList { ID = id }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id }; 
+                editControl = new RockDropDownList { ID = id }; 
                 editControl.Items.Add( new ListItem() );
             }
 
             if ( configurationValues != null && configurationValues.ContainsKey( ENTITY_TYPE_KEY ) )
             {
-                int? entityTypeId = configurationValues[ENTITY_TYPE_KEY].Value.AsIntegerOrNull();
-                if ( entityTypeId.HasValue )
+                Guid? entityTypeGuid = configurationValues[ENTITY_TYPE_KEY].Value.AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
                 {
-                    Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
-                    var attributes = attributeService.GetByEntityTypeId( entityTypeId.Value );
-                    if ( attributes.Any() )
+                    var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
+                    if ( entityType != null )
                     {
-                        foreach ( var attribute in attributes )
+                        Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
+                        var attributes = attributeService.GetByEntityTypeId( entityType.Id );
+                        if ( attributes.Any() )
                         {
-                            editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                            foreach ( var attribute in attributes )
+                            {
+                                editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
+                            }
                         }
+                        return editControl;
                     }
-                    return editControl;
                 }
             }
 

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -42,11 +43,6 @@ namespace Rock.Storage.Provider
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveFile( BinaryFile file, HttpContext context )
         {
-            if ( file.Data == null )
-            {
-                throw new ArgumentException( "File Data must not be null." );
-            }
-
             var url = GenerateUrl( file );
             var physicalPath = GetPhysicalPath( url, context );
             var directoryName = Path.GetDirectoryName( physicalPath );
@@ -56,7 +52,24 @@ namespace Rock.Storage.Provider
                 Directory.CreateDirectory( directoryName );
             }
 
-            File.WriteAllBytes( physicalPath, file.Data.Content );
+            if ( file.Data != null && file.Data.ContentStream != null )
+            {
+                
+                FileStream sourceFileStream = file.Data.ContentStream as FileStream;
+                bool sameFile = ( sourceFileStream != null ) && sourceFileStream.Name == physicalPath;
+
+                if ( !sameFile )
+                {
+                    using ( FileStream writeStream = File.OpenWrite( physicalPath ) )
+                    {
+                        file.Data.ContentStream.CopyTo( writeStream );
+                    }
+
+
+                    file.Data.ContentStream.Dispose();
+                    file.Data.ContentStream = null;
+                }
+            }
 
             // Set Data to null after successful OS save so the the binary data is not 
             // written into the database.
@@ -80,18 +93,20 @@ namespace Rock.Storage.Provider
         }
 
         /// <summary>
-        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public override byte[] GetFileContent( BinaryFile file, HttpContext context )
+        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
         {
             var physicalPath = GetPhysicalPath( file.Url, context );
 
             if ( File.Exists( physicalPath ) )
             {
-                return File.ReadAllBytes( physicalPath );
+                var fileStream = File.OpenRead( physicalPath );
+
+                return fileStream;
             }
             else
             {
@@ -147,6 +162,10 @@ namespace Rock.Storage.Provider
             BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId );
             binaryFileType.LoadAttributes();
             string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
+            if (string.IsNullOrEmpty(rootPath))
+            {
+                rootPath = "~/App_Data/Files";
+            }
             return rootPath;
         }
 

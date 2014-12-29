@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -27,7 +26,7 @@ namespace Rock.CheckIn
     /// A location option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInLocation : DotLiquid.ILiquidizable
+    public class CheckInLocation : DotLiquid.ILiquidizable, DotLiquid.IIndexable
     {
         /// <summary>
         /// Gets or sets the location.
@@ -140,16 +139,47 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = Location.ToLiquid() as Dictionary<string, object>;
-            if ( dictionary != null )
-            {
-                dictionary.Add( "LastCheckIn", LastCheckIn );
-                dictionary.Add( "CurrentCount", CurrentCount );
-                dictionary.Update( "Schedules", Schedules.Where( s => s.Selected ).ToList() );
-                return dictionary;
-            }
+            return this;
+        }
 
-            return new Dictionary<string, object>();
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                switch ( key.ToStringSafe() )
+                {
+                    case "LastCheckIn": return LastCheckIn;
+                    case "CurrentCount": return CurrentCount;
+                    case "Schedules": return Schedules.Where( s => s.Selected ).ToList();
+                    default: return Location[key];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalProperties = new List<string> { "LastCheckIn", "CurrentCount", "Schedules" };
+            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Location.ContainsKey( key );
+            }
         }
     }
 }

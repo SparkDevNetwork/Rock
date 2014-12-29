@@ -80,9 +80,13 @@ namespace Rock.Rest.Controllers
                 .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == tagName );
 
             if ( tag != null )
+            {
                 return tag;
+            }
             else
+            {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
         }
 
         [Authenticate, Secured]
@@ -110,6 +114,5 @@ namespace Rock.Rest.Controllers
                     !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
                 .OrderBy( t => t.Name );
         }
-
     }
 }

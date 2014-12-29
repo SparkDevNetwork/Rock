@@ -439,7 +439,9 @@ $(document).ready(function() {
                 var itemMergeFields = new Dictionary<string, object>();
                 if ( CurrentPerson != null )
                 {
+                    // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                     itemMergeFields.Add( "Person", CurrentPerson );
+                    itemMergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
                 globalAttributeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
 
@@ -454,46 +456,35 @@ $(document).ready(function() {
                 }
             }
 
-            var mergeFields = new Dictionary<string, object>();
-            
+            var mergeFields = new  Dictionary<string, object>();
             mergeFields.Add( "Pagination", pagination );
             mergeFields.Add( "LinkedPages", linkedPages );
-            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
             mergeFields.Add( "Items", currentPageContent );
             mergeFields.Add( "Campuses", CampusCache.All() );
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-            
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
             // enable showing debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
-                var debugFields = new Dictionary<string, object>();
-                if ( CurrentPerson != null )
-                {
-                    debugFields.Add( "Person", CurrentPerson );
-                }
-                debugFields.Add( "Pagination", pagination );
-                debugFields.Add( "LinkedPages", linkedPages );
-                debugFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                debugFields.Add( "Items", currentPageContent.Take( 5 ).ToList() );
-                debugFields.Add( "Campuses", CampusCache.All() );
-                globalAttributeFields.ToList().ForEach( d => debugFields.Add( d.Key, d.Value ) );
+                mergeFields["Items"] = currentPageContent.Take( 5 ).ToList();
 
                 lDebug.Visible = true;
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Showing first 5 items.</em></p>" );
-                debugInfo.Append( "<pre>" + debugFields.LiquidizeChildren().ToJson() + "</pre>" );
-                debugInfo.Append( "</div" );
-                lDebug.Text = debugInfo.ToString();
+                
+                lDebug.Text = mergeFields.lavaDebugInfo();
+
+                mergeFields["Items"] = currentPageContent;
             }
             else
             {
                 lDebug.Visible = false;
                 lDebug.Text = string.Empty;
             }
+
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+            mergeFields.Add( "Person", CurrentPerson );
 
             // set page title
             if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )
@@ -600,10 +591,6 @@ $(document).ready(function() {
             var template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
             if ( template == null )
             {
-                string liquidFolder = Server.MapPath( ResolveRockUrl( "~~/Assets/Liquid" ) );
-                Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
                 template = Template.Parse( GetAttributeValue( "Template" ) );
 
                 int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
@@ -903,10 +890,15 @@ $(document).ready(function() {
                     // add item attributes
                     AttributeService attributeService = new AttributeService( rockContext );
                     var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
-                                            .Where( a =>
-                                                a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                                a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) )
+                                            .Where( a => (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) 
+                                                ) || (
+                                                    a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() ) 
+                                                ) )
                                             .ToList();
+
                     foreach ( var attribute in itemAttributes )
                     {
                         kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );

@@ -91,7 +91,7 @@ namespace Rock.Web.UI.Controls.Communication
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
             rcwMessage.Label = "Message";
-            rcwMessage.Help = "<span class='tip tip-liquid'></span>";
+            rcwMessage.Help = "<span class='tip tip-lava'></span>";
             Controls.Add( rcwMessage );
 
             mfpMessage = new MergeFieldPicker();

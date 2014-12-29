@@ -26,30 +26,15 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public class AuthController : ApiController, IHasCustomRoutes
+    public class AuthController : ApiController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "AuthLogin",
-                routeTemplate: "api/Auth/Login",
-                defaults: new
-                {
-                    controller = "Auth",
-                    action = "Login"
-                } );
-        }
-
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
         /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
+        [System.Web.Http.Route("api/Auth/Login")]
         public void Login( [FromBody]LoginParameters loginParameters )
         {
             bool valid = false;

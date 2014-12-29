@@ -1,6 +1,6 @@
 ﻿/*
     Used to manage styles related to reusable components / widgets.
-    
+
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
@@ -111,8 +111,8 @@
     }
 
     &.picker-menu-right {
-        
-        .picker-menu {    
+
+        .picker-menu {
             right: 0;
             left: auto;
         }
@@ -179,12 +179,12 @@
     }
 }
 
-#dialog .scroll-container-picker 
+#dialog .scroll-container-picker
 {
     width: 360px;
 
     .viewport {
-        width: 340px;  
+        width: 340px;
         height: 190px;
     }
 }
@@ -240,17 +240,17 @@ ul.rocktree ul {
 }
 
 .rocktree {
-    
+
     .rocktree-item {
 
         white-space: nowrap;
-        
+
         & > i {
             cursor: pointer;
             padding: 4px;
         }
     }
-    
+
     li {
 	    margin: 0px;
     }
@@ -297,7 +297,7 @@ ul.rocktree ul {
 
 // treeview wrapper
 .treeview {
-    
+
     margin-bottom: @spacing-md-px;
 
     .treeview-actions {
@@ -309,7 +309,7 @@ ul.rocktree ul {
     }
 
     .treeview-scroll {
-        
+
     }
 }
 
@@ -323,9 +323,9 @@ ul.rocktree ul {
     list-style: none;
 
     li {
-        
+
         padding-left: @spacing-md-px;
-        
+
         i.fa-circle {
             font-size: 9px;
             color: #d0cfcf;
@@ -384,13 +384,13 @@ ul.rocktree ul {
 // -------------------------
 
 .list-as-blocks {
-    
+
     h3 {
         margin-top: 0;
         font-size: 14px;
         margin: 6px 0;
     }
-    
+
     ul {
         padding: 0;
         list-style: none;
@@ -418,7 +418,7 @@ ul.rocktree ul {
                     background-color: @accent-bold-color;
                     color: @accent-bold-text-color;
                 }
-                
+
                 div.notification {
                     position: absolute;
                     top: -10px;
@@ -438,7 +438,7 @@ ul.rocktree ul {
                 }
             }
 
-            
+
         }
     }
 }
@@ -527,9 +527,9 @@ ul.rocktree ul {
 // 8. Tags
 // ------------------------
 
-div.tagsinput  
-{ 
-    width:100%; 
+div.tagsinput
+{
+    width:100%;
     overflow-y: auto;
     float: left;
 }
@@ -598,7 +598,7 @@ div.tagsinput
     }
 }
 
-div.tagsinput span.tag.personal 
+div.tagsinput span.tag.personal
 {
     background: @tag-bg-alt;
 }
@@ -608,33 +608,33 @@ div.tagsinput span.tag.personal:before
     border-color: transparent @tag-bg-alt transparent transparent;
 }
 
-div.tagsinput span.tag a 
-{ 
-    font-weight: bold; 
-    color: @tag-text-color; 
-    text-decoration:none; 
+div.tagsinput span.tag a
+{
+    font-weight: bold;
+    color: @tag-text-color;
+    text-decoration:none;
     font-size: 11px;
     opacity: 0;
     -moz-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
-    -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s; 
+    -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
 }
 
-div.tagsinput span.tag:hover a 
-{ 
+div.tagsinput span.tag:hover a
+{
     opacity: 1;
 }
 
-div.tagsinput input 
-{ 
-    width:80px; 
-    margin:0px; 
-    font-family: helvetica; 
-    font-size: 13px; 
-    border:1px solid transparent; 
-    padding: 0px; 
-    background: transparent; 
-    color: #8f8f8f !important; /* needed as script adds element value */ 
-    outline: 0px; 
+div.tagsinput input
+{
+    width:80px;
+    margin:0px;
+    font-family: helvetica;
+    font-size: 13px;
+    border:1px solid transparent;
+    padding: 0px;
+    background: transparent;
+    color: #8f8f8f !important; /* needed as script adds element value */
+    outline: 0px;
     box-shadow: none;
     margin: -2px 0 0 10px;
     border-radius: @border-radius-base;
@@ -648,24 +648,24 @@ div.tagsinput input
         background-color: rgba(0,0,0,.05);
     }
 
-    div { 
-        display:block; 
-        float: left; 
+    div {
+        display:block;
+        float: left;
     }
 }
 
-div.tagsinput 
+div.tagsinput
 
-.tags_clear 
-{ 
-    clear: both; 
-    width: 100%; 
-    height: 0px; 
+.tags_clear
+{
+    clear: both;
+    width: 100%;
+    height: 0px;
 }
 
-.not_valid 
+.not_valid
 {
-    background: #FBD8DB !important; 
+    background: #FBD8DB !important;
     color: #90111A !important;
 }
 
@@ -688,12 +688,12 @@ div.tagsinput
         box-shadow: 0 5px 10px rgba(0,0,0,.2);
 
         li {
-            margin-bottom: 4px; 
-            
+            margin-bottom: 4px;
+
             &:last-child {
-                margin-bottom: 0; 
+                margin-bottom: 0;
             }
-            
+
             a {
                 color:@accent-bold-text-color;
                 text-decoration: none;
@@ -705,7 +705,7 @@ div.tagsinput
                     background: darken(@accent-bold-color, 5%);
                     border-radius: 4px;
                 }
-            }  
+            }
         }
 
 
@@ -715,7 +715,7 @@ div.tagsinput
 .tag-letterlist {
 
    color: lighten(@text-color, 20%);
-    
+
     li {
         margin-right: 12px;
     }
@@ -727,7 +727,7 @@ div.tagsinput
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: @screen-sm-min) {
- 
+
     .taglist {
         text-align: left;
 
@@ -735,13 +735,13 @@ div.tagsinput
             float: left;
         }
     }
-    
+
     div.tagsinput input {
         margin: 0;
     }
 }
- 
-// 9. 
+
+// 9.
 // ------------------------
 .photoframe {
     border: 4px solid @accent-semibold-color;
@@ -802,7 +802,7 @@ div.tagsinput
             outline: 0; // get rid of orange box in chrome
         }
     }
-    
+
     .tt-hint {
         padding: 4px 4px 4px 25px;
     }
@@ -822,10 +822,10 @@ div.tagsinput
     }
 
     .dropdown {
-        
+
         .navbar-link {
             text-align: right;
-            
+
             span {
                 padding-right: 4px;
             }
@@ -848,16 +848,16 @@ div.tagsinput
             left: auto;
         }
     }
-    
+
 }
 
 .smartsearch input:-moz-placeholder {
-    color: darken(@smartsearch-input-text-color, 25%); 
+    color: darken(@smartsearch-input-text-color, 25%);
 }
 
 
 .smartsearch input::-webkit-input-placeholder {
-    color: darken(@smartsearch-input-text-color, 25%); 
+    color: darken(@smartsearch-input-text-color, 25%);
 }
 
 .smartsearch .nav > li > a {
@@ -878,7 +878,7 @@ div.tagsinput
 // -------------------------
 
 fieldset .actions {
-    margin-top: 12px; 
+    margin-top: 12px;
 }
 
 
@@ -895,7 +895,7 @@ fieldset .actions {
 // 13. Code Editor
 // -------------------------
 .code-editor {
-   position: relative; 
+   position: relative;
 }
 
 // 14. Labels
@@ -1158,8 +1158,8 @@ fieldset .actions {
     padding: 2px;
     display: table-cell;
     position: relative;
-    
-    .imageupload-thumbnail {     
+
+    .imageupload-thumbnail {
         position: relative;
 
         .imageupload-thumbnail-image {
@@ -1251,7 +1251,7 @@ fieldset .actions {
             text-overflow: ellipsis;
             white-space: nowrap;
             text-align: center;
-            
+
             &:after {
                 content: '\f016';
                 font-family: FontAwesome;
@@ -1289,16 +1289,17 @@ fieldset .actions {
         }
     }
 
-    .fileupload-dropzone {
-        margin-top: 2px;
+    .fileupload-dropzone,
+    .fileupload-button {
         height: 30px;
-        border: 1px dotted darken(@accent-light-color, 20%);
-        border-radius: 0 0 @border-radius-base @border-radius-base;
+        // border: 1px dotted darken(@accent-light-color, 20%);
         background-color: @btn-action-bg;
         text-align: center;
         padding-top: 8px;
         position: relative;
         line-height: 12px;
+
+        ::-webkit-file-upload-button { cursor:pointer; }
 
         input {
             opacity: 0;
@@ -1307,13 +1308,30 @@ fieldset .actions {
             position: absolute;
             left: 0;
             top: 0;
+            cursor: pointer;
         }
 
         span {
             font-size: 13px;
             color: @btn-action-color;
             width: 100%;
+            padding: 0 .5em;
+
+            &:before {
+                .fa-icon();
+                content: @fa-var-upload;
+                padding-right: .25em;
+            }
         }
+    }
+
+    .fileupload-dropzone {
+        margin-top: 2px;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+    }
+
+    .fileupload-button {
+        border-radius: @border-radius-base;
     }
 
     .upload-progress {
@@ -1333,12 +1351,12 @@ fieldset .actions {
 // -------------------------
 
 .updateprogress-status {
-    position: fixed; 
-    padding: 50px; 
-    color: @btn-primary-color; 
-    left: 40%; 
-    top: 40%; 
-    opacity: 1; 
+    position: fixed;
+    padding: 50px;
+    color: @btn-primary-color;
+    left: 40%;
+    top: 40%;
+    opacity: 1;
     background-color: @btn-primary-bg;
     border-radius: @border-radius-base;
     z-index: (@zindex-modal-background + 100);
@@ -1358,7 +1376,7 @@ fieldset .actions {
       height: 100%;
       width: 6px;
       display: inline-block;
-  
+
       -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
       animation: stretchdelay 1.2s infinite ease-in-out;
     }
@@ -1384,15 +1402,15 @@ fieldset .actions {
     }
 
     @-webkit-keyframes stretchdelay {
-      0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+      0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
       20% { -webkit-transform: scaleY(1.0) }
     }
 
     @keyframes stretchdelay {
-      0%, 40%, 100% { 
+      0%, 40%, 100% {
         transform: scaleY(0.4);
         -webkit-transform: scaleY(0.4);
-      }  20% { 
+      }  20% {
         transform: scaleY(1.0);
         -webkit-transform: scaleY(1.0);
       }
@@ -1407,7 +1425,7 @@ fieldset .actions {
 // -------------------------
 .well-message {
     text-align: center;
-    
+
 
     h1 {
         font-size: 38px;
@@ -1442,7 +1460,7 @@ fieldset .actions {
         border-color: @state-warning-border;
     }
 }
-    
+
 ul.groupmembers {
     list-style: none;
     margin: 6px 0;
@@ -1461,7 +1479,7 @@ ul.groupmembers {
             margin-right: 7.5px;
             display: inline-block;
             width: 60px;
-            height: 60px; 
+            height: 60px;
         }
 
         h4 {
@@ -1497,7 +1515,7 @@ ul.groupmembers {
         }
     }
 }
-   
+
 // 22. Rock List
 // -------------------------
 
@@ -1537,7 +1555,7 @@ ul.rocklist {
             overflow: hidden;
             display: block;
         }
-        
+
         &:hover {
             background-color: @accent-semibold-color;
             color: @accent-semibold-text-color;
@@ -1624,7 +1642,7 @@ ul.rocklist {
 	    opacity: 0;
 	    transition: opacity .25s ease-in-out;
 	    -moz-transition: opacity .25s ease-in-out;
-	    -webkit-transition: opacity .25s ease-in-out; 
+	    -webkit-transition: opacity .25s ease-in-out;
 
         a {
 	        color: #fff;
@@ -1657,14 +1675,14 @@ ul.rocklist {
 
 .image-editor-crop-container {
     height:480px;
-    width:480px; 
+    width:480px;
 }
 
-						
+
 .image-editor-photo:hover .options {
 	opacity: 1;
 }
-							
+
 .image-editor-photo .options a:first-child {
 	margin-left: 0;
 }

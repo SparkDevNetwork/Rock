@@ -184,9 +184,8 @@ namespace Rock.Web.UI.Controls
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
 $('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
-
-    // if the startdate is later than the enddate, change the end date to be startdate+1
-    if (ev.date.valueOf() > $('#{1}').data('datepicker').date.valueOf()) {{
+        
+    if (ev.date.valueOf() > $('#{1}').data('datepicker').dates[0]) {{
         var newDate = new Date(ev.date)
         newDate.setDate(newDate.getDate() + 1);
         $('#{1}').datepicker('update', newDate);

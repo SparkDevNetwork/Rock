@@ -719,7 +719,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", errorMessages.AsDelimited( "<br/>" ) );
+                    ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", 
+                        "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
                 }
             }
         }

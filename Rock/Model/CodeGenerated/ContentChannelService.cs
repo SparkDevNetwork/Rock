@@ -102,6 +102,8 @@ namespace Rock.Model
             target.ChannelUrl = source.ChannelUrl;
             target.ItemUrl = source.ItemUrl;
             target.TimeToLive = source.TimeToLive;
+            target.ContentControlType = source.ContentControlType;
+            target.RootImageDirectory = source.RootImageDirectory;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

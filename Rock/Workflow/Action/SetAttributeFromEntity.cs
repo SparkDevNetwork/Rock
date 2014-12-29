@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
+    [BooleanField("Use Id instead of Guid", "Most entity attribute field types expect the Guid of the entity (which is used by default). Select this option if the entity's Id should be used instead (should be rare).", false, "", 1, "UseId" )]
     public class SetAttributeToEntity : ActionComponent
     {
         /// <summary>
@@ -50,19 +51,20 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            if ( entity != null && entity is IEntity )
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
-                if ( attribute != null )
+                Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
+                if ( !guid.IsEmpty() )
                 {
-                    if ( entity != null )
+                    var attribute = AttributeCache.Read( guid, rockContext );
+                    if ( attribute != null )
                     {
+                        // Person is handled special since it needs the person alias id
                         if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                         {
-                            var person = entity as Person;
+                            var person = (Person)entity;
 
-                            var primaryAlias = new PersonAliasService(rockContext).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
+                            var primaryAlias = new PersonAliasService( rockContext ).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
                             if ( primaryAlias != null )
                             {
                                 SetWorkflowAttributeValue( action, guid, primaryAlias.Guid.ToString() );
@@ -73,16 +75,22 @@ namespace Rock.Workflow.Action
                                 errorMessages.Add( "Could not determine person primary alias!" );
                             }
                         }
-                        else if ( entity is Group && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid(), rockContext ).Id )
-                        {
-                            var group = entity as Group;
-                            SetWorkflowAttributeValue( action, guid, group.Guid.ToString() );
-                            return true;
-                        }
                         else
                         {
-                            errorMessages.Add( "The attribute is not the correct type for the entity!" );
+                            if ( GetAttributeValue( action, "UseId" ).AsBoolean() )
+                            {
+                                SetWorkflowAttributeValue( action, guid, ( (IEntity)entity ).Id.ToString() );
+                            }
+                            else
+                            {
+                                SetWorkflowAttributeValue( action, guid, ( (IEntity)entity ).Guid.ToString() );
+                            }
+                            return true;
                         }
+                    }
+                    else
+                    {
+                        errorMessages.Add( "Invalid attribute!" );
                     }
                 }
                 else
@@ -92,11 +100,10 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                errorMessages.Add( "Invalid attribute!" );
+                errorMessages.Add( "The entity is null or not a Rock IEntity." );
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
-
             return false;
         }
 

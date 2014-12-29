@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Groups
 
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
+        private bool _canView = false;
 
         #endregion
 
@@ -76,22 +77,22 @@ namespace RockWeb.Blocks.Groups
                     RockPage.SaveSharedItem( key, _group );
                 }
 
-                if ( _group != null )
+                if ( _group != null && _group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
+                    _canView = true;
+
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-                    gGroupMembers.Actions.ShowAdd = true;
-                    gGroupMembers.IsDeleteEnabled = true;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
 
-                    // make sure they have Auth to the block AND Edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    // make sure they have Auth to edit the block OR edit to the Group
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
@@ -114,7 +115,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            pnlContent.Visible = _canView;
+
+            if ( !Page.IsPostBack && _canView )
             {
                 BindFilter();
 

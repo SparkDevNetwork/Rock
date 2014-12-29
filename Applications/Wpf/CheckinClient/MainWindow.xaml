@@ -1,8 +1,0 @@
-﻿<NavigationWindow x:Class="CheckinClient.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Rock Check-in Client" Height="350" Width="525" WindowState="Maximized" WindowStyle="None"
-        FontFamily="./resources/#Open Sans Regular"
-        Source="StartupPage.xaml" 
-        ShowsNavigationUI="False">
-</NavigationWindow>
