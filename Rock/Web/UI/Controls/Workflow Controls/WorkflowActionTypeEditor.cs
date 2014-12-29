@@ -403,7 +403,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlEntityType.AutoPostBack = true;
             _ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
 
-            foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
+            foreach ( var item in ActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
                 var type = item.Value.GetType();
                 if (type != null)

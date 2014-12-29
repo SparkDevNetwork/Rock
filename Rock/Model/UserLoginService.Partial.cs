@@ -152,7 +152,7 @@ namespace Rock.Model
                             return null;
 
                         UserLogin user = this.GetByEncryptedKey( publicKey );
-                        if ( user.UserName == username )
+                        if ( user != null && user.UserName == username )
                             return user;
                     }
                 }

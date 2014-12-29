@@ -1,18 +1,19 @@
 /*
    Rock's Core CSS
-    
+
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
     3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
     4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
     5. ASP.Net Overrides - Yep they get it wrong too sometimes
-    
+
 
 */
 
 
 // 1. Imports
 //--------------------------------
+@import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
@@ -57,7 +58,7 @@
     color: @text-selection-text-color;
 }
 ::-moz-selection {
-	background: @text-selection-color; 
+	background: @text-selection-color;
     color: @text-selection-text-color;
 }
 
@@ -82,9 +83,10 @@ small
     border-radius: 4px;
     font-size: 11px;
 
-    &.tip-liquid {
+    &.tip-liquid,
+    &.tip-lava {
         &:after {
-            content: '{{ Liquid }}';
+            content: '{{ Lava }}';
         }
     }
 
@@ -105,9 +107,9 @@ small
     background-color: @accent-color;
     white-space: nowrap;
     border-radius: @border-radius-base;
-} 
+}
 
-// context help  
+// context help
 a.help {
     margin-left: 6px;
     outline: 0;
@@ -121,9 +123,9 @@ a.help {
 }
 
 .well {
-    & > h1, 
-    & > h2, 
-    & > h3, 
+    & > h1,
+    & > h2,
+    & > h3,
     & > h4 {
         margin-top: 0;
     }
@@ -148,7 +150,7 @@ a.help {
     font-weight: @font-weight-semibold;
 }
 
-// add badge colors back to BS3 
+// add badge colors back to BS3
 .badge-danger {
     background-color: @label-danger-bg;
 }
@@ -257,7 +259,7 @@ a.help {
 }
 
 .panel-info {
-        
+
     .panel-body {
         background-color: @body-bg;
     }
@@ -327,7 +329,7 @@ a.help {
     }
 
     .panel-body {
-        
+
         .grid.grid-panel {
             margin: -15px;
 
@@ -337,7 +339,7 @@ a.help {
 
             .table-bordered {
                 border-width: 1px 0 0 0;
-                
+
                 & > tfoot > tr > td {
                     border: 0px;
                 }
@@ -397,7 +399,7 @@ a.help {
     }
 }
 // new alert types
-.alert-action { 
+.alert-action {
     .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
@@ -424,7 +426,7 @@ a.help {
     }
 }
 
-.alert-warning { 
+.alert-warning {
     a {
         color: @alert-warning-text;
         border-bottom: @alert-warning-link-border-bottom;
@@ -434,7 +436,7 @@ a.help {
     }
 }
 
-.alert-danger { 
+.alert-danger {
     a {
         color: @alert-danger-text;
         border-bottom: @alert-danger-link-border-bottom;
@@ -467,7 +469,7 @@ a.help {
     }
 }
 
-// modify BS3 to use fontawesome for carousel icons 
+// modify BS3 to use fontawesome for carousel icons
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
     position: absolute;

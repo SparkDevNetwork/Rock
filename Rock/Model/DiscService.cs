@@ -32,36 +32,36 @@ namespace Rock.Model
         /// Raw question data.
         /// </summary>
         private static String[,] questionData = {
-            {"enjoys challenges","enjoys having fun","freely expresses feelings","comfortable with circumstances","NNNN","NNNN"},
-            {"tries to avoid mistakes","not easily moved","convinces others ","goes along with the flow","CDIS","CDIS"},
-            {"liked by others","systematically thinks through issues","quickly shares thoughts","does not like change","ICDS","ICDS"},
-            {"enjoys talking","calculates actions","actions are predictable","makes decisions quickly","ICSD","ICSD"},
-            {"takes risks","sees imperfections","people person","avoids extremes","DCIS","DCIS"},
-            {"sensitive to others","influences others","struggles acknowledging abilities","produces results","SICD","SICD"},
-            {"full of energy","tries to avoid mistakes","takes control","accessible to others","ICDS","ICDS"},
-            {"high-spirited","easily focuses","does not speak up","fully committed to the goal","ICSD","ICSD"},
-            {"pays attention to details","consistent with others","is entertaining","gives direction","CSID","CSID"},
-            {"conquers challenges","encourages others","follows others","minutely exact","DISC","DISC"},
-            {"plays down abilities","listens to others","driven by goals","an optimist","CSDI","CSDI"},
-            {"pushes others forward","concerned for other","concerned for correctness","is self sufficient","ISCD","ISCD"},
-            {"pursues goals","understands other's feelings","people enjoy them","avoids danger","DSIC","DSIC"},
-            {"prefers precision","follows others","starts things","enjoys life fully","CSDI","CSDI"},
-            {"liked by others","thinks things through","perseveres over obstacles","does things the traditional way","ICDS","ICDS"},
-            {"is analytical","takes risks","loyal to others","possesses charm ","CDSI","CDSI"},
-            {"enjoys others","patient listener","takes care of themselves","listens to details","ISDC","ISDC"},
-            {"doesn't challenge others","doggedly pursues","works systematically","high energy","SDCI","SDCI"},
-            {"overcomes difficulties","shows feelings freely","mindful of others","prone to worry","DISC","DISC"},
-            {"enjoys hanging out with people","cares deeply about others","is concerned about the facts","secure in abilities","ISCD","ISCD"},
-            {"does things the right way","is generous","shares inner thoughts","committed to the goal","CSID","CSID"},
-            {"acts without thinking","evaluates objectively","assumes control","comfortable with the status quo","ICDS","ICDS"},
-            {"spends time with others","thinks systematically through issues","displays confidence","gives grace to others","ICDS","ICDS"},
-            {"seeks others","comfortable with the status quo","resistant to opposition","follows instructions precisely","ISDC","ISDC"},
-            {"pushes others to do their best","thinks through problems analytically","collaborative team player","upbeat about life","DCSI","DCSI"},
-            {"enjoys having fun with others","conforms exactly to a standard","expresses opinions freely","is consistent","ICDS","ICDS"},
-            {"forcefully pursues a goal","welcoming to others","considerate of others","carefully assesses risks","DISC","DISC"},
-            {"critical of others","pushes others","optimistic toward others","concerned with others","CDIS","CDIS"},
-            {"readily follows others","tries to avoid mistakes","does not show weakness","enjoys others","NNNN","NNNN"},
-            {"expresses feelings","often stands out","monitors details","satisfied with circumstances","IDCS","IDCS"}
+            {"Enjoys challenges","Enjoys having fun","Freely expresses feelings","Comfortable with circumstances","NNNN","NNNN"},
+            {"Tries to avoid mistakes","Not easily moved","Convinces others ","Goes along with the flow","CDIS","CDIS"},
+            {"Liked by others","Systematically thinks through issues","Quickly shares thoughts","Does not like change","ICDS","ICDS"},
+            {"Enjoys talking","Calculates actions","Actions are predictable","Makes decisions quickly","ICSD","ICSD"},
+            {"Takes risks","Sees imperfections","People person","Avoids extremes","DCIS","DCIS"},
+            {"Sensitive to others","Influences others","Struggles acknowledging abilities","Produces results","SICD","SICD"},
+            {"Full of energy","Tries to avoid mistakes","Takes control","Accessible to others","ICDS","ICDS"},
+            {"High-spirited","Easily focuses","Does not speak up","Fully committed to the goal","ICSD","ICSD"},
+            {"Pays attention to details","Consistent with others","Is entertaining","Gives direction","CSID","CSID"},
+            {"Conquers challenges","Encourages others","Follows others","Minutely exact","DISC","DISC"},
+            {"Plays down abilities","Listens to others","Driven by goals","An optimist","CSDI","CSDI"},
+            {"Pushes others forward","Concerned for other","Concerned for correctness","Is self sufficient","ISCD","ISCD"},
+            {"Pursues goals","Understands other's feelings","People enjoy them","Avoids danger","DSIC","DSIC"},
+            {"Prefers precision","Follows others","Starts things","Enjoys life fully","CSDI","CSDI"},
+            {"Liked by others","Thinks things through","Perseveres over obstacles","Does things the traditional way","ICDS","ICDS"},
+            {"Is analytical","Takes risks","Loyal to others","Possesses charm ","CDSI","CDSI"},
+            {"Enjoys others","Patient listener","Takes care of themselves","Listens to details","ISDC","ISDC"},
+            {"Doesn't challenge others","Doggedly pursues","Works systematically","High energy","SDCI","SDCI"},
+            {"Overcomes difficulties","Shows feelings freely","Mindful of others","Prone to worry","DISC","DISC"},
+            {"Enjoys hanging out with people","Cares deeply about others","Is concerned about the facts","Secure in abilities","ISCD","ISCD"},
+            {"Does things the right way","Is generous","Shares inner thoughts","Committed to the goal","CSID","CSID"},
+            {"Acts without thinking","Evaluates objectively","Assumes control","Comfortable with the status quo","ICDS","ICDS"},
+            {"Spends time with others","Thinks systematically through issues","Displays confidence","Gives grace to others","ICDS","ICDS"},
+            {"Seeks others","Comfortable with the status quo","Resistant to opposition","Follows instructions precisely","ISDC","ISDC"},
+            {"Pushes others to do their best","Thinks through problems analytically","Collaborative team player","Upbeat about life","DCSI","DCSI"},
+            {"Enjoys having fun with others","Conforms exactly to a standard","Expresses opinions freely","Is consistent","ICDS","ICDS"},
+            {"Forcefully pursues a goal","Welcoming to others","Considerate of others","Carefully assesses risks","DISC","DISC"},
+            {"Critical of others","Pushes others","Optimistic toward others","Concerned with others","CDIS","CDIS"},
+            {"Readily follows others","Tries to avoid mistakes","Does not show weakness","Enjoys others","NNNN","NNNN"},
+            {"Expresses feelings","Often stands out","Monitors details","Satisfied with circumstances","IDCS","IDCS"}
         };
 
 #pragma warning disable 1591
@@ -81,6 +81,7 @@ namespace Rock.Model
             public int NaturalBehaviorC;
             public int NaturalBehaviorI;
             public int NaturalBehaviorD;
+            public string PersonalityType;
             public DateTime LastSaveDate;
         }
 
@@ -98,6 +99,9 @@ namespace Rock.Model
             public string LeastScore;
         }
 
+        /// <summary>
+        /// The key names for the DISC person attributes.
+        /// </summary>
         public static class AttributeKeys
         {
             public const string AdaptiveD = "AdaptiveD";
@@ -108,7 +112,7 @@ namespace Rock.Model
             public const string NaturalI = "NaturalI";
             public const string NaturalS = "NaturalS";
             public const string NaturalC = "NaturalC";
-
+            public const string PersonalityType = "PersonalityType";
             public const string LastSaveDate = "LastSaveDate";
         }
 
@@ -205,8 +209,34 @@ namespace Rock.Model
                 testResults.NaturalBehaviorC = Convert.ToInt32( ( nbC / decY * 100 ) );
                 testResults.NaturalBehaviorI = Convert.ToInt32( ( nbI / decY * 100 ) );
                 testResults.NaturalBehaviorD = Convert.ToInt32( ( nbD / decY * 100 ) );
+                testResults.LastSaveDate = RockDateTime.Now;
+
+                // Determine the Natural personality type
+                testResults.PersonalityType = DetermineNaturalPersonalityType( testResults );
             }
+
             return testResults;
+        }
+
+        /// <summary>
+        /// Determines the natural personality type. This is the highest score and the next highest 
+        /// if the score is over the midline (we're definining midline as over 24).
+        /// </summary>
+        /// <param name="results">The AssessmentResults</param>
+        /// <returns></returns>
+        public static string DetermineNaturalPersonalityType( AssessmentResults results )
+        {
+            var personalityType = string.Empty;
+            Dictionary<string, int> dictionary = new Dictionary<string, int>();
+            dictionary["D"] = results.NaturalBehaviorD;
+            dictionary["I"] = results.NaturalBehaviorI;
+            dictionary["S"] = results.NaturalBehaviorS;
+            dictionary["C"] = results.NaturalBehaviorC;
+
+            List<KeyValuePair<string, int>> list = dictionary.ToList();
+            list.Sort( ( x, y ) => y.Value.CompareTo( x.Value ) );
+            personalityType = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 24 ) ? list[1].Key : string.Empty );
+            return personalityType;
         }
 
         /// <summary>
@@ -263,6 +293,9 @@ namespace Rock.Model
                     case AttributeKeys.NaturalC:
                         savedScores.NaturalBehaviorC = AttributeValueLookup( person, attrib );
                         break;
+                    case AttributeKeys.PersonalityType:
+                        savedScores.PersonalityType = person.AttributeValues[attrib].Value;
+                        break;
                     case AttributeKeys.LastSaveDate:
                         DateTime lastAssessmentDate = DateTime.MinValue;
                         bool bCatch = DateTime.TryParse( person.AttributeValues[attrib].Value, out lastAssessmentDate );
@@ -285,7 +318,8 @@ namespace Rock.Model
         /// <param name="NBi">Natural Behavior I</param>
         /// <param name="NBs">Natural Behavior S</param>
         /// <param name="NBc">Natural Behavior C</param>
-        static public void SaveAssessmentResults( Person person, String ABd, String ABi, String ABs, String ABc, String NBd, String NBi, String NBs, String NBc )
+        /// <param name="personalityType">One or two letters of DISC that represents the personality.</param>
+        static public void SaveAssessmentResults( Person person, string ABd, string ABi, string ABs, string ABc, string NBd, string NBi, string NBs, string NBc, string personalityType )
         {
             person.LoadAttributes();
 
@@ -319,6 +353,9 @@ namespace Rock.Model
                     case AttributeKeys.NaturalC:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc );
                         break;
+                    case AttributeKeys.PersonalityType:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], personalityType );
+                        break;
                     case AttributeKeys.LastSaveDate:
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString() );
                         break;
@@ -327,5 +364,64 @@ namespace Rock.Model
 
             person.SaveAttributeValues();
         }
+
+        #region DISC shared  UI stuff
+        /// <summary>
+        /// Plots the one DISC graph.
+        /// </summary>
+        /// <param name="barD">The D bar.</param>
+        /// <param name="barI">The I bar.</param>
+        /// <param name="barS">The S bar.</param>
+        /// <param name="barC">The C bar.</param>
+        /// <param name="scoreD">The D score.</param>
+        /// <param name="scoreI">The I score.</param>
+        /// <param name="scoreS">The S score.</param>
+        /// <param name="scoreC">The C score.</param>
+        /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
+        public static void PlotOneGraph( System.Web.UI.HtmlControls.HtmlGenericControl barD, System.Web.UI.HtmlControls.HtmlGenericControl barI, 
+            System.Web.UI.HtmlControls.HtmlGenericControl barS, System.Web.UI.HtmlControls.HtmlGenericControl barC,
+            int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
+        {
+            barD.RemoveCssClass( "discbar-primary" );
+            barI.RemoveCssClass( "discbar-primary" );
+            barS.RemoveCssClass( "discbar-primary" );
+            barC.RemoveCssClass( "discbar-primary" );
+
+            // find the max value
+            var maxScore = barD;
+            var maxValue = scoreD;
+            if ( scoreI > maxValue )
+            {
+                maxScore = barI;
+                maxValue = scoreI;
+            }
+            if ( scoreS > maxValue )
+            {
+                maxScore = barS;
+                maxValue = scoreS;
+            }
+            if ( scoreC > maxValue )
+            {
+                maxScore = barC;
+                maxValue = scoreC;
+            }
+            maxScore.AddCssClass( "discbar-primary" );
+            var score = Math.Floor( (double)( (double)scoreD / (double)maxScale ) * 100 ).ToString();
+            barD.Style.Add( "height", score + "%" );
+            barD.Attributes["title"] = scoreD.ToString();
+
+            score = Math.Floor( (double)( (double)scoreI / (double)maxScale ) * 100 ).ToString();
+            barI.Style.Add( "height", score + "%" );
+            barI.Attributes["title"] = scoreI.ToString();
+
+            score = Math.Floor( (double)( (double)scoreS / (double)maxScale ) * 100 ).ToString();
+            barS.Style.Add( "height", score + "%" );
+            barS.Attributes["title"] = scoreS.ToString();
+
+            score = Math.Floor( (double)( (double)scoreC / (double)maxScale ) * 100 ).ToString();
+            barC.Style.Add( "height", score + "%" );
+            barC.Attributes["title"] = scoreC.ToString();
+        }
+        #endregion
     }
 }

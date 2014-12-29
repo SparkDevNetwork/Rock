@@ -39,7 +39,9 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Takes a defined type and returns all defined values and merges them with a liquid template." )]
     [DefinedTypeField("Defined Type", "The defined type to load values for merge fields.")]
-    [CodeEditorField("Liquid Template", "Liquid template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400)]
+    [CodeEditorField("Liquid Template", "Liquid template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
+    {{ definedValue.Value }}
+{% endfor %}")]
     [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.")]
     public partial class DefinedValueListLiquid : Rock.Web.UI.RockBlock
     {
@@ -112,8 +114,9 @@ namespace RockWeb.Blocks.Core
         {
             List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
             var mergeFields = new Dictionary<string, object>();
+            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
             mergeFields.Add( "Person", CurrentPerson );
-
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
             var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             
@@ -137,12 +140,9 @@ namespace RockWeb.Blocks.Core
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
                 lDebug.Visible = true;
-                StringBuilder debugInfo = new StringBuilder();
-                debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
-                debugInfo.Append( "<p><em>Available Merge Fields</em></p>" );
-                debugInfo.Append( "<pre>" + mergeFields.ToJson() + "</pre>" );
-                debugInfo.Append( "</div" );
-                lDebug.Text = debugInfo.ToString();
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                mergeFields.Remove( "Person" );
+                lDebug.Text = mergeFields.lavaDebugInfo();
             }
         }
 

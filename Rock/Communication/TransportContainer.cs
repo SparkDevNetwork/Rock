@@ -27,49 +27,50 @@ namespace Rock.Communication
     /// </summary>
     public class TransportContainer : Container<TransportComponent, IComponentData>
     {
-        private static TransportContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<TransportContainer> instance =
+            new Lazy<TransportContainer>( () => new TransportContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static TransportContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                    instance = new TransportContainer();
-                return instance;
-            }
-        }
-
-        private TransportContainer()
-        {
-            Refresh();
+            get { return instance.Value; }
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static TransportComponent GetComponent( string entityTypeName )
+        public static TransportComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( TransportComponent ) )]
         protected override IEnumerable<Lazy<TransportComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
     }
 }

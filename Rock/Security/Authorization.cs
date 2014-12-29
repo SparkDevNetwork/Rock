@@ -170,6 +170,11 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
+            return ItemAuthorized( entity, action, specialRole ) ?? entity.IsAllowedByDefault( action );
+        }
+
+        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole )
+        {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
@@ -197,14 +202,19 @@ namespace Rock.Security
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
-            if ( entity.ParentAuthority != null )
+            bool? parentAuthorized = null;
+
+            if ( entity.ParentAuthorityPre != null )
             {
-                return Authorized( entity.ParentAuthority, action, specialRole );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole );
             }
-            else
+
+            if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                return entity.IsAllowedByDefault( action );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole );
             }
+
+            return parentAuthorized;
         }
 
         /// <summary>
@@ -217,6 +227,11 @@ namespace Rock.Security
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person, RockContext rockContext = null )
+        {
+            return ItemAuthorized( entity, action, person, rockContext ) ?? entity.IsAllowedByDefault( action );
+        }
+        
+        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, RockContext rockContext )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -281,14 +296,19 @@ namespace Rock.Security
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
-            if ( entity.ParentAuthority != null )
+            bool? parentAuthorized = null;
+
+            if ( entity.ParentAuthorityPre != null )
             {
-                return Authorized( entity.ParentAuthority, action, person );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, rockContext );
             }
-            else
+
+            if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                return entity.IsAllowedByDefault( action );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, rockContext );
             }
+
+            return parentAuthorized; 
         }
 
         /// <summary>

@@ -89,7 +89,7 @@ $('.filter-item-select').click(function (event) {
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "FilterFieldEditorScript", script, true );
         }
-        
+
         /// <summary>
         /// Gets or sets the name of entity type that is being filtered.
         /// </summary>
@@ -122,7 +122,7 @@ $('.filter-item-select').click(function (event) {
                         RockPage rockPage = this.Page as RockPage;
                         if ( rockPage != null )
                         {
-                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ).ThenBy( c => c.GetTitle(FilteredEntityType)) )
+                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ).ThenBy( c => c.GetTitle( FilteredEntityType ) ) )
                             {
                                 if ( component.IsAuthorized( Authorization.VIEW, rockPage.CurrentPerson ) )
                                 {
@@ -131,7 +131,7 @@ $('.filter-item-select').click(function (event) {
                                         AuthorizedComponents.Add( component.Section, new Dictionary<string, string>() );
                                     }
 
-                                    AuthorizedComponents[component.Section].Add( component.TypeName, component.GetTitle(FilteredEntityType) );
+                                    AuthorizedComponents[component.Section].Add( component.TypeName, component.GetTitle( FilteredEntityType ) );
                                 }
                             }
 
@@ -330,13 +330,25 @@ $('.filter-item-select').click(function (event) {
             {
                 foreach ( var item in section.Value )
                 {
-                    if ( !this.ExcludedFilterTypes.Any( a => a == item.Key) )
+                    if ( !this.ExcludedFilterTypes.Any( a => a == item.Key ) )
                     {
                         ListItem li = new ListItem( item.Value, item.Key );
+
                         if ( !string.IsNullOrWhiteSpace( section.Key ) )
                         {
                             li.Attributes.Add( "optiongroup", section.Key );
                         }
+
+                        var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( item.Key );
+                        if ( filterComponent != null )
+                        {
+                            string description = Reflection.GetDescription( filterComponent.GetType() );
+                            if ( !string.IsNullOrWhiteSpace( description ) )
+                            {
+                                li.Attributes.Add( "title", description );
+                            }
+                        }
+
                         li.Selected = item.Key == FilterEntityTypeName;
                         ddlFilterType.Items.Add( li );
                     }
@@ -415,7 +427,7 @@ $('.filter-item-select').click(function (event) {
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag(HtmlTextWriterTag.Span);
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "Filter Type " );
             writer.RenderEndTag();
 
@@ -427,7 +439,7 @@ $('.filter-item-select').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );

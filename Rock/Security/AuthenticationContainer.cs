@@ -23,53 +23,55 @@ using Rock.Extension;
 namespace Rock.Security
 {
     /// <summary>
-    /// MEF Container class for Authentication Componenets
+    /// MEF Container class for Binary File Authentication Components
     /// </summary>
     public class AuthenticationContainer : Container<AuthenticationComponent, IComponentData>
     {
-        private static AuthenticationContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<AuthenticationContainer> instance =
+            new Lazy<AuthenticationContainer>( () => new AuthenticationContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static AuthenticationContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                    instance = new AuthenticationContainer();
-                return instance;
-            }
-        }
-
-        private AuthenticationContainer()
-        {
-            Refresh();
+            get { return instance.Value; }
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static AuthenticationComponent GetComponent( string entityTypeName )
+        public static AuthenticationComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
-        
-        // MEF Import Definition
-#pragma warning disable
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( AuthenticationComponent ) )]
         protected override IEnumerable<Lazy<AuthenticationComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
+
     }
 }

@@ -1103,7 +1103,8 @@ namespace Rock.Web.UI.Controls
                             // If valid personid and either no people were selected or this person was selected add them as a recipient
                             if ( personId.HasValue && ( !peopleSelected.Any() || peopleSelected.Contains( personId.Value ) ) )
                             {
-                                recipients.Add( personId.Value, mergeValues );
+                                // only add the PersonId to the recipients if they already haven't been added or ready (just in case there are duplicate Person Ids in the dataset)
+                                recipients.AddOrIgnore( personId.Value, mergeValues );
                             }
                         }
                     }

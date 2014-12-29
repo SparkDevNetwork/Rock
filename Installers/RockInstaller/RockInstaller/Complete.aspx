@@ -93,7 +93,7 @@
     
 
     const string baseStorageUrl = "//storage.rockrms.com/install/";
-    const string baseVersion = "2_0_0";
+    const string baseVersion = "2_5_0";
 
     string storageUrl = string.Empty;
 

@@ -21,39 +21,28 @@
 // </copyright>
 //
 
-using System.Web;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.Http;
 using System.Web.Routing;
-using Rock.Model;
-using Rock;
-using System.Linq;
-using System.Data.Entity;
+
 using Rock.Data;
-using System.Collections.Generic;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
-    public partial class ExceptionLogsController : IHasCustomRoutes
+    public partial class ExceptionLogsController
     {
-        public void AddRoutes( RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "GetChartData",
-                routeTemplate: "api/ExceptionLogs/GetChartData",
-                defaults: new
-                {
-                    controller = "ExceptionLogs",
-                    action = "GetChartData"
-                } );
-        }
-
         /// <summary>
         /// Gets the exceptions grouped by date.
         /// </summary>
         /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
         public IEnumerable<IChartData> GetChartData()
         {
             var exceptionList = this.Get().Where( x => x.HasInnerException == false && x.CreatedDateTime != null )

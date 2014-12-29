@@ -42,25 +42,6 @@
 		    return null;
 		},
         
-        // Utility function to recursive through all nodes and clear any selected values
-        _clearSelectedNodes = function (array) {
-            var currentNode,
-                i;
-            
-            if (!array || typeof array.length !== 'number') {
-                return;
-            }
-
-            for (i = 0; i < array.length; i++) {
-                currentNode = array[i];
-                currentNode.isSelected = false;
-                
-                if (currentNode.hasChildren && currentNode.children) {
-                    _clearSelectedNodes(currentNode.children);
-                }
-            }
-        },
-        
         // Default utility function to attempt to map a Rock.Web.UI.Controls.Pickers.TreeViewItem
         // to a more standard JS object.
 		_mapArrayDefault = function (arr) {
@@ -214,6 +195,11 @@
                         }
 
                         currentNode = _findNodeById(currentId, self.nodes);
+                        while (currentNode == null && toExpand.length > 0) {
+                            // if we can't find it, try the next one until we find one or run out of expanded ids
+                            currentId = toExpand.shift();
+                            currentNode = _findNodeById(currentId, self.nodes);
+                        }
 
                         if (!currentNode) {
                             return;
@@ -271,7 +257,6 @@
             
             for (i = 0; i < nodeArray.length; i++) {
                 nodeArray[i].isOpen = false;
-                nodeArray[i].isSelected = false;
             }
 
             // If a parent node is supplied, append the result set to the parent node.
@@ -312,9 +297,12 @@
 
 				    $li.append('<span class="rocktree-name"> ' + node.name + '</span>');
 				    
-                    if (node.isSelected) {
-                        $li.find('.rocktree-name').addClass('selected');
-                    }
+				    for (var i = 0; i < self.selectedNodes.length; i++) {
+				        if (self.selectedNodes[i].id == node.id) {
+				            $li.find('.rocktree-name').addClass('selected');
+				            break;
+				        }
+				    }
 
 				    if (node.hasChildren) {
 				        $li.prepend('<i class="rocktree-icon ' + folderCssClass + '"></i>');
@@ -387,14 +375,12 @@
         // Clears all selected nodes
         clear: function () {
             this.selectedNodes = [];
-            _clearSelectedNodes(this.nodes);
             this.render();
         },
         
         // Sets selected nodes given an array of ids
         setSelected: function (array) {
             this.selectedNodes = [];
-            _clearSelectedNodes(this.nodes);
 
             var currentNode,
                 i;
@@ -403,7 +389,6 @@
                 currentNode = _findNodeById(array[i], this.nodes);
 
                 if (currentNode) {
-                    currentNode.isSelected = true;
                     this.selectedNodes.push(currentNode);
 
                     // trigger the node as selected
@@ -471,10 +456,8 @@
                 // If multi-select is disabled, clear all previous selections
                 if (!self.options.multiselect) {
                     $rockTree.find('.selected').removeClass('selected');
-                    _clearSelectedNodes(self.nodes);
                 }
 
-                node.isSelected = true;
                 $item.toggleClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);

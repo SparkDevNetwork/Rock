@@ -203,5 +203,50 @@ namespace Rock
             }
             return null;
         }
+
+        /// <summary>
+        /// Gets the appropriate DbContext based on the entity type
+        /// </summary>
+        /// <param name="entityType">Type of the Entity.</param>
+        /// <returns></returns>
+        public static System.Data.Entity.DbContext GetDbContextForEntityType( Type entityType )
+        {
+            Type contextType = typeof( Rock.Data.RockContext );
+            if ( entityType.Assembly != contextType.Assembly )
+            {
+                var contextTypeLookup = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                if ( contextTypeLookup.Any() )
+                {
+                    contextType = contextTypeLookup.First().Value;
+                }
+            }
+
+            System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+            return dbContext;
+        }
+
+        /// <summary>
+        /// Gets the appropriate Rock.Data.IService based on the entity type
+        /// </summary>
+        /// <param name="entityType">Type of the Entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static Rock.Data.IService GetServiceForEntityType( Type entityType, System.Data.Entity.DbContext dbContext )
+        {
+            Type serviceType = typeof( Rock.Data.Service<> );
+            if ( entityType.Assembly != serviceType.Assembly )
+            {
+                var serviceTypeLookup = Reflection.SearchAssembly( entityType.Assembly, serviceType );
+                if ( serviceTypeLookup.Any() )
+                {
+                    serviceType = serviceTypeLookup.First().Value;
+                }
+            }
+
+            Type service = serviceType.MakeGenericType( new Type[] { entityType } );
+            Rock.Data.IService serviceInstance = Activator.CreateInstance( service, dbContext ) as Rock.Data.IService;
+            return serviceInstance;
+        }
     }
 }

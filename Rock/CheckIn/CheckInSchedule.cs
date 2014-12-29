@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -26,7 +25,7 @@ namespace Rock.CheckIn
     /// A schedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule : DotLiquid.ILiquidizable
+    public class CheckInSchedule : DotLiquid.ILiquidizable, DotLiquid.IIndexable
     {
         /// <summary>
         /// Gets or sets the schedule.
@@ -100,15 +99,45 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = Schedule.ToLiquid() as Dictionary<string, object>;
-            if (dictionary != null)
-            {
-                dictionary.Add( "LastCheckIn", LastCheckIn );
-                return dictionary;
-            }
-
-            return new Dictionary<string, object>();
+            return this;
         }
 
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                switch ( key.ToStringSafe() )
+                {
+                    case "LastCheckIn": return LastCheckIn;
+                    default: return Schedule[key];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalProperties = new List<string> { "LastCheckIn" };
+            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Schedule.ContainsKey( key );
+            }
+        }
     }
 }

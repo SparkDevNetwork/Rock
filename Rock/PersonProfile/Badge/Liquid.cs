@@ -54,10 +54,10 @@ namespace Rock.PersonProfile.Badge
                 {
                     string debugInfo = string.Format( @"
                             <small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='fa fa-eye'></i></a></small>
-                            <pre id='badge-debug' class='collapse well badge-debug'>
+                            <div id='badge-debug' class='collapse well badge-debug'>
                                 {0}
-                            </pre>
-                        ", mergeValues.LiquidHelpText() );
+                            </div>
+                        ", mergeValues.lavaDebugInfo() );
 
                     displayText += debugInfo;
                 }

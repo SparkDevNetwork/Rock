@@ -115,14 +115,10 @@ namespace Rock.Model
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
             {
-                if ( groupTypeIds != "0" )
-                {
-                    List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-
-                    qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
-                }
+                List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+                qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
             }
 
             qry = qry.Where( a => a.GroupType.ShowInNavigation == true );

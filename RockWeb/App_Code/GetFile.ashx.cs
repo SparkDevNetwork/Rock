@@ -16,7 +16,8 @@
 //
 using System;
 using System.IO;
-using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using Rock;
 using Rock.Data;
@@ -80,18 +81,15 @@ namespace RockWeb
                 throw new Exception( "fileName must be specified" );
             }
 
-            const string RootContentFolder = "~/Content";
-            string physicalRootFolder = context.Request.MapPath( RootContentFolder );
-            string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
-            byte[] fileContents;
-
-            using ( FileStream sourceStream = File.Open( physicalContentFileName, FileMode.Open, FileAccess.Read ) )
+            return Task.Run( () =>
             {
-                fileContents = new byte[sourceStream.Length];
-                context.Items.Add( "fileContents", fileContents );
+                const string RootContentFolder = "~/Content";
+                string physicalRootFolder = context.Request.MapPath( RootContentFolder );
+                string physicalContentFileName = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( new char[] { '/', '\\' } ) );
+                var sourceStream = File.OpenRead( physicalContentFileName );
+                context.Items.Add( "fileContents", sourceStream );
                 context.Items.Add( "physicalContentFileName", physicalContentFileName );
-                return sourceStream.ReadAsync( fileContents, 0, (int)sourceStream.Length );
-            }
+            } );
         }
 
         /// <summary>
@@ -158,17 +156,12 @@ namespace RockWeb
                                 return;
                             }
                         }
-                        
-                        context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", binaryFile.FileName ) );
-                        context.Response.ContentType = binaryFile.MimeType;
 
                         if ( binaryFile.Data != null )
                         {
-                            if ( binaryFile.Data.Content != null )
+                            if ( binaryFile.Data.ContentStream != null )
                             {
-                                context.Response.BinaryWrite( binaryFile.Data.Content );
-                                context.Response.Flush();
-                                context.ApplicationInstance.CompleteRequest();
+                                SendFile( context, binaryFile.Data.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
                                 return;
                             }
                         }
@@ -176,19 +169,14 @@ namespace RockWeb
                 }
                 else
                 {
-                    byte[] fileContents = (byte[])context.Items["fileContents"];
+                    Stream fileContents = (Stream)context.Items["fileContents"];
                     string physicalContentFileName = context.Items["physicalContentFileName"] as string;
 
                     if ( fileContents != null )
                     {
-                        context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( physicalContentFileName ) ) );
-
                         string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalContentFileName );
-                        context.Response.ContentType = mimeType;
-
-                        context.Response.BinaryWrite( fileContents );
-                        context.Response.Flush();
-                        context.ApplicationInstance.CompleteRequest();
+                        string fileName = Path.GetFileName( physicalContentFileName );
+                        SendFile( context, fileContents, mimeType, fileName, "" );
                         return;
                     }
                 }
@@ -199,11 +187,91 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, context );
-                context.Response.StatusCode = 500;
-                context.Response.StatusDescription = ex.Message;
-                context.Response.Flush();
-                context.ApplicationInstance.CompleteRequest();
+                try
+                {
+                    context.Response.StatusCode = 500;
+                    context.Response.StatusDescription = ex.Message;
+                    context.Response.Flush();
+                    context.ApplicationInstance.CompleteRequest();
+                }
+                catch ( Exception ex2 )
+                {
+                    ExceptionLogService.LogException( ex2, context );
+                }
             }
+        }
+
+        /// <summary>
+        /// Sends the file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="eTag">The e tag.</param>
+        private void SendFile( HttpContext context, Stream fileContents, string mimeType, string fileName, string eTag )
+        {
+            int startIndex = 0;
+            int fileLength = (int)fileContents.Length;
+            int responseLength = fileLength;
+
+            // resumable logic from http://stackoverflow.com/a/6475414/1755417
+            if ( context.Request.Headers["Range"] != null && ( context.Request.Headers["If-Range"] == null ) )
+            {
+                var match = Regex.Match( context.Request.Headers["Range"], @"bytes=(\d*)-(\d*)" );
+                startIndex = match.Groups[1].Value.AsInteger();
+                responseLength = (match.Groups[2].Value.AsIntegerOrNull() + 1 ?? fileLength ) - startIndex;
+                context.Response.StatusCode = (int)System.Net.HttpStatusCode.PartialContent;
+                context.Response.Headers["Content-Range"] = "bytes " + startIndex + "-" + ( startIndex + responseLength - 1 ) + "/" + fileLength;
+            }
+            
+            context.Response.Clear();
+            context.Response.Buffer = false;
+            context.Response.Headers["Accept-Ranges"] = "bytes";
+            context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+            context.Response.AddHeader( "content-length", responseLength.ToString() );
+            context.Response.Cache.SetCacheability( HttpCacheability.Public ); // required for etag output
+
+            context.Response.Cache.SetETag( eTag ); // required for IE9 resumable downloads
+            context.Response.ContentType = mimeType;
+            byte[] buffer = new byte[4096];
+
+            if ( context.Response.IsClientConnected )
+            {
+                fileContents.Seek( startIndex, SeekOrigin.Begin );
+                while (true)
+                {
+                    var bytesRead = fileContents.Read( buffer, 0, buffer.Length );
+                    if ( bytesRead == 0 )
+                    {
+                        break;
+                    }
+
+                    if ( !context.Response.IsClientConnected )
+                    {
+                        // quit sending if the client isn't connected
+                        break;
+                    }
+
+                    try
+                    {
+                        context.Response.OutputStream.Write( buffer, 0, bytesRead );
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (!context.Response.IsClientConnected)
+                        {
+                            // if client disconnected during the .write, ignore
+                        }
+                        else
+                        {
+                            throw ex;
+                        }
+                    }
+                }
+            }
+
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

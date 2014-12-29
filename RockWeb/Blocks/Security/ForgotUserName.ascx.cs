@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Invalid Email Caption", "", false, "Sorry, we could not find an account for the email address you entered.", "Captions", 1 )]
     [TextField("Success Caption", "", false, "Your user name has been sent with instructions on how to change your password if needed.", "Captions", 2)]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [EmailTemplateField("Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
+    [SystemEmailField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -77,7 +77,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
-            var mergeObjects = new Dictionary<string, object>();
 
             var url = LinkedPageUrl( "ConfirmationPage" );
             if ( string.IsNullOrWhiteSpace( url ) )
@@ -85,9 +84,9 @@ namespace RockWeb.Blocks.Security
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
+            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-            var personDictionaries = new List<IDictionary<string, object>>();
+            var results = new List<IDictionary<string, object>>();
 
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
@@ -109,25 +108,15 @@ namespace RockWeb.Blocks.Security
                     }
                 }
 
-                if ( users.Count > 0 )
-                {
-                    var personDictionary = person.ToLiquid() as Dictionary<string, object>;
-                    if (personDictionary.Keys.Contains("Users"))
-                    {
-                        personDictionary["Users"] = users;
-                    }
-                    else
-                    {
-                        personDictionary.Add( "Users", users );
-                    }
-
-                    personDictionaries.Add( personDictionary );
-                }
+                var resultsDictionary = new Dictionary<string, object>();
+                resultsDictionary.Add( "Person", person);
+                resultsDictionary.Add( "Users", users );
+                results.Add( resultsDictionary );
             }
 
-            if ( personDictionaries.Count > 0 )
+            if ( results.Count > 0 )
             {
-                mergeObjects.Add( "Persons", personDictionaries.ToArray() );
+                mergeObjects.Add( "Results", results.ToArray() );
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( tbEmail.Text, mergeObjects ) );
 

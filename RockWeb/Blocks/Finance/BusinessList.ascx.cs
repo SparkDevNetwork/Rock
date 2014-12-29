@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Finance
         protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            var businessId = (int)e.RowKeyValue;
+            var businessId = e.RowKeyId;
             parms.Add( "businessId", businessId.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }

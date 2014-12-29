@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.IO;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -35,22 +36,57 @@ namespace Rock.Model
     {
         #region Entity Properties
 
+        //// ** NOTE:  We need [DataMember] on Content so that REST can GET and POST BinaryFileData. 
+        //// ** However, we don't have to worry about Liquid serializing this since BinaryFile.Data is not marked with [DataMember]
+        //// ** So the only way you would get serialized Content if you intentionally requested to serialise BinaryFileData
+        
         /// <summary>
         /// Gets or sets the data/content of a <see cref="Rock.Model.BinaryFile"/>
+        /// NOTE: Use ContentStream instead of Content whenever possible
         /// </summary>
         /// <value>
         /// A <see cref="System.Byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public byte[] Content { get; set; }
+        public byte[] Content {
+            get
+            {
+                if ( this.ContentStream != null )
+                {
+                    var result = new byte[this.ContentStream.Length];
 
-        //// ** NOTE:  We need [DataMember] so that REST can GET and POST BinaryFileData. 
-        //// ** However, we don't have to worry about Liquid serializing this since BinaryFile.Data is not marked with [DataMember]
-        //// ** So the only way you would get serialized Content if you intentionally requested to serialise BinaryFileData
+                    // set position to start to ensure we read the entire stream
+                    this.ContentStream.Seek( 0, SeekOrigin.Begin );
+                    this.ContentStream.Read( result, 0, result.Length );
+                    
+                    // set position back to start
+                    this.ContentStream.Seek( 0, SeekOrigin.Begin );
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                this.ContentStream = new MemoryStream( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the content stream.
+        /// </summary>
+        /// <value>
+        /// The content stream.
+        /// </value>
+        [HideFromReporting]
+        [NotMapped]
+        public virtual Stream ContentStream { get; set; }
 
         #endregion
-
     }
 
     #region Entity Configuration

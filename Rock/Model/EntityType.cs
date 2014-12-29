@@ -173,10 +173,21 @@ namespace Rock.Model
         {
             if ( this.IsSecured )
             {
-                var entityType = System.Activator.CreateInstance( EntityTypeCache.Read( this ).GetEntityType() );
-                if ( entityType is Rock.Security.ISecured )
+                object entity = null;
+                try
                 {
-                    Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entityType;
+                    var type = EntityTypeCache.Read( this ).GetEntityType();
+                    entity = System.Activator.CreateInstance( type );
+                }
+                catch
+                {
+                    // unable to create the entity, so return false since we can't do anything with it
+                    return false;
+                }
+
+                if ( entity is Rock.Security.ISecured )
+                {
+                    Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entity;
                     return iSecured.IsAuthorized( action, person, rockContext );
                 }
             }

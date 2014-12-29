@@ -11,7 +11,7 @@
 @import "_variables.less";
 @import "_print.less";
 
-/*#region  
+/*#region
 // Fonts                       */
 // -------------------------
 
@@ -67,26 +67,26 @@
 /*
     Rock Theme Styles
 
-    1. 
+    1.
     2. HTML Overrides
     3. Bootstrap Overides
     4. Rock Overrides
     5. Theme Styling
     6. Utilities
-    7. Responsive Overrides 
+    7. Responsive Overrides
     8. Side Navbar
     9. Person Details
 
 */
 
-/*#region  
+/*#region
 // 1.         */
 // -------------------------
 
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 2. HTML Overrides         */
 // -------------------------
 
@@ -107,7 +107,7 @@ a:hover {
     text-decoration: none;
 }
 
-input[type=text], 
+input[type=text],
 textarea,
 .form-control {
   -webkit-transition: all 0.30s ease-in-out;
@@ -115,8 +115,8 @@ textarea,
   -ms-transition: all 0.30s ease-in-out;
   -o-transition: all 0.30s ease-in-out;
 }
- 
-input[type=text]:focus, 
+
+input[type=text]:focus,
 textarea:focus,
 .form-control:focus {
   box-shadow: 0 0 5px rgba(238, 118, 36, .6);
@@ -132,9 +132,9 @@ pre {
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 3. Bootstrap Overrides    */
-// ------------------------- 
+// -------------------------
 
 
 // panel tweaks
@@ -212,7 +212,7 @@ pre {
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 4. Rock Overrides         */
 // -------------------------
 
@@ -222,7 +222,7 @@ pre {
 
 // type ahead styles
 .tt-suggestion {
- 
+
   p {
 
       &:hover {
@@ -244,7 +244,7 @@ pre {
 
 .loginstatus {
     margin-right: 2px;
-    
+
     .profile-photo {
         height: 35px;
         width: 35px;
@@ -254,18 +254,6 @@ pre {
 	    -moz-border-radius: 17.5px;
         border-radius: 17.5px;
         margin: -8px 4px 0 0;
-    }
-}
-
-.rock-modal { 
-    .modal-header {
-        background-color: @accent-bold-color;
-        color: @accent-bold-text-color;
-
-        small, 
-        .close {
-            color: darken(@accent-bold-text-color, 20%);
-        }
     }
 }
 
@@ -280,7 +268,7 @@ pre {
     padding: 30px 20px;
     border-radius: 120px;
     box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
-    
+
     .spinner {
         width: 80px;
         height: 60px;
@@ -345,10 +333,24 @@ pre {
    color: #fff;
 }
 
+.discchart {
+
+    li {
+        background-color: lighten(@brand-primary, 10%);
+        color: #fff;
+    }
+
+    .discbar {
+        &.discbar-primary {
+            background: @brand-primary;
+        }
+    }
+}
+
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 5. Theme Styling          */
 // -------------------------
 
@@ -394,8 +396,8 @@ pre {
                 width: 100%;
             }
 
-            .navbar-nav > .open > a, 
-            .navbar-nav > .open > a:hover, 
+            .navbar-nav > .open > a,
+            .navbar-nav > .open > a:hover,
             .navbar-nav > .open > a:focus {
                 background-color: lighten(@accent-bold-color, 5%);
             }
@@ -524,7 +526,7 @@ body#splash {
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 6. Utilities              */
 // -------------------------
 
@@ -542,7 +544,7 @@ body#splash {
 /*#endregion */
 
 
-/*#region 
+/*#region
 // 7. Responsive Overrides  */
 // -------------------------
 
@@ -550,7 +552,7 @@ body#splash {
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-    
+
     body#splash {
 
         #content {
@@ -567,7 +569,7 @@ body#splash {
 
 }
 
-// Medium devices (desktops, 992px and up) 
+// Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
 
     #content-wrapper {
@@ -586,8 +588,8 @@ body#splash {
                     width: inherit;
                 }
 
-                & .navbar-nav > .open > a, 
-                & .navbar-nav > .open > a:hover, 
+                & .navbar-nav > .open > a,
+                & .navbar-nav > .open > a:hover,
                 & .navbar-nav > .open > a:focus {
                     background-color: darken(@accent-semibold-color, 5%);
                 }
@@ -603,7 +605,7 @@ body#splash {
                 }
             }
         }
-    
+
         .smartsearch {
             margin: 9px 8px 9px 0;
             width: 290px;
@@ -617,16 +619,16 @@ body#splash {
 
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-    
+
 }
 /*#endregion */
 
 
-/*#region  
+/*#region
 // 8. Side Navbar             */
-// ------------------------- 
+// -------------------------
 
 
 // base styles
@@ -654,7 +656,7 @@ body#splash {
     .navbar-side {
         margin-top: 24px;
         display: inline-block;
-        width: 100%;    
+        width: 100%;
 
         & > li {
             text-align: center;
@@ -665,7 +667,7 @@ body#splash {
                 font-size: 24px;
                 color: @accent-bold-text-color;
                 display: block;
-                
+
                 &:hover {
                     background-color: lighten(@accent-bold-color, 5%);
                 }
@@ -694,7 +696,7 @@ body#splash {
 
                     &:hover {
                         background-color: darken(@accent-bold-color, 5%);
-                    } 
+                    }
                 }
 
                 li.title {
@@ -730,10 +732,10 @@ body#splash {
             }
         }
     }
-   
+
 }
 
-// expanded view 
+// expanded view
 @media (min-width: @screen-md-min) {
 
     .navbar-static-side {
@@ -754,7 +756,7 @@ body.navbar-side-open {
 
     #content-wrapper {
         margin-left: 70px;
-    } 
+    }
 }
 
 body.navbar-side-close {
@@ -764,12 +766,12 @@ body.navbar-side-close {
 
     #content-wrapper {
         margin-left: 0;
-    } 
+    }
 }
 /*#endregion */
 
 
-/*#region 
+/*#region
 // 9. Person Details  */
 // -------------------------
 

@@ -49,6 +49,7 @@ namespace Rock.Reporting.DataFilter
             switch ( entityField.FilterFieldType )
             {
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     var ddlDateCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.DateFilterComparisonTypes );
                     ddlDateCompare.ID = string.Format( "{0}_ddlDateCompare", controlIdPrefix );
@@ -59,7 +60,7 @@ namespace Rock.Reporting.DataFilter
                     var datePicker = new DatePicker();
                     datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
                     datePicker.AddCssClass( "js-filter-control" );
-                    datePicker.DisplayCurrentOption = true;
+                    datePicker.DisplayCurrentOption = entityField.FilterFieldType == SystemGuid.FieldType.FILTER_DATE;
                     parentControl.Controls.Add( datePicker );
                     controls.Add( datePicker );
 
@@ -342,12 +343,22 @@ namespace Rock.Reporting.DataFilter
             ddlEntityField.AddCssClass( "entity-property-selection" );
             ddlEntityField.RenderControl( writer );
             writer.RenderEndTag();
-
-            StringBuilder sb = new StringBuilder();
-            int i = 0;
-
             writer.AddAttribute( "class", "col-md-9" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // generate result for "none"
+            StringBuilder sb = new StringBuilder();
+            string lineFormat = @"
+            case {0}: {1}; break;";
+
+            int fieldIndex = 0;
+            sb.AppendFormat( lineFormat, fieldIndex, "result = ''" );
+            fieldIndex++;
+            
+            // render empty row for "none"
+            writer.AddAttribute( "class", "row field-criteria" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();  // row
 
             foreach ( var entityField in entityFields )
             {
@@ -393,10 +404,11 @@ namespace Rock.Reporting.DataFilter
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
+                    case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
                         break;
 
-                    case SystemGuid.FieldType.DATE:
+                    case SystemGuid.FieldType.FILTER_DATE:
                         clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
                         break;
 
@@ -418,13 +430,10 @@ namespace Rock.Reporting.DataFilter
 
                 if ( clientFormatSelection != string.Empty )
                 {
-                    string lineFormat = @"
-            case {0}: {1}; break;";
-
-                    sb.AppendFormat( lineFormat, i, clientFormatSelection );
+                    sb.AppendFormat( lineFormat, fieldIndex, clientFormatSelection );
                 }
 
-                i++;
+                fieldIndex++;
             }
 
             writer.RenderEndTag();  // col-md-9
@@ -670,6 +679,7 @@ namespace Rock.Reporting.DataFilter
             switch ( property.FilterFieldType )
             {
                 case SystemGuid.FieldType.DATE:
+                case SystemGuid.FieldType.FILTER_DATE:
 
                     if ( values.Count == 2 )
                     {

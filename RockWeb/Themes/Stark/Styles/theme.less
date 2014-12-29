@@ -21,29 +21,34 @@
 // -------------------------
 
 main {
-    display:block;
+    display: block;
+}
+
+img {
+    .img-responsive();
 }
 
 
-// 2. Bootstrap Overrides 
-// ------------------------- 
+// 2. Bootstrap Overrides
+// -------------------------
 
 .navbar {
     position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
-
     // using fontawesome nav toggle button instead of the BS default
     .navbar-toggle {
         padding: 6px 10px;
-        i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
+
+        i.fa-bars {
+            color: @navbar-inverse-toggle-icon-bar-bg;
+        }
     }
 }
 
-a:hover i.fs
-{
+a:hover i.fs {
     text-decoration: none;
 }
 
-// 3. Theme Styling 
+// 3. Theme Styling
 // -------------------------
 
 header {
@@ -59,7 +64,7 @@ header {
 
 // homepage items
 #announcement-rotator {
-    margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
+    margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
 
     .item {
         img {
@@ -73,7 +78,11 @@ header {
         margin: 0 auto @spacing-lg-px;
         max-width: 390px;
     }
-    .announcement-title { margin: @spacing-sm-px 0; }
+
+    .announcement-title {
+        margin: @spacing-sm-px 0;
+    }
+
     img {
         width: 100%;
     }
@@ -109,9 +118,8 @@ footer {
 }
 
 #splash.error {
-    
     background-color: @gray-lighter;
-    
+
     #content {
         margin-top: 20px;
         background-color: @body-bg;
@@ -152,7 +160,7 @@ footer {
     }
 }
 
-// 4. Responsive Overrides 
+// 4. Responsive Overrides
 // -------------------------
 
 // default styling should be for phones 767px or less
@@ -164,12 +172,10 @@ footer {
     }
 }
 
-// Medium devices (desktops, 992px and up) 
+// Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
-
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-
 }

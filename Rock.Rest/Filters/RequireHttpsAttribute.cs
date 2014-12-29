@@ -26,8 +26,10 @@ namespace Rock.Rest.Filters
     {
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
-            if (!String.Equals(actionContext.Request.RequestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-                actionContext.Response = actionContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "HTTPS Required");
+            if ( !string.Equals( actionContext.Request.RequestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase ) )
+            {
+                actionContext.Response = actionContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "HTTPS Required" );
+            }
         }
     }
 }
