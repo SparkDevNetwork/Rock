@@ -398,17 +398,17 @@ namespace RockWeb.Blocks.WorkFlow
                             // Save action updates
                             rockContext.SaveChanges();
 
-
                         }
 
                     } );
 
-                    var errorMessages = new List<string>();
-                    service.Process( dbWorkflow, out errorMessages );
-
                 }
 
                 Workflow = service.Get( Workflow.Id );
+
+                var errorMessages = new List<string>();
+                service.Process( Workflow, out errorMessages );
+
             }
 
             ShowReadonlyDetails();
@@ -687,6 +687,15 @@ namespace RockWeb.Blocks.WorkFlow
                             Workflow.ActivatedDateTime.Value.ToShortTimeString(),
                             Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
                     }
+
+                    if ( Workflow.LastProcessedDateTime.HasValue )
+                    {
+                        tdLastProcessed.Description = string.Format( "{0} {1} ({2})",
+                            Workflow.LastProcessedDateTime.Value.ToShortDateString(),
+                            Workflow.LastProcessedDateTime.Value.ToShortTimeString(),
+                            Workflow.LastProcessedDateTime.Value.ToRelativeDateString() );
+                    }
+
                     if ( Workflow.CompletedDateTime.HasValue )
                     {
                         tdCompletedWhen.Description = string.Format( "{0} {1} ({2})",
