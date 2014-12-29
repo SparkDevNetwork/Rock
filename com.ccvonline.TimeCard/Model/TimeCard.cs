@@ -13,7 +13,7 @@ namespace com.ccvonline.TimeCard.Model
     /// </summary>
     [Table( "_com_ccvonline_TimeCard_TimeCard" )]
     [DataContract]
-    public class TimeCard : NamedModel<TimeCard>
+    public class TimeCard : Model<TimeCard>
     {
         #region Entity Properties
 

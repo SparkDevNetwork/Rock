@@ -48,8 +48,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Model.cs" />
-    <Compile Include="Data\NamedModel.cs" />
+    <Compile Include="Data\Model.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Data\TimeCardContext.cs" />
     <Compile Include="Data\TimeCardService.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
