@@ -55,6 +55,83 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Searches the person entit(ies) by email.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByEmail/{email}" )]
+        public IQueryable<Person> GetByEmail( string email )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService( rockContext ).GetByEmail( email, true );
+        }
+
+        /// <summary>
+        /// Searches the person entit(ies) by phone number.
+        /// </summary>
+        /// <param name="number">The phone number.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByPhoneNumber/{number}" )]
+        public IQueryable<Person> GetByPhoneNumber( string number )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService( rockContext ).GetByPhonePartial( number, true );
+        }
+
+        /// <summary>
+        /// Gets the name of the by user.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByUserName/{username}" )]
+        public Person GetByUserName( string username )
+        {
+            int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                .Where( u => u.UserName.Equals( username ) )
+                .Select( a => a.PersonId )
+                .FirstOrDefault();
+
+            if ( personId != null )
+            {
+                return Service.Queryable( "PhoneNumbers" )
+                    .FirstOrDefault( p => p.Id == personId.Value );
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        /// <summary>
+        /// Gets the Person by person alias identifier.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetByPersonAliasId/{personAliasId}" )]
+        public Person GetByPersonAliasId( int personAliasId )
+        {
+            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
+            if ( personId != null )
+            {
+                return this.Get( personId.Value );
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        #region Search
+
+        /// <summary>
         /// Searches the specified name.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -237,80 +314,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Searches the person entit(ies) by email.
-        /// </summary>
-        /// <param name="email">The email.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetByEmail/{email}" )]
-        public IQueryable<Person> GetByEmail( string email )
-        {
-            var rockContext = new Rock.Data.RockContext();
-            return new PersonService( rockContext ).GetByEmail( email, true );
-        }
-
-        /// <summary>
-        /// Searches the person entit(ies) by phone number.
-        /// </summary>
-        /// <param name="number">The phone number.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetByPhoneNumber/{number}" )]
-        public IQueryable<Person> GetByPhoneNumber( string number )
-        {
-            var rockContext = new Rock.Data.RockContext();
-            return new PersonService( rockContext ).GetByPhonePartial( number, true );
-        }
-
-        /// <summary>
-        /// Gets the name of the by user.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetByUserName/{username}" )]
-        public Person GetByUserName( string username )
-        {
-            int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
-                .Where( u => u.UserName.Equals( username ) )
-                .Select( a => a.PersonId )
-                .FirstOrDefault();
-
-            if ( personId != null )
-            {
-                return this.Get( personId.Value );
-            }
-
-            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
-        }
-
-        /// <summary>
-        /// Gets the Person by person alias identifier.
-        /// </summary>
-        /// <param name="personAliasId">The person alias identifier.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/GetByPersonAliasId/{personAliasId}" )]
-        public Person GetByPersonAliasId( int personAliasId )
-        {
-            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
-                .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
-            if ( personId != null )
-            {
-                return this.Get( personId.Value );
-            }
-
-            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
-        }
-
-        /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -378,6 +381,8 @@ namespace Rock.Rest.Controllers
 
             return result;
         }
+
+        #endregion
 
         /// <summary>
         /// Deletes the specified identifier.
