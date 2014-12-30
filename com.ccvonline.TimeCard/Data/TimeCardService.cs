@@ -1,4 +1,8 @@
-using Rock.Data;
+using System;
+using System.Globalization;
+using System.Linq;
+using com.ccvonline.TimeCard.Model;
+using Rock;
 
 namespace com.ccvonline.TimeCard.Data
 {
@@ -26,6 +30,44 @@ namespace com.ccvonline.TimeCard.Data
         {
             errorMessage = string.Empty;
             return true;
+        }
+
+        /// <summary>
+        /// Ensures that there is a current pay period based on the current date 
+        /// </summary>
+        /// <param name="dataContext">The data context.</param>
+        public void EnsureCurrentPayPeriod()
+        {
+            var timeCardPayPeriodService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCardPayPeriod>( this.Context as TimeCardContext );
+            var currentDate = RockDateTime.Today;
+            var currentPayPeriod = timeCardPayPeriodService.Queryable().Where( a => currentDate >= a.StartDate && currentDate <= a.EndDate ).FirstOrDefault();
+            if ( currentPayPeriod == null )
+            {
+                // assume 14 PayPeriods starting on first Saturday of Year
+                DateTime jan1 = new DateTime( currentDate.Year, 1, 1 );
+                int daysOffset = DayOfWeek.Saturday - jan1.DayOfWeek;
+                DateTime firstSaturday = jan1.AddDays( daysOffset );
+                Calendar cal = new GregorianCalendar( GregorianCalendarTypes.USEnglish );
+                var firstWeek = cal.GetWeekOfYear( firstSaturday, CalendarWeekRule.FirstFullWeek, DayOfWeek.Saturday );
+                int weekNum = 1;
+                if ( firstWeek <= 1 )
+                {
+                    weekNum--;
+                }
+
+                firstSaturday = firstSaturday.AddDays( weekNum * 7 );
+                var payPeriodEnd = firstSaturday.AddDays( -14 );
+                while ( payPeriodEnd < currentDate )
+                {
+                    payPeriodEnd = payPeriodEnd.AddDays( 14 );
+                }
+
+                currentPayPeriod = new TimeCardPayPeriod();
+                currentPayPeriod.StartDate = payPeriodEnd.AddDays( -14 );
+                currentPayPeriod.EndDate = payPeriodEnd;
+                timeCardPayPeriodService.Add( currentPayPeriod );
+                this.Context.SaveChanges();
+            }
         }
     }
 }

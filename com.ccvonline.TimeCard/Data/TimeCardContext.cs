@@ -1,8 +1,4 @@
 using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration.Conventions;
-using System.Web;
-
-//using com.ccvonline.TimeCard.Model;
 
 namespace com.ccvonline.TimeCard.Data
 {
@@ -11,12 +7,38 @@ namespace com.ccvonline.TimeCard.Data
     /// </summary>
     public partial class TimeCardContext : Rock.Data.DbContext
     {
-
         #region Models
 
+        /// <summary>
+        /// Gets or sets the time cards.
+        /// </summary>
+        /// <value>
+        /// The time cards.
+        /// </value>
         public DbSet<TimeCard.Model.TimeCard> TimeCards { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time card days.
+        /// </summary>
+        /// <value>
+        /// The time card days.
+        /// </value>
         public DbSet<TimeCard.Model.TimeCardDay> TimeCardDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time card histories.
+        /// </summary>
+        /// <value>
+        /// The time card histories.
+        /// </value>
         public DbSet<TimeCard.Model.TimeCardHistory> TimeCardHistories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time card pay periods.
+        /// </summary>
+        /// <value>
+        /// The time card pay periods.
+        /// </value>
         public DbSet<TimeCard.Model.TimeCardPayPeriod> TimeCardPayPeriods { get; set; }
 
         #endregion
@@ -27,7 +49,7 @@ namespace com.ccvonline.TimeCard.Data
         public TimeCardContext()
             : base( "RockContext" )
         {
-             //intentionally left blank
+             // intentionally left blank
         }
 
         /// <summary>
@@ -53,6 +75,5 @@ namespace com.ccvonline.TimeCard.Data
             Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
             modelBuilder.Configurations.AddFromAssembly( System.Reflection.Assembly.GetExecutingAssembly() );
         }
-
     }
 }
