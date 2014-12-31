@@ -38,11 +38,14 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            //var entityInterface = ;
-            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            if ( lblAssemblyPath.Text == string.Empty)
+            {
+                rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+                FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+                lblAssemblyPath.Text = fi.FullName;
+            }
 
-            ofdAssembly.InitialDirectory = fi.DirectoryName;
+            ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
             ofdAssembly.Filter = "dll files (*.dll)|*.dll";
             ofdAssembly.FileName = "Rock.dll";
             ofdAssembly.RestoreDirectory = true;
