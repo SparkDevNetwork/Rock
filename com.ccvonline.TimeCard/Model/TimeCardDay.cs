@@ -35,15 +35,21 @@ namespace com.ccvonline.TimeCard.Model
         [Required]
         [DataMember]
         public DateTime StartDateTime { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the lunch start date time (Lunch Out)
+        /// </summary>
+        /// <value>
+        /// The lunch start date time (Lunch Out)
+        /// </value>
         [DataMember]
         public DateTime? LunchStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the lunch end date time.
+        /// Gets or sets the lunch end date time (Lunch In)
         /// </summary>
         /// <value>
-        /// The lunch end date time.
+        /// The lunch end date time (Lunch In)
         /// </value>
         [DataMember]
         public DateTime? LunchEndDateTime { get; set; }
@@ -54,9 +60,8 @@ namespace com.ccvonline.TimeCard.Model
         /// <value>
         /// The end date time.
         /// </value>
-        [Required]
         [DataMember]
-        public DateTime EndDateTime { get; set; }
+        public DateTime? EndDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the total duration of the worked.

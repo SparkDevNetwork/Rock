@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -61,6 +65,7 @@
     <Compile Include="Model\TimeCardHistory.cs" />
     <Compile Include="Model\TimeCardPayPeriod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\Schedule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

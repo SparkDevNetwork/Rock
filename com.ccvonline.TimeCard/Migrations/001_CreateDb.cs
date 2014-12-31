@@ -21,7 +21,7 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCard] (
     [TimeCardStatus] [int] not null,
     [SubmittedToPersonAliasId] [int] not null,
     [SubmittedDateTime] [datetime] null,
-    [ApprovedByPersonAliasId] [int] not null,
+    [ApprovedByPersonAliasId] [int] null,
     [ApprovedDateTime] [datetime] null,
     [ExportedDateTime] [datetime] null,
     [CreatedDateTime] [datetime] null,
@@ -38,7 +38,7 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] (
     [StartDateTime] [datetime] not null,
     [LunchStartDateTime] [datetime] null,
     [LunchEndDateTime] [datetime] null,
-    [EndDateTime] [datetime] not null,
+    [EndDateTime] [datetime] null,
     [TotalWorkedDuration] [decimal](18, 2) null,
     [PaidHolidayHours] [decimal](18, 2) null,
     [PaidVacationHours] [decimal](18, 2) null,
@@ -69,8 +69,8 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] (
 );
 create table [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod] (
     [Id] [int] not null identity,
-    [StartDate] [date] null,
-    [EndDate] [date] null,
+    [StartDate] [date] not null,
+    [EndDate] [date] not null,
     [CreatedDateTime] [datetime] null,
     [ModifiedDateTime] [datetime] null,
     [CreatedByPersonAliasId] [int] null,

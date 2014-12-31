@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.Serialization;
 using com.ccvonline.TimeCard.Data;
+using Rock;
 
 namespace com.ccvonline.TimeCard.Model
 {
@@ -145,6 +148,249 @@ namespace com.ccvonline.TimeCard.Model
         public virtual ICollection<TimeCardHistory> TimeCardHistories { get; set; }
 
         #endregion
+
+        #region methods
+
+        /// <summary>
+        /// Totals the worked hours per week.
+        /// </summary>
+        /// <param name="includeRegularDates">if set to <c>true</c> [include regular dates].</param>
+        /// <param name="includeHolidayDates">if set to <c>true</c> [include holiday dates].</param>
+        /// <returns></returns>
+        public List<HoursPerTimeCardDay> GetTotalWorkedHoursPerDay( bool includeRegularDates, bool includeHolidayDates )
+        {
+            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.TimeCard.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
+            List<DateTime> holidayDates = new List<DateTime>();
+            if ( timeCardHolidaySchedule != null )
+            {
+                DDay.iCal.Event calEvent = timeCardHolidaySchedule.GetCalenderEvent();
+                if ( calEvent != null )
+                {
+                    holidayDates = calEvent.GetOccurrences( this.TimeCardPayPeriod.StartDate, this.TimeCardPayPeriod.EndDate ).Select( a => a.Period.StartTime.Date ).ToList();
+                }
+            }
+
+            var timeCardDaysQry = TimeCardDays.AsQueryable();
+
+            // note: coded as "else ifs vs if,if" to make it more readable
+            if ( includeRegularDates && !includeHolidayDates )
+            {
+                timeCardDaysQry = timeCardDaysQry.Where( a => !holidayDates.Contains( a.StartDateTime.Date ) );
+            }
+            else if ( !includeRegularDates && includeHolidayDates )
+            {
+                timeCardDaysQry = timeCardDaysQry.Where( a => holidayDates.Contains( a.StartDateTime.Date ) );
+            }
+            else if ( !includeRegularDates && !includeHolidayDates )
+            {
+                timeCardDaysQry = timeCardDaysQry.Where( a => 1 == 0 );
+            }
+            else
+            {
+                // include all worked hours if includeRegularDates and includeHolidayDates
+            }
+
+            return timeCardDaysQry.Select( x => new HoursPerTimeCardDay
+            {
+                TimeCardDay = x,
+                Hours = x.TotalWorkedDuration
+            } ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the worked holiday hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerTimeCardDay> GetWorkedHolidayHours()
+        {
+            // Number of hours/week where the person worked on a holiday 
+            return GetTotalWorkedHoursPerDay( false, true );
+        }
+
+        /// <summary>
+        /// Gets the regular hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerTimeCardDay> GetRegularHours()
+        {
+            /// Number of hours/week where the person worked, up to 40 hours, then subtract HolidayWorkedHours()
+            /// The idea is that if a person is getting paid extra for HolidayWorkedHours, those won't count towards regular time
+            var totalWorkedHoursPerWeekMax40 = this.GetTotalWorkedHoursPerDay( true, true ).Select( a => new HoursPerTimeCardDay
+            {
+                TimeCardDay = a.TimeCardDay,
+                Hours = a.Hours
+            } );
+
+            decimal totalRegular = 0;
+            foreach (var day in totalWorkedHoursPerWeekMax40)
+            {
+                if ( totalRegular < 40 )
+                {
+                    // if less than 40 so far, increment the total by the day's hours
+                    totalRegular += day.Hours ?? 0;
+                    if ( totalRegular > 40 )
+                    {
+                        // if we spilled over 40, only count the hours for this day before the 40 was reached
+                        day.Hours -= totalRegular - 40;
+                        totalRegular = 40;
+                    }
+                }
+                else
+                {
+                    // if we already worked 40 hours, don't count additional hours as regular hours
+                    day.Hours = 0;
+                }
+            }
+            
+            var totalWorkedHolidayHours = GetWorkedHolidayHours();
+
+            var regularHours = totalWorkedHoursPerWeekMax40.ToList();
+            foreach ( var week in regularHours )
+            {
+                var holidayHours = totalWorkedHolidayHours.FirstOrDefault( a => a.TimeCardDay.Id == week.TimeCardDay.Id );
+                if ( holidayHours != null )
+                {
+                    week.Hours = week.Hours - holidayHours.Hours;
+                }
+            }
+
+            return regularHours;
+        }
+
+        /// <summary>
+        /// Gets the overtime hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerTimeCardDay> GetOvertimeHours()
+        {
+            // TotalWorkedHoursPerWeek(true, true) – RegularHours() – HolidayWorkedHours () 
+            var totalWorkedHoursPerDay = this.GetTotalWorkedHoursPerDay( true, true );
+            var regularHoursPerDay = this.GetRegularHours();
+            var workedHolidayHoursPerDay = this.GetWorkedHolidayHours();
+
+            var overtimeHours = totalWorkedHoursPerDay;
+            foreach ( var day in overtimeHours )
+            {
+                var regularHours = regularHoursPerDay.FirstOrDefault( a => a.TimeCardDay.Id == day.TimeCardDay.Id );
+                if ( regularHours != null )
+                {
+                    day.Hours = day.Hours - regularHours.Hours;
+                }
+
+                var holidayWorkedHours = workedHolidayHoursPerDay.FirstOrDefault( a => a.TimeCardDay.Id == day.TimeCardDay.Id );
+                if ( holidayWorkedHours != null )
+                {
+                    day.Hours = day.Hours - holidayWorkedHours.Hours;
+                }
+            }
+
+            return overtimeHours;
+        }
+
+        /// <summary>
+        /// Paids the vacation hours.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<int, IEnumerable<TimeCardDay>> GroupByWeekNum( IEnumerable<TimeCardDay> timeCardDays = null )
+        {
+            timeCardDays = timeCardDays ?? this.TimeCardDays;
+            var firstDayOfWeek = this.TimeCardPayPeriod.StartDate.DayOfWeek;
+            Calendar cal = new GregorianCalendar( GregorianCalendarTypes.USEnglish );
+            var result = timeCardDays.ToList().Select( a => new
+            {
+                WeekOfYear = cal.GetWeekOfYear( a.StartDateTime, CalendarWeekRule.FirstFullWeek, firstDayOfWeek ),
+                TimeCardDay = a
+            } )
+            .GroupBy( a => a.WeekOfYear )
+            .ToDictionary( k => k.Key, v => v.Select( a => a.TimeCardDay ) );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Paids the vacation hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerWeek> PaidVacationHours()
+        {
+            return this.GroupByWeekNum().Select( x => new HoursPerWeek
+            {
+                WeekOfYear = x.Key,
+                Hours = x.Value.Sum( xx => xx.PaidVacationHours )
+            } ).ToList();
+        }
+
+        /// <summary>
+        /// Paids the holiday hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerWeek> PaidHolidayHours()
+        {
+            return this.GroupByWeekNum().Select( x => new HoursPerWeek
+            {
+                WeekOfYear = x.Key,
+                Hours = x.Value.Sum( xx => xx.PaidHolidayHours )
+            } ).ToList();
+        }
+
+        /// <summary>
+        /// Paids the sick hours.
+        /// </summary>
+        /// <returns></returns>
+        public List<HoursPerWeek> PaidSickHours()
+        {
+            return this.GroupByWeekNum().Select( x => new HoursPerWeek
+            {
+                WeekOfYear = x.Key,
+                Hours = x.Value.Sum( xx => xx.PaidSickHours )
+            } ).ToList();
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HoursPerTimeCardDay
+    {
+        /// <summary>
+        /// Gets or sets the week start date.
+        /// </summary>
+        /// <value>
+        /// The week start date.
+        /// </value>
+        public TimeCardDay TimeCardDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hours.
+        /// </summary>
+        /// <value>
+        /// The hours.
+        /// </value>
+        public decimal? Hours { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HoursPerWeek
+    {
+        /// <summary>
+        /// Gets or sets the week of year.
+        /// </summary>
+        /// <value>
+        /// The week of year.
+        /// </value>
+        public int WeekOfYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hours.
+        /// </summary>
+        /// <value>
+        /// The hours.
+        /// </value>
+        public decimal? Hours { get; set; }
     }
 
     /// <summary>

@@ -13,7 +13,6 @@
                         <span><%#this.GetHoursHtml( Container.DataItem as com.ccvonline.TimeCard.Model.TimeCardDay) %></span>
                     </ItemTemplate>
                 </Rock:RockTemplateField>
-                <Rock:DeleteField OnClick="gList_Delete"/>
             </Columns>
         </Rock:Grid>
 

@@ -33,10 +33,12 @@ namespace com.ccvonline.TimeCard.Data
         }
 
         /// <summary>
-        /// Ensures that there is a current pay period based on the current date 
+        /// Ensures that there is a current pay period based on the current date
+        /// and returns the current pay period
         /// </summary>
-        /// <param name="dataContext">The data context.</param>
-        public void EnsureCurrentPayPeriod()
+        /// <param name="payrollStartDay">The payroll start day.</param>
+        /// <returns></returns>
+        public TimeCardPayPeriod EnsureCurrentPayPeriod( DayOfWeek payrollStartDay )
         {
             var timeCardPayPeriodService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCardPayPeriod>( this.Context as TimeCardContext );
             var currentDate = RockDateTime.Today;
@@ -45,10 +47,10 @@ namespace com.ccvonline.TimeCard.Data
             {
                 // assume 14 PayPeriods starting on first Saturday of Year
                 DateTime jan1 = new DateTime( currentDate.Year, 1, 1 );
-                int daysOffset = DayOfWeek.Saturday - jan1.DayOfWeek;
+                int daysOffset = payrollStartDay - jan1.DayOfWeek;
                 DateTime firstSaturday = jan1.AddDays( daysOffset );
                 Calendar cal = new GregorianCalendar( GregorianCalendarTypes.USEnglish );
-                var firstWeek = cal.GetWeekOfYear( firstSaturday, CalendarWeekRule.FirstFullWeek, DayOfWeek.Saturday );
+                var firstWeek = cal.GetWeekOfYear( firstSaturday, CalendarWeekRule.FirstFullWeek, payrollStartDay );
                 int weekNum = 1;
                 if ( firstWeek <= 1 )
                 {
@@ -68,6 +70,13 @@ namespace com.ccvonline.TimeCard.Data
                 timeCardPayPeriodService.Add( currentPayPeriod );
                 this.Context.SaveChanges();
             }
+
+            return currentPayPeriod;
         }
+
+        
+
+
+        
     }
 }

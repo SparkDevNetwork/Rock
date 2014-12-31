@@ -15,6 +15,9 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
+using com.ccvonline.TimeCard.Data;
+using com.ccvonline.TimeCard.Model;
+
 namespace RockWeb.Plugins.com_ccvonline.TimeCard
 {
     /// <summary>
@@ -23,7 +26,6 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
     [DisplayName( "Time Card Detail" )]
     [Category( "CCV > Time Card" )]
     [Description( "Displays the details of a time card." )]
-
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -53,6 +55,72 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             {
                 ShowDetail();
             }
+        }
+
+        #endregion
+
+        #region repeater helpers
+
+        /// <summary>
+        /// Formats the time card time.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public string FormatTimeCardTime(DateTime? dateTime)
+        {
+            if ( dateTime.HasValue )
+            {
+                if (dateTime.Value.TimeOfDay == TimeSpan.Zero)
+                {
+                    return "-";
+                }
+                else
+                {
+                    return dateTime.Value.ToString( "hh:mmtt" );
+                }
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Formats the time card hours.
+        /// </summary>
+        /// <param name="hours">The hours.</param>
+        /// <returns></returns>
+        public string FormatTimeCardHours( object hours )
+        {
+            if ( hours != null )
+            {
+                TimeSpan timeSpan = TimeSpan.FromHours( Convert.ToDouble(hours) );
+                return timeSpan.TotalHours.ToString("0.00" );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Formats the regular hours.
+        /// </summary>
+        /// <param name="timeCardDay">The time card day.</param>
+        /// <returns></returns>
+        public string FormatRegularHours( TimeCardDay timeCardDay )
+        {
+            return FormatTimeCardHours( timeCardDay.TimeCard.GetRegularHours().Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault().Hours );
+        }
+
+        /// <summary>
+        /// Formats the overtime hours.
+        /// </summary>
+        /// <param name="timeCardDay">The time card day.</param>
+        /// <returns></returns>
+        public string FormatOvertimeHours( TimeCardDay timeCardDay )
+        {
+            return FormatTimeCardHours( timeCardDay.TimeCard.GetOvertimeHours().Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault().Hours );
         }
 
         #endregion
@@ -87,13 +155,55 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         protected void btnSave_Click( object sender, EventArgs e )
         {
         }
-        
+
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
         private void ShowDetail()
         {
+            int timeCardId = PageParameter("TimeCardId").AsInteger();
+            hfTimeCardId.Value = timeCardId.ToString();
+            
+            var dataContext = new TimeCardContext();
+            var timeCardDayService = new TimeCardService<TimeCardDay>( dataContext );
+            var timeCardService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCard>(dataContext);
+            var timeCard = timeCardService.Get(timeCardId);
+            if (timeCard == null)
+            {
+                return;
+            }
+
+            var qry = timeCardDayService.Queryable().Where( a => a.TimeCardId == timeCardId ).OrderBy( a => a.StartDateTime );
+            var qryList = qry.ToList();
+
+            // ensure 14 days
+            if ( qryList.Count() < 14 )
+            {
+                var missingDays = new List<TimeCardDay>();
+                var startDateTime = timeCard.TimeCardPayPeriod.StartDate;
+                while (startDateTime < timeCard.TimeCardPayPeriod.EndDate)
+                {
+                    if ( !qryList.Any( a => a.StartDateTime.Date == startDateTime.Date ) )
+                    {
+                        var timeCardDay = new TimeCardDay();
+                        timeCardDay.TimeCardId = timeCardId;
+                        timeCardDay.StartDateTime = startDateTime;
+                        missingDays.Add( timeCardDay );
+                    }
+                    startDateTime = startDateTime.AddDays( 1 );
+                }
+
+                timeCardDayService.AddRange( missingDays );
+                dataContext.SaveChanges();
+            }
+
+            rptTimeCardDay.DataSource = qry.ToList();
+            rptTimeCardDay.DataBind();
+
         }
 
         #endregion

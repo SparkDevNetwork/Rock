@@ -22,6 +22,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
     [Description( "Lists all the time cards for a specific employee." )]
 
     [LinkedPage( "Detail Page" )]
+    [DayOfWeekField( "Payroll Start Day", "The Day of Week that pay periods start on.  The First week of Payroll is determined by the first full week of the year for that day.", false, DayOfWeek.Monday )]
     public partial class TimeCardList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -35,9 +36,10 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             base.OnInit( e );
 
             bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
-            
+
             // TimeCard/Time Card Pay Period is auto created based on current date
             gList.Actions.ShowAdd = false;
+            gList.DataKeyNames = new string[] { "Id" };
 
             gList.IsDeleteEnabled = false;
             gList.Actions.AddClick += gList_AddClick;
@@ -99,7 +101,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "TimeCardId", e.RowKeyId);
+            NavigateToLinkedPage( "DetailPage", "TimeCardId", e.RowKeyId );
         }
 
         /// <summary>
@@ -112,7 +114,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             var dataContext = new TimeCardContext();
             var timeCardService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCard>( dataContext );
             var timeCard = timeCardService.Get( e.RowKeyId );
-            if (timeCard != null)
+            if ( timeCard != null )
             {
                 string errorMessage;
                 if ( !timeCardService.CanDelete( timeCard, out errorMessage ) )
@@ -137,6 +139,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         /// <returns></returns>
         public string GetHoursHtml( TimeCardDay timeCardDay )
         {
+            
             return "TODO!";
         }
 
@@ -147,12 +150,25 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         {
             var dataContext = new TimeCardContext();
             var timeCardService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCard>( dataContext );
-            timeCardService.EnsureCurrentPayPeriod();
+            DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>(DayOfWeek.Monday);
+            var currentPayPeriod = timeCardService.EnsureCurrentPayPeriod( payrollStartDay );
             SortProperty sortProperty = gList.SortProperty;
 
             var qry = timeCardService.Queryable().Where( a => a.PersonAliasId == this.CurrentPersonAliasId );
 
-            if (sortProperty != null)
+            // ensure that employee has a timecard for the current pay period
+            var currentEmployeeTimeCard = qry.Where( a => a.TimeCardPayPeriodId == currentPayPeriod.Id ).FirstOrDefault();
+            if ( currentEmployeeTimeCard == null )
+            {
+                currentEmployeeTimeCard = new com.ccvonline.TimeCard.Model.TimeCard();
+                currentEmployeeTimeCard.TimeCardPayPeriodId = currentPayPeriod.Id;
+                currentEmployeeTimeCard.TimeCardStatus = TimeCardStatus.InProgress;
+                currentEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
+                timeCardService.Add( currentEmployeeTimeCard );
+                dataContext.SaveChanges();
+            }
+
+            if ( sortProperty != null )
             {
                 qry = qry.Sort( sortProperty );
             }
