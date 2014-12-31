@@ -58,6 +58,7 @@ namespace Rock.CodeGeneration
 
                 foreach ( var file in ofdAssembly.FileNames )
                 {
+                    lblAssemblyPath.Text = file;
                     var assembly = Assembly.LoadFrom( file );
 
                     foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
@@ -96,10 +97,16 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
-            string serviceFolder = Path.Combine( RootFolder().FullName, "Rock" );
-            string restFolder = Path.Combine( RootFolder().FullName, "Rock.Rest" );
-            string dataViewFolder = Path.Combine( RootFolder().FullName, "Rock" );
-            string rockClientFolder = Path.Combine( RootFolder().FullName, "Rock.Client" );
+            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
+            string serviceFolder = Path.Combine( RootFolder().FullName, projectName );
+            string restFolder = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
+            string rockClientFolder = Path.Combine( RootFolder().FullName, projectName + ".Client" );
+            if ( projectName != "Rock" )
+            {
+                restFolder = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
+                rockClientFolder = Path.Combine( RootFolder().FullName, projectName + "\\Client" );
+            }
+            
 
             if ( cbService.Checked )
             {
@@ -113,13 +120,16 @@ namespace Rock.CodeGeneration
             if ( cbRest.Checked )
             {
                 fbdRestOutput.SelectedPath = restFolder;
+                if (!Directory.Exists(restFolder))
+                {
+                    Directory.CreateDirectory( restFolder );
+                }
+
                 if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
                 {
                     restFolder = fbdRestOutput.SelectedPath;
                 }
             }
-
-
 
             Cursor = Cursors.WaitCursor;
 
@@ -528,8 +538,8 @@ order by [parentTable], [columnName]
         {
             // Should probably be read from config file, or selected from directory dialog.  
             // For now, just traverses parent folders looking for Rock.sln file
-            var dirInfo = new DirectoryInfo( Assembly.GetExecutingAssembly().Location );
-            while ( dirInfo != null && !File.Exists( Path.Combine( dirInfo.FullName, "Rock.sln" ) ) )
+            var dirInfo = new DirectoryInfo( Path.GetDirectoryName(lblAssemblyPath.Text) );
+            while ( dirInfo != null && !dirInfo.GetDirectories().Any(a => a.Name == "RockWeb" ) )
             {
                 dirInfo = dirInfo.Parent;
             }
