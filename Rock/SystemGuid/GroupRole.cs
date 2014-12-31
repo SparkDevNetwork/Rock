@@ -147,5 +147,16 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Security Groups
+
+        /// <summary>
+        /// Gets the security group member role.
+        /// </summary>
+        /// <value>
+        /// The role Guid.
+        /// </value>
+        public const string GROUPROLE_SECURITY_GROUP_MEMBER = "00F3AC1C-71B9-4EE5-A30E-4C48C8A0BF1F";
+
+        #endregion
     }
 }
