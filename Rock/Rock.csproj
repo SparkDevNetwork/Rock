@@ -298,6 +298,9 @@
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Store\Package.cs" />
     <Compile Include="Store\InstalledPackageService.cs" />
+    <Compile Include="Store\Organization.cs" />
+    <Compile Include="Store\OrganizationService.cs" />
+    <Compile Include="Store\StoreService.cs" />
     <Compile Include="Store\PackageVersionService.cs" />
     <Compile Include="Store\PackageVersionRating.cs" />
     <Compile Include="Store\PackageVersion.cs" />
@@ -309,7 +312,7 @@
     <Compile Include="Store\PromoService.cs" />
     <Compile Include="Store\StoreImage.cs" />
     <Compile Include="Store\StoreModel.cs" />
-    <Compile Include="Store\StoreService.cs" />
+    <Compile Include="Store\StoreServiceBase.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />

@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Store
     [Description( "Lists packages that have been purchased in the Rock Store." )]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
     [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 4 )]
+    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "", 4 )]
     public partial class PurchasedPackages : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -165,15 +166,27 @@ namespace RockWeb.Blocks.Store
         {
             string errorResponse = string.Empty;
             
-            PackageService packageService = new PackageService();
-            var purchases = packageService.GetPurchasedPackages( out errorResponse );
+            // check that the store is configured with an organization
+            if ( StoreService.OrganizationIsConfigured() )
+            {
+                PackageService packageService = new PackageService();
+                var purchases = packageService.GetPurchasedPackages( out errorResponse );
 
-            // check errors
-            ErrorCheck( errorResponse );
+                // check errors
+                ErrorCheck( errorResponse );
 
-            rptPurchasedProducts.DataSource = purchases;
-            rptPurchasedProducts.DataBind();
+                if ( purchases.Count == 0 )
+                {
+                    lMessages.Text = "<div class='alert alert-warning'>No packages have been purchased for this organization.</div>";
+                }
 
+                rptPurchasedProducts.DataSource = purchases;
+                rptPurchasedProducts.DataBind();
+            }
+            else
+            {
+                NavigateToLinkedPage( "LinkOrganizationPage" );
+            }
         }
 
         private void ErrorCheck( string errorResponse )

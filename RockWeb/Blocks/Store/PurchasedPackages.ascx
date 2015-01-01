@@ -43,6 +43,8 @@
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
+
+                    <asp:Literal ID="lMessages" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlError" runat="server" Visible="false">

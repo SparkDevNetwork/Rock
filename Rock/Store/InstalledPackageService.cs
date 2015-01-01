@@ -17,7 +17,7 @@ namespace Rock.Store
     /// <summary>
     /// Service class for the store category model.
     /// </summary>
-    public class InstalledPackageService : StoreService
+    public class InstalledPackageService : StoreServiceBase
     {
 
         InstalledPackage _installedPackages = null;
