@@ -93,7 +93,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "DB536038-A421-408F-8A33-1B95ADB8A51E", "E4CCB79C-479F-4BEE-8156-969B2CE05973", @"da8e33f3-2eef-4c4b-87f3-715c3f107caf" );
 
             // Attrib Value for Block:Group Member List, Attribute:Person Profile Page Page: Org Chart, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "DB536038-A421-408F-8A33-1B95ADB8A51E", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25" );
+            RockMigrationHelper.AddBlockAttributeValue( "DB536038-A421-408F-8A33-1B95ADB8A51E", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
         
 
             // migration roundup... yeehaa!
