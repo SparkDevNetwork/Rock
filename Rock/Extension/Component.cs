@@ -206,6 +206,8 @@ namespace Rock.Extension
         /// </summary>
         public Component()
         {
+            var type = this.GetType();
+            Rock.Attribute.Helper.UpdateAttributes(type, Rock.Web.Cache.EntityTypeCache.GetId(type.FullName));
             this.LoadAttributes();
         }
 
@@ -267,6 +269,15 @@ namespace Rock.Extension
         public Security.ISecured ParentAuthority
         {
             get { return new Rock.Security.GlobalDefault(); }
+        }
+
+        /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public virtual Security.ISecured ParentAuthorityPre
+        {
+            get { return null; }
         }
 
         /// <summary>

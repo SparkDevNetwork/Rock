@@ -40,6 +40,9 @@ namespace Rock.Client
         public int /* ContentChannelDateType*/ DateRangeType { get; set; }
 
         /// <summary />
+        public bool DisablePriority { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

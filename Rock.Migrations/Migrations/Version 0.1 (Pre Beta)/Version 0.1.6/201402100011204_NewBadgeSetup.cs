@@ -314,7 +314,7 @@ namespace Rock.Migrations
                 -- creat instance of badge
                 INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
                 VALUES
-	                ('In Serving Team', 'Show is individual is in a serving team.', @AttendingDurationBadgeEntityTypeId, 1, 'E0455598-82B0-4F49-B806-C3A41C71E9DA')
+	                ('In Serving Team', 'Show if individual is in a serving team.', @AttendingDurationBadgeEntityTypeId, 1, 'E0455598-82B0-4F49-B806-C3A41C71E9DA')
 	
 
                 DECLARE @GroupTypeAttributeId int  = (SELECT [Id] FROM [Attribute] 

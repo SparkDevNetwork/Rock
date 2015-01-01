@@ -17,70 +17,61 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.IO;
-using System.Reflection;
 
 using Rock.Extension;
 
 namespace Rock.Address
 {
     /// <summary>
-    /// Singleton class that uses MEF to load and cache all of the VerificationComponent classes
+    /// MEF Container class for Binary File Verification Components
     /// </summary>
     public class VerificationContainer : Container<VerificationComponent, IComponentData>
     {
-        #region Singleton Support
-
-        private static VerificationContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<VerificationContainer> instance =
+            new Lazy<VerificationContainer>( () => new VerificationContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static VerificationContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                    instance = new VerificationContainer();
-                return instance;
-            }
-        }
-
-        private VerificationContainer()
-        {
-            Refresh();
+            get { return instance.Value; }
         }
 
         /// <summary>
-        /// Gets the component.
+        /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="verificationComponentType">Type of the verification component.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        public static VerificationComponent GetComponent( Type verificationComponentType )
+        public static VerificationComponent GetComponent( string entityType )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == verificationComponentType.FullName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.GetComponentByEntity( entityType );
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
+        }
 
-        #region MEF Support
-
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( VerificationComponent ) )]
         protected override IEnumerable<Lazy<VerificationComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
 
-        #endregion
     }
 }

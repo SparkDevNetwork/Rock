@@ -237,7 +237,9 @@ namespace Rock.CheckIn
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( RockDateTime.Now );
-                    if ( nextScheduleActiveTime.HasValue && nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime ) < 0 )
+                    if ( nextScheduleActiveTime.HasValue &&
+                        ( schedule.IsCheckInActive || nextScheduleActiveTime.Value.CompareTo( RockDateTime.Now ) >= 0 ) &&
+                        nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime ) < 0 )
                     {
                         nextGroupActiveTime = nextScheduleActiveTime.Value;
                     }

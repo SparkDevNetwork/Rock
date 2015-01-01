@@ -43,11 +43,6 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            if ( value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-            {
-                return "Current Date";
-            }
-
             DateTime? dateValue = value.AsDateTime();
             if ( dateValue.HasValue )
             {
@@ -91,7 +86,6 @@ namespace Rock.Field.Types
             var keys = base.ConfigurationKeys();
             keys.Add( "format" );
             keys.Add( "displayDiff" );
-            keys.Add( "displayCurrentOption" );
             return keys;
         }
 
@@ -114,13 +108,7 @@ namespace Rock.Field.Types
             cbDisplayDiff.Text = "Yes";
             cbDisplayDiff.Help = "Display the number of years between value and current date";
 
-            var cbDisplayCurrent = new RockCheckBox();
-            controls.Add( cbDisplayCurrent );
-            cbDisplayCurrent.Label = "Allow 'Current' Option";
-            cbDisplayCurrent.Text = "Yes";
-            cbDisplayCurrent.Help = "Display option for selecting the 'current' date instead of a specific date";
             return controls;
-
         }
 
         /// <summary>
@@ -145,13 +133,6 @@ namespace Rock.Field.Types
                 {
                     ( (CheckBox)controls[1] ).Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
                 }
-
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox &&
-                    configurationValues.ContainsKey( "displayCurrentOption" ) )
-                {
-                    ( (CheckBox)controls[2] ).Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
-                }
-
             }
         }
 
@@ -165,7 +146,6 @@ namespace Rock.Field.Types
             var values = base.ConfigurationValues( controls );
             values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date)", "" ) );
             values.Add( "displayDiff", new ConfigurationValue( "Display Date Span", "Display the number of years between value and current date", "False" ) );
-            values.Add( "displayCurrentOption", new ConfigurationValue( "Allow 'Current' Option", "Display option for selecting the 'current' date instead of a specific date.", "False" ) );
 
             if ( controls != null )
             {
@@ -177,11 +157,6 @@ namespace Rock.Field.Types
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
                 {
                     values["displayDiff"].Value = ( (CheckBox)controls[1] ).Checked.ToString();
-                }
-
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
-                {
-                    values["displayCurrentOption"].Value = ( (CheckBox)controls[2] ).Checked.ToString();
                 }
             }
 
@@ -198,10 +173,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var dp = new DatePicker { ID = id }; 
-            dp.DisplayCurrentOption = configurationValues.ContainsKey( "displayCurrentOption" )  &&
-                configurationValues["displayCurrentOption"].Value.AsBoolean( false );
-            return dp;
+            return new DatePicker { ID = id }; 
         }
 
         /// <summary>
@@ -212,16 +184,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (control != null && control is DatePicker)
+            if (control != null)
             {
                 var dtp = control as DatePicker;
                 if (dtp != null )
                 {
-                    if ( dtp.CurrentDate )
-                    {
-                        return "CURRENT";
-                    }
-                    else if ( dtp.SelectedDate.HasValue )
+                    if ( dtp.SelectedDate.HasValue )
                     {
                         // serialize the date using ISO 8601 standard
                         return dtp.SelectedDate.Value.ToString( "o" );
@@ -240,22 +208,15 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is DatePicker ) 
+            if ( control != null ) 
             {
                 var dtp = control as DatePicker;
                 if ( dtp != null )
                 {
-                    if ( dtp.DisplayCurrentOption && value != null && value.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                    var dt = value.AsDateTime();
+                    if ( dt.HasValue )
                     {
-                        dtp.CurrentDate = true;
-                    }
-                    else
-                    {
-                        var dt = value.AsDateTime();
-                        if ( dt.HasValue )
-                        {
-                            dtp.SelectedDate = dt;
-                        }
+                        dtp.SelectedDate = dt;
                     }
                 }
             }
@@ -270,7 +231,7 @@ namespace Rock.Field.Types
         public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
         {
             var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.DATE;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.FILTER_DATE;
             return filterConfig;
         }
     }

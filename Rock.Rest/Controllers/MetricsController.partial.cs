@@ -30,24 +30,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class MetricsController : IHasCustomRoutes
+    public partial class MetricsController
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "MetricsGetHtmlByBlockId",
-                routeTemplate: "api/Metrics/GetHtmlForBlock/{blockId}",
-                defaults: new
-                {
-                    controller = "Metrics",
-                    action = "GetHtmlForBlock"
-                } );
-        }
-
         /// <summary>
         /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
@@ -55,6 +39,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
+        [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
@@ -68,9 +53,9 @@ namespace Rock.Rest.Controllers
                 var metricCategoryPairList = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( block.GetAttributeValue( "MetricCategories" ) );
 
                 var metricGuids = metricCategoryPairList.Select( a => a.MetricGuid ).ToList();
-               
+
                 bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
-                
+
                 MetricService metricService = new MetricService( rockContext );
                 var metrics = metricService.GetByGuids( metricGuids );
                 List<object> metricsData = new List<object>();
@@ -81,9 +66,9 @@ namespace Rock.Rest.Controllers
 								Please select a metric in the block settings.
 							</div>";
                 }
-                
+
                 MetricValueService metricValueService = new MetricValueService( rockContext );
-                
+
                 DateTime firstDayOfYear = new DateTime( RockDateTime.Now.Year, 1, 1 );
                 DateTime currentDateTime = RockDateTime.Now;
                 DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
@@ -98,7 +83,7 @@ namespace Rock.Rest.Controllers
 
                     //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
                     //// Note: if a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
-                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId || metric.EntityTypeId == null )
+                    if ( entityTypeId.HasValue && ( metric.EntityTypeId == entityTypeId || metric.EntityTypeId == null ) )
                     {
                         if ( entityId.HasValue )
                         {
@@ -109,12 +94,12 @@ namespace Rock.Rest.Controllers
                     var lastMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     if ( lastMetricValue != null )
                     {
-                        metricYTDData.LastValue = lastMetricValue.YValue.HasValue ? Math.Round( lastMetricValue.YValue.Value, roundYValues ? 0 : 2) : (decimal?)null;
+                        metricYTDData.LastValue = lastMetricValue.YValue.HasValue ? Math.Round( lastMetricValue.YValue.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
                     }
 
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
-                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round(sum.Value, roundYValues ? 0 : 2) : (decimal?)null;
+                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
 
                     // figure out goal as of current date time by figuring out the slope of the goal
                     var qryGoalValuesCurrentYear = metricValueService.Queryable()
@@ -161,17 +146,7 @@ namespace Rock.Rest.Controllers
                 // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    StringBuilder debugInfo = new StringBuilder();
-                    debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
-
-                    debugInfo.Append( "<pre>" );
-
-                    debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
-                    debugInfo.Append( mergeValues.LiquidHelpText() + "</pre>" );
-
-                    debugInfo.Append( "</div>" );
-
-                    resultHtml += debugInfo.ToString();
+                    resultHtml += mergeValues.lavaDebugInfo();
                 }
 
                 return resultHtml;

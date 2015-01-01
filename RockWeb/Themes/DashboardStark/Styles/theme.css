@@ -1,12 +1,12 @@
 /*
    Rock's Core CSS
-    
+
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
     3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
     4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
     5. ASP.Net Overrides - Yep they get it wrong too sometimes
-    
+
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -441,7 +441,7 @@ img.jcrop-preview {
 }
 /*
     Used to manage styles related to reusable components / widgets.
-    
+
     1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Tree - used for tree control
@@ -1431,29 +1431,53 @@ fieldset .actions {
   cursor: pointer;
   display: block;
 }
-.fileupload-group .fileupload-dropzone {
-  margin-top: 2px;
+.fileupload-group .fileupload-dropzone,
+.fileupload-group .fileupload-button {
   height: 30px;
-  border: 1px dotted #bbbbbb;
-  border-radius: 0 0 4px 4px;
   background-color: #999999;
   text-align: center;
   padding-top: 8px;
   position: relative;
   line-height: 12px;
 }
-.fileupload-group .fileupload-dropzone input {
+.fileupload-group .fileupload-dropzone ::-webkit-file-upload-button,
+.fileupload-group .fileupload-button ::-webkit-file-upload-button {
+  cursor: pointer;
+}
+.fileupload-group .fileupload-dropzone input,
+.fileupload-group .fileupload-button input {
   opacity: 0;
   height: 100%;
   width: 100%;
   position: absolute;
   left: 0;
   top: 0;
+  cursor: pointer;
 }
-.fileupload-group .fileupload-dropzone span {
+.fileupload-group .fileupload-dropzone span,
+.fileupload-group .fileupload-button span {
   font-size: 13px;
   color: #ffffff;
   width: 100%;
+  padding: 0 .5em;
+}
+.fileupload-group .fileupload-dropzone span:before,
+.fileupload-group .fileupload-button span:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\f093";
+  padding-right: .25em;
+}
+.fileupload-group .fileupload-dropzone {
+  margin-top: 2px;
+  border-radius: 0 0 4px 4px;
+}
+.fileupload-group .fileupload-button {
+  border-radius: 4px;
 }
 .fileupload-group .upload-progress {
   position: absolute;
@@ -2155,6 +2179,7 @@ td.grid-col-actions {
 
     1. HTML Content - block to edit HTML on a page
     2. My Account - Used on external sites for setting person details
+    3. Lava Debug - Used to style the lava debug panel
 */
 .htmlcontent-edit-header {
   padding: 7.5px 15px 0 15px;
@@ -2171,6 +2196,39 @@ td.grid-col-actions {
 }
 .my-account .photo img {
   width: 100%;
+}
+.lava-debug {
+  clear: both;
+  margin-top: 24px;
+}
+.lava-debug code {
+  background-color: #c4e3f3;
+  color: #3a87ad;
+}
+.lava-debug p {
+  margin-bottom: 10px;
+  font-weight: normal !important;
+}
+.lava-debug p.attributes {
+  margin-bottom: 0;
+}
+.lava-debug .lava-debug-key {
+  font-weight: 700;
+}
+.lava-debug .panel {
+  border: 0;
+}
+.lava-debug .panel .panel-heading {
+  background-color: #cce7f4;
+  color: #3a87ad;
+  border: 0;
+  cursor: pointer;
+}
+.lava-debug .panel .panel-heading.collapsed i:before {
+  content: "\f078";
+}
+.lava-debug .panel .panel-body {
+  background-color: #e6f3fa;
 }
 /*
     Used to manage styles for specific blocks.
@@ -2681,6 +2739,7 @@ table.attribute-grid tr th:nth-child(3) {
     14. Bulk Update
     15. Photo Upload
     16. Duplicate Pages
+    17. DISC
 */
 .personprofile {
   margin-top: -15px;
@@ -2880,12 +2939,51 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
   background: #817b72;
-  position: absolute;
-  bottom: 0;
   width: 8px;
   min-height: 1px;
 }
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-attendance ul.badge-attendance-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
+}
 .badge-attendance.annimate ul.badge-attendance-chart li span {
+  -webkit-animation: bar-grow 1s ease-in-out;
+  -moz-animation: bar-grow 1s ease-in-out;
+  -o-animation: bar-grow 1s ease-in-out;
+  animation: bar-grow 1s ease-in-out;
+}
+.badge-disc ul.badge-disc-chart {
+  display: table;
+  table-layout: fixed;
+  height: 40px;
+  margin: 0 auto;
+  width: 45px;
+}
+.badge-disc ul.badge-disc-chart li {
+  position: relative;
+  display: table-cell;
+  vertical-align: bottom;
+  height: 40px;
+  width: 3px;
+}
+.badge-disc ul.badge-disc-chart li span {
+  display: block;
+  background: #99bbd9;
+  width: 10px;
+  min-height: 2px;
+}
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .badge-disc ul.badge-disc-chart li span {
+    position: absolute;
+    bottom: 0;
+  }
+}
+.badge-disc ul.badge-disc-chart li.badge-disc-primary span {
+  background: #4f89bd;
+}
+.badge-disc.annimate ul.badge-disc-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
   -moz-animation: bar-grow 1s ease-in-out;
   -o-animation: bar-grow 1s ease-in-out;
@@ -3275,6 +3373,93 @@ tr.inactive td {
 .grid-table tbody tr.duplicate-source:hover > td {
   background-color: #999999;
   color: #333333;
+}
+.disc-assessment th {
+  padding: 6px;
+}
+.disc-assessment th:last-child {
+  border-radius: 0 4px 0 0;
+}
+.disc-assessment th.disc-question {
+  font-weight: 700;
+  padding: 6px;
+  border-radius: 4px 0 0 0;
+}
+.disc-assessment .disc-question {
+  width: 100%;
+}
+.disc-assessment .disc-answer {
+  width: 100px;
+}
+.disc-heading {
+  text-align: center;
+}
+.discchart {
+  clear: both;
+  padding: 0;
+  width: 80%;
+  height: 425px;
+  margin: 0 auto;
+  max-width: 650px;
+  position: relative;
+}
+.discchart li {
+  display: inline-block;
+  height: 425px;
+  margin: 0 2% 0 0;
+  width: 20%;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  vertical-align: bottom;
+  border-radius: 6px 6px 0 0;
+  background-color: #428bca;
+  color: #ecf0f3;
+}
+.discchart li.discchart-midpoint {
+  height: 70%;
+  width: 100%;
+  background-color: transparent;
+  position: absolute;
+  bottom: 0;
+  border-top: 2px solid red;
+  border-radius: 0;
+}
+.discchart .discbar-label {
+  font-weight: 500;
+  overflow: hidden;
+  text-transform: uppercase;
+  width: 100%;
+  font-size: 28px;
+  bottom: 20px;
+  position: absolute;
+}
+.discchart .discbar {
+  border: 1px solid #ddd;
+}
+.discchart .discbar:before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5%;
+  letter-spacing: -3px;
+  font-size: 20px;
+  padding: 5px 1em 0;
+  display: block;
+  text-align: center;
+  content: attr(title);
+  word-wrap: break-word;
+  line-height: 1em;
+}
+.discchart .discbar.discbar-primary {
+  background: #193c5a;
+}
+.disc-chart .discbar-value {
+  letter-spacing: -3px;
+  opacity: .4;
+  width: 100%;
+  font-size: 30px;
+  position: absolute;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3767,10 +3952,12 @@ iframe.email-body {
 .cke_dialog_footer {
   background-color: #eeeeee !important;
   background-image: none !important;
+  color: #555555 !important;
   outline: none !important;
   padding: 8px !important;
   margin-top: 10px !important;
   box-shadow: none !important;
+  border-radius: 0 0 4px 4px;
 }
 a.cke_dialog_ui_button,
 a.cke_dialog_ui_button:focus,
@@ -3784,35 +3971,70 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 14px !important;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel {
+  background-color: transparent !important;
+  color: #428bca !important;
+  font-weight: normal !important;
+  border: none !important;
+}
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:hover,
+a.cke_dialog_ui_button.cke_dialog_ui_button_cancel:focus {
+  color: #2a6496;
+  text-decoration: underline;
+  background-color: transparent;
 }
 a.cke_dialog_ui_button_ok,
 a.cke_dialog_ui_button_ok:focus,
 a.cke_dialog_ui_button_ok:active {
   background: #428bca !important;
-  color: #ecf0f3 !important;
-  border: 1px solid #3071a9 !important;
+  color: #ffffff !important;
+  border: 1px solid #2a6496 !important;
 }
-.ck-folders,
-.ck-files {
-  width: 50%;
-  float: left;
+@media (min-width: 480px) {
+  .ck-folders,
+  .ck-files {
+    float: left;
+  }
+}
+.ck-folders .scroll-container-vertical,
+.ck-files .scroll-container-vertical {
+  width: auto;
+}
+.ck-folders .scroll-container-vertical .viewport,
+.ck-files .scroll-container-vertical .viewport {
+  width: auto;
+}
+@media (min-width: 480px) {
+  .ck-folders {
+    width: 40%;
+  }
 }
 .ck-folders .actions {
   margin-bottom: 15px;
 }
-.ck-folders .scroll-container-vertical {
-  width: 450px;
+@media (max-width: 767px) {
+  .ck-folders .scroll-container-vertical .viewport {
+    height: 100px;
+  }
 }
-.ck-folders .scroll-container-vertical .viewport {
-  width: 430px;
+@media (min-width: 480px) {
+  .ck-files {
+    width: 60%;
+  }
 }
-.ck-files .fileupload-group .fileupload-dropzone {
-  height: 35px;
-  padding-top: 9px;
+.ck-files .fileupload-group {
+  display: inline-block;
+  border: none;
+  padding: 0;
 }
 .ck-files img.file-browser-image {
   width: 50px;
@@ -3840,8 +4062,9 @@ small {
   border-radius: 4px;
   font-size: 11px;
 }
-.tip.tip-liquid:after {
-  content: '{{ Liquid }}';
+.tip.tip-liquid:after,
+.tip.tip-lava:after {
+  content: '{{ Lava }}';
 }
 .tip.tip-html:after {
   content: '< HTML />';

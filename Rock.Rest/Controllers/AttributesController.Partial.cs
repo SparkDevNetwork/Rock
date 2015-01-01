@@ -26,30 +26,14 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Attributes REST API
     /// </summary>
-    public partial class AttributesController : IHasCustomRoutes
+    public partial class AttributesController
     {
-        /// <summary>
-        /// Add Custom route for flushing cached attributes
-        /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "AttributeFlush",
-                routeTemplate: "api/attributes/flush/{id}",
-                defaults: new
-                {
-                    controller = "attributes",
-                    action = "flush",
-                    id = System.Web.Http.RouteParameter.Optional
-                } );
-        }
-
         /// <summary>
         /// Flushes an attributes from cache.
         /// </summary>
         [Authenticate, Secured]
         [HttpPut]
+        [System.Web.Http.Route( "api/attributes/flush/{id}" )]
         public void Flush( int id )
         {
             Rock.Web.Cache.AttributeCache.Flush( id );
@@ -60,6 +44,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         [Authenticate, Secured]
         [HttpPut]
+        [System.Web.Http.Route( "api/attributes/flush" )]
         public void Flush()
         {
             Rock.Web.Cache.GlobalAttributesCache.Flush();

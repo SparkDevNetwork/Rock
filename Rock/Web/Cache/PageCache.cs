@@ -329,41 +329,37 @@ namespace Rock.Web.Cache
         {
             get
             {
-                List<BlockCache> blocks = new List<BlockCache>();
 
-                if ( blockIds != null )
-                {
-                    foreach ( int id in blockIds.ToList() )
-                    {
-                        BlockCache block = BlockCache.Read( id );
-                        if ( block != null )
-                        {
-                            blocks.Add( block );
-                        }
-                    }
-                }
-                else
+                if ( blockIds == null )
                 {
                     blockIds = new List<int>();
 
-                    // Load Layout Blocks
                     var rockContext = new RockContext();
                     BlockService blockService = new BlockService( rockContext );
-                    // layout blocks are likely to be in the cache already since pages share layouts, so look in the cache first
-                    foreach ( int layoutBlockId in blockService.GetByLayout( this.LayoutId ).Select( b => b.Id ))
-                    {
-                        blockIds.Add( layoutBlockId );
-                        blocks.Add( BlockCache.Read( layoutBlockId ) );
-                    }
+
+                    // Load Layout Blocks
+                    blockService
+                        .GetByLayout( this.LayoutId )
+                        .Select( b => b.Id )
+                        .ToList()
+                        .ForEach( b => blockIds.Add( b ) );
 
                     // Load Page Blocks
-                    foreach ( Block block in blockService.GetByPage( this.Id ) )
-                    {
-                        blockIds.Add( block.Id );
-                        block.LoadAttributes( rockContext );
-                        blocks.Add( BlockCache.Read( block ) );
-                    }
+                    blockService
+                        .GetByPage( this.Id )
+                        .Select( b => b.Id )
+                        .ToList()
+                        .ForEach( b => blockIds.Add( b ) );
+                }
 
+                var blocks = new List<BlockCache>();
+                foreach( int id in blockIds)
+                {
+                    var block = BlockCache.Read( id );
+                    if ( block != null )
+                    {
+                        blocks.Add( block );
+                    }
                 }
                 return blocks;
             }
@@ -703,17 +699,17 @@ namespace Rock.Web.Cache
                 }
 
                 var properties = new Dictionary<string, object>();
-                properties.Add( "id", this.Id );
-                properties.Add( "title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
-                properties.Add( "current", isCurrentPage.ToString().ToLower() );
-                properties.Add( "isParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
-                properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
-                properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
-                properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
-                properties.Add( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() );
-                properties.Add( "icon-css-class", this.IconCssClass ?? string.Empty );
-                properties.Add( "description", this.Description ?? "" );
-                properties.Add( "icon-url", iconUrl );
+                properties.Add( "Id", this.Id );
+                properties.Add( "Title", string.IsNullOrWhiteSpace( this.PageTitle ) ? this.InternalName : this.PageTitle );
+                properties.Add( "Current", isCurrentPage.ToString().ToLower() );
+                properties.Add( "IsParentOfCurrent", isParentOfCurrent.ToString().ToLower() );
+                properties.Add( "Url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
+                properties.Add( "DisplayDescription", this.MenuDisplayDescription.ToString().ToLower() );
+                properties.Add( "DisplayIcon", this.MenuDisplayIcon.ToString().ToLower() );
+                properties.Add( "DisplayChildPages", this.MenuDisplayChildPages.ToString().ToLower() );
+                properties.Add( "IconCssClass", this.IconCssClass ?? string.Empty );
+                properties.Add( "Description", this.Description ?? "" );
+                properties.Add( "IconUrl", iconUrl );
 
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages )
                 {
@@ -733,7 +729,7 @@ namespace Rock.Web.Cache
 
                     if ( childPages.Any() )
                     {
-                        properties.Add( "pages", childPages );
+                        properties.Add( "Pages", childPages );
                     }
                 }
 

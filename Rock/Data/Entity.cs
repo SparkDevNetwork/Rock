@@ -33,7 +33,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
+    public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable, DotLiquid.IIndexable
         where T : Entity<T>, new()
     {
         #region Entity Properties
@@ -295,54 +295,72 @@ namespace Rock.Data
         /// <returns>DotLiquid compatible dictionary.</returns>
         public object ToLiquid()
         {
-            return this.ToLiquid( false );
+            return this;
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
-        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
-        /// <returns>
-        /// DotLiquid compatible dictionary.
-        /// </returns>
-        public virtual object ToLiquid( bool debug )
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public virtual object this[object key]
         {
-            var dictionary = new Dictionary<string, object>();
+            get 
+            {
+                Type entityType = this.GetType();
+                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                    entityType = entityType.BaseType;
 
+                var propInfo = entityType.GetProperty( key.ToStringSafe() );
+                if ( propInfo != null &&
+                    propInfo.Name != "Attributes" &&
+                    propInfo.Name != "AttributeValues" &&
+                    ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
+                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+                {
+                    object propValue = propInfo.GetValue( this, null );
+
+                    if ( propValue is Guid )
+                    {
+                        return ( (Guid)propValue ).ToString();
+                    }
+                    else
+                    {
+                        return propValue;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public virtual bool ContainsKey( object key )
+        {
             Type entityType = this.GetType();
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            foreach ( var propInfo in entityType.GetProperties() )
+            var propInfo = entityType.GetProperty( key.ToStringSafe() );
+            if ( propInfo != null &&
+                propInfo.Name != "Attributes" &&
+                propInfo.Name != "AttributeValues" &&
+                ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
+                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
             {
-                if ( propInfo.Name != "Attributes" &&
-                    propInfo.Name != "AttributeValues" &&
-                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.IgnoreLiquidAttribute ) ).Count() <= 0 )
-                {
-                    object propValue = propInfo.GetValue( this, null );
-
-                    if (propValue is Guid)
-                    {
-                        propValue = ( (Guid)propValue ).ToString();
-                    }
-
-                    if ( debug && propValue is IEntity )
-                    {
-                        dictionary.Add( propInfo.Name, ( (IEntity)propValue ).ToLiquid( true ) );
-                    }
-                    else if ( debug && propValue is DotLiquid.ILiquidizable )
-                    {
-                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
-                    }
-                    else
-                    {
-                        dictionary.Add( propInfo.Name, propValue );
-                    }
-                }
+                return true;
             }
 
-            return dictionary;
+            return false;
         }
 
         #endregion

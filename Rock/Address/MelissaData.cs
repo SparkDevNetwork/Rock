@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 using Rock.Attribute;
 using Rock.MelissaData.AddressCheck;
 using Rock.Web.UI;
@@ -44,11 +46,11 @@ namespace Rock.Address
         {
             result = string.Empty;
 
-            if ( location != null && 
-                (!location.StandardizedDateTime.HasValue || reVerify ) )
+            if ( location != null &&
+                ( !location.StandardizedDateTime.HasValue || reVerify ) )
             {
                 var requestArray = new RequestArray();
-                requestArray.CustomerID = GetAttributeValue("CustomerId");
+                requestArray.CustomerID = GetAttributeValue( "CustomerId" );
                 requestArray.OptAddressParsed = "True";
 
                 RequestArrayRecord requestAddress = new RequestArrayRecord();
@@ -57,6 +59,7 @@ namespace Rock.Address
                 requestAddress.City = location.City;
                 requestAddress.State = location.State;
                 requestAddress.Zip = location.PostalCode;
+                requestAddress.Country = location.Country;
                 requestAddress.RecordID = "1";
 
                 requestArray.Record = new RequestArrayRecord[1];
@@ -68,15 +71,43 @@ namespace Rock.Address
                 if ( responseArray.TotalRecords == "1" && responseArray.Record[0].RecordID == "1" )
                 {
                     result = responseArray.Record[0].Results;
-
-                    if ( responseArray.Record[0].Results.Contains( "AS01" ) )
+                    if ( string.IsNullOrWhiteSpace( result ) )
                     {
+                        result = responseArray.Results;
+                    }
+
+                    string[] validResultCodes = new string[] {
+                        "AS01", // Address Fully Verified
+                        "AS09"  // Foreign Address
+                    };
+
+                    if ( validResultCodes.Any( a => responseArray.Record[0].Results.Contains( a ) ) )
+                    {
+                        bool foreignAddress = responseArray.Record[0].Results.Contains("AS09");
                         ResponseArrayRecordAddress responseAddress = responseArray.Record[0].Address;
                         location.Street1 = responseAddress.Address1;
                         location.Street2 = responseAddress.Address2;
                         location.City = responseAddress.City.Name;
-                        location.State = responseAddress.State.Abbreviation;
-                        location.PostalCode = responseAddress.Zip + '-' + responseAddress.Plus4;
+                        if ( !foreignAddress || !string.IsNullOrWhiteSpace(responseAddress.State.Abbreviation) )
+                        {
+                            // only set the State if we got a AS01 or a State back
+                            location.State = responseAddress.State.Abbreviation;
+                        }
+
+                        if ( !foreignAddress || !string.IsNullOrWhiteSpace( responseAddress.Zip ) )
+                        {
+                            // only set the PostalCode if we got a AS01 or a Zip back
+                            location.PostalCode = responseAddress.Zip;
+                            if (!string.IsNullOrWhiteSpace(requestAddress.Plus4))
+                            {
+                                location.PostalCode = responseAddress.Zip + '-' + responseAddress.Plus4;
+                            }
+                            else
+                            {
+                                location.PostalCode = responseAddress.Zip;
+                            }
+                        }
+
                         if ( location.Street2.Trim() == string.Empty &&
                             responseAddress.Suite.Trim() != string.Empty )
                             location.Street2 = responseAddress.Suite;

@@ -16,6 +16,7 @@ namespace RockInstallTools
 
         private static string requiredDotnetVersion = "4.5.1";
         private static double iisVersionRequired = 7.0;
+        private static int minimumDatabaseSize = 500;
 
         // internet connection test method
         public static EnvironmentCheckResult ConnectedToInternetTest()
@@ -237,7 +238,7 @@ namespace RockInstallTools
                     return result;
                 }
 
-                result.Message = String.Format( "The '{0}' database does not exist on the server, but you have persmissions to create it.  Rock will create it for you as part of the install.", dbDatabase );
+                result.Message = String.Format( "The '{0}' database does not exist on the server, but you have permissions to create it.  Rock will create it for you as part of the install.", dbDatabase );
             }
             else
             {
@@ -258,6 +259,15 @@ namespace RockInstallTools
                     result.DidPass = false;
                     return result;
                 }
+            }
+
+            DatabaseConfigurationResult sizeResult = CheckSqlDatabaseSize( dbServer, dbUsername, dbPassword, dbDatabase );
+            if ( !sizeResult.Success )
+            {
+                result.Message = sizeResult.Message;
+                result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DatabaseTooSmall";
+                result.DidPass = false;
+                return result;
             }
 
             return result;
@@ -475,6 +485,66 @@ namespace RockInstallTools
             }
 
             return permissionsCorrect;
+        }
+
+        // check if database is of proper size
+        private static DatabaseConfigurationResult CheckSqlDatabaseSize( string servername, string username, string password, string database )
+        {
+            DatabaseConfigurationResult result = new DatabaseConfigurationResult();
+            result.Success = true;
+            result.Message = "Database meets size requirements";
+           
+            // setup connection
+            string connectionString = String.Format( "user id={0};password={1};server={2};Initial Catalog={3};connection timeout=10", username, password, servername, database );
+            SqlConnection testConnection = new SqlConnection( connectionString );
+            SqlDataReader reader;
+
+            // try connection
+            try
+            {
+                testConnection.Open();
+
+                // test permissions by creating and dropping a table
+                SqlCommand testCommand = new SqlCommand( "sp_helpdb  " + database, testConnection );
+                reader = testCommand.ExecuteReader();
+
+                // get second data table
+                reader.NextResult();
+
+                reader.Read();
+                string size = reader.GetValue( 5 ).ToString();
+
+                if ( size != "Unlimited" )
+                {
+                    if ( size.Contains( "KB" ) )
+                    {
+                        size = size.Replace( " KB", "" );
+                        int sizeInKB = Int32.Parse( size );
+
+                        int sizeInMB = sizeInKB / 1024;
+
+                        if ( sizeInMB < minimumDatabaseSize )
+                        {
+                            result.Success = false;
+                            result.Message = String.Format( "The database '{0}' is not large enough to properly support Rock. Please ensure it is at least {1}MB in size (current size is {2}MB).", database, minimumDatabaseSize.ToString(), sizeInMB.ToString());
+                        }
+                    }
+                }
+
+
+            }
+            catch ( Exception ex )
+            {
+                // we'll default to everything is OK
+                result.Message = "Assuming database size is acceptable as we were unable to determine its size.";
+                return result;
+            }
+            finally
+            {
+                testConnection = null;
+            }
+
+            return result;
         }
 
         // check is database is empty

@@ -409,7 +409,7 @@ namespace RockWeb.Blocks.Administration
             {
                 var rockContext = new RockContext();
 
-                int? personAliasId = new Rock.Model.PersonAliasService( rockContext ).GetPrimaryAliasId( ppUser.PersonId.Value );
+                int? personAliasId = ppUser.PersonAliasId;
                 if ( personAliasId.HasValue )
                 {
                     bool alreadyExists = false;
@@ -464,6 +464,7 @@ namespace RockWeb.Blocks.Administration
             rGrid.DataBind();
 
             var parentRules = new List<MyAuthRule>();
+            AddParentRules( itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction );
             AddParentRules( itemRules, parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();

@@ -131,32 +131,21 @@ namespace Rock.Communication.Transport
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
-                string fromAddress = communication.GetMediumDataValue( "FromAddress" );
-                string replyTo = communication.GetMediumDataValue( "ReplyTo" );
-
-                // Check to make sure sending domain is a safe sender
-                var safeDomains = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
-                var emailParts = fromAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
-                if (emailParts.Length != 2 || !safeDomains.Contains(emailParts[1],StringComparer.OrdinalIgnoreCase))
-                {
-                    if (string.IsNullOrWhiteSpace(replyTo))
-                    {
-                        replyTo = fromAddress;
-                    }
-                    fromAddress = globalAttributes.GetValue("OrganizationEmail");
-                }
-
                 // From
+                string fromAddress = communication.GetMediumDataValue( "FromAddress" );
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(
                     fromAddress,
                     communication.GetMediumDataValue( "FromName" ) );
 
                 // Reply To
+                string replyTo = communication.GetMediumDataValue( "ReplyTo" );
                 if ( !string.IsNullOrWhiteSpace( replyTo ) )
                 {
                     message.ReplyToList.Add( new MailAddress( replyTo ) );
                 }
+
+                CheckSafeSender( message, globalAttributes );
 
                 // CC
                 string cc = communication.GetMediumDataValue( "CC" );
@@ -197,7 +186,10 @@ namespace Rock.Communication.Transport
                             var binaryFile = binaryFileService.Get(binaryFileId);
                             if ( binaryFile != null )
                             {
-                                Stream stream = new MemoryStream( binaryFile.Data.Content );
+                                // set the stream to the beginning, just in case
+                                binaryFile.Data.ContentStream.Seek( 0, SeekOrigin.Begin );
+
+                                Stream stream = binaryFile.Data.ContentStream;
                                 message.Attachments.Add( new Attachment( stream, binaryFile.FileName ) );
                             }
                         }
@@ -335,6 +327,8 @@ namespace Rock.Communication.Transport
                     message.From = new MailAddress( from, fromName );
                 }
 
+                CheckSafeSender( message, globalAttributes );
+
                 if ( !string.IsNullOrWhiteSpace( template.Cc ) )
                 {
                     foreach ( string ccRecipient in template.Cc.SplitDelimitedValues() )
@@ -437,6 +431,8 @@ namespace Rock.Communication.Transport
                         message.From = new MailAddress( from, fromName );
                     }
 
+                    CheckSafeSender( message, globalAttributes );
+
                     message.IsBodyHtml = true;
                     message.Priority = MailPriority.Normal;
 
@@ -511,5 +507,40 @@ namespace Rock.Communication.Transport
                 return new List<string>( recipients.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
         }
 
+        private void CheckSafeSender( MailMessage message, GlobalAttributesCache globalAttributes )
+        {
+            if ( message != null && message.From != null )
+            {
+                string from = message.From.Address;
+                string fromName = message.From.DisplayName;
+
+                // Check to make sure sending domain is a safe sender
+                var safeDomains = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
+                var emailParts = from.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( emailParts.Length != 2 || !safeDomains.Contains( emailParts[1], StringComparer.OrdinalIgnoreCase ) )
+                {
+                    string orgEmail = globalAttributes.GetValue( "OrganizationEmail" );
+                    if ( !string.IsNullOrWhiteSpace( orgEmail ) && !orgEmail.Equals( from, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        message.From = new MailAddress( orgEmail );
+
+                        bool addReplyTo = true;
+                        foreach ( var replyTo in message.ReplyToList )
+                        {
+                            if ( replyTo.Address.Equals( from, StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                addReplyTo = false;
+                                break;
+                            }
+                        }
+
+                        if ( addReplyTo )
+                        {
+                            message.ReplyToList.Add( new MailAddress( from, fromName ) );
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -354,16 +354,10 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
         /// <returns></returns>
         public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute, RockContext rockContext )
         {
-            int labelFileTypeId = new BinaryFileTypeService( rockContext )
-                    .Queryable()
-                    .Where( f => f.Guid == new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
-                    .Select( f => f.Id )
-                    .FirstOrDefault();
-
             return groupTypeAttribute
                 .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ) )
                 .Where( a => a.Value.QualifierValues.ContainsKey( "binaryFileType" ) )
-                .Where( a => a.Value.QualifierValues["binaryFileType"].Value.Equals( labelFileTypeId.ToString() ) )
+                .Where( a => a.Value.QualifierValues["binaryFileType"].Value.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
                 .ToDictionary( k => k.Key, v => v.Value );
         }
 

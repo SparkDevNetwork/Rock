@@ -2,12 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+#if !NET35
 using System.Net;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+#if NET35
+using System.Web;
+#endif
 using DotLiquid.Util;
-using Humanizer;
 
 namespace DotLiquid
 {
@@ -49,296 +53,6 @@ namespace DotLiquid
 				: input.ToUpper();
 		}
 
-        /// <summary>
-        /// pluralizes string
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string Pluralize( string input )
-        {
-            return input == null
-                ? input
-                : input.Pluralize();
-        }
-
-        /// <summary>
-        /// convert a integer to a string
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ToString( int input )
-        {
-            return input.ToString();
-        }
-
-        /// <summary>
-        /// singularize string
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string Singularize( string input )
-        {
-            return input == null
-                ? input
-                : input.Singularize();
-        }
-
-        /// <summary>
-        /// takes computer-readible-formats and makes them human readable
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string Humanize( string input )
-        {
-            return input == null
-                ? input
-                : input.Humanize();
-        }
-
-        /// <summary>
-        /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string HumanizeDateTime( string input )
-        {
-            if ( input == null )
-                return input;
-
-            DateTime dateProvided;
-
-            if ( DateTime.TryParse(input.ToString(), out dateProvided ))
-            {
-                return dateProvided.Humanize( false, RockDateTime.Now );
-            }
-            else
-            {
-                return input;
-            }
-        }
-
-        /// <summary>
-        /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string HumanizeTimeSpan( string sStartDate, string sEndDate, int precision =  1)
-        {
-            if ( string.IsNullOrWhiteSpace(sStartDate) || string.IsNullOrWhiteSpace(sEndDate) )
-                return "Two dates must be provided";
-
-            if ( sEndDate == "Now" )
-            {
-                sEndDate = RockDateTime.Now.ToString();
-            }
-
-            DateTime startDate, endDate;
-
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse(sEndDate, out endDate ))
-            {
-                TimeSpan difference = endDate - startDate;
-                return difference.Humanize(precision);
-            }
-            else
-            {
-                return "Could not parse one or more of the dates provided into a valid DateTime";
-            }
-        }
-
-        /// <summary>
-        /// takes two datetimes and returns the difference in the unit you provide
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static Int64? DateDiff( string sStartDate, string sEndDate, string unit )
-        {
-            if ( string.IsNullOrWhiteSpace( sStartDate ) || string.IsNullOrWhiteSpace( sEndDate ) )
-                return null;
-
-            if ( sEndDate == "Now" )
-            {
-                sEndDate = RockDateTime.Now.ToString();
-            }
-
-            if ( sStartDate == "Now" )
-            {
-                sStartDate = RockDateTime.Now.ToString();
-            }
-
-            DateTime startDate, endDate;
-
-            if ( DateTime.TryParse( sStartDate, out startDate ) && DateTime.TryParse( sEndDate, out endDate ) )
-            {
-                TimeSpan difference = endDate - startDate;
-
-                switch ( unit )
-                {
-                    case "d":
-                        return (Int64)difference.TotalDays;
-                    case "h":
-                        return (Int64)difference.TotalHours;
-                    case "m":
-                        return (Int64)difference.TotalMinutes;
-                    case "s":
-                        return (Int64)difference.TotalSeconds;
-                    default:
-                        return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// returns sentence in 'Title Case'
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string TitleCase( string input )
-        {
-            return input == null
-                ? input
-                : input.Titleize();
-        }
-
-        /// <summary>
-        /// returns sentence in 'PascalCase'
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ToPascal( string input )
-        {
-            return input == null
-                ? input
-                : input.Dehumanize();
-        }
-
-        /// <summary>
-        /// returns sentence in 'PascalCase'
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ToCssClass( string input )
-        {
-            return input == null
-                ? input
-                : input.ToLower().Replace( " ", "-" );
-        }
-
-        /// <summary>
-        /// returns sentence in 'Sentence case'
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string SentenceCase( string input )
-        {
-            return input == null
-                ? input
-                : input.Transform( To.SentenceCase );
-        }
-
-        /// <summary>
-        /// takes 1, 2 and returns 1st, 2nd
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string NumberToOrdinal( string input )
-        {
-            if ( input == null )
-                return input;
-
-            int number;
-
-            if ( int.TryParse( input, out number ) )
-            {
-                return number.Ordinalize();
-            }
-            else
-            {
-                return input;
-            }
-        }
-
-        /// <summary>
-        /// takes 1,2 and returns one, two
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string NumberToWords( string input )
-        {
-            if ( input == null )
-                return input;
-
-            int number;
-
-            if ( int.TryParse( input, out number ) )
-            {
-                return number.ToWords();
-            }
-            else
-            {
-                return input;
-            }
-        }
-
-        /// <summary>
-        /// takes 1,2 and returns first, second
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string NumberToOrdinalWords( string input )
-        {
-            if ( input == null )
-                return input;
-
-            int number;
-
-            if ( int.TryParse( input, out number ) )
-            {
-                return number.ToOrdinalWords();
-            }
-            else
-            {
-                return input;
-            }
-        }
-
-        /// <summary>
-        /// takes 1,2 and returns I, II, IV
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string NumberToRomanNumerals( string input )
-        {
-            if ( input == null )
-                return input;
-
-            int number;
-
-            if ( int.TryParse( input, out number ) )
-            {
-                return number.ToRoman();
-            }
-            else
-            {
-                return input;
-            }
-        }
-
-        /// <summary>
-        /// formats string to be appropriate for a quantity
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string ToQuantity( string input, int quantity )
-        {
-            return input == null
-                ? input
-                : input.ToQuantity( quantity );
-        }
-
 		/// <summary>
 		/// capitalize words in the input sentence
 		/// </summary>
@@ -361,7 +75,11 @@ namespace DotLiquid
 
 			try
 			{
+#if NET35
+                return HttpUtility.HtmlEncode(input);
+#else
 				return WebUtility.HtmlEncode(input);
+#endif
 			}
 			catch
 			{
@@ -374,6 +92,38 @@ namespace DotLiquid
 			return Escape(input);
 		}
 
+
+#if NET35
+	/// <summary>
+	/// Truncates a string down to 15 characters
+	/// </summary>
+	/// <param name="input"></param>
+	/// <returns></returns>
+        public static string Truncate(string input)
+        {
+            return Truncate(input, 15, "...");
+        }
+
+        /// <summary>
+        /// Truncates a string down to <paramref name="length"/> characters
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string Truncate(string input, int length)
+        {
+            return Truncate(input, length, "...");
+        }
+
+        /// <summary>
+        /// Truncates a string down to x characters
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="length"></param>
+        /// <param name="truncateString"></param>
+        /// <returns></returns>
+        public static string Truncate(string input, int length, string truncateString)
+#else
 		/// <summary>
 		/// Truncates a string down to x characters
 		/// </summary>
@@ -382,6 +132,7 @@ namespace DotLiquid
 		/// <param name="truncateString"></param>
 		/// <returns></returns>
 		public static string Truncate(string input, int length = 50, string truncateString = "...")
+#endif
 		{
 			if (string.IsNullOrEmpty(input))
 				return input;
@@ -393,7 +144,21 @@ namespace DotLiquid
 				: input;
 		}
 
+#if NET35
+        public static string TruncateWords(string input)
+        {
+            return TruncateWords(input, 15);
+        }
+
+        public static string TruncateWords(string input, int words)
+        {
+            return TruncateWords(input, words, "...");
+        }
+
+        public static string TruncateWords(string input, int words, string truncateString)
+#else
 		public static string TruncateWords(string input, int words = 15, string truncateString = "...")
+#endif
 		{
 			if (string.IsNullOrEmpty(input))
 				return input;
@@ -440,6 +205,25 @@ namespace DotLiquid
                 //: Regex.Replace(input, Environment.NewLine, string.Empty);
 		}
 
+#if NET35
+	/// <summary>
+	/// Join elements of the array with a certain character between them
+	/// </summary>
+	/// <param name="input"></param>
+	/// <returns></returns>
+        public static string Join(IEnumerable input)
+        {
+            return Join(input, " ");
+        }
+
+        /// <summary>
+        /// Join elements of the array with a certain character between them
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="glue"></param>
+        /// <returns></returns>
+        public static string Join(IEnumerable input, string glue)
+#else
 		/// <summary>
 		/// Join elements of the array with a certain character between them
 		/// </summary>
@@ -447,14 +231,40 @@ namespace DotLiquid
 		/// <param name="glue"></param>
 		/// <returns></returns>
 		public static string Join(IEnumerable input, string glue = " ")
+#endif
 		{
 			if (input == null)
 				return null;
 
 			IEnumerable<object> castInput = input.Cast<object>();
+#if NET35
+            return string.Join(glue, castInput.Select(o => o.ToString()).ToArray());
+#else
 			return string.Join(glue, castInput);
+#endif
 		}
 
+#if NET35
+	/// <summary>
+	/// Sort elements of the array
+	/// provide optional property with which to sort an array of hashes or drops
+	/// </summary>
+	/// <param name="input"></param>
+	/// <returns></returns>
+        public static IEnumerable Sort(object input)
+        {
+            return Sort(input, null);
+        }
+
+        /// <summary>
+        /// Sort elements of the array
+        /// provide optional property with which to sort an array of hashes or drops
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static IEnumerable Sort(object input, string property)
+#else
 		/// <summary>
 		/// Sort elements of the array
 		/// provide optional property with which to sort an array of hashes or drops
@@ -463,6 +273,7 @@ namespace DotLiquid
 		/// <param name="property"></param>
 		/// <returns></returns>
 		public static IEnumerable Sort(object input, string property = null)
+#endif
 		{
 			List<object> ary;
 			if (input is IEnumerable)
@@ -502,6 +313,27 @@ namespace DotLiquid
 			return ary;
 		}
 
+#if NET35
+	/// <summary>
+	/// Replace occurrences of a string with another
+	/// </summary>
+	/// <param name="input"></param>
+	/// <param name="string"></param>
+	/// <returns></returns>
+        public static string Replace(string input, string @string)
+        {
+            return Replace(input, @string, " ");
+        }
+
+        /// <summary>
+        /// Replace occurrences of a string with another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string Replace(string input, string @string, string replacement)
+#else
 		/// <summary>
 		/// Replace occurrences of a string with another
 		/// </summary>
@@ -510,6 +342,7 @@ namespace DotLiquid
 		/// <param name="replacement"></param>
 		/// <returns></returns>
 		public static string Replace(string input, string @string, string replacement = "")
+#endif
 		{
 			if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(@string))
 				return input;
@@ -519,6 +352,28 @@ namespace DotLiquid
 				: Regex.Replace(input, @string, replacement);
 		}
 
+#if NET35
+	/// <summary>
+	/// Replace the first occurence of a string with another
+	/// </summary>
+	/// <param name="input"></param>
+	/// <param name="string"></param>
+	/// <param name="replacement"></param>
+	/// <returns></returns>
+        public static string ReplaceFirst(string input, string @string)
+        {
+            return ReplaceFirst(input, @string, "");
+        }
+
+        /// <summary>
+        /// Replace the first occurence of a string with another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="string"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string ReplaceFirst(string input, string @string, string replacement)
+#else
 		/// <summary>
 		/// Replace the first occurence of a string with another
 		/// </summary>
@@ -527,6 +382,7 @@ namespace DotLiquid
 		/// <param name="replacement"></param>
 		/// <returns></returns>
 		public static string ReplaceFirst(string input, string @string, string replacement = "")
+#endif
 		{
 			if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(@string))
 				return input;
@@ -617,19 +473,8 @@ namespace DotLiquid
 			if (input == null)
 				return null;
 
-            if ( input.ToString() == "Now" )
-            {
-                input = RockDateTime.Now.ToString();
-            }
-
 			if (format.IsNullOrWhiteSpace())
 				return input.ToString();
-
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
-            if ( format.Length == 1 )
-            {
-                format = " " + format;
-            }
 
 			DateTime date;
 

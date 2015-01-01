@@ -24,31 +24,45 @@ using Rock.Extension;
 namespace Rock.Reporting
 {
     /// <summary>
-    /// MEF Container class for data filters
+    /// MEF Container class for Binary File DataFilter Components
     /// </summary>
     public class DataFilterContainer : Container<DataFilterComponent, IComponentData>
     {
-        private static DataFilterContainer instance;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        private static readonly Lazy<DataFilterContainer> instance =
+            new Lazy<DataFilterContainer>( () => new DataFilterContainer() );
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
-
+        /// <value>
+        /// The instance.
+        /// </value>
         public static DataFilterContainer Instance
         {
-            get
-            {
-                if ( instance == null )
-                {
-                    instance = new DataFilterContainer();
-                }
-                return instance;
-            }
+            get { return instance.Value; }
         }
 
-        private DataFilterContainer()
+        /// <summary>
+        /// Gets the component with the matching Entity Type Name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static DataFilterComponent GetComponent( string entityType )
         {
-            Refresh();
+            return Instance.GetComponentByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            return Instance.GetComponentNameByEntity( entityType );
         }
 
         /// <summary>
@@ -72,25 +86,6 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the component with the matching Entity Type Name
-        /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <returns></returns>
-        public static DataFilterComponent GetComponent( string entityTypeName )
-        {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the components that are for filtering a given entity type name
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
@@ -98,19 +93,22 @@ namespace Rock.Reporting
         public static List<DataFilterComponent> GetComponentsByFilteredEntityName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => 
+                .Where( c =>
                     c.Value.Value.AppliesToEntityType == entityTypeName ||
-                    c.Value.Value.AppliesToEntityType == string.Empty )
+                    string.IsNullOrEmpty( c.Value.Value.AppliesToEntityType ) )
                 .Select( c => c.Value.Value )
-                .OrderBy( c => c.Order)
+                .OrderBy( c => c.Order )
                 .ToList();
         }
 
-        // MEF Import Definition
-#pragma warning disable
+        /// <summary>
+        /// Gets or sets the MEF components.
+        /// </summary>
+        /// <value>
+        /// The MEF components.
+        /// </value>
         [ImportMany( typeof( DataFilterComponent ) )]
         protected override IEnumerable<Lazy<DataFilterComponent, IComponentData>> MEFComponents { get; set; }
-#pragma warning restore
 
     }
 }

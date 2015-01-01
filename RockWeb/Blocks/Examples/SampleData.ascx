@@ -14,7 +14,7 @@
 
                 <asp:Panel ID="pnlInputForm" runat="server">
                     <fieldset>
-                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password to use for Logins" Help="The password to use for any user logins that are created in the sample data.  Note: If you don't provide a password no logins will be added." ></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password to use for Logins" Help="The password to use for any user logins that are created in the sample data.  Note: If you don't provide a password no logins will be added." TextMode="Password" ></Rock:RockTextBox>
                     </fieldset>
                     <Rock:BootstrapButton ID="bbtnLoadData" runat="server" CssClass="btn btn-primary" OnClick="bbtnLoadData_Click" Text="Load Sample Data" DataLoadingText="Loading...(this may take a few minutes)"></Rock:BootstrapButton>           
                 </asp:Panel>

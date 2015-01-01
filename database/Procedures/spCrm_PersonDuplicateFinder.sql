@@ -177,7 +177,7 @@ BEGIN
         ,Gender
         ,PersonAliasId
         )
-    SELECT [m].[Number]
+    SELECT DISTINCT [m].[Number]
         ,isnull([m].[Extension], '')
         ,isnull([m].[CountryCode], '')
         ,[m].[NumberTypeValueId]

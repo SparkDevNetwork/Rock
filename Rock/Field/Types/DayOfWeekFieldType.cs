@@ -79,7 +79,11 @@ namespace Rock.Field.Types
 
             if ( dayOfWeekPicker != null )
             {
-                return dayOfWeekPicker.SelectedDayOfWeek.ConvertToInt().ToString();
+                var selectedDay = dayOfWeekPicker.SelectedDayOfWeek;
+                if ( selectedDay != null)
+                {
+                    return selectedDay.ConvertToInt().ToString();
+                }
             }
 
             return null;
@@ -93,11 +97,15 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            DayOfWeek? dayOfWeek = null;
+
+            if ( !string.IsNullOrWhiteSpace(value) )
             {
-                DayOfWeekPicker dayOfWeekPicker = control as DayOfWeekPicker;
-                dayOfWeekPicker.SelectedDayOfWeek = (System.DayOfWeek)( value.AsInteger() );
+                dayOfWeek = (DayOfWeek)( value.AsInteger() );
             }
+
+            DayOfWeekPicker dayOfWeekPicker = control as DayOfWeekPicker;
+            dayOfWeekPicker.SelectedDayOfWeek = dayOfWeek;
         }
 
 

@@ -81,10 +81,9 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a double
-        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as case when (len(value) &lt; 100 and ISNUMERIC( value) = 1 and value not like '%[^0-9.]%') then convert(numeric(38,10), value ) else null end
+        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as (case when len([value]) &lt; (100) AND isnumeric([value])=(1) AND NOT [value] like %[^0-9.]%' AND NOT [value] like '%[.]%' then CONVERT([numeric](38,10),[value])  end
         /// </summary>
         /// <value>
-        /// The match score.
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -92,10 +91,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a DateTime 
-        /// Calculated Field: alter table AttributeValue add ValueAsDateTime as case when (len(value) &lt; 50 and ISDATE( value) = 1) then convert(datetime, value) else null end
+        /// Calculated Field: ALTER TABLE [dbo].[AttributeValue] ADD [ValueAsDateTime] AS CASE WHEN [value] LIKE '____-__-__T__:__:__________' THEN CONVERT(datetime, CONVERT(datetimeoffset, [value])) ELSE NULL END
+        /// NOTE: Only supports "timezone neutral" ISO-8601 format
         /// </summary>
         /// <value>
-        /// The match score.
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -150,10 +149,8 @@ namespace Rock.Model
             var attributeCache = AttributeCache.Read( this.AttributeId );
             if (attributeCache != null)
             {
-                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
-                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
-
-                if ( attributeCache.FieldTypeId == fieldTypeImage.Id || attributeCache.FieldTypeId == fieldTypeBinaryFile.Id )
+                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+                if ( attributeCache.FieldType.Field is Rock.Field.Types.BinaryFileFieldType )
                 {
                     Guid? binaryFileGuid = Value.AsGuidOrNull();
                     if ( binaryFileGuid.HasValue )

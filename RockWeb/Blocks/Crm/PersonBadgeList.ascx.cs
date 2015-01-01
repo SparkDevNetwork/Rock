@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonBadge_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PersonBadgeId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "PersonBadgeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
             PersonBadgeService PersonBadgeService = new PersonBadgeService( rockContext );
-            PersonBadge PersonBadge = PersonBadgeService.Get( (int)e.RowKeyValue );
+            PersonBadge PersonBadge = PersonBadgeService.Get( e.RowKeyId );
 
             if ( PersonBadge != null )
             {

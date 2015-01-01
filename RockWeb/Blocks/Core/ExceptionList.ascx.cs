@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Administraton
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            SetExceptionPanelVisibility( (int)e.RowKeyValue );
+            SetExceptionPanelVisibility( e.RowKeyId );
         }
 
         #endregion
@@ -330,7 +330,7 @@ namespace RockWeb.Blocks.Administraton
 
         protected void gExceptionOccurrences_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ExceptionId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "ExceptionId", e.RowKeyId );
         }
 
         #endregion
