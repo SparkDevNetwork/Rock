@@ -14,7 +14,7 @@ namespace Rock.Store
     /// <summary>
     /// Service class for the store package model.
     /// </summary>
-    public class PackageService : StoreService
+    public class PackageService : StoreServiceBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageService"/> class.
@@ -83,8 +83,7 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
             
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            string storeKey = globalAttributes.GetValue( "RockStoreKey" );
+            string storeKey = StoreService.GetOrganizationKey();
             
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
@@ -121,8 +120,7 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            string storeKey = globalAttributes.GetValue( "RockStoreKey" );
+            string storeKey = StoreService.GetOrganizationKey(); ;
 
             // setup REST call
             var client = new RestClient( _rockStoreUrl );

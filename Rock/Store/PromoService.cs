@@ -14,7 +14,7 @@ namespace Rock.Store
     /// <summary>
     /// Service class for the store promotions model.
     /// </summary>
-    public class PromoService : StoreService
+    public class PromoService : StoreServiceBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PromoService"/> class.

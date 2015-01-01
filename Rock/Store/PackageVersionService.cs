@@ -14,7 +14,7 @@ namespace Rock.Store
     /// <summary>
     /// Service class for the store category model.
     /// </summary>
-    public class PackageVersionService : StoreService
+    public class PackageVersionService : StoreServiceBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryService"/> class.
