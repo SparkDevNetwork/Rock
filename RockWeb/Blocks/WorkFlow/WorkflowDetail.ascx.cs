@@ -150,6 +150,10 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     BuildControls( false );
                 }
+                else
+                {
+                    ShowAttributeValues();
+                }
             }
         }
 
@@ -187,23 +191,8 @@ namespace RockWeb.Blocks.WorkFlow
 
             bool editMode = hfMode.Value == "Edit";
 
-            liNotes.Visible = !editMode;
-            divNotes.Visible = !editMode;
-
             liLog.Visible = !editMode;
             divLog.Visible = !editMode;
-
-            if (!editMode )
-            {
-                if ( ncWorkflowNotes.NoteCount > 0 )
-                {
-                    lNoteCount.Text = string.Format( "<span class='badge badge-default'>{0:N0}</span>", ncWorkflowNotes.NoteCount );
-                }
-                else
-                {
-                    lNoteCount.Text = string.Empty;
-                }
-            }
 
             pnlDetailsView.Visible = !editMode;
             pnlDetailsEdit.Visible = editMode;
@@ -215,8 +204,6 @@ namespace RockWeb.Blocks.WorkFlow
             ShowHideTab( activeTab == "Details" || activeTab == string.Empty, divDetails );
             ShowHideTab( activeTab == "Activities", liActivities );
             ShowHideTab( activeTab == "Activities", divActivities );
-            ShowHideTab( activeTab == "Notes", liNotes );
-            ShowHideTab( activeTab == "Notes", divNotes );
             ShowHideTab( activeTab == "Log", liLog );
             ShowHideTab( activeTab == "Log", divLog );
 
@@ -694,10 +681,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
             hlType.Text = Workflow.WorkflowType.Name;
 
-            var noteEntityTypeId = EntityTypeCache.Read( typeof( Workflow ) ).Id;
-            var noteType = new NoteTypeService( rockContext ).Get( noteEntityTypeId, "WorkflowNote" );
-            ncWorkflowNotes.NoteTypeId = noteType.Id;
-
             ShowReadonlyDetails();
         }
 
@@ -746,39 +729,13 @@ namespace RockWeb.Blocks.WorkFlow
                             Workflow.CompletedDateTime.Value.ToRelativeDateString() );
                     }
 
-                    phViewAttributes.Controls.Clear();
-                    foreach ( var attribute in Workflow.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
-                    {
-                        var td = new TermDescription();
-                        td.ID = "tdViewAttribute_" + attribute.Key;
-                        td.Term = attribute.Name;
-
-                        string value = Workflow.GetAttributeValue( attribute.Key );
-
-                        var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
-
-                        if ( field is Rock.Field.ILinkableFieldType )
-                        {
-                            var linkableField = field as Rock.Field.ILinkableFieldType;
-                            td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
-                                ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
-                        }
-                        else
-                        {
-                            td.Description = formattedValue;
-                        }
-                        phViewAttributes.Controls.Add( td );
-                    }
+                    ShowAttributeValues();
 
                     var rockContext = new RockContext();
                     _personAliasService = new PersonAliasService( rockContext );
                     _groupService = new GroupService( rockContext );
                     rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
                     rptrActivities.DataBind();
-
-                    ncWorkflowNotes.EntityId = Workflow.Id;
-                    ncWorkflowNotes.RebuildNotes( true );
 
                     BindLog();
                 }
@@ -788,6 +745,8 @@ namespace RockWeb.Blocks.WorkFlow
                     pnlContent.Visible = false;
                 }
             }
+
+            HideSecondaryBlocks( false );
         }
 
         private void ShowEditDetails()
@@ -838,6 +797,36 @@ namespace RockWeb.Blocks.WorkFlow
             lState.Text = sbState.ToString();
 
             BuildControls( true );
+
+            HideSecondaryBlocks( true );
+        }
+
+        private void ShowAttributeValues()
+        {
+            phViewAttributes.Controls.Clear();
+            foreach ( var attribute in Workflow.Attributes.OrderBy( a => a.Value.Order ).Select( a => a.Value ) )
+            {
+                var td = new TermDescription();
+                td.ID = "tdViewAttribute_" + attribute.Key;
+                td.Term = attribute.Name;
+
+                string value = Workflow.GetAttributeValue( attribute.Key );
+
+                var field = attribute.FieldType.Field;
+                string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+
+                if ( field is Rock.Field.ILinkableFieldType )
+                {
+                    var linkableField = field as Rock.Field.ILinkableFieldType;
+                    td.Description = string.Format( "<a href='{0}{1}'>{2}</a>",
+                        ResolveRockUrl( "~" ), linkableField.UrlLink( value, attribute.QualifierValues ), formattedValue );
+                }
+                else
+                {
+                    td.Description = formattedValue;
+                }
+                phViewAttributes.Controls.Add( td );
+            }
         }
 
         private void BindLog()

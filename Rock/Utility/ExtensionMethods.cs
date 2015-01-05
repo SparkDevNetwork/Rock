@@ -960,16 +960,25 @@ namespace Rock
         /// <returns></returns>
         public static string FormatAsHtmlTitle( this string str )
         {
-            // Remove any HTML
-            string encodedStr = System.Web.HttpUtility.HtmlEncode( str );
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // Remove any HTML
+                string encodedStr = System.Web.HttpUtility.HtmlEncode( str );
 
-            // split first word from rest of string
-            int endOfFirstWord = encodedStr.IndexOf( " " );
+                // split first word from rest of string
+                int endOfFirstWord = encodedStr.IndexOf( " " );
 
-            if ( endOfFirstWord != -1 )
-                return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
-            else
-                return "<span class='first-word'>" + encodedStr + " </span>";
+                if ( endOfFirstWord != -1 )
+                {
+                    return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
+                }
+                else
+                {
+                    return "<span class='first-word'>" + encodedStr + " </span>";
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>

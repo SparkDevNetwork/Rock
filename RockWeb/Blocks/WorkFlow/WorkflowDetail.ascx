@@ -28,9 +28,6 @@
                     <li id="liActivities" runat="server">
                         <a href='#<%=divActivities.ClientID%>' data-toggle="pill" data-active-div="Activities">Activities</a>
                     </li>
-                    <li id="liNotes" runat="server">
-                        <a href='#<%=divNotes.ClientID%>' data-toggle="pill" data-active-div="Notes">Notes <asp:Literal ID="lNoteCount" runat="server" /></a>
-                    </li>
                     <li id="liLog" runat="server">
                         <a href='#<%=divLog.ClientID%>' data-toggle="pill" data-active-div="Log">Log</a>
                     </li>
@@ -148,16 +145,6 @@
                             </span>
 
                         </asp:Panel>
-
-                    </div>
-
-                    <div ID="divNotes" runat="server" class="tab-pane">
-
-                        <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Term="Note" ShowHeading="false"
-                            DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="false"
-                            ShowPrivateCheckBox="false" ShowSecurityButton="false"
-                            AllowAnonymousEntry="false" AddAlwaysVisible="true"
-                            SortDirection="Descending" />
 
                     </div>
 
