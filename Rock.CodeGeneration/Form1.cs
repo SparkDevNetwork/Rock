@@ -189,14 +189,10 @@ namespace Rock.CodeGeneration
         /// <param name="type"></param>
         private void WriteServiceFile( string rootFolder, Type type )
         {
-            string repoConstructorParam = string.Empty;
-            if ( !type.Assembly.Equals( rockAssembly ) )
+            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            if (dbContextFullName.StartsWith("Rock.Data."))
             {
-                foreach ( var context in Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) ) )
-                {
-                    repoConstructorParam = string.Format( " new EFRepository<{0}>( new {1}() ) ", type.Name, context.Value.FullName );
-                    break;
-                }
+                dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
             var properties = GetEntityProperties( type );
@@ -244,7 +240,8 @@ namespace Rock.CodeGeneration
             sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"context\">The context.</param>" );
-            sb.AppendFormat( "        public {0}Service(RockContext context) : base(context)" + Environment.NewLine, type.Name );
+
+            sb.AppendFormat( "        public {0}Service({1} context) : base(context)" + Environment.NewLine, type.Name, dbContextFullName );
             sb.AppendLine( "        {" );
             sb.AppendLine( "        }" );
 
@@ -462,6 +459,7 @@ order by [parentTable], [columnName]
         {
             string pluralizedName = type.Name.Pluralize();
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
+            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
             var sb = new StringBuilder();
 
@@ -499,7 +497,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    /// </summary>" );
             sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    {" );
-            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new Rock.Data.RockContext() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new {3}() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name, dbContextFullName );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
             
