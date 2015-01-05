@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Allow Anonymous", "", false, "", 9 )]
     [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10 )]
     [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11 )]
-    public partial class Notes : RockBlock
+    public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -98,6 +98,14 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
+        #region Methods
+
+        public void SetVisible( bool visible )
+        {
+            notesTimeline.Visible = visible;
+        }
+
+        #endregion
 
     }
 }
