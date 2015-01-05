@@ -94,6 +94,15 @@ namespace Rock.Model
         [DataMember]
         public Guid? ActionAttributeGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the allow notes.
+        /// </summary>
+        /// <value>
+        /// The allow notes.
+        /// </value>
+        [DataMember]
+        public bool? AllowNotes { get; set; }
+
         #endregion
 
         #region Virtual Properties

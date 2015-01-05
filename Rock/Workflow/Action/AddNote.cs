@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     [Description( "Adds a note to the workflow." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Add Note" )]
-    [MemoField( "Note", "The note to add. <span class='tip tip-lava'></span>", true, "" )]
+    [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "" )]
     public class AddNote : ActionComponent
     {
         /// <summary>

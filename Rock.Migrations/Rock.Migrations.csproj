@@ -70,6 +70,10 @@
     <Compile Include="Migrations\201412301436122_RestrictCheckinAdminSite.Designer.cs">
       <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201501051814547_WorkflowNotes.cs" />
+    <Compile Include="Migrations\201501051814547_WorkflowNotes.Designer.cs">
+      <DependentUpon>201501051814547_WorkflowNotes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1372,6 +1376,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201412301436122_RestrictCheckinAdminSite.resx">
       <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501051814547_WorkflowNotes.resx">
+      <DependentUpon>201501051814547_WorkflowNotes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
