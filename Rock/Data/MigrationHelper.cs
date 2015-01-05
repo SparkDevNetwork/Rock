@@ -2439,6 +2439,16 @@ INSERT INTO [dbo].[Auth]
             Migration.Sql( string.Format( "DELETE FROM [dbo].[Auth] where [Guid] = '{0}'", guid ) );
         }
 
+        /// <summary>
+        /// Adds the security authentication for rest controller.
+        /// </summary>
+        /// <param name="restControllerClass">The rest controller class.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.RestController";
@@ -2492,9 +2502,20 @@ INSERT INTO [dbo].[Auth]
                 groupGuid,                      // 5
                 specialRole.ConvertToInt(),     // 6
                 authGuid ) );                   // 7
-        }                                          
+        }
 
 
+        /// <summary>
+        /// Adds the security authentication for rest action.
+        /// </summary>
+        /// <param name="restActionMethod">The rest action method.</param>
+        /// <param name="restActionPath">The rest action path.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.RestAction";
@@ -3930,6 +3951,11 @@ INSERT INTO [dbo].[Auth]
 
         #region REST Methods
 
+        /// <summary>
+        /// Adds the rest controller.
+        /// </summary>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
         public void AddRestController( string controllerName, string controllerClass )
         {
             Migration.Sql( string.Format( @"
@@ -3950,6 +3976,13 @@ INSERT INTO [dbo].[Auth]
                     ) );
         }
 
+        /// <summary>
+        /// Adds the rest action.
+        /// </summary>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
+        /// <param name="actionMethod">The action method.</param>
+        /// <param name="actionPath">The action path.</param>
         public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
         {
             AddRestController( controllerName, controllerClass );
