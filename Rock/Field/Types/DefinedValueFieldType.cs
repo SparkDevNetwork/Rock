@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     {
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+        private const string DISPLAY_DESCRIPTION = "displaydescription";
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -52,6 +53,15 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
+                bool useDescription = false;
+                if ( !condensed &&
+                     configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+                {
+                    useDescription = true;
+                }
+
                 var names = new List<string>();
                 foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
@@ -61,7 +71,7 @@ namespace Rock.Field.Types
                         var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
                         if ( definedValue != null )
                         {
-                            names.Add( definedValue.Value );
+                            names.Add( useDescription ? definedValue.Description : definedValue.Value );
                         }
                     }
                 }
@@ -82,6 +92,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( DEFINED_TYPE_KEY );
             configKeys.Add( ALLOW_MULTIPLE_KEY );
+            configKeys.Add( DISPLAY_DESCRIPTION );
             return configKeys;
         }
 
@@ -117,6 +128,16 @@ namespace Rock.Field.Types
             cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
             cb.Help = "When set, allows multiple defined type values to be selected.";
+
+            // Add checkbox for deciding if the defined values list is renedered as a drop
+            // down list or a checkbox list.
+            var cbDescription = new RockCheckBox();
+            controls.Add( cbDescription );
+            cbDescription.AutoPostBack = true;
+            cbDescription.CheckedChanged += OnQualifierUpdated;
+            cbDescription.Label = "Display Descriptions";
+            cbDescription.Text = "Yes";
+            cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
             return controls;
         }
 
@@ -130,17 +151,23 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", "" ) );
+            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", "" ) );
 
-            if ( controls != null && controls.Count == 2 )
+            if ( controls != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is DropDownList )
                 {
                     configurationValues[DEFINED_TYPE_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
                 }
 
-                if ( controls[1] != null && controls[1] is CheckBox )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
                 {
                     configurationValues[ ALLOW_MULTIPLE_KEY ].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
+                {
+                    configurationValues[DISPLAY_DESCRIPTION].Value = ( (CheckBox)controls[2] ).Checked.ToString();
                 }
             }
 
@@ -154,16 +181,21 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            if ( controls != null && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
                 {
                     ( (DropDownList)controls[0] ).SelectedValue = configurationValues[DEFINED_TYPE_KEY].Value;
                 }
 
-                if ( controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
                 {
                     ( (CheckBox)controls[1] ).Checked = configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) )
+                {
+                    ( (CheckBox)controls[2] ).Checked = configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
                 }
             }
         }
@@ -200,9 +232,12 @@ namespace Rock.Field.Types
                     var definedValues = definedValueService.GetByDefinedTypeId( definedTypeId );
                     if ( definedValues.Any() )
                     {
+
+                        bool useDescription = configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+
                         foreach ( var definedValue in definedValues )
                         {
-                            editControl.Items.Add( new ListItem( definedValue.Value, definedValue.Id.ToString() ) );
+                            editControl.Items.Add( new ListItem( useDescription ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() ) );
                         }
                     }
                     return editControl;

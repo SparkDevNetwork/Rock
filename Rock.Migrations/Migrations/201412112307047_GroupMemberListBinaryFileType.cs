@@ -37,6 +37,12 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "88B7EFA9-7419-4D05-9F88-38B936E61EDD", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Person Profile Page", "PersonProfilePage", "", "The person profile page to link to.", 2, "", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", false );
             // Sets GroupMemberList PersonProfile Attribute Value
             RockMigrationHelper.AddBlockAttributeValue( "BA0F3E7D-1C3A-47CB-9058-893DBAA35B89", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", "08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
+            // Security role members
+            RockMigrationHelper.AddBlockAttributeValue( "E71D3062-286A-49D2-A0BB-84B385EFAD50", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", "08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
+            // Application Group Members
+            RockMigrationHelper.AddBlockAttributeValue( "AB47ABE2-B9BB-4C89-B35A-ABCECA2098C6", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", "08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
+            // Photo Request Members
+            RockMigrationHelper.AddBlockAttributeValue( "B99901FD-E852-4FCF-8F9B-0870984D59AE", "9E139BB9-D87C-4C9F-A241-DC4620AD340B", "08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
 
             // BinaryFileType ScanSettings Up Migration
             AddColumn( "dbo.BinaryFileType", "MaxWidth", c => c.Int() );

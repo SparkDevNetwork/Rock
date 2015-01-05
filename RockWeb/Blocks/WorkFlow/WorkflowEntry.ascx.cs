@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    // Loop through all the query string parameters and try to set any workflo
+                    // Loop through all the query string parameters and try to set any workflow
                     // attributes that might have the same key
                     foreach ( string key in Request.QueryString.AllKeys )
                     {
@@ -342,7 +342,10 @@ namespace RockWeb.Blocks.WorkFlow
                         // If the workflow type is persisted, save the workflow
                         if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                         {
-                            _workflowService.Add( _workflow );
+                            if ( _workflow.Id == 0 )
+                            {
+                                _workflowService.Add( _workflow );
+                            }
 
                             _rockContext.WrapTransaction( () =>
                             {
@@ -560,19 +563,19 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( _workflow != null && _workflow.Id != 0 )
+            if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
                 ncWorkflowNotes.EntityId = _workflow.Id;
                 ncWorkflowNotes.RebuildNotes( setValues );
 
-                divAttributes.RemoveCssClass( "col-md-12" );
-                divAttributes.AddCssClass( "col-md-6" );
+                divForm.RemoveCssClass( "col-md-12" );
+                divForm.AddCssClass( "col-md-6" );
                 divNotes.Visible = true;
             }
             else
             {
-                divAttributes.AddCssClass( "col-md-12" );
-                divAttributes.RemoveCssClass( "col-md-6" );
+                divForm.AddCssClass( "col-md-12" );
+                divForm.RemoveCssClass( "col-md-6" );
                 divNotes.Visible = false;
             }
 

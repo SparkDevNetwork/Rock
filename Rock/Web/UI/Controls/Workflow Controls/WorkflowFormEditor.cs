@@ -37,6 +37,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfFormGuid;
         private RockDropDownList _ddlNotificationSystemEmail;
         private RockCheckBox _cbIncludeActions;
+        private RockCheckBox _cbAllowNotes;
         private CodeEditor _ceHeaderText;
         private CodeEditor _ceFooterText;
         private WorkflowFormActionList _falActions;
@@ -78,6 +79,7 @@ namespace Rock.Web.UI.Controls
                 form.Header = _ceHeaderText.Text;
                 form.Footer = _ceFooterText.Text;
                 form.Actions = _falActions.Value;
+                form.AllowNotes = _cbAllowNotes.Checked;
 
                 foreach ( var row in AttributeRows )
                 {
@@ -118,6 +120,7 @@ namespace Rock.Web.UI.Controls
                 _ceHeaderText.Text = value.Header;
                 _ceFooterText.Text = value.Footer;
                 _falActions.Value = value.Actions;
+                _cbAllowNotes.Checked = value.AllowNotes.HasValue && value.AllowNotes.Value;
 
                 // Remove any existing rows (shouldn't be any)
                 foreach ( var attributeRow in Controls.OfType<WorkflowFormAttributeRow>() )
@@ -163,6 +166,7 @@ namespace Rock.Web.UI.Controls
                 _ceFooterText.Text = string.Empty;
                 _falActions.Value = "Submit^^^Your information has been submitted successfully.";
                 _ddlNotificationSystemEmail.SelectedIndex = 0;
+                _cbAllowNotes.Checked = false;
             }
         }
 
@@ -280,6 +284,12 @@ namespace Rock.Web.UI.Controls
             _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected command label.";
             Controls.Add( _ddlActionAttribute );
 
+            _cbAllowNotes = new RockCheckBox();
+            _cbAllowNotes.Label = "Enable Note Entry";
+            _cbAllowNotes.Text = "Yes";
+            _cbAllowNotes.Help = "Should this form include an area for viewing and editing notes related to the workflow?";
+            _cbAllowNotes.ID = this.ID + "_cbAllowNotes";
+            Controls.Add( _cbAllowNotes );
         }
 
         /// <summary>
@@ -306,6 +316,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // row
+
+                _cbAllowNotes.RenderControl( writer );
 
                 _ceHeaderText.ValidationGroup = ValidationGroup;
                 _ceHeaderText.RenderControl( writer );
