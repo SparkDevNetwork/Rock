@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( canConfigure )
                 {
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.DataKeyNames = new string[] { "Id" };
                     rGrid.Actions.ShowAdd = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.Actions.ShowExcelExport = false;
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Administration
             var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
-            var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var page = pageService.Get( e.RowKeyId );
             if ( page != null )
             {
                 string errorMessage = string.Empty;

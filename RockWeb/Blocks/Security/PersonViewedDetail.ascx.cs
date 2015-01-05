@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Security
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            gViewDetails.DataKeyNames = new string[] { "id" };
+            gViewDetails.DataKeyNames = new string[] { "Id" };
             gViewDetails.GridRebind += gViewDetails_GridRebind;
         }
 

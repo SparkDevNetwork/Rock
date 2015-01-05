@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -50,6 +51,27 @@ namespace Rock.Client
 
         /// <summary />
         public bool RequiresViewSecurity { get; set; }
+
+        /// <summary />
+        public int? MaxWidth { get; set; }
+
+        /// <summary />
+        public int? MaxHeight { get; set; }
+
+        /// <summary />
+        public int /* PreferredFormat*/ PreferredFormat { get; set; }
+
+        /// <summary />
+        public int /* PreferredResolution*/ PreferredResolution { get; set; }
+
+        /// <summary />
+        public int /* PreferredColorDepth*/ PreferredColorDepth { get; set; }
+
+        /// <summary />
+        public bool PreferredRequired { get; set; }
+
+        /// <summary />
+        public EntityType StorageEntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -30,6 +31,12 @@ namespace Rock.Client
     /// </summary>
     public partial class WorkflowType
     {
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
+
         /// <summary />
         public bool IsSystem { get; set; }
 
@@ -64,16 +71,16 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public ICollection<WorkflowActivityType> ActivityTypes { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public int Id { get; set; }

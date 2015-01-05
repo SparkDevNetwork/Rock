@@ -27,6 +27,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a Day of the Week
+    /// stored as int value that can be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
     public class DayOfWeekFieldType : FieldType
     {

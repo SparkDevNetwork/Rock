@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -53,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary />
+        public ICollection<WorkflowAction> Actions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

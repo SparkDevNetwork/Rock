@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Core
                         if ( !Page.IsPostBack )
                             _container.Refresh();
 
-                        rGrid.DataKeyNames = new string[] { "id" };
+                        rGrid.DataKeyNames = new string[] { "Id" };
                         rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
                         rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>

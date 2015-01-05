@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Core
 
             if ( _canConfigure )
             {
-                rGrid.DataKeyNames = new string[] { "id" };
+                rGrid.DataKeyNames = new string[] { "Id" };
                 rGrid.Actions.ShowAdd = true;
 
                 rGrid.Actions.AddClick += rGrid_Add;
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new CategoryService( rockContext );
 
-            var category = service.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var category = service.Get( e.RowKeyId );
             if ( category != null )
             {
                 string errorMessage = string.Empty;

@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
-            gLog.DataKeyNames = new string[] { "id" };
+            gLog.DataKeyNames = new string[] { "Id" };
             gLog.Actions.ShowAdd = false;
             gLog.IsDeleteEnabled = false;
             gLog.GridRebind += gLog_GridRebind;
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                if (pnlEditDetails.Visible)
+                if (hfMode.Value == "Edit")
                 {
                     BuildControls( false );
                 }
@@ -185,13 +185,43 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnPreRender( e );
 
-            string activTab = hfActiveTab.Value;
-            ShowHideTab( activTab == "Details" || activTab == string.Empty, liDetails );
-            ShowHideTab( activTab == "Details" || activTab == string.Empty, divDetails );
-            ShowHideTab( activTab == "Activities", liActivities );
-            ShowHideTab( activTab == "Activities", divActivities );
-            ShowHideTab( activTab == "Log", liLog );
-            ShowHideTab( activTab == "Log", divLog );
+            bool editMode = hfMode.Value == "Edit";
+
+            liNotes.Visible = !editMode;
+            divNotes.Visible = !editMode;
+
+            liLog.Visible = !editMode;
+            divLog.Visible = !editMode;
+
+            if (!editMode )
+            {
+                if ( ncWorkflowNotes.NoteCount > 0 )
+                {
+                    lNoteCount.Text = string.Format( "<span class='badge badge-default'>{0:N0}</span>", ncWorkflowNotes.NoteCount );
+                }
+                else
+                {
+                    lNoteCount.Text = string.Empty;
+                }
+            }
+
+            pnlDetailsView.Visible = !editMode;
+            pnlDetailsEdit.Visible = editMode;
+            pnlActivitesView.Visible = !editMode;
+            pnlActivitesEdit.Visible = editMode;
+
+            string activeTab = hfActiveTab.Value;
+            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, liDetails );
+            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, divDetails );
+            ShowHideTab( activeTab == "Activities", liActivities );
+            ShowHideTab( activeTab == "Activities", divActivities );
+            ShowHideTab( activeTab == "Notes", liNotes );
+            ShowHideTab( activeTab == "Notes", divNotes );
+            ShowHideTab( activeTab == "Log", liLog );
+            ShowHideTab( activeTab == "Log", divLog );
+
+            btnEdit.Visible = _canEdit && !editMode;
+            btnSave.Visible = _canEdit && editMode;
         }
 
         #endregion
@@ -202,14 +232,12 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails();
-        }
+            if ( new List<string> { "Notes", "Log" }.Contains( hfActiveTab.Value ) )
+            {
+                hfActiveTab.Value = "Details";
+            }
 
-        protected void btnViewCancel_Click( object sender, EventArgs e )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams["WorkflowTypeId"] = Workflow.WorkflowTypeId.ToString();
-            NavigateToParentPage( qryParams );
+            ShowEditDetails();
         }
 
         /// <summary>
@@ -398,17 +426,17 @@ namespace RockWeb.Blocks.WorkFlow
                             // Save action updates
                             rockContext.SaveChanges();
 
-
                         }
 
                     } );
 
-                    var errorMessages = new List<string>();
-                    service.Process( dbWorkflow, out errorMessages );
-
                 }
 
                 Workflow = service.Get( Workflow.Id );
+
+                var errorMessages = new List<string>();
+                service.Process( Workflow, out errorMessages );
+
             }
 
             ShowReadonlyDetails();
@@ -421,7 +449,19 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            ShowReadonlyDetails();
+            if ( Workflow != null )
+            {
+                if ( hfMode.Value == "View" )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["WorkflowTypeId"] = Workflow.WorkflowTypeId.ToString();
+                    NavigateToParentPage( qryParams );
+                }
+                else
+                {
+                    ShowDetail( Workflow.Id );
+                }
+            }
         }
 
         #endregion
@@ -631,7 +671,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( Workflow == null )
             {
-                pnlDetails.Visible = false;
+                pnlContent.Visible = false;
                 return;
             }
 
@@ -654,17 +694,19 @@ namespace RockWeb.Blocks.WorkFlow
             }
             hlType.Text = Workflow.WorkflowType.Name;
 
+            var noteEntityTypeId = EntityTypeCache.Read( typeof( Workflow ) ).Id;
+            var noteType = new NoteTypeService( rockContext ).Get( noteEntityTypeId, "WorkflowNote" );
+            ncWorkflowNotes.NoteTypeId = noteType.Id;
+
             ShowReadonlyDetails();
         }
 
         private void ShowReadonlyDetails()
         {
-            pnlViewDetails.Visible = true;
-            pnlEditDetails.Visible = false;
+            hfMode.Value = "View";
 
             if ( Workflow != null )
             {
-
                 if ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     tdName.Description = Workflow.Name;
@@ -687,6 +729,15 @@ namespace RockWeb.Blocks.WorkFlow
                             Workflow.ActivatedDateTime.Value.ToShortTimeString(),
                             Workflow.ActivatedDateTime.Value.ToRelativeDateString() );
                     }
+
+                    if ( Workflow.LastProcessedDateTime.HasValue )
+                    {
+                        tdLastProcessed.Description = string.Format( "{0} {1} ({2})",
+                            Workflow.LastProcessedDateTime.Value.ToShortDateString(),
+                            Workflow.LastProcessedDateTime.Value.ToShortTimeString(),
+                            Workflow.LastProcessedDateTime.Value.ToRelativeDateString() );
+                    }
+
                     if ( Workflow.CompletedDateTime.HasValue )
                     {
                         tdCompletedWhen.Description = string.Format( "{0} {1} ({2})",
@@ -726,21 +777,22 @@ namespace RockWeb.Blocks.WorkFlow
                     rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
                     rptrActivities.DataBind();
 
-                    btnEdit.Visible = _canEdit;
+                    ncWorkflowNotes.EntityId = Workflow.Id;
+                    ncWorkflowNotes.RebuildNotes( true );
 
+                    BindLog();
                 }
                 else
                 {
                     nbNotAuthorized.Visible = true;
-                    pnlDetails.Visible = false;
+                    pnlContent.Visible = false;
                 }
             }
         }
 
         private void ShowEditDetails()
         {
-            pnlViewDetails.Visible = false;
-            pnlEditDetails.Visible = true;
+            hfMode.Value = "Edit";
 
             if ( _canEdit )
             {
@@ -786,8 +838,6 @@ namespace RockWeb.Blocks.WorkFlow
             lState.Text = sbState.ToString();
 
             BuildControls( true );
-
-            BindLog();
         }
 
         private void BindLog()
@@ -799,6 +849,18 @@ namespace RockWeb.Blocks.WorkFlow
 
             gLog.DataSource = logEntries;
             gLog.DataBind();
+        }
+
+        private void ShowHideTab( bool show, System.Web.UI.HtmlControls.HtmlGenericControl control )
+        {
+            if ( show )
+            {
+                control.AddCssClass( "active" );
+            }
+            else
+            {
+                control.RemoveCssClass( "active" );
+            }
         }
 
         #endregion
@@ -921,17 +983,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
         }
 
-        private void ShowHideTab( bool show, System.Web.UI.HtmlControls.HtmlGenericControl control )
-        {
-            if ( show )
-            {
-                control.AddCssClass( "active" );
-            }
-            else
-            {
-                control.RemoveCssClass( "active" );
-            }
-        }
 
         #endregion
 

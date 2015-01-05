@@ -109,9 +109,11 @@
 // Bootbox Modal Overrides
 .modal.bootbox {
     width: auto;
+    z-index: @zindex-popover;
 }
 .bootbox .modal-dialog {
     margin: 0;
+    
     @media (max-width: @screen-sm-max) {
         width: auto;
     }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -53,6 +54,12 @@ namespace Rock.Client
 
         /// <summary />
         public string WorkflowName { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
 
         /// <summary />
         public int Id { get; set; }

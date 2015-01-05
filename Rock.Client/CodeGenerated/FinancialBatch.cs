@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -50,6 +51,12 @@ namespace Rock.Client
 
         /// <summary />
         public decimal ControlAmount { get; set; }
+
+        /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialTransaction> Transactions { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

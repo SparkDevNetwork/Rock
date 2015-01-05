@@ -16,11 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -38,6 +36,7 @@ namespace Rock.Rest.Controllers
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="rootCategoryId">The root category identifier.</param>
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityQualifier">The entity qualifier.</param>
@@ -47,12 +46,28 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
-        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
+        public IQueryable<CategoryItem> GetChildren( int id, int rootCategoryId = 0, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
         {
             Person currentPerson = GetPerson();
 
-            IQueryable<Category> qry;
-            qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
+            IQueryable<Category> qry = Get();
+
+            if ( id == 0 )
+            {
+                if ( rootCategoryId != 0 )
+                {
+                    qry = qry.Where( a => a.ParentCategoryId == rootCategoryId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ParentCategoryId == null );
+                }
+            }
+            else
+            {
+                qry = qry.Where( a => a.ParentCategoryId == id );
+            }
+
 
             IService serviceInstance = null;
 
@@ -105,7 +120,10 @@ namespace Rock.Rest.Controllers
 
             if ( getCategorizedItems )
             {
-                var items = GetCategorizedItems( serviceInstance, id, showUnnamedEntityItems ).ToList();
+                // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
+                int parentItemId = id == 0 ? rootCategoryId : id;
+                
+                var items = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems ).ToList();
                 if ( items != null )
                 {
                     foreach ( var categorizedItem in items.OrderBy( i => i.Name ) )

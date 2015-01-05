@@ -36,9 +36,6 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AjaxMin">
-      <HintPath>..\packages\AjaxMin.5.8.5172.27710\lib\net40\AjaxMin.dll</HintPath>
-    </Reference>
     <Reference Include="CronExpressionDescriptor">
       <HintPath>..\packages\CronExpressionDescriptor.1.9.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
@@ -248,6 +245,7 @@
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
@@ -297,6 +295,7 @@
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
+    <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
@@ -664,6 +663,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRadioButton.cs" />
+    <Compile Include="Web\UI\Controls\ToolkitScriptManager.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
@@ -818,6 +818,7 @@
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\LogError.cs" />
+    <Compile Include="Workflow\Action\AddNote.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />

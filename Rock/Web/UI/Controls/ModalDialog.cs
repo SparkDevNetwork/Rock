@@ -329,28 +329,36 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
+var modalClose_{0} = function() {{
+    $('#{0}').modal('hide');
+    if (!$('.modal').is(':visible')) {{
+        $('body').removeClass('modal-open');
+    }}
+}}
+
 if ($('#{0}').find('.js-modal-visible').val() == '1') {{
+    $('body').addClass('modal-open');
     $('#{0}').modal({{
         show: true,
-        manager: '{3}'
+        manager: '{3}',
+        backdrop: 'static',
+        keyboard: false
     }});
 }} 
 else {{
-    $('#{0}').modal('hide');
+    modalClose_{0}();
 }}
 
 $('#{0}').find('.js-modaldialog-close-link, .js-modaldialog-cancel-link').click(function () {{
     {1}
-    $('#{0}').find('.js-modal-visible').val('0')    
-    $('#{0}').modal('hide');
+    $('#{0}').find('.js-modal-visible').val('0');
+    modalClose_{0}();
 }});
 
 $('#{0}').find('.js-modaldialog-save-link').click(function () {{
     {2}
-
-    $('#{0}').find('.js-modal-visible').val('0')    
-    $('#{0}').modal('hide');
-    
+    $('#{0}').find('.js-modal-visible').val('0');
+    modalClose_{0}();
 }});
 
 ";

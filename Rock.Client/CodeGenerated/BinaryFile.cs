@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -40,9 +41,6 @@ namespace Rock.Client
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary />
-        public string Url { get; set; }
-
-        /// <summary />
         public string FileName { get; set; }
 
         /// <summary />
@@ -50,6 +48,18 @@ namespace Rock.Client
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public int? StorageEntityTypeId { get; set; }
+
+        /// <summary />
+        public BinaryFileType BinaryFileType { get; set; }
+
+        /// <summary />
+        public EntityType StorageEntityType { get; set; }
+
+        /// <summary />
+        public string Url { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
