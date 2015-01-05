@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
@@ -162,7 +163,7 @@ namespace Rock.Rest
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
 
             var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
-                .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) )
+                .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && (a.Value.GetCustomAttribute<DataContractAttribute>() != null) )
                 .OrderBy( a => a.Key ).Select( a => a.Value );
 
             foreach ( var entityType in entityTypeList )
