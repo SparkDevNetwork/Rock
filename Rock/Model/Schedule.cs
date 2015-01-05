@@ -66,7 +66,7 @@ namespace Rock.Model
         {
             get
             {
-                return _iCalendarContent;
+                return _iCalendarContent ?? string.Empty;
             }
             set
             {

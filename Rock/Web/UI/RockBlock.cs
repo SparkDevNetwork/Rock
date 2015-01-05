@@ -789,6 +789,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Adds the google maps javascript API to the page
+        /// Put this in the OnInit of your block if it will be using the google maps api
+        /// </summary>
+        public void LoadGoogleMapsApi()
+        {
+            RockPage.LoadGoogleMapsApi();
+        }
+
+        /// <summary>
         /// Resolves a rock URL.  Similar to the <see cref="System.Web.UI.Control" /> ResolveUrl method except that you can prefix
         /// a Url with '~~' to indicate a virtual path to Rock's current theme root folder
         /// </summary>

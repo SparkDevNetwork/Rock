@@ -24,7 +24,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// stored as comma delimited list of int value that can each be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
     public class DaysOfWeekFieldType : FieldType
     {

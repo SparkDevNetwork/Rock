@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Core
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
             gBlockTypes.RowItemText = "Block Type";
-            gBlockTypes.DataKeyNames = new string[] { "id" };
+            gBlockTypes.DataKeyNames = new string[] { "Id" };
             gBlockTypes.Actions.ShowAdd = true;
             gBlockTypes.Actions.AddClick += gBlockTypes_Add;
             gBlockTypes.GridRebind += gBlockTypes_GridRebind;

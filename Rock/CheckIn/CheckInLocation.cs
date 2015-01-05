@@ -26,7 +26,7 @@ namespace Rock.CheckIn
     /// A location option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInLocation : DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public class CheckInLocation : Lava.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the location.
@@ -53,6 +53,7 @@ namespace Rock.CheckIn
         /// The current count.
         /// </value>
         [DataMember]
+        [Obsolete( "Not Used. This will be removed post McKinley." )]
         public int CurrentCount { get; set; }
 
         /// <summary>
@@ -143,6 +144,26 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [Rock.Data.LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string> { "LastCheckIn", "Locations" };
+                if ( this.Location != null )
+                {
+                    availableKeys.AddRange( this.Location.AvailableKeys );
+                }
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -150,6 +171,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Rock.Data.LavaIgnore]
         public object this[object key]
         {
             get
@@ -157,7 +179,6 @@ namespace Rock.CheckIn
                 switch ( key.ToStringSafe() )
                 {
                     case "LastCheckIn": return LastCheckIn;
-                    case "CurrentCount": return CurrentCount;
                     case "Schedules": return Schedules.Where( s => s.Selected ).ToList();
                     default: return Location[key];
                 }
@@ -171,8 +192,8 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalProperties = new List<string> { "LastCheckIn", "CurrentCount", "Schedules" };
-            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            var additionalKeys = new List<string> { "LastCheckIn", "Schedules" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
             }

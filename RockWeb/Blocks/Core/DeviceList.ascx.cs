@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
             fDevice.ApplyFilterClick += fDevice_ApplyFilterClick;
             fDevice.DisplayFilterValue += fDevice_DisplayFilterValue;
             
-            gDevice.DataKeyNames = new string[] { "id" };
+            gDevice.DataKeyNames = new string[] { "Id" };
             gDevice.Actions.ShowAdd = true;
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -59,6 +60,12 @@ namespace Rock.Client
 
         /// <summary />
         public string AdditionalMergeValuesJson { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public ICollection<CommunicationRecipientActivity> Activities { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

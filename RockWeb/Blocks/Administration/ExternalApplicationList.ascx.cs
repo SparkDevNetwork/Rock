@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gExternalApplication.DataKeyNames = new string[] { "id" };
+            gExternalApplication.DataKeyNames = new string[] { "Id" };
             gExternalApplication.Actions.ShowAdd = false;
             gExternalApplication.GridRebind += gExternalApplication_GridRebind;
             gExternalApplication.RowItemText = "External Application";

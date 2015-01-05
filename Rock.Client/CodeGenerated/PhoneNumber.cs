@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -53,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsMessagingEnabled { get; set; }
+
+        /// <summary />
+        public DefinedValue NumberTypeValue { get; set; }
 
         /// <summary />
         public bool IsUnlisted { get; set; }

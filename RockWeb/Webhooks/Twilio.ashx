@@ -106,6 +106,12 @@ public class Twilio : IHttpHandler
             body = request.Form["Body"];
         }
         
+        // determine if we should log
+        if ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" )
+        {
+            WriteToLog( fromPhone, toPhone, body );
+        }
+        
         if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
         {
             string errorMessage = string.Empty;
@@ -119,6 +125,18 @@ public class Twilio : IHttpHandler
         }
     }
 
+    private void WriteToLog (string fromPhone, string toPhone, string body) {
+
+        string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
+
+        using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
+        using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
+        {
+            sw.WriteLine( string.Format("{0} - From: '{1}', To: '{2}', Message: '{3}'", RockDateTime.Now.ToString(), fromPhone, toPhone, body) );
+        }
+    }
+    
+    
     public bool IsReusable
     {
         get

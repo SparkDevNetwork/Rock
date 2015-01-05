@@ -12,9 +12,9 @@
                 </div>
                 <div id="divOrgLogin" runat="server" class="col-sm-6">
                  
-                        <p><asp:Literal ID="lLoginProviderMessage" runat="server" /></p>
                         <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
 
+                        <asp:Literal ID="lPromptMessage" runat="server" />
                         <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
                         <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
                         <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        

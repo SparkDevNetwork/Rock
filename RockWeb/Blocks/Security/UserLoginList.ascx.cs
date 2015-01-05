@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Security
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            gUserLogins.DataKeyNames = new string[] { "id" };
+            gUserLogins.DataKeyNames = new string[] { "Id" };
             gUserLogins.Actions.ShowAdd = _personId.HasValue && _canEdit;
             gUserLogins.Actions.AddClick += gUserLogins_Add;
             gUserLogins.IsDeleteEnabled = _canEdit;
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( _canEdit )
             {
-                ShowEdit( (int)gUserLogins.DataKeys[e.RowIndex]["id"] );
+                ShowEdit( e.RowKeyId );
             }
         }
 

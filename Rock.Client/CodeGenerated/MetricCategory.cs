@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -38,6 +39,12 @@ namespace Rock.Client
 
         /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public Metric Metric { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
 
         /// <summary />
         public int Id { get; set; }

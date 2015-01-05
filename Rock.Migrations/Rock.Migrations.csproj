@@ -62,6 +62,14 @@
     <Compile Include="Migrations\201412160006127_BinaryFileUrl.Designer.cs">
       <DependentUpon>201412160006127_BinaryFileUrl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412192231166_OrganizationUnit.cs" />
+    <Compile Include="Migrations\201412192231166_OrganizationUnit.Designer.cs">
+      <DependentUpon>201412192231166_OrganizationUnit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201412301436122_RestrictCheckinAdminSite.cs" />
+    <Compile Include="Migrations\201412301436122_RestrictCheckinAdminSite.Designer.cs">
+      <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1358,6 +1366,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201412160006127_BinaryFileUrl.resx">
       <DependentUpon>201412160006127_BinaryFileUrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412192231166_OrganizationUnit.resx">
+      <DependentUpon>201412192231166_OrganizationUnit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412301436122_RestrictCheckinAdminSite.resx">
+      <DependentUpon>201412301436122_RestrictCheckinAdminSite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>

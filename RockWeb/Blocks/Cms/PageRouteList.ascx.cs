@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gPageRoutes.DataKeyNames = new string[] { "id" };
+            gPageRoutes.DataKeyNames = new string[] { "Id" };
             gPageRoutes.Actions.ShowAdd = true;
             gPageRoutes.Actions.AddClick += gPageRoutes_Add;
             gPageRoutes.GridRebind += gPageRoutes_GridRebind;

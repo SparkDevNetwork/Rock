@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            gContentList.DataKeyNames = new string[] { "id" };
+            gContentList.DataKeyNames = new string[] { "Id" };
             _canApprove = IsUserAuthorized( "Approve" );
             ppApprovedByFilter.Visible = _canApprove;
             gContentListFilter.ApplyFilterClick += gContentListFilter_ApplyFilterClick;

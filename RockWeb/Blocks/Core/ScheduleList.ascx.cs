@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gSchedules.DataKeyNames = new string[] { "id" };
+            gSchedules.DataKeyNames = new string[] { "Id" };
             gSchedules.Actions.ShowAdd = true;
             gSchedules.Actions.AddClick += gSchedules_Add;
             gSchedules.GridRebind += gSchedules_GridRebind;

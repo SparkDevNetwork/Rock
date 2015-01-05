@@ -39,12 +39,12 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group." )]
-
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
-    [BooleanField( "Show Edit", "", true, "", 1 )]
-    [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
-    [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 4 )]
+    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 0 )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 1 )]
+    [BooleanField( "Show Edit", "", true, "", 2 )]
+    [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
+    [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
     [LinkedPage("Group Map Page", "The page to display detailed group map.")]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -648,7 +648,23 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
+            var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+            if ( currentGroup != null )
+            {
+                ShowReadonlyDetails( currentGroup );
+            }
+            else
+            {
+                string groupId = PageParameter( "GroupId" );
+                if ( !string.IsNullOrWhiteSpace( groupId ) )
+                {
+                    ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
         }
 
         #endregion
@@ -1092,18 +1108,30 @@ namespace RockWeb.Blocks.Groups
             return group;
         }
 
-        private IQueryable<GroupType> GetAllowedGroupTypes ( Group parentGroup, RockContext rockContext = null )
+        /// <summary>
+        /// Gets the allowed group types.
+        /// </summary>
+        /// <param name="parentGroup">The parent group.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private IQueryable<GroupType> GetAllowedGroupTypes ( Group parentGroup, RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
 
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+
             var groupTypeQry = groupTypeService.Queryable();
 
             // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
-            if ( groupTypeGuids.Count > 0 )
+            List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> groupTypeExcludeGuids = GetAttributeValue( "GroupTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            if ( groupTypeIncludeGuids.Any() )
             {
-                groupTypeQry = groupTypeQry.Where( a => groupTypeGuids.Contains( a.Guid ) );
+                groupTypeQry = groupTypeQry.Where( a => groupTypeIncludeGuids.Contains( a.Guid ) );
+            }
+            else if (groupTypeExcludeGuids.Any())
+            {
+                groupTypeQry = groupTypeQry.Where( a => !groupTypeExcludeGuids.Contains( a.Guid ) );
             }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows

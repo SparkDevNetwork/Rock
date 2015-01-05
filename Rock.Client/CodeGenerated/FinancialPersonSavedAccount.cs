@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -30,6 +31,15 @@ namespace Rock.Client
     /// </summary>
     public partial class FinancialPersonSavedAccount
     {
+        /// <summary />
+        public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
         /// <summary />
         public int PersonAliasId { get; set; }
 
@@ -46,13 +56,13 @@ namespace Rock.Client
         public string TransactionCode { get; set; }
 
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
+        public EntityType GatewayEntityType { get; set; }
 
         /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
+        public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
+        public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

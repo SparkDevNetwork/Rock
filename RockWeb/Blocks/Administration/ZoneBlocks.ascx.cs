@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( page.Layout.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                gLayoutBlocks.DataKeyNames = new string[] { "id" };
+                gLayoutBlocks.DataKeyNames = new string[] { "Id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
                 gLayoutBlocks.Actions.ShowExcelExport = false;
                 gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                gPageBlocks.DataKeyNames = new string[] { "id" };
+                gPageBlocks.DataKeyNames = new string[] { "Id" };
                 gPageBlocks.Actions.ShowAdd = true;
                 gPageBlocks.Actions.ShowExcelExport = false;
                 gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
 
             var rockContext = new RockContext();
             BlockService blockService = new BlockService( rockContext );
-            Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( block != null )
             {
                 blockService.Delete( block );

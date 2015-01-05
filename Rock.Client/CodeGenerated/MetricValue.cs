@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -53,6 +54,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? EntityId { get; set; }
+
+        /// <summary />
+        public long DateTimeStamp { get; set; }
+
+        /// <summary />
+        public string SeriesId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

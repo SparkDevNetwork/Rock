@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -41,6 +42,15 @@ namespace Rock.Client
 
         /// <summary />
         public string Value { get; set; }
+
+        /// <summary />
+        public decimal? ValueAsNumeric { get; set; }
+
+        /// <summary />
+        public DateTime? ValueAsDateTime { get; set; }
+
+        /// <summary />
+        public Attribute Attribute { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

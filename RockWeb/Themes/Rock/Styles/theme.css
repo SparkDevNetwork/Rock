@@ -434,6 +434,7 @@ img.jcrop-preview {
 }
 .modal.bootbox {
   width: auto;
+  z-index: 1010;
 }
 .bootbox .modal-dialog {
   margin: 0;
@@ -5633,6 +5634,9 @@ body#splash.error #content #logo {
   line-height: 1.1em;
   padding: 6px;
   color: #d3cec5;
+}
+.navbar-static-side .navbar-side > li .nav-childpages li a:focus {
+  background-color: #353133;
 }
 .navbar-static-side .navbar-side > li .nav-childpages li a:hover {
   background-color: #1b1919;
