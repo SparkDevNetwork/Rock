@@ -104,7 +104,7 @@ namespace Rock.CodeGeneration
             if ( projectName != "Rock" )
             {
                 restFolder = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
-                rockClientFolder = Path.Combine( RootFolder().FullName, projectName + "\\Client" );
+                //rockClientFolder = Path.Combine( RootFolder().FullName, projectName + "\\Client" );
             }
             
 
@@ -461,24 +461,7 @@ order by [parentTable], [columnName]
         private void WriteRESTFile( string rootFolder, Type type )
         {
             string pluralizedName = type.Name.Pluralize();
-
-            string baseName = new DirectoryInfo( rootFolder ).Name;
-            if ( baseName.EndsWith( ".Rest", StringComparison.OrdinalIgnoreCase ) )
-            {
-                baseName = baseName.Substring( 0, baseName.Length - 5 );
-            }
-
-            string restNamespace = type.Namespace;
-            if ( restNamespace.StartsWith( baseName + ".", true, null ) )
-            {
-                restNamespace = baseName + ".Rest" + restNamespace.Substring( baseName.Length );
-            }
-            else
-            {
-                restNamespace = ".Rest." + restNamespace;
-            }
-
-            restNamespace = restNamespace.Replace( ".Model", ".Controllers" );
+            string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
 
             var sb = new StringBuilder();
 
@@ -519,9 +502,9 @@ order by [parentTable], [columnName]
             sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new Rock.Data.RockContext() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
-
-
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restNamespace ).FullName, "CodeGenerated", pluralizedName + "Controller.cs" ) );
+            
+            var filePath1 = Path.Combine( rootFolder, "Controllers" );
+            var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.cs" ) );
             WriteFile( file, sb );
         }
 
