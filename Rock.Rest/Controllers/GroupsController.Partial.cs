@@ -20,7 +20,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
+using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -126,6 +126,26 @@ namespace Rock.Rest.Controllers
             }
 
             return groupNameList.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the families.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [EnableQuery]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamilies/{personId}" )]
+        public IQueryable<Group> GetFamilies( int personId )
+        {
+            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            return ( (GroupService)Service )
+                .Queryable( "Campus,GroupLocations.Location,Members.GroupRole" )
+                .Where( g =>
+                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
+                    g.Members.Select( m => m.PersonId ).Contains( personId ) );
         }
 
         /// <summary>

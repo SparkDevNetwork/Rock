@@ -18,7 +18,19 @@
 
                     <asp:Literal ID="lheadingText" runat="server" />
 
-                    <asp:PlaceHolder ID="phAttributes" runat="server" />
+                    <div class="row">
+                        <div id="divAttributes" runat="server" class="col-md-6">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" />
+                        </div>
+                        <div id="divNotes" runat="server" class="col-md-6">
+                            <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" Term="Note" 
+                                ShowHeading="true" Title="Notes"
+                                DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="false"
+                                ShowPrivateCheckBox="false" ShowSecurityButton="false"
+                                AllowAnonymousEntry="false" AddAlwaysVisible="false"
+                                SortDirection="Descending" />
+                        </div>
+                    </div>
             
                     <asp:Literal ID="lFootingText" runat="server" />
 
