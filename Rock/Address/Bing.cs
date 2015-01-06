@@ -57,9 +57,15 @@ namespace Rock.Address
             bool verified = false;
             result = string.Empty;
 
+            // Only verify if location is valid, has not been locked, and 
+            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
             if ( location != null && 
                 !(location.IsGeoPointLocked ?? false) &&  
-                (!location.GeocodeAttemptedDateTime.HasValue || reVerify) )
+                (
+                    !location.GeocodeAttemptedDateTime.HasValue || 
+                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds(-30) ) > 0 ||
+                    reVerify
+                ) )
             {
                 // Verify that bing transaction count hasn't been exceeded for the day
                 DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
