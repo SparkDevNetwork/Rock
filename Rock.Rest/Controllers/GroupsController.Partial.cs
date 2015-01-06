@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
@@ -147,6 +148,62 @@ namespace Rock.Rest.Controllers
                     g.GroupType.Guid.Equals( groupTypeGuid ) &&
                     g.Members.Select( m => m.PersonId ).Contains( personId ) );
         }
+
+        [Authenticate, Secured]
+        [EnableQuery]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}" )]
+        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId,
+            string street, string city, string state, string postalCode )
+        {
+            var groupLocations = new List<GroupLocation>();
+
+            string street2 = string.Empty;
+            string country = GlobalAttributesCache.Read().OrganizationCountry;
+
+            var rockContext = (RockContext)Service.Context;
+            var location = new LocationService( rockContext ).Get( street, street2, city, state, postalCode, country );
+
+            if ( location.GeoPoint != null )
+            {
+                var groupLocationService = new GroupLocationService( rockContext );
+                foreach ( var fence in groupLocationService
+                    .Queryable().AsNoTracking()
+                    .Where( gl =>
+                        gl.Group.GroupTypeId == geofenceGroupTypeId &&
+                        gl.Location.GeoFence != null &&
+                        location.GeoPoint.Intersects( gl.Location.GeoFence ) )
+                    .Select( gl => gl.Location.GeoFence )
+                    .ToList() )
+                {
+                    foreach ( var groupLocation in groupLocationService
+                        .Queryable( "Group.GroupType,Location" ).AsNoTracking()
+                        .Where( gl =>
+                            gl.Group.GroupTypeId == groupTypeId &&
+                            gl.Location.GeoPoint != null &&
+                            gl.Location.GeoPoint.Intersects( fence ) ) )
+                    {
+                        groupLocations.Add( groupLocation );
+                    }
+                }
+            }
+
+            var groupIds = groupLocations.Select( gl => gl.GroupId).Distinct().ToList();
+
+            var groups = Service.Queryable()
+                .AsNoTracking()
+                .Where( g => groupIds.Contains( g.Id ) )
+                .ToList();
+
+            foreach ( var group in groups )
+            {
+                group.GroupLocations = groupLocations.Where( gl => gl.GroupId == group.Id ).ToList();
+            }
+
+            return groups.AsQueryable();
+        }
+
+        #region MapInfo methods
 
         /// <summary>
         /// Gets the map information.
@@ -506,5 +563,7 @@ namespace Rock.Rest.Controllers
                 Result = result;
             }
         }
+
+        #endregion
     }
 }
