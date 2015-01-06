@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Package Install" )]
     [Category( "Store" )]
     [Description( "Installs a package." )]
+    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "")]
     public partial class PackageInstall : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -119,58 +120,69 @@ namespace RockWeb.Blocks.Store
         {
             string errorResponse = string.Empty;
 
-            // get package id
-            int packageId = -1;
-
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
+            // check that store is configured
+            if ( StoreService.OrganizationIsConfigured() )
             {
-                packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
-            }
+                // get package id
+                int packageId = -1;
 
-            PackageService packageService = new PackageService();
-            var package = packageService.GetPackage( packageId, out errorResponse );
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
+                {
+                    packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
+                }
 
-            // check for errors
-            ErrorCheck( errorResponse );
+                PackageService packageService = new PackageService();
+                var package = packageService.GetPackage( packageId, out errorResponse );
 
-            lPackageName.Text = package.Name;
-            lPackageDescription.Text = package.Description;
+                // check for errors
+                ErrorCheck( errorResponse );
 
-            lPackageImage.Text = String.Format(@"<div class=""margin-b-md"" style=""
+                lPackageName.Text = package.Name;
+                lPackageDescription.Text = package.Description;
+
+                lPackageImage.Text = String.Format( @"<div class=""margin-b-md"" style=""
                                 background: url('{0}') no-repeat center;
                                 width: 100%;
                                 height: 140px;"">
-                                </div>", package.PackageIconBinaryFile.ImageUrl);
+                                </div>", package.PackageIconBinaryFile.ImageUrl );
 
-            if ( package.IsFree )
-            {
-                lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
-                lInstallMessage.Text = _installFreeMessage;
-            }
-            else
-            {
-                lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
-                lInstallMessage.Text = string.Format(_installPurchaseMessage, package.Price.ToString());
-            }
-
-            if ( package.IsPurchased )
-            {
-                // check if it's installed
-                // determine the state of the install button (install, update, buy or installed)
-                InstalledPackage installedPackage = InstalledPackageService.InstalledPackageVersion( package.Id );
-
-                if ( installedPackage == null )
+                if ( package.IsFree )
                 {
-                    lCost.Visible = false;
-                    lInstallMessage.Text = _installPreviousPurchase;
+                    lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
+                    lInstallMessage.Text = _installFreeMessage;
                 }
                 else
                 {
-                    lCost.Visible = false;
-                    lInstallMessage.Text = _updateMessage;
-                    btnInstall.Text = "Update";
+                    lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
+                    lInstallMessage.Text = string.Format( _installPurchaseMessage, package.Price.ToString() );
                 }
-                
+
+                if ( package.IsPurchased )
+                {
+                    // check if it's installed
+                    // determine the state of the install button (install, update, buy or installed)
+                    InstalledPackage installedPackage = InstalledPackageService.InstalledPackageVersion( package.Id );
+
+                    if ( installedPackage == null )
+                    {
+                        lCost.Visible = false;
+                        lInstallMessage.Text = _installPreviousPurchase;
+                    }
+                    else
+                    {
+                        lCost.Visible = false;
+                        lInstallMessage.Text = _updateMessage;
+                        btnInstall.Text = "Update";
+                    }
+
+                }
+            }
+            else 
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "ReturnUrl", Request.RawUrl );
+
+                NavigateToLinkedPage( "LinkOrganizationPage", queryParams );
             }
         }
 
