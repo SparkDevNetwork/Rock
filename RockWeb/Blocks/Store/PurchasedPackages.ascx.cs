@@ -40,9 +40,9 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Purchased Products" )]
     [Category( "Store" )]
     [Description( "Lists packages that have been purchased in the Rock Store." )]
-    [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
-    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 4 )]
-    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "", 4 )]
+    [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "")]
+    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "")]
+    [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "" )]
     public partial class PurchasedPackages : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -185,7 +185,10 @@ namespace RockWeb.Blocks.Store
             }
             else
             {
-                NavigateToLinkedPage( "LinkOrganizationPage" );
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "ReturnUrl", Request.RawUrl );
+                
+                NavigateToLinkedPage( "LinkOrganizationPage", queryParams );
             }
         }
 

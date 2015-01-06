@@ -10,7 +10,7 @@
             </div>
             <div class="panel-body">
 
-                <h1>Welcome to the Rock Store!</h1>
+                <h1>Store Configuration</h1>
 
                 <p>
                     In order for us to get the store ready for your first download 
@@ -39,10 +39,20 @@
 
                     <Rock:RockRadioButtonList ID="rblOrganizations" AutoPostBack="true" OnSelectedIndexChanged="rblOrganizations_SelectedIndexChanged"  runat="server"></Rock:RockRadioButtonList>
                     
-                    <asp:Button ID="btnSelectOrganization" runat="server" CssClass="btn btn-primary" Text="Select Organization" OnClick="btnSelectOrganization_Click" Enabled="false" />
-                    <asp:Button ID="btnSelectOrganizationCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnSelectOrganizationCancel_Click" />
+                    <div class="margin-t-md">
+                        <asp:Button ID="btnSelectOrganization" runat="server" CssClass="btn btn-primary" Text="Select Organization" OnClick="btnSelectOrganization_Click" Enabled="false" />
+                        <asp:Button ID="btnSelectOrganizationCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnSelectOrganizationCancel_Click" />
+                    </div>
                 </asp:Panel>
 
+                <asp:Panel ID="pnlComplete" runat="server" Visible="false">
+                    <asp:Literal ID="lCompleteMessage" runat="server" />
+                    
+                    <div class="margin-t-md">
+                        <asp:Button ID="btnContinue" runat="server" CssClass="btn btn-primary" Text="Continue" OnClick="btnContinue_Click" />
+                    </div>
+                </asp:Panel>
+                
                 <asp:Literal ID="lMessages" runat="server" />
             </div>
         

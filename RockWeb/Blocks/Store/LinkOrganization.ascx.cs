@@ -128,6 +128,32 @@ namespace RockWeb.Blocks.Store
             btnSelectOrganization.Enabled = true;
         }
 
+        protected void btnSelectOrganization_Click( object sender, EventArgs e )
+        {
+            Organization organization = new Organization();
+            organization.Key = rblOrganizations.SelectedValue;
+            organization.Name = rblOrganizations.SelectedItem.Text;
+            SetOrganization( organization );
+        }
+
+        protected void btnSelectOrganizationCancel_Click( object sender, EventArgs e )
+        {
+            pnlSelectOrganization.Visible = false;
+            pnlAuthenicate.Visible = true;
+        }
+
+        protected void btnContinue_Click( object sender, EventArgs e )
+        {
+            if ( PageParameter( "ReturnUrl" ) != string.Empty )
+            {
+                Response.Redirect( PageParameter( "ReturnUrl" ) );
+            }
+            else
+            {
+                Response.Redirect( Server.MapPath("~/Store") );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -138,22 +164,9 @@ namespace RockWeb.Blocks.Store
             globalCache.SetValue( "StoreOrganizationKey", organization.Key, true );
             pnlAuthenicate.Visible = false;
             pnlSelectOrganization.Visible = false;
+            pnlComplete.Visible = true;
 
-            lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Success!</strong> We were able to configure the store for use by {0}.</div>", organization.Name );
-        }
-
-        protected void btnSelectOrganization_Click( object sender, EventArgs e )
-        {
-            Organization organization = new Organization();
-            organization.Key = rblOrganizations.SelectedValue;
-            organization.Name = rblOrganizations.SelectedItem.Text;
-            SetOrganization(organization);
-        }
-
-        protected void btnSelectOrganizationCancel_Click( object sender, EventArgs e )
-        {
-            pnlSelectOrganization.Visible = false;
-            pnlAuthenicate.Visible = true;
+            lCompleteMessage.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Success!</strong> We were able to configure the store for use by {0}.</div>", organization.Name );
         }
 
         private void ProcessNoResults()
@@ -189,6 +202,5 @@ namespace RockWeb.Blocks.Store
         }
 
         #endregion
-        
-}
+    }
 }
