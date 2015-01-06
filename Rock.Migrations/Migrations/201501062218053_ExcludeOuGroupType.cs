@@ -35,6 +35,50 @@ namespace Rock.Migrations
 
             // Rename the Defined Type 'Liquid Templates' -> 'Lava Templates
             Sql( @"  UPDATE [DefinedType] SET [Name] = 'Lava Templates' WHERE [Guid] = 'C3D44004-6951-44D9-8560-8567D705A48B'" );
+
+            // Fix checkin label merge fields
+            Sql( @"
+    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'CE57450F-634A-420A-BF5A-B43E9B20ABF2' )
+	IF @AttributeId IS NOT NULL
+	BEGIN
+
+		UPDATE [AttributeValue]
+		SET [Value] = REPLACE([Value], '|Notes:^|', '')
+		WHERE [AttributeId] = @AttributeId
+		AND [Value] LIKE '%|Notes:^|%'
+
+		UPDATE [AttributeValue]
+		SET [Value] = REPLACE([Value], '|Child Pick-up Receipt^|up your child. If you lose this please see the area director.^|', '')
+		WHERE [AttributeId] = @AttributeId
+		AND [Value] LIKE '%|Child Pick-up Receipt^|up your child. If you lose this please see the area director.^|%'
+
+		DECLARE @ChildLabelIconId int = ( SELECT TOP 1 [Id] FROM [BinaryFile] WHERE [Guid] = 'C2E6B0A0-3991-4FAF-9E2F-49CF321CBB0D' )
+		IF @ChildLabelIconId IS NOT NULL
+		BEGIN
+
+			DECLARE @BirthdayIconValueId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'C6AA76B5-3E7F-4E14-905E-36173E60949D' ) 
+			IF @BirthdayIconValueId IS NOT NULL
+			BEGIN
+				UPDATE [AttributeValue]
+				SET [Value] = REPLACE([Value], '|2^' + CAST(@BirthdayIconValueId AS VARCHAR), '|B^' + CAST(@BirthdayIconValueId AS VARCHAR))
+				WHERE [AttributeId] = @AttributeId
+				AND [EntityId] = @ChildLabelIconId
+				AND [Value] LIKE '%|2^' + CAST(@BirthdayIconValueId AS VARCHAR) + '%'
+			END
+
+			DECLARE @FirsttimeIconValueId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'BD1B1FEA-D4A9-45EB-9958-01EF75D5A949' ) 
+			IF @FirsttimeIconValueId IS NOT NULL
+			BEGIN
+				UPDATE [AttributeValue]
+				SET [Value] = REPLACE([Value], '|3^' + CAST(@FirsttimeIconValueId AS VARCHAR), '|F^' + CAST(@FirsttimeIconValueId AS VARCHAR))
+				WHERE [AttributeId] = @AttributeId
+				AND [EntityId] = @ChildLabelIconId
+				AND [Value] LIKE '%|3^' + CAST(@FirsttimeIconValueId AS VARCHAR) + '%'
+			END
+
+		END
+    END
+" );
         }
         
         /// <summary>
