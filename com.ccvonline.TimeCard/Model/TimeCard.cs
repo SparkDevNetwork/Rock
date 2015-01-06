@@ -219,11 +219,19 @@ namespace com.ccvonline.TimeCard.Model
             {
                 TimeCardDay = a.TimeCardDay,
                 Hours = a.Hours
-            } );
+            } ).ToList();
 
-            decimal totalRegular = 0;
+            Dictionary<int, decimal> totalRegularByWeek = new Dictionary<int, decimal>();
             foreach (var day in totalWorkedHoursPerWeekMax40)
             {
+                int weekOfYear = day.TimeCardDay.WeekOfYear();
+                if (!totalRegularByWeek.ContainsKey(weekOfYear))
+                {
+                    totalRegularByWeek.Add(weekOfYear, 0);
+                }
+
+                decimal totalRegular = totalRegularByWeek[weekOfYear];
+                
                 if ( totalRegular < 40 )
                 {
                     // if less than 40 so far, increment the total by the day's hours
@@ -240,6 +248,8 @@ namespace com.ccvonline.TimeCard.Model
                     // if we already worked 40 hours, don't count additional hours as regular hours
                     day.Hours = 0;
                 }
+
+                totalRegularByWeek[weekOfYear] = totalRegular;
             }
             
             var totalWorkedHolidayHours = GetWorkedHolidayHours();
@@ -253,7 +263,7 @@ namespace com.ccvonline.TimeCard.Model
                     week.Hours = week.Hours - holidayHours.Hours;
                 }
             }
-
+            
             return regularHours;
         }
 
@@ -263,7 +273,7 @@ namespace com.ccvonline.TimeCard.Model
         /// <returns></returns>
         public List<HoursPerTimeCardDay> GetOvertimeHours()
         {
-            // TotalWorkedHoursPerWeek(true, true) – RegularHours() – HolidayWorkedHours () 
+            // Overtime hours is TotalWorkedHoursPerWeek(true, true) – RegularHours() – HolidayWorkedHours() 
             var totalWorkedHoursPerDay = this.GetTotalWorkedHoursPerDay( true, true );
             var regularHoursPerDay = this.GetRegularHours();
             var workedHolidayHoursPerDay = this.GetWorkedHolidayHours();
@@ -294,11 +304,9 @@ namespace com.ccvonline.TimeCard.Model
         public Dictionary<int, IEnumerable<TimeCardDay>> GroupByWeekNum( IEnumerable<TimeCardDay> timeCardDays = null )
         {
             timeCardDays = timeCardDays ?? this.TimeCardDays;
-            var firstDayOfWeek = this.TimeCardPayPeriod.StartDate.DayOfWeek;
-            Calendar cal = new GregorianCalendar( GregorianCalendarTypes.USEnglish );
             var result = timeCardDays.ToList().Select( a => new
             {
-                WeekOfYear = cal.GetWeekOfYear( a.StartDateTime, CalendarWeekRule.FirstFullWeek, firstDayOfWeek ),
+                WeekOfYear = a.WeekOfYear(),
                 TimeCardDay = a
             } )
             .GroupBy( a => a.WeekOfYear )
@@ -369,6 +377,22 @@ namespace com.ccvonline.TimeCard.Model
         /// The hours.
         /// </value>
         public decimal? Hours { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if (TimeCardDay != null)
+            {
+                return string.Format( "{0} {1}", TimeCardDay.StartDateTime.Date.ToShortDateString(), Hours );
+            }
+
+            return base.ToString();
+        }
     }
 
     /// <summary>
@@ -391,6 +415,22 @@ namespace com.ccvonline.TimeCard.Model
         /// The hours.
         /// </value>
         public decimal? Hours { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( WeekOfYear != null )
+            {
+                return string.Format( "{0} {1}", WeekOfYear, Hours );
+            }
+
+            return base.ToString();
+        }
     }
 
     /// <summary>

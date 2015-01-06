@@ -86,7 +86,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\TimeCardContext.cs" />
-    <Compile Include="Data\TimeCardService.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AlterColumns.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardDayService.cs" />
@@ -97,6 +96,7 @@
     <Compile Include="Model\TimeCardDay.cs" />
     <Compile Include="Model\TimeCardHistory.cs" />
     <Compile Include="Model\TimeCardPayPeriod.cs" />
+    <Compile Include="Model\TimeCardPayPeriodService.partial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\Controllers\CodeGenerated\TimeCardDaysController.cs" />
     <Compile Include="Rest\Controllers\CodeGenerated\TimeCardHistoriesController.cs" />

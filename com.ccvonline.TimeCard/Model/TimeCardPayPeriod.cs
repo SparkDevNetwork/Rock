@@ -37,6 +37,7 @@ namespace com.ccvonline.TimeCard.Model
         #endregion
 
         #region Virtual Properties
+
         #endregion
 
         #region methods

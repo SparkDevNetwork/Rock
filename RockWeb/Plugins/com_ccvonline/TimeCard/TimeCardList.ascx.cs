@@ -112,7 +112,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         protected void gList_Delete( object sender, RowEventArgs e )
         {
             var dataContext = new TimeCardContext();
-            var timeCardService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCard>( dataContext );
+            var timeCardService = new TimeCardService( dataContext );
             var timeCard = timeCardService.Get( e.RowKeyId );
             if ( timeCard != null )
             {
@@ -149,9 +149,10 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         private void BindGrid()
         {
             var dataContext = new TimeCardContext();
-            var timeCardService = new TimeCardService<com.ccvonline.TimeCard.Model.TimeCard>( dataContext );
+            var timeCardService = new TimeCardService( dataContext );
+            var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
             DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>(DayOfWeek.Monday);
-            var currentPayPeriod = timeCardService.EnsureCurrentPayPeriod( payrollStartDay );
+            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( payrollStartDay );
             SortProperty sortProperty = gList.SortProperty;
 
             var qry = timeCardService.Queryable().Where( a => a.PersonAliasId == this.CurrentPersonAliasId );

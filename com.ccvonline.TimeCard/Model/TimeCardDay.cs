@@ -122,6 +122,17 @@ namespace com.ccvonline.TimeCard.Model
         /// </value>
         public virtual TimeCard TimeCard { get; set; }
 
+        /// <summary>
+        /// WeekNumber of the year
+        /// </summary>
+        /// <returns></returns>
+        public virtual int WeekOfYear()
+        {
+            var firstDayOfWeek = this.TimeCard.TimeCardPayPeriod.StartDate.DayOfWeek;
+            System.Globalization.Calendar cal = new System.Globalization.GregorianCalendar( System.Globalization.GregorianCalendarTypes.USEnglish );
+            return cal.GetWeekOfYear( this.StartDateTime, System.Globalization.CalendarWeekRule.FirstFullWeek, firstDayOfWeek );
+        }
+
         #endregion
     }
 
