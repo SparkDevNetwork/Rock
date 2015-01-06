@@ -15,7 +15,7 @@ namespace com.ccvonline.TimeCard.Migrations
             Sql(@"
 alter table [_com_ccvonline_TimeCard_TimeCardDay] drop column [TotalWorkedDuration]
 alter table [_com_ccvonline_TimeCard_TimeCardDay] add [TotalWorkedDuration]
-as (DATEDIFF(MINUTE, StartDateTime, EndDateTime) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0) persisted");
+as (DATEDIFF(MINUTE, StartDateTime, isnull(EndDateTime, LunchStartDateTime)) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0) persisted");
         }
 
         public override void Down()
