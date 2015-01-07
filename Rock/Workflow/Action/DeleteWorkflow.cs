@@ -50,10 +50,12 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var workflow = action.Activity.Workflow;
-
-            WorkflowService workflowService = new WorkflowService( rockContext );
-            workflowService.Delete( workflow );
-            rockContext.SaveChanges();
+            if ( workflow.Id >= 0 )
+            {
+                WorkflowService workflowService = new WorkflowService( rockContext );
+                workflowService.Delete( workflow );
+                rockContext.SaveChanges();
+            }
 
             workflow.IsPersisted = false;
 

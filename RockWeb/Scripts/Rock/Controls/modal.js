@@ -25,7 +25,7 @@
                 $('#modal-popup').modal('layout');
 
                 $(this.contentWindow).on('resize', function () {
-                    var newHeight = $(this.document.body).prop('scrollHeight')
+                    var newHeight = $(this.document.body).prop('offsetHeight')
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
                     if ($modalPopupIFrame.height() != newHeight) {
@@ -39,8 +39,11 @@
             $('#modal-popup').fadeTo(0, 0);
             $modalPopupIFrame[0].style.height = 'auto';
             $modalPopupIFrame.attr('src', popupUrl);
-            $('#modal-popup').modal('show');
-
+            $('#modal-popup').modal({
+                show: true,
+                backdrop: 'static',
+                keyboard: false
+            });
         },
 
         exports = {
