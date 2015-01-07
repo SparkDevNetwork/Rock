@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -83,6 +84,24 @@ namespace Rock.Client
 
         /// <summary />
         public int? GroupTypePurposeValueId { get; set; }
+
+        /// <summary />
+        public ICollection<Group> Groups { get; set; }
+
+        /// <summary />
+        public ICollection<GroupType> ChildGroupTypes { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeRole> Roles { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
+
+        /// <summary />
+        public GroupTypeRole DefaultGroupRole { get; set; }
+
+        /// <summary />
+        public DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

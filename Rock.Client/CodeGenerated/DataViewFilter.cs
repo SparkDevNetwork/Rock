@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -41,6 +42,12 @@ namespace Rock.Client
 
         /// <summary />
         public string Selection { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public ICollection<DataViewFilter> ChildFilters { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

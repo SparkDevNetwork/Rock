@@ -42,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [LavaIgnore]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -64,10 +65,11 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public int? EntityId { get; set; }
         
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets or sets the value
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the value.
@@ -80,24 +82,45 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the Value as a double
-        /// Calculated Field: alter table AttributeValue add ValueAsNumeric as (case when len([value]) &lt; (100) AND isnumeric([value])=(1) AND NOT [value] like %[^0-9.]%' AND NOT [value] like '%[.]%' then CONVERT([numeric](38,10),[value])  end
+        /// Gets the Value as a double (Computed Column)
         /// </summary>
         /// <value>
         /// </value>
+        /* Computed Column Spec:
+        CASE 
+        WHEN len([value]) < (100)
+            AND isnumeric([value]) = (1)
+            AND NOT [value] LIKE '%[^0-9.]%'
+            AND NOT [value] LIKE '%[.]%'
+            THEN CONVERT([numeric](38, 10), [value])
+        END         
+         */
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets the Value as a DateTime 
-        /// Calculated Field: ALTER TABLE [dbo].[AttributeValue] ADD [ValueAsDateTime] AS CASE WHEN [value] LIKE '____-__-__T__:__:__________' THEN CONVERT(datetime, CONVERT(datetimeoffset, [value])) ELSE NULL END
-        /// NOTE: Only supports "timezone neutral" ISO-8601 format
-        /// </summary>
-        /// <value>
-        /// </value>
+        /// Gets the Value as a DateTime (Computed Column)
+        /* Computed Column Spec:
+        CASE 
+        -- make sure it isn't a big value or a date range, etc
+        WHEN LEN([value]) <= 33
+            THEN CASE 
+                    -- is it an ISO-8601
+                    WHEN VALUE LIKE '____-__-__T__:__:__%'
+                        THEN CONVERT(DATETIME, CONVERT(DATETIMEOFFSET, [value]))
+                    -- is it some other value SQL Date
+                    WHEN ISDATE([VALUE]) = 1
+                        THEN CONVERT(DATETIME, [VALUE])
+                    ELSE NULL
+                    END
+        ELSE NULL    
+        END
+        */
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
         public DateTime? ValueAsDateTime { get; private set; }
         
         /// <summary>
@@ -133,6 +156,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>

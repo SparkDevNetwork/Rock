@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -58,10 +59,19 @@ namespace Rock.Client
         public int? MediumEntityTypeId { get; set; }
 
         /// <summary />
-        public string MediumDataJson { get; set; }
+        public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
-        public string AdditionalMergeFieldsJson { get; set; }
+        public PersonAlias ReviewerPersonAlias { get; set; }
+
+        /// <summary />
+        public ICollection<CommunicationRecipient> Recipients { get; set; }
+
+        /// <summary />
+        public EntityType MediumEntityType { get; set; }
+
+        /// <summary />
+        public List<string> AdditionalMergeFields { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

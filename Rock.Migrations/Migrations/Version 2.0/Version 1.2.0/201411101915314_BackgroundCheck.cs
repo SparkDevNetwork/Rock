@@ -172,8 +172,8 @@ SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03
             RestrictAttributeToSecurityRole( "44490089-E02C-4E54-A456-454845ABBC9D", "View" );
             RestrictAttributeToSecurityRole( "44490089-E02C-4E54-A456-454845ABBC9D", "View" );
 
-            RockMigrationHelper.UpdatePersonAttribute( "C403E219-A56B-439E-9D50-9302DFE760CF", "4D1E1EBA-ABF2-4A7C-8ADF-65CB5AAE94E2", "Background Check Document", "BackgroundCheckDocument", "", "The last background check", 0, "", "F3931952-460D-43E0-A6E0-EB6B5B1F9167" );
-            RockMigrationHelper.AddAttributeQualifier( "F3931952-460D-43E0-A6E0-EB6B5B1F9167", "binaryFileType", "5C701472-8A6B-4BBE-AEC6-EC833C859F2D", "43248635-B07D-49D8-885D-DF46C041CC04" );
+            RockMigrationHelper.UpdatePersonAttribute( "6F9E2DD0-E39E-4602-ADF9-EB710A75304A", "4D1E1EBA-ABF2-4A7C-8ADF-65CB5AAE94E2", "Background Check Document", "BackgroundCheckDocument", "", "The last background check", 0, "", "F3931952-460D-43E0-A6E0-EB6B5B1F9167" );
+            RockMigrationHelper.AddAttributeQualifier( "F3931952-460D-43E0-A6E0-EB6B5B1F9167", "binaryFileType", "5c701472-8a6b-4bbe-aec6-ec833c859f2d", "43248635-B07D-49D8-885D-DF46C041CC04" );
             RestrictAttributeToSecurityRole( "F3931952-460D-43E0-A6E0-EB6B5B1F9167", "View" );
             RestrictAttributeToSecurityRole( "44490089-E02C-4E54-A456-454845ABBC9D", "View" );
 

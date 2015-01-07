@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             var tagService = new Rock.Model.TagService( rockContext );
-            var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var tag = tagService.Get( e.RowKeyId );
 
             if ( tag != null )
             {

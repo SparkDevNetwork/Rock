@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -56,6 +57,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? InitiatorPersonAliasId { get; set; }
+
+        /// <summary />
+        public ICollection<WorkflowActivity> Activities { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

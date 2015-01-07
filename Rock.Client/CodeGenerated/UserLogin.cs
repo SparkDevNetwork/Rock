@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -35,9 +36,6 @@ namespace Rock.Client
 
         /// <summary />
         public string UserName { get; set; }
-
-        /// <summary />
-        public string Password { get; set; }
 
         /// <summary />
         public bool? IsConfirmed { get; set; }
@@ -74,6 +72,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PersonId { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

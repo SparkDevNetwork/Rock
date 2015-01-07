@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -30,6 +31,9 @@ namespace Rock.Client
     /// </summary>
     public partial class FinancialAccount
     {
+        /// <summary />
+        public int? AccountTypeValueId { get; set; }
+
         /// <summary />
         public int? ParentAccountId { get; set; }
 
@@ -64,7 +68,10 @@ namespace Rock.Client
         public DateTime? EndDate { get; set; }
 
         /// <summary />
-        public int? AccountTypeValueId { get; set; }
+        public DefinedValue AccountTypeValue { get; set; }
+
+        /// <summary />
+        public ICollection<FinancialAccount> ChildAccounts { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

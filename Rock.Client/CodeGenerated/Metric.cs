@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -77,6 +78,15 @@ namespace Rock.Client
 
         /// <summary />
         public int? EntityTypeId { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceValueType { get; set; }
+
+        /// <summary />
+        public ICollection<MetricCategory> MetricCategories { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

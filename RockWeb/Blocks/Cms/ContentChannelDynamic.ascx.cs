@@ -226,7 +226,7 @@ $(document).ready(function() {
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "EnableDebug", cbDebug.Checked.ToString() );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
-            SetAttributeValue( "Template", ceQuery.Text );
+            SetAttributeValue( "Template", ceTemplate.Text );
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbCacheDuration.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
@@ -245,11 +245,10 @@ $(document).ready(function() {
             FlushCacheItem( CONTENT_CACHE_KEY );
             FlushCacheItem( TEMPLATE_CACHE_KEY );
 
-            ShowView();
-        }
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+            upnlContent.Update();
 
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
             ShowView();
         }
 
@@ -319,6 +318,10 @@ $(document).ready(function() {
         /// </summary>
         protected override void ShowSettings()
         {
+            pnlEditModal.Visible = true;
+            upnlContent.Update();
+            mdEdit.Show();
+
             var rockContext = new RockContext();
             ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
                 .OrderBy( c => c.Name )
@@ -342,7 +345,7 @@ $(document).ready(function() {
             cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
             cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
             cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
-            ceQuery.Text = GetAttributeValue( "Template" );
+            ceTemplate.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
@@ -358,8 +361,6 @@ $(document).ready(function() {
             kvlOrder.Value = GetAttributeValue( "Order" );
             kvlOrder.Required = true;
 
-            pnlView.Visible = false;
-            pnlEdit.Visible = true;
 
             ShowEdit();
 
@@ -371,8 +372,6 @@ $(document).ready(function() {
         /// </summary>
         private void ShowView()
         {
-            pnlEdit.Visible = false;
-            pnlView.Visible = true;
             nbContentError.Visible = false;
             upnlContent.Update();
 

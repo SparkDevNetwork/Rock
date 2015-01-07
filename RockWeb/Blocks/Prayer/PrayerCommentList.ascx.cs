@@ -127,6 +127,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
+            // NOTE: DataKeys for Grid has two fields "id,entityId"
             NavigateToLinkedPage( "DetailPage", _prayerCommentKeyParameter, (int)e.RowKeyValues["id"], _prayerRequestKeyParameter, (int)e.RowKeyValues["entityid"] );
         }
 
@@ -143,6 +144,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var rockContext = new RockContext();
                 NoteService noteService = new NoteService( rockContext );
+                // NOTE: DataKeys for Grid has two fields "id,entityId"
                 Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
                 if ( prayerComment != null )

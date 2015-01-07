@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -46,7 +47,16 @@ namespace Rock.Client
         public int? CheckInEndOffsetMinutes { get; set; }
 
         /// <summary />
+        public DateTime? EffectiveStartDate { get; set; }
+
+        /// <summary />
+        public DateTime? EffectiveEndDate { get; set; }
+
+        /// <summary />
         public int? CategoryId { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

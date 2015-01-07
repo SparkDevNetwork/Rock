@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             SystemEmailService emailTemplateService = new SystemEmailService( rockContext );
-            SystemEmail emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+            SystemEmail emailTemplate = emailTemplateService.Get( e.RowKeyId );
             if ( emailTemplate != null )
             {
                 emailTemplateService.Delete( emailTemplate );

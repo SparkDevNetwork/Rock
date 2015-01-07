@@ -46,8 +46,15 @@ namespace Rock.Address
         {
             result = string.Empty;
 
-            if ( location != null &&
-                ( !location.StandardizedDateTime.HasValue || reVerify ) )
+            // Only verify if location is valid, has not been locked, and 
+            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
+            if ( location != null && 
+                !(location.IsGeoPointLocked ?? false) &&  
+                (
+                    !location.StandardizedDateTime.HasValue || 
+                    location.StandardizedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds(-30) ) > 0 ||
+                    reVerify
+                ) )
             {
                 var requestArray = new RequestArray();
                 requestArray.CustomerID = GetAttributeValue( "CustomerId" );

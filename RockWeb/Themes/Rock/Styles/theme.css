@@ -2288,6 +2288,10 @@ table.display-all td {
 .sticky-table-header > .table-bordered > tfoot > tr:last-child > td {
   border-bottom: 0;
 }
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: rgba(0, 0, 0, 0.03);
@@ -2309,19 +2313,32 @@ td.wrap-contents {
 .grid {
   margin-bottom: 20px;
 }
-.table-responsive[data-pattern="priority-columns"] {
-  margin-bottom: inherit;
-  border: inherit;
-  border-radius: inherit;
+.grid .grid-table {
+  border: 1px solid #dddddd;
 }
+.grid .grid-table.table-light {
+  border: none;
+}
+.grid.grid-panel .grid-table {
+  border: none !important;
+}
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+/*.table-responsive[data-pattern="priority-columns"] {
+    margin-bottom: inherit;
+    border: inherit;
+    border-radius: inherit;
+}*/
 .table-wrapper .btn-toolbar {
   display: none;
 }
 .grid-filter {
   background-color: #efefef;
   border-radius: 4px;
-  padding: 0 6px 12px 6px;
-  margin-bottom: -10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #dddddd;
 }
 .grid-filter header {
   border-radius: 4px 4px 0 0;
@@ -2366,7 +2383,7 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .table thead th {
-  background-color: #ffffff;
+  background-color: #efefef;
   font-size: 14px;
   color: #524c43;
   font-weight: 700;

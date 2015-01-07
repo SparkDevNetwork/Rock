@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// A schedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule : DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public class CheckInSchedule : Lava.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the schedule.
@@ -103,6 +103,26 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [Rock.Data.LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string> { "LastCheckIn" };
+                if ( this.Schedule != null )
+                {
+                    availableKeys.AddRange( this.Schedule.AvailableKeys );
+                }
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -110,6 +130,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Rock.Data.LavaIgnore]
         public object this[object key]
         {
             get
