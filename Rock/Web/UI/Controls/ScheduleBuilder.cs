@@ -385,6 +385,7 @@ namespace Rock.Web.UI.Controls
         protected void btnSaveSchedule_Click( object sender, EventArgs e )
         {
             iCalendarContent = _scheduleBuilderPopupContents.GetCalendarContentFromControls();
+            _modalDialog.Hide();
             if ( SaveSchedule != null )
             {
                 SaveSchedule( sender, e );

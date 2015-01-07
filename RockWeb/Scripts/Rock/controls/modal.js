@@ -39,8 +39,11 @@
             $('#modal-popup').fadeTo(0, 0);
             $modalPopupIFrame[0].style.height = 'auto';
             $modalPopupIFrame.attr('src', popupUrl);
-            $('#modal-popup').modal('show');
-
+            $('#modal-popup').modal({
+                show: true,
+                backdrop: 'static',
+                keyboard: false
+            });
         },
 
         exports = {

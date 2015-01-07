@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new String[1] { "PersonId" };
-            hlPersonProfileLink.DataNavigateUrlFormatString = String.Format( "{0}?PersonId=", LinkedPageUrl( "PersonProfilePage" ) ) + "{0}";
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
