@@ -55,7 +55,7 @@
         <asp:Repeater runat="server" ID="rptTimeCardDay" OnItemDataBound="rptTimeCardDay_ItemDataBound">
             <ItemTemplate>
                 <div class="row gridresponsive-row gridresponsive-item">
-                    <div class="gridresponsive-item-view">
+                    <div class="gridresponsive-item-view clickable">
                         <div class="col-xs-3 col-md-2 col-lg-1">
                             <div class="row">
                                 <div class="col-xs-7">
@@ -169,7 +169,7 @@
             Sys.Application.add_load(function () {
                 $('.js-hour-type').tooltip();
 
-                $(".js-item-edit, .js-item-cancel").on("click", function (a, b, c) {
+                $(".js-item-edit, .js-item-cancel, .gridresponsive-item-view").on("click", function (a, b, c) {
                     var $parent = $(this).closest(".gridresponsive-item");
                     $parent.find(".gridresponsive-item-edit").slideToggle(function () {
                         $parent.find(".gridresponsive-item-view").slideToggle();
