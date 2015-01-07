@@ -1,23 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-
 using com.ccvonline.TimeCard.Data;
 using com.ccvonline.TimeCard.Model;
-using System.Web.UI.HtmlControls;
+
+using Rock;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.TimeCard
 {
@@ -166,7 +159,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
                 lPaidHolidayHours.Text = FormatTimeCardHours( timeCardDay.PaidHolidayHours );
 
                 Literal lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Literal;
-                lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours ); ;
+                lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
 
                 Literal lOtherHours = repeaterItem.FindControl( "lOtherHours" ) as Literal;
                 decimal totalOtherHours = timeCardDay.PaidVacationHours ?? 0 + timeCardDay.PaidHolidayHours ?? 0 + timeCardDay.PaidSickHours ?? 0;
@@ -196,17 +189,17 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
 
                 TimePicker tpTimeOut = repeaterItem.FindControl( "tpTimeOut" ) as TimePicker;
                 tpTimeOut.SelectedTime = timeCardDay.EndDateTime.HasValue ? timeCardDay.EndDateTime.Value.TimeOfDay : (TimeSpan?)null;
-                
+
                 RockDropDownList ddlVacationHours = repeaterItem.FindControl( "ddlVacationHours" ) as RockDropDownList;
                 RockDropDownList ddlHolidayHours = repeaterItem.FindControl( "ddlHolidayHours" ) as RockDropDownList;
                 RockDropDownList ddlSickHours = repeaterItem.FindControl( "ddlSickHours" ) as RockDropDownList;
 
                 ddlVacationHours.Items.Clear();
-                ddlVacationHours.Items.Add( "" );
+                ddlVacationHours.Items.Add( string.Empty );
                 ddlHolidayHours.Items.Clear();
-                ddlHolidayHours.Items.Add( "" );
+                ddlHolidayHours.Items.Add( string.Empty );
                 ddlSickHours.Items.Clear();
-                ddlSickHours.Items.Add( "" );
+                ddlSickHours.Items.Add( string.Empty );
 
                 for ( double hour = 0.25; hour <= 8; hour += 0.25 )
                 {
@@ -214,7 +207,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
                     ddlHolidayHours.Items.Add( hour.ToString( "0.00" ) );
                     ddlSickHours.Items.Add( hour.ToString( "0.00" ) );
                 }
-                
+
                 ddlVacationHours.SetValue( ToNearestQtrHour( timeCardDay.PaidVacationHours ).ToString() );
                 ddlHolidayHours.SetValue( ToNearestQtrHour( timeCardDay.PaidHolidayHours ).ToString() );
                 ddlSickHours.SetValue( ToNearestQtrHour( timeCardDay.PaidSickHours ).ToString() );
@@ -230,9 +223,14 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
 
         #endregion
 
-        private static decimal? ToNearestQtrHour( decimal? hours)
+        /// <summary>
+        /// To the nearest QTR hour.
+        /// </summary>
+        /// <param name="hours">The hours.</param>
+        /// <returns></returns>
+        private static decimal? ToNearestQtrHour( decimal? hours )
         {
-           return hours.HasValue ? hours - hours % 0.25M : null;
+            return hours.HasValue ? hours - ( hours % 0.25M ) : null;
         }
 
         #region Methods
@@ -274,6 +272,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
                         timeCardDay.StartDateTime = startDateTime;
                         missingDays.Add( timeCardDay );
                     }
+
                     startDateTime = startDateTime.AddDays( 1 );
                 }
 
@@ -366,16 +365,5 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
                 return null;
             }
         }
-
-        /// <summary>
-        /// Handles the Click event of the lbCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            ShowDetail();
-        }
-        
-}
+    }
 }

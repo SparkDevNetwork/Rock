@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TimeCardDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.TimeCard.TimeCardDetail" %>
-<asp:UpdatePanel ID="upnlContent" runat="server" >
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <style>
@@ -147,7 +147,7 @@
                                 <div class="col-md-3">
                                     <Rock:RockDropDownList runat="server" ID="ddlSickHours" Label="Sick Hrs" />
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <Rock:RockTextBox runat="server" ID="tbNotes" Label="Notes" MaxLength="200" />
                                 </div>
@@ -156,7 +156,7 @@
 
                         <div class="col-md-2 pull-right gridresponsive-commandcolumn">
                             <asp:LinkButton runat="server" ID="lbSave" CssClass="btn btn-success btn-sm js-item-save margin-b-sm" OnClick="lbSave_Click"><i class="fa fa-check"></i></asp:LinkButton>
-                            <a runat="server" id="lbCancel" class="btn btn-warning btn-sm js-item-cancel margin-b-sm" causesvalidation="false"><i class="fa fa-minus"></i></a>
+                            <a runat="server" id="lbCancel" class="btn btn-warning btn-sm js-item-cancel margin-b-sm"><i class="fa fa-minus"></i></a>
                         </div>
 
                     </div>
@@ -173,7 +173,7 @@
             Sys.Application.add_load(function () {
                 $('.js-hour-type').tooltip();
 
-                $(".js-item-edit, .js-item-cancel, .gridresponsive-item-view").on("click", function (a, b, c) {
+                $(".js-item-edit, .js-item-cancel, .gridresponsive-item-view").on("click", function (a) {
 
                     // prevent the .js-item-edit from bubbling up to .gridresponsive-item-view
                     a.stopImmediatePropagation();

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -9,7 +7,6 @@ using com.ccvonline.TimeCard.Data;
 using com.ccvonline.TimeCard.Model;
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +35,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
 
             bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-            // TimeCard/Time Card Pay Period is auto created based on current date
+            // TimeCard/Time Card Pay Period is auto created based on current date, so no need for Add/Delete button
             gList.Actions.ShowAdd = false;
             gList.DataKeyNames = new string[] { "Id" };
 
@@ -134,17 +131,6 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         #region Methods
 
         /// <summary>
-        /// Gets the hours HTML.
-        /// </summary>
-        /// <param name="timeCardDay">The time card day.</param>
-        /// <returns></returns>
-        public string GetHoursHtml( TimeCardDay timeCardDay )
-        {
-            var overTimeHours = timeCardDay.TimeCard.GetOvertimeHours().Where( a => a.TimeCardDay.Id == timeCardDay.Id ).FirstOrDefault();
-            return "TODO!";
-        }
-
-        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -152,7 +138,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             var dataContext = new TimeCardContext();
             var timeCardService = new TimeCardService( dataContext );
             var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
-            DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>(DayOfWeek.Monday);
+            DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>( DayOfWeek.Monday );
             var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( payrollStartDay );
             SortProperty sortProperty = gList.SortProperty;
 
@@ -184,7 +170,12 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             var repeaterItem = e.Row;
@@ -215,5 +206,5 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             lPaidSickHours.Text = timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lPaidSickHours.Visible = lPaidSickHours.Text.AsDecimal() != 0;
         }
-}
+    }
 }

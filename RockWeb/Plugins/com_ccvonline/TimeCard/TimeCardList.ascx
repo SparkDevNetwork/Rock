@@ -12,9 +12,9 @@
                     <ItemTemplate>
                         <asp:Label runat="server" ID="lRegularHours" CssClass="js-hour-type badge badge-default" data-toggle="tooltip" data-placement="top" title="Regular" />
                         <asp:Label runat="server" ID="lOvertimeHours" CssClass="js-hour-type badge badge-danger" data-toggle="tooltip" data-placement="top" title="Overtime" />
-                        <asp:Label runat="server" ID="lPaidVacationHours" Cssclass="js-hour-type badge badge-success" data-toggle="tooltip" data-placement="top" title="Vacation" />
-                        <asp:Label runat="server" ID="lPaidHolidayHours" Cssclass="js-hour-type badge badge-info" data-toggle="tooltip" data-placement="top" title="Holiday" />
-                        <asp:Label runat="server" ID="lPaidSickHours" Cssclass="js-hour-type badge badge-warning" data-toggle="tooltip" data-placement="top" title="Sick" />
+                        <asp:Label runat="server" ID="lPaidVacationHours" CssClass="js-hour-type badge badge-success" data-toggle="tooltip" data-placement="top" title="Vacation" />
+                        <asp:Label runat="server" ID="lPaidHolidayHours" CssClass="js-hour-type badge badge-info" data-toggle="tooltip" data-placement="top" title="Holiday" />
+                        <asp:Label runat="server" ID="lPaidSickHours" CssClass="js-hour-type badge badge-warning" data-toggle="tooltip" data-placement="top" title="Sick" />
                     </ItemTemplate>
                 </Rock:RockTemplateField>
             </Columns>
