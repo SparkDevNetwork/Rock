@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using com.ccvonline.TimeCard.Data;
 using com.ccvonline.TimeCard.Model;
 using Rock;
@@ -139,7 +140,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         /// <returns></returns>
         public string GetHoursHtml( TimeCardDay timeCardDay )
         {
-            
+            var overTimeHours = timeCardDay.TimeCard.GetOvertimeHours().Where( a => a.TimeCardDay.Id == timeCardDay.Id ).FirstOrDefault();
             return "TODO!";
         }
 
@@ -183,5 +184,36 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         }
 
         #endregion
-    }
+        
+        protected void gList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            var repeaterItem = e.Row;
+            var timeCard = e.Row.DataItem as com.ccvonline.TimeCard.Model.TimeCard;
+            if ( timeCard == null )
+            {
+                return;
+            }
+
+            Label lRegularHours = repeaterItem.FindControl( "lRegularHours" ) as Label;
+            var regularHours = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 );
+            lRegularHours.Text = regularHours.ToString( "0.##" );
+
+            Label lOvertimeHours = repeaterItem.FindControl( "lOvertimeHours" ) as Label;
+            var overtimeHours = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 );
+            lOvertimeHours.Text = overtimeHours.ToString( "0.##" );
+            lOvertimeHours.Visible = lOvertimeHours.Text.AsDecimal() != 0;
+
+            Label lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Label;
+            lPaidVacationHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lPaidVacationHours.Visible = lPaidVacationHours.Text.AsDecimal() != 0;
+
+            Label lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Label;
+            lPaidHolidayHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lPaidHolidayHours.Visible = lPaidHolidayHours.Text.AsDecimal() != 0;
+
+            Label lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Label;
+            lPaidSickHours.Text = timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lPaidSickHours.Visible = lPaidSickHours.Text.AsDecimal() != 0;
+        }
+}
 }
