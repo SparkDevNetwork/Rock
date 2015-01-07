@@ -156,7 +156,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the parent security authority for the DataView
+        /// Gets the parent security authority for the DataView which is its Category
         /// </summary>
         /// <value>
         /// The parent authority of the DataView.
