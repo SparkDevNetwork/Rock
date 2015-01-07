@@ -196,15 +196,31 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
 
                 TimePicker tpTimeOut = repeaterItem.FindControl( "tpTimeOut" ) as TimePicker;
                 tpTimeOut.SelectedTime = timeCardDay.EndDateTime.HasValue ? timeCardDay.EndDateTime.Value.TimeOfDay : (TimeSpan?)null;
+                
+                RockDropDownList ddlVacationHours = repeaterItem.FindControl( "ddlVacationHours" ) as RockDropDownList;
+                RockDropDownList ddlHolidayHours = repeaterItem.FindControl( "ddlHolidayHours" ) as RockDropDownList;
+                RockDropDownList ddlSickHours = repeaterItem.FindControl( "ddlSickHours" ) as RockDropDownList;
 
-                NumberBox nbVacationHours = repeaterItem.FindControl( "nbVacationHours" ) as NumberBox;
-                nbVacationHours.Text = FormatTimeCardHours( timeCardDay.PaidVacationHours );
+                ddlVacationHours.Items.Clear();
+                ddlVacationHours.Items.Add( "" );
+                ddlHolidayHours.Items.Clear();
+                ddlHolidayHours.Items.Add( "" );
+                ddlSickHours.Items.Clear();
+                ddlSickHours.Items.Add( "" );
 
-                NumberBox nbHolidayHours = repeaterItem.FindControl( "nbHolidayHours" ) as NumberBox;
-                nbHolidayHours.Text = FormatTimeCardHours( timeCardDay.PaidHolidayHours );
+                for ( double hour = 0.25; hour <= 8; hour += 0.25 )
+                {
+                    ddlVacationHours.Items.Add( hour.ToString( "0.00" ) );
+                    ddlHolidayHours.Items.Add( hour.ToString( "0.00" ) );
+                    ddlSickHours.Items.Add( hour.ToString( "0.00" ) );
+                }
+                
+                ddlVacationHours.SetValue( ToNearestQtrHour( timeCardDay.PaidVacationHours ).ToString() );
+                ddlHolidayHours.SetValue( ToNearestQtrHour( timeCardDay.PaidHolidayHours ).ToString() );
+                ddlSickHours.SetValue( ToNearestQtrHour( timeCardDay.PaidSickHours ).ToString() );
 
-                NumberBox nbSickHours = repeaterItem.FindControl( "nbSickHours" ) as NumberBox;
-                nbSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
+                RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
+                tbNotes.Text = timeCardDay.Notes;
 
                 // Action Controls
                 LinkButton lbSave = repeaterItem.FindControl( "lbSave" ) as LinkButton;
@@ -213,6 +229,11 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         }
 
         #endregion
+
+        private static decimal? ToNearestQtrHour( decimal? hours)
+        {
+           return hours.HasValue ? hours - hours % 0.25M : null;
+        }
 
         #region Methods
 
@@ -299,14 +320,17 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             TimePicker tpTimeOut = repeaterItem.FindControl( "tpTimeOut" ) as TimePicker;
             timeCardDay.EndDateTime = GetTimeCardTimeValue( repeaterItem, timeCardDay, tpTimeOut );
 
-            NumberBox nbVacationHours = repeaterItem.FindControl( "nbVacationHours" ) as NumberBox;
-            timeCardDay.PaidVacationHours = nbVacationHours.Text.AsDecimalOrNull();
+            RockDropDownList ddlVacationHours = repeaterItem.FindControl( "ddlVacationHours" ) as RockDropDownList;
+            timeCardDay.PaidVacationHours = ddlVacationHours.SelectedValue.AsDecimalOrNull();
 
-            NumberBox nbHolidayHours = repeaterItem.FindControl( "nbHolidayHours" ) as NumberBox;
-            timeCardDay.PaidHolidayHours = nbHolidayHours.Text.AsDecimalOrNull();
+            RockDropDownList ddlHolidayHours = repeaterItem.FindControl( "ddlHolidayHours" ) as RockDropDownList;
+            timeCardDay.PaidHolidayHours = ddlHolidayHours.SelectedValue.AsDecimalOrNull();
 
-            NumberBox nbSickHours = repeaterItem.FindControl( "nbSickHours" ) as NumberBox;
-            timeCardDay.PaidSickHours = nbSickHours.Text.AsDecimalOrNull();
+            RockDropDownList ddlSickHours = repeaterItem.FindControl( "ddlSickHours" ) as RockDropDownList;
+            timeCardDay.PaidSickHours = ddlSickHours.SelectedValue.AsDecimalOrNull();
+
+            RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
+            timeCardDay.Notes = tbNotes.Text;
 
             dbContext.SaveChanges();
 
@@ -352,5 +376,6 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         {
             ShowDetail();
         }
-    }
+        
+}
 }

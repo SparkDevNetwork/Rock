@@ -44,7 +44,7 @@
             </div>
             <div class="col-md-2 hidden-xs hidden-sm">
                 <div class="row">
-                    <strong>Other Hours</strong>
+                    <strong>Other Hrs</strong>
                 </div>
             </div>
             <div class="col-xs-3 hidden-md hidden-lg"><strong>Other Hrs</strong></div>
@@ -139,13 +139,17 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <Rock:NumberBox runat="server" ID="nbVacationHours" NumberType="Double" Placeholder="Enter hours" Label="Vacation Hrs" />
+                                    <Rock:RockDropDownList runat="server" ID="ddlVacationHours" Label="Vacation Hrs" />
                                 </div>
                                 <div class="col-md-3">
-                                    <Rock:NumberBox runat="server" ID="nbHolidayHours" NumberType="Double" Placeholder="Enter hours" Label="Holiday Hrs" />
+                                    <Rock:RockDropDownList runat="server" ID="ddlHolidayHours" Label="Holiday Hrs" />
                                 </div>
                                 <div class="col-md-3">
-                                    <Rock:NumberBox runat="server" ID="nbSickHours" NumberType="Double" Placeholder="Enter hours" Label="Sick Hrs" />
+                                    <Rock:RockDropDownList runat="server" ID="ddlSickHours" Label="Sick Hrs" />
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <Rock:RockTextBox runat="server" ID="tbNotes" Label="Notes" MaxLength="200" />
                                 </div>
                             </div>
                         </div>
@@ -170,6 +174,10 @@
                 $('.js-hour-type').tooltip();
 
                 $(".js-item-edit, .js-item-cancel, .gridresponsive-item-view").on("click", function (a, b, c) {
+
+                    // prevent the .js-item-edit from bubbling up to .gridresponsive-item-view
+                    a.stopImmediatePropagation();
+
                     var $parent = $(this).closest(".gridresponsive-item");
                     $parent.find(".gridresponsive-item-edit").slideToggle(function () {
                         $parent.find(".gridresponsive-item-view").slideToggle();
