@@ -4900,7 +4900,7 @@ a.help {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
-  margin: -15px;
+  margin: -15px -15px -30px -15px;
 }
 .panel-block .panel-body .grid.grid-panel .grid-filter {
   border-radius: 0;
