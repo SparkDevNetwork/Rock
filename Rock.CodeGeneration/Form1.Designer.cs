@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.cblModels = new System.Windows.Forms.CheckedListBox();
@@ -37,8 +38,9 @@
             this.cbService = new System.Windows.Forms.CheckBox();
             this.ofdAssembly = new System.Windows.Forms.OpenFileDialog();
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
-            this.fbdDataViewOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.cbClient = new System.Windows.Forms.CheckBox();
+            this.lblAssemblyPath = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -53,7 +55,8 @@
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(12, 381);
+            this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnGenerate.Location = new System.Drawing.Point(12, 406);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -63,16 +66,20 @@
             // 
             // cblModels
             // 
+            this.cblModels.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cblModels.FormattingEnabled = true;
-            this.cblModels.Location = new System.Drawing.Point(13, 38);
+            this.cblModels.Location = new System.Drawing.Point(15, 54);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(361, 334);
+            this.cblModels.Size = new System.Drawing.Size(597, 340);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
             // 
+            this.cbSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSelectAll.AutoSize = true;
-            this.cbSelectAll.Location = new System.Drawing.Point(305, 19);
+            this.cbSelectAll.Location = new System.Drawing.Point(543, 19);
             this.cbSelectAll.Name = "cbSelectAll";
             this.cbSelectAll.Size = new System.Drawing.Size(69, 17);
             this.cbSelectAll.TabIndex = 4;
@@ -84,14 +91,16 @@
             // 
             this.fbdServiceOutput.Description = "Select the project folder that the Service files should be added to.  The namespa" +
     "ce of the objects will be used to create a relative folder path if neccessary.";
+            this.fbdServiceOutput.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fbdServiceOutput.ShowNewFolderButton = false;
             // 
             // cbRest
             // 
+            this.cbRest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbRest.AutoSize = true;
             this.cbRest.Checked = true;
             this.cbRest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRest.Location = new System.Drawing.Point(167, 385);
+            this.cbRest.Location = new System.Drawing.Point(167, 410);
             this.cbRest.Name = "cbRest";
             this.cbRest.Size = new System.Drawing.Size(48, 17);
             this.cbRest.TabIndex = 6;
@@ -100,10 +109,11 @@
             // 
             // cbService
             // 
+            this.cbService.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbService.AutoSize = true;
             this.cbService.Checked = true;
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbService.Location = new System.Drawing.Point(99, 385);
+            this.cbService.Location = new System.Drawing.Point(99, 410);
             this.cbService.Name = "cbService";
             this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
@@ -119,30 +129,46 @@
             // 
             this.fbdRestOutput.Description = "Select the project folder that the Rest files should be added to.  The namespace " +
     "of the objects will be used to create a relative folder path if neccessary.";
+            this.fbdRestOutput.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fbdRestOutput.ShowNewFolderButton = false;
-            // 
-            // fbdDataViewOutput
-            // 
-            this.fbdDataViewOutput.Description = "Select the project folder that the DataFilters files should be added to.  ";
-            this.fbdDataViewOutput.ShowNewFolderButton = false;
             // 
             // cbClient
             // 
+            this.cbClient.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbClient.AutoSize = true;
             this.cbClient.Checked = true;
             this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbClient.Location = new System.Drawing.Point(221, 385);
+            this.cbClient.Location = new System.Drawing.Point(221, 410);
             this.cbClient.Name = "cbClient";
             this.cbClient.Size = new System.Drawing.Size(53, 17);
             this.cbClient.TabIndex = 8;
             this.cbClient.Text = "Client";
             this.cbClient.UseVisualStyleBackColor = true;
             // 
+            // lblAssemblyPath
+            // 
+            this.lblAssemblyPath.AutoSize = true;
+            this.lblAssemblyPath.Location = new System.Drawing.Point(66, 38);
+            this.lblAssemblyPath.Name = "lblAssemblyPath";
+            this.lblAssemblyPath.Size = new System.Drawing.Size(0, 13);
+            this.lblAssemblyPath.TabIndex = 9;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 38);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Assembly:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(386, 416);
+            this.ClientSize = new System.Drawing.Size(624, 441);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblAssemblyPath);
             this.Controls.Add(this.cbClient);
             this.Controls.Add(this.cbService);
             this.Controls.Add(this.cbRest);
@@ -151,8 +177,10 @@
             this.Controls.Add(this.btnGenerate);
             this.Controls.Add(this.btnLoad);
             this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(320, 240);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Rock Code Generator";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -169,8 +197,9 @@
         private System.Windows.Forms.CheckBox cbService;
 		private System.Windows.Forms.OpenFileDialog ofdAssembly;
         private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
-        private System.Windows.Forms.FolderBrowserDialog fbdDataViewOutput;
         private System.Windows.Forms.CheckBox cbClient;
+        private System.Windows.Forms.Label lblAssemblyPath;
+        private System.Windows.Forms.Label label1;
     }
 }
 

@@ -110,6 +110,8 @@ namespace Rock.Model
                         // Populate with inner exception type, message and update whether or not there is another inner exception.
                         exceptionLog.ExceptionType = ex.GetType().ToString();
                         exceptionLog.Description = ex.Message;
+                        exceptionLog.Source = ex.Source;
+                        exceptionLog.StackTrace = ex.StackTrace;
                         exceptionLog.HasInnerException = ex.InnerException != null;
 
                         // Ensure EF properly recognizes this as a new record.

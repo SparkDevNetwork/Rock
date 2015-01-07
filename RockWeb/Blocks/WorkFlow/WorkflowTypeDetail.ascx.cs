@@ -656,6 +656,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                             workflowActionType.WorkflowForm.NotificationSystemEmailId = editorWorkflowActionType.WorkflowForm.NotificationSystemEmailId;
                             workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
+                            workflowActionType.WorkflowForm.AllowNotes = editorWorkflowActionType.WorkflowForm.AllowNotes;
                             workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
                             workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
                             workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
