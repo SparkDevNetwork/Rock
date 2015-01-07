@@ -19,6 +19,11 @@
 
 // 1. Bootstrap Overrides
 // -------------------------
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
+
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
     background-color: rgba(0,0,0,.03);
@@ -44,14 +49,34 @@ td.wrap-contents { // keep cells from scrolling off screen
 
 .grid {
     margin-bottom: 20px;
+
+    .grid-table {
+        border: 1px solid @table-border-color;
+    }
+
+    .grid-table.table-light {
+        border: none;
+    }
+}
+
+.grid.grid-panel {
+    .grid-table {
+        border: none !important;
+    }
 }
 
 // rwd responsive table override
-.table-responsive[data-pattern="priority-columns"] {
+
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+    border: 0;
+}
+
+/*.table-responsive[data-pattern="priority-columns"] {
     margin-bottom: inherit;
     border: inherit;
     border-radius: inherit;
-}
+}*/
 
 // 2. Core Table
 // -------------------------
@@ -68,8 +93,8 @@ td.wrap-contents { // keep cells from scrolling off screen
 .grid-filter {
     background-color: @grid-filter-bg;
     border-radius: @border-radius-base;
-    padding: 0 6px 12px 6px;
-	margin-bottom: -10px;
+    padding: 6px 12px;
+	border-bottom: 1px solid @table-border-color;
 
     header {
         border-radius: @border-radius-base @border-radius-base 0 0;
