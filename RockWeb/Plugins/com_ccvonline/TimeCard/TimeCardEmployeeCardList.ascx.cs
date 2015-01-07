@@ -15,13 +15,12 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
     /// <summary>
     /// Lists all the Referral Agencies.
     /// </summary>
-    [DisplayName( "Time Card List" )]
+    [DisplayName( "Employee Time Card List" )]
     [Category( "CCV > Time Card" )]
-    [Description( "Lists all the time cards for a specific employee." )]
+    [Description( "Lists all the time cards for a specific pay period." )]
 
     [LinkedPage( "Detail Page" )]
-    [DayOfWeekField( "Payroll Start Day", "The Day of Week that pay periods start on.  The First week of Payroll is determined by the first full week of the year for that day.", false, DayOfWeek.Monday )]
-    public partial class TimeCardList : Rock.Web.UI.RockBlock
+    public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -35,11 +34,11 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
 
             bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-            // TimeCard/Time Card Pay Period is auto created based on current date, so no need for Add/Delete button
+            // TimeCard/Time Card Pay Period is auto created when Employees create time cards
             gList.Actions.ShowAdd = false;
             gList.DataKeyNames = new string[] { "Id" };
 
-            gList.IsDeleteEnabled = false;
+            gList.IsDeleteEnabled = true;
             gList.GridRebind += gList_GridRebind;
         }
 
@@ -91,6 +90,36 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             NavigateToLinkedPage( "DetailPage", "TimeCardId", e.RowKeyId );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_Delete( object sender, RowEventArgs e )
+        {
+            var dataContext = new TimeCardContext();
+            var timeCardService = new TimeCardService( dataContext );
+            var timeCard = timeCardService.Get( e.RowKeyId );
+            if ( timeCard != null )
+            {
+                string errorMessage;
+                if ( !timeCardService.CanDelete( timeCard, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                if ( timeCard.HasHoursEntered() )
+                {
+                    mdGridWarning.Show( "This time card has hours entered.", ModalAlertType.Information );
+                    return;
+                }
+
+                timeCardService.Delete( timeCard );
+                dataContext.SaveChanges();
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -103,23 +132,21 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             var dataContext = new TimeCardContext();
             var timeCardService = new TimeCardService( dataContext );
             var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
-            DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>( DayOfWeek.Monday );
-            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( payrollStartDay );
-            SortProperty sortProperty = gList.SortProperty;
 
-            var qry = timeCardService.Queryable().Where( a => a.PersonAliasId == this.CurrentPersonAliasId );
-
-            // ensure that employee has a timecard for the current pay period
-            var currentEmployeeTimeCard = qry.Where( a => a.TimeCardPayPeriodId == currentPayPeriod.Id ).FirstOrDefault();
-            if ( currentEmployeeTimeCard == null )
+            int timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId " ).AsInteger();
+            var timeCardPayPeriod = timeCardPayPeriodService.Get( timeCardPayPeriodId );
+            if ( timeCardPayPeriod == null )
             {
-                currentEmployeeTimeCard = new com.ccvonline.TimeCard.Model.TimeCard();
-                currentEmployeeTimeCard.TimeCardPayPeriodId = currentPayPeriod.Id;
-                currentEmployeeTimeCard.TimeCardStatus = TimeCardStatus.InProgress;
-                currentEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
-                timeCardService.Add( currentEmployeeTimeCard );
-                dataContext.SaveChanges();
+                nbNotificationBox.Text = "No time cards found for the current pay period";
             }
+            else
+            {
+                nbNotificationBox.Text = string.Empty;
+            }
+
+            var qry = timeCardService.Queryable("PersonAlias.Person").Where( a => a.TimeCardPayPeriodId == timeCardPayPeriodId );
+
+            SortProperty sortProperty = gList.SortProperty;
 
             if ( sortProperty != null )
             {
@@ -127,7 +154,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             }
             else
             {
-                qry = qry.OrderByDescending( a => a.TimeCardPayPeriod.StartDate );
+                qry = qry.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName);
             }
 
             gList.DataSource = qry.ToList();

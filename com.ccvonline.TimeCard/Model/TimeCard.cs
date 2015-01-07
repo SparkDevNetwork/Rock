@@ -354,6 +354,15 @@ namespace com.ccvonline.TimeCard.Model
             } ).ToList();
         }
 
+        /// <summary>
+        /// Determines whether any of the time cards have hours entered.
+        /// </summary>
+        /// <returns></returns>
+        public bool HasHoursEntered()
+        {
+            return this.TimeCardDays.Any( a => a.HasHoursEntered() );
+        }
+
         #endregion
     }
 

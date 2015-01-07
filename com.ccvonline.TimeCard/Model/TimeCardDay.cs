@@ -133,6 +133,15 @@ namespace com.ccvonline.TimeCard.Model
             return cal.GetWeekOfYear( this.StartDateTime, System.Globalization.CalendarWeekRule.FirstFullWeek, firstDayOfWeek );
         }
 
+        /// <summary>
+        /// Determines whether this time card has any hours entered.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasHoursEntered()
+        {
+            return TotalWorkedDuration > 0 || PaidHolidayHours > 0 || PaidSickHours > 0 || PaidVacationHours > 0;
+        }
+
         #endregion
     }
 
