@@ -300,6 +300,8 @@
     <Compile Include="Store\InstalledPackageService.cs" />
     <Compile Include="Store\Organization.cs" />
     <Compile Include="Store\OrganizationService.cs" />
+    <Compile Include="Store\PackageInstallStep.cs" />
+    <Compile Include="Store\PurchaseResponse.cs" />
     <Compile Include="Store\StoreService.cs" />
     <Compile Include="Store\PackageVersionService.cs" />
     <Compile Include="Store\PackageVersionRating.cs" />
