@@ -33,7 +33,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    public abstract class Entity<T> : IEntity, Lava.ILiquidizable
         where T : Entity<T>, new()
     {
         #region Entity Properties
@@ -82,6 +82,7 @@ namespace Rock.Data
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [LavaIgnore]
         [HideFromReporting]
         public string ForeignId { get; set; }
 
@@ -202,7 +203,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [DataMember]
+        [LavaInclude]
         public virtual string UrlEncodedKey
         {
             get
@@ -299,6 +300,31 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public virtual List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string>();
+
+                foreach ( var propInfo in GetBaseType().GetProperties() )
+                {
+                    if ( propInfo != null && LiquidizableProperty(propInfo) )
+                    {
+                        availableKeys.Add( propInfo.Name );
+                    }
+                }
+
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <value>
@@ -306,32 +332,27 @@ namespace Rock.Data
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [LavaIgnore]
         public virtual object this[object key]
         {
             get 
             {
-                Type entityType = this.GetType();
-                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                    entityType = entityType.BaseType;
-
-                var propInfo = entityType.GetProperty( key.ToStringSafe() );
-                if ( propInfo != null &&
-                    propInfo.Name != "Attributes" &&
-                    propInfo.Name != "AttributeValues" &&
-                    ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
-                    propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+                var propInfo = GetBaseType().GetProperty( key.ToStringSafe() );
+                if ( propInfo != null && LiquidizableProperty(propInfo))
                 {
-                    object propValue = propInfo.GetValue( this, null );
-
-                    if ( propValue is Guid )
+                    try
                     {
-                        return ( (Guid)propValue ).ToString();
+                        object propValue = propInfo.GetValue( this, null );
+                        if ( propValue is Guid )
+                        {
+                            return ( (Guid)propValue ).ToString();
+                        }
+                        else
+                        {
+                            return propValue;
+                        }
                     }
-                    else
-                    {
-                        return propValue;
-                    }
+                    catch { }
                 }
 
                 return null;
@@ -345,17 +366,8 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool ContainsKey( object key )
         {
-            Type entityType = this.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                entityType = entityType.BaseType;
-
-            var propInfo = entityType.GetProperty( key.ToStringSafe() );
-            if ( propInfo != null &&
-                propInfo.Name != "Attributes" &&
-                propInfo.Name != "AttributeValues" &&
-                ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 ||
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 ) &&
-                propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
+            var propInfo = GetBaseType().GetProperty( key.ToStringSafe() );
+            if ( propInfo != null && LiquidizableProperty( propInfo ) )
             {
                 return true;
             }
@@ -363,6 +375,40 @@ namespace Rock.Data
             return false;
         }
 
+        private Type GetBaseType()
+        {
+            Type entityType = this.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            {
+                entityType = entityType.BaseType;
+            }
+            return entityType;
+        }
+
+        private bool LiquidizableProperty ( PropertyInfo propInfo )
+        {
+            // If property has a [LavaIgnore] attribute return false
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() > 0 )
+            {
+                return false;
+            }
+
+            // If property has a [DataMember] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // If property has a [LavaInclude] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 )
+            {
+                return true;
+            }
+
+            // otherwise return false
+            return false;
+
+        }
         #endregion
 
         #region Static Methods

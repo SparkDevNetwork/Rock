@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( _canEdit )
             {
-                ShowEdit( (int)gUserLogins.DataKeys[e.RowIndex]["id"] );
+                ShowEdit( e.RowKeyId );
             }
         }
 

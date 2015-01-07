@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -32,12 +33,6 @@ namespace Rock.Client
     {
         /// <summary />
         public int PersonAliasId { get; set; }
-
-        /// <summary />
-        public string AccountNumberSecured { get; set; }
-
-        /// <summary />
-        public string AccountNumberMasked { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

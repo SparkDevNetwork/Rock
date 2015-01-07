@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
 
             var rockContext = new RockContext();
             BlockService blockService = new BlockService( rockContext );
-            Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( block != null )
             {
                 blockService.Delete( block );

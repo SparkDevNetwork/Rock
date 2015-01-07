@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -59,6 +60,21 @@ namespace Rock.Client
 
         /// <summary />
         public bool? AllowGuests { get; set; }
+
+        /// <summary />
+        public GroupType GroupType { get; set; }
+
+        /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
+        public ICollection<Group> Groups { get; set; }
+
+        /// <summary />
+        public ICollection<GroupMember> Members { get; set; }
+
+        /// <summary />
+        public ICollection<GroupLocation> GroupLocations { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

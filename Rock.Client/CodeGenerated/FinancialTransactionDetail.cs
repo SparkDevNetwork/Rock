@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -31,10 +32,13 @@ namespace Rock.Client
     public partial class FinancialTransactionDetail
     {
         /// <summary />
-        public int TransactionId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public int AccountId { get; set; }
+
+        /// <summary />
+        public int TransactionId { get; set; }
 
         /// <summary />
         public bool IsNonCash { get; set; }
@@ -46,10 +50,10 @@ namespace Rock.Client
         public string Summary { get; set; }
 
         /// <summary />
-        public int? EntityTypeId { get; set; }
+        public int? EntityId { get; set; }
 
         /// <summary />
-        public int? EntityId { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

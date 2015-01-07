@@ -197,13 +197,13 @@ namespace RockWeb.Blocks.Core
         protected void gCategories_Select( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "CategoryId", gCategories.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "CategoryId", e.RowKeyId.ToString() );
             Response.Redirect( new PageReference( CurrentPageReference.PageId, 0, parms ).BuildUrl(), false );
         }
 
         protected void gCategories_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)gCategories.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
         
         /// <summary>
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new CategoryService( rockContext );
 
-            var category = service.Get( (int)gCategories.DataKeys[e.RowIndex]["id"] );
+            var category = service.Get( e.RowKeyId );
             if ( category != null )
             {
                 string errorMessage = string.Empty;

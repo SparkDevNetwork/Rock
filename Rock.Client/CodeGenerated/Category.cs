@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -59,6 +60,12 @@ namespace Rock.Client
 
         /// <summary />
         public string HighlightColor { get; set; }
+
+        /// <summary />
+        public ICollection<Category> ChildCategories { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

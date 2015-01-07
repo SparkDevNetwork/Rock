@@ -58,12 +58,14 @@ namespace Rock.Web.UI.Controls
 
             var searchExtensions = new Dictionary<string,Tuple<string, string>>();
             foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+            {
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( service.Value.Value.SearchLabel, service.Value.Value.ResultUrl ) );
                     if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
                         hfFilter.Value = service.Key.ToString();
                 }
+            }
 
             writer.AddAttribute( "class", "smartsearch " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -86,7 +88,10 @@ namespace Rock.Web.UI.Controls
 
             // wrap item in span for css hook
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            writer.Write( searchExtensions[hfFilter.Value].Item1 );
+            if ( searchExtensions.ContainsKey( hfFilter.Value ) )
+            {
+                writer.Write( searchExtensions[hfFilter.Value].Item1 );
+            }
             writer.RenderEndTag();
 
             // add carat

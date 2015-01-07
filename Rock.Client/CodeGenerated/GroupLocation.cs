@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -47,6 +48,15 @@ namespace Rock.Client
 
         /// <summary />
         public int? GroupMemberPersonAliasId { get; set; }
+
+        /// <summary />
+        public Location Location { get; set; }
+
+        /// <summary />
+        public DefinedValue GroupLocationTypeValue { get; set; }
+
+        /// <summary />
+        public ICollection<Schedule> Schedules { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( e.RowKeyId );
         }
 
         /// <summary>

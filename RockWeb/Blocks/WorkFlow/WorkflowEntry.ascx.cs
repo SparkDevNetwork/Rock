@@ -241,6 +241,14 @@ namespace RockWeb.Blocks.WorkFlow
         {
             LoadWorkflowType();
 
+            // Set the note type if this is first request
+            if ( !Page.IsPostBack )
+            {
+                var noteEntityTypeId = EntityTypeCache.Read( typeof( Workflow ) ).Id;
+                var noteType = new NoteTypeService( _rockContext ).Get( noteEntityTypeId, "WorkflowNote" );
+                ncWorkflowNotes.NoteTypeId = noteType.Id;
+            }
+
             if ( _workflowType == null )
             {
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
@@ -321,7 +329,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    // Loop through all the query string parameters and try to set any workflo
+                    // Loop through all the query string parameters and try to set any workflow
                     // attributes that might have the same key
                     foreach ( string key in Request.QueryString.AllKeys )
                     {
@@ -334,7 +342,10 @@ namespace RockWeb.Blocks.WorkFlow
                         // If the workflow type is persisted, save the workflow
                         if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                         {
-                            _workflowService.Add( _workflow );
+                            if ( _workflow.Id == 0 )
+                            {
+                                _workflowService.Add( _workflow );
+                            }
 
                             _rockContext.WrapTransaction( () =>
                             {
@@ -550,6 +561,22 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                 }
+            }
+
+            if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
+            {
+                ncWorkflowNotes.EntityId = _workflow.Id;
+                ncWorkflowNotes.RebuildNotes( setValues );
+
+                divForm.RemoveCssClass( "col-md-12" );
+                divForm.AddCssClass( "col-md-6" );
+                divNotes.Visible = true;
+            }
+            else
+            {
+                divForm.AddCssClass( "col-md-12" );
+                divForm.RemoveCssClass( "col-md-6" );
+                divNotes.Visible = false;
             }
 
             phActions.Controls.Clear();

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -59,6 +60,9 @@ namespace Rock.Client
 
         /// <summary />
         public string IpAddress { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
         public int Id { get; set; }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -62,6 +63,12 @@ namespace Rock.Client
 
         /// <summary />
         public string Permalink { get; set; }
+
+        /// <summary />
+        public ContentChannel ContentChannel { get; set; }
+
+        /// <summary />
+        public ContentChannelType ContentChannelType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                DisplayConent();
+                DisplayContent();
             }
         }
 
@@ -99,14 +99,14 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            DisplayConent();
+            DisplayContent();
         }
 
         #endregion
 
         #region Methods
 
-        private void DisplayConent() {
+        private void DisplayContent() {
 
             int groupId = -1;
             
@@ -120,7 +120,16 @@ namespace RockWeb.Blocks.Groups
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
 
-                var group = groupService.Queryable( "GroupLocations,Members,Members.Person" ).Where( g => g.Id == groupId ).AsNoTracking().FirstOrDefault();
+                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+
+                var qry = groupService
+                    .Queryable( "GroupLocations,Members,Members.Person" )
+                    .Where( g => g.Id == groupId );
+                if ( !enableDebug )
+                {
+                    qry = qry.AsNoTracking();
+                }
+                var group = qry.FirstOrDefault();
                 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );
@@ -131,7 +140,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaTemplate" );
 
                 // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
                     lDebug.Text = mergeFields.lavaDebugInfo();

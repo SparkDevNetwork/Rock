@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -47,6 +48,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public ICollection<AuditDetail> Details { get; set; }
 
         /// <summary />
         public int Id { get; set; }

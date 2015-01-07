@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 
 namespace Rock.Client
@@ -50,6 +51,15 @@ namespace Rock.Client
 
         /// <summary />
         public string HelpText { get; set; }
+
+        /// <summary />
+        public ICollection<DefinedValue> DefinedValues { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public FieldType FieldType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
