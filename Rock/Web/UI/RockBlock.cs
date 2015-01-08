@@ -38,14 +38,6 @@ namespace Rock.Web.UI
     public abstract class RockBlock : UserControl
     {
 
-        #region Private Fields
-
-        private List<Control> _adminControls = new List<Control>();
-        private string _preHtml = string.Empty;
-        private string _postHtml = string.Empty;
-
-        #endregion
-
         #region Public Properties
 
         /// <summary>
@@ -471,19 +463,6 @@ namespace Rock.Web.UI
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
-
-            _adminControls = new List<Control>();
-            if ( PageCache.IncludeAdminFooter )
-            {
-                foreach ( Control configControl in GetAdministrateControls( UserCanAdministrate, UserCanEdit ) )
-                {
-                    configControl.ClientIDMode = ClientIDMode.AutoID;
-                    this.Controls.Add( configControl );
-                    _adminControls.Add( configControl );
-                }
-            }
-
-            SetPrePostText();
         }
 
         /// <summary>
@@ -494,134 +473,6 @@ namespace Rock.Web.UI
         {
             base.OnLoad( e );
             SetValidationGroup( this.Controls, BlockValidationGroup );
-        }
-
-        /// <summary>
-        /// When a control renders it's content to the page, this method will also check to see if 
-        /// the block instance of this control has been configured for output caching, and if so, 
-        /// the contents will also be rendered to a string variable that will gets cached in the 
-        /// default MemoryCache for use next time by the Rock.Web.UI.RockPage.OnInit() method when rendering the 
-        /// control content.
-        /// </summary>
-        /// <param name="writer"></param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            StringBuilder sbOutput = null;
-            StringWriter swOutput = null;
-            HtmlTextWriter twOutput = null;
-
-            if ( BlockCache.OutputCacheDuration > 0 )
-            {
-                sbOutput = new StringBuilder();
-                swOutput = new StringWriter( sbOutput );
-                twOutput = new HtmlTextWriter( swOutput );
-            }
-
-            // Create block wrapper
-            string blockTypeCss = BlockCache.BlockType != null ? BlockCache.BlockType.Name : "";
-            var parts = blockTypeCss.Split( new char[] { '>' } );
-            if ( parts.Length > 1 )
-            {
-                blockTypeCss = parts[parts.Length - 1].Trim();
-            }
-            blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-            string blockInstanceCss = "block-instance " +
-                blockTypeCss +
-                ( string.IsNullOrWhiteSpace( BlockCache.CssClass ) ? "" : " " + BlockCache.CssClass.Trim() ) +
-                ( UserCanEdit || UserCanAdministrate ? " can-configure " : "" );
-
-            writer.Write( _preHtml );
-            writer.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", BlockCache.Id ) );
-            writer.AddAttribute( "data-zone-location", BlockCache.BlockLocation.ToString() );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-content" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( BlockCache.OutputCacheDuration > 0 )
-            {
-                twOutput.Write( _preHtml );
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", BlockCache.Id ) );
-                twOutput.AddAttribute( "data-zone-location", BlockCache.BlockLocation.ToString() );
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
-                twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Class, "block-content" );
-                twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            if ( PageCache.IncludeAdminFooter && ( UserCanAdministrate || UserCanEdit ) )
-            {
-                // Add the config buttons
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration config-bar" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-arrow-circle-right" );
-                writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration-bar" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( string.IsNullOrWhiteSpace( BlockCache.Name ) ? BlockCache.BlockType.Name : BlockCache.Name );
-                writer.RenderEndTag();
-
-                foreach ( Control configControl in _adminControls )
-                {
-                    configControl.RenderControl( writer );
-                }
-
-                writer.RenderEndTag();  // block-configuration-bar
-                writer.RenderEndTag();  // config-bar
-            }
-
-            base.Render( writer );
-
-            writer.RenderEndTag();  // block-content
-            writer.RenderEndTag();  // block-instance
-
-            writer.Write( _postHtml );
-
-            if ( BlockCache.OutputCacheDuration > 0 )
-            {
-                base.Render( twOutput );
-
-                twOutput.RenderEndTag();  // block-content
-                twOutput.RenderEndTag();  // block-instance
-
-                twOutput.Write( _postHtml );
-
-                CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( BlockCache.OutputCacheDuration );
-
-                ObjectCache cache = RockMemoryCache.Default;
-                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", BlockCache.Id );
-                cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
-            }
-
-        }
-
-        /// <summary>
-        /// Outputs the content of a server control's children to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the rendered content.</param>
-        protected override void RenderChildren( HtmlTextWriter writer )
-        {
-            if ( Controls != null )
-            {
-                foreach ( Control child in Controls )
-                {
-                    if ( !_adminControls.Contains( child ) )
-                    {
-                        child.RenderControl( writer );
-                    }
-                }
-            }
         }
 
         #endregion
@@ -653,42 +504,6 @@ namespace Rock.Web.UI
             BlockCache = blockCache;
             UserCanEdit = canEdit;
             UserCanAdministrate = canAdministrate;
-        }
-
-        /// <summary>
-        /// Sets the pre post text.
-        /// </summary>
-        private void SetPrePostText()
-        {
-            string appRoot = ResolveRockUrl( "~/" );
-            string themeRoot = ResolveRockUrl( "~~/" );
-
-            if ( Visible )
-            {
-                if ( !string.IsNullOrWhiteSpace( BlockCache.PreHtml ) )
-                {
-                    _preHtml = BlockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    var preHtmlControl = this.FindControl( "lPreHtml" ) as Literal;
-                    if ( preHtmlControl != null )
-                    {
-                        preHtmlControl.Text = _preHtml;
-                        _preHtml = string.Empty;
-                    }
-                }
-
-                if ( !string.IsNullOrWhiteSpace( BlockCache.PostHtml ) )
-                {
-                    _postHtml = BlockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    var postHtmlControl = this.FindControl( "lPostHtml" ) as Literal;
-                    if ( postHtmlControl != null )
-                    {
-                        postHtmlControl.Text = _postHtml;
-                        _postHtml = string.Empty;
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -1241,8 +1056,6 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            SetPrePostText();
-
             if ( e.BlockID == BlockCache.Id && BlockUpdated != null )
             {
                 BlockUpdated( sender, e );
