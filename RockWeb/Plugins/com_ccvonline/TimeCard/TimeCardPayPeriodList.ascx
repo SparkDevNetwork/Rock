@@ -15,12 +15,12 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" RowItemText="Pay Period" OnRowSelected="gList_RowSelected">
                         <Columns>
-                            <Rock:RockTemplateField HeaderText="Pay Period" SortExpression="StartDate">
-                                <ItemTemplate>
-                                    <asp:Literal runat="server" ID="lPayPeriodName" Text="<%# Container.DataItem.ToString()  %>" />
-                                </ItemTemplate>
-                                
-                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField HeaderText="Pay Period" DataField="PayPeriod" SortExpression="PayPeriod.StartDate" />
+                            <Rock:RockBoundField HeaderText="In Progress" DataField="CardsInProgressCount" SortExpression="CardsInProgressCount" />
+                            <Rock:RockBoundField HeaderText="Submitted" DataField="CardsSubmittedCount" SortExpression="CardsSubmittedCount" />
+                            <Rock:RockBoundField HeaderText="Approved" DataField="CardsApprovedCount" SortExpression="CardsApprovedCount" />
+                            <Rock:RockBoundField HeaderText="Paid" DataField="CardsPaidCount" SortExpression="CardsPaidCount" />
+                            <Rock:RockBoundField HeaderText="Total" DataField="CardsCount" SortExpression="CardsCount" />
                             <Rock:DeleteField OnClick="gList_Delete" />
                         </Columns>
                     </Rock:Grid>

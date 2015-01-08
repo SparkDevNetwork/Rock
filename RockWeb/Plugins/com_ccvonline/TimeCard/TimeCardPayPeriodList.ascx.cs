@@ -15,22 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-
 using com.ccvonline.TimeCard.Data;
 using com.ccvonline.TimeCard.Model;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.TimeCard
 {
@@ -88,7 +80,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            //
         }
 
         /// <summary>
@@ -156,10 +148,32 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         {
             TimeCardContext dbContext = new TimeCardContext();
             TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( dbContext );
+            TimeCardService timeCardService = new TimeCardService( dbContext );
+            var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
+            var timeCardQry = timeCardService.Queryable();
+            
+            var joinQry = payPeriodQry.Join(
+                timeCardQry,
+                innerKey => innerKey.Id,
+                outerKey => outerKey.TimeCardPayPeriodId,
+                ( PayPeriod, TimeCard ) => new
+                {
+                    PayPeriod,
+                    TimeCard
+                } ).GroupBy( g => g.PayPeriod );
 
-            var qry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
+            var selectQry = joinQry.Select( a => new
+            {
+                Id = a.Key.Id,
+                PayPeriod = a.Key,
+                CardsInProgressCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.InProgress ),
+                CardsSubmittedCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Submitted ),
+                CardsApprovedCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Approved ),
+                CardsPaidCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Exported ),
+                CardsCount = a.Count(),
+            } );
 
-            gList.DataSource = qry.ToList();
+            gList.DataSource = selectQry.ToList();
             gList.DataBind();
         }
 
