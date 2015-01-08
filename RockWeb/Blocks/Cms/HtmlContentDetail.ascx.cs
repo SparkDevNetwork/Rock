@@ -102,6 +102,10 @@ namespace RockWeb.Blocks.Cms
             {
                 ShowView();
             }
+            else
+            {
+                nbApprovalRequired.Visible = false;
+            }
         }
 
         #endregion
@@ -218,7 +222,7 @@ namespace RockWeb.Blocks.Cms
                     // if the content has changed
                     if ( htmlContent.Content != newContent )
                     {
-                        lPreHtml.Text += "<div class='alert alert-info'>Your changes will not be visible until they are reviewed and approved.</div>";
+                        nbApprovalRequired.Visible = true;
                         htmlContent.IsApproved = false;
                     }
                 }
