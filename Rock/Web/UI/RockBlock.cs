@@ -24,7 +24,6 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -37,48 +36,13 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
+        #region Private Properties
 
-        #region Private Fields
-
-        private List<Control> _adminControls = new List<Control>();
-        private string _preHtml = string.Empty;
-        private string _postHtml = string.Empty;
+        internal BlockCache _blockCache;
 
         #endregion
 
         #region Public Properties
-
-        /// <summary>
-        /// Gets or sets the page cache.
-        /// </summary>
-        /// <value>
-        /// The page cache.
-        /// </value>
-        internal protected PageCache PageCache { get; private set; }
-
-        /// <summary>
-        /// Gets the block cache.
-        /// </summary>
-        /// <value>
-        /// The block cache.
-        /// </value>
-        internal protected BlockCache BlockCache { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [user can edit].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [user can edit]; otherwise, <c>false</c>.
-        /// </value>
-        internal protected bool UserCanEdit { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [user can administrate].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [user can administrate]; otherwise, <c>false</c>.
-        /// </value>
-        internal protected bool UserCanAdministrate { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Rock.Web.UI.RockPage">page</see> that contains the block (instance).
@@ -102,7 +66,7 @@ namespace Rock.Web.UI
         /// </value>
         public int BlockId
         {
-            get { return BlockCache.Id; }
+            get { return _blockCache.Id; }
         }
 
         /// <summary>
@@ -113,7 +77,7 @@ namespace Rock.Web.UI
         /// </value>
         public string BlockName
         {
-            get { return BlockCache.Name; }
+            get { return _blockCache.Name; }
         }
 
         /// <summary>
@@ -247,7 +211,7 @@ namespace Rock.Web.UI
                             }
                         }
                     }
-
+                    
                 }
                 return _contextTypesRequired;
             }
@@ -285,7 +249,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.  For example: Rock.Model.Campus </param>
         /// <returns></returns>
-        public Rock.Data.IEntity ContextEntity( string entityTypeName )
+        public Rock.Data.IEntity ContextEntity(string entityTypeName)
         {
             if ( ContextEntities.ContainsKey( entityTypeName ) )
             {
@@ -408,7 +372,7 @@ namespace Rock.Web.UI
             string blockKey = string.Format( ":RockBlock:{0}:", blockId );
             foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
             {
-                cache.Remove( keyValuePair.Key );
+                cache.Remove( keyValuePair.Key);
             }
         }
 
@@ -421,13 +385,13 @@ namespace Rock.Web.UI
         {
             string cacheKeyTemplate = "Rock:{0}:{1}:RockBlock:{2}:ItemCache:{3}";
 
-            if ( BlockCache.PageId.HasValue )
+            if (_blockCache.PageId.HasValue)
             {
-                return string.Format( cacheKeyTemplate, "Page", BlockCache.PageId.Value, BlockCache.Id, key );
+                return string.Format( cacheKeyTemplate, "Page", _blockCache.PageId.Value, _blockCache.Id, key );
             }
             else
             {
-                return string.Format( cacheKeyTemplate, "Layout", ( BlockCache.LayoutId ?? 0 ), BlockCache.Id, key );
+                return string.Format( cacheKeyTemplate, "Layout", (_blockCache.LayoutId ?? 0), _blockCache.Id, key );
             }
         }
 
@@ -468,22 +432,9 @@ namespace Rock.Web.UI
 
             base.OnInit( e );
 
-            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
+            this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, _blockCache.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
-
-            _adminControls = new List<Control>();
-            if ( PageCache.IncludeAdminFooter )
-            {
-                foreach ( Control configControl in GetAdministrateControls( UserCanAdministrate, UserCanEdit ) )
-                {
-                    configControl.ClientIDMode = ClientIDMode.AutoID;
-                    this.Controls.Add( configControl );
-                    _adminControls.Add( configControl );
-                }
-            }
-
-            SetPrePostText();
         }
 
         /// <summary>
@@ -506,122 +457,59 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
-            StringBuilder sbOutput = null;
-            StringWriter swOutput = null;
-            HtmlTextWriter twOutput = null;
+            string preHtml = string.Empty;
+            string postHtml = string.Empty;
 
-            if ( BlockCache.OutputCacheDuration > 0 )
+            string appRoot = ResolveRockUrl( "~/" );
+            string themeRoot = ResolveRockUrl( "~~/" );
+
+            if ( Visible )
             {
-                sbOutput = new StringBuilder();
-                swOutput = new StringWriter( sbOutput );
-                twOutput = new HtmlTextWriter( swOutput );
-            }
-
-            // Create block wrapper
-            string blockTypeCss = BlockCache.BlockType != null ? BlockCache.BlockType.Name : "";
-            var parts = blockTypeCss.Split( new char[] { '>' } );
-            if ( parts.Length > 1 )
-            {
-                blockTypeCss = parts[parts.Length - 1].Trim();
-            }
-            blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
-            string blockInstanceCss = "block-instance " +
-                blockTypeCss +
-                ( string.IsNullOrWhiteSpace( BlockCache.CssClass ) ? "" : " " + BlockCache.CssClass.Trim() ) +
-                ( UserCanEdit || UserCanAdministrate ? " can-configure " : "" );
-
-            writer.Write( _preHtml );
-            writer.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", BlockCache.Id ) );
-            writer.AddAttribute( "data-zone-location", BlockCache.BlockLocation.ToString() );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-content" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( BlockCache.OutputCacheDuration > 0 )
-            {
-                twOutput.Write( _preHtml );
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", BlockCache.Id ) );
-                twOutput.AddAttribute( "data-zone-location", BlockCache.BlockLocation.ToString() );
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
-                twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                twOutput.AddAttribute( HtmlTextWriterAttribute.Class, "block-content" );
-                twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            if ( PageCache.IncludeAdminFooter && ( UserCanAdministrate || UserCanEdit ) )
-            {
-                // Add the config buttons
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration config-bar" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-arrow-circle-right" );
-                writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration-bar" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( string.IsNullOrWhiteSpace( BlockCache.Name ) ? BlockCache.BlockType.Name : BlockCache.Name );
-                writer.RenderEndTag();
-
-                foreach ( Control configControl in _adminControls )
+                if ( !string.IsNullOrWhiteSpace( _blockCache.PreHtml ) )
                 {
-                    configControl.RenderControl( writer );
+                    preHtml = _blockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    var preHtmlControl = this.FindControl( "lPreHtml" ) as Literal;
+                    if ( preHtmlControl != null )
+                    {
+                        preHtmlControl.Text = preHtml;
+                        preHtml = string.Empty;
+                    }
                 }
 
-                writer.RenderEndTag();  // block-configuration-bar
-                writer.RenderEndTag();  // config-bar
-            }
-
-            base.Render( writer );
-
-            writer.RenderEndTag();  // block-content
-            writer.RenderEndTag();  // block-instance
-
-            writer.Write( _postHtml );
-
-            if ( BlockCache.OutputCacheDuration > 0 )
-            {
-                base.Render( twOutput );
-
-                twOutput.RenderEndTag();  // block-content
-                twOutput.RenderEndTag();  // block-instance
-
-                twOutput.Write( _postHtml );
-
-                CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( BlockCache.OutputCacheDuration );
-
-                ObjectCache cache = RockMemoryCache.Default;
-                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", BlockCache.Id );
-                cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
-            }
-
-        }
-
-        /// <summary>
-        /// Outputs the content of a server control's children to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the rendered content.</param>
-        protected override void RenderChildren( HtmlTextWriter writer )
-        {
-            if ( Controls != null )
-            {
-                foreach ( Control child in Controls )
+                if ( !string.IsNullOrWhiteSpace( _blockCache.PostHtml ) )
                 {
-                    if ( !_adminControls.Contains( child ) )
+                    postHtml = _blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    var postHtmlControl = this.FindControl( "lPostHtml" ) as Literal;
+                    if ( postHtmlControl != null )
                     {
-                        child.RenderControl( writer );
+                        postHtmlControl.Text = postHtml;
+                        postHtml = string.Empty;
                     }
                 }
             }
+
+            if ( _blockCache.OutputCacheDuration > 0 )
+            {
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", _blockCache.Id );
+                StringBuilder sbOutput = new StringBuilder();
+                StringWriter swOutput = new StringWriter( sbOutput );
+                HtmlTextWriter twOutput = new HtmlTextWriter( swOutput );
+
+                base.Render( twOutput );
+
+                CacheItemPolicy cacheDuration = new CacheItemPolicy();
+                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( _blockCache.OutputCacheDuration );
+
+                ObjectCache cache = RockMemoryCache.Default;
+                cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
+            }
+
+            writer.Write( preHtml );
+            base.Render( writer );
+            writer.Write( postHtml );
+
         }
 
         #endregion
@@ -629,66 +517,12 @@ namespace Rock.Web.UI
         #region Public Methods
 
         /// <summary>
-        /// Sets the block.
-        /// </summary>
-        /// <param name="pageCache">The page cache.</param>
-        /// <param name="blockCache">The block cache.</param>
-        public void SetBlock( PageCache pageCache, BlockCache blockCache )
-        {
-            bool canEdit = IsUserAuthorized( Authorization.EDIT );
-            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
-            SetBlock( pageCache, blockCache, canEdit, canAdministrate );
-        }
-
-        /// <summary>
         /// Sets the block instance.
         /// </summary>
-        /// <param name="pageCache">The page cache.</param>
-        /// <param name="blockCache">The block instance from <see cref="Rock.Web.Cache.BlockCache" /> .</param>
-        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
-        /// <param name="canAdministrate">if set to <c>true</c> [can administrate].</param>
-        public void SetBlock( PageCache pageCache, BlockCache blockCache, bool canEdit, bool canAdministrate )
+        /// <param name="blockCache">The block instance from <see cref="Rock.Web.Cache.BlockCache"/> .</param>
+        public void SetBlock( BlockCache blockCache )
         {
-            PageCache = pageCache;
-            BlockCache = blockCache;
-            UserCanEdit = canEdit;
-            UserCanAdministrate = canAdministrate;
-        }
-
-        /// <summary>
-        /// Sets the pre post text.
-        /// </summary>
-        private void SetPrePostText()
-        {
-            string appRoot = ResolveRockUrl( "~/" );
-            string themeRoot = ResolveRockUrl( "~~/" );
-
-            if ( Visible )
-            {
-                if ( !string.IsNullOrWhiteSpace( BlockCache.PreHtml ) )
-                {
-                    _preHtml = BlockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    var preHtmlControl = this.FindControl( "lPreHtml" ) as Literal;
-                    if ( preHtmlControl != null )
-                    {
-                        preHtmlControl.Text = _preHtml;
-                        _preHtml = string.Empty;
-                    }
-                }
-
-                if ( !string.IsNullOrWhiteSpace( BlockCache.PostHtml ) )
-                {
-                    _postHtml = BlockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    var postHtmlControl = this.FindControl( "lPostHtml" ) as Literal;
-                    if ( postHtmlControl != null )
-                    {
-                        postHtmlControl.Text = _postHtml;
-                        _postHtml = string.Empty;
-                    }
-                }
-            }
+            _blockCache = blockCache;
         }
 
         /// <summary>
@@ -696,9 +530,9 @@ namespace Rock.Web.UI
         /// </summary>
         public void SaveAttributeValues()
         {
-            if ( BlockCache != null )
+            if ( _blockCache != null )
             {
-                BlockCache.SaveAttributeValues();
+                _blockCache.SaveAttributeValues();
             }
         }
 
@@ -709,9 +543,9 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.String"/> representing the stored attribute value. If the attribute is not found, this value will be null.</returns>
         public string GetAttributeValue( string key )
         {
-            if ( BlockCache != null )
+            if ( _blockCache != null )
             {
-                return BlockCache.GetAttributeValue( key );
+                return _blockCache.GetAttributeValue( key );
             }
             return null;
         }
@@ -725,9 +559,9 @@ namespace Rock.Web.UI
         /// found, an empty list will be returned.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( BlockCache != null )
+            if ( _blockCache != null )
             {
-                return BlockCache.GetAttributeValues( key );
+                return _blockCache.GetAttributeValues( key );
             }
 
             return new List<string>();
@@ -740,9 +574,9 @@ namespace Rock.Web.UI
         /// <param name="value">A <see cref="System.String" /> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
-            if ( BlockCache != null )
+            if ( _blockCache != null )
             {
-                BlockCache.SetAttributeValue( key, value );
+                _blockCache.SetAttributeValue( key, value );
             }
         }
 
@@ -763,7 +597,7 @@ namespace Rock.Web.UI
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the CurrentPerson is authorized to perform the requested action; otherwise <c>false</c>.</returns>
         public bool IsUserAuthorized( string action )
         {
-            return BlockCache.IsAuthorized( action, CurrentPerson );
+            return _blockCache.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -971,7 +805,7 @@ namespace Rock.Web.UI
         /// <returns>
         /// A <see cref="System.String" /> that represents the resolved Url.
         /// </returns>
-        public string ResolveRockUrl( string url )
+        public string ResolveRockUrl( string url)
         {
             return RockPage.ResolveRockUrl( url );
         }
@@ -983,7 +817,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string ResolveRockUrlIncludeRoot( string url )
         {
-            return RockPage.ResolveRockUrlIncludeRoot( url );
+            return RockPage.ResolveRockUrlIncludeRoot ( url );
         }
 
         /// <summary>
@@ -1091,7 +925,7 @@ namespace Rock.Web.UI
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockCache.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", _blockCache.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -1106,7 +940,7 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    EntityTypeCache.Read( typeof( Block ) ).Id, BlockCache.Id ) ) + "')" );
+                    EntityTypeCache.Read( typeof( Block ) ).Id, _blockCache.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -1119,9 +953,9 @@ namespace Rock.Web.UI
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                     aMoveBlock.Attributes.Add( "class", "block-move block-move" );
-                    aMoveBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
-                    aMoveBlock.Attributes.Add( "data-zone", BlockCache.Zone );
-                    aMoveBlock.Attributes.Add( "data-zone-location", BlockCache.BlockLocation.ToString() );
+                    aMoveBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
+                    aMoveBlock.Attributes.Add( "data-zone", _blockCache.Zone );
+                    aMoveBlock.Attributes.Add( "data-zone-location", _blockCache.BlockLocation.ToString() );
                     aMoveBlock.Attributes.Add( "title", "Move Block" );
                     configControls.Add( aMoveBlock );
                     HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
@@ -1132,7 +966,7 @@ namespace Rock.Web.UI
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                aDeleteBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
+                aDeleteBlock.Attributes.Add( "href", _blockCache.Id.ToString() );
                 aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
@@ -1175,9 +1009,9 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
-            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this.BlockCache.BlockTypeId.ToString(), rockContext ) )
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this._blockCache.BlockTypeId.ToString(), rockContext ) )
             {
-                this.BlockCache.ReloadAttributeValues();
+                this._blockCache.ReloadAttributeValues();
             }
         }
 
@@ -1194,7 +1028,7 @@ namespace Rock.Web.UI
             foreach ( var customAttribute in customAttributes )
             {
                 var securityActionAttribute = customAttribute as SecurityActionAttribute;
-                if ( securityActionAttribute != null )
+                if (securityActionAttribute != null)
                 {
                     securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
                 }
@@ -1241,9 +1075,7 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            SetPrePostText();
-
-            if ( e.BlockID == BlockCache.Id && BlockUpdated != null )
+            if ( e.BlockID == _blockCache.Id && BlockUpdated != null )
             {
                 BlockUpdated( sender, e );
             }
