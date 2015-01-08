@@ -41,17 +41,7 @@ namespace Rock.Rest.Filters
         {
             string controllerClassName = actionContext.ActionDescriptor.ControllerDescriptor.ControllerType.FullName;
             string actionMethod = actionContext.Request.Method.Method;
-
-            var routeData = actionContext.Request.GetRouteData();
-            string actionPath = routeData.Route.RouteTemplate;
-            foreach( var key in routeData.Values.Keys )
-            {
-                actionPath = actionPath.Replace( "{" + key + "}", routeData.Values[key].ToString() );
-            }
-            foreach( var key in routeData.Route.Defaults.Keys )
-            {
-                actionPath = actionPath.Replace( "{" + key + "}", routeData.Route.Defaults[key].ToString() );
-            }
+            string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate;
 
             ISecured item = Rock.Web.Cache.RestActionCache.Read( actionMethod + actionPath );
             if ( item == null )
