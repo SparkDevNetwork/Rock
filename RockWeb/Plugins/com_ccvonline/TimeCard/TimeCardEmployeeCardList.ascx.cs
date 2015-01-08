@@ -41,17 +41,12 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
-            gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
-
             // TimeCard/Time Card Pay Period is auto created when Employees create time cards
             gList.Actions.ShowAdd = false;
             gList.DataKeyNames = new string[] { "Id" };
 
             gList.IsDeleteEnabled = true;
             gList.GridRebind += gList_GridRebind;
-
-            BindFilter();
         }
 
         /// <summary>
@@ -80,29 +75,6 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             //
-        }
-
-        /// <summary>
-        /// Gfs the settings_ display filter value.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
-        {
-            // never show the Filter Values. We'll do that ourselves using lActionTitle
-            e.Value = null;
-        }
-
-        /// <summary>
-        /// Handles the ApplyFilterClick event of the gfSettings control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
-        {
-            var selectedValue = ddlTimeCardPayPeriod.SelectedValue.AsIntegerOrNull() != null ? ddlTimeCardPayPeriod.SelectedValue : string.Empty;
-            gfSettings.SaveUserPreference( "Pay Period", selectedValue );
-            BindGrid();
         }
 
         /// <summary>
@@ -160,40 +132,17 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         #region Methods
 
         /// <summary>
-        /// Binds the filter.
-        /// </summary>
-        private void BindFilter()
-        {
-            var timeCardPayPeriodService = new TimeCardPayPeriodService( new TimeCardContext() );
-
-            ddlTimeCardPayPeriod.Items.Clear();
-            ddlTimeCardPayPeriod.Items.Add( new ListItem() );
-            foreach ( var payPeriod in timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate ).AsNoTracking() )
-            {
-                ddlTimeCardPayPeriod.Items.Add( new ListItem( payPeriod.ToString(), payPeriod.Id.ToString() ) );
-            }
-
-            ddlTimeCardPayPeriod.SetValue( gfSettings.GetUserPreference( "Pay Period" ).AsIntegerOrNull() );
-        }
-
-        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
             // first try to use PageParameter
-            int? timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId " ).AsIntegerOrNull();
+            int? timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsIntegerOrNull();
             TimeCardPayPeriod timeCardPayPeriod = null;
 
             var dataContext = new TimeCardContext();
             var timeCardService = new TimeCardService( dataContext );
             var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
-
-            if ( !timeCardPayPeriodId.HasValue )
-            {
-                // if no PageParameter, use Filter
-                timeCardPayPeriodId = gfSettings.GetUserPreference( "Pay Period" ).AsIntegerOrNull();
-            }
 
             if ( !timeCardPayPeriodId.HasValue )
             {
