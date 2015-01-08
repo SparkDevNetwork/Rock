@@ -798,6 +798,7 @@ namespace Rock.Web.UI
                                 {
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
+                                    control = new RockBlockWrapper( blockControl );
 
                                     // Add any breadcrumbs to current page reference that the block creates
                                     Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
