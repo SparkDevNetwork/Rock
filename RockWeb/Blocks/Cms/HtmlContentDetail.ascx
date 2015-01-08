@@ -2,12 +2,9 @@
 
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
-        <%-- View Panel --%>
-        <asp:Panel ID="pnlView" runat="server">
-            <asp:Literal ID="lPreHtml" runat="server"></asp:Literal>
-            <asp:Literal ID="lHtmlContent" runat="server" />
-            <asp:Literal ID="lPostHtml" runat="server"></asp:Literal>
-        </asp:Panel>
+
+        <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
+        <asp:Literal ID="lHtmlContent" runat="server" />
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
