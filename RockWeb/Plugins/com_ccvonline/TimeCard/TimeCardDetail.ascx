@@ -169,6 +169,43 @@
             <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span>
         </div>
 
+        <!-- Actions/Submit Panel -->
+        <asp:Panel ID="pnlPersonActions" runat="server">
+            <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" />
+            <Rock:RockCheckBox ID="cbAgree" runat="server" Text="I certify and agree that:" />
+            <ol>
+                <li>all of the entries on this Time Card for this payroll period are both accurate and complete;</li>
+                <li>the entries include all hours worked plus paid time off hours, if any;</li>
+                <li>the entries do not include unpaid meal periods or other non-work time; and,</li>
+                <li>I have not worked either more or fewer hours than entered.</li>
+            </ol>
+            <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" OnClick="lbSubmit_Click" Text="Submit" />
+        </asp:Panel>
+
+        <!-- Totals Panel -->
+        <asp:Panel ID="pnlTotals" runat="server">
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockLiteral ID="lTotalsWorkedHtml" runat="server" />
+                </div>
+                <div class="col-md-6">
+                    <Rock:RockLiteral ID="lTotalsPaidHtml" runat="server" />
+                </div>
+            </div>
+            <div class="row">
+                <h4>Total</h4>
+                <Rock:RockLiteral ID="lTotalsTotalHtml" runat="server" />
+            </div>
+
+
+
+        </asp:Panel>
+
+        <!-- History Panel -->
+        <asp:Panel ID="pnlHistory" runat="server">
+            <Rock:RockLiteral ID="lHistoryHtml" runat="server" />
+        </asp:Panel>
+
         <script>
             Sys.Application.add_load(function () {
                 $('.js-hour-type').tooltip();

@@ -280,8 +280,39 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
                 dataContext.SaveChanges();
             }
 
-            rptTimeCardDay.DataSource = qry.ToList();
+            var timeCardDayList = qry.ToList();
+
+            // bind time card day repeater 
+            rptTimeCardDay.DataSource = timeCardDayList;
             rptTimeCardDay.DataBind();
+
+            // Actions/Submit
+            // todo
+
+            // Totals
+            lTotalsWorkedHtml.Text = new Rock.Web.DescriptionList()
+            .Add( "Regular", timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Add( "Overtime", timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Add( "Holiday", timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Html;
+
+            ;
+
+            lTotalsPaidHtml.Text = new Rock.Web.DescriptionList()
+            .Add( "Vacation Hours", timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Add( "Holiday Hours", timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Add( "Sick Hours", timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
+            .Html;
+
+            lTotalsTotalHtml.Text = new Rock.Web.DescriptionList()
+            .Add( "All Hours", timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 )
+            + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 )
+            + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 )
+            + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ) ).Html;
+
+            // History
+            // todo
+
         }
 
         #endregion
@@ -364,6 +395,16 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSubmit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSubmit_Click( object sender, EventArgs e )
+        {
+            // TODO
         }
     }
 }
