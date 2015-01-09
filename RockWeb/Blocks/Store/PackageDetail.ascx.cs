@@ -213,6 +213,12 @@ namespace RockWeb.Blocks.Store
 
             if ( latestVersion != null )
             {
+
+                foreach ( var screenshot in latestVersion.Screenshots )
+                {
+                    lScreenshots.Text += String.Format( "<img src='{0}' />", screenshot.ImageUrl );
+                }
+                
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
                 lLatestVersionDescription.Text = latestVersion.Description;
 

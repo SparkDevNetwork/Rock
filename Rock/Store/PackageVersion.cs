@@ -102,6 +102,12 @@ namespace Rock.Store
         /// <value>
         /// A list <see cref="List<Rock.Store.StoreImage>"/> representing the version screenshots.
         /// </value>
-        public List<StoreImage> ScreenShots { get; set; }
+        public List<StoreImage> Screenshots { get; set; }
+
+        public PackageVersion()
+        {
+            this.Screenshots = new List<StoreImage>();
+            this.Ratings = new List<PackageVersionRating>();
+        }
     }
 }

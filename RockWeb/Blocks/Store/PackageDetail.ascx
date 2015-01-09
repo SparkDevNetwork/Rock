@@ -67,6 +67,8 @@
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
 
+                                <asp:Literal ID="lScreenshots" runat="server" />
+
                                 <h4><asp:Literal ID="lLatestVersionLabel" runat="server" /></h4>
                                 <p class="margin-b-lg">
                                     <asp:Literal ID="lLatestVersionDescription" runat="server" />

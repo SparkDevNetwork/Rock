@@ -92,6 +92,8 @@ namespace Rock.Store
             request.Method = Method.GET;
             request.Resource = string.Format( "api/Packages/GetPackageDetails/{0}/{1}", packageId.ToString(), storeKey );
 
+            //request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
+
             var response = client.Execute<Package>( request );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
