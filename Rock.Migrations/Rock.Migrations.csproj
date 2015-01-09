@@ -79,6 +79,14 @@
       <DependentUpon>201501062218053_ExcludeOuGroupType.cs</DependentUpon>
     </Compile>
     <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
+    <Compile Include="Migrations\201501071632548_GroupSavedAccount.cs" />
+    <Compile Include="Migrations\201501071632548_GroupSavedAccount.Designer.cs">
+      <DependentUpon>201501071632548_GroupSavedAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201501072220452_OuGroupTypeUpdates.cs" />
+    <Compile Include="Migrations\201501072220452_OuGroupTypeUpdates.Designer.cs">
+      <DependentUpon>201501072220452_OuGroupTypeUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1387,6 +1395,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201501062218053_ExcludeOuGroupType.resx">
       <DependentUpon>201501062218053_ExcludeOuGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501071632548_GroupSavedAccount.resx">
+      <DependentUpon>201501071632548_GroupSavedAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501072220452_OuGroupTypeUpdates.resx">
+      <DependentUpon>201501072220452_OuGroupTypeUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
