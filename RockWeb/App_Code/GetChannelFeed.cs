@@ -154,6 +154,12 @@ namespace RockWeb
                         {
                             item.Content = item.Content.ResolveMergeFields( mergeFields );
 
+                            // resolve any relative links
+                            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                            item.Content = item.Content.Replace( @" src=""/", @" src=""" + publicAppRoot );
+                            item.Content = item.Content.Replace( @" href=""/", @" href=""" + publicAppRoot );
+
                             // get item attributes and add them as elements to the feed
                             item.LoadAttributes( rockContext );
                             foreach ( var attributeValue in item.AttributeValues )
