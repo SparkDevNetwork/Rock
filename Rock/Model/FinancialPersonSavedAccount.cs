@@ -27,9 +27,10 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an bank or debit/credit card that a <see cref="Rock.Model.Person"/> has saved to Rock for future reuse. Please
-    /// note that account number is not actually stored here. The reference/profile number is stored here as well as a masked 
-    /// version of the account number.
+    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for 
+    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored 
+    /// here as well as a masked version of the account number.  This saved account will either be associated to a person
+    /// alias or a group. 
     /// </summary>
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
@@ -45,8 +46,17 @@ namespace Rock.Model
         /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
-       
+        public int? PersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupId { get; set; }
+
         /// <summary>
         /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
         /// </summary>
@@ -132,6 +142,14 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        public virtual Group Group { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the Payment Gateway service that was used to process this transaction.
         /// </summary>
         /// <value>
@@ -182,7 +200,6 @@ namespace Rock.Model
 
     #region Entity Configuration
 
-
     /// <summary>
     /// FinancialPersonSavedAccount Configuration class.
     /// </summary>
@@ -193,7 +210,8 @@ namespace Rock.Model
         /// </summary>
         public FinancialPersonSavedAccountConfiguration()
         {
-            this.HasRequired( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( true );
+            this.HasOptional( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );

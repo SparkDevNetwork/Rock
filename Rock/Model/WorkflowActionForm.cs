@@ -157,6 +157,7 @@ namespace Rock.Model
                             if ( definedValue != null )
                             {
                                 button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
+                                button.EmailHtml = definedValue.GetAttributeValue( "ButtonEmailHTML" );
                             }
                         }
                     }
@@ -185,7 +186,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Html" )]
+        [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
         public class LiquidButton
         {
             /// <summary>
@@ -203,6 +204,14 @@ namespace Rock.Model
             /// The HTML.
             /// </value>
             public string Html { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Email HTML.
+            /// </summary>
+            /// <value>
+            /// The Email HTML.
+            /// </value>
+            public string EmailHtml { get; set; }
         }
 
     }

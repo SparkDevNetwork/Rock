@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( Workflow != null )
             {
                 ViewState["Workflow"] = JsonConvert.SerializeObject( Workflow, Formatting.None, jsonSetting );
-                ViewState["LogEntries"] = Workflow.LogEntries.Where( l => l.Id == 0 ).Select( l => l.LogText ).ToList();
+                ViewState["LogEntries"] = Workflow.GetUnsavedLogEntries().Select( l => l.LogText ).ToList();
                 ViewState["ExpandedActivities"] = ExpandedActivities;
             }
 
