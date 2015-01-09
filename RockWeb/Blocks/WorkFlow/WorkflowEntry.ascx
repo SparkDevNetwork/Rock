@@ -31,7 +31,7 @@
 
                         </asp:Panel>
 
-                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" />
+                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg" />
 
                     </div>
 
