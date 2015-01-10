@@ -1,0 +1,14 @@
+<div class="panel panel-block">
+        
+	<div class="panel-heading">
+		<h1 class="panel-title"><i class="fa fa-list"></i> View By Category</h1>
+	</div>
+	<div class="panel-body">
+		<ul class="list-unstyled">
+			{% for category in Categories %}
+				<li><a href="{{ LinkedPages.DetailPage }}?CategoryId={{ category.Id }}&CategoryName={{ category.Name | Replace:' ','%20'}}">{{ category.Name }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
+</div>
+
