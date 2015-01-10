@@ -93,6 +93,12 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            if ( !_canEdit && Workflow != null )
+            {
+                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            }
+
             // Add new log entries since they are not serialized
             LogEntries = ViewState["LogEntries"] as List<string>;
             if ( LogEntries == null )
@@ -133,12 +139,6 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnLoad( e );
 
             nbNotAuthorized.Visible = false;
-
-            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT ) ;
-            if ( !_canEdit && Workflow != null )
-            {
-                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            }
 
             if ( !Page.IsPostBack )
             {
@@ -633,6 +633,12 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 pnlDetails.Visible = false;
                 return;
+            }
+
+            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            if ( !_canEdit && Workflow != null )
+            {
+                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
             }
 
             Workflow.LoadAttributes( rockContext );
