@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -108,7 +109,6 @@ namespace Rock.Field.Types
             DayOfWeekPicker dayOfWeekPicker = control as DayOfWeekPicker;
             dayOfWeekPicker.SelectedDayOfWeek = dayOfWeek;
         }
-
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

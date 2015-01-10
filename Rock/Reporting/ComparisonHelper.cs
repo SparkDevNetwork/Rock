@@ -158,9 +158,13 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
         /// <returns></returns>
-        public static RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
+        public static RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes, bool required = true )
         {
             var ddl = new RockDropDownList();
+            if ( !required )
+            {
+                ddl.Items.Add( new ListItem( string.Empty, "0" ) );
+            }
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
             {
                 if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )

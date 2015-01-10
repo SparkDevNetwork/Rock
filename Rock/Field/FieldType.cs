@@ -16,8 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
+using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field
 {
@@ -170,6 +175,110 @@ namespace Rock.Field
             {
                 ( (TextBox)control ).Text = value;
             }
+        }
+
+        /// <summary>
+        /// Creates the controls needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public virtual List<Control> FilterControls ( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var controls = new List<Control>();
+
+            RockDropDownList ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes, false );
+            ddlText.ID = string.Format( "{0}_ddlText", id );
+            ddlText.AddCssClass( "js-filter-compare" );
+            controls.Add( ddlText );
+
+            var tbText = new RockTextBox();
+            tbText.ID = string.Format( "{0}_tbText", id );
+            tbText.AddCssClass( "js-filter-control" );
+            controls.Add( tbText );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual List<string> GetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            if ( filterControls != null )
+            {
+                if ( filterControls.Count > 0 && filterControls[0] is RockDropDownList )
+                {
+                    values.Add( ( (RockDropDownList)filterControls[0] ).SelectedValue );
+                }
+                if ( filterControls.Count > 1 && filterControls[1] is RockTextBox)
+                {
+                    values.Add( ( (RockTextBox)filterControls[1] ).Text );
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValue">The filter value.</param>
+        public virtual void SetFilterValues ( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterControls != null )
+            {
+                if ( filterControls.Count > 0 && filterControls[0] is RockDropDownList && filterValues.Count > 0 )
+                {
+                    ( (RockDropDownList)filterControls[0] ).SetValue( filterValues[0] );
+                }
+                if ( filterControls.Count > 1 && filterControls[1] is RockTextBox )
+                {
+                    ( (RockTextBox)filterControls[1] ).Text = filterValues[1];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <returns></returns>
+        public virtual Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, string propertyName, List<string> filterValues )
+        {
+            if ( filterValues.Count >= 2 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+                string comparisonValue = filterValues[0];
+                if ( comparisonValue != "0" )
+                {
+                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                    ConstantExpression constantExpression;
+                    if ( propertyExpression.Type == typeof( Guid ) )
+                    {
+                        constantExpression = Expression.Constant( filterValues[1].AsGuid() );
+                    }
+                    else
+                    {
+                        constantExpression = Expression.Constant( filterValues[1] );
+                    }
+
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

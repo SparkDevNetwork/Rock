@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Web.UI;
+using Rock.Data;
 
 namespace Rock.Field
 {
@@ -109,6 +111,39 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
+        /// <summary>
+        /// Creates the controls needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        List<Control> FilterControls( Dictionary<string, ConfigurationValue> configurationValues, string id );
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        List<string> GetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues );
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValue">The filter value.</param>
+        void SetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <returns></returns>
+        Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, string propertyName, List<string> filterValues );
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
