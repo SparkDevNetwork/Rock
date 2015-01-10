@@ -70,6 +70,10 @@ namespace RockWeb.Blocks.Store
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
         }
 
         /// <summary>
@@ -214,10 +218,8 @@ namespace RockWeb.Blocks.Store
             if ( latestVersion != null )
             {
 
-                foreach ( var screenshot in latestVersion.Screenshots )
-                {
-                    lScreenshots.Text += String.Format( "<img src='{0}' />", screenshot.ImageUrl );
-                }
+                rptScreenshots.DataSource = latestVersion.Screenshots;
+                rptScreenshots.DataBind();
                 
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
                 lLatestVersionDescription.Text = latestVersion.Description;

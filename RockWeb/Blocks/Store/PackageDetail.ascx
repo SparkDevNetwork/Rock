@@ -67,6 +67,18 @@
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
 
+                                <div class="row">
+                                <asp:Repeater ID="rptScreenshots" runat="server">
+                                    <ItemTemplate>
+                                        <div class="col-sm-6">
+                                            <a href='' class='package-screenshot'>
+                                                <%# string.Format("<img src=\"{0}\" style=\"width: 100%\" class=\"margin-b-lg\" />", Eval("ImageUrl"))%>
+                                            </a>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                                </div>
+
                                 <asp:Literal ID="lScreenshots" runat="server" />
 
                                 <h4><asp:Literal ID="lLatestVersionLabel" runat="server" /></h4>
@@ -110,8 +122,26 @@
                         $(this).hide();
                         return false;
                     });
+
+                    $(function () {
+                        $("a.package-screenshot").fluidbox();
+                    });
                 });
         </script>
+
+        <style>
+            .fluidbox .fluidbox-ghost {
+                    cursor: -webkit-zoom-in;
+                    cursor: -moz-zoom-in;
+                    cursor: zoom-in;
+            }
+
+            .fluidbox-opened .fluidbox-ghost {
+                    cursor: -webkit-zoom-out;
+                    cursor: -moz-zoom-out;
+                    cursor: zoom-out;
+            }
+        </style>
 
 
        </asp:Panel>
