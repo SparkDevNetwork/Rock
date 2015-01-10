@@ -227,7 +227,7 @@
 @headings-font-family:    @font-family-base;
 @headings-font-weight:    @font-weight-bold;
 @headings-line-height:    1.1;
-@headings-color:          inherit;
+@headings-color:          @text-color;
 
 
 // Iconography
@@ -782,7 +782,7 @@
 // ------------------------
 @text-muted:                  lighten(@text-color, 20%);
 @abbr-border-color:           @gray-light;
-@headings-small-color:        @gray-light;
+@headings-small-color:        lighten(@headings-color, 10%);
 @blockquote-small-color:      @gray-light;
 @blockquote-border-color:     @gray-lighter;
 @page-header-border-color:    @gray-lighter;
