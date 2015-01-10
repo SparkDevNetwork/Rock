@@ -468,6 +468,14 @@
             <param name="culture">The culture used to calculate the name variants</param>
             <returns></returns>
         </member>
+        <member name="M:RestSharp.Extensions.ResponseStatusExtensions.ToWebException(RestSharp.ResponseStatus)">
+            <summary>
+            Convert a <see cref="T:RestSharp.ResponseStatus"/> to a <see cref="T:System.Net.WebException"/> instance.
+            </summary>
+            <param name="responseStatus">The response status.</param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">responseStatus</exception>
+        </member>
         <member name="M:RestSharp.Extensions.StringExtensions.UrlEncode(System.String)">
             <summary>
             Uses Uri.EscapeDataString() based on recommendations on MSDN
@@ -493,6 +501,7 @@
             Parses most common JSON date formats
             </summary>
             <param name="input">JSON value to parse</param>
+            <param name="culture"></param>
             <returns>DateTime</returns>
         </member>
         <member name="M:RestSharp.Extensions.StringExtensions.RemoveSurroundingQuotes(System.String)">
@@ -515,6 +524,7 @@
             Converts a string to pascal case
             </summary>
             <param name="lowercaseAndUnderscoredWord">String to convert</param>
+            <param name="culture"></param>
             <returns>string</returns>
         </member>
         <member name="M:RestSharp.Extensions.StringExtensions.ToPascalCase(System.String,System.Boolean,System.Globalization.CultureInfo)">
@@ -523,6 +533,7 @@
             </summary>
             <param name="text">String to convert</param>
             <param name="removeUnderscores">Option to remove underscores</param>
+            <param name="culture"></param>
             <returns></returns>
         </member>
         <member name="M:RestSharp.Extensions.StringExtensions.ToCamelCase(System.String,System.Globalization.CultureInfo)">
@@ -530,6 +541,7 @@
             Converts a string to camel case
             </summary>
             <param name="lowercaseAndUnderscoredWord">String to convert</param>
+            <param name="culture"></param>
             <returns>String</returns>
         </member>
         <member name="M:RestSharp.Extensions.StringExtensions.MakeInitialLowerCase(System.String)">
@@ -566,6 +578,13 @@
             </summary>
             <param name="pascalCasedWord"></param>
             <returns></returns>
+        </member>
+        <member name="M:RestSharp.Extensions.StringExtensions.AddSpaces(System.String)">
+            <summary>
+            Add spaces to a pascal-cased string
+            </summary>
+            <param name="pascalCasedWord">String to convert</param>
+            <returns>string</returns>
         </member>
         <member name="M:RestSharp.Extensions.StringExtensions.GetNameVariants(System.String,System.Globalization.CultureInfo)">
             <summary>
@@ -662,6 +681,7 @@
             <summary>
             Execute an async POST-style request with the specified HTTP Method.  
             </summary>
+            <param name="action"></param>
             <param name="httpMethod">The HTTP method to execute.</param>
             <returns></returns>
         </member>
@@ -669,6 +689,7 @@
             <summary>
             Execute an async GET-style request with the specified HTTP Method.  
             </summary>
+            <param name="action"></param>
             <param name="httpMethod">The HTTP method to execute.</param>
             <returns></returns>
         </member>
@@ -718,6 +739,11 @@
             Execute a PATCH request
             </summary>
         </member>
+        <member name="M:RestSharp.Http.Merge">
+            <summary>
+            Execute a MERGE request
+            </summary>
+        </member>
         <member name="M:RestSharp.Http.AsGet(System.String)">
             <summary>
             Execute a GET-style request with the specified HTTP Method.  
@@ -765,6 +791,11 @@
         <member name="P:RestSharp.Http.Timeout">
             <summary>
             Timeout in milliseconds to be used for the request
+            </summary>
+        </member>
+        <member name="P:RestSharp.Http.ReadWriteTimeout">
+            <summary>
+            The number of milliseconds before the writing or reading times out.
             </summary>
         </member>
         <member name="P:RestSharp.Http.Credentials">
@@ -841,6 +872,11 @@
         <member name="P:RestSharp.Http.Url">
             <summary>
             URL to call for this request
+            </summary>
+        </member>
+        <member name="P:RestSharp.Http.PreAuthenticate">
+            <summary>
+            Flag to send authorisation header with the HttpWebRequest
             </summary>
         </member>
         <member name="P:RestSharp.Http.Proxy">
@@ -1150,12 +1186,14 @@
             
             </summary>
             <param name="request"></param>
+            <param name="callback"></param>
         </member>
         <member name="M:RestSharp.IRestClient.ExecuteAsync``1(RestSharp.IRestRequest,System.Action{RestSharp.IRestResponse{``0},RestSharp.RestRequestAsyncHandle})">
             <summary>
             
             </summary>
             <param name="request"></param>
+            <param name="callback"></param>
         </member>
         <member name="M:RestSharp.IRestClient.ExecuteAsyncGet(RestSharp.IRestRequest,System.Action{RestSharp.IRestResponse,RestSharp.RestRequestAsyncHandle},System.String)">
             <summary>
@@ -1290,6 +1328,11 @@
             
             </summary>
         </member>
+        <member name="P:RestSharp.IRestClient.ReadWriteTimeout">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="P:RestSharp.IRestClient.UseSynchronizationContext">
             <summary>
             
@@ -1301,6 +1344,11 @@
             </summary>
         </member>
         <member name="P:RestSharp.IRestClient.BaseUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:RestSharp.IRestClient.PreAuthenticate">
             <summary>
             
             </summary>
@@ -1346,6 +1394,7 @@
         <member name="M:RestSharp.IRestRequest.AddBody(System.Object,System.String)">
             <summary>
             Serializes obj to format specified by RequestFormat, but passes xmlNamespace if using the default XmlSerializer
+            The default format is XML. Change RequestFormat if you wish to use a different serialization format.
             </summary>
             <param name="obj">The object to serialize</param>
             <param name="xmlNamespace">The XML namespace to use when serializing</param>
@@ -1354,19 +1403,43 @@
         <member name="M:RestSharp.IRestRequest.AddBody(System.Object)">
             <summary>
             Serializes obj to data format specified by RequestFormat and adds it to the request body.
+            The default format is XML. Change RequestFormat if you wish to use a different serialization format.
             </summary>
             <param name="obj">The object to serialize</param>
             <returns>This request</returns>
         </member>
+        <member name="M:RestSharp.IRestRequest.AddJsonBody(System.Object)">
+            <summary>
+            Serializes obj to JSON format and adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <returns>This request</returns>
+        </member>
+        <member name="M:RestSharp.IRestRequest.AddXmlBody(System.Object)">
+            <summary>
+            Serializes obj to XML format and adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <returns>This request</returns>
+        </member>
+        <member name="M:RestSharp.IRestRequest.AddXmlBody(System.Object,System.String)">
+            <summary>
+            Serializes obj to format specified by RequestFormat, but passes xmlNamespace if using the default XmlSerializer
+            Serializes obj to XML format and passes xmlNamespace then adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <param name="xmlNamespace">The XML namespace to use when serializing</param>
+            <returns>This request</returns>
+        </member>
         <member name="M:RestSharp.IRestRequest.AddObject(System.Object,System.String[])">
             <summary>
-            Calls AddParameter() for all public, readable properties specified in the white list
+            Calls AddParameter() for all public, readable properties specified in the includedProperties list
             </summary>
             <example>
             request.AddObject(product, "ProductId", "Price", ...);
             </example>
             <param name="obj">The object with properties to add as parameters</param>
-            <param name="whitelist">The names of the properties to include</param>
+            <param name="includedProperties">The names of the properties to include</param>
             <returns>This request</returns>
         </member>
         <member name="M:RestSharp.IRestRequest.AddObject(System.Object)">
@@ -1427,6 +1500,14 @@
             </summary>
             <param name="name">Name of the segment to add</param>
             <param name="value">Value of the segment to add</param>
+            <returns></returns>
+        </member>
+        <member name="M:RestSharp.IRestRequest.AddQueryParameter(System.String,System.String)">
+            <summary>
+            Shortcut to AddParameter(name, value, QueryString) overload
+            </summary>
+            <param name="name">Name of the parameter to add</param>
+            <param name="value">Value of the parameter to add</param>
             <returns></returns>
         </member>
         <member name="P:RestSharp.IRestRequest.AlwaysMultipartFormData">
@@ -1512,6 +1593,11 @@
         <member name="P:RestSharp.IRestRequest.Timeout">
             <summary>
             Timeout in milliseconds to be used for the request. This timeout value overrides a timeout set on the RestClient.
+            </summary>
+        </member>
+        <member name="P:RestSharp.IRestRequest.ReadWriteTimeout">
+            <summary>
+            The number of milliseconds before the writing or reading times out.  This timeout value overrides a timeout set on the RestClient.
             </summary>
         </member>
         <member name="P:RestSharp.IRestRequest.Attempts">
@@ -1612,7 +1698,8 @@
             <summary>
             Exceptions thrown during the request, if any.  
             </summary>
-            <remarks>Will contain only network transport or framework exceptions thrown during the request.  HTTP protocol errors are handled by RestSharp and will not appear here.</remarks>
+            <remarks>Will contain only network transport or framework exceptions thrown during the request.
+            HTTP protocol errors are handled by RestSharp and will not appear here.</remarks>
         </member>
         <member name="T:RestSharp.IRestResponse`1">
             <summary>
@@ -1794,6 +1881,12 @@
             Default constructor that registers default content handlers
             </summary>
         </member>
+        <member name="M:RestSharp.RestClient.#ctor(System.Uri)">
+            <summary>
+            Sets the BaseUrl property for requests made by this client instance
+            </summary>
+            <param name="baseUrl"></param>
+        </member>
         <member name="M:RestSharp.RestClient.#ctor(System.String)">
             <summary>
             Sets the BaseUrl property for requests made by this client instance
@@ -1897,6 +1990,11 @@
             Timeout in milliseconds to use for requests made by this client instance
             </summary>
         </member>
+        <member name="P:RestSharp.RestClient.ReadWriteTimeout">
+            <summary>
+            The number of milliseconds before the writing or reading times out.
+            </summary>
+        </member>
         <member name="P:RestSharp.RestClient.UseSynchronizationContext">
             <summary>
             Whether to invoke async callbacks using the SynchronizationContext.Current captured when invoked
@@ -1913,7 +2011,7 @@
             Should include scheme and domain without trailing slash.
             </summary>
             <example>
-            client.BaseUrl = "http://example.com";
+            client.BaseUrl = new Uri("http://example.com");
             </example>
         </member>
         <member name="M:RestSharp.RestClientExtensions.ExecuteAsync(RestSharp.IRestClient,RestSharp.IRestRequest,System.Action{RestSharp.IRestResponse})">
@@ -1962,10 +2060,10 @@
         <member name="M:RestSharp.RestClientExtensions.AddDefaultParameter(RestSharp.IRestClient,System.String,System.Object,RestSharp.ParameterType)">
             <summary>
             Adds a parameter to the request. There are four types of parameters:
-            - GetOrPost: Either a QueryString value or encoded form value based on method
-            - HttpHeader: Adds the name/value pair to the HTTP request's Headers collection
-            - UrlSegment: Inserted into URL if there is a matching url token e.g. {AccountId}
-            - RequestBody: Used by AddBody() (not recommended to use directly)
+               - GetOrPost: Either a QueryString value or encoded form value based on method
+               - HttpHeader: Adds the name/value pair to the HTTP request's Headers collection
+               - UrlSegment: Inserted into URL if there is a matching url token e.g. {AccountId}
+               - RequestBody: Used by AddBody() (not recommended to use directly)
             </summary>
             <param name="restClient">The IRestClient instance</param>
             <param name="name">Name of the parameter</param>
@@ -2083,6 +2181,7 @@
         <member name="M:RestSharp.RestRequest.AddBody(System.Object,System.String)">
             <summary>
             Serializes obj to format specified by RequestFormat, but passes xmlNamespace if using the default XmlSerializer
+            The default format is XML. Change RequestFormat if you wish to use a different serialization format.
             </summary>
             <param name="obj">The object to serialize</param>
             <param name="xmlNamespace">The XML namespace to use when serializing</param>
@@ -2091,19 +2190,43 @@
         <member name="M:RestSharp.RestRequest.AddBody(System.Object)">
             <summary>
             Serializes obj to data format specified by RequestFormat and adds it to the request body.
+            The default format is XML. Change RequestFormat if you wish to use a different serialization format.
             </summary>
             <param name="obj">The object to serialize</param>
             <returns>This request</returns>
         </member>
+        <member name="M:RestSharp.RestRequest.AddJsonBody(System.Object)">
+            <summary>
+            Serializes obj to JSON format and adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <returns>This request</returns>
+        </member>
+        <member name="M:RestSharp.RestRequest.AddXmlBody(System.Object)">
+            <summary>
+            Serializes obj to XML format and adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <returns>This request</returns>
+        </member>
+        <member name="M:RestSharp.RestRequest.AddXmlBody(System.Object,System.String)">
+            <summary>
+            Serializes obj to format specified by RequestFormat, but passes xmlNamespace if using the default XmlSerializer
+            Serializes obj to XML format and passes xmlNamespace then adds it to the request body.
+            </summary>
+            <param name="obj">The object to serialize</param>
+            <param name="xmlNamespace">The XML namespace to use when serializing</param>
+            <returns>This request</returns>
+        </member>
         <member name="M:RestSharp.RestRequest.AddObject(System.Object,System.String[])">
             <summary>
-            Calls AddParameter() for all public, readable properties specified in the white list
+            Calls AddParameter() for all public, readable properties specified in the includedProperties list
             </summary>
             <example>
             request.AddObject(product, "ProductId", "Price", ...);
             </example>
             <param name="obj">The object with properties to add as parameters</param>
-            <param name="whitelist">The names of the properties to include</param>
+            <param name="includedProperties">The names of the properties to include</param>
             <returns>This request</returns>
         </member>
         <member name="M:RestSharp.RestRequest.AddObject(System.Object)">
@@ -2163,6 +2286,14 @@
             </summary>
             <param name="name">Name of the segment to add</param>
             <param name="value">Value of the segment to add</param>
+            <returns></returns>
+        </member>
+        <member name="M:RestSharp.RestRequest.AddQueryParameter(System.String,System.String)">
+            <summary>
+            Shortcut to AddParameter(name, value, QueryString) overload
+            </summary>
+            <param name="name">Name of the parameter to add</param>
+            <param name="value">Value of the parameter to add</param>
             <returns></returns>
         </member>
         <member name="M:RestSharp.RestRequest.IncreaseNumAttempts">
@@ -2270,6 +2401,11 @@
         <member name="P:RestSharp.RestRequest.Timeout">
             <summary>
             Timeout in milliseconds to be used for the request. This timeout value overrides a timeout set on the RestClient.
+            </summary>
+        </member>
+        <member name="P:RestSharp.RestRequest.ReadWriteTimeout">
+            <summary>
+            The number of milliseconds before the writing or reading times out.  This timeout value overrides a timeout set on the RestClient.
             </summary>
         </member>
         <member name="P:RestSharp.RestRequest.Attempts">
@@ -2614,6 +2750,12 @@
             <param name="obj">Object to serialize</param>
             <returns>XML as string</returns>
         </member>
+        <member name="M:RestSharp.Serializers.XmlSerializer.IsNumeric(System.Object)">
+            <summary>
+            Determines if a given object is numeric in any way
+            (can be integer, double, null, etc).
+            </summary>
+        </member>
         <member name="P:RestSharp.Serializers.XmlSerializer.RootElement">
             <summary>
             Name of the root element to use when serializing
@@ -2877,14 +3019,6 @@
             </summary>
             <param name="value">String to be validated</param>
             <param name="maxSize">Maximum length of the string</param>
-        </member>
-        <member name="M:RestSharp.Extensions.ResponseStatusExtensions.ToWebException(RestSharp.ResponseStatus)">
-            <summary>
-            Convert a <see cref="T:RestSharp.ResponseStatus"/> to a <see cref="T:System.Net.WebException"/> instance.
-            </summary>
-            <param name="responseStatus">The response status.</param>
-            <returns></returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">responseStatus</exception>
         </member>
     </members>
 </doc>
