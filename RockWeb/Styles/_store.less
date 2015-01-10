@@ -1,0 +1,230 @@
+﻿/*
+    Used to manage styles related to Rock's store
+    /* NOTE: This less file is not included in the core since it is only used
+             internally. It must be included in the theme.
+    
+    1. Promo Rotator
+    2. Package Summary
+    3. Package Detail
+    4. Components
+    5. Purchased Package
+    6. 
+    7. 
+*/
+
+// 1. Promo Rotator
+// -------------------------
+.promotionrotator {
+	margin-bottom: 48px;
+
+    .carousel-inner {
+        img {
+            width: 100%;
+        }
+    }
+
+    .carousel-indicators {
+		bottom: -35px;
+
+        li {
+		    border-color: #6A6A6A;
+	    }
+
+        .active {
+		    background-color: #6A6A6A;
+	    }
+	}
+
+    .carousel-control {
+        .fa-chevron-right {
+		    right: 20px;
+	    }
+
+        .fa-chevron-left {
+		    left: 20px;
+	    }
+    }
+}
+
+// 2. Package Summary
+// -------------------------
+.packagesummary {
+    height: 250px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-bottom: 24px;
+    background-color: #fff;
+
+    .packagesummary-image-hover {
+        background-color: #000;
+        opacity: 0;
+        width: 100%;
+        height: 140px;
+        content: '';
+        -webkit-transition: opacity .25s ease-in;
+        -moz-transition: opacity .25s ease-in;
+        -o-transition: opacity .25s ease-in;
+        -ms-transition: opacity .25s ease-in;
+        transition: opacity .25s ease-in;
+    }
+
+    &:hover .packagesummary-image-hover {
+        opacity: 0.5;
+    }
+
+    .packagesummary-body {
+        padding: 8px;
+        
+        h2 {
+            line-height: 1.3em;
+            margin: 15px 0 0;
+            font-size: 18px;
+            font-weight: @font-weight-semibold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vendor {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    
+}
+
+
+// 3. 
+// -------------------------
+
+.packagedetail {
+    
+    .packagedetail-image {
+        width: 100%;
+    }
+
+    .packagedetail-additionalversions {
+        display: none;
+    }
+
+    .btn-install {
+        width: 100%;
+    }
+}
+
+
+// 4.
+// -------------------------
+
+// @fa-var-star: "\f005";
+// @fa-var-star-half: "\f089";
+// @fa-var-star-o: "\f006";
+
+.rating {
+    font-family: FontAwesome;
+
+    &.rating-0:before {
+        content: "\f006  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-05:before {
+        content: "\f089  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-1:before {
+        content: "\f005  \f006  \f006  \f006  \f006";
+    }
+
+    &.rating-15:before {
+        content: "\f005  \f089  \f006  \f006  \f006";
+    }
+
+    &.rating-2:before {
+        content: "\f005  \f005  \f006  \f006  \f006";
+    }
+
+    &.rating-25:before {
+        content: "\f005  \f005  \f089  \f006  \f006";
+    }
+
+    &.rating-3:before {
+        content: "\f005  \f005  \f005  \f006  \f006";
+    }
+
+    &.rating-35:before {
+        content: "\f005  \f005  \f005  \f089  \f006";
+    }
+
+    &.rating-4:before {
+        content: "\f005  \f005  \f005  \f005  \f006";
+    }
+
+    &.rating-45:before {
+        content: "\f005  \f005  \f005  \f005  \f089";
+    }
+
+    &.rating-5:before {
+        content: "\f005  \f005  \f005  \f005  \f005";
+    }
+}
+
+.pricelabel {
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    border-radius: @border-radius-base;
+    text-align: center;
+
+    &.cost {
+       background-color: @alert-success-bg;
+       border-color: @alert-success-border;
+       color: @alert-success-text;
+    }
+
+    &.free {
+        background-color: @alert-info-bg;
+        border-color: @alert-info-border;
+        color: @alert-info-text;
+    }
+
+    h4 {
+        font-size: 24px;
+        font-weight: @font-weight-bold;
+        color: inherit;
+    }
+}
+
+// 5. Purchased Package
+// -------------------------
+.purchasedpackage {
+    margin-bottom: 24px;
+
+    h1 {
+        margin-top: 0;
+        line-height: 1.3em;
+        font-size: 18px;
+        font-weight: @font-weight-semibold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .purchasedpackage-install {
+        a {
+            width: 100%;
+        }
+    }
+}
+
+
+// 5. 
+// -------------------------
+
+
+// 6. 
+// -------------------------
+
+
+// 7. 
+// -------------------------
