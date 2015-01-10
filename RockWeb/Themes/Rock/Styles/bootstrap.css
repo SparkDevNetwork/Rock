@@ -2657,7 +2657,7 @@ h6,
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 900;
   line-height: 1.1;
-  color: #6a6a6a;
+  color: inherit;
 }
 h1 small,
 h2 small,
@@ -2685,7 +2685,7 @@ h6 .small,
 .h6 .small {
   font-weight: normal;
   line-height: 1;
-  color: #848484;
+  color: #f3f3f4;
 }
 h1,
 .h1,
