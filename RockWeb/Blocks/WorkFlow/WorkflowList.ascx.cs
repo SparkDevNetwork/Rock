@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -29,6 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock;
 using Attribute = Rock.Model.Attribute;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -43,6 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
         #region Fields
 
         private WorkflowType _workflowType = null;
+        private List<AttributeCache> _attributeColumns = null;
 
         #endregion
 
@@ -352,6 +355,14 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         protected void AddAttributeColumns()
         {
+            _attributeColumns = new List<AttributeCache>();
+
+            // Remove filter controls
+            foreach( var control in gfWorkflows.Controls.OfType<RockControlWrapper>().ToList() )
+            {
+                gfWorkflows.Controls.Remove( control );
+            }
+
             // Remove attribute columns
             foreach ( var column in gWorkflows.Columns.OfType<AttributeField>().ToList() )
             {
@@ -360,7 +371,6 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( _workflowType != null )
             {
-                // Add attribute columns
                 int entityTypeId = new Workflow().TypeId;
                 string qualifier = _workflowType.Id.ToString();
                 foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
@@ -372,6 +382,20 @@ namespace RockWeb.Blocks.WorkFlow
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
+                    var attributeCache = AttributeCache.Read( attribute );
+                    _attributeColumns.Add( attributeCache );
+
+                    // Add filter control
+                    var wrapper = new RockControlWrapper();
+                    gfWorkflows.Controls.Add( wrapper );
+                    wrapper.ID = "filter_" + attribute.Id.ToString();
+                    wrapper.Label = attribute.Name;
+                    foreach ( var control in attributeCache.FieldType.Field.FilterControls( attributeCache.QualifierValues, wrapper.ID ) )
+                    {
+                        wrapper.Controls.Add( control );
+                    }
+
+                    // Add attribute column
                     string dataFieldExpression = attribute.Key;
                     bool columnExists = gWorkflows.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
                     if ( !columnExists )
@@ -380,13 +404,7 @@ namespace RockWeb.Blocks.WorkFlow
                         boundField.DataField = dataFieldExpression;
                         boundField.HeaderText = attribute.Name;
                         boundField.SortExpression = string.Empty;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
-
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                         gWorkflows.Columns.Add( boundField );
                     }
                 }
@@ -432,7 +450,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var rockContext = new RockContext();
                 var workflowService = new WorkflowService( rockContext );
 
-                var qry = workflowService.Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" )
+                var qry = workflowService
+                    .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
                     .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
 
                 // Activated Date Range Filter
@@ -492,6 +511,33 @@ namespace RockWeb.Blocks.WorkFlow
                 if ( !string.IsNullOrWhiteSpace( status ) )
                 {
                     qry = qry.Where( w => w.Status.StartsWith( status ) );
+                }
+
+                var attributeValueService = new AttributeValueService( rockContext );
+                var parameterExpression = attributeValueService.ParameterExpression;
+                foreach ( var attribute in _attributeColumns )
+                {
+                    var attributeFilter = gfWorkflows.FindControl( "filter_" + attribute.Id.ToString() ) as RockControlWrapper;
+                    if (attributeFilter != null)
+                    {
+                        var controls = new List<Control>();
+                        foreach( Control control in attributeFilter.Controls)
+                        {
+                            controls.Add(control);
+                        }
+                        var filterValues = attribute.FieldType.Field.GetFilterValues( controls, attribute.QualifierValues );
+                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, "Value", filterValues );
+                        if ( expression != null )
+                        {
+                            var attributeValues = attributeValueService
+                                .Queryable().AsNoTracking()
+                                .Where( v => v.Attribute.Id == attribute.Id );
+
+                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                            qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                        }
+                    }
                 }
 
                 List<Workflow> workflows = null;
