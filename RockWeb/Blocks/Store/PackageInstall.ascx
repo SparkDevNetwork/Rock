@@ -31,11 +31,13 @@
                             </p>
 
                             <Rock:RockTextBox ID="txtUsername" runat="server" Label="Store Username" />
-                            <Rock:RockTextBox ID="txtPassword" runat="server" Label="Store Password" />
+                            <Rock:RockTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Store Password" />
 
                             <Rock:RockCheckBox ID="cbAgreeToTerms" runat="server" Label="I have read and agree to the terms of the Rock Store <small><a href='http://www.rockrms.com/Store/Terms'>(read terms)</a></small>" AutoPostBack="true" OnCheckedChanged="cbAgreeToTerms_CheckedChanged" />
 
-                            <asp:Button ID="btnInstall" CssClass="btn btn-primary" runat="server" Text="Install" Enabled="false" />
+                            <asp:Button ID="btnInstall" CssClass="btn btn-primary" OnClick="btnInstall_Click" runat="server" Text="Install" Enabled="false" />
+
+                            <asp:Literal id="lMessages" runat="server" />
                         </div>
                     </div>
                 </asp:Panel>
