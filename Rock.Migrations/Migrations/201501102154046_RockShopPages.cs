@@ -112,9 +112,9 @@ namespace Rock.Migrations
     </div>
     <div class=""panel-body"">
         <ul class=""list-unstyled"">
-            <li><a href=""~/Store/Purchased"">Purchased</a></li>
-            <li><a href=""http://www.rockrms.com/Store/Support"">Support</a></li>
-            <li><a href=""~/Store/Account"">Account</a></li>
+            <li><a href=""~/RockShop/Purchases"">Purchases</a></li>
+            <li><a href=""https://www.rockrms.com/Store/Support"">Support</a></li>
+            <li><a href=""~/RockShop/Account"">Account</a></li>
         </ul>
     </div>
 </div>", "E4381B48-166F-45C8-923C-DCA75FCD033C" );
@@ -475,6 +475,10 @@ namespace Rock.Migrations
 
             // Attrib Value for Block:Package Category List Lava, Attribute:Lava Template Page: Link Organization, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "F78A82BA-BD33-46DD-81ED-8CA80E3CF4FB", "15C3DABE-7B8F-48CC-8EC6-EBDBD8E04C53", @"{% include '~/Assets/Lava/Store/PackageCategoryListSidebar.lava' %}" );
+
+            RockMigrationHelper.AddPageRoute( "B093E7A0-5E7E-4A5F-AEF3-CE397D342BFA", "RockShop" );
+            RockMigrationHelper.AddPageRoute( "6A163569-2826-4EF2-8208-879DDBDC0896", "RockShop/Purchases" );
+            RockMigrationHelper.AddPageRoute( "DADE879D-8DF5-4367-89EF-FEECD12B81AB", "RockShop/Account" );
         }
         
         /// <summary>
