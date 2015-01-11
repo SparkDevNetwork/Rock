@@ -57,6 +57,8 @@ namespace RockWeb.Blocks.Store
 
         // used for public / protected properties
 
+        int packageId = -1;
+
         #endregion
 
         #region Base Control Methods
@@ -83,6 +85,12 @@ namespace RockWeb.Blocks.Store
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            // get package id
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
+            {
+                packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -112,10 +120,44 @@ namespace RockWeb.Blocks.Store
             DisplayPackageInfo();
         }
 
+        protected void btnInstall_Click( object sender, EventArgs e )
+        {
+            StoreService storeService = new StoreService();
+
+            var installResponse = storeService.Purchase( txtUsername.Text, txtPassword.Text, packageId );
+
+            switch ( installResponse.PurchaseResult )
+            {
+                case PurchaseResult.AuthenicationFailed:
+                    lMessages.Text = string.Format("<div class='alert alert-warning margin-t-md'><strong>Could Not Authenicate</strong> {0}</div>", installResponse.Message);
+                    break;
+                case PurchaseResult.Error:
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {0}</div>", installResponse.Message );
+                    break;
+                case PurchaseResult.NoCardOnFile:
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{0}'>Account Page</a>.</div>", ResolveRockUrl("~/RockShop/Account") );
+                    break;
+                case PurchaseResult.NotAuthorized:
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchased for this organization. Please see your organization's primary contact to enable your account for purchases.</div>" );
+                    break;
+                case PurchaseResult.PaymentFailed:
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred will processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a>.</div>", installResponse.Message, ResolveRockUrl("~/RockShop/Account") );
+                    break;
+                case PurchaseResult.Success:
+                    ProcessInstall(installResponse.PackageInstallSteps);
+                    break;
+            }
+        }
+
         #endregion
 
         #region Methods
 
+        private void ProcessInstall(List<PackageInstallStep> installSteps)
+        {
+            string test = "test";
+        }
+        
         private void DisplayPackageInfo()
         {
             string errorResponse = string.Empty;
@@ -123,14 +165,7 @@ namespace RockWeb.Blocks.Store
             // check that store is configured
             if ( StoreService.OrganizationIsConfigured() )
             {
-                // get package id
-                int packageId = -1;
-
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
-                {
-                    packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
-                }
-
+                
                 PackageService packageService = new PackageService();
                 var package = packageService.GetPackage( packageId, out errorResponse );
 
