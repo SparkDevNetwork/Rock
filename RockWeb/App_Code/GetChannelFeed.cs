@@ -110,7 +110,7 @@ namespace RockWeb
                 
                 ContentChannelService channelService = new ContentChannelService( rockContext );
 
-                var channel = channelService.Get( channelId );
+                var channel = channelService.Queryable( "ContentChannelType" ).Where( c => c.Id == channelId ).FirstOrDefault();
 
                 if ( channel != null )
                 {
@@ -145,10 +145,16 @@ namespace RockWeb
 
                         // get channel items
                         ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
-                        var content = contentService.Queryable()
-                                        .Where( c => c.ContentChannelId == channel.Id && c.Status == ContentChannelItemStatus.Approved )
-                                        .OrderBy( c => c.StartDateTime ).OrderBy(c => c.Id)
+
+                        var content = contentService.Queryable( "ContentChannelType" )
+                                        .Where( c => c.ContentChannelId == channel.Id && c.Status == ContentChannelItemStatus.Approved && c.StartDateTime <= RockDateTime.Now )
+                                        .OrderByDescending( c => c.StartDateTime )
                                         .Take( rssItemLimit );
+
+                        if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                        {
+                            content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                        }
 
                         foreach ( var item in content )
                         {
