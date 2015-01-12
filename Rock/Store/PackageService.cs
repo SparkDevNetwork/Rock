@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using System.Configuration;
 using System.IO;
+using Newtonsoft.Json;
 
 
 namespace Rock.Store
@@ -149,11 +150,12 @@ namespace Rock.Store
             request.Method = Method.GET;
             request.Resource = string.Format( "api/Packages/GetPurchasedPackages/{0}", storeKey );
 
-            var response = client.Execute<List<Package>>( request );
+            var response = client.Execute( request );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {
-                return response.Data;
+                List<Package> packages = JsonConvert.DeserializeObject<List<Package>>(response.Content);
+                return packages;
             }
             else
             {
