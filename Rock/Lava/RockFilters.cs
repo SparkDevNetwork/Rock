@@ -681,42 +681,50 @@ namespace Rock.Lava
             }
 
             // If valid attribute and value were found
-            if ( attribute != null && 
-                !string.IsNullOrWhiteSpace(rawValue) &&
-                attribute.IsAuthorized( Authorization.VIEW, null ) )
+            if ( attribute != null && !string.IsNullOrWhiteSpace( rawValue ) )
             {
-                // Check qualifier for 'Raw' if present, just return the raw unformatted value
-                if ( qualifier.Equals("RawValue", StringComparison.OrdinalIgnoreCase) )
+                Person currentPerson = null;
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
-                    return rawValue;
+                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
 
-                // Check qualifier for 'Url' and if present and attribute's field type is a ILinkableFieldType, then return the formatted url value
-                var field = attribute.FieldType.Field;
-                if ( qualifier.Equals("Url", StringComparison.OrdinalIgnoreCase) && field is Rock.Field.ILinkableFieldType )
+                if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
-                    return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
-                }
-
-                // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
-                if ( !string.IsNullOrWhiteSpace(qualifier) && field is Rock.Field.IEntityFieldType )
-                {
-                    IEntity entity = ( (Rock.Field.IEntityFieldType)field ).GetEntity( rawValue );
-                    if (entity != null)
+                    // Check qualifier for 'Raw' if present, just return the raw unformatted value
+                    if ( qualifier.Equals( "RawValue", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
+                        return rawValue;
+                    }
+
+                    // Check qualifier for 'Url' and if present and attribute's field type is a ILinkableFieldType, then return the formatted url value
+                    var field = attribute.FieldType.Field;
+                    if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
+                    {
+                        return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
+                    }
+
+                    // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
+                    if ( !string.IsNullOrWhiteSpace( qualifier ) && field is Rock.Field.IEntityFieldType )
+                    {
+                        IEntity entity = ( (Rock.Field.IEntityFieldType)field ).GetEntity( rawValue );
+                        if ( entity != null )
                         {
-                            return entity;
-                        }
-                        else
-                        {
-                            return entity.GetPropertyValue( qualifier ).ToStringSafe();
+                            if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                return entity;
+                            }
+                            else
+                            {
+                                return entity.GetPropertyValue( qualifier ).ToStringSafe();
+                            }
                         }
                     }
-                }
 
-                // Otherwise return the formatted value
-                return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                    // Otherwise return the formatted value
+                    return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                }
             }
 
             return string.Empty;
