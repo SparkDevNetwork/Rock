@@ -50,6 +50,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
+    [BooleanField("Display Country Code", "When enabled prepends the country code to all phone numbers.")]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -294,7 +295,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 string cc = countryCode as string ?? string.Empty;
                 string n = number as string ?? string.Empty;
-                formattedNumber = PhoneNumber.FormattedNumber( cc, n );
+
+                if ( GetAttributeValue( "DisplayCountryCode" ).AsBoolean() )
+                {
+                    formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
+                }
+                else
+                {
+                    formattedNumber = PhoneNumber.FormattedNumber( cc, n );
+                }
             }
 
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
