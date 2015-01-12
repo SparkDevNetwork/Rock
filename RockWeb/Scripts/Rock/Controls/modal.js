@@ -42,7 +42,8 @@
             $('#modal-popup').modal({
                 show: true,
                 backdrop: 'static',
-                keyboard: false
+                keyboard: false,
+                attentionAnimation: ''
             });
         },
 

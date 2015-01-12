@@ -38,7 +38,6 @@
             this.cbService = new System.Windows.Forms.CheckBox();
             this.ofdAssembly = new System.Windows.Forms.OpenFileDialog();
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
-            this.fbdDataViewOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.cbClient = new System.Windows.Forms.CheckBox();
             this.lblAssemblyPath = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -92,6 +91,7 @@
             // 
             this.fbdServiceOutput.Description = "Select the project folder that the Service files should be added to.  The namespa" +
     "ce of the objects will be used to create a relative folder path if neccessary.";
+            this.fbdServiceOutput.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fbdServiceOutput.ShowNewFolderButton = false;
             // 
             // cbRest
@@ -129,12 +129,8 @@
             // 
             this.fbdRestOutput.Description = "Select the project folder that the Rest files should be added to.  The namespace " +
     "of the objects will be used to create a relative folder path if neccessary.";
+            this.fbdRestOutput.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fbdRestOutput.ShowNewFolderButton = false;
-            // 
-            // fbdDataViewOutput
-            // 
-            this.fbdDataViewOutput.Description = "Select the project folder that the DataFilters files should be added to.  ";
-            this.fbdDataViewOutput.ShowNewFolderButton = false;
             // 
             // cbClient
             // 
@@ -201,7 +197,6 @@
         private System.Windows.Forms.CheckBox cbService;
 		private System.Windows.Forms.OpenFileDialog ofdAssembly;
         private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
-        private System.Windows.Forms.FolderBrowserDialog fbdDataViewOutput;
         private System.Windows.Forms.CheckBox cbClient;
         private System.Windows.Forms.Label lblAssemblyPath;
         private System.Windows.Forms.Label label1;
