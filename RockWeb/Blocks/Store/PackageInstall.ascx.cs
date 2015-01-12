@@ -31,6 +31,7 @@ using Rock.Attribute;
 using Rock.Store;
 using System.Text;
 using Rock.Utility;
+using System.Net;
 
 namespace RockWeb.Blocks.Store
 {
@@ -153,9 +154,25 @@ namespace RockWeb.Blocks.Store
 
         #region Methods
 
-        private void ProcessInstall(List<PackageInstallStep> installSteps)
+        private void ProcessInstall( List<PackageInstallStep> installSteps )
         {
-            string test = "test";
+            foreach ( var installStep in installSteps )
+            {
+                string sourceFile = installStep.InstallPackageUrl.Replace( "~", "http://www.rockrms.com" );  // todo remove before flight
+                string destinationFile = Server.MapPath( string.Format( "~/App_Data/{0}.zip", installStep.PackageId.ToString() ) );
+
+                // download file
+                try
+                {
+                    WebClient wc = new WebClient();
+                    wc.DownloadFile( sourceFile, destinationFile );
+                }
+                catch ( Exception ex )
+                {
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred will while downloading package from the store. Please try again later.</div>", ex.Message );
+                    return;
+                }
+            }
         }
         
         private void DisplayPackageInfo()
