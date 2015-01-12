@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -117,6 +118,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 currentEmployeeTimeCard.TimeCardPayPeriodId = currentPayPeriod.Id;
                 currentEmployeeTimeCard.TimeCardStatus = TimeCardStatus.InProgress;
                 currentEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
+                currentEmployeeTimeCard.TimeCardDays = new List<TimeCardDay>();
                 timeCardService.Add( currentEmployeeTimeCard );
                 dataContext.SaveChanges();
             }

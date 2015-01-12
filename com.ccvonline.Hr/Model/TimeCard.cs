@@ -222,16 +222,16 @@ namespace com.ccvonline.Hr.Model
             } ).ToList();
 
             Dictionary<int, decimal> totalRegularByWeek = new Dictionary<int, decimal>();
-            foreach (var day in totalWorkedHoursPerWeekMax40)
+            foreach ( var day in totalWorkedHoursPerWeekMax40 )
             {
                 int weekOfYear = day.TimeCardDay.WeekOfYear();
-                if (!totalRegularByWeek.ContainsKey(weekOfYear))
+                if ( !totalRegularByWeek.ContainsKey( weekOfYear ) )
                 {
-                    totalRegularByWeek.Add(weekOfYear, 0);
+                    totalRegularByWeek.Add( weekOfYear, 0 );
                 }
 
                 decimal totalRegular = totalRegularByWeek[weekOfYear];
-                
+
                 if ( totalRegular < 40 )
                 {
                     // if less than 40 so far, increment the total by the day's hours
@@ -251,7 +251,7 @@ namespace com.ccvonline.Hr.Model
 
                 totalRegularByWeek[weekOfYear] = totalRegular;
             }
-            
+
             var totalWorkedHolidayHours = GetWorkedHolidayHours();
 
             var regularHours = totalWorkedHoursPerWeekMax40.ToList();
@@ -263,7 +263,7 @@ namespace com.ccvonline.Hr.Model
                     week.Hours = week.Hours - holidayHours.Hours;
                 }
             }
-            
+
             return regularHours;
         }
 
@@ -395,7 +395,7 @@ namespace com.ccvonline.Hr.Model
         /// </returns>
         public override string ToString()
         {
-            if (TimeCardDay != null)
+            if ( TimeCardDay != null )
             {
                 return string.Format( "{0} {1}", TimeCardDay.StartDateTime.Date.ToShortDateString(), Hours );
             }
@@ -433,12 +433,7 @@ namespace com.ccvonline.Hr.Model
         /// </returns>
         public override string ToString()
         {
-            if ( WeekOfYear != null )
-            {
-                return string.Format( "{0} {1}", WeekOfYear, Hours );
-            }
-
-            return base.ToString();
+            return string.Format( "{0} {1}", WeekOfYear, Hours );
         }
     }
 

@@ -252,9 +252,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
-            _regularHoursCache = timeCard.GetRegularHours();
-            _overtimeHoursCache = timeCard.GetOvertimeHours();
-
             var qry = timeCardDayService.Queryable().Where( a => a.TimeCardId == timeCardId ).OrderBy( a => a.StartDateTime );
             var qryList = qry.ToList();
 
@@ -282,6 +279,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             var timeCardDayList = qry.ToList();
 
+            _regularHoursCache = timeCard.GetRegularHours();
+            _overtimeHoursCache = timeCard.GetOvertimeHours();
+
             // bind time card day repeater 
             rptTimeCardDay.DataSource = timeCardDayList;
             rptTimeCardDay.DataBind();
@@ -296,19 +296,19 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             .Add( "Holiday", timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
             .Html;
 
-            ;
-
             lTotalsPaidHtml.Text = new Rock.Web.DescriptionList()
             .Add( "Vacation Hours", timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
             .Add( "Holiday Hours", timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
             .Add( "Sick Hours", timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
             .Html;
 
+            var totalHours = timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 ) 
+                + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ) 
+                + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ) 
+                + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 );
+
             lTotalsTotalHtml.Text = new Rock.Web.DescriptionList()
-            .Add( "All Hours", timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 )
-            + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 )
-            + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 )
-            + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ) ).Html;
+            .Add( "All Hours", totalHours ).Html;
 
             // History
             // todo
