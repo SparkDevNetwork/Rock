@@ -22,12 +22,25 @@ namespace Rock.Store
         public OrganizationService() :base()
         {}
 
+        /// <summary>
+        /// Gets the organizations.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
         public IEnumerable<Organization> GetOrganizations( string username, string password )
         {
             string errorResponse = string.Empty;
             return GetOrganizations( username, password, out errorResponse );
         }
-        
+
+        /// <summary>
+        /// Gets the organizations.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public IEnumerable<Organization> GetOrganizations( string username, string password, out string errorResponse )
         {
             errorResponse = string.Empty;

@@ -20,14 +20,16 @@ namespace Rock.Store
     public class InstalledPackageService : StoreServiceBase
     {
 
-        InstalledPackage _installedPackages = null;
-        
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class.
+        /// Initializes a new instance of the <see cref="Rock.Model.CategoryService" /> class.
         /// </summary>
         public InstalledPackageService() :base()
         {}
 
+        /// <summary>
+        /// Gets the installed packages.
+        /// </summary>
+        /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
             string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
@@ -40,12 +42,17 @@ namespace Rock.Store
                     return JsonConvert.DeserializeObject<List<InstalledPackage>>( json );
                 }
             }
-            catch ( Exception ex )
+            catch 
             {
                 return new List<InstalledPackage>();
             }
         }
 
+        /// <summary>
+        /// Installeds the package version.
+        /// </summary>
+        /// <param name="packageId">The package identifier.</param>
+        /// <returns></returns>
         public static InstalledPackage InstalledPackageVersion( int packageId )
         {
             var installedPackages = GetInstalledPackages();

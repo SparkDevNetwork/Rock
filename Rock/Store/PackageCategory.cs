@@ -39,7 +39,7 @@ namespace Rock.Store
         /// Gets or sets the CSS Icon Class of the Package Category. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing the CSS Icon Class of the Package Category.
+        /// A <see cref="System.String"/> representing the CSS Icon Class of the Package Category.
         /// </value>
         public string IconCssClass { get; set; }
     }

@@ -23,7 +23,7 @@ namespace Rock.Store
         /// Gets or sets the rating. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> representing the rating value.
+        /// A <see cref="System.Int32"/> representing the rating value.
         /// </value>
         public int Rating { get; set; }
 
@@ -39,7 +39,7 @@ namespace Rock.Store
         /// Gets or sets the review text. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing text of the review.
+        /// A <see cref="System.String"/> representing text of the review.
         /// </value>
         public string Review { get; set; }
 
@@ -55,7 +55,7 @@ namespace Rock.Store
         /// Gets or sets the person id of the reviewer. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.int"/> representing person id of the reviewer.
+        /// A <see cref="System.Int32"/> representing person id of the reviewer.
         /// </value>
         public int PersonId { get; set; }
 

@@ -22,12 +22,25 @@ namespace Rock.Store
         public StoreService() :base()
         {}
 
+        /// <summary>
+        /// Authenicates the user.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
         public bool AuthenicateUser( string username, string password )
         {
             string errorResponse = string.Empty;
             return AuthenicateUser( username, password, out  errorResponse );
         }
-        
+
+        /// <summary>
+        /// Authenicates the user.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public bool AuthenicateUser( string username, string password, out string errorResponse )
         {
             errorResponse = string.Empty;
@@ -52,12 +65,27 @@ namespace Rock.Store
             }
         }
 
+        /// <summary>
+        /// Purchases the specified username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="packageId">The package identifier.</param>
+        /// <returns></returns>
         public PurchaseResponse Purchase( string username, string password, int packageId )
         {
             string errorResponse = string.Empty;
             return Purchase( username, password, packageId, out errorResponse );
         }
 
+        /// <summary>
+        /// Purchases the specified username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="packageId">The package identifier.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public PurchaseResponse Purchase( string username, string password, int packageId, out string errorResponse )
         {
             errorResponse = string.Empty;
@@ -85,6 +113,10 @@ namespace Rock.Store
             }
         }
 
+        /// <summary>
+        /// Organizations the is configured.
+        /// </summary>
+        /// <returns></returns>
         public static bool OrganizationIsConfigured()
         {
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -100,6 +132,10 @@ namespace Rock.Store
             }
         }
 
+        /// <summary>
+        /// Gets the organization key.
+        /// </summary>
+        /// <returns></returns>
         public static string GetOrganizationKey()
         {
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();

@@ -40,7 +40,7 @@ namespace Rock.Store
         /// Gets or sets the version's label. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing the versions lable.
+        /// A <see cref="System.String"/> representing the versions lable.
         /// </value>
         public string VersionLabel { get; set; }
 
@@ -48,7 +48,7 @@ namespace Rock.Store
         /// Gets or sets the version's rock semantic version. 
         /// </summary>
         /// <value>
-        /// A <see cref="Nuget.SemanticVersion"/> representing the versions rock semantic version.
+        /// A <see cref="RockSemanticVersion"/> representing the versions rock semantic version.
         /// </value>
         public RockSemanticVersion RequiredRockSemanticVersion { 
             get {
@@ -60,7 +60,7 @@ namespace Rock.Store
         /// Gets or sets the required Rock version. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> required Rock version.
+        /// A <see cref="System.String"/> required Rock version.
         /// </value>
         public string RequiredRockVersion { get; set; }
 
@@ -68,7 +68,7 @@ namespace Rock.Store
         /// Gets or sets the version description. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing the version description.
+        /// A <see cref="System.String"/> representing the version description.
         /// </value>
         public string Description { get; set; }
 
@@ -76,7 +76,7 @@ namespace Rock.Store
         /// Gets or sets the documentation URL. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing URL to the version's documentation.
+        /// A <see cref="System.String"/> representing URL to the version's documentation.
         /// </value>
         public string DocumentationUrl { get; set; }
 
@@ -89,21 +89,24 @@ namespace Rock.Store
         public DateTime AddedDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the version ratings. 
+        /// Gets or sets the ratings.
         /// </summary>
         /// <value>
-        /// A list <see cref="List<Rock.Store.PackageVersionRating>"/> representing the version ratings.
+        /// The ratings.
         /// </value>
         public List<PackageVersionRating> Ratings { get; set; }
 
         /// <summary>
-        /// Gets or sets the version screenshots. 
+        /// Gets or sets the screenshots.
         /// </summary>
         /// <value>
-        /// A list <see cref="List<Rock.Store.StoreImage>"/> representing the version screenshots.
+        /// The screenshots.
         /// </value>
         public List<StoreImage> Screenshots { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackageVersion" /> class.
+        /// </summary>
         public PackageVersion()
         {
             this.Screenshots = new List<StoreImage>();

@@ -28,21 +28,47 @@ namespace Rock.Store
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of install steps. 
+        /// Gets or sets the package install steps.
         /// </summary>
         /// <value>
-        /// A <see cref="List<PackageInstallStep>"/> representing a list of package install steps.
+        /// The package install steps.
         /// </value>
         public List<PackageInstallStep> PackageInstallSteps { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum PurchaseResult
     {
+        /// <summary>
+        /// The success
+        /// </summary>
         Success,
+
+        /// <summary>
+        /// The authenication failed
+        /// </summary>
         AuthenicationFailed,
+
+        /// <summary>
+        /// The not authorized
+        /// </summary>
         NotAuthorized,
+
+        /// <summary>
+        /// The no card on file
+        /// </summary>
         NoCardOnFile,
+
+        /// <summary>
+        /// The payment failed
+        /// </summary>
         PaymentFailed,
+
+        /// <summary>
+        /// The error
+        /// </summary>
         Error
     }
 }

@@ -39,7 +39,7 @@ namespace Rock.Store
         /// Gets or sets the Price of the Package. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.decimal"/> representing the Price of the Package.
+        /// A <see cref="System.Decimal"/> representing the Price of the Package.
         /// </value>
         public decimal? Price { get; set; }
 
@@ -87,7 +87,7 @@ namespace Rock.Store
         /// Gets or sets the Rating of the Package. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.double"/> representing the Rating of the Package.
+        /// A <see cref="System.Double"/> representing the Rating of the Package.
         /// </value>
         public double? Rating { get; set; }
 
@@ -116,10 +116,10 @@ namespace Rock.Store
         public StoreImage PackageIconBinaryFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the package versions 
+        /// Gets or sets the versions.
         /// </summary>
         /// <value>
-        /// A <see cref="List<Rock.Store.PackageVersion>"/> representing the packages versions.
+        /// The versions.
         /// </value>
         public List<PackageVersion> Versions { get; set; }
 
@@ -143,10 +143,13 @@ namespace Rock.Store
         /// Gets or sets the purchaser 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> of the person who purchased the package.
+        /// A <see cref="System.String"/> of the person who purchased the package.
         /// </value>
         public string Purchaser { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Package"/> class.
+        /// </summary>
         public Package()
         {
             this.PrimaryCategory = new PackageCategory();

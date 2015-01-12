@@ -356,7 +356,20 @@ namespace Rock.Model
         /// </summary>
         public class LogEntry
         {
+            /// <summary>
+            /// Gets or sets the log date time.
+            /// </summary>
+            /// <value>
+            /// The log date time.
+            /// </value>
             public DateTime LogDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the log text.
+            /// </summary>
+            /// <value>
+            /// The log text.
+            /// </value>
             public string LogText { get; set; }
         }
 
@@ -368,7 +381,7 @@ namespace Rock.Model
         /// <summary>
         /// Adds a <see cref="Rock.Model.WorkflowLog" /> entry.
         /// </summary>
-        /// <param name="logEntry">A <see cref="System.String" />containing the log entry.</param>
+        /// <param name="logText">The log text.</param>
         /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
         public virtual void AddLogEntry( string logText, bool force = false )
         {
