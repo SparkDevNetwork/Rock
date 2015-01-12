@@ -468,6 +468,13 @@
             });
 
             /**
+            * Hide the expand button if we are in a modal
+            */
+            if ($control.closest('.modal').length) {
+                $('#btnExpandToggle_' + controlId).hide();
+            }
+
+            /**
             * Handle the toggle expand fullscreen button click.
             */
             $('#btnExpandToggle_' + controlId).click(function () {
