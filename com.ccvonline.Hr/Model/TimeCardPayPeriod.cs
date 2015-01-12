@@ -1,0 +1,58 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using com.ccvonline.TimeCard.Data;
+
+namespace com.ccvonline.TimeCard.Model
+{
+    /// <summary>
+    /// NOTE: Table is populated on-demand. If the CurrentDate isn’t a TimeCardPayPeriod yet, a row will be created. 
+    /// </summary>
+    [Table( "_com_ccvonline_TimeCard_TimeCardPayPeriod" )]
+    [DataContract]
+    public class TimeCardPayPeriod : Model<TimeCardPayPeriod>
+    {
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the start date.
+        /// </summary>
+        /// <value>
+        /// The start date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>
+        /// The end date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime EndDate { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        #endregion
+
+        #region methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} - {1}", StartDate.ToShortDateString(), EndDate.ToShortDateString() );
+        }
+
+        #endregion
+    }
+}
