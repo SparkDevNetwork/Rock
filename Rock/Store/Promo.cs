@@ -19,9 +19,28 @@ namespace Rock.Store
         /// </value>
         public int Id { get; set; }
 
-        // waiting to document these until we figure out if they're needed or if they should use their full classes
+        /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
         public int CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image large identifier.
+        /// </summary>
+        /// <value>
+        /// The image large identifier.
+        /// </value>
         public int ImageLargeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image small identifier.
+        /// </summary>
+        /// <value>
+        /// The image small identifier.
+        /// </value>
         public int ImageSmallId { get; set; }
 
         /// <summary>
@@ -44,7 +63,7 @@ namespace Rock.Store
         /// Gets or sets the Package Vendor of the Promo. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing the Package Vendor of the Promo.
+        /// A <see cref="System.String"/> representing the Package Vendor of the Promo.
         /// </value>
         public string PackageVendor { get; set; }
 
@@ -52,7 +71,7 @@ namespace Rock.Store
         /// Gets or sets the Package Name of the Promo. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.string"/> representing the Package Name of the Promo.
+        /// A <see cref="System.String"/> representing the Package Name of the Promo.
         /// </value>
         public string PackageName { get; set; }
 
@@ -116,7 +135,7 @@ namespace Rock.Store
         /// Gets or sets the promo's package rating. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.double"/> for the promo's package rating.
+        /// A <see cref="System.Double"/> for the promo's package rating.
         /// </value>
         public double? PackageRating { get; set; }
 
@@ -124,7 +143,7 @@ namespace Rock.Store
         /// Gets or sets the promo's package price. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.double"/> for the promo's package price.
+        /// A <see cref="System.Double"/> for the promo's package price.
         /// </value>
         public decimal? PackagePrice { get; set; }
     }

@@ -16,6 +16,10 @@ namespace Rock.Store
         /// Internal variable to store the url to the store.
         /// </summary>
         protected string _rockStoreUrl = string.Empty;
+
+        /// <summary>
+        /// The Client Timeout
+        /// </summary>
         protected int _clientTimeout = 12000;
 
         /// <summary>

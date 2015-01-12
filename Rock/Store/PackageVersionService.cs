@@ -17,7 +17,7 @@ namespace Rock.Store
     public class PackageVersionService : StoreServiceBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class.
+        /// Initializes a new instance of the <see cref="Rock.Model.CategoryService"/> class.
         /// </summary>
         public PackageVersionService() :base()
         {}
@@ -32,6 +32,12 @@ namespace Rock.Store
             return GetPackageVersion( versionId, out error );
         }
 
+        /// <summary>
+        /// Gets the package version.
+        /// </summary>
+        /// <param name="versionId">The version identifier.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public PackageVersion GetPackageVersion( int versionId, out string errorResponse )
         {
             errorResponse = string.Empty;

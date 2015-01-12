@@ -12,6 +12,9 @@ namespace Rock.Store
     public class StoreModel : DotLiquid.ILiquidizable
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StoreModel"/> class.
+        /// </summary>
         public StoreModel() { }
 
         /// <summary>

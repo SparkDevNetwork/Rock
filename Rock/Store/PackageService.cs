@@ -23,15 +23,22 @@ namespace Rock.Store
         {}
 
         /// <summary>
-        /// Gets a list of packages from the store.
+        /// Gets all packages.
         /// </summary>
-        /// <returns>a <see cref="T:IEumerable<Package>"/> of packages.</returns>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <returns></returns>
         public IEnumerable<Package> GetAllPackages( int? categoryId )
         {
             string error = null;
             return GetAllPackages( categoryId, out error );
         }
-        
+
+        /// <summary>
+        /// Gets all packages.
+        /// </summary>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public IEnumerable<Package> GetAllPackages(int? categoryId, out string errorResponse)
         {
             errorResponse = string.Empty;
@@ -79,6 +86,12 @@ namespace Rock.Store
         }
 
 
+        /// <summary>
+        /// Gets the package.
+        /// </summary>
+        /// <param name="packageId">The package identifier.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public Package GetPackage( int packageId, out string errorResponse )
         {
             errorResponse = string.Empty;
@@ -118,6 +131,11 @@ namespace Rock.Store
             return GetPurchasedPackages( out error );
         }
 
+        /// <summary>
+        /// Gets the purchased packages.
+        /// </summary>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public List<Package> GetPurchasedPackages(out string errorResponse )
         {
             errorResponse = string.Empty;

@@ -17,21 +17,26 @@ namespace Rock.Store
     public class PackageCategoryService : StoreServiceBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class.
+        /// Initializes a new instance of the <see cref="PackageCategoryService"/> class.
         /// </summary>
         public PackageCategoryService() :base()
         {}
 
         /// <summary>
-        /// Gets a list of package categories from the store.
+        /// Gets the categories.
         /// </summary>
-        /// <returns>a <see cref="T:IEumerable<Category>"/> of package categories.</returns>
+        /// <returns></returns>
         public IEnumerable<PackageCategory> GetCategories()
         {
             string error = null;
             return GetCategories( out error );
         }
-        
+
+        /// <summary>
+        /// Gets the categories.
+        /// </summary>
+        /// <param name="errorResponse">The error response.</param>
+        /// <returns></returns>
         public IEnumerable<PackageCategory> GetCategories(out string errorResponse)
         {
             errorResponse = string.Empty;

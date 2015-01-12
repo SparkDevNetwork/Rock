@@ -22,17 +22,30 @@ namespace Rock.Store
         public PromoService() : base()
         {}
 
-        
+
         /// <summary>
-        /// Gets a list of featured package categories from the store.
+        /// Gets the promos.
         /// </summary>
-        /// <returns>a <see cref="T:IEumerable<Promos>"/> of promos.</returns>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="isTopFree">if set to <c>true</c> [is top free].</param>
+        /// <param name="isFeatured">if set to <c>true</c> [is featured].</param>
+        /// <param name="isTopPaid">if set to <c>true</c> [is top paid].</param>
+        /// <returns></returns>
         public List<Promo> GetPromos( int? categoryId, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false )
         {
             string error = null;
             return GetPromos(categoryId, out error, isTopFree, isFeatured, isTopPaid);
         }
-        
+
+        /// <summary>
+        /// Gets the promos.
+        /// </summary>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="errorResponse">The error response.</param>
+        /// <param name="isTopFree">if set to <c>true</c> [is top free].</param>
+        /// <param name="isFeatured">if set to <c>true</c> [is featured].</param>
+        /// <param name="isTopPaid">if set to <c>true</c> [is top paid].</param>
+        /// <returns></returns>
         public List<Promo> GetPromos(int? categoryId, out string errorResponse, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false)
         {
             errorResponse = string.Empty;
