@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using com.ccvonline.TimeCard.Data;
+using com.ccvonline.Hr.Data;
 
-namespace com.ccvonline.TimeCard.Model
+namespace com.ccvonline.Hr.Model
 {
     /// <summary>
     /// 

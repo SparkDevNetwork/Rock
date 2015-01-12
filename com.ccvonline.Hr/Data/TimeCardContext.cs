@@ -1,6 +1,6 @@
 using System.Data.Entity;
 
-namespace com.ccvonline.TimeCard.Data
+namespace com.ccvonline.Hr.Data
 {
     /// <summary>
     /// 
@@ -15,7 +15,7 @@ namespace com.ccvonline.TimeCard.Data
         /// <value>
         /// The time cards.
         /// </value>
-        public DbSet<TimeCard.Model.TimeCard> TimeCards { get; set; }
+        public DbSet<Hr.Model.TimeCard> TimeCards { get; set; }
 
         /// <summary>
         /// Gets or sets the time card days.
@@ -23,7 +23,7 @@ namespace com.ccvonline.TimeCard.Data
         /// <value>
         /// The time card days.
         /// </value>
-        public DbSet<TimeCard.Model.TimeCardDay> TimeCardDays { get; set; }
+        public DbSet<Hr.Model.TimeCardDay> TimeCardDays { get; set; }
 
         /// <summary>
         /// Gets or sets the time card histories.
@@ -31,7 +31,7 @@ namespace com.ccvonline.TimeCard.Data
         /// <value>
         /// The time card histories.
         /// </value>
-        public DbSet<TimeCard.Model.TimeCardHistory> TimeCardHistories { get; set; }
+        public DbSet<Hr.Model.TimeCardHistory> TimeCardHistories { get; set; }
 
         /// <summary>
         /// Gets or sets the time card pay periods.
@@ -39,7 +39,7 @@ namespace com.ccvonline.TimeCard.Data
         /// <value>
         /// The time card pay periods.
         /// </value>
-        public DbSet<TimeCard.Model.TimeCardPayPeriod> TimeCardPayPeriods { get; set; }
+        public DbSet<Hr.Model.TimeCardPayPeriod> TimeCardPayPeriods { get; set; }
 
         #endregion
 

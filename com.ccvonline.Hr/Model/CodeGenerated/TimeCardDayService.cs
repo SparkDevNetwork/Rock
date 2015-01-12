@@ -25,7 +25,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace com.ccvonline.TimeCard.Model
+namespace com.ccvonline.Hr.Model
 {
     /// <summary>
     /// TimeCardDay Service class
@@ -36,7 +36,7 @@ namespace com.ccvonline.TimeCard.Model
         /// Initializes a new instance of the <see cref="TimeCardDayService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public TimeCardDayService(com.ccvonline.TimeCard.Data.TimeCardContext context) : base(context)
+        public TimeCardDayService(com.ccvonline.Hr.Data.TimeCardContext context) : base(context)
         {
         }
 

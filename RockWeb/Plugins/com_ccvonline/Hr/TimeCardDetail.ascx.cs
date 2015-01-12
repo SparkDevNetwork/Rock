@@ -5,14 +5,14 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using com.ccvonline.TimeCard.Data;
-using com.ccvonline.TimeCard.Model;
+using com.ccvonline.Hr.Data;
+using com.ccvonline.Hr.Model;
 
 using Rock;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.TimeCard
+namespace RockWeb.Plugins.com_ccvonline.Hr
 {
     /// <summary>
     /// Displays the details of a Referral Agency.
@@ -122,7 +122,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptTimeCardDay_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var timeCardDay = e.Item.DataItem as com.ccvonline.TimeCard.Model.TimeCardDay;
+            var timeCardDay = e.Item.DataItem as TimeCardDay;
             if ( timeCardDay != null )
             {
                 var repeaterItem = e.Item;

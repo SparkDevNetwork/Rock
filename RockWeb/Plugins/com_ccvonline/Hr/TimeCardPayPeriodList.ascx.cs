@@ -18,13 +18,13 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using com.ccvonline.TimeCard.Data;
-using com.ccvonline.TimeCard.Model;
+using com.ccvonline.Hr.Data;
+using com.ccvonline.Hr.Model;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.TimeCard
+namespace RockWeb.Plugins.com_ccvonline.Hr
 {
     /// <summary>
     /// Template block for developers to use to start a new block.

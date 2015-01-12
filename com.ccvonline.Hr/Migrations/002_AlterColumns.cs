@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Plugin;
 
-namespace com.ccvonline.TimeCard.Migrations
+namespace com.ccvonline.Hr.Migrations
 {
     [MigrationNumber( 2, "1.2.0" )]
     public class AlterColumns : Migration

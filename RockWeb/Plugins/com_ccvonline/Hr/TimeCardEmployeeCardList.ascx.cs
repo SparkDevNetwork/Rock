@@ -5,15 +5,15 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using com.ccvonline.TimeCard.Data;
-using com.ccvonline.TimeCard.Model;
+using com.ccvonline.Hr.Data;
+using com.ccvonline.Hr.Model;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.TimeCard
+namespace RockWeb.Plugins.com_ccvonline.Hr
 {
     /// <summary>
     /// Lists all the Referral Agencies.
@@ -185,7 +185,7 @@ namespace RockWeb.Plugins.com_ccvonline.TimeCard
         protected void gList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             var repeaterItem = e.Row;
-            var timeCard = e.Row.DataItem as com.ccvonline.TimeCard.Model.TimeCard;
+            var timeCard = e.Row.DataItem as TimeCard;
             if ( timeCard == null )
             {
                 return;

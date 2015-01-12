@@ -21,15 +21,15 @@
 // </copyright>
 //
 
-using com.ccvonline.TimeCard.Model;
+using com.ccvonline.Hr.Model;
 
-namespace com.ccvonline.TimeCard.Rest.Controllers
+namespace com.ccvonline.Hr.Rest.Controllers
 {
     /// <summary>
     /// TimeCards REST API
     /// </summary>
-    public partial class TimeCardsController : Rock.Rest.ApiController<com.ccvonline.TimeCard.Model.TimeCard>
+    public partial class TimeCardsController : Rock.Rest.ApiController<com.ccvonline.Hr.Model.TimeCard>
     {
-        public TimeCardsController() : base( new com.ccvonline.TimeCard.Model.TimeCardService( new com.ccvonline.TimeCard.Data.TimeCardContext() ) ) { } 
+        public TimeCardsController() : base( new com.ccvonline.Hr.Model.TimeCardService( new com.ccvonline.Hr.Data.TimeCardContext() ) ) { } 
     }
 }

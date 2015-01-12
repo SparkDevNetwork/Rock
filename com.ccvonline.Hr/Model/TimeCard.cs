@@ -6,10 +6,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
-using com.ccvonline.TimeCard.Data;
+using com.ccvonline.Hr.Data;
 using Rock;
 
-namespace com.ccvonline.TimeCard.Model
+namespace com.ccvonline.Hr.Model
 {
     /// <summary>
     /// 
@@ -159,7 +159,7 @@ namespace com.ccvonline.TimeCard.Model
         /// <returns></returns>
         public List<HoursPerTimeCardDay> GetTotalWorkedHoursPerDay( bool includeRegularDates, bool includeHolidayDates )
         {
-            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.TimeCard.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
+            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
             List<DateTime> holidayDates = new List<DateTime>();
             if ( timeCardHolidaySchedule != null )
             {

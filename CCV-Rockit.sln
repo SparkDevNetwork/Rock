@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Hr", "com.ccvonline.TimeCard\com.ccvonline.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Hr", "com.ccvonline.Hr\com.ccvonline.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

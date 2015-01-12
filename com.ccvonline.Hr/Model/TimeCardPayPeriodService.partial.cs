@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using Rock;
 
-namespace com.ccvonline.TimeCard.Model
+namespace com.ccvonline.Hr.Model
 {
     /// <summary>
     /// 

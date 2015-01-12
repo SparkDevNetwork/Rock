@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace com.ccvonline.TimeCard.SystemGuid
+namespace com.ccvonline.Hr.SystemGuid
 {
     /// <summary>
     /// 
