@@ -13,8 +13,8 @@ namespace com.ccvonline.Hr.Migrations
         public override void Up()
         {
             Sql(@"
-alter table [_com_ccvonline_TimeCard_TimeCardDay] drop column [TotalWorkedDuration]
-alter table [_com_ccvonline_TimeCard_TimeCardDay] add [TotalWorkedDuration]
+alter table [_com_ccvonline_Hr_TimeCardDay] drop column [TotalWorkedDuration]
+alter table [_com_ccvonline_Hr_TimeCardDay] add [TotalWorkedDuration]
 as (DATEDIFF(MINUTE, StartDateTime, isnull(EndDateTime, LunchStartDateTime)) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0) persisted");
         }
 

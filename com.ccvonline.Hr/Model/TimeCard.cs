@@ -14,7 +14,7 @@ namespace com.ccvonline.Hr.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_TimeCard_TimeCard" )]
+    [Table( "_com_ccvonline_Hr_TimeCard" )]
     [DataContract]
     public class TimeCard : Model<TimeCard>
     {

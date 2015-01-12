@@ -10,7 +10,7 @@ namespace com.ccvonline.Hr.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_TimeCard_TimeCardHistory" )]
+    [Table( "_com_ccvonline_Hr_TimeCardHistory" )]
     [DataContract]
     public class TimeCardHistory : Model<TimeCardHistory>
     {

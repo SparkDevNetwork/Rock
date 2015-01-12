@@ -14,12 +14,12 @@ namespace com.ccvonline.Hr.Migrations
         {
             // Create Tables
             Sql( @"
-create table [dbo].[_com_ccvonline_TimeCard_TimeCard] (
+create table [dbo].[_com_ccvonline_Hr_TimeCard] (
     [Id] [int] not null identity,
     [TimeCardPayPeriodId] [int] not null,
     [PersonAliasId] [int] not null,
     [TimeCardStatus] [int] not null,
-    [SubmittedToPersonAliasId] [int] not null,
+    [SubmittedToPersonAliasId] [int] null,
     [SubmittedDateTime] [datetime] null,
     [ApprovedByPersonAliasId] [int] null,
     [ApprovedDateTime] [datetime] null,
@@ -32,7 +32,7 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCard] (
     [ForeignId] [nvarchar](50) null,
     primary key ([Id])
 );
-create table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] (
+create table [dbo].[_com_ccvonline_Hr_TimeCardDay] (
     [Id] [int] not null identity,
     [TimeCardId] [int] not null,
     [StartDateTime] [datetime] not null,
@@ -52,7 +52,7 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] (
     [ForeignId] [nvarchar](50) null,
     primary key ([Id])
 );
-create table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] (
+create table [dbo].[_com_ccvonline_Hr_TimeCardHistory] (
     [Id] [int] not null identity,
     [TimeCardId] [int] not null,
     [HistoryDateTime] [datetime] not null,
@@ -67,7 +67,7 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] (
     [ForeignId] [nvarchar](50) null,
     primary key ([Id])
 );
-create table [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod] (
+create table [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod] (
     [Id] [int] not null identity,
     [StartDate] [date] not null,
     [EndDate] [date] not null,
@@ -83,20 +83,20 @@ create table [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod] (
 
             // Add Constraints
             Sql( @"
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_ApprovedByPersonAlias] foreign key ([ApprovedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_PersonAlias] foreign key ([PersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_SubmittedToPersonAlias] foreign key ([SubmittedToPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCard] add constraint [TimeCard_TimeCardPayPeriod] foreign key ([TimeCardPayPeriodId]) references [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod]([Id]) on delete cascade;
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] add constraint [TimeCardDay_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] add constraint [TimeCardDay_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardDay] add constraint [TimeCardDay_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_TimeCard_TimeCard]([Id]) on delete cascade;
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] add constraint [TimeCardHistory_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] add constraint [TimeCardHistory_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardHistory] add constraint [TimeCardHistory_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_TimeCard_TimeCard]([Id]) on delete cascade;
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod] add constraint [TimeCardPayPeriod_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
-alter table [dbo].[_com_ccvonline_TimeCard_TimeCardPayPeriod] add constraint [TimeCardPayPeriod_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_ApprovedByPersonAlias] foreign key ([ApprovedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_PersonAlias] foreign key ([PersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_SubmittedToPersonAlias] foreign key ([SubmittedToPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCard] add constraint [_com_ccvonline_Hr_TimeCard_TimeCardPayPeriod] foreign key ([TimeCardPayPeriodId]) references [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod]([Id]) on delete cascade;
+alter table [dbo].[_com_ccvonline_Hr_TimeCardDay] add constraint [_com_ccvonline_Hr_TimeCardDay_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardDay] add constraint [_com_ccvonline_Hr_TimeCardDay_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardDay] add constraint [_com_ccvonline_Hr_TimeCardDay_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_Hr_TimeCard]([Id]) on delete cascade;
+alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_Hr_TimeCard]([Id]) on delete cascade;
+alter table [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod] add constraint [_com_ccvonline_Hr_TimeCardPayPeriod_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod] add constraint [_com_ccvonline_Hr_TimeCardPayPeriod_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
 " );
         }
 
