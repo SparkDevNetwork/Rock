@@ -714,7 +714,7 @@ namespace Rock.PayFlowPro
             var ppInvoice = new Invoice();
             ppInvoice.Amt = ppAmount;
             ppInvoice.BillTo = ppBillingInfo;
-
+            ppInvoice.Desc = paymentInfo.Description;
             return ppInvoice;
         }
 
