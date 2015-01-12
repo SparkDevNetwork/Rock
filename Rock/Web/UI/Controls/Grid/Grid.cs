@@ -653,7 +653,14 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "data-add-focus-btn", "false" );
                 writer.AddAttribute( "data-add-display-all-btn", "false" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                if ( DisplayType == GridDisplayType.Light )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive table-no-border" );
+                }
+                else
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
             

@@ -33,7 +33,17 @@ namespace Rock.Migrations
             // Create the Group, Person, PersonAlias, UserLogin, and GroupMember records for the Rock Mobile App to use
             RockMigrationHelper.AddSecurityRoleGroup( "Rock Mobile App", "Security group used by Rock's mobile app to access REST API.", "EDD336D5-1429-41D9-8D41-2581A05F0E16" );
 
-            Sql( @"
+            // Generate a random api key
+            var apiKey = new System.Text.StringBuilder();
+            Random rnd = new Random();
+            char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
+            int poolSize = codeCharacters.Length;
+            for ( int i = 0; i < 24; i++ )
+            {
+                apiKey.Append( codeCharacters[rnd.Next( poolSize )] );
+            }
+
+            Sql( string.Format( @"
     -- Get the 'Rock Mobile App' person ( create if neccessary )
     DECLARE @PersonID int = ( 
 	    SELECT TOP 1 P.[Id] 
@@ -68,7 +78,7 @@ namespace Rock.Migrations
 	    DECLARE @DatabaseAuthEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '4E9B798F-BB68-4C0E-9707-0928D15AB020' )
 
 	    INSERT INTO [UserLogin] ( [UserName], [IsConfirmed], [ApiKey], [PersonId], [Guid], [EntityTypeId] )
-	    VALUES ( NEWID(), 1, 'rnzOT59qMAQTPYtyS9NOcPF0', @PersonId, '39A02D96-553B-40EB-8D0F-008F01E8C963', @DatabaseAuthEntityTypeId )
+	    VALUES ( NEWID(), 1, '{0}', @PersonId, '39A02D96-553B-40EB-8D0F-008F01E8C963', @DatabaseAuthEntityTypeId )
 	    SET @LoginID = SCOPE_IDENTITY()
 
     END
@@ -86,16 +96,19 @@ namespace Rock.Migrations
 	    VALUES ( 1, @GroupId, @PersonID, @GroupRoleId, 1, NEWID() )
 
     END
-" );
+", apiKey.ToString() ) );
+
             // Add security for Mobile App group
             RockMigrationHelper.AddRestController( "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController" );
             RockMigrationHelper.AddRestAction( "Groups", "Rock.Rest.Controllers.GroupsController", "GET", "api/Groups/GetFamilies/{personId}" );
+            RockMigrationHelper.AddRestAction( "Groups", "Rock.Rest.Controllers.GroupsController", "GET", "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}" );
             RockMigrationHelper.AddRestAction( "People", "Rock.Rest.Controllers.PeopleController", "GET", "api/People/GetByUserName/{username}" );
             RockMigrationHelper.AddRestAction( "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController", "GET", "api/PrayerRequests" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.PrayerRequestsController", 0, "View", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "C87D747A-4921-410B-B12B-6F1D2FE00362" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.PrayerRequestsController", 0, "Edit", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "5544DDEF-B4C6-45FA-9DA1-3CA6A0449229" );
             RockMigrationHelper.AddSecurityAuthForRestAction( "GET", "api/People/GetByUserName/{username}", 0, "View", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "A691B084-F38D-4250-A7BD-C538982FADAB" );
             RockMigrationHelper.AddSecurityAuthForRestAction( "GET", "api/Groups/GetFamilies/{personId}", 0, "View", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "6C171174-E7FC-447C-A415-F1E400F83B72" );
+            RockMigrationHelper.AddSecurityAuthForRestAction( "GET", "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}", 0, "View", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "A8988477-E80E-407F-B2EC-5BCD555B5DD0" );
             RockMigrationHelper.AddSecurityAuthForRestAction( "GET", "api/PrayerRequests", 0, "View", false, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "AA6E1E7C-D2D7-4DF0-9197-9385012C55EB" );
 
             // Secure the Checkin Admin site so that only Rock Admins, Staff, and Staff-Like roles can access the site
