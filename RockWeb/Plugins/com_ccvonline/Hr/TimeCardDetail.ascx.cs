@@ -85,16 +85,16 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// </summary>
         /// <param name="hours">The hours.</param>
         /// <returns></returns>
-        public string FormatTimeCardHours( object hours )
+        public string FormatTimeCardHours( decimal? hours )
         {
-            if ( hours != null )
+            if ( hours.HasValue && hours != 0 )
             {
                 TimeSpan timeSpan = TimeSpan.FromHours( Convert.ToDouble( hours ) );
                 return timeSpan.TotalHours.ToString( "0.##" );
             }
             else
             {
-                return "0";
+                return string.Empty;
             }
         }
 
@@ -112,8 +112,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             ShowDetail();
         }
 
-        private List<HoursPerTimeCardDay> _regularHoursCache = null;
-        private List<HoursPerTimeCardDay> _overtimeHoursCache = null;
+        private List<HoursPerTimeCardDay> _workedRegularHoursCache = null;
+        private List<HoursPerTimeCardDay> _workedOvertimeHoursCache = null;
+        private List<HoursPerTimeCardDay> _workedHolidayHoursCache = null;
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptTimeCardDay control.
@@ -146,19 +147,25 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 Literal lEndDateTime = repeaterItem.FindControl( "lEndDateTime" ) as Literal;
                 lEndDateTime.Text = FormatTimeCardTime( timeCardDay.EndDateTime );
 
-                Literal lRegularHours = repeaterItem.FindControl( "lRegularHours" ) as Literal;
-                lRegularHours.Text = FormatTimeCardHours( _regularHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault().Hours );
+                Literal lWorkedRegularHours = repeaterItem.FindControl( "lWorkedRegularHours" ) as Literal;
+                var regularHoursForDay = _workedRegularHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
+                lWorkedRegularHours.Text = FormatTimeCardHours( regularHoursForDay != null ? regularHoursForDay.Hours : 0 );
 
-                Literal lOvertimeHours = repeaterItem.FindControl( "lOvertimeHours" ) as Literal;
-                lOvertimeHours.Text = FormatTimeCardHours( _overtimeHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault().Hours );
+                Badge lWorkedOvertimeHours = repeaterItem.FindControl( "lWorkedOvertimeHours" ) as Badge;
+                var workedOvertimeHoursForDay = _workedOvertimeHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
+                lWorkedOvertimeHours.Text = FormatTimeCardHours( workedOvertimeHoursForDay != null ? workedOvertimeHoursForDay.Hours : 0 );
 
-                Literal lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Literal;
+                Badge lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Badge;
+                var workedHolidayHoursForDay = _workedHolidayHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
+                lWorkedHolidayHours.Text = FormatTimeCardHours( workedHolidayHoursForDay != null ? workedHolidayHoursForDay.Hours : 0 );
+
+                Badge lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Badge;
                 lPaidVacationHours.Text = FormatTimeCardHours( timeCardDay.PaidVacationHours );
 
-                Literal lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Literal;
+                Badge lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Badge;
                 lPaidHolidayHours.Text = FormatTimeCardHours( timeCardDay.PaidHolidayHours );
 
-                Literal lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Literal;
+                Badge lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Badge;
                 lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
 
                 Literal lOtherHours = repeaterItem.FindControl( "lOtherHours" ) as Literal;
@@ -279,8 +286,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             var timeCardDayList = qry.ToList();
 
-            _regularHoursCache = timeCard.GetRegularHours();
-            _overtimeHoursCache = timeCard.GetOvertimeHours();
+            _workedRegularHoursCache = timeCard.GetRegularHours();
+            _workedOvertimeHoursCache = timeCard.GetOvertimeHours();
+            _workedHolidayHoursCache = timeCard.GetWorkedHolidayHours();
 
             // bind time card day repeater 
             rptTimeCardDay.DataSource = timeCardDayList;
@@ -293,22 +301,40 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lTotalRegularWorked.Text = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalOvertimeWorked.Text = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalHolidayWorked.Text = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
-            
+
             lTotalVacationPaid.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalHolidayPaid.Text = timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalSickPaid.Text = timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
-            
-            var totalHours = timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 ) 
-                + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ) 
-                + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ) 
+
+            var totalHours = timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 )
+                + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 )
+                + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 )
                 + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 );
 
             lTotalHours.Text = totalHours.ToString( "0.##" );
-            
 
-            // History
-            // todo
+            // if this timeCard doesn't have any history records yet, assume they are entering the TimeCard for the first time
+            var timeCardHistoryService = new TimeCardHistoryService( dataContext );
+            if ( !timeCardHistoryService.Queryable().Any( a => a.TimeCardId == timeCard.Id ) )
+            {
+                TimeCardHistory timeCardHistory = new TimeCardHistory();
+                timeCardHistory.TimeCardId = timeCard.Id;
+                timeCardHistory.HistoryDateTime = RockDateTime.Now;
+                timeCardHistory.TimeCardStatus = TimeCardStatus.InProgress;
+                timeCardHistory.Notes = string.Empty;
+                timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
 
+                timeCardHistoryService.Add( timeCardHistory );
+                dataContext.SaveChanges();
+
+                // get after saving to flesh out the virtual fields
+                timeCardHistory = timeCardHistoryService.Get( timeCardHistory.Guid );
+            }
+
+            // TimeCard History grid
+            var historyQry = timeCardHistoryService.Queryable().Where( a => a.TimeCardId == timeCard.Id ).OrderBy( a => a.HistoryDateTime );
+            gHistory.DataSource = historyQry.ToList();
+            gHistory.DataBind();
         }
 
         #endregion

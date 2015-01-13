@@ -48,6 +48,14 @@ namespace com.ccvonline.Hr.Model
         /// </value>
         public virtual TimeCard TimeCard { get; set; }
 
+        /// <summary>
+        /// Gets or sets the status person alias.
+        /// </summary>
+        /// <value>
+        /// The status person alias.
+        /// </value>
+        public virtual Rock.Model.PersonAlias StatusPersonAlias { get; set; }
+
         #endregion
     }
 
@@ -62,6 +70,7 @@ namespace com.ccvonline.Hr.Model
         public TimeCardHistoryConfiguration()
         {
             this.HasRequired( a => a.TimeCard ).WithMany( a => a.TimeCardHistories ).HasForeignKey( a => a.TimeCardId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.StatusPersonAlias ).WithMany().HasForeignKey( p => p.StatusPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 }

@@ -94,10 +94,31 @@ alter table [dbo].[_com_ccvonline_Hr_TimeCardDay] add constraint [_com_ccvonline
 alter table [dbo].[_com_ccvonline_Hr_TimeCardDay] add constraint [_com_ccvonline_Hr_TimeCardDay_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_Hr_TimeCard]([Id]) on delete cascade;
 alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
 alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
+alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_StatusPersonAlias] foreign key ([StatusPersonAliasId]) references [dbo].[PersonAlias]([Id]);
 alter table [dbo].[_com_ccvonline_Hr_TimeCardHistory] add constraint [_com_ccvonline_Hr_TimeCardHistory_TimeCard] foreign key ([TimeCardId]) references [dbo].[_com_ccvonline_Hr_TimeCard]([Id]) on delete cascade;
 alter table [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod] add constraint [_com_ccvonline_Hr_TimeCardPayPeriod_CreatedByPersonAlias] foreign key ([CreatedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
 alter table [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod] add constraint [_com_ccvonline_Hr_TimeCardPayPeriod_ModifiedByPersonAlias] foreign key ([ModifiedByPersonAliasId]) references [dbo].[PersonAlias]([Id]);
 " );
+
+            // Create Indexes
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Guid] ON [dbo].[_com_ccvonline_Hr_TimeCard]([Guid])
+CREATE NONCLUSTERED INDEX [IX_TimeCardPayPeriodId] ON [dbo].[_com_ccvonline_Hr_TimeCard]([TimeCardPayPeriodId])
+CREATE NONCLUSTERED INDEX [IX_PersonAliasId] ON [dbo].[_com_ccvonline_Hr_TimeCard]([PersonAliasId])
+CREATE NONCLUSTERED INDEX [IX_SubmittedToPersonAliasId] ON [dbo].[_com_ccvonline_Hr_TimeCard]([SubmittedToPersonAliasId])
+CREATE NONCLUSTERED INDEX [IX_ApprovedByPersonAliasId] ON [dbo].[_com_ccvonline_Hr_TimeCard]([ApprovedByPersonAliasId])
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Guid] ON [dbo].[_com_ccvonline_Hr_TimeCardDay]([Guid])
+CREATE NONCLUSTERED INDEX [IX_TimeCardId] ON [dbo].[_com_ccvonline_Hr_TimeCardDay]([TimeCardId])
+CREATE NONCLUSTERED INDEX [IX_StartDateTime] ON [dbo].[_com_ccvonline_Hr_TimeCardDay]([StartDateTime])
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Guid] ON [dbo].[_com_ccvonline_Hr_TimeCardHistory]([Guid])
+CREATE NONCLUSTERED INDEX [IX_TimeCardId] ON [dbo].[_com_ccvonline_Hr_TimeCardHistory]([TimeCardId])
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Guid] ON [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod]([Guid])
+CREATE NONCLUSTERED INDEX [IX_StartDate] ON [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod]([StartDate])
+CREATE NONCLUSTERED INDEX [IX_EndDate] ON [dbo].[_com_ccvonline_Hr_TimeCardPayPeriod]([EndDate])            
+            " );
         }
 
         public override void Down()

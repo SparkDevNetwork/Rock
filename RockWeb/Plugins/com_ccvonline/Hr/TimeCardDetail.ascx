@@ -22,8 +22,6 @@
 
         <asp:HiddenField ID="hfTimeCardId" runat="server" />
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
         <div class="row gridresponsive-row gridresponsive-header">
             <div class="col-xs-3 col-md-2 col-lg-1">
                 <strong>Date</strong>
@@ -85,20 +83,18 @@
                         <div class="col-xs-4 col-md-2">
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <asp:Literal runat="server" ID="lRegularHours" />
+                                    <asp:Literal runat="server" ID="lWorkedRegularHours" />
                                 </div>
                                 <div class="col-xs-6">
-                                    <asp:Literal runat="server" ID="lOvertimeHours" />
+                                    <Rock:Badge runat="server" ID="lWorkedOvertimeHours" BadgeType="Danger" ToolTip="Overtime" />
+                                    <Rock:Badge runat="server" ID="lWorkedHolidayHours" BadgeType="Info" ToolTip="Worked Holiday" />
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2 hidden-xs hidden-sm">
-                            <span class="js-hour-type badge badge-success" data-toggle="tooltip" data-placement="top" title="Vacation">
-                                <asp:Literal runat="server" ID="lPaidVacationHours" /></span>
-                            <span class="js-hour-type badge badge-info" data-toggle="tooltip" data-placement="top" title="Holiday">
-                                <asp:Literal runat="server" ID="lPaidHolidayHours" /></span>
-                            <span class="js-hour-type badge badge-warning" data-toggle="tooltip" data-placement="top" title="Sick">
-                                <asp:Literal runat="server" ID="lPaidSickHours" /></span>
+                            <Rock:Badge runat="server" ID="lPaidVacationHours" BadgeType="Success" ToolTip="Vacation" />
+                            <Rock:Badge runat="server" ID="lPaidHolidayHours" BadgeType="Info" ToolTip="Paid Holiday" />
+                            <Rock:Badge runat="server" ID="lPaidSickHours" BadgeType="Warning" ToolTip="Sick" />
                         </div>
                         <div class="col-xs-3 hidden-md hidden-lg">
                             <asp:Literal runat="server" ID="lOtherHours" />
@@ -166,12 +162,8 @@
         </asp:Repeater>
 
         <div class="margin-t-md pull-right hidden-sm hidden-xs">
-            <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span>
+            <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span> <span class="label label-danger">Overtime</span>
         </div>
-
-
-
-
 
         <!-- Totals Panel -->
         <asp:Panel ID="pnlTotals" runat="server">
@@ -188,7 +180,6 @@
                 <div class="col-md-1">
                     <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
                 </div>
-
             </div>
             <div class="row">
                 <div class="col-md-3">Holiday</div>
@@ -234,8 +225,10 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" />
-                    <Rock:RockCheckBox ID="cbAgree" runat="server" Text="I certify and agree that:" />
+                    <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
+                    <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
+                    <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
+                    <asp:CustomValidator ID="validateAgree" runat="server" ValidationGroup="vgSubmit" ClientValidationFunction="validateCheckbox" ErrorMessage="Agree must be checked" />
                     <ol>
                         <li>all of the entries on this Time Card for this payroll period are both accurate and complete;</li>
                         <li>the entries include all hours worked plus paid time off hours, if any;</li>
@@ -246,20 +239,32 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" OnClick="lbSubmit_Click" Text="Submit" />
+                <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition(this)" OnClick="lbSubmit_Click" Text="Submit" />
             </div>
         </asp:Panel>
 
-
-
         <!-- History Panel -->
         <asp:Panel ID="pnlHistory" runat="server">
-            <asp:Literal ID="lHistoryHtml" runat="server" />
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>History</h2>
+                    <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
+                        <Columns>
+                            <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias.Person" />
+                            <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
+                            <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
+                            <Rock:RockBoundField HeaderText="Notes" DataField="Notes" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+                <div class="col-md-6">
+                </div>
+            </div>
         </asp:Panel>
 
         <script>
             Sys.Application.add_load(function () {
-                $('.js-hour-type').tooltip();
+                $('.badge').tooltip();
 
                 $(".js-item-edit, .js-item-cancel, .gridresponsive-item-view").on("click", function (a) {
 
@@ -271,6 +276,19 @@
                     $parent.find(".gridresponsive-item-edit").slideToggle();
                 });
             });
+
+            // make the window scroll to the specified element.  use setTimeout to have it do it after any other scrolls that happen (like validation)
+            function maintainScrollPosition(element) {
+                setTimeout(function () {
+                    $(window).scrollTop($(element).position().top);
+                }, 0)
+            }
+
+            // custom validate function to check if Checkbox is Checked=True
+            function validateCheckbox(a, b)
+            {
+                b.IsValid = $('.js-agree-checkbox').prop('checked');
+            }
 
         </script>
 
