@@ -112,20 +112,20 @@ namespace Rock.Field
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
         /// <summary>
-        /// Creates the controls needed to filter (query) values using this field type.
+        /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        List<Control> FilterControls( Dictionary<string, ConfigurationValue> configurationValues, string id );
+        Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id );
 
         /// <summary>
         /// Gets the filter value.
         /// </summary>
-        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        List<string> GetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues );
+        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Sets the filter value.
@@ -133,7 +133,7 @@ namespace Rock.Field
         /// <param name="filterControls">The filter controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValue">The filter value.</param>
-        void SetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
+        void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
 
         /// <summary>
         /// Gets the filters expression.

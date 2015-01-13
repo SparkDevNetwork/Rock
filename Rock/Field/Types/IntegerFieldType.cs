@@ -15,6 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Web.UI;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -69,6 +72,30 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             return new NumberBox { ID = id }; 
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public virtual ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( string id )
+        {
+            var numberBox = new NumberBox();
+            numberBox.ID = string.Format( "{0}_numberBox", id );
+            numberBox.AddCssClass( "js-filter-control" );
+            return numberBox;
         }
 
         /// <summary>
