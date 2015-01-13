@@ -400,6 +400,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             if ( tpTimePicker.SelectedTime.HasValue )
             {
                 var timeCardDate = timeCardDay.StartDateTime.Date;
+
+                // round to the nearest 15 minute
+                tpTimePicker.SelectedTime = TimeSpan.FromMinutes( 15 * Math.Round( tpTimePicker.SelectedTime.Value.TotalMinutes / 15 ) );
+                
                 if ( tpTimePicker.SelectedTime < timeCardDay.StartDateTime.TimeOfDay )
                 {
                     // they picked a time that is earlier than the StartDateTime, which means it is the next day
