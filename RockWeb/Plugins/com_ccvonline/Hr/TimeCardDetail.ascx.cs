@@ -290,25 +290,21 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // todo
 
             // Totals
-            lTotalsWorkedHtml.Text = new Rock.Web.DescriptionList()
-            .Add( "Regular", timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Add( "Overtime", timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Add( "Holiday", timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Html;
-
-            lTotalsPaidHtml.Text = new Rock.Web.DescriptionList()
-            .Add( "Vacation Hours", timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Add( "Holiday Hours", timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Add( "Sick Hours", timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" ) )
-            .Html;
-
+            lTotalRegularWorked.Text = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lTotalOvertimeWorked.Text = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lTotalHolidayWorked.Text = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            
+            lTotalVacationPaid.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lTotalHolidayPaid.Text = timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lTotalSickPaid.Text = timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            
             var totalHours = timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 ) 
                 + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ) 
                 + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ) 
                 + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 );
 
-            lTotalsTotalHtml.Text = new Rock.Web.DescriptionList()
-            .Add( "All Hours", totalHours ).Html;
+            lTotalHours.Text = totalHours.ToString( "0.##" );
+            
 
             // History
             // todo
@@ -364,10 +360,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             dbContext.SaveChanges();
 
-            // redirect to the same page (to avoid the "Resend" browser warning, and also update the other rows in the grid that might be impacted)
-            string redirectUrl = this.Request.Url.AbsolutePath + "?TimeCardId=" + timeCardDay.TimeCardId.ToString();
-            this.Response.Redirect( redirectUrl, false );
-            Context.ApplicationInstance.CompleteRequest();
+            ShowDetail();
         }
 
         /// <summary>

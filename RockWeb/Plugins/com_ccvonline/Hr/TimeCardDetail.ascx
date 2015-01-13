@@ -169,41 +169,92 @@
             <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span>
         </div>
 
-        <!-- Actions/Submit Panel -->
-        <asp:Panel ID="pnlPersonActions" runat="server">
-            <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" />
-            <Rock:RockCheckBox ID="cbAgree" runat="server" Text="I certify and agree that:" />
-            <ol>
-                <li>all of the entries on this Time Card for this payroll period are both accurate and complete;</li>
-                <li>the entries include all hours worked plus paid time off hours, if any;</li>
-                <li>the entries do not include unpaid meal periods or other non-work time; and,</li>
-                <li>I have not worked either more or fewer hours than entered.</li>
-            </ol>
-            <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" OnClick="lbSubmit_Click" Text="Submit" />
-        </asp:Panel>
+
+
+
 
         <!-- Totals Panel -->
         <asp:Panel ID="pnlTotals" runat="server">
+            <h2>Totals:</h2>
+            <h4>Worked Hours</h4>
             <div class="row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lTotalsWorkedHtml" runat="server" />
-                </div>
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lTotalsPaidHtml" runat="server" />
+                <div class="col-md-3">Regular Hours</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalRegularWorked" runat="server" />
                 </div>
             </div>
             <div class="row">
-                <h4>Total</h4>
-                <Rock:RockLiteral ID="lTotalsTotalHtml" runat="server" />
+                <div class="col-md-3">Overtime Hours</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
+                </div>
+
             </div>
-
-
-
+            <div class="row">
+                <div class="col-md-3">Holiday</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalHolidayWorked" runat="server" />
+                </div>
+            </div>
+            <h4>PTO Hours
+            </h4>
+            <div class="row">
+                <div class="col-md-3">Vacation Hours</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalVacationPaid" runat="server" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">Holiday Hours</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalHolidayPaid" runat="server" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">Sick Hours</div>
+                <div class="col-md-1">
+                    <asp:Literal ID="lTotalSickPaid" runat="server" />
+                </div>
+            </div>
+            <div class="row">
+                <h4>
+                    <div class="col-md-3">All Hours</div>
+                    <div class="col-md-1">
+                        <strong>
+                            <asp:Literal ID="lTotalHours" runat="server" />
+                        </strong>
+                    </div>
+                </h4>
+            </div>
         </asp:Panel>
+
+        <!-- Actions/Submit Panel -->
+        <h2>Submit</h2>
+        <asp:Panel ID="pnlPersonActions" runat="server">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" />
+                    <Rock:RockCheckBox ID="cbAgree" runat="server" Text="I certify and agree that:" />
+                    <ol>
+                        <li>all of the entries on this Time Card for this payroll period are both accurate and complete;</li>
+                        <li>the entries include all hours worked plus paid time off hours, if any;</li>
+                        <li>the entries do not include unpaid meal periods or other non-work time; and,</li>
+                        <li>I have not worked either more or fewer hours than entered.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="actions">
+                <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" OnClick="lbSubmit_Click" Text="Submit" />
+            </div>
+        </asp:Panel>
+
+
 
         <!-- History Panel -->
         <asp:Panel ID="pnlHistory" runat="server">
-            <Rock:RockLiteral ID="lHistoryHtml" runat="server" />
+            <asp:Literal ID="lHistoryHtml" runat="server" />
         </asp:Panel>
 
         <script>
@@ -216,9 +267,8 @@
                     a.stopImmediatePropagation();
 
                     var $parent = $(this).closest(".gridresponsive-item");
-                    $parent.find(".gridresponsive-item-edit").slideToggle(function () {
-                        $parent.find(".gridresponsive-item-view").slideToggle();
-                    });
+                    $parent.find(".gridresponsive-item-view").slideToggle();
+                    $parent.find(".gridresponsive-item-edit").slideToggle();
                 });
             });
 
