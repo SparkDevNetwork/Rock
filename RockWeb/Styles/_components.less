@@ -30,6 +30,7 @@
     27. List Extensions - additional list options
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
+    30. Paneled List Group - extends the bootstrap list group to behave in a panel
 */
 
 // 1. Pickers
@@ -1746,4 +1747,21 @@ ul.rocklist {
 // -------------------------
 .contextsetter {
     margin-right: 2px;
+}
+
+
+// 30. Paneled List Group
+// -------------------------
+ul.list-group-panel {
+    margin: 0;
+
+    .list-group-item {
+        border-radius: 0;
+        border: 0;
+        border-top: 1px solid @list-group-border;
+
+        &:first-child {
+            border: 0;
+        }
+    }
 }

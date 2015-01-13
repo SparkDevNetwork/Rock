@@ -63,6 +63,18 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Authorizes the specified payment information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual FinancialTransaction Authorize( PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = "Gateway does not support Authorizations";
+            return null;
+        }
+    
+        /// <summary>
         /// Charges the specified payment info.
         /// </summary>
         /// <param name="paymentInfo">The payment info.</param>

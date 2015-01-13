@@ -52,8 +52,8 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="400" />
-                            <Rock:CodeEditor ID="ceContent" runat="server" Label="Content" Height="400" EditorMode="Html" EditorTheme="Rock"  />
+                            <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="500" />
+                            <Rock:CodeEditor ID="ceContent" runat="server" Label="Content" EditorHeight="500" EditorMode="Html" EditorTheme="Rock"  />
                         </div>
                     </div>
 

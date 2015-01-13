@@ -87,6 +87,68 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Authorizes the specified payment info.
+        /// </summary>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Authorize( PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            Response ppResponse = null;
+
+            var invoice = GetInvoice( paymentInfo );
+            var tender = GetTender( paymentInfo );
+
+            if ( tender != null )
+            {
+                if ( paymentInfo is ReferencePaymentInfo )
+                {
+                    var reference = paymentInfo as ReferencePaymentInfo;
+                    var ppTransaction = new ReferenceTransaction( "Authorization", reference.TransactionCode, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+                else
+                {
+                    var ppTransaction = new AuthorizationTransaction( GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+            }
+            else
+            {
+                errorMessage = "Could not create tender from PaymentInfo";
+            }
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        var transaction = new FinancialTransaction();
+                        transaction.TransactionCode = txnResponse.Pnref;
+                        return transaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Charges the specified payment info.
         /// </summary>
         /// <param name="paymentInfo">The payment info.</param>
@@ -652,7 +714,7 @@ namespace Rock.PayFlowPro
             var ppInvoice = new Invoice();
             ppInvoice.Amt = ppAmount;
             ppInvoice.BillTo = ppBillingInfo;
-
+            ppInvoice.Desc = paymentInfo.Description;
             return ppInvoice;
         }
 

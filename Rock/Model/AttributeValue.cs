@@ -102,22 +102,24 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Value as a DateTime (Computed Column)
-        /* Computed Column Spec:
-        CASE 
-        -- make sure it isn't a big value or a date range, etc
-        WHEN LEN([value]) <= 33
-            THEN CASE 
-                    -- is it an ISO-8601
-                    WHEN VALUE LIKE '____-__-__T__:__:__%'
-                        THEN CONVERT(DATETIME, CONVERT(DATETIMEOFFSET, [value]))
-                    -- is it some other value SQL Date
-                    WHEN ISDATE([VALUE]) = 1
-                        THEN CONVERT(DATETIME, [VALUE])
-                    ELSE NULL
-                    END
-        ELSE NULL    
-        END
-        */
+        /// </summary>
+        /// <remarks>
+        /// Computed Column Spec:
+        /// CASE 
+        /// -- make sure it isn't a big value or a date range, etc
+        /// WHEN LEN([value]) &lt;= 33
+        ///    THEN CASE 
+        ///            -- is it an ISO-8601
+        ///            WHEN VALUE LIKE '____-__-__T__:__:__%'
+        ///                THEN CONVERT(DATETIME, CONVERT(DATETIMEOFFSET, [value]))
+        ///            -- is it some other value SQL Date
+        ///            WHEN ISDATE([VALUE]) = 1
+        ///                THEN CONVERT(DATETIME, [VALUE])
+        ///            ELSE NULL
+        ///            END
+        /// ELSE NULL    
+        /// END
+        /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
