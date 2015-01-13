@@ -486,9 +486,10 @@ namespace Rock.Web.UI
         /// <param name="blockCache">The block cache.</param>
         public void SetBlock( PageCache pageCache, BlockCache blockCache )
         {
-            bool canEdit = IsUserAuthorized( Authorization.EDIT );
-            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
-            SetBlock( pageCache, blockCache, canEdit, canAdministrate );
+            PageCache = pageCache;
+            BlockCache = blockCache;
+            UserCanEdit = IsUserAuthorized( Authorization.EDIT );
+            UserCanAdministrate  = IsUserAuthorized( Authorization.ADMINISTRATE );
         }
 
         /// <summary>

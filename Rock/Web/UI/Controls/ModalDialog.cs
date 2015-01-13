@@ -342,7 +342,8 @@ if ($('#{0}').find('.js-modal-visible').val() == '1') {{
         show: true,
         manager: '{3}',
         backdrop: 'static',
-        keyboard: false
+        keyboard: false,
+        attentionAnimation: ''
     }});
 }} 
 else {{

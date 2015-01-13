@@ -7,6 +7,7 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 @import "_print.less";
@@ -135,6 +136,37 @@ pre {
 /*#region
 // 3. Bootstrap Overrides    */
 // -------------------------
+
+h1 small, 
+h2 small, 
+h3 small, 
+h4 small, 
+h5 small, 
+h6 small, 
+.h1 small, 
+.h2 small, 
+.h3 small, 
+.h4 small, 
+.h5 small, 
+.h6 small, 
+h1 .small, 
+h2 .small, 
+h3 .small, 
+h4 .small, 
+h5 .small, 
+h6 .small, 
+.h1 .small, 
+.h2 .small, 
+.h3 .small, 
+.h4 .small, 
+.h5 .small, 
+.h6 .small {
+    font-weight: inherit;
+}
+
+h4, .h4 {
+    font-weight: 500;
+}
 
 
 // panel tweaks
