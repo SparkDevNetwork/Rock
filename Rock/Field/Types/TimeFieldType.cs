@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -106,6 +107,60 @@ namespace Rock.Field.Types
                         tp.SelectedTime = timeValue;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public virtual ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.DateFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( string id )
+        {
+            var timePicker = new TimePicker();
+            timePicker.ID = string.Format( "{0}_timePicker", id );
+            timePicker.AddCssClass( "js-filter-control" );
+            return timePicker;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control )
+        {
+            var timePicker = control as TimePicker;
+            if ( timePicker != null && timePicker.SelectedTime.HasValue )
+            {
+                return timePicker.SelectedTime.Value.ToString( "o" );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, string value )
+        {
+            var timePicker = control as TimePicker;
+            if ( timePicker != null )
+            {
+                timePicker.SelectedTime = value.AsTimeSpan();
             }
         }
 

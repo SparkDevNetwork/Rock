@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -222,6 +223,83 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public virtual ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.DateFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( string id )
+        {
+            var datePicker = new DatePicker();
+            datePicker.ID = string.Format( "{0}_dtPicker", id );
+            datePicker.AddCssClass( "js-filter-control" );
+            datePicker.DisplayCurrentOption = true;
+            return datePicker;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control )
+        {
+            var datePicker = control as DatePicker;
+            if ( datePicker != null )
+            {
+                if ( datePicker.IsCurrentDateOffset )
+                {
+                    return string.Format( "CURRENT:{0}", datePicker.CurrentDateOffsetDays );
+                }
+                else if ( datePicker.SelectedDate.HasValue )
+                {
+                    return datePicker.SelectedDate.Value.ToString( "o" );
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, string value )
+        {
+            var datePicker = control as DatePicker;
+            if ( datePicker != null )
+            {
+                if ( datePicker.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    datePicker.IsCurrentDateOffset = true;
+                    var valueParts = value.Split( ':' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        datePicker.CurrentDateOffsetDays = valueParts[1].AsIntegerOrNull() ?? 0;
+                    }
+                }
+                else
+                {
+                    var dt = value.AsDateTime();
+                    if ( dt.HasValue )
+                    {
+                        datePicker.SelectedDate = dt;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
@@ -48,6 +49,29 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsValid( string value, bool required, out string message )
+        {
+            if ( required && string.IsNullOrWhiteSpace( value ) )
+            {
+                message = "value is required.";
+                return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
+        #region Format Value
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -76,26 +100,9 @@ namespace Rock.Field
             return FormatValue( null, value, configurationValues, false );
         }
 
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsValid( string value, bool required, out string message )
-        {
-            if ( required && string.IsNullOrWhiteSpace( value ) )
-            {
-                message = "value is required.";
-                return false;
-            }
+        #endregion
 
-            message = string.Empty;
-            return true;
-        }
+        #region Configuration 
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -133,6 +140,10 @@ namespace Rock.Field
         public virtual void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -177,27 +188,73 @@ namespace Rock.Field
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Creates the controls needed to filter (query) values using this field type.
+        /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public virtual List<Control> FilterControls ( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var controls = new List<Control>();
+            HtmlGenericControl row = new HtmlGenericControl( "div" );
+            row.ID = string.Format( "{0}_row", id );
+            row.AddCssClass( "row" );
 
-            RockDropDownList ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes, false );
-            ddlText.ID = string.Format( "{0}_ddlText", id );
-            ddlText.AddCssClass( "js-filter-compare" );
-            controls.Add( ddlText );
+            HtmlGenericControl col1 = new HtmlGenericControl( "div" );
+            col1.ID = string.Format( "{0}_col1", id );
+            row.Controls.Add( col1 );
+            col1.AddCssClass( "col-sm-4" );
+            col1.Controls.Add( FilterCompareControl( id ) );
 
+            HtmlGenericControl col2 = new HtmlGenericControl( "div" );
+            col2.ID = string.Format( "{0}_col2", id );
+            row.Controls.Add( col2 );
+            col2.AddCssClass( "col-sm-8" );
+            col2.Controls.Add( FilterValueControl( id ) );
+
+            return row;
+        }
+
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public virtual Control FilterCompareControl( string id )
+        { 
+            RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, false );
+            ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
+            ddlCompare.AddCssClass( "js-filter-compare" );
+            return ddlCompare;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public virtual ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.StringFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public virtual Control FilterValueControl( string id )
+        { 
             var tbText = new RockTextBox();
             tbText.ID = string.Format( "{0}_tbText", id );
             tbText.AddCssClass( "js-filter-control" );
-            controls.Add( tbText );
-
-            return controls;
+            return tbText;
         }
 
         /// <summary>
@@ -206,23 +263,53 @@ namespace Rock.Field
         /// <param name="filterControls">The filter controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public virtual List<string> GetFilterValues( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues )
+        public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var values = new List<string>();
 
-            if ( filterControls != null )
+            if ( filterControl != null )
             {
-                if ( filterControls.Count > 0 && filterControls[0] is RockDropDownList )
+                try
                 {
-                    values.Add( ( (RockDropDownList)filterControls[0] ).SelectedValue );
+                    values.Add( GetFilterCompareValue( filterControl.Controls[0].Controls[0] ) );
+                    values.Add( GetFilterValueValue( filterControl.Controls[1].Controls[0] ) );
                 }
-                if ( filterControls.Count > 1 && filterControls[1] is RockTextBox)
-                {
-                    values.Add( ( (RockTextBox)filterControls[1] ).Text );
-                }
+                catch { }
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public virtual string GetFilterCompareValue( Control control )
+        {
+            var ddlCompare = control as RockDropDownList;
+            if ( ddlCompare != null )
+            {
+                return ddlCompare.SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public virtual string GetFilterValueValue( Control control )
+        {
+            var tbText = control as RockTextBox;
+            if ( tbText != null )
+            {
+                return tbText.Text;
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -231,18 +318,46 @@ namespace Rock.Field
         /// <param name="filterControls">The filter controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValue">The filter value.</param>
-        public virtual void SetFilterValues ( List<Control> filterControls, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        public virtual void SetFilterValues ( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
         {
-            if ( filterControls != null )
+            var values = new List<string>();
+
+            if ( filterControl != null )
             {
-                if ( filterControls.Count > 0 && filterControls[0] is RockDropDownList && filterValues.Count > 0 )
+                try
                 {
-                    ( (RockDropDownList)filterControls[0] ).SetValue( filterValues[0] );
+                    SetFilterCompareValue( filterControl.Controls[0].Controls[0], values.Count > 0 ? values[0] : string.Empty );
+                    SetFilterValueValue( filterControl.Controls[1].Controls[0], values.Count > 1 ? values[1] : string.Empty );
                 }
-                if ( filterControls.Count > 1 && filterControls[1] is RockTextBox )
-                {
-                    ( (RockTextBox)filterControls[1] ).Text = filterValues[1];
-                }
+                catch { }
+            }
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public virtual void SetFilterCompareValue( Control control, string value )
+        {
+            var ddlCompare = control as RockDropDownList;
+            if ( ddlCompare != null )
+            {
+                ddlCompare.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public virtual void SetFilterValueValue( Control control, string value )
+        {
+            var tbText = control as RockTextBox;
+            if ( tbText != null )
+            {
+                tbText.Text = value;
             }
         }
 
@@ -281,6 +396,10 @@ namespace Rock.Field
             return null;
         }
 
+        #endregion
+
+        #region Event Handlers
+
         /// <summary>
         /// Called when [qualifier updated].
         /// </summary>
@@ -298,6 +417,8 @@ namespace Rock.Field
         /// Occurs when [qualifier updated].
         /// </summary>
         public event EventHandler QualifierUpdated;
+
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
