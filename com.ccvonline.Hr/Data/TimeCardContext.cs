@@ -3,9 +3,10 @@ using System.Data.Entity;
 namespace com.ccvonline.Hr.Data
 {
     /// <summary>
-    /// 
+    /// TimeCardContext
+    /// NOTE: Inherits from RockContext instead of Rock.Data.DbContext so we can use it for both TimeCard and Core services
     /// </summary>
-    public partial class TimeCardContext : Rock.Data.DbContext
+    public partial class TimeCardContext : Rock.Data.RockContext
     {
         #region Models
 
