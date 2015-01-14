@@ -32,7 +32,11 @@ namespace Rock.Workflow.Action
     [Description( "Adds a note to the workflow." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Add Note" )]
-    [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "" )]
+    [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "", "", 0 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.WORKFLOW_NOTE_TYPE, "Note Type",
+        "The type of the note. The type determines the icon to display with note.",
+        true, false, Rock.SystemGuid.DefinedValue.WORKFLOW_NOTE_TYPE_SYSTEM_NOTE, "", 1 )]
+    [BooleanField( "Is Alert", "Should this note be flagged as an alert", false, "", 2 )]
     public class AddNote : ActionComponent
     {
         /// <summary>
@@ -50,24 +54,31 @@ namespace Rock.Workflow.Action
             if ( action != null && action.Activity != null &&
                 action.Activity.Workflow != null && action.Activity.Workflow.Id > 0 )
             {
-                var noteEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Workflow ) ).Id;
-                var noteType = new NoteTypeService( rockContext ).Get( noteEntityTypeId, "WorkflowNote" );
+                var noteType = new NoteTypeService( rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
+
                 var text = GetAttributeValue( action, "Note" ).ResolveMergeFields( GetMergeFields( action ) );
 
                 var note = new Note();
                 note.IsSystem = false;
+                note.IsAlert = GetAttributeValue( action, "IsAlert" ).AsBoolean();
                 note.NoteTypeId = noteType.Id;
                 note.EntityId = action.Activity.Workflow.Id;
                 note.Caption = string.Empty;
                 note.Text = text;
-                note.IsAlert = false;
+
+                var sourceType = DefinedValueCache.Read( GetAttributeValue( action, "NoteType" ) );
+                if ( sourceType != null )
+                {
+                    note.SourceTypeValueId = sourceType.Id;
+                }
+
                 new NoteService( rockContext ).Add( note );
 
                 return true;
             }
             else
             {
-                errorMessages.Add( "A Note can only be added to a persisted workflow with a valid ID.");
+                errorMessages.Add( "A Note can only be added to a persisted workflow with a valid ID." );
                 return false;
             }
         }

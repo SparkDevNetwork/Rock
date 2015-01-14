@@ -1279,17 +1279,7 @@ achieve our mission.  We are so grateful for your commitment.
             var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
-                var reference = new ReferencePaymentInfo();
-                reference.TransactionCode = savedAccount.TransactionCode;
-                reference.ReferenceNumber = savedAccount.ReferenceNumber;
-                reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
-                reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.CurrencyTypeValue );
-                if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
-                {
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.CreditCardTypeValue );
-                }
-
-                return reference;
+                return savedAccount.GetReferencePayment();
             }
 
             return null;

@@ -112,6 +112,11 @@ namespace Rock.Financial
         public virtual DefinedValueCache CreditCardTypeValue { get { return null; } }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        public virtual string Description { get; set; }
+
+        /// <summary>
         /// Gets the formatted value.
         /// </summary>
         /// <value>

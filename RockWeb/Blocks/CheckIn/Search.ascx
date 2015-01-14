@@ -17,8 +17,14 @@
                 $phoneNumber = $("input[id$='tbPhone']");
                 $phoneNumber.val('');
             });
-        });
 
+            // set focus to the input unless on a touch device
+            var isTouchDevice = 'ontouchstart' in document.documentElement;
+            if (!isTouchDevice) {
+                $('.checkin-phone-entry').focus();
+            }
+        });
+        
     </script>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
