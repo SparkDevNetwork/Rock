@@ -112,8 +112,212 @@ Pastor:Talk to a Pastor'
 
             // Add/Update PageContext for Page:Workflow Detail, Entity: Rock.Model.Workflow, Parameter: workflowid
             RockMigrationHelper.UpdatePageContext( "BA547EED-5537-49CF-BD4E-C583D760788C", "Rock.Model.Workflow", "workflowid", "55B1F94F-6498-4616-A1EC-4891E3FF2299" );
-        }
+
+
+            // Migration Rollups
+
+            Sql(@"
+    UPDATE [HtmlContent]
+    SET [Content] = '<ul class=""list-group list-group-panel"">
+<li class=""list-group-item""><a href=""http://www.rockrms.com/"">Rock RMS Website</a></li>
+<li class=""list-group-item""><a href=""~/page/1"">External Website</a></li>
+</ul>'
+    WHERE [Guid] = '007EA905-D5D3-4DC5-AD0B-2C1E3935E452'
+");
+
+            Sql( @"
+UPDATE [SystemEmail]
+SET [Body] = '{{ GlobalAttribute.EmailHeader }}
+
+<p>{{ Person.FirstName }},</p>
+<p>The following {{ Workflow.WorkflowType.Name }} requires action:<p>
+<p>{{ Workflow.WorkflowType.WorkTerm}}: <a href=''{{ GlobalAttribute.InternalApplicationRoot }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}''>{{ Workflow.Name }}</a></p>
+
+{% assign RequiredFields = false %}
+
+<h3 class=""separator"">Details</h3>
+
+
+
+{% for attribute in Action.FormAttributes %}
+
+    
+    {% if attribute.IsVisible and attribute.Value != '' %}
+        <div>
+            <strong>{{ attribute.Name }}:</strong>
+            <br />
+            
+                {% if attribute.Url and attribute.Url != '' %}
+                    <a href=''{{ attribute.Url }}''>{{ attribute.Value }}</a>
+                {% else %}
+                    {{ attribute.Value }}
+                {% endif %}
+
+        </div>
+        <br />
+    {% endif %}
+    
         
+    {% if attribute.IsRequired && attribute.Value == Empty %}
+        {% assign RequiredFields = true %}
+    {% endif %}
+
+{% endfor %}
+
+
+
+<table width=""100%"">
+    <tr>
+        <td>
+
+    <table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+     <tr>
+       <td>
+    
+    		<div><!--[if mso]>
+    		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ GlobalAttribute.InternalApplicationRoot }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#269abc"" fillcolor=""#31b0d5"">
+    			<w:anchorlock/>
+    			<center style=""color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:normal;"">View Details</center>
+    		  </v:roundrect>
+    		<![endif]--><a href=""{{ GlobalAttribute.InternalApplicationRoot }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}""
+    		style=""background-color:#31b0d5;border:1px solid #269abc;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:14px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">View Details</a></div>
+    
+    	</td>
+     </tr>
+    </table>
+
+    {% if Action.ActionType.WorkflowForm.IncludeActionsInNotification == true %}
+
+        {% if RequiredFields != true %}
+    
+            {% for button in Action.ActionType.WorkflowForm.Buttons %}
+                {% capture ButtonLinkSearch %}{% raw %}{{ ButtonLink }}{% endraw %}{% endcapture %}
+                {% capture ButtonLinkReplace %}{{ GlobalAttribute.InternalApplicationRoot }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}&action={{ button.Name }}{% endcapture %}
+                {% capture ButtonHtml %}{{ button.EmailHtml | Replace: ButtonLinkSearch, ButtonLinkReplace }}{% endcapture %}
+
+                {% capture ButtonTextSearch %}{% raw %}{{ ButtonText }}{% endraw %}{% endcapture %}
+                {% capture ButtonTextReplace %}{{ button.Name }}{% endcapture %}
+                {{ ButtonHtml | Replace: ButtonTextSearch, ButtonTextReplace }}
+            {% endfor %}
+        {% endif %}
+
+    {% endif %}
+
+        </td>
+    </tr>
+</table>
+
+
+{{ GlobalAttribute.EmailFooter }}'
+WHERE [Guid] = '88C7D1CC-3478-4562-A301-AE7D4D7FFF6D'
+" );
+
+            Sql( @"
+/*
+<doc>
+	<summary>
+ 		This function returns the address of the person provided.
+	</summary>
+
+	<returns>
+		Address of the person.
+	</returns>
+	<remarks>
+		This function allows you to request an address for a specific person. It will return
+		the first address of that type (multiple address are possible if the individual is in
+		multiple families). 
+		
+		You can provide the address type by specifing 'Home', 'Previous', 
+		'Work'. For custom address types provide the AddressTypeId like '19'.
+
+		You can also determine which component of the address you'd like. Values include:
+			+ 'Full' - the full address 
+			+ 'Street1'
+			+ 'Street2'
+			+ 'City'
+			+ 'State'
+			+ 'PostalCode'
+			+ 'Country'
+
+	</remarks>
+	<code>
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Full')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Street1')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Street2')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'City')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'State')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'PostalCode')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Country')
+	</code>
+</doc>
+*/
+
+CREATE FUNCTION [dbo].[ufnCrm_GetAddress](
+	@PersonId int, 
+	@AddressType varchar(20),
+	@AddressComponent varchar(20)) 
+
+RETURNS nvarchar(250) AS
+
+BEGIN
+	DECLARE @AddressTypeId int
+
+	-- get address type
+	IF (@AddressType = 'Home')
+		BEGIN
+		SET @AddressTypeId = 19
+		END
+	ELSE IF (@AddressType = 'Work')
+		BEGIN
+		SET @AddressTypeId = 20
+		END
+	ELSE IF (@AddressType = 'Previous')
+		BEGIN
+		SET @AddressTypeId = 137
+		END
+	ELSE
+		SET @AddressTypeId = CAST(@AddressType AS int)
+
+	-- return address component
+	IF (@AddressComponent = 'Street1')
+		BEGIN
+		RETURN (SELECT [Street1] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'Street2')
+		BEGIN
+		RETURN (SELECT [Street2] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'City')
+		BEGIN
+		RETURN (SELECT [City] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'State')
+		BEGIN
+		RETURN (SELECT [State] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'PostalCode')
+		BEGIN
+		RETURN (SELECT [PostalCode] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'Country')
+		BEGIN
+		RETURN (SELECT [Country] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE 
+		BEGIN
+		RETURN (SELECT [Street1] + ' ' + [Street2] + ' ' + [City] + ', ' + [State] + ' ' + [PostalCode] FROM [Location] WHERE [Id] = (SELECT [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+
+	RETURN ''
+END
+" );
+        
+        Sql(@"
+    UPDATE [BinaryFileData]
+    SET Content = 0x0A3C212D2D2073617665642066726F6D2075726C3D283030373629687474703A2F2F6C6F63616C686F73743A363232392F47657446696C652E617368783F677569643D66393865396236312D336662342D343366342D386333302D346565636432663534393637202D2D3E0A3C68746D6C3E3C686561643E3C6D65746120687474702D65717569763D22436F6E74656E742D547970652220636F6E74656E743D22746578742F68746D6C3B20636861727365743D5554462D38223E3C2F686561643E3C626F64793E3C707265207374796C653D22776F72642D777261703A20627265616B2D776F72643B2077686974652D73706163653A207072652D777261703B223E1043547E7E43442C7E43435E7E43547E0A5E58417E54413030307E4A534E5E4C54305E4D4E575E4D54445E504F4E5E504D4E5E4C48302C305E4A4D415E5052362C367E534431355E4A55535E4C524E5E4349305E585A0A5E58410A5E4D4D540A5E50573831320A5E4C4C303430360A5E4C53300A5E46543434332C3131395E41304E2C3133352C3133345E46423333332C312C302C525E46485C5E46445757575E46530A5E465431322C3236385E41304E2C3133352C3134365E46485C5E4644355E46530A5E465431342C3332375E41304E2C34352C34355E46485C5E4644365E46530A5E464F3632362C3334305E474236302C35362C35365E46530A5E46543632362C3338345E41304E2C34352C34355E464237302C312C302C435E46525E46485C5E46444141415E46530A5E464F3731392C3334305E474236302C35362C35365E46530A5E46543731392C3338345E41304E2C34352C34355E464237302C312C302C435E46525E46485C5E46444C4C4C5E46530A5E46543333362C3130335E41304E2C3130322C3130305E46485C5E4644325E46530A5E46543430312C3130335E41304E2C3130322C3130305E46485C5E4644335E46530A5E46543334322C3133305E41304E2C32382C32385E46485C5E4644345E46530A5E46543333382C3338355E41304E2C32382C32385E46485C5E464431305E46530A5E465431332C3338355E41304E2C32382C32385E46485C5E4644395E46530A5E4C52595E464F302C305E47423831322C302C3133365E46535E4C524E0A5E5051312C302C312C595E585A0A3C2F7072653E3C2F626F64793E3C2F68746D6C3E
+    WHERE [Guid] = 'DF44734E-473B-4009-9099-7BA25C8EA36A'
+");
+        }
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
