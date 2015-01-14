@@ -95,6 +95,10 @@
     <Compile Include="Migrations\201501102154046_RockShopPages.Designer.cs">
       <DependentUpon>201501102154046_RockShopPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201501141430064_WorkflowNotes2.cs" />
+    <Compile Include="Migrations\201501141430064_WorkflowNotes2.Designer.cs">
+      <DependentUpon>201501141430064_WorkflowNotes2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1415,6 +1419,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201501102154046_RockShopPages.resx">
       <DependentUpon>201501102154046_RockShopPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501141430064_WorkflowNotes2.resx">
+      <DependentUpon>201501141430064_WorkflowNotes2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
