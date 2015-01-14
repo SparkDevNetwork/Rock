@@ -49,7 +49,7 @@ namespace Rock.Store
         }
 
         /// <summary>
-        /// Installeds the package version.
+        /// Returns the installed package version.
         /// </summary>
         /// <param name="packageId">The package identifier.</param>
         /// <returns></returns>
@@ -60,5 +60,36 @@ namespace Rock.Store
             return installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
         }
 
+
+        /// <summary>
+        /// Logs that an install occurred.
+        /// </summary>
+        /// <param name="packageId">The package identifier.</param>
+        /// <param name="versionId">The package version identifier.</param>
+        /// <returns></returns>
+        public static void SaveInstall( int packageId, string packageName, int versionId, string versionLabel, int vendorId, string vendorName )
+        {
+            var installedPackages = GetInstalledPackages();
+
+            var package = installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
+
+            // set properties
+            package.VersionId = versionId;
+            package.VersionLabel = versionLabel;
+            package.InstallDateTime = RockDateTime.Now;
+
+            // save results to file
+            SaveInstalledPackages( installedPackages );
+        }
+
+        private static void SaveInstalledPackages( List<InstalledPackage> packages )
+        {
+            string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            
+            string packagesAsJson = packages.ToJson();
+
+            System.IO.File.WriteAllText( packageFile, packagesAsJson );
+
+        }
     }
 }
