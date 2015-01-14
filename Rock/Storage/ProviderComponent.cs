@@ -16,10 +16,11 @@
 //
 using System;
 using System.IO;
-
 using System.Web;
+
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Storage
 {
@@ -73,14 +74,36 @@ namespace Rock.Storage
         /// <returns></returns>
         public virtual string GenerateUrl( BinaryFile file )
         {
-            if ( file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+            string url = string.Empty;
+
+            if ( file != null )
             {
-                return string.Format( "~/GetImage.ashx?guid={0}", file.Guid );
+                string handler = file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) ? "GetImage.ashx" : "GetFile.ashx";
+                url = System.Web.VirtualPathUtility.ToAbsolute( "~/" + handler);
+                url += "?guid=" + file.Guid.ToString();
+
+                Uri uri = null;
+                try
+                {
+                    if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+                    {
+                        uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                    }
+                }
+                catch { }
+
+                if ( uri == null )
+                {
+                    uri = new Uri( GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+                }
+
+                if ( uri != null )
+                {
+                    return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
+                }
             }
-            else
-            {
-                return string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
-            }
+
+            return url;
         }
 
         /// <summary>
