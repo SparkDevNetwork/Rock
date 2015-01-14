@@ -167,12 +167,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 // TODO use Rock SystemGuids for these after next merge from core
                 string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
                 string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
-                
-                
+
                 Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
                 Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
                 Guid groupStaffGuid = GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
-                
+
                 // figure out what department the person is a leader in (hopefully at most one department, but we'll deal with multiple just in case)
                 var groupMemberService = new GroupMemberService( hrContext );
                 var qryPersonDeptLeaderGroup = groupMemberService.Queryable().Where( a => a.PersonId == this.CurrentPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid && a.GroupRole.Guid == groupLeaderGuid ).Select( a => a.Group );
