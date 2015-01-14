@@ -50,7 +50,6 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
-                tbPhone.Focus();
                 this.Page.Form.DefaultButton = lbSearch.UniqueID;
             }
         }

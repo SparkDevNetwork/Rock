@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Financial;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -194,6 +196,24 @@ namespace Rock.Model
             return this.MaskedAccountNumber.ToStringSafe();
         }
 
+        /// <summary>
+        /// Gets a reference payment info record.
+        /// </summary>
+        /// <returns></returns>
+        public ReferencePaymentInfo GetReferencePayment()
+        {
+            var reference = new ReferencePaymentInfo();
+            reference.TransactionCode = this.TransactionCode;
+            reference.ReferenceNumber = this.ReferenceNumber;
+            reference.MaskedAccountNumber = this.MaskedAccountNumber;
+            reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.CurrencyTypeValue );
+            if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+            {
+                reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.CreditCardTypeValue );
+            }
+
+            return reference;
+        }
         #endregion
 
     }

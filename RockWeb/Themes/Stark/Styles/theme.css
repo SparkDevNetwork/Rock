@@ -479,6 +479,7 @@ img.jcrop-preview {
     27. List Extensions - additional list options
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
+    30. Paneled List Group - extends the bootstrap list group to behave in a panel
 */
 .picker {
   position: relative;
@@ -1791,6 +1792,17 @@ ul.rocklist .rocklist-item.selected {
 }
 .contextsetter {
   margin-right: 2px;
+}
+ul.list-group-panel {
+  margin: 0;
+}
+ul.list-group-panel .list-group-item {
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid #dddddd;
+}
+ul.list-group-panel .list-group-item:first-child {
+  border: 0;
 }
 /*
     Used to manage styles related to Rock's forms

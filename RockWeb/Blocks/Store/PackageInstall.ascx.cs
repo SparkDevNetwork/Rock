@@ -32,6 +32,9 @@ using Rock.Store;
 using System.Text;
 using Rock.Utility;
 using System.Net;
+using System.IO.Compression;
+using Microsoft.Web.XmlTransform;
+
 
 namespace RockWeb.Blocks.Store
 {
@@ -52,6 +55,7 @@ namespace RockWeb.Blocks.Store
         private string _updateMessage = "Login below with your Rock Store account to upgrade this package.";
         private string _installPreviousPurchase = "Login below with your Rock Store account to install this previously purchased package.";
 
+        const string _xdtExtension = ".rock.xdt";
         #endregion
 
         #region Properties
@@ -156,25 +160,192 @@ namespace RockWeb.Blocks.Store
 
         private void ProcessInstall( List<PackageInstallStep> installSteps )
         {
-            foreach ( var installStep in installSteps )
+            if ( installSteps != null )
             {
-                string sourceFile = installStep.InstallPackageUrl.Replace( "~", "http://www.rockrms.com" );  // todo remove before flight
-                string destinationFile = Server.MapPath( string.Format( "~/App_Data/{0}.zip", installStep.PackageId.ToString() ) );
 
-                // download file
-                try
+                foreach ( var installStep in installSteps )
                 {
-                    WebClient wc = new WebClient();
-                    wc.DownloadFile( sourceFile, destinationFile );
-                }
-                catch ( Exception ex )
-                {
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred will while downloading package from the store. Please try again later.</div>", ex.Message );
-                    return;
+                    string appRoot = Server.MapPath( "~/" );
+                    string rockShopWorkingDir = appRoot + "App_Data/RockShop";
+                    string installWorkingDirectory = rockShopWorkingDir + "/packageversion-" + installStep.VersionId.ToString();
+                    string sourceFile = installStep.InstallPackageUrl.Replace( "~", "http://www.rockrms.com" );  // todo remove before flight
+                    string destinationFile = rockShopWorkingDir + string.Format( "/{0}.plugin", installStep.PackageId.ToString() );
+
+                    // check that the RockShop directory exists
+                    if ( !Directory.Exists( rockShopWorkingDir ) )
+                    {
+                        Directory.CreateDirectory( rockShopWorkingDir );
+                    }
+
+                    // create working directory
+                    if ( !Directory.Exists( installWorkingDirectory ) )
+                    {
+                        Directory.CreateDirectory( installWorkingDirectory );
+                    }
+
+                    // download file
+                    try
+                    {
+                        WebClient wc = new WebClient();
+                        wc.DownloadFile( sourceFile, destinationFile );
+                    }
+                    catch ( Exception ex )
+                    {
+                        CleanUpPackage( installWorkingDirectory, destinationFile );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {0}</em></div>", ex.Message );
+                        return;
+                    }
+
+                    // unzip the file
+                    try
+                    {
+                        using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
+                        {
+                            foreach ( ZipArchiveEntry entry in packageZip.Entries )
+                            {
+                                if ( entry.FullName == "App_Data" && (entry.FullName.EndsWith( ".sql", StringComparison.OrdinalIgnoreCase ) || entry.FullName.EndsWith( ".del", StringComparison.OrdinalIgnoreCase )) )
+                                {
+                                    // move sql and .del files in the App_Data directory to working directory
+                                    entry.ExtractToFile( installWorkingDirectory + "/" + entry.Name, true );
+                                }
+                                else if ( entry.FullName.EndsWith( _xdtExtension, StringComparison.OrdinalIgnoreCase ) )
+                                {
+                                    // process xtd
+                                    string transformTargetFile = entry.FullName.Substring( 0, entry.FullName.LastIndexOf( _xdtExtension ) );
+                                    string transformFile = installWorkingDirectory + "/" + entry.Name;
+                                    
+                                    // copy xtd file to working directory
+                                    entry.ExtractToFile( transformFile, true );
+
+                                    // process transform
+                                    using ( XmlTransformableDocument document = new XmlTransformableDocument() )
+                                    {
+                                        document.PreserveWhitespace = true;
+                                        document.Load( transformTargetFile );
+
+                                        using ( XmlTransformation transform = new XmlTransformation( transformFile ) )
+                                        {
+                                            if ( transform.Apply( document ) )
+                                            {
+                                                document.Save( transformTargetFile );
+                                                File.Delete( transformFile );
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // process all files that are not .sql, .del or .xtd
+                                    string fullpath = Path.Combine( appRoot, entry.FullName );
+                                    string directory = Path.GetDirectoryName( fullpath );
+
+                                    if ( !Directory.Exists( directory ) )
+                                    {
+                                        Directory.CreateDirectory( directory );
+                                    }
+
+                                    entry.ExtractToFile( fullpath, true );
+                                }
+                            }
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        CleanUpPackage( installWorkingDirectory, destinationFile );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {0}</em></div>", ex.Message );
+                        return;
+                    }
+
+                    // process and sql files
+                    string[] files = Directory.GetFiles( installWorkingDirectory, "*.sql" );
+
+                    try
+                    {
+                        using ( var context = new RockContext() )
+                        {
+                            Array.Sort( files );
+                            
+                            foreach ( var file in files)
+                            {
+                                context.Database.ExecuteSqlCommand( System.IO.File.ReadAllText( file ) );
+                            }
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        CleanUpPackage( installWorkingDirectory, destinationFile );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {0}</em></div>", ex.Message );
+                        return;
+                    }
+
+                    // process delete instructions
+                    files = Directory.GetFiles( installWorkingDirectory, "*.del" );
+
+                    try
+                    {
+                        Array.Sort( files );
+                        
+                        foreach ( var file in files )
+                        {
+                            string deleteItem = "";
+
+                            System.IO.StreamReader srFile = new System.IO.StreamReader( file );
+                            while ( (deleteItem = srFile.ReadLine()) != null )
+                            {
+                                if ( Directory.Exists( deleteItem ) )
+                                {
+                                    Directory.Delete( deleteItem );
+                                }
+
+                                if ( File.Exists( deleteItem ) )
+                                {
+                                    File.Delete( deleteItem );
+                                }
+                            }
+
+                            srFile.Close();
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        CleanUpPackage( installWorkingDirectory, destinationFile );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifing Files</strong> An error occurred while modifing files. <br><em>Error: {0}</em></div>", ex.Message );
+                        return;
+                    }
+
+                    // cleanup package
+                    CleanUpPackage( installWorkingDirectory, destinationFile );
+
+                    // update package install json file
+                    InstalledPackageService.SaveInstall( installStep.PackageId, installStep.PackageName, installStep.VersionId, installStep.VersionLabel, installStep.VendorId, installStep.VendorName );
                 }
             }
+            else
+            {
+                lMessages.Text = "<div class='alert alert-warning margin-t-md'><strong>Error</strong> Install package was not valid. Please try again later.";
+            }
         }
-        
+
+        private void CleanUpPackage(string installWorkingDirectory, string packageFile)
+        {
+            try
+            {
+                if ( Directory.Exists( installWorkingDirectory ) )
+                {
+                    Directory.Delete( installWorkingDirectory, true );
+                }
+
+                if ( File.Exists( packageFile ) )
+                {
+                    File.Delete( packageFile );
+                }
+
+            } catch(Exception ex){
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {0}</em></div>", ex.Message );
+                return;
+            }
+        }
+
         private void DisplayPackageInfo()
         {
             string errorResponse = string.Empty;

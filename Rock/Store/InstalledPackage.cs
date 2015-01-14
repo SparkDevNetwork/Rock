@@ -25,7 +25,7 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.String"/> representing the package label.
         /// </value>
-        public string PackageLabel { get; set; }
+        public string PackageName { get; set; }
 
         /// <summary>
         /// Gets or sets the VersionId of the installation. 
