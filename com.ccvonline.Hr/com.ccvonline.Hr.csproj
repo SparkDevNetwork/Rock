@@ -85,7 +85,7 @@
     <Compile Include="Data\Model.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\TimeCardContext.cs" />
+    <Compile Include="Data\HrContext.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AlterColumns.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardDayService.cs" />

@@ -30,6 +30,6 @@ namespace com.ccvonline.Hr.Rest.Controllers
     /// </summary>
     public partial class TimeCardPayPeriodsController : Rock.Rest.ApiController<com.ccvonline.Hr.Model.TimeCardPayPeriod>
     {
-        public TimeCardPayPeriodsController() : base( new com.ccvonline.Hr.Model.TimeCardPayPeriodService( new com.ccvonline.Hr.Data.TimeCardContext() ) ) { } 
+        public TimeCardPayPeriodsController() : base( new com.ccvonline.Hr.Model.TimeCardPayPeriodService( new com.ccvonline.Hr.Data.HrContext() ) ) { } 
     }
 }

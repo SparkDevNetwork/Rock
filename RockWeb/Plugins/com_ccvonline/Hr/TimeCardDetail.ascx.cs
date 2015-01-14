@@ -250,9 +250,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             int timeCardId = PageParameter( "TimeCardId" ).AsInteger();
             hfTimeCardId.Value = timeCardId.ToString();
 
-            var dataContext = new TimeCardContext();
-            var timeCardDayService = new TimeCardDayService( dataContext );
-            var timeCardService = new TimeCardService( dataContext );
+            var hrContext = new HrContext();
+            var timeCardDayService = new TimeCardDayService( hrContext );
+            var timeCardService = new TimeCardService( hrContext );
             var timeCard = timeCardService.Queryable( "TimeCardDays" ).FirstOrDefault( a => a.Id == timeCardId );
             if ( timeCard == null )
             {
@@ -281,7 +281,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
 
                 timeCardDayService.AddRange( missingDays );
-                dataContext.SaveChanges();
+                hrContext.SaveChanges();
             }
 
             var timeCardDayList = qry.ToList();
@@ -352,7 +352,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lTotalHours.Text = totalHours.ToString( "0.##" );
 
             // if this timeCard doesn't have any history records yet, assume they are entering the TimeCard for the first time
-            var timeCardHistoryService = new TimeCardHistoryService( dataContext );
+            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
             if ( !timeCardHistoryService.Queryable().Any( a => a.TimeCardId == timeCard.Id ) )
             {
                 TimeCardHistory timeCardHistory = new TimeCardHistory();
@@ -363,7 +363,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
 
                 timeCardHistoryService.Add( timeCardHistory );
-                dataContext.SaveChanges();
+                hrContext.SaveChanges();
 
                 // get after saving to flesh out the virtual fields
                 timeCardHistory = timeCardHistoryService.Get( timeCardHistory.Guid );
@@ -384,11 +384,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            var dbContext = new TimeCardContext();
+            var hrContext = new HrContext();
             var repeaterItem = ( sender as Control ).BindingContainer as RepeaterItem;
 
             var timeCardDayId = ( sender as LinkButton ).CommandArgument;
-            var timeCardDayService = new TimeCardDayService( dbContext );
+            var timeCardDayService = new TimeCardDayService( hrContext );
             var timeCardDay = timeCardDayService.Get( timeCardDayId.AsInteger() );
 
             TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
@@ -422,7 +422,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
             timeCardDay.Notes = tbNotes.Text;
 
-            dbContext.SaveChanges();
+            hrContext.SaveChanges();
 
             ShowDetail();
         }

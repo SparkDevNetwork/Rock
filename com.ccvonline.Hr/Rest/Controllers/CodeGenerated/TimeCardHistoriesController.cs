@@ -30,6 +30,6 @@ namespace com.ccvonline.Hr.Rest.Controllers
     /// </summary>
     public partial class TimeCardHistoriesController : Rock.Rest.ApiController<com.ccvonline.Hr.Model.TimeCardHistory>
     {
-        public TimeCardHistoriesController() : base( new com.ccvonline.Hr.Model.TimeCardHistoryService( new com.ccvonline.Hr.Data.TimeCardContext() ) ) { } 
+        public TimeCardHistoriesController() : base( new com.ccvonline.Hr.Model.TimeCardHistoryService( new com.ccvonline.Hr.Data.HrContext() ) ) { } 
     }
 }

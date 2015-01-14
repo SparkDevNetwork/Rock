@@ -101,9 +101,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// </summary>
         private void BindGrid()
         {
-            var dataContext = new TimeCardContext();
-            var timeCardService = new TimeCardService( dataContext );
-            var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
+            var hrContext = new HrContext();
+            var timeCardService = new TimeCardService( hrContext );
+            var timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
             DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>( DayOfWeek.Monday );
             var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( payrollStartDay );
             SortProperty sortProperty = gList.SortProperty;
@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 currentEmployeeTimeCard.PersonAliasId = this.CurrentPersonAliasId.Value;
                 currentEmployeeTimeCard.TimeCardDays = new List<TimeCardDay>();
                 timeCardService.Add( currentEmployeeTimeCard );
-                dataContext.SaveChanges();
+                hrContext.SaveChanges();
             }
 
             if ( sortProperty != null )

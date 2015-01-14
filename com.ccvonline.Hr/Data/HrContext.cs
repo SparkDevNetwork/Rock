@@ -3,10 +3,10 @@ using System.Data.Entity;
 namespace com.ccvonline.Hr.Data
 {
     /// <summary>
-    /// TimeCardContext
+    /// HrContext
     /// NOTE: Inherits from RockContext instead of Rock.Data.DbContext so we can use it for both TimeCard and Core services
     /// </summary>
-    public partial class TimeCardContext : Rock.Data.RockContext
+    public partial class HrContext : Rock.Data.RockContext
     {
         #region Models
 
@@ -45,9 +45,9 @@ namespace com.ccvonline.Hr.Data
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TimeCardContext"/> class.
+        /// Initializes a new instance of the <see cref="HrContext"/> class.
         /// </summary>
-        public TimeCardContext()
+        public HrContext()
             : base( "RockContext" )
         {
              // intentionally left blank
@@ -71,7 +71,7 @@ namespace com.ccvonline.Hr.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             // we don't want this context to create a database or look for EF Migrations, do set the Initializer to null
-            Database.SetInitializer<TimeCardContext>( new NullDatabaseInitializer<TimeCardContext>() );
+            Database.SetInitializer<HrContext>( new NullDatabaseInitializer<HrContext>() );
 
             Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
             modelBuilder.Configurations.AddFromAssembly( System.Reflection.Assembly.GetExecutingAssembly() );

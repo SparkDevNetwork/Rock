@@ -36,7 +36,7 @@ namespace com.ccvonline.Hr.Model
         /// Initializes a new instance of the <see cref="TimeCardService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public TimeCardService(com.ccvonline.Hr.Data.TimeCardContext context) : base(context)
+        public TimeCardService(com.ccvonline.Hr.Data.HrContext context) : base(context)
         {
         }
 

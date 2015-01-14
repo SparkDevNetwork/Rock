@@ -110,8 +110,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            var dbContext = new TimeCardContext();
-            TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( dbContext );
+            var hrContext = new HrContext();
+            TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
             TimeCardPayPeriod timeCardPayPeriod = timeCardPayPeriodService.Get( e.RowKeyId );
             if ( timeCardPayPeriod != null )
             {
@@ -123,7 +123,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
 
                 // check if any of the pay period' time cards have hours entered
-                TimeCardService timeCardService = new TimeCardService( dbContext );
+                TimeCardService timeCardService = new TimeCardService( hrContext );
                 if ( timeCardService.Queryable().Where( a => a.TimeCardPayPeriodId == timeCardPayPeriod.Id ).ToList().Any( a => a.HasHoursEntered() ) )
                 {
                     mdGridWarning.Show( "Pay Period has time cards with hours entered", ModalAlertType.Information );
@@ -131,7 +131,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
 
                 timeCardPayPeriodService.Delete( timeCardPayPeriod );
-                dbContext.SaveChanges();
+                hrContext.SaveChanges();
             }
 
             BindGrid();
@@ -146,9 +146,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// </summary>
         private void BindGrid()
         {
-            TimeCardContext dbContext = new TimeCardContext();
-            TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( dbContext );
-            TimeCardService timeCardService = new TimeCardService( dbContext );
+            HrContext hrContext = new HrContext();
+            TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
+            TimeCardService timeCardService = new TimeCardService( hrContext );
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
             var timeCardQry = timeCardService.Queryable();
             

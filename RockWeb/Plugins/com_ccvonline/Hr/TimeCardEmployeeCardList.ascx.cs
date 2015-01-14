@@ -23,6 +23,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time cards for a specific pay period." )]
 
     [LinkedPage( "Detail Page" )]
+    [BooleanField( "Limit To My Staff", "Enable this to only show people that are in the department that you lead.", true )]
     public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -104,8 +105,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            var dataContext = new TimeCardContext();
-            var timeCardService = new TimeCardService( dataContext );
+            var hrContext = new HrContext();
+            var timeCardService = new TimeCardService( hrContext );
             var timeCard = timeCardService.Get( e.RowKeyId );
             if ( timeCard != null )
             {
@@ -123,7 +124,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
 
                 timeCardService.Delete( timeCard );
-                dataContext.SaveChanges();
+                hrContext.SaveChanges();
             }
         }
 
@@ -140,25 +141,50 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             int? timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsIntegerOrNull();
             TimeCardPayPeriod timeCardPayPeriod = null;
 
-            var dataContext = new TimeCardContext();
-            var timeCardService = new TimeCardService( dataContext );
-            var timeCardPayPeriodService = new TimeCardPayPeriodService( dataContext );
+            var hrContext = new HrContext();
+            var timeCardService = new TimeCardService( hrContext );
+            var timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
 
             if ( !timeCardPayPeriodId.HasValue )
             {
                 // if still not set, use current
-                timeCardPayPeriod = timeCardPayPeriodService.GetCurrentPayPeriod();    
+                timeCardPayPeriod = timeCardPayPeriodService.GetCurrentPayPeriod();
                 timeCardPayPeriodId = timeCardPayPeriod != null ? timeCardPayPeriod.Id : (int?)null;
             }
 
-            if (timeCardPayPeriod == null && timeCardPayPeriodId.HasValue)
+            if ( timeCardPayPeriod == null && timeCardPayPeriodId.HasValue )
             {
                 timeCardPayPeriod = timeCardPayPeriodService.Get( timeCardPayPeriodId.Value );
             }
 
-            lblPayPeriod.Text = string.Format("Pay Period: {0}", timeCardPayPeriod);
+            lblPayPeriod.Text = string.Format( "Pay Period: {0}", timeCardPayPeriod );
 
             var qry = timeCardService.Queryable( "PersonAlias.Person" ).Where( a => a.TimeCardPayPeriodId == timeCardPayPeriodId );
+
+            var limitToMyStaff = this.GetAttributeValue( "LimitToMyStaff" ).AsBooleanOrNull() ?? true;
+            if ( limitToMyStaff )
+            {
+                // TODO use Rock SystemGuids for these after next merge from core
+                string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
+                string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
+                
+                
+                Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
+                Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+                Guid groupStaffGuid = GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
+                
+                // figure out what department the person is a leader in (hopefully at most one department, but we'll deal with multiple just in case)
+                var groupMemberService = new GroupMemberService( hrContext );
+                var qryPersonDeptLeaderGroup = groupMemberService.Queryable().Where( a => a.PersonId == this.CurrentPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid && a.GroupRole.Guid == groupLeaderGuid ).Select( a => a.Group );
+
+                // get a List vs a Qry since GroupMember and TimeCard use different DbContexts
+                var staffPersonIds = groupMemberService.Queryable()
+                    .Where( a => qryPersonDeptLeaderGroup.Any( x => x.Id == a.GroupId ) )
+                    .Where( a => a.GroupRole.Guid == groupStaffGuid )
+                    .Select( a => a.PersonId );
+
+                qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
 
             SortProperty sortProperty = gList.SortProperty;
 
