@@ -32,6 +32,8 @@ using Rock.Store;
 using System.Text;
 using Rock.Utility;
 using System.Net;
+using System.IO.Compression;
+
 
 namespace RockWeb.Blocks.Store
 {
@@ -158,8 +160,16 @@ namespace RockWeb.Blocks.Store
         {
             foreach ( var installStep in installSteps )
             {
+                string appRoot = Server.MapPath( "~/" );
+                string rockShopWorkingDir = appRoot + "App_Data/RockShop";
                 string sourceFile = installStep.InstallPackageUrl.Replace( "~", "http://www.rockrms.com" );  // todo remove before flight
-                string destinationFile = Server.MapPath( string.Format( "~/App_Data/{0}.zip", installStep.PackageId.ToString() ) );
+                string destinationFile =  rockShopWorkingDir + string.Format( "/{0}.plugin", installStep.PackageId.ToString());
+                
+                // check that the RockShop directory exists
+                if ( !Directory.Exists( rockShopWorkingDir ) )
+                {
+                    Directory.CreateDirectory( rockShopWorkingDir );
+                }
 
                 // download file
                 try
@@ -169,12 +179,114 @@ namespace RockWeb.Blocks.Store
                 }
                 catch ( Exception ex )
                 {
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred will while downloading package from the store. Please try again later.</div>", ex.Message );
+                    CleanUpPackage();
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Downloading Package</strong> An error occurred while downloading package from the store. Please try again later. <br><em>Error: {0}</em></div>", ex.Message );
                     return;
                 }
+
+                // unzip the file
+                try
+                {
+                    using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
+                    {
+                        foreach ( ZipArchiveEntry entry in packageZip.Entries )
+                        {
+                            if ( !entry.FullName.EndsWith( ".xtd", StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                string fullpath = Path.Combine( appRoot, entry.FullName );
+                                string directory = Path.GetDirectoryName( fullpath );
+
+                                if ( !Directory.Exists( directory ) )
+                                {
+                                    Directory.CreateDirectory( directory );
+                                }
+
+                                entry.ExtractToFile( fullpath, true );
+                            }
+                            else { 
+                                // todo process xtd
+                            }
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    CleanUpPackage();
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Extracting Package</strong> An error occurred while extracting the contents of the package. <br><em>Error: {0}</em></div>", ex.Message );
+                    return;
+                }
+
+                // process and sql files
+                string[] files = Directory.GetFiles( appRoot + "App_Data/RockShop/", "*.sql" );
+
+                try
+                {
+                    using ( var context = new RockContext() )
+                    {
+                        foreach ( var file in files )
+                        {
+                            context.Database.ExecuteSqlCommand( System.IO.File.ReadAllText( file ) );
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    CleanUpPackage();
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Updating Database</strong> An error occurred while updating the database. <br><em>Error: {0}</em></div>", ex.Message );
+                    return;
+                }
+
+                // process delete instructions
+                files = Directory.GetFiles( appRoot + "App_Data/RockShop/", "*.del" );
+
+                try
+                {
+                    foreach ( var file in files )
+                    {
+                        string deleteFile = "";
+
+                        System.IO.StreamReader srFile = new System.IO.StreamReader( file );
+                        while ( (deleteFile = srFile.ReadLine()) != null )
+                        {
+                            if ( File.Exists( deleteFile ) )
+                            {
+                                File.Delete( deleteFile );
+                            }
+                        }
+
+                        srFile.Close();
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    CleanUpPackage();
+                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Modifing Files</strong> An error occurred while modifing files. <br><em>Error: {0}</em></div>", ex.Message );
+                    return;
+                }
+
+                // cleanup package
+                CleanUpPackage();
+
+                // todo update package install json file
             }
         }
-        
+
+        private void CleanUpPackage()
+        {
+            try
+            {
+                string shopRoot = Server.MapPath( "~/App_Data/RockShop" );
+
+                if ( Directory.Exists( shopRoot ) )
+                {
+                    Directory.Delete( shopRoot, true );
+                }
+            } catch(Exception ex){
+                lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {0}</em></div>", ex.Message );
+                return;
+            }
+        }
+
         private void DisplayPackageInfo()
         {
             string errorResponse = string.Empty;
