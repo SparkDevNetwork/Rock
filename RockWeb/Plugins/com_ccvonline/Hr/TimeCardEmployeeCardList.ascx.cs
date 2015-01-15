@@ -1,13 +1,11 @@
 using System;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -48,6 +46,26 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             gList.IsDeleteEnabled = true;
             gList.GridRebind += gList_GridRebind;
+
+            // disable the normal Export export and add a special CSV Export button instead
+            gList.Actions.ShowExcelExport = false;
+
+            var btnExport = new LinkButton();
+            btnExport.ID = "btnExport";
+            btnExport.CssClass = "btn btn-default btn-sm";
+            btnExport.ToolTip = "Export to CSV";
+            btnExport.CausesValidation = false;
+            
+            btnExport.Text = @"
+<i class='fa fa-file-text-o'></i>
+Export
+";
+            btnExport.Click += btnExport_Click;
+            
+            // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
+            
+            gList.Actions.AddCustomActionControl( btnExport );
         }
 
         /// <summary>
@@ -126,6 +144,66 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 timeCardService.Delete( timeCard );
                 hrContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void btnExport_Click( object sender, EventArgs e )
+        {
+            var selectedTimeCardIds = gList.SelectedKeys.Select( a => a.ToString().AsInteger() ).ToList();
+            if ( !selectedTimeCardIds.Any() )
+            {
+                mdGridWarning.Show( "Please select at least one time card to export", ModalAlertType.Warning );
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            // TODO: What about Worked Holiday Hours??
+            sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
+            var timeCardService = new TimeCardService( new HrContext() );
+            var selectedTimeCardsQry = timeCardService.Queryable().Where( a => selectedTimeCardIds.Contains( a.Id ) );
+            if ( gList.SortProperty != null )
+            {
+                selectedTimeCardsQry = selectedTimeCardsQry.Sort( gList.SortProperty );
+            }
+            else
+            {
+                selectedTimeCardsQry = selectedTimeCardsQry.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
+            }
+
+            foreach ( var timeCard in selectedTimeCardsQry.ToList() )
+            {
+                string employeeId = "TODO";
+                string departmentId = "TODO";
+                string formattedLine = string.Format(
+                    "\"{0}, {1}\",\"{2}\",\"{3}\",{4:N2},{5:N2},{6:N2},{7:N2},{8:N2}",
+                    timeCard.PersonAlias.Person.LastName,
+                    timeCard.PersonAlias.Person.FirstName,
+                    employeeId,
+                    departmentId,
+                    timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ),
+                    timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ),
+                    timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ),
+                    timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ),
+                    timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ) );
+
+                sb.AppendLine( formattedLine );
+            }
+
+            // send the csv export to the browser
+            this.Page.EnableViewState = false;
+            this.Page.Response.Clear();
+            this.Page.Response.ContentType = "text/csv";
+            this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + string.Format( "TimeCardExport_{0}.csv", RockDateTime.Now.ToString( "MMddyyyy_HHmmss" ) ) );
+            
+            this.Page.Response.Charset = "";
+            this.Page.Response.Write( sb.ToString() );
+            this.Page.Response.Flush();
+            this.Page.Response.End();
         }
 
         #endregion
@@ -224,6 +302,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var overtimeHours = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 );
             lOvertimeHours.Text = overtimeHours.ToString( "0.##" );
             lOvertimeHours.Visible = lOvertimeHours.Text.AsDecimal() != 0;
+
+            Label lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Label;
+            var workedHolidayHours = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 );
+            lWorkedHolidayHours.Text = workedHolidayHours.ToString( "0.##" );
+            lWorkedHolidayHours.Visible = lWorkedHolidayHours.Text.AsDecimal() != 0;
 
             Label lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Label;
             lPaidVacationHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
