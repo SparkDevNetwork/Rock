@@ -103,6 +103,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddRestAction( "Groups", "Rock.Rest.Controllers.GroupsController", "GET", "api/Groups/GetFamilies/{personId}" );
             RockMigrationHelper.AddRestAction( "Groups", "Rock.Rest.Controllers.GroupsController", "GET", "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}" );
             RockMigrationHelper.AddRestAction( "People", "Rock.Rest.Controllers.PeopleController", "GET", "api/People/GetByUserName/{username}" );
+            RockMigrationHelper.AddRestAction( "People", "Rock.Rest.Controllers.PeopleController", "PUT", "api/People/{id}" ); 
             RockMigrationHelper.AddRestAction( "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController", "GET", "api/PrayerRequests" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.PrayerRequestsController", 0, "View", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "C87D747A-4921-410B-B12B-6F1D2FE00362" );
             RockMigrationHelper.AddSecurityAuthForRestController( "Rock.Rest.Controllers.PrayerRequestsController", 0, "Edit", true, "EDD336D5-1429-41D9-8D41-2581A05F0E16", Model.SpecialRole.None, "5544DDEF-B4C6-45FA-9DA1-3CA6A0449229" );

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,7 +27,6 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -811,17 +811,10 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.CheckedSecurityActions )
                                     {
                                         Page.Trace.Warn( "\tAdding additional security actions for blcok" );
-                                        block.BlockType.SecurityActions = new Dictionary<string, string>();
+                                        block.BlockType.SecurityActions = new ConcurrentDictionary<string, string>();
                                         foreach ( var action in blockControl.GetSecurityActionAttributes() )
                                         {
-                                            if ( block.BlockType.SecurityActions.ContainsKey( action.Key ) )
-                                            {
-                                                block.BlockType.SecurityActions[action.Key] = action.Value;
-                                            }
-                                            else
-                                            {
-                                                block.BlockType.SecurityActions.Add( action.Key, action.Value );
-                                            }
+                                            block.BlockType.SecurityActions.TryAdd( action.Key, action.Value );
                                         }
                                         block.BlockType.CheckedSecurityActions = true;
                                     }

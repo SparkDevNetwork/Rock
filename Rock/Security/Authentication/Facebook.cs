@@ -447,9 +447,7 @@ namespace Rock.Security.ExternalAuthentication
                                             binaryFile.BinaryFileType = fileType;
                                             binaryFile.MimeType = "image/jpeg";
                                             binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
-
-                                            binaryFile.Data = new BinaryFileData();
-                                            binaryFile.Data.Content = bytes;
+                                            binaryFile.Content = bytes;
 
                                             var binaryFileService = new BinaryFileService( rockContext );
                                             binaryFileService.Add( binaryFile );

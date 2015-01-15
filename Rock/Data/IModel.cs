@@ -81,6 +81,6 @@ namespace Rock.Data
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
-        void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state );
+        void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );
     }
 }
