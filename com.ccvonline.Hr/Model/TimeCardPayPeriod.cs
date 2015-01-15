@@ -15,7 +15,7 @@ namespace com.ccvonline.Hr.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the start date.
+        /// Gets or sets the start date of the Pay Period
         /// </summary>
         /// <value>
         /// The start date.
@@ -25,7 +25,7 @@ namespace com.ccvonline.Hr.Model
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the end date.
+        /// Gets or sets the DateTime where the PayPeriod ends. NOTE: The displayed EndDate will be EndDate.AddDays(-1) since humans think of this as a 24 hour date vs a point in time.
         /// </summary>
         /// <value>
         /// The end date.
@@ -50,7 +50,7 @@ namespace com.ccvonline.Hr.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} - {1}", StartDate.ToShortDateString(), EndDate.ToShortDateString() );
+            return string.Format( "{0} - {1}", StartDate.ToShortDateString(), EndDate.AddDays(-1).ToShortDateString() );
         }
 
         #endregion

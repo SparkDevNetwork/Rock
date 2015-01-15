@@ -159,29 +159,28 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             if ( limitToMyStaff )
             {
                 var staffPersonIds = TimeCardPayPeriodService.GetStaffThatReportToPerson( hrContext, this.CurrentPersonId ?? 0 );
-
                 timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
             }
-            
-            var joinQry = payPeriodQry.Join(
+
+            var joinQry = payPeriodQry.GroupJoin(
                 timeCardQry,
                 innerKey => innerKey.Id,
                 outerKey => outerKey.TimeCardPayPeriodId,
-                ( PayPeriod, TimeCard ) => new
+                ( PayPeriod, TimeCards ) => new
                 {
                     PayPeriod,
-                    TimeCard
-                } ).GroupBy( g => g.PayPeriod );
+                    TimeCards = TimeCards
+                } );
 
             var selectQry = joinQry.Select( a => new
             {
-                Id = a.Key.Id,
-                PayPeriod = a.Key,
-                CardsInProgressCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.InProgress ),
-                CardsSubmittedCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Submitted ),
-                CardsApprovedCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Approved ),
-                CardsPaidCount = a.Count( x => x.TimeCard.TimeCardStatus == TimeCardStatus.Exported ),
-                CardsCount = a.Count(),
+                Id = a.PayPeriod.Id,
+                PayPeriod = a.PayPeriod,
+                CardsInProgressCount = a.TimeCards.Count( x => x.TimeCardStatus == TimeCardStatus.InProgress ),
+                CardsSubmittedCount = a.TimeCards.Count( x => x.TimeCardStatus == TimeCardStatus.Submitted ),
+                CardsApprovedCount = a.TimeCards.Count( x => x.TimeCardStatus == TimeCardStatus.Approved ),
+                CardsPaidCount = a.TimeCards.Count( x => x.TimeCardStatus == TimeCardStatus.Exported ),
+                CardsCount = a.TimeCards.Count(),
             } );
 
             gList.DataSource = selectQry.ToList();

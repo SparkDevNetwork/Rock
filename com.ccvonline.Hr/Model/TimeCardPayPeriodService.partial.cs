@@ -13,28 +13,17 @@ namespace com.ccvonline.Hr.Model
         /// <summary>
         /// Ensures the current pay period then returns it
         /// </summary>
-        /// <param name="payrollStartDay">The payroll start day.</param>
+        /// <param name="firstPayPeriodStartDate">The first pay period start date</param>
         /// <returns></returns>
-        public TimeCardPayPeriod EnsureCurrentPayPeriod( DayOfWeek payrollStartDay )
+        public TimeCardPayPeriod EnsureCurrentPayPeriod( DateTime firstPayPeriodStartDate )
         {
             TimeCardPayPeriod currentPayPeriod = GetCurrentPayPeriod();
             if ( currentPayPeriod == null )
             {
                 // assume 14 PayPeriods starting on first Saturday of Year
                 DateTime currentDate = RockDateTime.Today;
-                DateTime jan1 = new DateTime( currentDate.Year, 1, 1 );
-                int daysOffset = payrollStartDay - jan1.DayOfWeek;
-                DateTime firstSaturday = jan1.AddDays( daysOffset );
-                System.Globalization.Calendar cal = new GregorianCalendar( GregorianCalendarTypes.USEnglish );
-                var firstWeek = cal.GetWeekOfYear( firstSaturday, CalendarWeekRule.FirstFullWeek, payrollStartDay );
-                int weekNum = 1;
-                if ( firstWeek <= 1 )
-                {
-                    weekNum--;
-                }
 
-                firstSaturday = firstSaturday.AddDays( weekNum * 7 );
-                var payPeriodEnd = firstSaturday.AddDays( -14 );
+                var payPeriodEnd = firstPayPeriodStartDate.AddDays( 14 );
                 while ( payPeriodEnd < currentDate )
                 {
                     payPeriodEnd = payPeriodEnd.AddDays( 14 );
@@ -84,7 +73,7 @@ namespace com.ccvonline.Hr.Model
                 .Where( a => qryPersonDeptLeaderGroup.Any( x => x.Id == a.GroupId ) )
                 .Where( a => a.GroupRole.Guid == groupStaffGuid )
                 .Select( a => a.PersonId );
-            
+
             return staffPersonIds;
         }
     }

@@ -5,6 +5,7 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+            <Rock:NotificationBox ID="nbBlockWarning" runat="server" NotificationBoxType="Warning" />
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-star"></i>&nbsp;My Time Cards</h1>

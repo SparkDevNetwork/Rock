@@ -21,7 +21,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time cards for a specific employee." )]
 
     [LinkedPage( "Detail Page" )]
-    [DayOfWeekField( "Payroll Start Day", "The Day of Week that pay periods start on.  The First week of Payroll is determined by the first full week of the year for that day.", false, DayOfWeek.Monday )]
+    [DateField( "First Pay Period Start Date", "The Start Date of the first Payroll Period.  This will determine the daterange of subsequent Pay Periods." , false, "2014-12-15"  )]   
     public partial class TimeCardList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -104,8 +104,14 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var hrContext = new HrContext();
             var timeCardService = new TimeCardService( hrContext );
             var timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
-            DayOfWeek payrollStartDay = this.GetAttributeValue( "PayrollStartDay" ).ConvertToEnum<DayOfWeek>( DayOfWeek.Monday );
-            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( payrollStartDay );
+            DateTime? firstPayPeriodStartDate = this.GetAttributeValue( "FirstPayPeriodStartDate" ).AsDateTime();
+            if (!firstPayPeriodStartDate.HasValue)
+            {
+                nbBlockWarning.Text = "The first pay period start date must be set in block settings";
+                return;
+            }
+
+            var currentPayPeriod = timeCardPayPeriodService.EnsureCurrentPayPeriod( firstPayPeriodStartDate.Value );
             SortProperty sortProperty = gList.SortProperty;
 
             var qry = timeCardService.Queryable().Where( a => a.PersonAliasId == this.CurrentPersonAliasId );
