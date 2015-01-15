@@ -14,13 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
-using System.Web;
+
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -34,41 +31,40 @@ namespace Rock.Storage.Provider
     public class Database : ProviderComponent
     {
         /// <summary>
-        /// Removes the file from the external storage medium associated with the provider.
+        /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public override void RemoveFile( BinaryFile file, HttpContext context )
+        public override void SaveContent( BinaryFile file )
         {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to delete
+            if ( file.DatabaseData == null )
+            {
+                file.DatabaseData = new BinaryFileData();
+            }
+            file.DatabaseData.Content = file.Content;
         }
 
         /// <summary>
-        /// Saves the file to the external storage medium associated with the provider.
+        /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public override void SaveFile( BinaryFile file, HttpContext context )
+        public override void DeleteContent( BinaryFile file )
         {
-            // Database storage just stores everything in the BinaryFile table, so there is no external file data to save
+            file.DatabaseData = null;
         }
 
         /// <summary>
-        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
+        /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
+        public override Stream GetContentStream( BinaryFile file )
         {
-            if ( file.Data != null )
+            if ( file.DatabaseData != null && file.DatabaseData.Content != null )
             {
-                return file.Data.ContentStream;
+                return new MemoryStream( file.DatabaseData.Content );
             }
-            else
-            {
-                return null;
-            }
+            return new MemoryStream();
         }
+
     }
 }
