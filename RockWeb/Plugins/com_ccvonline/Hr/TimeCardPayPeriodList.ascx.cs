@@ -20,6 +20,8 @@ using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -27,13 +29,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_ccvonline.Hr
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Time Card Pay Period List" )]
     [Category( "CCV > Time Card" )]
     [Description( "Lists all the time card pay periods." )]
 
     [LinkedPage( "Detail Page" )]
+    [BooleanField( "Limit To My Staff", "Enable this to only include counts for the people that are in the department that you lead.", true )]
     public partial class TimeCardPayPeriodList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -80,7 +83,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            BindGrid();
         }
 
         /// <summary>
@@ -151,6 +154,14 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             TimeCardService timeCardService = new TimeCardService( hrContext );
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
             var timeCardQry = timeCardService.Queryable();
+
+            var limitToMyStaff = this.GetAttributeValue( "LimitToMyStaff" ).AsBooleanOrNull() ?? true;
+            if ( limitToMyStaff )
+            {
+                var staffPersonIds = TimeCardPayPeriodService.GetStaffThatReportToPerson( hrContext, this.CurrentPersonId ?? 0 );
+
+                timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
             
             var joinQry = payPeriodQry.Join(
                 timeCardQry,

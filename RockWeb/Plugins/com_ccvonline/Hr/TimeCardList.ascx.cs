@@ -14,7 +14,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_ccvonline.Hr
 {
     /// <summary>
-    /// Lists all the Referral Agencies.
+    /// 
     /// </summary>
     [DisplayName( "Time Card List" )]
     [Category( "CCV > Time Card" )]

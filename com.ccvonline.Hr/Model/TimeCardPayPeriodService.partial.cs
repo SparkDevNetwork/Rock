@@ -59,5 +59,33 @@ namespace com.ccvonline.Hr.Model
             var currentDate = RockDateTime.Today;
             return this.Queryable().Where( a => currentDate >= a.StartDate && currentDate <= a.EndDate ).FirstOrDefault();
         }
+
+        /// <summary>
+        /// Gets a list of Person Ids for people that are Staff that report to specified leaderPersonId.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="leaderPersonId">The leader person identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<int> GetStaffThatReportToPerson( Rock.Data.RockContext rockContext, int leaderPersonId )
+        {
+            // TODO use Rock SystemGuids for these after next merge from core
+            string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
+            string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
+
+            Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
+            Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+            Guid groupStaffGuid = GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
+
+            // figure out what department the person is a leader in (hopefully at most one department, but we'll deal with multiple just in case)
+            var groupMemberService = new Rock.Model.GroupMemberService( rockContext );
+            var qryPersonDeptLeaderGroup = groupMemberService.Queryable().Where( a => a.PersonId == leaderPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid && a.GroupRole.Guid == groupLeaderGuid ).Select( a => a.Group );
+
+            var staffPersonIds = groupMemberService.Queryable()
+                .Where( a => qryPersonDeptLeaderGroup.Any( x => x.Id == a.GroupId ) )
+                .Where( a => a.GroupRole.Guid == groupStaffGuid )
+                .Select( a => a.PersonId );
+            
+            return staffPersonIds;
+        }
     }
 }
