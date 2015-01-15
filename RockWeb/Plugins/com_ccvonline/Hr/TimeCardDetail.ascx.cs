@@ -4,11 +4,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -20,6 +19,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [DisplayName( "Time Card Detail" )]
     [Category( "CCV > Time Card" )]
     [Description( "Displays the details of a time card." )]
+
+    [WorkflowTypeField( "Workflow", "The workflow to activate when a TimeCard is submitted.", false, false )]
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -434,7 +435,41 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSubmit_Click( object sender, EventArgs e )
         {
-            // TODO
+            var hrContext = new HrContext();
+            
+            int timeCardId = hfTimeCardId.Value.AsInteger();
+            var timeCardService = new TimeCardService( hrContext );
+            var timeCard = timeCardService.Get( timeCardId );
+            if ( timeCard == null )
+            {
+                return;
+            }
+            
+            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowTypeService = new WorkflowTypeService( hrContext );
+                var workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                if ( workflowType != null )
+                {
+                    var workflowName = string.Format( "{0} Time Card for {1}", timeCard.TimeCardPayPeriod, timeCard.PersonAlias.Person );
+                    var workflow = Workflow.Activate( workflowType, workflowName );
+                }
+            }
+
+            timeCard.TimeCardStatus = TimeCardStatus.Submitted;
+            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+            var timeCardHistory = new TimeCardHistory();
+            timeCardHistory.TimeCardId = timeCard.Id;
+            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
+            timeCardHistory.StatusPersonAliasId = this.CurrentPersonId;
+            timeCardHistory.HistoryDateTime = RockDateTime.Now;
+            timeCardHistory.Notes = string.Empty;
+            timeCardHistoryService.Add( timeCardHistory );
+
+            hrContext.SaveChanges();
+
+            ShowDetail();
         }
     }
 }
