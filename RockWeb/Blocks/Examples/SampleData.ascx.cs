@@ -743,7 +743,8 @@ namespace RockWeb.Blocks.Examples
                 _stopwatch.Start();
             }
             rockContext.ChangeTracker.DetectChanges();
-            rockContext.SaveChanges( disablePrePostProcessing: true );
+//            rockContext.SaveChanges( disablePrePostProcessing: true );
+            rockContext.SaveChanges();  // PreProcessing is required to save the photos
 
             // Now save each person's attributevalues (who had them defined in the XML)
             // and add each person's ID to a dictionary for use later.
@@ -1750,13 +1751,11 @@ namespace RockWeb.Blocks.Examples
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = _binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( photoUrl );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
 
             var webClient = new WebClient();
             try
             {
-                binaryFile.Data.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
+                binaryFile.Content = webClient.DownloadData( photoUrl );
 
                 if ( webClient.ResponseHeaders != null )
                 {

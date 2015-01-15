@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Web;
 
+using Rock;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,49 +31,30 @@ namespace Rock.Storage
     public abstract class ProviderComponent : Component
     {
         /// <summary>
-        /// Saves the file to the external storage medium associated with the provider.
+        /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public abstract void SaveFile( BinaryFile file, HttpContext context );
+        public abstract void SaveContent( BinaryFile file );
 
         /// <summary>
-        /// Removes the file from the external storage medium associated with the provider.
+        /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public abstract void RemoveFile( BinaryFile file, HttpContext context );
+        public abstract void DeleteContent( BinaryFile file );
 
         /// <summary>
-        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        [Obsolete( "This will be removed post McKinley. Use GetFileContentStream() instead." )]
-        public virtual byte[] GetFileContent( BinaryFile file, HttpContext context )
-        {
-            var stream = GetFileContentStream( file, context );
-            var result = new byte[stream.Length];
-            stream.Seek( 0, SeekOrigin.Begin );
-            stream.Read( result, 0, result.Length );
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the file content
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        public abstract Stream GetFileContentStream( BinaryFile file, HttpContext context );
+        public abstract Stream GetContentStream( BinaryFile file );
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public virtual string GenerateUrl( BinaryFile file )
+        public virtual string GetContentUrl( BinaryFile file )
         {
             string url = string.Empty;
 
