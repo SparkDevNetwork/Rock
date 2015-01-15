@@ -259,6 +259,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            lTitle.Text = "Pay Period: " + timeCard.TimeCardPayPeriod.ToString();
+            hlblSubTitle.Text = timeCard.TimeCardStatus.ConvertToString();
+
             var qry = timeCardDayService.Queryable().Where( a => a.TimeCardId == timeCardId ).OrderBy( a => a.StartDateTime );
             var qryList = qry.ToList();
 
@@ -295,45 +298,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             rptTimeCardDay.DataBind();
 
             // Actions/Submit
-            var rockContext = new Rock.Data.RockContext();
-            var groupService = new GroupService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
-            Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
-
-            // figure out what department the person works in (hopefully at most one department, but we'll deal with multiple just in case)
-            var qryPersonDeptGroup = groupMemberService.Queryable().Where( a => a.PersonId == this.CurrentPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid ).Select( a => a.Group );
-
-            // get a list of the department(s) and the parent departments so that we can get a list of leaders that this person could submit the timecard to (starting with most immediate leader)
-            List<int> departmentGroupIds = new List<int>();
-
-            foreach ( var deptGroup in qryPersonDeptGroup.ToList() )
-            {
-                departmentGroupIds.Add( deptGroup.Id );
-
-                // TODO: Use GroupService.GetAncestorIds do this after next merge from core
-                var parentGroup = deptGroup.ParentGroup;
-                while ( parentGroup != null )
-                {
-                    departmentGroupIds.Add( parentGroup.Id );
-                    parentGroup = parentGroup.ParentGroup;
-                }
-            }
-
-            // TODO use Rock SystemGuid for this after next merge from core
-            string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
+            List<Person> leaders = TimeCardPayPeriodService.GetLeadersForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
 
             ddlSubmitTo.Items.Clear();
             ddlSubmitTo.Items.Add( new ListItem() );
-            foreach ( var deptGroupId in departmentGroupIds )
-            {
-                Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
-                var qryLeaders = groupMemberService.Queryable()
-                    .Where( a => a.GroupId == deptGroupId )
-                    .Where( a => a.GroupRole.Guid == groupLeaderGuid )
-                    .Select( a => a.Person );
-
-                ddlSubmitTo.Items.AddRange( qryLeaders.ToList().Select( a => new ListItem( a.ToString(), a.Id.ToString() ) ).ToArray() );
-            }
+            ddlSubmitTo.Items.AddRange( leaders.Select( a => new ListItem( a.ToString(), a.Id.ToString() ) ).ToArray() );
 
             // Totals
             lTotalRegularWorked.Text = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );

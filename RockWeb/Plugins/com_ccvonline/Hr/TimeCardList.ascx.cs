@@ -167,6 +167,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lOvertimeHours.Text = overtimeHours.ToString( "0.##" );
             lOvertimeHours.Visible = lOvertimeHours.Text.AsDecimal() != 0;
 
+            Label lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Label;
+            var workedOvertimeHours = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 );
+            lWorkedHolidayHours.Text = workedOvertimeHours.ToString( "0.##" );
+            lWorkedHolidayHours.Visible = lWorkedHolidayHours.Text.AsDecimal() != 0;
+
             Label lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Label;
             lPaidVacationHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lPaidVacationHours.Visible = lPaidVacationHours.Text.AsDecimal() != 0;

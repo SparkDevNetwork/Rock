@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Rock;
+using Rock.Model;
 
 namespace com.ccvonline.Hr.Model
 {
@@ -66,7 +68,7 @@ namespace com.ccvonline.Hr.Model
             Guid groupStaffGuid = GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
 
             // figure out what department the person is a leader in (hopefully at most one department, but we'll deal with multiple just in case)
-            var groupMemberService = new Rock.Model.GroupMemberService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             var qryPersonDeptLeaderGroup = groupMemberService.Queryable().Where( a => a.PersonId == leaderPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid && a.GroupRole.Guid == groupLeaderGuid ).Select( a => a.Group );
 
             var staffPersonIds = groupMemberService.Queryable()
@@ -75,6 +77,54 @@ namespace com.ccvonline.Hr.Model
                 .Select( a => a.PersonId );
 
             return staffPersonIds;
+        }
+
+        /// <summary>
+        /// Gets the leaders for staff person starting with the most immediate leader(s) and ending with the organization leader(s)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="staffPersonId">The staff person identifier.</param>
+        /// <returns></returns>
+        public static List<Person> GetLeadersForStaffPerson( Rock.Data.RockContext rockContext, int staffPersonId )
+        {
+            var groupService = new GroupService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
+
+            // figure out what department the person works in (hopefully at most one department, but we'll deal with multiple just in case)
+            var qryPersonDeptGroup = groupMemberService.Queryable().Where( a => a.PersonId == staffPersonId ).Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid ).Select( a => a.Group );
+
+            // get a list of the department(s) and the parent departments so that we can get a list of leaders that this person could submit the timecard to (starting with most immediate leader)
+            List<int> departmentGroupIds = new List<int>();
+
+            foreach ( var deptGroup in qryPersonDeptGroup.ToList() )
+            {
+                departmentGroupIds.Add( deptGroup.Id );
+
+                // TODO: Use GroupService.GetAncestorIds do this after next merge from core
+                var parentGroup = deptGroup.ParentGroup;
+                while ( parentGroup != null )
+                {
+                    departmentGroupIds.Add( parentGroup.Id );
+                    parentGroup = parentGroup.ParentGroup;
+                }
+            }
+
+            // TODO use Rock SystemGuid for this after next merge from core
+            string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
+
+            List<Person> leaders = new List<Person>();
+            foreach ( var deptGroupId in departmentGroupIds )
+            {
+                Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+                var qryLeaders = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == deptGroupId )
+                    .Where( a => a.GroupRole.Guid == groupLeaderGuid )
+                    .Select( a => a.Person );
+
+                leaders.AddRange( qryLeaders.ToList() );
+            }
+            return leaders;
         }
     }
 }
