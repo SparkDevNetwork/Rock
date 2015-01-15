@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -100,7 +100,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The security actions.
         /// </value>
-        public Dictionary<string, string> SecurityActions { get; set; }
+        public ConcurrentDictionary<string, string> SecurityActions { get; set; }
 
         #endregion
 

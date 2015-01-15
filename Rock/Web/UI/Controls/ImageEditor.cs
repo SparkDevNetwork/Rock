@@ -587,16 +587,17 @@ namespace Rock.Web.UI.Controls
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
                 if ( binaryFile != null )
                 {
-                    Stream croppedImage = CropImage( binaryFile.Data.ContentStream, binaryFile.MimeType );
-
                     BinaryFile croppedBinaryFile = new BinaryFile();
                     croppedBinaryFile.IsTemporary = true;
                     croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
                     croppedBinaryFile.MimeType = binaryFile.MimeType;
                     croppedBinaryFile.FileName = binaryFile.FileName;
                     croppedBinaryFile.Description = binaryFile.Description;
-                    croppedBinaryFile.Data = new BinaryFileData();
-                    croppedBinaryFile.Data.ContentStream = croppedImage;
+
+                    using ( Stream croppedImage = CropImage( binaryFile.ContentStream, binaryFile.MimeType ) )
+                    {
+                        croppedBinaryFile.Content = croppedImage.ReadBytesToEnd();
+                    }
 
                     binaryFileService.Add( croppedBinaryFile );
                     rockContext.SaveChanges();
@@ -727,9 +728,9 @@ namespace Rock.Web.UI.Controls
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
-                    if ( binaryFile.Data != null && binaryFile.Data.ContentStream != null )
+                    if ( binaryFile.Content != null && binaryFile.Content.Length > 0 )
                     {
-                        var bitMap = new System.Drawing.Bitmap( binaryFile.Data.ContentStream );
+                        var bitMap = new System.Drawing.Bitmap( binaryFile.ContentStream );
                         _imgCropSource.Width = bitMap.Width;
                         _imgCropSource.Height = bitMap.Height;
                     }

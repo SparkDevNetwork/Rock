@@ -157,13 +157,10 @@ namespace RockWeb
                             }
                         }
 
-                        if ( binaryFile.Data != null )
+                        if ( binaryFile.Content != null && binaryFile.Content.Length > 0 )
                         {
-                            if ( binaryFile.Data.ContentStream != null )
-                            {
-                                SendFile( context, binaryFile.Data.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
-                                return;
-                            }
+                            SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
+                            return;
                         }
                     }
                 }

@@ -201,9 +201,9 @@ namespace RockWeb
                     // If we didn't get it from the cache, get it from the binaryFileService
                     BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
 
-                    if ( binaryFile != null && binaryFile.Data != null )
+                    if ( binaryFile != null )
                     {
-                        fileContent = binaryFile.Data.ContentStream;
+                        fileContent = binaryFile.ContentStream;
                     }
 
                     // If we got the image from the binaryFileService, it might need to be resized and cached

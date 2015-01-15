@@ -16,10 +16,12 @@
 //
 using System;
 using System.IO;
-
 using System.Web;
+
+using Rock;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Storage
 {
@@ -29,58 +31,61 @@ namespace Rock.Storage
     public abstract class ProviderComponent : Component
     {
         /// <summary>
-        /// Saves the file to the external storage medium associated with the provider.
+        /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public abstract void SaveFile( BinaryFile file, HttpContext context );
+        public abstract void SaveContent( BinaryFile file );
 
         /// <summary>
-        /// Removes the file from the external storage medium associated with the provider.
+        /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        public abstract void RemoveFile( BinaryFile file, HttpContext context );
+        public abstract void DeleteContent( BinaryFile file );
 
         /// <summary>
-        /// Gets the file bytes from the external storage medium associated with the provider.
+        /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        [Obsolete( "This will be removed post McKinley. Use GetFileContentStream() instead." )]
-        public virtual byte[] GetFileContent( BinaryFile file, HttpContext context )
-        {
-            var stream = GetFileContentStream( file, context );
-            var result = new byte[stream.Length];
-            stream.Seek( 0, SeekOrigin.Begin );
-            stream.Read( result, 0, result.Length );
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the file content
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        public abstract Stream GetFileContentStream( BinaryFile file, HttpContext context );
+        public abstract Stream GetContentStream( BinaryFile file );
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public virtual string GenerateUrl( BinaryFile file )
+        public virtual string GetContentUrl( BinaryFile file )
         {
-            if ( file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+            string url = string.Empty;
+
+            if ( file != null )
             {
-                return string.Format( "~/GetImage.ashx?guid={0}", file.Guid );
+                string handler = file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) ? "GetImage.ashx" : "GetFile.ashx";
+                url = System.Web.VirtualPathUtility.ToAbsolute( "~/" + handler);
+                url += "?guid=" + file.Guid.ToString();
+
+                Uri uri = null;
+                try
+                {
+                    if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+                    {
+                        uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                    }
+                }
+                catch { }
+
+                if ( uri == null )
+                {
+                    uri = new Uri( GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+                }
+
+                if ( uri != null )
+                {
+                    return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
+                }
             }
-            else
-            {
-                return string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
-            }
+
+            return url;
         }
 
         /// <summary>

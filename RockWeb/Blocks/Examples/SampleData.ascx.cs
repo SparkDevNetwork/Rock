@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
-        private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
+        private static EntityType _storageEntityType = _binaryFileType.StorageEntityType;
 
         /// <summary>
         /// The Autnentication Database entity type.
@@ -1750,13 +1750,16 @@ namespace RockWeb.Blocks.Examples
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = _binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( photoUrl );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
 
             var webClient = new WebClient();
             try
             {
-                binaryFile.Data.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
+                binaryFile.Content = webClient.DownloadData( photoUrl );
+
+                // Because prepost processing is disabled for this rockcontext, need to
+                // manually have the storage provider save the contents of the binary file
+                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
+                binaryFile.StorageProvider.SaveContent( binaryFile );
 
                 if ( webClient.ResponseHeaders != null )
                 {

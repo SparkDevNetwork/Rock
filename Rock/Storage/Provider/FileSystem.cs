@@ -15,13 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Web;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -36,143 +33,105 @@ namespace Rock.Storage.Provider
     public class FileSystem : ProviderComponent
     {
         /// <summary>
-        /// Saves the file to the external storage medium associated with the provider.
+        /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
-        public override void SaveFile( BinaryFile file, HttpContext context )
+        public override void SaveContent( BinaryFile binaryFile )
         {
-            var physicalPath = GetPhysicalPath( file, context );
-            var directoryName = Path.GetDirectoryName( physicalPath );
+            var filePath = GetFilePath( binaryFile );
 
+            // Create the directory if it doesn't exist
+            var directoryName = Path.GetDirectoryName( filePath );
             if ( !Directory.Exists( directoryName ) )
             {
                 Directory.CreateDirectory( directoryName );
             }
 
-            if ( file.Data != null && file.Data.ContentStream != null )
-            {
-                
-                FileStream sourceFileStream = file.Data.ContentStream as FileStream;
-                bool sameFile = ( sourceFileStream != null ) && sourceFileStream.Name == physicalPath;
-
-                if ( !sameFile )
-                {
-                    using ( FileStream writeStream = File.OpenWrite( physicalPath ) )
-                    {
-                        file.Data.ContentStream.CopyTo( writeStream );
-                    }
-
-
-                    file.Data.ContentStream.Dispose();
-                    file.Data.ContentStream = null;
-                }
-            }
-
-            // Set Data to null after successful OS save so the the binary data is not 
-            // written into the database.
-            file.Data = null;
+            // Write the contents to file
+            File.WriteAllBytes( filePath, binaryFile.Content );
         }
 
         /// <summary>
-        /// Removes the file from the external storage medium associated with the provider.
+        /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
-        public override void RemoveFile( BinaryFile file, HttpContext context )
+        public override void DeleteContent( BinaryFile binaryFile )
         {
-            var physicalPath = GetPhysicalPath( file, context );
-
-            if ( File.Exists( physicalPath ) )
+            var file = new FileInfo( GetFilePath( binaryFile ) );
+            if ( file.Exists )
             {
-                File.Delete( physicalPath );
+                file.Delete();
             }
         }
 
         /// <summary>
-        /// Gets the file bytes in chunks from the external storage medium associated with the provider.
+        /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public override Stream GetFileContentStream( BinaryFile file, HttpContext context )
+        public override Stream GetContentStream( BinaryFile binaryFile )
         {
-            var physicalPath = GetPhysicalPath( file, context );
-
-            if ( File.Exists( physicalPath ) )
+            var file = new FileInfo( GetFilePath( binaryFile ) );
+            if ( file.Exists )
             {
-                var fileStream = File.OpenRead( physicalPath );
+                return file.OpenRead();
+            }
 
-                return fileStream;
-            }
-            else
-            {
-                return null;
-            }
+            return new MemoryStream();
         }
 
         /// <summary>
-        /// Gets the root path.
-        /// </summary>
-        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
-        /// <returns></returns>
-        /// <value>
-        /// The root path.
-        /// </value>
-        private string GetRootPath( int binaryFileTypeId )
-        {
-            BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId );
-            binaryFileType.LoadAttributes();
-            string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
-            if (string.IsNullOrEmpty(rootPath))
-            {
-                rootPath = "~/App_Data/Files";
-            }
-            return rootPath;
-        }
-
-        /// <summary>
-        /// Gets the physical path.
+        /// Gets the file path.
         /// </summary>
         /// <param name="binaryFile">The binary file.</param>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string GetPhysicalPath( BinaryFile binaryFile, HttpContext context )
+        private string GetFilePath( BinaryFile binaryFile )
         {
-            if ( string.IsNullOrWhiteSpace( binaryFile.FileName ) )
+            if ( binaryFile != null && !string.IsNullOrWhiteSpace( binaryFile.FileName ) )
             {
-                return null;
+                // If file's guid hasn't been set, set it now since it is required for filename
+                if ( binaryFile.Guid.IsEmpty() )
+                {
+                    binaryFile.Guid = Guid.NewGuid();
+                }
+
+                string subFolder = string.Empty;
+
+                var binaryFileType = binaryFile.BinaryFileType;
+                if ( binaryFileType == null && binaryFile.BinaryFileTypeId.HasValue )
+                {
+                    binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
+                }
+
+                if ( binaryFileType != null )
+                {
+                    binaryFileType.LoadAttributes();
+                    subFolder = binaryFileType.GetAttributeValue( "RootPath" );
+                }
+
+                if ( string.IsNullOrWhiteSpace( subFolder ) )
+                {
+                    subFolder = @"App_Data\Files";
+                }
+                else
+                {
+                    subFolder = subFolder.Replace( "/", @"\" );
+                    subFolder = subFolder.TrimStart( "~".ToCharArray() );
+                    subFolder = subFolder.TrimStart( @"\".ToCharArray() );
+                }
+
+                string folder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, subFolder );
+                string fileName = string.Format( "{0}_{1}", binaryFile.Guid, binaryFile.FileName );
+                return Path.Combine( folder, fileName );
             }
 
-            var urlBuilder = new StringBuilder();
-
-            string rootPath = GetRootPath( binaryFile.BinaryFileTypeId ?? 0 );
-
-            urlBuilder.Append( rootPath.EnsureTrailingForwardslash() );
-
-            // if the file doesn't have a folderPath, prefix the FileName on disk with the Guid so that we can have multiple files with the same name (for example, setup.exe and setup.exe)
-            if ( Path.GetDirectoryName( binaryFile.FileName ) == string.Empty )
-            {
-                urlBuilder.Append( binaryFile.Guid + "_" );
-            }
-
-            string urlFileName = binaryFile.FileName.Replace( "\\", "/" ).TrimStart( new char[] { '/' } );
-
-            urlBuilder.Append( urlFileName );
-            
-            var path = urlBuilder.ToString();
-            if ( Regex.Match(path, @"^[A-Z,a-z]:\\").Success  || path.StartsWith( "\\\\" ) )
-            {
-                return path;
-            }
-
-            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) || path.StartsWith( "/" ) || path.StartsWith( "~" ) )
-            {
-                return context.Server.MapPath( path );
-            }
-
-            return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, path );
+            return string.Empty;
         }
+
+
     }
 }

@@ -304,6 +304,8 @@
     <Compile Include="Store\StoreModel.cs" />
     <Compile Include="Store\StoreServiceBase.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
+    <Compile Include="SystemGuid\NoteType.cs" />
+    <Compile Include="Transactions\DeleteBinaryFile.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />

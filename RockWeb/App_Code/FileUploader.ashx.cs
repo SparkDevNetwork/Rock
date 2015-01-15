@@ -186,8 +186,10 @@ namespace RockWeb
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.Data.ContentStream = GetFileContentStream( context, uploadedFile );
+            using ( var stream = GetFileContentStream( context, uploadedFile ) )
+            {
+                binaryFile.Content = stream.ReadBytesToEnd();
+            }
 
             var binaryFileService = new BinaryFileService( rockContext );
             binaryFileService.Add( binaryFile );
