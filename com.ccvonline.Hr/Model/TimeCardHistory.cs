@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using com.ccvonline.Hr.Data;
+using Rock;
 
 namespace com.ccvonline.Hr.Model
 {
@@ -55,6 +56,34 @@ namespace com.ccvonline.Hr.Model
         /// The status person alias.
         /// </value>
         public virtual Rock.Model.PersonAlias StatusPersonAlias { get; set; }
+
+        #endregion
+
+        #region methods
+
+        /// <summary>
+        /// Gets the time card history status text.
+        /// </summary>
+        /// <param name="timeCardHistory">The time card history.</param>
+        /// <returns></returns>
+        public string GetStatusText()
+        {
+            string statusText = string.Empty;
+            switch ( this.TimeCardStatus )
+            {
+                case TimeCardStatus.Approved:
+                    statusText = string.Format( "{0} by {1}", this.TimeCardStatus.ConvertToString(), this.StatusPersonAlias );
+                    break;
+                case TimeCardStatus.Submitted:
+                    statusText = string.Format( "{0} to {1}", this.TimeCardStatus.ConvertToString(), this.StatusPersonAlias );
+                    break;
+                default:
+                    statusText = this.TimeCardStatus.ConvertToString();
+                    break;
+            }
+
+            return statusText;
+        }
 
         #endregion
     }

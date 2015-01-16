@@ -363,6 +363,30 @@ namespace com.ccvonline.Hr.Model
             return this.TimeCardDays.Any( a => a.HasHoursEntered() );
         }
 
+        /// <summary>
+        /// Gets the time card status text.
+        /// </summary>
+        /// <param name="timeCard">The time card.</param>
+        /// <returns></returns>
+        public string GetStatusText()
+        {
+            string statusText = string.Empty;
+            switch ( this.TimeCardStatus )
+            {
+                case TimeCardStatus.Approved:
+                    statusText = string.Format( "{0} by {1}", this.TimeCardStatus.ConvertToString(), this.ApprovedByPersonAlias );
+                    break;
+                case TimeCardStatus.Submitted:
+                    statusText = string.Format( "{0} to {1}", this.TimeCardStatus.ConvertToString(), this.SubmittedToPersonAlias );
+                    break;
+                default:
+                    statusText = this.TimeCardStatus.ConvertToString();
+                    break;
+            }
+
+            return statusText;
+        }
+
         #endregion
     }
 

@@ -261,7 +261,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             }
 
             lTitle.Text = "Pay Period: " + timeCard.TimeCardPayPeriod.ToString();
-            hlblSubTitle.Text = timeCard.TimeCardStatus.ConvertToString();
+            hlblSubTitle.Text = timeCard.GetStatusText();
 
             var qry = timeCardDayService.Queryable().Where( a => a.TimeCardId == timeCardId ).OrderBy( a => a.StartDateTime );
             var qryList = qry.ToList();
@@ -436,7 +436,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         protected void lbSubmit_Click( object sender, EventArgs e )
         {
             var hrContext = new HrContext();
-            
+
             int timeCardId = hfTimeCardId.Value.AsInteger();
             var timeCardService = new TimeCardService( hrContext );
             var timeCard = timeCardService.Get( timeCardId );
@@ -444,7 +444,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             {
                 return;
             }
-            
+
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
@@ -454,15 +454,27 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 {
                     var workflowName = string.Format( "{0} Time Card for {1}", timeCard.TimeCardPayPeriod, timeCard.PersonAlias.Person );
                     var workflow = Workflow.Activate( workflowType, workflowName );
+
+                    List<string> workflowErrors;
+                    if ( workflow.Process( hrContext, timeCard, out workflowErrors ) )
+                    {
+                        if ( workflow.IsPersisted || workflowType.IsPersisted )
+                        {
+                            var workflowService = new Rock.Model.WorkflowService( hrContext );
+                            workflowService.Add( workflow );
+                            hrContext.SaveChanges();
+                        }
+                    }
                 }
             }
 
             timeCard.TimeCardStatus = TimeCardStatus.Submitted;
+            timeCard.SubmittedToPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
             var timeCardHistoryService = new TimeCardHistoryService( hrContext );
             var timeCardHistory = new TimeCardHistory();
             timeCardHistory.TimeCardId = timeCard.Id;
             timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
-            timeCardHistory.StatusPersonAliasId = this.CurrentPersonId;
+            timeCardHistory.StatusPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
             timeCardHistory.HistoryDateTime = RockDateTime.Now;
             timeCardHistory.Notes = string.Empty;
             timeCardHistoryService.Add( timeCardHistory );
@@ -470,6 +482,21 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             hrContext.SaveChanges();
 
             ShowDetail();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            TimeCardHistory timeCardHistory = e.Row.DataItem as TimeCardHistory;
+            if ( timeCardHistory != null )
+            {
+                Literal lStatusText = e.Row.FindControl( "lStatusText" ) as Literal;
+                lStatusText.Text = timeCardHistory.GetStatusText();
+            }
         }
     }
 }

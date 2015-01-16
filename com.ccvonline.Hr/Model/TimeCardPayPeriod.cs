@@ -50,7 +50,7 @@ namespace com.ccvonline.Hr.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} - {1}", StartDate.ToShortDateString(), EndDate.AddDays(-1).ToShortDateString() );
+            return string.Format( "{0} - {1}", StartDate.ToShortDateString(), EndDate.AddDays( -1 ).ToShortDateString() );
         }
 
         #endregion

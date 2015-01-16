@@ -261,11 +261,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h2>History</h2>
-                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
+                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light" OnRowDataBound="gHistory_RowDataBound">
                                 <Columns>
-                                    <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias.Person" />
                                     <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
-                                    <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
+                                    <Rock:RockTemplateField HeaderText="Status">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lStatusText" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:RockBoundField HeaderText="Notes" DataField="Notes" />
                                 </Columns>
                             </Rock:Grid>
