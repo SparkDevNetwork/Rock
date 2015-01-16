@@ -359,6 +359,16 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        protected void lbAddTransaction_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> pageParams = new Dictionary<string, string>();
+
+            pageParams.Add( "BatchId", PageParameter( "batchId" ) );
+            pageParams.Add( "TransactionId", "0" );
+            NavigateToPage( RockPage.Guid, pageParams );
+
+        }
+
         /// <summary>
         /// Handles the BlockUpdated event of the Block control.
         /// </summary>
@@ -554,6 +564,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transactionId">The transaction identifier.</param>
         public void ShowDetail( int transactionId, int? batchId )
         {
+            // show or hide the add new transaction button depending if there is a batch id in the querystring
+            lbAddTransaction.Visible = !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) );
+            
             FinancialTransaction txn = null;
 
             bool editAllowed = true;
@@ -720,6 +733,19 @@ namespace RockWeb.Blocks.Finance
         /// <param name="txn">The TXN.</param>
         private void ShowEditDetails( FinancialTransaction txn, RockContext rockContext )
         {
+            this.Page.ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "StartupScript", @"Sys.Application.add_load(function () {
+
+                // if the person picker is empty then open it for quick entry
+                var personPicker = $('.js-authorizedperson');
+                var currentPerson = personPicker.find('.picker-selectedperson').html();
+                if (currentPerson != null && currentPerson.length == 0) {
+                    $(personPicker).find('a.picker-label').trigger('click');
+                }
+
+            });", true );
+
             if ( txn != null )
             {
                 BindDropdowns( rockContext );
@@ -916,6 +942,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-}
+    }
 }
