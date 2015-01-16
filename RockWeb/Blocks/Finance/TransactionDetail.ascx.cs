@@ -355,7 +355,14 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                NavigateToParentPage();
+                Dictionary<string, string> pageParams = new Dictionary<string, string>();
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) ) )
+                {
+                    pageParams.Add( "BatchId", PageParameter( "batchId" ) );
+                }
+
+                NavigateToParentPage( pageParams );
             }
         }
 
