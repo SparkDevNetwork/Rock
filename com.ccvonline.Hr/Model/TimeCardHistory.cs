@@ -72,6 +72,7 @@ namespace com.ccvonline.Hr.Model
             switch ( this.TimeCardStatus )
             {
                 case TimeCardStatus.Approved:
+                case TimeCardStatus.Exported:
                     statusText = string.Format( "{0} by {1}", this.TimeCardStatus.ConvertToString(), this.StatusPersonAlias );
                     break;
                 case TimeCardStatus.Submitted:

@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TimeCardEmployeeCardList.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Hr.TimeCardEmployeeCardList" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
+
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
@@ -17,6 +17,18 @@
                     <Columns>
                         <Rock:SelectField />
                         <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.FirstName" />
+
+                        <Rock:RockTemplateField HeaderText="Employee #">
+                            <ItemTemplate>
+                                <asp:Literal ID="lEmployeeNumber" runat="server" />
+                            </ItemTemplate>
+                        </Rock:RockTemplateField>
+                        <Rock:RockTemplateField HeaderText="Department">
+                            <ItemTemplate>
+                                <asp:Literal ID="lDepartment" runat="server" />
+                            </ItemTemplate>
+                        </Rock:RockTemplateField>
+
                         <Rock:EnumField DataField="TimeCardStatus" HeaderText="Status" SortExpression="TimeCardStatus" />
                         <Rock:RockTemplateField HeaderText="Hours">
                             <ItemTemplate>

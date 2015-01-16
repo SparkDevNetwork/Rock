@@ -9,6 +9,7 @@ using com.ccvonline.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Hr
@@ -20,10 +21,15 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Category( "CCV > Time Card" )]
     [Description( "Lists all the time cards for a specific pay period." )]
 
-    [LinkedPage( "Detail Page" )]
-    [BooleanField( "Limit To My Staff", "Enable this to only show people that are in the department that you lead.", true )]
+    [LinkedPage( "Detail Page", order: 0 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "EmployeeId Attribute", "Select the Person Attribute that is used for the person's EmployeeId", order: 1 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "DepartmentId Attribute", "Select the Person Attribute that is used for the person's DepartmentId", order: 2 )]
+    [BooleanField( "Limit To My Staff", "Enable this to only show people that are in the department that you lead.", true, order: 3 )]
     public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
+        private AttributeCache employeeIdAttribute = null;
+        private AttributeCache departmentIdAttribute = null;
+        
         #region Base Control Methods
 
         /// <summary>
@@ -55,16 +61,16 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             btnExport.CssClass = "btn btn-default btn-sm";
             btnExport.ToolTip = "Export to CSV";
             btnExport.CausesValidation = false;
-            
+
             btnExport.Text = @"
 <i class='fa fa-file-text-o'></i>
 Export
 ";
             btnExport.Click += btnExport_Click;
-            
+
             // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
             ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
-            
+
             gList.Actions.AddCustomActionControl( btnExport );
         }
 
@@ -75,6 +81,9 @@ Export
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            employeeIdAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeIdAttribute" ).AsGuid() );
+            departmentIdAttribute = AttributeCache.Read( this.GetAttributeValue( "DepartmentIdAttribute" ).AsGuid() );
 
             if ( !Page.IsPostBack )
             {
@@ -164,7 +173,9 @@ Export
             StringBuilder sb = new StringBuilder();
             // TODO: What about Worked Holiday Hours??
             sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
-            var timeCardService = new TimeCardService( new HrContext() );
+
+            var hrContext = new HrContext();
+            var timeCardService = new TimeCardService( hrContext );
             var selectedTimeCardsQry = timeCardService.Queryable().Where( a => selectedTimeCardIds.Contains( a.Id ) );
             if ( gList.SortProperty != null )
             {
@@ -175,10 +186,34 @@ Export
                 selectedTimeCardsQry = selectedTimeCardsQry.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
             }
 
+            // prevent them from exporting if any of the selected cards are not approved
+            TimeCardStatus[] okToExportStatuses = new TimeCardStatus[] { TimeCardStatus.Approved, TimeCardStatus.Exported };
+            if ( selectedTimeCardsQry.Any( a => !okToExportStatuses.Contains( a.TimeCardStatus ) ) )
+            {
+                mdGridWarning.Show( "Time cards must be approved before they are exported.", ModalAlertType.Warning );
+                return;
+            }
+
             foreach ( var timeCard in selectedTimeCardsQry.ToList() )
             {
-                string employeeId = "TODO";
-                string departmentId = "TODO";
+                string employeeId = string.Empty;
+                string departmentId = string.Empty;
+                if ( employeeIdAttribute != null || departmentIdAttribute != null )
+                {
+                    timeCard.PersonAlias.Person.LoadAttributes( hrContext );
+                    if ( employeeIdAttribute != null )
+                    {
+                        var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeIdAttribute.Key );
+                        employeeId = employeeIdAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeIdAttribute.QualifierValues, false );
+                    }
+
+                    if ( departmentIdAttribute != null )
+                    {
+                        var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( departmentIdAttribute.Key );
+                        departmentId = employeeIdAttribute.FieldType.Field.FormatValue( null, departmentIdValue, departmentIdAttribute.QualifierValues, false );
+                    }
+                }
+
                 string formattedLine = string.Format(
                     "\"{0}, {1}\",\"{2}\",\"{3}\",{4:N2},{5:N2},{6:N2},{7:N2},{8:N2}",
                     timeCard.PersonAlias.Person.LastName,
@@ -192,15 +227,32 @@ Export
                     timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ) );
 
                 sb.AppendLine( formattedLine );
+
+                // update the status and exported date time of the selected timecards
+                timeCard.TimeCardStatus = TimeCardStatus.Exported;
+                timeCard.ExportedDateTime = RockDateTime.Now;
+
+                var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+                var timeCardHistory = new TimeCardHistory();
+                timeCardHistory.TimeCardId = timeCard.Id;
+                timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
+                timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
+                timeCardHistory.HistoryDateTime = RockDateTime.Now;
+                timeCardHistory.Notes = string.Empty;
+                timeCardHistoryService.Add( timeCardHistory );
+
+                hrContext.SaveChanges();
             }
+
+            hrContext.SaveChanges();
 
             // send the csv export to the browser
             this.Page.EnableViewState = false;
             this.Page.Response.Clear();
             this.Page.Response.ContentType = "text/csv";
             this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + string.Format( "TimeCardExport_{0}.csv", RockDateTime.Now.ToString( "MMddyyyy_HHmmss" ) ) );
-            
-            this.Page.Response.Charset = "";
+
+            this.Page.Response.Charset = string.Empty;
             this.Page.Response.Write( sb.ToString() );
             this.Page.Response.Flush();
             this.Page.Response.End();
@@ -277,6 +329,33 @@ Export
             {
                 return;
             }
+
+            string employeeId = string.Empty;
+            string departmentId = string.Empty;
+            if ( employeeIdAttribute != null || departmentIdAttribute != null )
+            {
+                if ( timeCard.PersonAlias.Person.Attributes == null )
+                {
+                    timeCard.PersonAlias.Person.LoadAttributes();
+                }
+
+                if ( employeeIdAttribute != null )
+                {
+                    var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeIdAttribute.Key );
+                    employeeId = employeeIdAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeIdAttribute.QualifierValues, false );
+                }
+
+                if ( departmentIdAttribute != null )
+                {
+                    var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( departmentIdAttribute.Key );
+                    departmentId = employeeIdAttribute.FieldType.Field.FormatValue( null, departmentIdValue, departmentIdAttribute.QualifierValues, false );
+                }
+            }
+
+            Literal lEmployeeNumber = repeaterItem.FindControl( "lEmployeeNumber" ) as Literal;
+            lEmployeeNumber.Text = employeeId;
+            Literal lDepartment = repeaterItem.FindControl( "lDepartment" ) as Literal;
+            lDepartment.Text = departmentId;
 
             Label lRegularHours = repeaterItem.FindControl( "lRegularHours" ) as Label;
             var regularHours = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 );

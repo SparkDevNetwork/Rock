@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
@@ -226,6 +227,14 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 // Action Controls
                 LinkButton lbSave = repeaterItem.FindControl( "lbSave" ) as LinkButton;
                 lbSave.CommandArgument = timeCardDay.Id.ToString();
+
+                // only show the Save button if in edit mode (this current person can edit this time card)
+                lbSave.Visible = hfEditMode.Value.AsBooleanOrNull() ?? false;
+
+                // only enable the EditRow controls if in edit mode (this current person can edit this time card)
+                Panel pnlEditRow = repeaterItem.FindControl( "pnlEditRow" ) as Panel;
+                pnlEditRow.Enabled = hfEditMode.Value.AsBooleanOrNull() ?? false;
+
             }
         }
 
@@ -260,8 +269,60 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            // make sure the current person is the timecard.person or is a leader of the timecard.person
+            List<Person> leaders = TimeCardPayPeriodService.GetLeadersForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
+
+            bool editMode = false;
+            nbMessage.Visible = false;
+            pnlDetails.Visible = true;
+            pnlApproverActions.Visible = false;
+            int? timeCardPersonId = timeCard.PersonAlias != null ? timeCard.PersonAlias.PersonId : (int?)null;
+            if ( timeCardPersonId == this.CurrentPersonId )
+            {
+                editMode = true;
+            }
+            else
+            {
+                if ( !leaders.Any( a => a.Id == this.CurrentPersonId ) )
+                {
+                    // if the currentPersonId is neither the TimeCard person or a leader of the timecard person, don't let them see it
+                    nbMessage.Visible = true;
+                    nbMessage.Text = "You are only allowed to view your timecards or timecards of person that report to you.";
+                    nbMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    pnlDetails.Visible = false;
+                    return;
+                }
+                else
+                {
+                    // if the current person is a leader of the timecard.person, enable the Approve button if is has been submitted.
+                    pnlApproverActions.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
+                }
+            }
+
+            hfEditMode.Value = editMode.ToTrueFalse();
+
+            // only show the Submit panel if in edit mode
+            pnlPersonActions.Visible = editMode;
+
+            lTimeCardPersonName.Text = string.Format( "{0}", timeCard.PersonAlias );
             lTitle.Text = "Pay Period: " + timeCard.TimeCardPayPeriod.ToString();
             hlblSubTitle.Text = timeCard.GetStatusText();
+
+            switch (timeCard.TimeCardStatus)
+            {
+                case TimeCardStatus.Approved:
+                    hlblSubTitle.LabelType = LabelType.Success;
+                    break;
+                case TimeCardStatus.Submitted:
+                    hlblSubTitle.LabelType = LabelType.Warning;
+                    break;
+                case TimeCardStatus.Exported:
+                    hlblSubTitle.LabelType = LabelType.Default;
+                    break;
+                default:
+                    hlblSubTitle.LabelType = LabelType.Info;
+                    break;
+            }
 
             var qry = timeCardDayService.Queryable().Where( a => a.TimeCardId == timeCardId ).OrderBy( a => a.StartDateTime );
             var qryList = qry.ToList();
@@ -299,8 +360,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             rptTimeCardDay.DataBind();
 
             // Actions/Submit
-            List<Person> leaders = TimeCardPayPeriodService.GetLeadersForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
-
             ddlSubmitTo.Items.Clear();
             ddlSubmitTo.Items.Add( new ListItem() );
             ddlSubmitTo.Items.AddRange( leaders.Select( a => new ListItem( a.ToString(), a.Id.ToString() ) ).ToArray() );
@@ -445,6 +504,20 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            timeCard.TimeCardStatus = TimeCardStatus.Submitted;
+            timeCard.SubmittedToPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
+            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+            var timeCardHistory = new TimeCardHistory();
+            timeCardHistory.TimeCardId = timeCard.Id;
+            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
+            timeCardHistory.StatusPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
+            timeCardHistory.HistoryDateTime = RockDateTime.Now;
+            timeCardHistory.Notes = string.Empty;
+            timeCardHistoryService.Add( timeCardHistory );
+
+            hrContext.SaveChanges();
+
+            // Launch the Workflow after timecard is marked submitted
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
@@ -468,19 +541,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
             }
 
-            timeCard.TimeCardStatus = TimeCardStatus.Submitted;
-            timeCard.SubmittedToPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
-            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
-            var timeCardHistory = new TimeCardHistory();
-            timeCardHistory.TimeCardId = timeCard.Id;
-            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
-            timeCardHistory.StatusPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
-            timeCardHistory.HistoryDateTime = RockDateTime.Now;
-            timeCardHistory.Notes = string.Empty;
-            timeCardHistoryService.Add( timeCardHistory );
-
-            hrContext.SaveChanges();
-
             ShowDetail();
         }
 
@@ -497,6 +557,39 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 Literal lStatusText = e.Row.FindControl( "lStatusText" ) as Literal;
                 lStatusText.Text = timeCardHistory.GetStatusText();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnApprove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApprove_Click( object sender, EventArgs e )
+        {
+            var hrContext = new HrContext();
+
+            int timeCardId = hfTimeCardId.Value.AsInteger();
+            var timeCardService = new TimeCardService( hrContext );
+            var timeCard = timeCardService.Get( timeCardId );
+            if ( timeCard == null )
+            {
+                return;
+            }
+
+            timeCard.TimeCardStatus = TimeCardStatus.Approved;
+            timeCard.ApprovedByPersonAliasId = this.CurrentPersonAliasId;
+            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+            var timeCardHistory = new TimeCardHistory();
+            timeCardHistory.TimeCardId = timeCard.Id;
+            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
+            timeCardHistory.StatusPersonAliasId = timeCard.ApprovedByPersonAliasId;
+            timeCardHistory.HistoryDateTime = RockDateTime.Now;
+            timeCardHistory.Notes = string.Empty;
+            timeCardHistoryService.Add( timeCardHistory );
+
+            hrContext.SaveChanges();
+
+            ShowDetail();
         }
     }
 }

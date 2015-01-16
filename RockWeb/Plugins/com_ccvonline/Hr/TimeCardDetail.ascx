@@ -21,10 +21,17 @@
         </style>
 
         <asp:HiddenField ID="hfTimeCardId" runat="server" />
+        <asp:HiddenField ID="hfEditMode" runat="server" />
+
+        <Rock:NotificationBox ID="nbMessage" runat="server" />
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
+                <h1>
+                    <asp:Literal ID="lTimeCardPersonName" runat="server" />
+                </h1>
+
                 <h1 class="panel-title">
                     <asp:Literal ID="lTitle" runat="server" Text="Pay Period" />
                 </h1>
@@ -133,7 +140,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-8 col-md-8">
-                                    <div class="row">
+                                    <asp:Panel ID="pnlEditRow" runat="server" CssClass="row" >
                                         <div class="col-md-3">
                                             <Rock:TimePicker runat="server" ID="tpTimeIn" Placeholder="Enter Time" Label="Time In" />
                                         </div>
@@ -160,7 +167,7 @@
                                         <div class="col-md-3">
                                             <Rock:RockTextBox runat="server" ID="tbNotes" Label="Notes" MaxLength="200" />
                                         </div>
-                                    </div>
+                                    </asp:Panel>
                                 </div>
 
                                 <div class="col-md-2 pull-right gridresponsive-commandcolumn">
@@ -233,9 +240,8 @@
                 </asp:Panel>
 
                 <!-- Actions/Submit Panel -->
-                <h2>Submit</h2>
                 <asp:Panel ID="pnlPersonActions" runat="server">
-
+                    <h2>Submit</h2>
                     <div class="row">
                         <div class="col-md-6">
                             <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
@@ -255,6 +261,14 @@
                         <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition(this)" OnClick="lbSubmit_Click" Text="Submit" />
                     </div>
                 </asp:Panel>
+
+                <asp:Panel ID="pnlApproverActions" runat="server">
+                    <h2>Approve</h2>
+                    <div class="actions">
+                        <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-action" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition(this)" OnClick="btnApprove_Click" Text="Approve" />
+                    </div>
+                </asp:Panel>
+
 
                 <!-- History Panel -->
                 <asp:Panel ID="pnlHistory" runat="server">
