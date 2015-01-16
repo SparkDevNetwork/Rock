@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Store
                             // process install.sql
                             try
                             {
-                                var sqlInstallEntry = packageZip.Entries.Where( e => e.FullName == "install.sql" ).FirstOrDefault();
+                                var sqlInstallEntry = packageZip.Entries.Where( e => e.FullName == "install/run.sql" ).FirstOrDefault();
                                 if (sqlInstallEntry != null) {
                                     string sqlScript = System.Text.Encoding.Default.GetString(sqlInstallEntry.Open().ReadBytesToEnd());
 
@@ -266,7 +266,7 @@ namespace RockWeb.Blocks.Store
                             // process deletefile.lst
                             try
                             {
-                                var deleteListEntry = packageZip.Entries.Where( e => e.FullName == "deletefile.lst" ).FirstOrDefault();
+                                var deleteListEntry = packageZip.Entries.Where( e => e.FullName == "install/deletefile.lst" ).FirstOrDefault();
                                 if ( deleteListEntry != null )
                                 {
                                 
