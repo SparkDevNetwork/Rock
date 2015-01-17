@@ -34,5 +34,13 @@ namespace Rock.Store
         /// A <see cref="System.String"/> representing URL of the Install Package.
         /// </value>
         public string InstallPackageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post install instructions. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing post install instructions.
+        /// </value>
+        public string PostInstallInstructions { get; set; }
     }
 }
