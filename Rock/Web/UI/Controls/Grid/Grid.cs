@@ -76,6 +76,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether table is responsive.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if table is responsive, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Responsive Table Enabled" )
+        ]
+        public virtual bool EnableResponsiveTable
+        {
+            get { return this.ViewState["EnableResponsiveTable"] as bool? ?? true; }
+            set { ViewState["EnableResponsiveTable"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show confirm delete dialog].
         /// </summary>
         /// <value>
@@ -649,7 +666,11 @@ namespace Rock.Web.UI.Controls
 
             if ( this.DataSource != null )
             {
-                writer.AddAttribute( "data-pattern", "priority-columns" );
+                if ( this.EnableResponsiveTable )
+                {
+                    writer.AddAttribute( "data-pattern", "priority-columns" );
+                }
+
                 writer.AddAttribute( "data-add-focus-btn", "false" );
                 writer.AddAttribute( "data-add-display-all-btn", "false" );
 

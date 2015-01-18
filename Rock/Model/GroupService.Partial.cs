@@ -150,10 +150,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of the <see cref="Rock.Model.Group"/> Ids that are ancestors of a specified groupId sorted starting with the most immediate parent
+        /// Returns an enumerable collection of the <see cref="Rock.Model.Group" /> Ids that are ancestors of a specified groupId sorted starting with the most immediate parent
         /// </summary>
-        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to retrieve descendants for.</param>
-        /// <returns>An enumerable collection of the group Ids that are descendants of referenced groupId.</returns>
+        /// <param name="childGroupId">The child group identifier.</param>
+        /// <returns>
+        /// An enumerable collection of the group Ids that are descendants of referenced groupId.
+        /// </returns>
         public IOrderedEnumerable<int> GetAllAncestorIds( int childGroupId )
         {
             var result = this.Context.Database.SqlQuery<int>(

@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 using Rock.Data;
 using Rock.Model;
@@ -24,7 +26,7 @@ namespace Rock.Transactions
     /// <summary>
     /// Deletes a binary file
     /// </summary>
-    public class DeleteBinaryFile : ITransaction
+    public class DeleteAttributeBinaryFile : ITransaction
     {
 
         /// <summary>
@@ -36,10 +38,10 @@ namespace Rock.Transactions
         public Guid BinaryFileGuid { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteBinaryFile"/> class.
+        /// Initializes a new instance of the <see cref="DeleteAttributeBinaryFile"/> class.
         /// </summary>
         /// <param name="binaryFileGuid">The binary file unique identifier.</param>
-        public DeleteBinaryFile( Guid binaryFileGuid )
+        public DeleteAttributeBinaryFile( Guid binaryFileGuid )
         {
             BinaryFileGuid = binaryFileGuid;
         }
@@ -54,7 +56,22 @@ namespace Rock.Transactions
             var binaryFile = binaryFileService.Get( BinaryFileGuid );
             if ( binaryFile != null )
             {
+                string guidAsString = BinaryFileGuid.ToString();
+
+                // If any attribute still has this file as a default value, don't delete it
+                if ( new AttributeService( rockContext ).Queryable().Any( a => a.DefaultValue == guidAsString) )
+                {
+                    return;
+                }
+
+                // If any attribute value still has this file as a value, don't delete it
+                if ( new AttributeValueService( rockContext ).Queryable().Any( a => a.Value == guidAsString) )
+                {
+                    return;
+                }
+
                 binaryFileService.Delete( binaryFile );
+
                 rockContext.SaveChanges();
             }
 

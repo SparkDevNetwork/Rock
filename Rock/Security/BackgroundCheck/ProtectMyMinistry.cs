@@ -427,7 +427,7 @@ namespace Rock.Security.BackgroundCheck
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
                         binaryFile.MimeType = "application/pdf";
                         binaryFile.FileName = fileName;
-                        binaryFile.Content = data;
+                        binaryFile.ContentStream = new MemoryStream( data );
 
                         var binaryFileService = new BinaryFileService( rockContext );
                         binaryFileService.Add( binaryFile );
