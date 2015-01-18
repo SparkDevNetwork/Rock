@@ -237,7 +237,7 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
+        /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Read( this.AttributeId );
