@@ -34,6 +34,11 @@ namespace Rock.Migrations
             AddColumn("dbo.BinaryFile", "Url", c => c.String(maxLength: 2083));
 
             Sql( @"
+    DECLARE @DatabaseEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '0AA42802-04FD-4AEC-B011-FEB127FC85CD' )
+	UPDATE [BinaryFile] SET 
+		[StorageEntityTypeId] = @DatabaseEntityTypeId
+	WHERE [StorageEntityTypeId] IS NULL
+
     DECLARE @FileSystemEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A97B6002-454E-4890-B529-B99F8F2F376A' )
     DECLARE @AttributeId int 
     DECLARE @DefaultValue nvarchar(max) 
@@ -60,7 +65,7 @@ namespace Rock.Migrations
     UPDATE [Attribute]
     SET [Description] = 'The relative path where files should be stored on the file system ( Default: ''App_Data\Files'' ).'
     WHERE [Id] = @AttributeId
-");
+" );
         }
         
         /// <summary>
