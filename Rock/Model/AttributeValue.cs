@@ -269,7 +269,7 @@ namespace Rock.Model
                     {
                         if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
                         {
-                            var transaction = new Rock.Transactions.DeleteBinaryFile( oldBinaryFileGuid.Value );
+                            var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                         }
                     }

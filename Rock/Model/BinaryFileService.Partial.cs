@@ -133,6 +133,8 @@ namespace Rock.Model
                 {
                     binaryFile.Guid = (Guid)guid;
                 }
+                binaryFile.StorageEntitySettings = reader["StorageEntitySettings"] as string;
+                binaryFile.Url = reader["Url"] as string;
 
                 binaryFile.DatabaseData = new BinaryFileData();
 

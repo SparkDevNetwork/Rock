@@ -157,11 +157,8 @@ namespace RockWeb
                             }
                         }
 
-                        if ( binaryFile.Content != null && binaryFile.Content.Length > 0 )
-                        {
-                            SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
-                            return;
-                        }
+                        SendFile( context, binaryFile.ContentStream, binaryFile.MimeType, binaryFile.FileName, binaryFile.Guid.ToString("N") );
+                        return;
                     }
                 }
                 else
@@ -235,34 +232,37 @@ namespace RockWeb
 
             if ( context.Response.IsClientConnected )
             {
-                fileContents.Seek( startIndex, SeekOrigin.Begin );
-                while (true)
+                using ( var fileStream = fileContents )
                 {
-                    var bytesRead = fileContents.Read( buffer, 0, buffer.Length );
-                    if ( bytesRead == 0 )
+                    fileStream.Seek( startIndex, SeekOrigin.Begin );
+                    while ( true )
                     {
-                        break;
-                    }
-
-                    if ( !context.Response.IsClientConnected )
-                    {
-                        // quit sending if the client isn't connected
-                        break;
-                    }
-
-                    try
-                    {
-                        context.Response.OutputStream.Write( buffer, 0, bytesRead );
-                    }
-                    catch (HttpException ex)
-                    {
-                        if (!context.Response.IsClientConnected)
+                        var bytesRead = fileStream.Read( buffer, 0, buffer.Length );
+                        if ( bytesRead == 0 )
                         {
-                            // if client disconnected during the .write, ignore
+                            break;
                         }
-                        else
+
+                        if ( !context.Response.IsClientConnected )
                         {
-                            throw ex;
+                            // quit sending if the client isn't connected
+                            break;
+                        }
+
+                        try
+                        {
+                            context.Response.OutputStream.Write( buffer, 0, bytesRead );
+                        }
+                        catch ( HttpException ex )
+                        {
+                            if ( !context.Response.IsClientConnected )
+                            {
+                                // if client disconnected during the .write, ignore
+                            }
+                            else
+                            {
+                                throw ex;
+                            }
                         }
                     }
                 }
