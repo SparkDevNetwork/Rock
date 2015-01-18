@@ -243,10 +243,13 @@ namespace RockWeb
 
                 context.Response.ContentType = binaryFileMetaData.MimeType;
 
-                context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
-                fileContent.Seek( 0, SeekOrigin.Begin );
-                fileContent.CopyTo( context.Response.OutputStream );
-                context.Response.Flush();
+                using ( var responseStream = fileContent )
+                {
+                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+                    responseStream.Seek( 0, SeekOrigin.Begin );
+                    responseStream.CopyTo( context.Response.OutputStream );
+                    context.Response.Flush();
+                }
             }
             finally
             {

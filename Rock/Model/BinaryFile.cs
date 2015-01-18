@@ -15,12 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Runtime.Serialization;
-
 using Rock;
 using Rock.Data;
 using Rock.Storage;
@@ -65,7 +65,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? BinaryFileTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
@@ -129,6 +129,33 @@ namespace Rock.Model
             }
         }
         private int? _storageEntityTypeId = null;
+        
+        /// <summary>
+        /// Gets or sets the storage entity settings.
+        /// </summary>
+        /// <value>
+        /// The storage entity settings.
+        /// </value>
+        /// <remarks>
+        /// Because a Storage provider's settings are stored with the binary file type, and that binary file 
+        /// type may change the settings or storage provider, the setting values at the time this file was 
+        /// saved need to be stored with the binary file so that the storage provider is still able to 
+        /// retrieve the file using these settings
+        /// </remarks>
+        public string StorageEntitySettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        /// <remarks>
+        /// It us up to the storage provider to save the url value when creating the file
+        /// </remarks>
+        [MaxLength( 2083 )]
+        [DataMember]
+        public string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the content last modified.
@@ -176,60 +203,6 @@ namespace Rock.Model
         public Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
-        /// Gets the URL that can be used to retrieve the file. A prefix of "~" represents the Application Root path
-        /// </summary>
-        /// <value>
-        /// The URL.
-        /// </value>
-        [DataMember]
-        public virtual string Url
-        {
-            get
-            {
-                if (StorageProvider != null)
-                {
-                    return StorageProvider.GetContentUrl( this );
-                }
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the content.
-        /// </summary>
-        /// <value>
-        /// The content.
-        /// </value>
-        [NotMapped]
-        [HideFromReporting]
-        [DataMember]
-        [LavaIgnore]
-        public virtual byte[] Content 
-        { 
-            get
-            {
-                if ( _content == null )
-                {
-                    using ( var stream = StorageProvider.GetContentStream( this ) )
-                    {
-                        _content = stream.ReadBytesToEnd();
-                    }
-                }
-
-                _contentIsDirty = false;
-                return _content;
-            } 
-            set
-            {
-                _content = value;
-                _contentIsDirty = true;
-                ContentLastModified = RockDateTime.Now;
-            }
-        }
-        private byte[] _content = null;
-        private bool _contentIsDirty = false;
-
-        /// <summary>
         /// Gets or sets the content stream.
         /// </summary>
         /// <value>
@@ -241,9 +214,29 @@ namespace Rock.Model
         {
             get 
             { 
-                return new MemoryStream( Content ); 
+                if ( _stream == null )
+                {
+                    _stream = StorageProvider.GetContentStream( this );
+                }
+                else
+                {
+                    if ( _stream.CanSeek )
+                    {
+                        _stream.Position = 0;
+                    }
+                }
+
+                return _stream;
+            }
+            set
+            {
+                _stream = value;
+                _contentIsDirty = true;
+                ContentLastModified = RockDateTime.Now;
             }
         }
+        private Stream _stream;
+        private bool _contentIsDirty = false;
 
         #endregion
 
@@ -288,11 +281,26 @@ namespace Rock.Model
                     // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
                     {
+                        // Persist the storage type
                         StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
+
+                        // Persist the storage type's settings specific to this binary file type
+                        var settings = new Dictionary<string, string>();
+                        if ( BinaryFileType.Attributes == null )
+                        {
+                            BinaryFileType.LoadAttributes();
+                        }
+                        foreach( var attributeValue in BinaryFileType.AttributeValues)
+                        {
+                            settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                        }
+                        StorageEntitySettings = settings.ToJson();
+
                         if ( StorageProvider != null )
                         {
                             // save the file to the provider's new storage medium
                             StorageProvider.SaveContent( this );
+                            Url = StorageProvider.GetContentUrl( this );
                         }
                     }
                 }
@@ -303,24 +311,39 @@ namespace Rock.Model
                     // it should use the StorageEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
                     {
-                        // if the storage provider changed, delete the original provider's content
-                        if ( StorageEntityTypeId.HasValue && 
-                            BinaryFileType.StorageEntityTypeId.HasValue && 
-                            StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value )
+                        // if the storage provider changed, or any of it's settings specific 
+                        // to the binary file type changed, delete the original provider's content
+                        if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
                         {
-                            if ( StorageProvider != null )
+                            var settings = new Dictionary<string, string>();
+                            if ( BinaryFileType.Attributes == null )
+                            {
+                                BinaryFileType.LoadAttributes();
+                            }
+                            foreach ( var attributeValue in BinaryFileType.AttributeValues )
+                            {
+                                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                            }
+                            string settingsJson = settings.ToJson();
+
+                            if ( StorageProvider != null && (
+                                StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
+                                StorageEntitySettings != settingsJson ) )
                             {
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
+
+                                // Set the new storage provider with it's settings
+                                StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
+                                StorageEntitySettings = settingsJson;
                             }
                         }
-
-                        StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                     }
 
                     if ( _contentIsDirty && StorageProvider != null )
                     {
                         StorageProvider.SaveContent( this );
+                            Url = StorageProvider.GetContentUrl( this );
                     }
                 }
             }
@@ -335,6 +358,25 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.FileName;
+        }
+
+        /// <summary>
+        /// Reads the file's content stream and conversts to a string.
+        /// </summary>
+        /// <returns></returns>
+        public string ContentsToString()
+        {
+            string contents = string.Empty;
+
+            using ( var stream = this.ContentStream )
+            {
+                using ( var reader = new StreamReader( stream ) )
+                {
+                    contents = reader.ReadToEnd();
+                }
+            }
+
+            return contents;
         }
 
         /// <summary>

@@ -273,7 +273,10 @@ namespace RockWeb.Blocks.Core
                 if (uploadedBinaryFile != null)
                 {
                     binaryFile.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
-                    binaryFile.Content = uploadedBinaryFile.Content;
+                    using ( var stream = uploadedBinaryFile.ContentStream )
+                    {
+                        binaryFile.ContentStream = stream;
+                    }
                 }
             }
 
