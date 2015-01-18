@@ -37,8 +37,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveContent( BinaryFile binaryFile )
         {
@@ -68,8 +67,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         public override void DeleteContent( BinaryFile binaryFile )
         {
             var file = new FileInfo( GetFilePath( binaryFile ) );
@@ -82,8 +80,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         /// <returns></returns>
         public override Stream GetContentStream( BinaryFile binaryFile )
         {
