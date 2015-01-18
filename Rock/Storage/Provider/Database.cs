@@ -40,7 +40,11 @@ namespace Rock.Storage.Provider
             {
                 file.DatabaseData = new BinaryFileData();
             }
-            file.DatabaseData.Content = file.Content;
+
+            using ( var stream = file.ContentStream )
+            {
+                file.DatabaseData.Content = stream.ReadBytesToEnd();
+            }
         }
 
         /// <summary>

@@ -65,18 +65,33 @@ namespace Rock.Store
         /// Logs that an install occurred.
         /// </summary>
         /// <param name="packageId">The package identifier.</param>
+        /// <param name="packageName">Name of the package.</param>
         /// <param name="versionId">The package version identifier.</param>
-        /// <returns></returns>
-        public static void SaveInstall( int packageId, string packageName, int versionId, string versionLabel, int vendorId, string vendorName )
+        /// <param name="versionLabel">The version label.</param>
+        /// <param name="vendorId">The vendor identifier.</param>
+        /// <param name="vendorName">Name of the vendor.</param>
+        /// <param name="installedBy">The installed by.</param>
+        public static void SaveInstall( int packageId, string packageName, int versionId, string versionLabel, int vendorId, string vendorName, string installedBy )
         {
             var installedPackages = GetInstalledPackages();
 
             var package = installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
 
+            if ( package == null )
+            {
+                package = new InstalledPackage();
+                installedPackages.Add( package );
+                package.PackageId = packageId;
+                package.PackageName = packageName;
+                package.VendorId = vendorId;
+                package.VendorName = vendorName;
+            }
+
             // set properties
             package.VersionId = versionId;
             package.VersionLabel = versionLabel;
             package.InstallDateTime = RockDateTime.Now;
+            package.InstalledBy = installedBy;
 
             // save results to file
             SaveInstalledPackages( installedPackages );

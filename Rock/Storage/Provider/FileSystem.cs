@@ -15,11 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 
-using Rock.Data;
+using Newtonsoft.Json;
+
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -35,8 +37,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveContent( BinaryFile binaryFile )
         {
@@ -50,14 +51,23 @@ namespace Rock.Storage.Provider
             }
 
             // Write the contents to file
-            File.WriteAllBytes( filePath, binaryFile.Content );
+            using ( var inputStream = binaryFile.ContentStream )
+            {
+                if ( inputStream != null )
+                {
+                    using ( var outputStream = File.OpenWrite( filePath ) )
+                    {
+                        inputStream.CopyTo( outputStream );
+                    }
+                }
+            }
+
         }
 
         /// <summary>
         /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         public override void DeleteContent( BinaryFile binaryFile )
         {
             var file = new FileInfo( GetFilePath( binaryFile ) );
@@ -70,8 +80,7 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Gets the contents from the external storage medium associated with the provider
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="context">The context.</param>
+        /// <param name="binaryFile">The binary file.</param>
         /// <returns></returns>
         public override Stream GetContentStream( BinaryFile binaryFile )
         {
@@ -93,25 +102,20 @@ namespace Rock.Storage.Provider
         {
             if ( binaryFile != null && !string.IsNullOrWhiteSpace( binaryFile.FileName ) )
             {
-                // If file's guid hasn't been set, set it now since it is required for filename
-                if ( binaryFile.Guid.IsEmpty() )
-                {
-                    binaryFile.Guid = Guid.NewGuid();
-                }
-
                 string subFolder = string.Empty;
 
-                var binaryFileType = binaryFile.BinaryFileType;
-                if ( binaryFileType == null && binaryFile.BinaryFileTypeId.HasValue )
+                try
                 {
-                    binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
+                    if ( binaryFile.StorageEntitySettings != null )
+                    {
+                        var settings = JsonConvert.DeserializeObject<Dictionary<string, string>>( binaryFile.StorageEntitySettings );
+                        if ( settings != null && settings.ContainsKey( "RootPath" ) )
+                        {
+                            subFolder = settings["RootPath"];
+                        }
+                    }
                 }
-
-                if ( binaryFileType != null )
-                {
-                    binaryFileType.LoadAttributes();
-                    subFolder = binaryFileType.GetAttributeValue( "RootPath" );
-                }
+                catch { }
 
                 if ( string.IsNullOrWhiteSpace( subFolder ) )
                 {

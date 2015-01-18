@@ -13,7 +13,6 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"  />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="FileName" Required="true" />
@@ -31,14 +30,13 @@
                         <Rock:FileUploader ID="fsFile" runat="server" Label="Upload New File" ShowDeleteButton="false" />
                         <Rock:DataTextBox ID="tbMimeType" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="MimeType" />
                         <Rock:BinaryFileTypePicker ID="ddlBinaryFileType" runat="server" Visible="false" />
-                        </div>
+                    </div>
                     <div class="col-md-6">
                         <div class="attributes">
                             <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
                     </div>
                 </div>
-
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

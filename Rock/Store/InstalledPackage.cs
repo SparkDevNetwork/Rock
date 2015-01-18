@@ -60,6 +60,14 @@ namespace Rock.Store
         public string VendorName { get; set; }
 
         /// <summary>
+        /// Gets or sets the Name of the person who installed the package. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Name of the installer.
+        /// </value>
+        public string InstalledBy { get; set; }
+
+        /// <summary>
         /// Gets or sets the install date/time. 
         /// </summary>
         /// <value>

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -442,15 +443,14 @@ namespace Rock.Security.ExternalAuthentication
                                         BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
                                         if ( fileType != null )
                                         {
-                                            BinaryFile binaryFile = new BinaryFile();
+                                            var binaryFileService = new BinaryFileService( rockContext );
+                                            var binaryFile = new BinaryFile();
+                                            binaryFileService.Add( binaryFile );
                                             binaryFile.IsTemporary = false;
                                             binaryFile.BinaryFileType = fileType;
                                             binaryFile.MimeType = "image/jpeg";
                                             binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
-                                            binaryFile.Content = bytes;
-
-                                            var binaryFileService = new BinaryFileService( rockContext );
-                                            binaryFileService.Add( binaryFile );
+                                            binaryFile.ContentStream = new MemoryStream( bytes );
 
                                             rockContext.SaveChanges();
 

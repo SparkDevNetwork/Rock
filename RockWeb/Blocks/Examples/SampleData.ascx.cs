@@ -1754,7 +1754,7 @@ namespace RockWeb.Blocks.Examples
             var webClient = new WebClient();
             try
             {
-                binaryFile.Content = webClient.DownloadData( photoUrl );
+                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
 
                 // Because prepost processing is disabled for this rockcontext, need to
                 // manually have the storage provider save the contents of the binary file
