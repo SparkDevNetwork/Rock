@@ -21,7 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Runtime.Serialization;
-using Rock;
+
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
@@ -104,11 +104,11 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the ID of the Storage Service <see cref="Rock.Model.EntityType"/> that is being used to store this file.
         /// </value>
         [DataMember]
-        public int? StorageEntityTypeId 
-        { 
-            get 
-            { 
-                return _storageEntityTypeId; 
+        public int? StorageEntityTypeId
+        {
+            get
+            {
+                return _storageEntityTypeId;
             }
 
             private set
@@ -125,11 +125,11 @@ namespace Rock.Model
                     }
                 }
 
-                
+
             }
         }
         private int? _storageEntityTypeId = null;
-        
+
         /// <summary>
         /// Gets or sets the storage entity settings.
         /// </summary>
@@ -212,8 +212,8 @@ namespace Rock.Model
         [HideFromReporting]
         public virtual Stream ContentStream
         {
-            get 
-            { 
+            get
+            {
                 if ( _stream == null )
                 {
                     _stream = StorageProvider.GetContentStream( this );
@@ -269,7 +269,7 @@ namespace Rock.Model
                     this.BinaryFileTypeId = null;
                 }
             }
-            else 
+            else
             {
                 if ( BinaryFileType == null && BinaryFileTypeId.HasValue )
                 {
@@ -290,7 +290,7 @@ namespace Rock.Model
                         {
                             BinaryFileType.LoadAttributes();
                         }
-                        foreach( var attributeValue in BinaryFileType.AttributeValues)
+                        foreach ( var attributeValue in BinaryFileType.AttributeValues )
                         {
                             settings.Add( attributeValue.Key, attributeValue.Value.Value );
                         }
@@ -343,7 +343,7 @@ namespace Rock.Model
                     if ( _contentIsDirty && StorageProvider != null )
                     {
                         StorageProvider.SaveContent( this );
-                            Url = StorageProvider.GetContentUrl( this );
+                        Url = StorageProvider.GetContentUrl( this );
                     }
                 }
             }
