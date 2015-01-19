@@ -70,6 +70,11 @@ namespace RockWeb.Blocks.Examples
         private static BinaryFileType _binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
+        /// The Binary file type settings
+        /// </summary>
+        private string _binaryFileTypeSettings = string.Empty;
+
+        /// <summary>
         /// The id for the "child" role of a family.
         /// </summary>
         private static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
@@ -706,6 +711,18 @@ namespace RockWeb.Blocks.Examples
             {
                 return;
             }
+
+            // Persist the storage type's settings specific to the photo binary file type
+            var settings = new Dictionary<string, string>();
+            if ( _binaryFileType.Attributes == null )
+            {
+                _binaryFileType.LoadAttributes();
+            }
+            foreach ( var attributeValue in _binaryFileType.AttributeValues )
+            {
+                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+            }
+            _binaryFileTypeSettings = settings.ToJson();
 
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
             GroupService groupService = new GroupService( rockContext );
@@ -1756,11 +1773,6 @@ namespace RockWeb.Blocks.Examples
             {
                 binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
 
-                // Because prepost processing is disabled for this rockcontext, need to
-                // manually have the storage provider save the contents of the binary file
-                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
-                binaryFile.StorageProvider.SaveContent( binaryFile );
-
                 if ( webClient.ResponseHeaders != null )
                 {
                     binaryFile.MimeType = webClient.ResponseHeaders["content-type"];
@@ -1792,6 +1804,16 @@ namespace RockWeb.Blocks.Examples
                         default:
                             throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
                     }
+                }
+
+                // Because prepost processing is disabled for this rockcontext, need to
+                // manually have the storage provider save the contents of the binary file
+                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
+                binaryFile.StorageEntitySettings = _binaryFileTypeSettings;
+                if ( binaryFile.StorageProvider != null )
+                {
+                    binaryFile.StorageProvider.SaveContent( binaryFile );
+                    binaryFile.Url = binaryFile.StorageProvider.GetContentUrl( binaryFile );
                 }
 
                 var binaryFileService = new BinaryFileService( context );
