@@ -234,7 +234,10 @@ namespace RockWeb
             {
                 using ( var fileStream = fileContents )
                 {
-                    fileStream.Seek( startIndex, SeekOrigin.Begin );
+                    if ( fileStream.CanSeek )
+                    {
+                        fileStream.Seek( startIndex, SeekOrigin.Begin );
+                    }
                     while ( true )
                     {
                         var bytesRead = fileStream.Read( buffer, 0, buffer.Length );
