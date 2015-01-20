@@ -31,7 +31,6 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their age." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
-
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByAge : CheckInActionComponent
     {
@@ -61,16 +60,15 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     double? age = person.Person.AgePrecise;
 
-                    if ( age == null )
-                    {
-                        continue;
-                    }
-
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
                             string ageRange = group.Group.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                            if ( string.IsNullOrWhiteSpace( ageRange ) )
+                            {
+                                continue;
+                            }
 
                             string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
                             string minAgeValue = null;
