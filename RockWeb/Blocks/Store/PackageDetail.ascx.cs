@@ -142,6 +142,8 @@ namespace RockWeb.Blocks.Store
             PackageService packageService = new PackageService();
             var package = packageService.GetPackage( packageId, out errorResponse );
 
+            string storeKey = StoreService.GetOrganizationKey();
+
             // check for errors
             ErrorCheck( errorResponse );
 
@@ -187,9 +189,12 @@ namespace RockWeb.Blocks.Store
                 {
                     if ( package.IsPurchased )
                     {
-                        // payup!
                         lbInstall.Text = "Install";
                         lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString());
+                        
+                        // set rating link button
+                        lbRate.Visible = true;
+                        lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString());
                     }
                     else
                     {
@@ -206,12 +211,22 @@ namespace RockWeb.Blocks.Store
                     lbInstall.Enabled = false;
                     lbInstall.CssClass = "btn btn-default btn-install";
                     lbInstall.Attributes.Add( "disabled", "disabled" );
+
+                    // set rating link button
+                    lbRate.Visible = true;
+                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+
                 }
                 else
                 {
                     // have a previous version installed
                     lbInstall.Text = "Update";
                     lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel);
+
+                    // set rating link button
+                    lbRate.Visible = true;
+                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+
                 }
             }
 
