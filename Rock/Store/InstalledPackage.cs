@@ -25,7 +25,7 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.String"/> representing the package label.
         /// </value>
-        public string PackageLabel { get; set; }
+        public string PackageName { get; set; }
 
         /// <summary>
         /// Gets or sets the VersionId of the installation. 
@@ -58,6 +58,14 @@ namespace Rock.Store
         /// A <see cref="System.String"/> representing the vendor name.
         /// </value>
         public string VendorName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name of the person who installed the package. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Name of the installer.
+        /// </value>
+        public string InstalledBy { get; set; }
 
         /// <summary>
         /// Gets or sets the install date/time. 

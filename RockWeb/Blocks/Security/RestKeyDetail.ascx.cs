@@ -118,10 +118,8 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the description gets saved as a system note for the person
-                var entityTypeService = new EntityTypeService( rockContext );
-                var entityType = entityTypeService.Get( "Rock.Model.Person" );
-                var noteTypeService = new NoteTypeService( rockContext );
-                var noteType = noteTypeService.Get( entityType.Id, "Timeline" );
+                var noteType = new NoteTypeService( rockContext )
+                    .Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
                 var noteService = new NoteService( rockContext );
                 var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
                 if ( note == null )
@@ -136,7 +134,8 @@ namespace RockWeb.Blocks.Security
                 rockContext.SaveChanges();
 
                 // the key gets saved in the api key field of a user login (which you have to create if needed)
-                entityType = entityTypeService.Get( "Rock.Security.Authentication.Database" );
+                var entityType = new EntityTypeService( rockContext )
+                    .Get( "Rock.Security.Authentication.Database" );
                 userLogin = userLoginService.GetByPersonId( restUser.Id ).FirstOrDefault();
                 if ( userLogin == null )
                 {

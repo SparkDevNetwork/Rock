@@ -179,6 +179,8 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
+            var preSavedEntities = new List<Guid>();
+
             // First loop through all models calling the PreSaveChanges
             foreach ( var entry in dbContext.ChangeTracker.Entries()
                 .Where( c =>
@@ -188,7 +190,12 @@ namespace Rock.Data
                 if ( entry.Entity is IModel )
                 {
                     var model = entry.Entity as IModel;
-                    model.PreSaveChanges( this, entry.State );
+                    model.PreSaveChanges( this, entry );
+
+                    if ( !preSavedEntities.Contains( model.Guid ) )
+                    {
+                        preSavedEntities.Add( model.Guid );
+                    }
                 }
             }
 
@@ -217,7 +224,10 @@ namespace Rock.Data
                     {
                         var model = entry.Entity as IModel;
 
-                        model.PreSaveChanges( this, entry.State );
+                        if ( !preSavedEntities.Contains( model.Guid ) )
+                        {
+                            model.PreSaveChanges( this, entry );
+                        }
 
                         // Update Guid/Created/Modified person and times
                         if ( entry.State == EntityState.Added )

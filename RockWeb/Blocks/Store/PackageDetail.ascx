@@ -34,7 +34,7 @@
                                 </p>
 
                                 <p>
-                                    <asp:Literal ID="lRatingSummary" runat="server" />
+                                    <asp:Literal ID="lRatingSummary" runat="server" /> <asp:LinkButton ID="lbRate" Visible="false" runat="server">Rate</asp:LinkButton>
                                 </p>
 
                                 <p>

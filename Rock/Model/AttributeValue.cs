@@ -237,20 +237,47 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Read( this.AttributeId );
             if (attributeCache != null)
             {
-                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-                if ( attributeCache.FieldType.Field is Rock.Field.Types.BinaryFileFieldType )
+                // Check to see if this attribute value if for a Field or Image field type 
+                // ( we don't want BinaryFileFieldType as that type of attribute's file can be used by more than one attribute )
+                var field = attributeCache.FieldType.Field;
+                if ( field != null && (
+                    field is Rock.Field.Types.FileFieldType ||
+                    field is Rock.Field.Types.ImageFieldType ) )
                 {
-                    Guid? binaryFileGuid = Value.AsGuidOrNull();
-                    if ( binaryFileGuid.HasValue )
+                    Guid? newBinaryFileGuid = null;
+                    Guid? oldBinaryFileGuid = null;
+
+                    if ( entry.State == System.Data.Entity.EntityState.Added ||
+                        entry.State == System.Data.Entity.EntityState.Modified )
+                    {
+                        newBinaryFileGuid = Value.AsGuidOrNull();
+                    }
+
+                    if ( entry.State == System.Data.Entity.EntityState.Modified ||
+                        entry.State == System.Data.Entity.EntityState.Deleted )
+                    {
+                        oldBinaryFileGuid = entry.OriginalValues["Value"].ToString().AsGuidOrNull();
+                    }
+
+                    if ( oldBinaryFileGuid.HasValue )
+                    {
+                        if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
+                        {
+                            var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
+
+                    if ( newBinaryFileGuid.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
-                        var binaryFile = binaryFileService.Get( binaryFileGuid.Value );
+                        var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
                         if ( binaryFile != null && binaryFile.IsTemporary )
                         {
                             binaryFile.IsTemporary = false;

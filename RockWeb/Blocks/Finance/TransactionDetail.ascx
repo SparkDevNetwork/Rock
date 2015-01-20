@@ -33,7 +33,7 @@
                     <div class="row">
 
                         <div class="col-md-6">
-                            <Rock:PersonPicker ID="ppAuthorizedPerson" runat="server" Label="Person" IncludeBusinesses="true" />
+                            <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" />
                             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" Required="true" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
@@ -45,6 +45,9 @@
                             <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
                         </div>
+
+                        
+
 
                         <div class="col-md-6">
 
@@ -81,7 +84,6 @@
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
-
                 </div>
 
                 <fieldset id="fieldsetViewSummary" runat="server">
@@ -118,6 +120,8 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+
+                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
                     </div>
 
                 </fieldset>

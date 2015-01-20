@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using System.Configuration;
 using System.IO;
+using System.Web;
 
 
 namespace Rock.Store
@@ -44,6 +45,9 @@ namespace Rock.Store
         public bool AuthenicateUser( string username, string password, out string errorResponse )
         {
             errorResponse = string.Empty;
+
+            // url encode the password
+            password = HttpUtility.UrlEncode( password );
 
             // setup REST call
             var client = new RestClient( _rockStoreUrl );

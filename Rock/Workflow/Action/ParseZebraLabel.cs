@@ -61,7 +61,7 @@ namespace Rock.Workflow.Action
 
                 StringBuilder sb = new StringBuilder();
 
-                var contentString = new StreamReader( binaryFile.Data.ContentStream ).ReadToEnd();
+                var contentString = binaryFile.ContentsToString();
                 foreach ( Match match in Regex.Matches( 
                     contentString,
                     @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
