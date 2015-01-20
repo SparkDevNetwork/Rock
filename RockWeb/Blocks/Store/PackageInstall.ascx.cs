@@ -311,6 +311,12 @@ namespace RockWeb.Blocks.Store
                     // update package install json file
                     InstalledPackageService.SaveInstall( purchaseResponse.PackageId, purchaseResponse.PackageName, installStep.VersionId, installStep.VersionLabel, purchaseResponse.VendorId, purchaseResponse.VendorName, purchaseResponse.InstalledBy );
                 
+                    // Clear all cached items
+                    Rock.Web.Cache.RockMemoryCache.Clear();
+
+                    // Clear the static object that contains all auth rules (so that it will be refreshed)
+                    Rock.Security.Authorization.Flush();
+
                     // show result message
                     lMessages.Text = string.Format( "<div class='alert alert-success'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
                 }

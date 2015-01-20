@@ -34,24 +34,101 @@ namespace Rock.Migrations
             AddColumn("dbo.BinaryFile", "Url", c => c.String(maxLength: 2083));
 
             Sql( @"
+-- create stored proc that retrieves a binaryfile record
+/*
+<doc>
+	<summary>
+ 		This function returns the BinaryFile for a given Id or Guid, depending on which is specified
+	</summary>
+
+	<returns>
+		* BinaryFile record
+	</returns>
+	<param name='Id' datatype='int'>The binary id to use</param>
+	<param name='Guid' datatype='uniqueidentifier'>The binaryfile guid to use</param>
+	<remarks>	
+	</remarks>
+	<code>
+		EXEC [dbo].[spCore_BinaryFileGet] 14, null -- car-promo.jpg
+	</code>
+</doc>
+*/
+ALTER PROCEDURE [dbo].[spCore_BinaryFileGet]
+    @Id int
+    , @Guid uniqueidentifier
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    /* NOTE!: Column Order cannot be changed without changing BinaryFileService.partial.cs due to CommandBehavior.SequentialAccess */
+    SELECT 
+        bf.[Id]
+        , bf.[IsTemporary] 
+        , bf.[IsSystem]
+        , bf.[BinaryFileTypeId]
+		, bft.[RequiresViewSecurity]
+        , bf.[FileName] 
+        , bf.[MimeType]
+        , bf.[ModifiedDateTime]
+        , bf.[Description]
+        , bf.[StorageEntityTypeId]
+        , bf.[Guid]
+		, bf.[StorageEntitySettings]
+		, bf.[Url]
+        /* if the BinaryFile as StorageEntityTypeId set, use that. Otherwise use the default StorageEntityTypeId from BinaryFileType  */
+        , COALESCE (bfse.[Name],bftse.[Name] ) as [StorageEntityTypeName]
+        , bfd.[Content]
+    FROM 
+        [BinaryFile] bf 
+    LEFT JOIN 
+        [BinaryFileData] bfd ON bf.[Id] = bfd.[Id]
+    LEFT JOIN 
+        [EntityType] bfse ON bf.[StorageEntityTypeId] = bfse.[Id]
+    LEFT JOIN 
+        [BinaryFileType] bft ON bf.[BinaryFileTypeId] = bft.[Id]
+    LEFT JOIN 
+        [EntityType] bftse ON bft.[StorageEntityTypeId] = bftse.[Id]
+    WHERE 
+        (@Id > 0 and bf.[Id] = @Id)
+        or
+        (bf.[Guid] = @Guid)
+END
+" );
+
+            Sql( @"
     DECLARE @DatabaseEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '0AA42802-04FD-4AEC-B011-FEB127FC85CD' )
+    DECLARE @FileSystemEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A97B6002-454E-4890-B529-B99F8F2F376A' )
+    DECLARE @AttributeId int 
+    DECLARE @DefaultValue nvarchar(max) 
+	DECLARE @ApplicationRoot varchar(400) = ( 
+		SELECT TOP 1 COALESCE( AV.[Value], A.[DefaultValue], '' ) AS [Url]
+		FROM [Attribute] A
+		LEFT OUTER JOIN [AttributeValue] AV ON AV.[AttributeId] = A.[Id]
+		WHERE A.[Guid] = '49AD7AD6-9BAC-4743-B1E8-B917F6271924'
+	)
+
+	IF RIGHT( @ApplicationRoot, 1 ) <> '/' 
+	BEGIN
+		SET @ApplicationRoot = @ApplicationRoot + '/'
+	END
+
 	UPDATE [BinaryFile] SET 
 		[StorageEntityTypeId] = @DatabaseEntityTypeId
 	WHERE [StorageEntityTypeId] IS NULL
 
-    DECLARE @FileSystemEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A97B6002-454E-4890-B529-B99F8F2F376A' )
-    DECLARE @AttributeId int 
-    DECLARE @DefaultValue nvarchar(max) 
     SELECT TOP 1 
 	    @AttributeId = [Id],
 	    @DefaultValue = [DefaultValue]
     FROM [Attribute] WHERE [Guid] = '3CAFA34D-9208-439B-A046-CB727FB729DE'
 
+    UPDATE [Attribute]
+    SET [Description] = 'The relative path where files should be stored on the file system ( Default: ''App_Data\Files'' ).'
+    WHERE [Id] = @AttributeId
+
     UPDATE F SET 
-	    Url = '{ ""RootPath"": ""' + 
+	    StorageEntitySettings = '{ ""RootPath"": ""' + 
 	    REPLACE( REPLACE ( REPLACE ( COALESCE ( AV.[Value], @DefaultValue, '' ), '~/', '' ), '/', '\' ), '\', '\\' ) +
-	    '"" }',
-	    StorageEntitySettings = REPLACE( REPLACE ( COALESCE ( AV.[Value], @DefaultValue, '' ), '~/', '' ), '/', '\' )
+	    '"" }'
     FROM [BinaryFile] F
     INNER JOIN [BinaryFileType] T 
 	    ON T.[Id] = F.[BinaryFileTypeId]
@@ -59,12 +136,14 @@ namespace Rock.Migrations
 	    ON AV.[EntityId] = T.[Id]
 	    AND AV.[AttributeId] = @AttributeId
     WHERE T.[StorageEntityTypeId] = @FileSystemEntityTypeId
-    AND F.[Url] IS NULL 
     AND F.[StorageEntitySettings] IS NULL
 
-    UPDATE [Attribute]
-    SET [Description] = 'The relative path where files should be stored on the file system ( Default: ''App_Data\Files'' ).'
-    WHERE [Id] = @AttributeId
+    UPDATE [BinaryFile] SET Url = @ApplicationRoot + 'GetImage.ashx?guid=' + CAST( [Guid] AS varchar(60) )
+    WHERE [Url] IS NULL
+    AND [MimeType] LIKE 'image%'
+
+    UPDATE [BinaryFile] SET Url = @ApplicationRoot + 'GetFile.ashx?guid=' + CAST( [Guid] AS varchar(60) )
+    WHERE [Url] IS NULL
 " );
         }
         

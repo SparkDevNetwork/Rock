@@ -246,7 +246,10 @@ namespace RockWeb
                 using ( var responseStream = fileContent )
                 {
                     context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
-                    responseStream.Seek( 0, SeekOrigin.Begin );
+                    if ( responseStream.CanSeek )
+                    {
+                        responseStream.Seek( 0, SeekOrigin.Begin );
+                    }
                     responseStream.CopyTo( context.Response.OutputStream );
                     context.Response.Flush();
                 }
@@ -366,7 +369,10 @@ namespace RockWeb
 
                 using ( var writeStream = File.OpenWrite( physFilePath ) )
                 {
-                    fileContent.Seek( 0, SeekOrigin.Begin );
+                    if ( fileContent.CanSeek )
+                    {
+                        fileContent.Seek( 0, SeekOrigin.Begin );
+                    }
                     fileContent.CopyTo( writeStream );
                 }
             }
