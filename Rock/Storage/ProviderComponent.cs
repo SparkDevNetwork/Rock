@@ -60,7 +60,12 @@ namespace Rock.Storage
 
             if ( file != null )
             {
-                string handler = file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) ? "GetImage.ashx" : "GetFile.ashx";
+                string handler = "GetFile.ashx";
+                if ( file.MimeType != null && file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    handler = "GetImage.ashx";
+                }
+
                 url = System.Web.VirtualPathUtility.ToAbsolute( "~/" + handler);
                 url += "?guid=" + file.Guid.ToString();
 

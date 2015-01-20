@@ -139,7 +139,10 @@ namespace RockWeb
 
             using ( var writeStream = File.OpenWrite( physicalFilePath ) )
             {
-                fileContent.Seek( 0, SeekOrigin.Begin );
+                if ( fileContent.CanSeek )
+                {
+                    fileContent.Seek( 0, SeekOrigin.Begin );
+                }
                 fileContent.CopyTo( writeStream );
             }
 
