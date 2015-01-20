@@ -752,7 +752,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                qry = qry.OrderByDescending( t => t.TransactionDateTime );
+                qry = qry.OrderBy( t => t.Id );
             }
 
             gTransactions.DataSource = qry.AsNoTracking().ToList();

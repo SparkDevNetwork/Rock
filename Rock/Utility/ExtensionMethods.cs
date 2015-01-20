@@ -364,7 +364,7 @@ namespace Rock
                             }
                             else if ( keyVal.Value is List<object> )
                             {
-                                sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{% for {2} in {1} %}}{{{{ {2}.[PropertyKey] }}}}{{% endfor %}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key, keyVal.Key.Singularize() ) );
+                                sb.Append( string.Format( "<p>{0} properties can be accessed by <code>{{% for {2} in {1} %}}{{{{ {2}.[PropertyKey] }}}}{{% endfor %}}</code>.</p>", char.ToUpper( keyVal.Key[0] ) + keyVal.Key.Substring( 1 ), keyVal.Key, keyVal.Key.Singularize().ToLower() ) );
                             }
                             else if ( keyVal.Key == "CurrentPerson" )
                             {
@@ -2595,5 +2595,65 @@ namespace Rock
 
         #endregion
 
+        #region Stream extension methods
+
+        /// <summary>
+        /// Reads entire stream and converts to byte array.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns></returns>
+        public static byte[] ReadBytesToEnd( this System.IO.Stream stream )
+        {
+            long originalPosition = 0;
+
+            if ( stream.CanSeek )
+            {
+                originalPosition = stream.Position;
+                stream.Position = 0;
+            }
+
+            try
+            {
+                byte[] readBuffer = new byte[4096];
+
+                int totalBytesRead = 0;
+                int bytesRead;
+
+                while ( ( bytesRead = stream.Read( readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead ) ) > 0 )
+                {
+                    totalBytesRead += bytesRead;
+
+                    if ( totalBytesRead == readBuffer.Length )
+                    {
+                        int nextByte = stream.ReadByte();
+                        if ( nextByte != -1 )
+                        {
+                            byte[] temp = new byte[readBuffer.Length * 2];
+                            Buffer.BlockCopy( readBuffer, 0, temp, 0, readBuffer.Length );
+                            Buffer.SetByte( temp, totalBytesRead, (byte)nextByte );
+                            readBuffer = temp;
+                            totalBytesRead++;
+                        }
+                    }
+                }
+
+                byte[] buffer = readBuffer;
+                if ( readBuffer.Length != totalBytesRead )
+                {
+                    buffer = new byte[totalBytesRead];
+                    Buffer.BlockCopy( readBuffer, 0, buffer, 0, totalBytesRead );
+                }
+                return buffer;
+            }
+            finally
+            {
+                if ( stream.CanSeek )
+                {
+                    stream.Position = originalPosition;
+                }
+            }
+        }
+        
+        #endregion
     }
 }

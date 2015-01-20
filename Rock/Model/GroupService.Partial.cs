@@ -150,6 +150,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of the <see cref="Rock.Model.Group" /> Ids that are ancestors of a specified groupId sorted starting with the most immediate parent
+        /// </summary>
+        /// <param name="childGroupId">The child group identifier.</param>
+        /// <returns>
+        /// An enumerable collection of the group Ids that are descendants of referenced groupId.
+        /// </returns>
+        public IOrderedEnumerable<int> GetAllAncestorIds( int childGroupId )
+        {
+            var result = this.Context.Database.SqlQuery<int>(
+                @"
+                with CTE as (
+                select *, 0 as [Level] from [Group] where [Id]={0}
+                union all
+                select [a].*, [Level] + 1 as [Level] from [Group] [a]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]
+                )
+                select Id from CTE where Id != {0} order by Level desc
+                ", childGroupId );
+
+            // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
+            return result.OrderBy(a => 0);
+        }
+
+        /// <summary>
         /// Adds the person to a new family record
         /// </summary>
         /// <param name="rockContext">The rock context.</param>

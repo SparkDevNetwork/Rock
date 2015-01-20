@@ -19,7 +19,9 @@
         {% else %}
         <div class="item">
           {% endif %}
-          <img src="{{ promo.ImageLarge.ImageUrl }}">
+          <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
+            <img src="{{ promo.ImageLarge.ImageUrl }}" />
+          </a>
 			</div>
         {% endfor %}
       </div>
