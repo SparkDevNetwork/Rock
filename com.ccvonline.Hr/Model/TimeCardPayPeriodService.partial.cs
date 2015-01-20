@@ -106,8 +106,6 @@ namespace com.ccvonline.Hr.Model
                 while ( parentGroup != null )
                 {
                     departmentGroupIds.Add( parentGroup.Id );
-                    parentGroup = parentGroup.ParentGroup;
-                }
             }
 
             // TODO use Rock SystemGuid for this after next merge from core
