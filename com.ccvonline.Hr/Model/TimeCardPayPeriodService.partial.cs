@@ -59,13 +59,9 @@ namespace com.ccvonline.Hr.Model
         /// <returns></returns>
         public static IQueryable<int> GetStaffThatReportToPerson( Rock.Data.RockContext rockContext, int leaderPersonId )
         {
-            // TODO use Rock SystemGuids for these after next merge from core
-            string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
-            string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
-
             Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
-            Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
-            Guid groupStaffGuid = GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
+            Guid groupLeaderGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+            Guid groupStaffGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
 
             // figure out what department the person is a leader in (hopefully at most one department, but we'll deal with multiple just in case)
             var groupMemberService = new GroupMemberService( rockContext );
@@ -106,15 +102,13 @@ namespace com.ccvonline.Hr.Model
                 while ( parentGroup != null )
                 {
                     departmentGroupIds.Add( parentGroup.Id );
+                }
             }
-
-            // TODO use Rock SystemGuid for this after next merge from core
-            string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
 
             List<Person> leaders = new List<Person>();
             foreach ( var deptGroupId in departmentGroupIds )
             {
-                Guid groupLeaderGuid = GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+                Guid groupLeaderGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
                 var qryLeaders = groupMemberService.Queryable()
                     .Where( a => a.GroupId == deptGroupId )
                     .Where( a => a.GroupRole.Guid == groupLeaderGuid )
