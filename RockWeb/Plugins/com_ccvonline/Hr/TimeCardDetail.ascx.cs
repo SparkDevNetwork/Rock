@@ -266,6 +266,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var timeCard = timeCardService.Queryable( "TimeCardDays" ).FirstOrDefault( a => a.Id == timeCardId );
             if ( timeCard == null )
             {
+                nbMessage.Text = "A valid TimeCardId must be specified";
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Visible = true;
+                pnlDetails.Visible = false;
                 return;
             }
 
