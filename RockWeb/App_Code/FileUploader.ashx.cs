@@ -139,7 +139,10 @@ namespace RockWeb
 
             using ( var writeStream = File.OpenWrite( physicalFilePath ) )
             {
-                fileContent.Seek( 0, SeekOrigin.Begin );
+                if ( fileContent.CanSeek )
+                {
+                    fileContent.Seek( 0, SeekOrigin.Begin );
+                }
                 fileContent.CopyTo( writeStream );
             }
 
@@ -181,17 +184,14 @@ namespace RockWeb
             }
 
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
-            BinaryFile binaryFile = new BinaryFile();
+            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFile = new BinaryFile();
+            binaryFileService.Add( binaryFile );
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.Data.ContentStream = GetFileContentStream( context, uploadedFile );
-
-            var binaryFileService = new BinaryFileService( rockContext );
-            binaryFileService.Add( binaryFile );
-
+            binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
             var response = new

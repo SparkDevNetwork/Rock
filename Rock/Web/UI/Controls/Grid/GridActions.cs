@@ -224,6 +224,7 @@ namespace Rock.Web.UI.Controls
             _lbAdd.Click += lbAdd_Click;
             _lbAdd.CausesValidation = false;
             _lbAdd.PreRender += lb_PreRender;
+            _lbAdd.AccessKey = "n";
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add( "class", "fa fa-plus-circle" );

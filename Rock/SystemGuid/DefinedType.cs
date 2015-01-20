@@ -200,9 +200,14 @@ namespace Rock.SystemGuid
         public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
 
         /// <summary>
-        /// The resource t_ ap i_ allowe d_ domains
+        /// The REST allowed domains
         /// </summary>
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
+
+        /// <summary>
+        /// The workflow note type
+        /// </summary>
+        public const string WORKFLOW_NOTE_TYPE = "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782";
 
     }
 }

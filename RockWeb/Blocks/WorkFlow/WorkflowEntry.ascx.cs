@@ -244,8 +244,7 @@ namespace RockWeb.Blocks.WorkFlow
             // Set the note type if this is first request
             if ( !Page.IsPostBack )
             {
-                var noteEntityTypeId = EntityTypeCache.Read( typeof( Workflow ) ).Id;
-                var noteType = new NoteTypeService( _rockContext ).Get( noteEntityTypeId, "WorkflowNote" );
+                var noteType = new NoteTypeService( _rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
                 ncWorkflowNotes.NoteTypeId = noteType.Id;
             }
 
@@ -422,6 +421,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            ShowNotes( false );
             ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
             return false;
 
@@ -567,16 +567,11 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 ncWorkflowNotes.EntityId = _workflow.Id;
                 ncWorkflowNotes.RebuildNotes( setValues );
-
-                divForm.RemoveCssClass( "col-md-12" );
-                divForm.AddCssClass( "col-md-6" );
-                divNotes.Visible = true;
+                ShowNotes( true );
             }
             else
             {
-                divForm.AddCssClass( "col-md-12" );
-                divForm.RemoveCssClass( "col-md-6" );
-                divNotes.Visible = false;
+                ShowNotes( false );
             }
 
             phActions.Controls.Clear();
@@ -615,6 +610,22 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+        }
+
+        private void ShowNotes(bool visible)
+        {
+            divNotes.Visible = visible;
+
+            if ( visible )
+            {
+                divForm.RemoveCssClass( "col-md-12" );
+                divForm.AddCssClass( "col-md-6" );
+            }
+            else
+            {
+                divForm.AddCssClass( "col-md-12" );
+                divForm.RemoveCssClass( "col-md-6" );
+            }
         }
 
         private void GetFormValues()

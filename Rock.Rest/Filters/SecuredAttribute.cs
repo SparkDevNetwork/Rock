@@ -39,9 +39,10 @@ namespace Rock.Rest.Filters
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
-            string controllerClassName = actionContext.ActionDescriptor.ControllerDescriptor.ControllerType.FullName;
+            var controller = actionContext.ActionDescriptor.ControllerDescriptor;
+            string controllerClassName = controller.ControllerType.FullName;
             string actionMethod = actionContext.Request.Method.Method;
-            string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate;
+            string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate.Replace( "{controller}", controller.ControllerName );
 
             ISecured item = Rock.Web.Cache.RestActionCache.Read( actionMethod + actionPath );
             if ( item == null )
