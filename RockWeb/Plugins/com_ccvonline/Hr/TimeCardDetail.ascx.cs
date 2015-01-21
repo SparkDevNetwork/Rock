@@ -10,6 +10,7 @@ using com.ccvonline.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Hr
@@ -21,7 +22,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Category( "CCV > Time Card" )]
     [Description( "Displays the details of a time card." )]
 
-    [WorkflowTypeField( "Workflow", "The workflow to activate when a TimeCard is submitted.", false, false )]
+    [WorkflowTypeField( "Workflow", "The workflow to activate when a TimeCard is submitted.", false, false, order: 2 )]
+
+    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -273,8 +277,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            AttributeCache canApproveTimecardAttribute = AttributeCache.Read( this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
+
             // make sure the current person is the timecard.person or is a leader of the timecard.person
-            List<Person> leaders = TimeCardPayPeriodService.GetLeadersForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
+            List<Person> leaders = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
 
             bool editMode = false;
             nbMessage.Visible = false;

@@ -20,10 +20,10 @@ using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Hr
@@ -36,7 +36,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time card pay periods." )]
 
     [LinkedPage( "Detail Page" )]
-    [BooleanField( "Limit To My Staff", "Enable this to only include counts for the people that are in the department that you lead.", true )]
+
+    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardPayPeriodList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -154,13 +156,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             TimeCardService timeCardService = new TimeCardService( hrContext );
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
             var timeCardQry = timeCardService.Queryable();
+            AttributeCache canApproveTimecardAttribute = AttributeCache.Read(this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
 
-            var limitToMyStaff = this.GetAttributeValue( "LimitToMyStaff" ).AsBooleanOrNull() ?? true;
-            if ( limitToMyStaff )
-            {
-                var staffPersonIds = TimeCardPayPeriodService.GetStaffThatReportToPerson( hrContext, this.CurrentPersonId ?? 0 );
-                timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
-            }
+            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
+            timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
 
             var joinQry = payPeriodQry.GroupJoin(
                 timeCardQry,

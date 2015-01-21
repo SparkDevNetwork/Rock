@@ -22,14 +22,16 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time cards for a specific pay period." )]
 
     [LinkedPage( "Detail Page", order: 0 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "EmployeeId Attribute", "Select the Person Attribute that is used for the person's EmployeeId", order: 1 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "DepartmentId Attribute", "Select the Person Attribute that is used for the person's DepartmentId", order: 2 )]
-    [BooleanField( "Limit To My Staff", "Enable this to only show people that are in the department that you lead.", true, order: 3 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Employee Number Attribute", "Select the Person Attribute that is used for the person's employee number.", order: 1 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Payroll Department Attribute", "Select the Person Attribute that is used for the person's payroll department to be included in the export.", order: 2 )]
+
+    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
-        private AttributeCache employeeIdAttribute = null;
-        private AttributeCache departmentIdAttribute = null;
-        
+        private AttributeCache employeeNumberAttribute = null;
+        private AttributeCache payrollDepartmentAttribute = null;
+
         #region Base Control Methods
 
         /// <summary>
@@ -82,8 +84,9 @@ Export
         {
             base.OnLoad( e );
 
-            employeeIdAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeIdAttribute" ).AsGuid() );
-            departmentIdAttribute = AttributeCache.Read( this.GetAttributeValue( "DepartmentIdAttribute" ).AsGuid() );
+            employeeNumberAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeNumberAttribute" ).AsGuid() );
+            payrollDepartmentAttribute = AttributeCache.Read( this.GetAttributeValue( "PayrollDepartmentAttribute" ).AsGuid() );
+
 
             if ( !Page.IsPostBack )
             {
@@ -198,19 +201,19 @@ Export
             {
                 string employeeId = string.Empty;
                 string departmentId = string.Empty;
-                if ( employeeIdAttribute != null || departmentIdAttribute != null )
+                if ( employeeNumberAttribute != null || payrollDepartmentAttribute != null )
                 {
                     timeCard.PersonAlias.Person.LoadAttributes( hrContext );
-                    if ( employeeIdAttribute != null )
+                    if ( employeeNumberAttribute != null )
                     {
-                        var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeIdAttribute.Key );
-                        employeeId = employeeIdAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeIdAttribute.QualifierValues, false );
+                        var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeNumberAttribute.Key );
+                        employeeId = employeeNumberAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeNumberAttribute.QualifierValues, false );
                     }
 
-                    if ( departmentIdAttribute != null )
+                    if ( payrollDepartmentAttribute != null )
                     {
-                        var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( departmentIdAttribute.Key );
-                        departmentId = employeeIdAttribute.FieldType.Field.FormatValue( null, departmentIdValue, departmentIdAttribute.QualifierValues, false );
+                        var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
+                        departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
                     }
                 }
 
@@ -290,14 +293,10 @@ Export
             lblPayPeriod.Text = string.Format( "Pay Period: {0}", timeCardPayPeriod );
 
             var qry = timeCardService.Queryable( "PersonAlias.Person" ).Where( a => a.TimeCardPayPeriodId == timeCardPayPeriodId );
+            AttributeCache canApproveTimecardAttribute = AttributeCache.Read( this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
 
-            var limitToMyStaff = this.GetAttributeValue( "LimitToMyStaff" ).AsBooleanOrNull() ?? true;
-            if ( limitToMyStaff )
-            {
-                var staffPersonIds = TimeCardPayPeriodService.GetStaffThatReportToPerson( hrContext, this.CurrentPersonId ?? 0 );
-
-                qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
-            }
+            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
+            qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
 
             SortProperty sortProperty = gList.SortProperty;
 
@@ -332,23 +331,23 @@ Export
 
             string employeeId = string.Empty;
             string departmentId = string.Empty;
-            if ( employeeIdAttribute != null || departmentIdAttribute != null )
+            if ( employeeNumberAttribute != null || payrollDepartmentAttribute != null )
             {
                 if ( timeCard.PersonAlias.Person.Attributes == null )
                 {
                     timeCard.PersonAlias.Person.LoadAttributes();
                 }
 
-                if ( employeeIdAttribute != null )
+                if ( employeeNumberAttribute != null )
                 {
-                    var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeIdAttribute.Key );
-                    employeeId = employeeIdAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeIdAttribute.QualifierValues, false );
+                    var employeeIdValue = timeCard.PersonAlias.Person.GetAttributeValue( employeeNumberAttribute.Key );
+                    employeeId = employeeNumberAttribute.FieldType.Field.FormatValue( null, employeeIdValue, employeeNumberAttribute.QualifierValues, false );
                 }
 
-                if ( departmentIdAttribute != null )
+                if ( payrollDepartmentAttribute != null )
                 {
-                    var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( departmentIdAttribute.Key );
-                    departmentId = employeeIdAttribute.FieldType.Field.FormatValue( null, departmentIdValue, departmentIdAttribute.QualifierValues, false );
+                    var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
+                    departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
                 }
             }
 
