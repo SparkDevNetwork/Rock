@@ -1236,7 +1236,7 @@ namespace Rock
         #region Boolean Extensions
 
         /// <summary>
-        /// A numeric 1 or 0
+        /// Returns a numeric 1 (if true) or 0 (if false).
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
@@ -1246,7 +1246,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the yes no.
+        /// Returns either "Yes" or "No".
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
@@ -1256,7 +1256,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the true false.
+        /// Returns the string "True" or "False".
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
@@ -1266,7 +1266,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Froms the true false.
+        /// Use AsBoolean() instead.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -1281,7 +1281,7 @@ namespace Rock
         #region DateTime Extensions
 
         /// <summary>
-        /// Returns the age at the current date
+        /// Returns the age at the current date.
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
@@ -1294,7 +1294,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the age at the current date
+        /// Returns the age at the current date.
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
@@ -1408,7 +1408,7 @@ namespace Rock
 
         /// <summary>
         /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
-        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
@@ -1428,7 +1428,7 @@ namespace Rock
         /// <summary>
         /// Returns a string in relative format (x seconds ago, x minutes ago, about an hour ago, in x seconds,
         /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
-        /// 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in long format (ex. November 5, 2011 at 1:57pm) </param>
@@ -1530,7 +1530,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts the date to an Epoch of milliseconds since 1970/1/1
+        /// Converts the date to an Epoch of milliseconds since 1970/1/1.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
@@ -1747,7 +1747,7 @@ namespace Rock
         #region CheckBoxList Extensions
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the Selected property of each item to true for each given matching string values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
@@ -1760,7 +1760,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the Selected property of each item to true for each given matching int values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
