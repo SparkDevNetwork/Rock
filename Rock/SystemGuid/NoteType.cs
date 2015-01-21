@@ -31,7 +31,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The types of notes associated to a prayer request
         /// </summary>
-        public const string PRAYER_COMMENT = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED";
+        public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
 
         /// <summary>
         /// The types of notes associated to a workflow
