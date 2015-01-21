@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -227,6 +229,120 @@ namespace Rock.Field.Types
                 if ( control != null && control is ListControl )
                     ( (ListControl)control ).SelectedValue = value;
             }
+        }
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
+            {
+                var cbList = new RockCheckBoxList();
+                cbList.ID = string.Format( "{0}_tbText", id );
+                cbList.AddCssClass( "js-filter-control" );
+                cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+                string listSource = configurationValues["values"].Value;
+
+                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
+                {
+                    var tableValues = new List<string>();
+                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
+                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
+                    {
+                        foreach ( DataRow row in dataTable.Rows )
+                        {
+                            cbList.Items.Add( new ListItem( row["text"].ToString(), row["value"].ToString() ) );
+                        }
+                    }
+                }
+
+                else
+                {
+                    foreach ( var listItem in listSource.GetListItems() )
+                    {
+                        cbList.Items.Add( listItem );
+                    }
+                }
+
+                if ( cbList.Items.Count > 0 )
+                {
+                    return cbList;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            List<string> cblValues = new List<string>();
+
+            if ( filterControl != null && filterControl is CheckBoxList )
+            {
+                CheckBoxList cbl = (CheckBoxList)filterControl;
+                foreach ( ListItem li in cbl.Items )
+                    if ( li.Selected )
+                        cblValues.Add( li.Value );
+                values.Add( cblValues.AsDelimited<string>( "," ) );
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues"></param>
+        public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterControl != null && filterValues.Any() )
+            {
+                string value = filterValues[0];
+                if ( value != null )
+                {
+                    List<string> values = new List<string>();
+                    values.AddRange( value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
+
+                    if ( filterControl != null && filterControl is CheckBoxList )
+                    {
+                        CheckBoxList cbl = (CheckBoxList)filterControl;
+                        foreach ( ListItem li in cbl.Items )
+                            li.Selected = values.Contains( li.Value );
+                    }
+                }
+            }
+        }
+
+        public override System.Linq.Expressions.Expression FilterExpression( Data.IService serviceInstance, System.Linq.Expressions.ParameterExpression parameterExpression, string propertyName, List<string> filterValues )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+                List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( selectedValues.Any() )
+                {
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

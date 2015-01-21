@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -206,6 +209,56 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var cblMultiSelect = EditControl( configurationValues, string.Format( "{0}_cblMultiSelect", id )) as RockCheckBoxList;
+            if ( cblMultiSelect != null )
+            {
+                cblMultiSelect.AddCssClass( "js-filter-compare");
+            }
+            return cblMultiSelect;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+            
+            string value = GetEditValue( filterControl, configurationValues );
+            if ( !string.IsNullOrEmpty( value ) )
+            {
+                values.Add( value );
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues"></param>
+        public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterControl != null && filterValues.Any() )
+            {
+                SetEditValue( filterControl, configurationValues, filterValues[0] );
+            }
+        }
+
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

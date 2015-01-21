@@ -33,6 +33,9 @@ namespace Rock.Field
     [Serializable]
     public abstract class FieldType : IFieldType
     {
+
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Field"/> class.
         /// </summary>
@@ -40,34 +43,7 @@ namespace Rock.Field
         {
         }
 
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        public virtual HorizontalAlign AlignValue
-        {
-            get { return HorizontalAlign.Left; }
-        }
-
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsValid( string value, bool required, out string message )
-        {
-            if ( required && string.IsNullOrWhiteSpace( value ) )
-            {
-                message = "value is required.";
-                return false;
-            }
-
-            message = string.Empty;
-            return true;
-        }
+        #endregion
 
         #region Format Value
 
@@ -103,6 +79,14 @@ namespace Rock.Field
         #endregion
 
         #region Configuration 
+
+        /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -188,6 +172,27 @@ namespace Rock.Field
             }
         }
 
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsValid( string value, bool required, out string message )
+        {
+            if ( required && string.IsNullOrWhiteSpace( value ) )
+            {
+                message = "value is required.";
+                return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
         #endregion
 
         #region Filter Control
@@ -201,7 +206,7 @@ namespace Rock.Field
         public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             HtmlGenericControl row = new HtmlGenericControl( "div" );
-            row.ID = string.Format( "{0}_row", id );
+            row.ID = id;
             row.AddCssClass( "row" );
 
             HtmlGenericControl col1 = new HtmlGenericControl( "div" );
@@ -320,14 +325,12 @@ namespace Rock.Field
         /// <param name="filterValue">The filter value.</param>
         public virtual void SetFilterValues ( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
         {
-            var values = new List<string>();
-
             if ( filterControl != null )
             {
                 try
                 {
-                    SetFilterCompareValue( filterControl.Controls[0].Controls[0], values.Count > 0 ? values[0] : string.Empty );
-                    SetFilterValueValue( filterControl.Controls[1].Controls[0], values.Count > 1 ? values[1] : string.Empty );
+                    SetFilterCompareValue( filterControl.Controls[0].Controls[0], filterValues.Count > 0 ? filterValues[0] : string.Empty );
+                    SetFilterValueValue( filterControl.Controls[1].Controls[0], filterValues.Count > 1 ? filterValues[1] : string.Empty );
                 }
                 catch { }
             }

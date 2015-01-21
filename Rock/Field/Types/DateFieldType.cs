@@ -229,7 +229,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public virtual ComparisonType FilterComparisonType
+        public override ComparisonType FilterComparisonType
         {
             get { return ComparisonHelper.DateFilterComparisonTypes; }
         }
