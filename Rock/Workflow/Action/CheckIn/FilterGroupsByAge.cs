@@ -59,16 +59,16 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var person in family.People )
                 {
                     double? age = person.Person.AgePrecise;
+                    if ( age == null )
+                    {
+                        continue;
+                    }
 
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
                             string ageRange = group.Group.GetAttributeValue( "AgeRange" ) ?? string.Empty;
-                            if ( string.IsNullOrWhiteSpace( ageRange ) )
-                            {
-                                continue;
-                            }
 
                             string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
                             string minAgeValue = null;
