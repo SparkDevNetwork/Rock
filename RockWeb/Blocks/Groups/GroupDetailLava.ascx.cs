@@ -150,12 +150,12 @@ namespace RockWeb.Blocks.Groups
                 } );
             }
 
-            Response.Redirect( Request.Url.ToString().Replace( "&Action=Edit", "" ) );
+            Response.Redirect( Request.Url.ToString().Replace( "&Action=EditGroup", "" ) );
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect(Request.Url.ToString().Replace("&Action=Edit", ""));
+            Response.Redirect(Request.Url.ToString().Replace("&Action=EditGroup", ""));
         }
 
         #endregion
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Groups
 
         private void RouteAction()
         {
-            if ( PageParameter( "Action" ) == "Edit" )
+            if ( PageParameter( "Action" ) == "EditGroup" )
             {
                 pnlEdit.Visible = true;
                 pnlView.Visible = false;
@@ -252,23 +252,30 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupId != -1 )
             {
+                
+                    RockContext rockContext = new RockContext();
+                    GroupService groupService = new GroupService( rockContext );
 
-                RockContext rockContext = new RockContext();
-                GroupService groupService = new GroupService( rockContext );
+                    var qry = groupService
+                            .Queryable( "GroupLocations" )
+                            .Where( g => g.Id == groupId );
 
-                var qry = groupService
-                        .Queryable( "GroupLocations" )
-                        .Where( g => g.Id == groupId );
+                    var group = qry.FirstOrDefault();
 
-                var group = qry.FirstOrDefault();
+                    if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        tbName.Text = group.Name;
+                        tbDescription.Text = group.Description;
+                        cbIsActive.Checked = group.IsActive;
 
-                tbName.Text = group.Name;
-                tbDescription.Text = group.Description;
-                cbIsActive.Checked = group.IsActive;
-
-                group.LoadAttributes();
-                //phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
+                        group.LoadAttributes();
+                        //phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
+                    }
+                    else
+                    {
+                        lContent.Text = "<div class='alert alert-warning'>You do not have permission to edit this group.</div>";
+                    }
             }
             else
             {
