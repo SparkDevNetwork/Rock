@@ -2746,6 +2746,44 @@ td.grid-col-actions {
 .panel-note .load-more span {
   margin: 0 12px;
 }
+.note-deny article,
+.note-danger article,
+.note-security article {
+  border-color: #eed3d7;
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.note-deny .actions a,
+.note-danger .actions a,
+.note-security .actions a {
+  color: #b94a48;
+}
+.note-approve article,
+.note-success article {
+  border-color: #d6e9c6;
+  background-color: #dff0d8;
+  color: #468847;
+}
+.note-approve .actions a,
+.note-success .actions a {
+  color: #468847;
+}
+.note-info article {
+  border-color: #bce8f1;
+  background-color: #d9edf7;
+  color: #3a87ad;
+}
+.note-info .actions a {
+  color: #3a87ad;
+}
+.note-warning article {
+  border-color: #fbeed5;
+  background-color: #fcf8e3;
+  color: #c09853;
+}
+.note-warning .actions a {
+  color: #c09853;
+}
 .panel-note-light {
   border: 0;
   background: none;
