@@ -42,10 +42,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedValue( "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782", "Deny", "Used for notes showing denials.", "68221BAB-13E6-43BB-9CEA-81507C5E4BAF" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "68221BAB-13E6-43BB-9CEA-81507C5E4BAF", "629CFBFF-3A95-4294-B13C-37F4FED04FE7", "fa fa-ban" );
 
-            // primary
-            RockMigrationHelper.AddDefinedValue( "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782", "Primary", "Used for styling notes using the Bootstrap primary coloring.", "643FC41E-AF5C-4FD1-8118-8DAAE254DAA5" );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "643FC41E-AF5C-4FD1-8118-8DAAE254DAA5", "629CFBFF-3A95-4294-B13C-37F4FED04FE7", "fa fa-comment" );
-
             // success
             RockMigrationHelper.AddDefinedValue( "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782", "Success", "Used for styling notes using the Bootstrap success coloring.", "128C609C-1601-4247-8BA2-6CB60AB2562C" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "128C609C-1601-4247-8BA2-6CB60AB2562C", "629CFBFF-3A95-4294-B13C-37F4FED04FE7", "fa fa-star" );
