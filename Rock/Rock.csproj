@@ -212,6 +212,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -309,6 +310,7 @@
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\RockRating.cs" />
     <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
