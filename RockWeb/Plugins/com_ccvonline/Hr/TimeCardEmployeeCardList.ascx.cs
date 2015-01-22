@@ -9,6 +9,7 @@ using com.ccvonline.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -21,6 +22,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Category( "CCV > Time Card" )]
     [Description( "Lists all the time cards for a specific pay period." )]
 
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve all timecards, regardless of department." )]
     [LinkedPage( "Detail Page", order: 0 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Employee Number Attribute", "Select the Person Attribute that is used for the person's employee number.", order: 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Payroll Department Attribute", "Select the Person Attribute that is used for the person's payroll department to be included in the export.", order: 2 )]
@@ -62,8 +64,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             btnExport.CausesValidation = false;
 
             btnExport.Text = @"
-<i class='fa fa-file-text-o'></i>
-Export
+<i class='fa fa-download' title='Export'></i>
 ";
             btnExport.Click += btnExport_Click;
 
@@ -228,7 +229,6 @@ Export
                 sb.AppendLine( formattedLine );
 
                 // update the status and exported date time of the selected timecards
-                var prevStatus = timeCard.TimeCardStatus;
                 timeCard.TimeCardStatus = TimeCardStatus.Exported;
                 timeCard.ExportedDateTime = RockDateTime.Now;
 
@@ -294,8 +294,12 @@ Export
 
             var qry = timeCardService.Queryable( "PersonAlias.Person" ).Where( a => a.TimeCardPayPeriodId == timeCardPayPeriodId );
 
-            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
-            qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            if ( !this.IsUserAuthorized( Authorization.APPROVE ) )
+            {
+                // unless the current user has the Global Approve role, limit cards to approvees
+                var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
+                qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
 
             SortProperty sortProperty = gList.SortProperty;
 

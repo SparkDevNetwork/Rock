@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i>&nbsp;Pay Periods</h1>
+                <h1 class="panel-title"><i class="fa fa-calendar-o"></i>&nbsp;Pay Periods</h1>
             </div>
             <div class="panel-body">
 

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using com.ccvonline.Hr.Data;
 using com.ccvonline.Hr.Model;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -24,7 +24,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Category( "CCV > Time Card" )]
     [Description( "Displays the details of a time card." )]
 
-    [WorkflowTypeField( "Workflow", "The workflow to activate when a TimeCard is submitted.", false, false, order: 2 )]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve all timecards, regardless of department." )]
+
+    [SystemEmailField( "Submitted Email", "The email to send when a time card is submitted. If not specified, an email will not be sent.", false )]
+    [SystemEmailField( "Approved Email", "The email to send when a time card is approved. If not specified, an email will not be sent.", false )]
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -276,44 +279,49 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 pnlDetails.Visible = false;
                 return;
             }
-            
-            if (!TimeCardPayPeriodService.ValidateApproverAttributeExists( hrContext))
+
+            if ( !TimeCardPayPeriodService.ValidateApproverAttributeExists( hrContext ) )
             {
-                nbMessage.Text = "A GroupMember Attribute with a key of 'CanApproveTimeCards' is required before time cards can be submitted.";
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Text = "WARNING: A GroupMember Attribute with a key of 'CanApproveTimeCards' is required before time cards can be submitted.";
+                nbMessage.NotificationBoxType = NotificationBoxType.Warning;
                 nbMessage.Visible = true;
             }
 
             // make sure the current person is the timecard.person or is an approver of the timecard.person
-            List<Person> leaders = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
+            List<Person> approvers = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
 
             bool editMode = false;
-            
+
             pnlDetails.Visible = true;
             pnlApproverActions.Visible = false;
             int? timeCardPersonId = timeCard.PersonAlias != null ? timeCard.PersonAlias.PersonId : (int?)null;
             if ( timeCardPersonId == this.CurrentPersonId )
             {
+                // only allow the timecard to be edited by the timeCard.Person, and only if the status is InProgress or Submitted
                 if ( timeCard.TimeCardStatus == TimeCardStatus.InProgress || timeCard.TimeCardStatus == TimeCardStatus.Submitted )
                 {
                     editMode = true;
                 }
+                else
+                {
+                    // timecard will be readonly, and not show the approve button
+                }
             }
             else
             {
-                if ( !leaders.Any( a => a.Id == this.CurrentPersonId ) && ( timeCardPersonId != this.CurrentPersonId ) )
+                if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId )  )
                 {
-                    // if the currentPersonId is neither the TimeCard person or a leader of the timecard person, don't let them see it
+                    // if the current person a global Approver or an approver of the timecard.person, enable the Approve button if is has been submitted.
+                    pnlApproverActions.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
+                }
+                else
+                {
+                    // if the currentPersonId is neither the TimeCard person or an approver of the timecard person, don't let them see it
                     nbMessage.Visible = true;
                     nbMessage.Text = "You are only allowed to view your timecards or timecards of person that report to you.";
                     nbMessage.NotificationBoxType = NotificationBoxType.Warning;
                     pnlDetails.Visible = false;
                     return;
-                }
-                else
-                {
-                    // if the current person is a leader of the timecard.person, enable the Approve button if is has been submitted.
-                    pnlApproverActions.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
                 }
             }
 
@@ -380,7 +388,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // Actions/Submit
             ddlSubmitTo.Items.Clear();
             ddlSubmitTo.Items.Add( new ListItem() );
-            ddlSubmitTo.Items.AddRange( leaders.Select( a => new ListItem( a.ToString(), a.Id.ToString() ) ).ToArray() );
+            ddlSubmitTo.Items.AddRange( approvers.Select( a => new ListItem( a.ToString(), a.Id.ToString() ) ).ToArray() );
 
             // Totals
             lTotalRegularWorked.Text = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
@@ -577,28 +585,19 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             hrContext.SaveChanges();
 
-            // Launch the Workflow after timecard is marked submitted
-            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-            if ( workflowTypeGuid.HasValue )
-            {
-                var workflowTypeService = new WorkflowTypeService( hrContext );
-                var workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                if ( workflowType != null )
-                {
-                    var workflowName = string.Format( "{0} Time Card for {1}", timeCard.TimeCardPayPeriod, timeCard.PersonAlias.Person );
-                    var workflow = Workflow.Activate( workflowType, workflowName );
+            // Send an email (if specified) after timecard is marked submitted
+            Guid? submittedEmailTemplateGuid = GetAttributeValue( "SubmittedEmail" ).AsGuidOrNull();
 
-                    List<string> workflowErrors;
-                    if ( workflow.Process( hrContext, timeCard, out workflowErrors ) )
-                    {
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
-                        {
-                            var workflowService = new Rock.Model.WorkflowService( hrContext );
-                            workflowService.Add( workflow );
-                            hrContext.SaveChanges();
-                        }
-                    }
-                }
+            if ( submittedEmailTemplateGuid.HasValue )
+            {
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                mergeObjects.Add( "TimeCard", timeCard );
+                mergeObjects.Add( "Person", this.CurrentPerson );
+                mergeObjects.Add( "SubmitToPerson", submitToPersonAlias.Person );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( submitToPersonAlias.Person.Email, mergeObjects ) );
+                Email.Send( submittedEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
 
             nbSubmittedSuccessMessage.Text = string.Format( "Successfully submitted to {0}", submitToPersonAlias );
@@ -623,7 +622,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
-            var prevStatus = timeCard.TimeCardStatus;
             timeCard.TimeCardStatus = TimeCardStatus.Approved;
             timeCard.ApprovedByPersonAliasId = this.CurrentPersonAliasId;
 
@@ -640,6 +638,21 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             timeCardHistoryService.Add( timeCardHistory );
 
             hrContext.SaveChanges();
+
+            // Send an email (if specified) after timecard is marked approved
+            Guid? approvedEmailTemplateGuid = GetAttributeValue( "ApprovedEmail" ).AsGuidOrNull();
+
+            if ( approvedEmailTemplateGuid.HasValue )
+            {
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                mergeObjects.Add( "TimeCard", timeCard );
+                mergeObjects.Add( "Person", timeCard.PersonAlias.Person );
+                mergeObjects.Add( "ApprovedByPerson", this.CurrentPerson );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( timeCard.PersonAlias.Person.Email, mergeObjects ) );
+                Email.Send( approvedEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+            }
 
             nbApprovedSuccessMessage.Text = string.Format( "Successfully approved by {0}", this.CurrentPersonAlias );
             nbApprovedSuccessMessage.Visible = true;

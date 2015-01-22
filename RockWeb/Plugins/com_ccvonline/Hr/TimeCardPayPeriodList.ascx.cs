@@ -23,6 +23,7 @@ using com.ccvonline.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,6 +36,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Category( "CCV > Time Card" )]
     [Description( "Lists all the time card pay periods." )]
 
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve all timecards, regardless of department." )]
     [LinkedPage( "Detail Page" )]
     public partial class TimeCardPayPeriodList : Rock.Web.UI.RockBlock
     {
@@ -154,8 +156,12 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
             var timeCardQry = timeCardService.Queryable();
 
-            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
-            timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            if ( !this.IsUserAuthorized( Authorization.APPROVE ) )
+            {
+                // unless the current user has the Global Approve role, limit cards to approvees
+                var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
+                timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
 
             var joinQry = payPeriodQry.GroupJoin(
                 timeCardQry,
