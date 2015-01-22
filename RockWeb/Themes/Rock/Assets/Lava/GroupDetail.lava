@@ -24,11 +24,18 @@
 	<div class="col-md-6">
 		{% for groupLocation in Group.GroupLocations %}
 			{% if groupLocation.Location.GeoPoint != '' %}
-				<img src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}" />"
+				<img src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}" />
 			{% endif %}
 		{% endfor %}
 	</div>
 </div>
+
+{% if AllowedActions.Edit == true %}
+  <div class="actions">
+    <a class="btn btn-primary" href="?GroupId={{ Group.Id }}&Action=Edit">Edit</a>
+  </div>
+{% endif %}
+
 <p>
 	
 </p>
@@ -40,12 +47,21 @@
 	{% for member in Group.Members %}
 
 		<li class="margin-b-md margin-r-md clearfix pull-left">
-			<img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" /> 
-			<div class="pull-left">
-				<strong>{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small> <br />
-				<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-			</div>
-		</li>
+			{% if LinkedPages.PersonDetailPage != '' %}
+        <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+      {% endif %}
+      <img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" />
+      <div class="pull-left">
+        <strong>{{ member.Person.FullName }}</strong>
+        <small>({{ member.GroupRole.Name}})</small>
+        <br />
+        <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+      </div>
+
+      {% if LinkedPages.PersonDetailPage != '' %}
+        </a>
+      {% endif %}
+   </li>
 		
 	{% endfor %}
 	</ul>

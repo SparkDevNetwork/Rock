@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Presents the details of a group using Lava" )]
     [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false)]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}" )]
+    [LinkedPage("Person Detail Page", "Page to link to for more information on a group member.", false)]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -82,7 +83,24 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                DisplayContent();
+                RouteAction();
+            }
+            else
+            {
+                var rockContext = new RockContext();
+                GroupService groupService = new GroupService( rockContext );
+
+                int groupId = -1;
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+                {
+                    groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
+                }
+
+                Group group = groupService.Get( groupId );
+                group.LoadAttributes();
+
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( group, phAttributes, false, BlockValidationGroup );
             }
         }
 
@@ -99,13 +117,68 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            DisplayContent();
+            RouteAction();
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            GroupService groupService = new GroupService( rockContext );
+
+            int groupId = -1;
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            {
+                groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
+            }
+
+            Group group = groupService.Get(groupId);
+
+            if ( group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                group.Name = tbName.Text;
+                group.Description = tbDescription.Text;
+                group.IsActive = cbIsActive.Checked;
+
+                // set attributes
+                group.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, group );
+
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    group.SaveAttributeValues( rockContext );
+                } );
+            }
+
+            Response.Redirect( Request.Url.ToString().Replace( "&Action=EditGroup", "" ) );
+        }
+
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            Response.Redirect(Request.Url.ToString().Replace("&Action=EditGroup", ""));
         }
 
         #endregion
 
         #region Methods
 
+        private void RouteAction()
+        {
+            if ( PageParameter( "Action" ) == "EditGroup" )
+            {
+                pnlEdit.Visible = true;
+                pnlView.Visible = false;
+                DisplayEdit();
+            }
+            else
+            {
+                pnlEdit.Visible = false;
+                pnlView.Visible = true;
+                DisplayContent();
+            }
+        }
+        
+        
         private void DisplayContent() {
 
             int groupId = -1;
@@ -125,6 +198,7 @@ namespace RockWeb.Blocks.Groups
                 var qry = groupService
                     .Queryable( "GroupLocations,Members,Members.Person" )
                     .Where( g => g.Id == groupId );
+                
                 if ( !enableDebug )
                 {
                     qry = qry.AsNoTracking();
@@ -133,6 +207,19 @@ namespace RockWeb.Blocks.Groups
                 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", group );
+
+                // add linked pages
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                // add collection of allowed security actions
+                Dictionary<string, object> securityActions = new Dictionary<string, object>();
+                securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                mergeFields.Add( "AllowedActions", securityActions );
+
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
                 var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
@@ -153,6 +240,47 @@ namespace RockWeb.Blocks.Groups
                 lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
 
+        }
+
+        private void DisplayEdit()
+        {
+            int groupId = -1;
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
+            {
+                groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
+            }
+
+            if ( groupId != -1 )
+            {
+                
+                    RockContext rockContext = new RockContext();
+                    GroupService groupService = new GroupService( rockContext );
+
+                    var qry = groupService
+                            .Queryable( "GroupLocations" )
+                            .Where( g => g.Id == groupId );
+
+                    var group = qry.FirstOrDefault();
+
+                    if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        tbName.Text = group.Name;
+                        tbDescription.Text = group.Description;
+                        cbIsActive.Checked = group.IsActive;
+
+                        group.LoadAttributes();
+                        //phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
+                    }
+                    else
+                    {
+                        lContent.Text = "<div class='alert alert-warning'>You do not have permission to edit this group.</div>";
+                    }
+            }
+            else
+            {
+                lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
+            }
         }
 
         #endregion
