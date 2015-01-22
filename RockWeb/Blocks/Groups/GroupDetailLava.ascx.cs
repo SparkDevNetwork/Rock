@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false)]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}" )]
     [LinkedPage("Person Detail Page", "Page to link to for more information on a group member.", false)]
+    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -150,34 +151,217 @@ namespace RockWeb.Blocks.Groups
                 } );
             }
 
-            Response.Redirect( Request.Url.ToString().Replace( "&Action=EditGroup", "" ) );
+            Response.Redirect( CreateCancelLink() );
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect(Request.Url.ToString().Replace("&Action=EditGroup", ""));
+            Response.Redirect( CreateCancelLink() );
+        }
+
+        protected void btnSaveGroupMember_Click( object sender, EventArgs e )
+        {
+            int groupId = 0;
+            int.TryParse( PageParameter( "GroupId" ), out groupId );
+            
+            int groupMemberId = 0;
+            if ( int.TryParse( PageParameter( "GroupMemberId" ), out groupMemberId ) );
+            
+            var rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+
+            var groupMember = groupMemberService.Get( groupMemberId );
+
+            if ( groupMemberId.Equals( 0 ) )
+            {
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = groupId;
+
+                // check to see if the person is alread a member of the gorup/role
+                var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
+                    groupId, ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
+
+                if ( existingGroupMember != null )
+                {
+                    // if so, don't add and show error message
+                    var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
+
+                    nbGroupMemberErrorMessage.Title = "Person Already In Group";
+                    nbGroupMemberErrorMessage.Text = string.Format(
+                        "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role.",
+                        person.FullName,
+                        ddlGroupRole.SelectedItem.Text,
+                        role.GroupType.GroupTerm,
+                        RockPage.PageId,
+                        existingGroupMember.Id );
+                    return;
+                }
+            }
+
+            groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+            groupMember.GroupRoleId = role.Id;
+            groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+
+            groupMember.LoadAttributes();
+
+            Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+
+            // using WrapTransaction because there are two Saves
+            rockContext.WrapTransaction( () =>
+            {
+                if ( groupMember.Id.Equals( 0 ) )
+                {
+                    groupMemberService.Add( groupMember );
+                }
+
+                rockContext.SaveChanges();
+                groupMember.SaveAttributeValues( rockContext );
+            } );
+
+            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
+            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+            {
+                Rock.Security.Role.Flush( group.Id );
+                Rock.Security.Authorization.Flush();
+            }
+            
+            Response.Redirect( CreateCancelLink() );
+        }
+        protected void btnCancelGroupMember_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( CreateCancelLink() );
         }
 
         #endregion
 
         #region Methods
 
-        private void RouteAction()
+        private string CreateCancelLink()
         {
-            if ( PageParameter( "Action" ) == "EditGroup" )
+            if ( Request.Url.Port == 80 || Request.Url.Port == 443 )
             {
-                pnlEdit.Visible = true;
-                pnlView.Visible = false;
-                DisplayEdit();
+                return string.Format( "{0}://{1}{2}?GroupId={3}", Request.Url.Scheme, Request.Url.Host, Request.Url.LocalPath, PageParameter( "GroupId" ) );
+                
             }
             else
             {
-                pnlEdit.Visible = false;
-                pnlView.Visible = true;
-                DisplayContent();
+                return string.Format( "{0}://{1}:{2}{3}?GroupId={4}", Request.Url.Scheme, Request.Url.Host, Request.Url.Port.ToString(), Request.Url.LocalPath, PageParameter( "GroupId" ) );
             }
         }
-        
+
+        private void RouteAction()
+        {
+            int groupMemberId = 0;
+
+            switch ( PageParameter( "Action" ) )
+            {
+                case "EditGroup":
+                    pnlGroupEdit.Visible = true;
+                    pnlGroupView.Visible = false;
+                    pnlEditGroupMember.Visible = false;
+                    DisplayEditGroup();
+                    break;
+                case "DeleteGroupMember":
+                    if (int.TryParse(PageParameter( "GroupMemberId" ), out groupMemberId)) {
+                        DeleteGroupMember( groupMemberId );
+                    }
+                    pnlGroupEdit.Visible = false;
+                    pnlGroupView.Visible = true;
+                    pnlEditGroupMember.Visible = false;
+                    DisplayContent();
+                    break;
+                case "AddGroupMember":
+                    AddGroupMember();
+                    break;
+                case "EditGroupMember":
+                    if ( int.TryParse( PageParameter( "GroupMemberId" ), out groupMemberId ) )
+                    {
+                        DisplayEditGroupMember( groupMemberId );
+                    }
+                    break;
+                default:
+                    pnlGroupEdit.Visible = false;
+                    pnlGroupView.Visible = true;
+                    pnlEditGroupMember.Visible = false;
+                    DisplayContent();
+                    break;
+            }
+        }
+
+        private void AddGroupMember()
+        {
+            int groupId = 0;
+            int.TryParse( PageParameter( "GroupId" ), out groupId );
+
+            var personAddPage = GetAttributeValue( "GroupMemberAddPage" );
+
+            if ( personAddPage == string.Empty )
+            {
+                DisplayEditGroupMember( 0 );
+            }
+            else
+            {
+                // redirect to the add page provided
+                var group = new GroupService( new RockContext() ).Get( groupId );
+                if ( group != null )
+                {
+                    var queryParams = new Dictionary<string, string>();
+                    queryParams.Add( "GroupId", group.Id.ToString() );
+                    queryParams.Add( "GroupName", group.Name );
+                    NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                }
+            }
+        }
+
+        private void DisplayEditGroupMember(int groupMemberId)
+        {
+            pnlGroupEdit.Visible = false;
+            pnlGroupView.Visible = true;
+            pnlEditGroupMember.Visible = true;
+            
+            int groupId = 0;
+            int.TryParse( PageParameter( "GroupId" ), out groupId );
+            
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService(rockContext);
+
+            var groupMember = groupMemberService.Get(groupMemberId);
+
+            if ( groupMember == null )
+            {
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = groupId;
+                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            }
+
+            // load dropdowns
+            LoadGroupMemberDropDowns( groupId );
+
+            // set values
+            ppGroupMemberPerson.SetValue( groupMember.Person );
+            ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+
+            // set attributes
+            groupMember.LoadAttributes();
+            Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, "", true );
+        }
+
+        private void LoadGroupMemberDropDowns(int groupId)
+        {
+            Group group = new GroupService( new RockContext() ).Get( groupId );
+            if ( group != null )
+            {
+                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
+                ddlGroupRole.DataBind();
+            }
+
+            rblStatus.BindToEnum<GroupMemberStatus>();
+        }
         
         private void DisplayContent() {
 
@@ -242,7 +426,21 @@ namespace RockWeb.Blocks.Groups
 
         }
 
-        private void DisplayEdit()
+        private void DeleteGroupMember( int groupMemberId )
+        {
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            var groupMember = groupMemberService.Get( groupMemberId );
+            if ( groupMember != null )
+            {
+                groupMemberService.Delete( groupMember );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        private void DisplayEditGroup()
         {
             int groupId = -1;
             if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
