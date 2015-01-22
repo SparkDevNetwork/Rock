@@ -236,7 +236,12 @@ END" );
             RockMigrationHelper.DeleteDefinedValue( "EF911C5F-A922-4B21-B601-FD306538B0E2" );
             RockMigrationHelper.DeleteDefinedValue( "B6B4ACE8-6B7E-4A67-AFFF-2CBEFC6C1BBF" );
             RockMigrationHelper.DeleteDefinedValue( "9304261A-2369-4830-B5EE-77BE3C42E9BF" );
+            
+            //
+            // Delete security settings for content channels
+            //
 
+            Sql( @"DELETE FROM [Auth] WHERE [Guid] in ( 'E7874EFF-F507-44EB-9405-D8A6FBA2F21C', 'D154C7B3-EC9F-4C93-BBE9-CE943712939E', '9FB9F2DA-04FF-49C3-A0E3-C09C2E130F6E' )" );
         }
     }
 }
