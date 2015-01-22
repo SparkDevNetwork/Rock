@@ -381,5 +381,5 @@ namespace RockWeb.Blocks.Examples
             string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
-    }
+}
 }
