@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Groups
                         // if so, don't add and show error message
                         var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
 
-                        nbErrorMessage.Title = "Person already added";
+                        nbErrorMessage.Title = "Person Exists";
                         nbErrorMessage.Text = string.Format( 
                             "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
                             person.FullName,
@@ -189,8 +189,6 @@ namespace RockWeb.Blocks.Groups
                 // show error if above max.. do not proceed
                 if ( roleMembershipAboveMax )
                 {
-                    var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
-
                     nbErrorMessage.Title = string.Format( "Maximum {0} Exceeded", role.Name.Pluralize() );
                     nbErrorMessage.Text = string.Format( 
                         "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
