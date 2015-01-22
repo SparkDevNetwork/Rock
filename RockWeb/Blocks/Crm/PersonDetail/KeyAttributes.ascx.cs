@@ -465,7 +465,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else
                         {
-                            formattedValue = attribute.FieldType.Field.FormatValue( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, false );
                             if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                             {
                                 fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
