@@ -289,6 +289,20 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupId">The group id.</param>
         public void ShowDetail( int groupMemberId, int? groupId )
         {
+            // autoexpand the person picker if this is an add
+            this.Page.ClientScript.RegisterStartupScript(
+                this.GetType(),
+                "StartupScript", @"Sys.Application.add_load(function () {
+
+                // if the person picker is empty then open it for quick entry
+                var personPicker = $('.js-authorizedperson');
+                var currentPerson = personPicker.find('.picker-selectedperson').html();
+                if (currentPerson != null && currentPerson.length == 0) {
+                    $(personPicker).find('a.picker-label').trigger('click');
+                }
+
+            });", true );
+            
             var rockContext = new RockContext();
             GroupMember groupMember = null;
 
