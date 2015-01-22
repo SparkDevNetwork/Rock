@@ -50,6 +50,9 @@ namespace Rock.Client
         public Guid? ActionAttributeGuid { get; set; }
 
         /// <summary />
+        public bool? AllowNotes { get; set; }
+
+        /// <summary />
         public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
 
         /// <summary />

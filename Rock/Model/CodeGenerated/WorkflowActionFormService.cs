@@ -99,6 +99,7 @@ namespace Rock.Model
             target.Footer = source.Footer;
             target.Actions = source.Actions;
             target.ActionAttributeGuid = source.ActionAttributeGuid;
+            target.AllowNotes = source.AllowNotes;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
