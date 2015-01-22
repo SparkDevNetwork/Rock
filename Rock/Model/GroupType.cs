@@ -260,7 +260,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [DataMember, LavaIgnore]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
