@@ -188,6 +188,8 @@ namespace Rock.Model
             
             // ignoring FinancialPersonSavedAccount,ModifiedByPersonAliasId 
             
+            // ignoring FinancialPersonSavedAccount,PersonAliasId 
+            
             // ignoring FinancialPledge,CreatedByPersonAliasId 
             
             // ignoring FinancialPledge,ModifiedByPersonAliasId 

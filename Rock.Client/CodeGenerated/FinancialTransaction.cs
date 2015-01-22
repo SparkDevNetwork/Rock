@@ -32,21 +32,6 @@ namespace Rock.Client
     public partial class FinancialTransaction
     {
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public int? SourceTypeValueId { get; set; }
-
-        /// <summary />
-        public int TransactionTypeValueId { get; set; }
-
-        /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
         public int? BatchId { get; set; }
 
         /// <summary />
@@ -56,6 +41,9 @@ namespace Rock.Client
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
+        /// <summary />
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary />
@@ -63,6 +51,18 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
+
+        /// <summary />
+        public int TransactionTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CreditCardTypeValueId { get; set; }
+
+        /// <summary />
+        public int? SourceTypeValueId { get; set; }
 
         /// <summary />
         public string CheckMicrEncrypted { get; set; }

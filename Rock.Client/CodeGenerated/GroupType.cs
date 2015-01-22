@@ -86,9 +86,6 @@ namespace Rock.Client
         public int? GroupTypePurposeValueId { get; set; }
 
         /// <summary />
-        public ICollection<Group> Groups { get; set; }
-
-        /// <summary />
         public ICollection<GroupType> ChildGroupTypes { get; set; }
 
         /// <summary />

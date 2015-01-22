@@ -53,13 +53,13 @@ namespace Rock.Client
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary />
-        public BinaryFileType BinaryFileType { get; set; }
-
-        /// <summary />
-        public EntityType StorageEntityType { get; set; }
-
-        /// <summary />
         public string Url { get; set; }
+
+        /// <summary />
+        public DateTime? ContentLastModified { get; set; }
+
+        /// <summary />
+        public BinaryFileType BinaryFileType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
