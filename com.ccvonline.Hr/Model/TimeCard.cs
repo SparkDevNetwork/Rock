@@ -105,6 +105,7 @@ namespace com.ccvonline.Hr.Model
         /// <value>
         /// The time card pay period.
         /// </value>
+        [Rock.Data.LavaInclude]
         public virtual TimeCardPayPeriod TimeCardPayPeriod { get; set; }
 
         /// <summary>
@@ -113,6 +114,7 @@ namespace com.ccvonline.Hr.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [Rock.Data.LavaInclude]
         public virtual Rock.Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -121,6 +123,7 @@ namespace com.ccvonline.Hr.Model
         /// <value>
         /// The submitted to person alias.
         /// </value>
+        [Rock.Data.LavaInclude]
         public virtual Rock.Model.PersonAlias SubmittedToPersonAlias { get; set; }
 
         /// <summary>
@@ -129,6 +132,7 @@ namespace com.ccvonline.Hr.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
+        [Rock.Data.LavaInclude]
         public virtual Rock.Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
