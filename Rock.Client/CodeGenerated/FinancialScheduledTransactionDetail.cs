@@ -32,9 +32,6 @@ namespace Rock.Client
     public partial class FinancialScheduledTransactionDetail
     {
         /// <summary />
-        public int? EntityTypeId { get; set; }
-
-        /// <summary />
         public int AccountId { get; set; }
 
         /// <summary />
@@ -45,6 +42,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public int? EntityId { get; set; }
