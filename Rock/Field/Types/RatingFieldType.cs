@@ -14,20 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field used to save and display a rating
     /// </summary>
-    public class MemoFieldType : FieldType
+    [Serializable]
+    public class RatingFieldType : FieldType
     {
-        private const string NUMBER_OF_ROWS = "numberofrows";
 
         /// <summary>
         /// Formats the value as HTML.
@@ -35,11 +36,18 @@ namespace Rock.Field.Types
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
+        /// <param name="condensed">if set to <c>true</c> [condsed].</param>
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return base.FormatValueAsHtml( parentControl, value, configurationValues, condensed ).ConvertCrLfToHtmlBr();
+            int rating = value.AsInteger();
+            var sb = new StringBuilder();
+            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
+            {
+                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-o" : "" );
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -48,8 +56,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( NUMBER_OF_ROWS );
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "max" );
             return configKeys;
         }
 
@@ -59,14 +67,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
-            var controls = base.ConfigurationControls();
+            List<Control> controls = new List<Control>();
 
-            // Add nuber box for selecting the number of rows
             var nb = new NumberBox();
             controls.Add( nb );
-            nb.NumberType = ValidationDataType.Integer;
-            nb.Label = "Rows";
-            nb.Help = "The number of rows to display (default is 3).";
+            nb.NumberType = System.Web.UI.WebControls.ValidationDataType.Integer;
+            nb.AutoPostBack = true;
+            nb.TextChanged += OnQualifierUpdated;
+            nb.Label = "Max Rating";
+            nb.Help = "The number of stars ( max rating ) that should be displayed.";
             return controls;
         }
 
@@ -78,14 +87,12 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
+            configurationValues.Add( "max", new ConfigurationValue( "Max Rating", "The number of stars ( max rating ) that should be displayed.", "" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
                 if ( controls[0] != null && controls[0] is NumberBox )
-                {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[0] ).Text;
-                }
+                    configurationValues["max"].Value = ( (NumberBox)controls[0] ).Text;
             }
 
             return configurationValues;
@@ -98,35 +105,43 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
-            {
-                if ( controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
-                {
-                    ( (NumberBox)controls[0] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
-                }
-            }
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( "max" ) )
+                ( (NumberBox)controls[0] ).Text = configurationValues["max"].Value;
         }
+
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The id.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            RockTextBox tb = new RockTextBox { ID = id, TextMode = TextBoxMode.MultiLine };
-            int? rows = 3;
+            int max = GetMaxRating(configurationValues);
+            return new RockRating { ID = id, Max = max }; 
+        }
 
-            if ( configurationValues != null && configurationValues.ContainsKey( NUMBER_OF_ROWS ))
+        /// <summary>
+        /// Gets the maximum rating.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        private int GetMaxRating( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( configurationValues != null && configurationValues.ContainsKey( "max" ) )
             {
-                rows = configurationValues[NUMBER_OF_ROWS].Value.AsIntegerOrNull() ?? 3;
+                int max = configurationValues["max"].Value.AsInteger();
+                if ( max > 0)
+                {
+                    return max;
+                }
             }
-            tb.Rows = rows.HasValue ? rows.Value : 3;
 
-            return tb;
+            return 5;
         }
 
     }

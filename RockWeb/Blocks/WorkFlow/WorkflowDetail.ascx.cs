@@ -523,7 +523,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+                        string formattedValue = field.FormatValueAsHtml( phActivityAttributes, value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -819,7 +819,7 @@ namespace RockWeb.Blocks.WorkFlow
                 string value = Workflow.GetAttributeValue( attribute.Key );
 
                 var field = attribute.FieldType.Field;
-                string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+                string formattedValue = field.FormatValueAsHtml( phViewAttributes, value, attribute.QualifierValues );
 
                 if ( field is Rock.Field.ILinkableFieldType )
                 {
