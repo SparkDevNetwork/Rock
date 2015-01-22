@@ -49,7 +49,14 @@
 
         exports = {
             updateSize: function (controlId) {
+                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
                 var $modalPopupIFrame = $(window.parent.document).find('iframe');
+
+                if (!$modalPopupIFrame.length || $modalPopupIFrame[0].contentWindow != window) {
+                    // exit if we aren't in an iframe (the non-iframe modal already sizes correctly without js help)
+                    return;
+                }
+
                 if ($modalPopupIFrame[0].style.height != 'auto') {
                     $modalPopupIFrame[0].style.height = 'auto';
                     var contentsHeight = $modalPopupIFrame.contents().height();
@@ -63,8 +70,7 @@
                         $modalPopupIFrame.height(contentsHeight);
                     }
                 }
-
-                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
+                
                 if ($control && $control.length) {
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
