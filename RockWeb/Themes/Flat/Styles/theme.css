@@ -2335,6 +2335,14 @@ td.wrap-contents {
 .grid.grid-panel .grid-table {
   border: none !important;
 }
+.grid.grid-panel th:first-child,
+.grid.grid-panel td:first-child {
+  border-left: 0;
+}
+.grid.grid-panel th:last-child,
+.grid.grid-panel td:last-child {
+  border-right: 0;
+}
 .grid-panel .table-responsive[data-pattern="priority-columns"],
 .table-responsive.table-no-border {
   border: 0;
