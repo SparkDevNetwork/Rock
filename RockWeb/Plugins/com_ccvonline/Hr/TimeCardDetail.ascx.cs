@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -23,9 +25,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Displays the details of a time card." )]
 
     [WorkflowTypeField( "Workflow", "The workflow to activate when a TimeCard is submitted.", false, false, order: 2 )]
-
-    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -238,7 +237,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 // only enable the EditRow controls if in edit mode (this current person can edit this time card)
                 Panel pnlEditRow = repeaterItem.FindControl( "pnlEditRow" ) as Panel;
                 pnlEditRow.Enabled = hfEditMode.Value.AsBooleanOrNull() ?? false;
-
             }
         }
 
@@ -264,6 +262,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             int timeCardId = PageParameter( "TimeCardId" ).AsInteger();
             hfTimeCardId.Value = timeCardId.ToString();
 
+            nbMessage.Visible = false;
+
             var hrContext = new HrContext();
             var timeCardDayService = new TimeCardDayService( hrContext );
             var timeCardService = new TimeCardService( hrContext );
@@ -276,24 +276,32 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 pnlDetails.Visible = false;
                 return;
             }
+            
+            if (!TimeCardPayPeriodService.ValidateApproverAttributeExists( hrContext))
+            {
+                nbMessage.Text = "A GroupMember Attribute with a key of 'CanApproveTimeCards' is required before time cards can be submitted.";
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Visible = true;
+            }
 
-            AttributeCache canApproveTimecardAttribute = AttributeCache.Read( this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
-
-            // make sure the current person is the timecard.person or is a leader of the timecard.person
-            List<Person> leaders = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
+            // make sure the current person is the timecard.person or is an approver of the timecard.person
+            List<Person> leaders = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
 
             bool editMode = false;
-            nbMessage.Visible = false;
+            
             pnlDetails.Visible = true;
             pnlApproverActions.Visible = false;
             int? timeCardPersonId = timeCard.PersonAlias != null ? timeCard.PersonAlias.PersonId : (int?)null;
             if ( timeCardPersonId == this.CurrentPersonId )
             {
-                editMode = true;
+                if ( timeCard.TimeCardStatus == TimeCardStatus.InProgress || timeCard.TimeCardStatus == TimeCardStatus.Submitted )
+                {
+                    editMode = true;
+                }
             }
             else
             {
-                if ( !leaders.Any( a => a.Id == this.CurrentPersonId ) )
+                if ( !leaders.Any( a => a.Id == this.CurrentPersonId ) && ( timeCardPersonId != this.CurrentPersonId ) )
                 {
                     // if the currentPersonId is neither the TimeCard person or a leader of the timecard person, don't let them see it
                     nbMessage.Visible = true;
@@ -318,7 +326,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lTitle.Text = "Pay Period: " + timeCard.TimeCardPayPeriod.ToString();
             hlblSubTitle.Text = timeCard.GetStatusText();
 
-            switch (timeCard.TimeCardStatus)
+            switch ( timeCard.TimeCardStatus )
             {
                 case TimeCardStatus.Approved:
                     hlblSubTitle.LabelType = LabelType.Success;
@@ -398,7 +406,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 timeCardHistory.TimeCardId = timeCard.Id;
                 timeCardHistory.HistoryDateTime = RockDateTime.Now;
                 timeCardHistory.TimeCardStatus = TimeCardStatus.InProgress;
-                timeCardHistory.Notes = string.Empty;
+                timeCardHistory.Notes = string.Format( "{0} created new time card", this.CurrentPersonAlias );
                 timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
 
                 timeCardHistoryService.Add( timeCardHistory );
@@ -461,6 +469,40 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
             timeCardDay.Notes = tbNotes.Text;
 
+            // log changes to the TimeCardDays if changes are made after getting submitted (status is not TimeCardStatus.InProgress)
+            List<string> sbTimeCardDayHistory = new List<string>();
+            if ( timeCardDay.TimeCard.TimeCardStatus != TimeCardStatus.InProgress )
+            {
+                var properties = timeCardDay.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual );
+
+                foreach ( PropertyInfo propInfo in properties )
+                {
+                    var timeCardDayEntry = hrContext.Entry( timeCardDay );
+
+                    // If entire entity was added or deleted or this property was modified
+                    var dbPropertyEntry = timeCardDayEntry.Property( propInfo.Name );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                    {
+                        if ( dbPropertyEntry.CurrentValue != dbPropertyEntry.OriginalValue )
+                        {
+                            sbTimeCardDayHistory.Add( string.Format( "changed {0} from '{1}' to '{2}'", propInfo.Name.SplitCase(), dbPropertyEntry.OriginalValue, dbPropertyEntry.CurrentValue ) );
+                        }
+                    }
+                }
+            }
+
+            if ( sbTimeCardDayHistory.Any() )
+            {
+                var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+                var timeCardHistory = new TimeCardHistory();
+                timeCardHistory.TimeCardId = timeCardDay.TimeCardId;
+                timeCardHistory.TimeCardStatus = timeCardDay.TimeCard.TimeCardStatus;
+                timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
+                timeCardHistory.HistoryDateTime = RockDateTime.Now;
+                timeCardHistory.Notes = sbTimeCardDayHistory.AsDelimited( "/n" );
+                timeCardHistoryService.Add( timeCardHistory );
+            }
+
             hrContext.SaveChanges();
 
             ShowDetail();
@@ -514,15 +556,23 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            var submitToPersonAlias = new PersonAliasService( hrContext ).Get( ddlSubmitTo.SelectedValue.AsInteger() );
+            if ( submitToPersonAlias == null )
+            {
+                return;
+            }
+
             timeCard.TimeCardStatus = TimeCardStatus.Submitted;
-            timeCard.SubmittedToPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
+            timeCard.SubmittedToPersonAliasId = submitToPersonAlias.Id;
             var timeCardHistoryService = new TimeCardHistoryService( hrContext );
             var timeCardHistory = new TimeCardHistory();
             timeCardHistory.TimeCardId = timeCard.Id;
             timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
-            timeCardHistory.StatusPersonAliasId = ddlSubmitTo.SelectedValue.AsIntegerOrNull();
+            timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
             timeCardHistory.HistoryDateTime = RockDateTime.Now;
-            timeCardHistory.Notes = string.Empty;
+
+            // NOTE: if status was already Submitted, still log it as history
+            timeCardHistory.Notes = string.Format( "Submitted to {0}", submitToPersonAlias );
             timeCardHistoryService.Add( timeCardHistory );
 
             hrContext.SaveChanges();
@@ -551,22 +601,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 }
             }
 
+            nbSubmittedSuccessMessage.Text = string.Format( "Successfully submitted to {0}", submitToPersonAlias );
+            nbSubmittedSuccessMessage.Visible = true;
             ShowDetail();
-        }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gHistory control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            TimeCardHistory timeCardHistory = e.Row.DataItem as TimeCardHistory;
-            if ( timeCardHistory != null )
-            {
-                Literal lStatusText = e.Row.FindControl( "lStatusText" ) as Literal;
-                lStatusText.Text = timeCardHistory.GetStatusText();
-            }
         }
 
         /// <summary>
@@ -586,19 +623,26 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
+            var prevStatus = timeCard.TimeCardStatus;
             timeCard.TimeCardStatus = TimeCardStatus.Approved;
             timeCard.ApprovedByPersonAliasId = this.CurrentPersonAliasId;
+
             var timeCardHistoryService = new TimeCardHistoryService( hrContext );
             var timeCardHistory = new TimeCardHistory();
             timeCardHistory.TimeCardId = timeCard.Id;
             timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
-            timeCardHistory.StatusPersonAliasId = timeCard.ApprovedByPersonAliasId;
+            timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
             timeCardHistory.HistoryDateTime = RockDateTime.Now;
-            timeCardHistory.Notes = string.Empty;
+
+            // NOTE: if status was already Approved, still log it as history
+            timeCardHistory.Notes = string.Format( "Approved by {0}", this.CurrentPersonAlias );
+
             timeCardHistoryService.Add( timeCardHistory );
 
             hrContext.SaveChanges();
 
+            nbApprovedSuccessMessage.Text = string.Format( "Successfully approved by {0}", this.CurrentPersonAlias );
+            nbApprovedSuccessMessage.Visible = true;
             ShowDetail();
         }
     }

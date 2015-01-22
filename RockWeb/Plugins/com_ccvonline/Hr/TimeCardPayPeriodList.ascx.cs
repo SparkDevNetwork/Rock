@@ -36,9 +36,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time card pay periods." )]
 
     [LinkedPage( "Detail Page" )]
-
-    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardPayPeriodList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -156,9 +153,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             TimeCardService timeCardService = new TimeCardService( hrContext );
             var payPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate );
             var timeCardQry = timeCardService.Queryable();
-            AttributeCache canApproveTimecardAttribute = AttributeCache.Read(this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
 
-            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
+            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
             timeCardQry = timeCardQry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
 
             var joinQry = payPeriodQry.GroupJoin(

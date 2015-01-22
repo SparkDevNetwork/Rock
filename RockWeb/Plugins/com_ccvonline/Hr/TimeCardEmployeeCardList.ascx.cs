@@ -24,9 +24,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [LinkedPage( "Detail Page", order: 0 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Employee Number Attribute", "Select the Person Attribute that is used for the person's employee number.", order: 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Payroll Department Attribute", "Select the Person Attribute that is used for the person's payroll department to be included in the export.", order: 2 )]
-
-    // NOTE: This Attributes should also be on TimeCardEmployeeCardList, TimeCardPayPeriodList and TimeCardDetail
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Can Approve Timecard Attribute", "Select the Person Attribute that is used to determine if a person can approve timecards, even if they aren't a leader.", order: 3 )]
     public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
         private AttributeCache employeeNumberAttribute = null;
@@ -86,7 +83,6 @@ Export
 
             employeeNumberAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeNumberAttribute" ).AsGuid() );
             payrollDepartmentAttribute = AttributeCache.Read( this.GetAttributeValue( "PayrollDepartmentAttribute" ).AsGuid() );
-
 
             if ( !Page.IsPostBack )
             {
@@ -232,6 +228,7 @@ Export
                 sb.AppendLine( formattedLine );
 
                 // update the status and exported date time of the selected timecards
+                var prevStatus = timeCard.TimeCardStatus;
                 timeCard.TimeCardStatus = TimeCardStatus.Exported;
                 timeCard.ExportedDateTime = RockDateTime.Now;
 
@@ -241,7 +238,10 @@ Export
                 timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
                 timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
                 timeCardHistory.HistoryDateTime = RockDateTime.Now;
-                timeCardHistory.Notes = string.Empty;
+
+                // NOTE: if status was already Approved, still log it as history
+                timeCardHistory.Notes = string.Format( "Exported by {0}", this.CurrentPersonAlias );
+
                 timeCardHistoryService.Add( timeCardHistory );
 
                 hrContext.SaveChanges();
@@ -293,9 +293,8 @@ Export
             lblPayPeriod.Text = string.Format( "Pay Period: {0}", timeCardPayPeriod );
 
             var qry = timeCardService.Queryable( "PersonAlias.Person" ).Where( a => a.TimeCardPayPeriodId == timeCardPayPeriodId );
-            AttributeCache canApproveTimecardAttribute = AttributeCache.Read( this.GetAttributeValue( "CanApproveTimecardAttribute" ).AsGuid() );
 
-            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson, canApproveTimecardAttribute != null ? canApproveTimecardAttribute.Key : null );
+            var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
             qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
 
             SortProperty sortProperty = gList.SortProperty;

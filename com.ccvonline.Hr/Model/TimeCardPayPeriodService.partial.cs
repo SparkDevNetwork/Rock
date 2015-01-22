@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Rock;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace com.ccvonline.Hr.Model
 {
@@ -56,30 +57,23 @@ namespace com.ccvonline.Hr.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="approverPerson">The approver person.</param>
-        /// <param name="canApproveTimecardAttributeKey">The can approve timecard attribute key.</param>
         /// <returns></returns>
-        public static IQueryable<int> GetApproveesForPerson( Rock.Data.RockContext rockContext, Person approverPerson, string canApproveTimecardAttributeKey )
+        public static IQueryable<int> GetApproveesForPerson( Rock.Data.RockContext rockContext, Person approverPerson )
         {
             Guid orgUnitGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_ORGANIZATION_UNIT.AsGuid();
-            Guid groupLeaderGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
             Guid groupStaffGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_STAFF.AsGuid();
 
-            // figure out what department the person is in (hopefully at most one department, but we'll deal with multiple just in case)
+            // figure out what department the approver person is in (hopefully at most one department, but we'll deal with multiple just in case)
             var groupMemberService = new GroupMemberService( rockContext );
-            if ( approverPerson.Attributes == null )
-            {
-                approverPerson.LoadAttributes();
-            }
 
-            bool canApproveTimecardIfNotLeader = !string.IsNullOrWhiteSpace( canApproveTimecardAttributeKey ) && ( approverPerson.GetAttributeValue( canApproveTimecardAttributeKey ).AsBooleanOrNull() ?? false );
-
-            // get the dept group(s) that they are a leader of, or are just member of but can approve timecards
-            var qryPersonDeptLeaderGroup = groupMemberService.Queryable().Where( a => a.PersonId == approverPerson.Id )
-                .Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid && ( canApproveTimecardIfNotLeader || a.GroupRole.Guid == groupLeaderGuid ) )
+            // get the dept group(s) that they are a member of where their CanApproveTimeCards group member attribute = 'true'
+            var qryPersonDeptCanApproveGroup = groupMemberService.Queryable().Where( a => a.PersonId == approverPerson.Id )
+                .Where( a => a.Group.GroupType.Guid == orgUnitGroupTypeGuid )
+                .WhereAttributeValue( rockContext, "CanApproveTimeCards", true.ToString() )
                 .Select( a => a.Group );
 
             var staffPersonIds = groupMemberService.Queryable()
-                .Where( a => qryPersonDeptLeaderGroup.Any( x => x.Id == a.GroupId ) )
+                .Where( a => qryPersonDeptCanApproveGroup.Any( x => x.Id == a.GroupId ) )
                 .Where( a => a.GroupRole.Guid == groupStaffGuid )
                 .Select( a => a.PersonId );
 
@@ -87,13 +81,24 @@ namespace com.ccvonline.Hr.Model
         }
 
         /// <summary>
-        /// Gets the leaders/approvers for staff person starting with the most immediate leader/approvers(s) and ending with the organization leader(s)
+        /// Validates that the CanApproveTimeCards GroupMember attribute exists.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool ValidateApproverAttributeExists( Rock.Data.RockContext rockContext )
+        {
+            var attributeService = new AttributeService( rockContext );
+            var groupMemberEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.GroupMember ) ).Id;
+            return attributeService.Queryable().Any( a => a.EntityTypeId == groupMemberEntityTypeId && a.Key == "CanApproveTimeCards" );
+        }
+
+        /// <summary>
+        /// Gets the approvers for staff person starting with the most approvers(s) and ending with the approvers at the top of the org chart
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="staffPersonId">The staff person identifier.</param>
-        /// <param name="canApproveTimecardAttributeKey">The can approve timecard attribute key.</param>
         /// <returns></returns>
-        public static List<Person> GetApproversForStaffPerson( Rock.Data.RockContext rockContext, int staffPersonId, string canApproveTimecardAttributeKey )
+        public static List<Person> GetApproversForStaffPerson( Rock.Data.RockContext rockContext, int staffPersonId )
         {
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -118,31 +123,14 @@ namespace com.ccvonline.Hr.Model
                 }
             }
 
-            List<Person> leadersApprovers = new List<Person>();
-            Guid groupLeaderGuid = Rock.SystemGuid.GroupRole.GROUPROLE_ORGANIZATION_UNIT_LEADER.AsGuid();
+            List<Person> approvers = new List<Person>();
             foreach ( var deptGroupId in departmentGroupIds )
             {
-                var qryDeptMembers = groupMemberService.Queryable().Where( a => a.GroupId == deptGroupId );
-
-                foreach ( var groupMember in qryDeptMembers )
-                {
-                    // if they have the leader role, they are automatically an approver
-                    if ( groupMember.GroupRole.Guid == groupLeaderGuid )
-                    {
-                        leadersApprovers.Add( groupMember.Person );
-                    }
-                    else if ( !string.IsNullOrWhiteSpace( canApproveTimecardAttributeKey ) )
-                    {
-                        // if they don't have the leader role, figure out if they are approver from the CanApproveTimecardAttributeK
-                        groupMember.Person.LoadAttributes();
-                        if ( groupMember.Person.GetAttributeValue( canApproveTimecardAttributeKey ).AsBooleanOrNull() ?? false )
-                        {
-                            leadersApprovers.Add( groupMember.Person );
-                        }
-                    }
-                }
+                var qryDeptApprovers = groupMemberService.Queryable().Where( a => a.GroupId == deptGroupId ).WhereAttributeValue( rockContext, "CanApproveTimeCards", true.ToString() );
+                approvers.AddRange( qryDeptApprovers.Select( a => a.Person ).ToList() );
             }
-            return leadersApprovers;
+
+            return approvers.Distinct().ToList();
         }
     }
 }

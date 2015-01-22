@@ -140,7 +140,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-8 col-md-8">
-                                    <asp:Panel ID="pnlEditRow" runat="server" CssClass="row" >
+                                    <asp:Panel ID="pnlEditRow" runat="server" CssClass="row">
                                         <div class="col-md-3">
                                             <Rock:TimePicker runat="server" ID="tpTimeIn" Placeholder="Enter Time" Label="Time In" />
                                         </div>
@@ -240,10 +240,11 @@
                 </asp:Panel>
 
                 <!-- Actions/Submit Panel -->
-                <asp:Panel ID="pnlPersonActions" runat="server">
+                <asp:Panel ID="pnlPersonActions" CssClass="js-submit-panel" runat="server">
                     <h2>Submit</h2>
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbSubmittedSuccessMessage" runat="server" NotificationBoxType="Success" />
                             <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
                             <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
                             <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
@@ -258,31 +259,34 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition(this)" OnClick="lbSubmit_Click" Text="Submit" />
+                        <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-submit-panel'))" OnClick="lbSubmit_Click" Text="Submit" />
                     </div>
+
                 </asp:Panel>
 
-                <asp:Panel ID="pnlApproverActions" runat="server">
+                <!-- Actions/Approver-->
+                <asp:Panel ID="pnlApproverActions" CssClass="js-approve-panel" runat="server">
                     <h2>Approve</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbApprovedSuccessMessage" runat="server" NotificationBoxType="Success" />
+                        </div>
+                    </div>
                     <div class="actions">
-                        <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-action" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition(this)" OnClick="btnApprove_Click" Text="Approve" />
+                        <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-action" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-approve-panel'))" OnClick="btnApprove_Click" Text="Approve" />
                     </div>
                 </asp:Panel>
-
 
                 <!-- History Panel -->
                 <asp:Panel ID="pnlHistory" runat="server">
                     <div class="row">
                         <div class="col-md-6">
                             <h2>History</h2>
-                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light" OnRowDataBound="gHistory_RowDataBound">
+                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
                                 <Columns>
                                     <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Status">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lStatusText" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
+                                    <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias" />
                                     <Rock:RockBoundField HeaderText="Notes" DataField="Notes" />
                                 </Columns>
                             </Rock:Grid>
@@ -311,9 +315,10 @@
             });
 
             // make the window scroll to the specified element.  use setTimeout to have it do it after any other scrolls that happen (like validation)
-            function maintainScrollPosition(element) {
+            function maintainScrollPosition($element) {
                 setTimeout(function () {
-                    $(window).scrollTop($(element).position().top);
+                    var scrollPosition = $element.position().top;
+                    $(window).scrollTop(scrollPosition);
                 }, 0)
             }
 

@@ -21,7 +21,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [Description( "Lists all the time cards for a specific employee." )]
 
     [LinkedPage( "Detail Page" )]
-    [DateField( "First Pay Period Start Date", "The Start Date of the first Payroll Period.  This will determine the daterange of subsequent Pay Periods." , false, "2014-12-15"  )]   
+    [DateField( "First Pay Period Start Date", "The Start Date of the first Payroll Period.  This will determine the daterange of subsequent Pay Periods.", false, "2014-12-15" )]
     public partial class TimeCardList : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var timeCardService = new TimeCardService( hrContext );
             var timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
             DateTime? firstPayPeriodStartDate = this.GetAttributeValue( "FirstPayPeriodStartDate" ).AsDateTime();
-            if (!firstPayPeriodStartDate.HasValue)
+            if ( !firstPayPeriodStartDate.HasValue )
             {
                 nbBlockWarning.Text = "The first pay period start date must be set in block settings";
                 return;
