@@ -4558,7 +4558,7 @@ body.modal-open,
   top: 1%;
 }
 .modal-overflow .modal-body {
-  overflow: auto;
+  /*overflow: auto;*/
   -webkit-overflow-scrolling: touch;
 }
 /* Responsive */
