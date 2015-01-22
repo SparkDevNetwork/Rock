@@ -156,51 +156,63 @@ namespace Rock.Rest.Controllers
         public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId,
             string street, string city, string state, string postalCode )
         {
-            var groupLocations = new List<GroupLocation>();
+            var fenceGroups = new List<Group>();
 
             string street2 = string.Empty;
             string country = GlobalAttributesCache.Read().OrganizationCountry;
 
+            // Get a new location record for the address
             var rockContext = (RockContext)Service.Context;
             var location = new LocationService( rockContext ).Get( street, street2, city, state, postalCode, country );
 
+            // If address was geocoded succesfully
             if ( location.GeoPoint != null )
             {
+                // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )
+                // where the geofence surrounds the location
                 var groupLocationService = new GroupLocationService( rockContext );
-                foreach ( var fence in groupLocationService
-                    .Queryable().AsNoTracking()
+                foreach ( var fenceGroupLocation in groupLocationService
+                    .Queryable("Group,Location").AsNoTracking()
                     .Where( gl =>
                         gl.Group.GroupTypeId == geofenceGroupTypeId &&
                         gl.Location.GeoFence != null &&
                         location.GeoPoint.Intersects( gl.Location.GeoFence ) )
-                    .Select( gl => gl.Location.GeoFence )
                     .ToList() )
                 {
+                    var fenceGroup = fenceGroups.FirstOrDefault( g => g.Id == fenceGroupLocation.GroupId );
+                    if ( fenceGroup == null )
+                    {
+                        fenceGroup = fenceGroupLocation.Group;
+                        fenceGroups.Add( fenceGroup );
+                    }
+                    fenceGroupLocation.Group = null;
+
+                    // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
+                    // within the fence 
+                    var groups = new List<Group>();
                     foreach ( var groupLocation in groupLocationService
-                        .Queryable( "Group.GroupType,Location" ).AsNoTracking()
+                        .Queryable( "Group,Location" ).AsNoTracking()
                         .Where( gl =>
                             gl.Group.GroupTypeId == groupTypeId &&
                             gl.Location.GeoPoint != null &&
-                            gl.Location.GeoPoint.Intersects( fence ) ) )
+                            gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) )
                     {
-                        groupLocations.Add( groupLocation );
+                        var group = groups.FirstOrDefault( g => g.Id == groupLocation.GroupId );
+                        if ( group == null )
+                        {
+                            group = groupLocation.Group;
+                            group.LoadAttributes();
+                            groups.Add( group );
+                        }
+                        groupLocation.Group = null;
                     }
+
+                    // Add the group as a child of the fence group 
+                    groups.ForEach( g => fenceGroup.Groups.Add( g ) );
                 }
             }
 
-            var groupIds = groupLocations.Select( gl => gl.GroupId).Distinct().ToList();
-
-            var groups = Service.Queryable()
-                .AsNoTracking()
-                .Where( g => groupIds.Contains( g.Id ) )
-                .ToList();
-
-            foreach ( var group in groups )
-            {
-                group.GroupLocations = groupLocations.Where( gl => gl.GroupId == group.Id ).ToList();
-            }
-
-            return groups.AsQueryable();
+            return fenceGroups.AsQueryable();
         }
 
         #region MapInfo methods
