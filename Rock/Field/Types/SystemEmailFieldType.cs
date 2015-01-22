@@ -43,6 +43,10 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
 
             var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            
+            // add a blank for the first option
+            editControl.Items.Add( new ListItem() );
+
             if ( systemEmails.Any() )
             {
                 foreach ( var systemEmail in systemEmails )
