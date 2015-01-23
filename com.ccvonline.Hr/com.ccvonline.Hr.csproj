@@ -88,6 +88,7 @@
     <Compile Include="Data\HrContext.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AlterColumns.cs" />
+    <Compile Include="Migrations\003_AddHolidaySchedule.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardDayService.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardHistoryService.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardPayPeriodService.cs" />
