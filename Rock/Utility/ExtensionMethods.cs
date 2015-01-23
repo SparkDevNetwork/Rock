@@ -105,11 +105,14 @@ namespace Rock
         /// <param name="lavaObject">The liquid object.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null )
+        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null, string preText = "", string postText = "" )
         {
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
             StringBuilder lavaDebugPanel = new StringBuilder();
             lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
+
+            lavaDebugPanel.Append( preText );
+
             lavaDebugPanel.Append( "<p>Below is a listing of available merge fields for this block. Find out more on Lava at <a href='http://www.rockrms.com/lava' target='_blank'>rockrms.com/lava</a>." );
 
             lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
@@ -121,6 +124,8 @@ namespace Rock
                 globalAttributes.Add( "GlobalAttribute", Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null) );
                 lavaDebugPanel.Append(  formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
+
+            lavaDebugPanel.Append( postText );
 
             lavaDebugPanel.Append( "</div>" );
 
