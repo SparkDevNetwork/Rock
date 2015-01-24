@@ -896,7 +896,7 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
-                return string.Format( "__doPostBack('{0}','{1}'); return false;", command, input.ToString() );
+                return string.Format( "javascript:__doPostBack('[ClientId]','{0}^{1}'); return false;", command, input.ToString() );
             }
             else
             {
