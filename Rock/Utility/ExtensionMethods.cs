@@ -942,6 +942,17 @@ namespace Rock
         }
 
         /// <summary>
+        /// Resolve any client ids in the string. This is used with Lava when writing out postback commands.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="client id">Client id.</param>
+        /// <returns></returns>
+        public static string ResolveClientIds( this string content, string clientId )
+        {
+            return content.Replace( "[ClientId]", clientId );
+        }
+
+        /// <summary>
         /// Determines whether string has merge fields in it.
         /// </summary>
         /// <param name="content">The content.</param>
