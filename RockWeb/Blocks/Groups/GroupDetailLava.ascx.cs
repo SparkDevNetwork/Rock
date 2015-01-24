@@ -54,6 +54,17 @@ namespace RockWeb.Blocks.Groups
         #region Properties
 
         // used for public / protected properties
+        public bool IsEditingGroup
+        {
+            get
+            {
+                return ViewState["IsEditingGroup"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["IsEditingGroup"] = value;
+            }
+        }
 
         #endregion
 
@@ -74,6 +85,20 @@ namespace RockWeb.Blocks.Groups
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            /*if ( IsEditingGroup == true )
+            {
+                Group group = new GroupService(new RockContext()).Get( groupId );
+                group.LoadAttributes();
+
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( group, phAttributes, false, BlockValidationGroup );
+            }*/
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -81,12 +106,12 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
-            {
+            
+            //if ( !Page.IsPostBack )
+            //{
                 RouteAction();
-            }
-            else
+            //}
+            /*else
             {
                 var rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
@@ -96,13 +121,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupId = Convert.ToInt32( PageParameter( "GroupId" ) );
                 }
-
-                Group group = groupService.Get( groupId );
-                group.LoadAttributes();
-
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( group, phAttributes, false, BlockValidationGroup );
-            }
+            }*/
         }
 
         #endregion
@@ -150,6 +169,8 @@ namespace RockWeb.Blocks.Groups
                     group.SaveAttributeValues( rockContext );
                 } );
             }
+
+            this.IsEditingGroup = false;
 
             Response.Redirect( CreateCancelLink() );
         }
@@ -238,6 +259,7 @@ namespace RockWeb.Blocks.Groups
 
         #region Methods
 
+        // todo delete
         private string CreateCancelLink()
         {
             if ( Request.Url.Port == 80 || Request.Url.Port == 443 )
@@ -253,6 +275,36 @@ namespace RockWeb.Blocks.Groups
 
         private void RouteAction()
         {
+
+            if ( Request.Form["__EVENTARGUMENT"] != null )
+            {
+
+                string[] eventArgs = Request.Form["__EVENTARGUMENT"].Split( '^' );
+
+                if ( eventArgs.Length == 2 )
+                {
+                    string action = eventArgs[0];
+                    string parameters = eventArgs[1];
+
+                    int argument = 0;
+                    int.TryParse( parameters, out argument );
+
+                    switch ( action )
+                    {
+                        case "DeleteGroupMember":
+                            DeleteGroupMember( argument );
+                            pnlGroupEdit.Visible = false;
+                            pnlGroupView.Visible = true;
+                            pnlEditGroupMember.Visible = false;
+                            DisplayContent();
+                            break;
+                    }
+                }
+            }
+
+            
+
+            
             int groupMemberId = 0;
 
             switch ( PageParameter( "Action" ) )
@@ -262,15 +314,6 @@ namespace RockWeb.Blocks.Groups
                     pnlGroupView.Visible = false;
                     pnlEditGroupMember.Visible = false;
                     DisplayEditGroup();
-                    break;
-                case "DeleteGroupMember":
-                    if (int.TryParse(PageParameter( "GroupMemberId" ), out groupMemberId)) {
-                        DeleteGroupMember( groupMemberId );
-                    }
-                    pnlGroupEdit.Visible = false;
-                    pnlGroupView.Visible = true;
-                    pnlEditGroupMember.Visible = false;
-                    DisplayContent();
                     break;
                 case "AddGroupMember":
                     AddGroupMember();
@@ -413,11 +456,19 @@ namespace RockWeb.Blocks.Groups
                 // show debug info
                 if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                 {
+                    string postbackCommands = @"<h5>Available Postback Commands</h5>
+                                                    <ul>
+                                                        <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
+                                                        <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
+                                                        <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
+                                                        <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
+                                                    </ul>";
+                    
                     lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
+                    lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
                 }
 
-                lContent.Text = template.ResolveMergeFields( mergeFields );
+                lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID);
             }
             else
             {
@@ -442,6 +493,8 @@ namespace RockWeb.Blocks.Groups
 
         private void DisplayEditGroup()
         {
+            this.IsEditingGroup = true;
+            
             int groupId = -1;
             if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) )
             {
@@ -467,7 +520,7 @@ namespace RockWeb.Blocks.Groups
                         cbIsActive.Checked = group.IsActive;
 
                         group.LoadAttributes();
-                        //phAttributes.Controls.Clear();
+                        phAttributes.Controls.Clear();
                         Rock.Attribute.Helper.AddEditControls( group, phAttributes, true, BlockValidationGroup );
                     }
                     else

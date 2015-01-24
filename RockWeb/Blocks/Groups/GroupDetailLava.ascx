@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         
+        <asp:HiddenField id="hfPostbackBind" ClientIDMode="Static" runat="server" />
+
         <asp:Panel ID="pnlGroupView" runat="server">
             <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
