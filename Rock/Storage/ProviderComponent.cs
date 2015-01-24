@@ -50,24 +50,43 @@ namespace Rock.Storage
         public abstract Stream GetContentStream( BinaryFile file );
 
         /// <summary>
-        /// Generate a URL for the file based on the rules of the StorageProvider
+        /// Gets the path.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <returns></returns>
-        public virtual string GetContentUrl( BinaryFile file )
+        public virtual string GetPath( BinaryFile file )
         {
             string url = string.Empty;
 
             if ( file != null )
             {
-                string handler = "GetFile.ashx";
+                url = "~/GetFile.ashx";
                 if ( file.MimeType != null && file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    handler = "GetImage.ashx";
+                    url = "~/GetImage.ashx";
                 }
 
-                url = System.Web.VirtualPathUtility.ToAbsolute( "~/" + handler);
                 url += "?guid=" + file.Guid.ToString();
+            }
+
+            return url;
+        }
+
+        /// <summary>
+        /// Generate a URL for the file based on the rules of the StorageProvider
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="httpContext">The HTTP context.</param>
+        /// <returns></returns>
+        public virtual string GetUrl( BinaryFile file )
+        {
+            if ( !string.IsNullOrWhiteSpace( file.Path ) )
+            {
+                string url = file.Path.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( file.Path ) : file.Path;
+                if ( url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return url;
+                }
 
                 Uri uri = null;
                 try
@@ -89,8 +108,7 @@ namespace Rock.Storage
                     return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;
                 }
             }
-
-            return url;
+            return string.Empty; ;
         }
 
         /// <summary>
