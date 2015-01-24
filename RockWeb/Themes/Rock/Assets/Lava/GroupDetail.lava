@@ -62,7 +62,7 @@
 
       {% if AllowedActions.Edit == true %}
         <div class="pull-left rollover-item">
-          <a href="?Action=DeleteGroupMember&GroupmemberId={{ member.Id }}&GroupId={{ Group.Id }}">
+          <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
             <i class="fa fa-times"></i>
           </a>
           <a href="?Action=EditGroupMember&GroupmemberId={{ member.Id }}&GroupId={{ Group.Id }}" class="margin-l-sm">
@@ -85,3 +85,10 @@
     </div>
   {% endif %}
 </p>
+
+
+
+
+
+
+<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}">Test me</a>
