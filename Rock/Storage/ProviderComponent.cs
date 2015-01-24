@@ -76,7 +76,6 @@ namespace Rock.Storage
         /// Generate a URL for the file based on the rules of the StorageProvider
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="httpContext">The HTTP context.</param>
         /// <returns></returns>
         public virtual string GetUrl( BinaryFile file )
         {
