@@ -404,6 +404,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $ValueList = $(this).closest('.value-list');
         $ValueList.find('.value-list-rows').append($ValueList.find('.js-value-list-html').val());
+        Rock.controls.modal.updateSize($(this));
     });
 
     $(document).on('click', 'a.value-list-remove', function (e) {
@@ -411,6 +412,7 @@ namespace Rock.Web.UI.Controls
         var $rows = $(this).closest('span.value-list-rows');
         $(this).closest('div.controls-row').remove();
         updateKeyValues($rows);            
+        Rock.controls.modal.updateSize($(this));
     });
 
     $(document).on('focusout', '.js-value-list-input', function (e) {

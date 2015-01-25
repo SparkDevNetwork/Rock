@@ -14,7 +14,9 @@
 		{% for member in Group.Members %}
 	
 			{% if member.GroupRole.IsLeader %}
-				<li>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></li>
+				<li>
+          {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+        </li>
 			{% endif %}
 		{% endfor %}
 		</ul>
@@ -32,7 +34,7 @@
 
 {% if AllowedActions.Edit == true %}
   <div class="actions">
-    <a class="btn btn-primary" href="?GroupId={{ Group.Id }}&Action=Edit">Edit</a>
+    <a class="btn btn-primary" href="?GroupId={{ Group.Id }}&Action=EditGroup">Edit</a>
   </div>
 {% endif %}
 
@@ -46,7 +48,7 @@
 	<ul class="list-unstyled clearfix">
 	{% for member in Group.Members %}
 
-		<li class="margin-b-md margin-r-md clearfix pull-left">
+		<li class="margin-b-md margin-r-md clearfix pull-left rollover-container">
 			{% if LinkedPages.PersonDetailPage != '' %}
         <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
       {% endif %}
@@ -58,11 +60,35 @@
         <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
       </div>
 
-      {% if LinkedPages.PersonDetailPage != '' %}
+      {% if AllowedActions.Edit == true %}
+        <div class="pull-left rollover-item">
+          <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+            <i class="fa fa-times"></i>
+          </a>
+          <a href="?Action=EditGroupMember&GroupmemberId={{ member.Id }}&GroupId={{ Group.Id }}" class="margin-l-sm">
+            <i class="fa fa-pencil"></i>
+          </a>
+        </div>
+      {% endif %}
+
+          {% if LinkedPages.PersonDetailPage != '' %}
         </a>
       {% endif %}
    </li>
 		
 	{% endfor %}
 	</ul>
+
+  {% if AllowedActions.Edit == true %}
+    <div class="pull-right margin-b-md">
+      <a href="?Action=AddGroupMember&GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Group Member</a>
+    </div>
+  {% endif %}
 </p>
+
+
+
+
+
+
+<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}">Test me</a>

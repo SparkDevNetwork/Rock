@@ -1813,7 +1813,7 @@ namespace RockWeb.Blocks.Examples
                 if ( binaryFile.StorageProvider != null )
                 {
                     binaryFile.StorageProvider.SaveContent( binaryFile );
-                    binaryFile.Url = binaryFile.StorageProvider.GetContentUrl( binaryFile );
+                    binaryFile.Path = binaryFile.StorageProvider.GetPath( binaryFile );
                 }
 
                 var binaryFileService = new BinaryFileService( context );
