@@ -3,13 +3,17 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         
-        <asp:Panel ID="pnlView" runat="server">
+        <asp:HiddenField id="hfPostbackBind" ClientIDMode="Static" runat="server" />
+
+        <asp:Panel ID="pnlGroupView" runat="server">
             <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
             <asp:Literal ID="lDebug" runat="server"></asp:Literal>
         </asp:Panel>
         
-        <asp:Panel ID="pnlEdit" runat="server" Visible="false">
+        <asp:Panel ID="pnlGroupEdit" runat="server" Visible="false">
+            <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            
             <div class="row">
                 <div class="col-md-6">
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
@@ -30,12 +34,41 @@
                     <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="true" />
                 </div>
             </div>
+
+            <div class="actions">
+                <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSave_Click" />
+                <asp:LinkButton id="lbCancel" runat="server" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false">Cancel</asp:LinkButton>
+            </div>
+
         </asp:Panel>
 
-        <div class="actions">
-            <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSave_Click" />
-            <asp:LinkButton id="lbCancel" runat="server" CssClass="btn btn-link" OnClick="lbCancel_Click">Cancel</asp:LinkButton>
-        </div>
+        <asp:Panel ID="pnlEditGroupMember" runat="server" Visible="false">
+            <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
+                </div>
+                <div class="col-md-6">
+                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
+                </div>
+                <div class="col-md-6">
+                    <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                </div>
+            </div>
+
+            <div class="actions">
+                <asp:Button ID="btnSaveGroupMember" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
+                <asp:LinkButton id="btnCancelGroupMember" runat="server" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
+            </div>
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>

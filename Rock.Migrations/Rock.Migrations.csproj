@@ -111,6 +111,10 @@
     <Compile Include="Migrations\201501212322501_NoteTypesPlusRollup.Designer.cs">
       <DependentUpon>201501212322501_NoteTypesPlusRollup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201501241557366_BinaryFilePath.cs" />
+    <Compile Include="Migrations\201501241557366_BinaryFilePath.Designer.cs">
+      <DependentUpon>201501241557366_BinaryFilePath.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1443,6 +1447,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201501212322501_NoteTypesPlusRollup.resx">
       <DependentUpon>201501212322501_NoteTypesPlusRollup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501241557366_BinaryFilePath.resx">
+      <DependentUpon>201501241557366_BinaryFilePath.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>

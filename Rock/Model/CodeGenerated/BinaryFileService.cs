@@ -112,7 +112,7 @@ namespace Rock.Model
             target.MimeType = source.MimeType;
             target.Description = source.Description;
             target.StorageEntitySettings = source.StorageEntitySettings;
-            target.Url = source.Url;
+            target.Path = source.Path;
             target.ContentLastModified = source.ContentLastModified;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
