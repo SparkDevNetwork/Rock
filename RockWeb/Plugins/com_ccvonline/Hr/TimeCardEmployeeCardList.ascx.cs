@@ -350,7 +350,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 if ( payrollDepartmentAttribute != null )
                 {
                     var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
-                    departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
+                    departmentId = payrollDepartmentAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
                 }
             }
 
