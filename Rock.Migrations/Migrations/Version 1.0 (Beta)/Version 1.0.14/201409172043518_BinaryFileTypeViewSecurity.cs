@@ -44,7 +44,19 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS, Rock.Model.SpecialRole.None, "B1E38251-E0EA-482F-B706-6A8D996726F1" );
             RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE, 1, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_FINANCE_USERS, Rock.Model.SpecialRole.None, "596BE5F2-BC90-472B-8501-FA0885A180D5" );
 
-            Sql( "sp_changeobjectowner 'spCore_BinaryFileGet', 'dbo'" );
+            Sql( @" DECLARE @ObjectName varchar(50) = 'spCore_BinaryFileGet'
+                    DECLARE @AlterSql nvarchar(MAX)
+                    DECLARE @SchemaOwner varchar(12) = (SELECT TOP 1 s.name
+										                    FROM sys.schemas AS s
+											                    INNER JOIN sys.all_objects AS o ON s.[schema_id] = o.[schema_id]
+										                    WHERE o.name = @ObjectName)
+
+                    IF (@SchemaOwner != 'dbo')
+	                    BEGIN
+		                    SELECT @AlterSql = 'ALTER SCHEMA dbo TRANSFER [' + @SchemaOwner + '].' + @ObjectName
+		                    EXEC sp_executesql @AlterSql
+	                    END" );
+
             Sql( @"
 -- create stored proc that retrieves a binaryfile record
 /*
