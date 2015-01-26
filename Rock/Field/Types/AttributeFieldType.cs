@@ -143,7 +143,7 @@ namespace Rock.Field.Types
 
                 if ( controls[1] != null && controls[1] is CheckBox )
                 {
-                    configurationValues[ ALLOW_MULTIPLE_KEY ].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                    configurationValues[ALLOW_MULTIPLE_KEY].Value = ( (CheckBox)controls[1] ).Checked.ToString();
                 }
             }
 
@@ -166,7 +166,7 @@ namespace Rock.Field.Types
                     if ( entityTypeGuid.HasValue )
                     {
                         var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
-                        if ( entityType != null)
+                        if ( entityType != null )
                         {
                             value = entityType.Id.ToString();
                         }
@@ -193,14 +193,14 @@ namespace Rock.Field.Types
         {
             ListControl editControl;
 
-            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
+            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                editControl = new RockCheckBoxList { ID = id }; 
+                editControl = new RockCheckBoxList { ID = id };
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new RockDropDownList { ID = id }; 
+                editControl = new RockDropDownList { ID = id };
                 editControl.Items.Add( new ListItem() );
             }
 
@@ -216,7 +216,7 @@ namespace Rock.Field.Types
                         var attributes = attributeService.GetByEntityTypeId( entityType.Id );
                         if ( attributes.Any() )
                         {
-                            foreach ( var attribute in attributes )
+                            foreach ( var attribute in attributes.OrderBy( a => a.Name ) )
                             {
                                 editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
                             }
