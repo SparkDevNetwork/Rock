@@ -24,13 +24,13 @@
                     
                     <div class="row">
                             <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" />
                             </div>
                     </div>
 
                     <div class="row">
                             <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3" />
+                                <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3"  ValidateRequestMode="Disabled" />
                             </div>
                     </div>
 
