@@ -96,7 +96,7 @@
         
         <%-- controls for scriptmanager and update panel --%>
         <asp:ScriptManager ID="sManager" runat="server"/>
-        <asp:UpdateProgress id="updateProgress" runat="server">
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
 		            <div class="updateprogress-status">
                         <div class="spinner">

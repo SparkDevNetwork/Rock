@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.Groups
 
                             if ( attrCache != null )
                             {
-                                dictAttribute.Add( "Value", attrCache.FieldType.Field.FormatValue( null, value.Value, attrCache.QualifierValues, false ) );
+                                dictAttribute.Add( "Value", attrCache.FieldType.Field.FormatValueAsHtml( null, value.Value, attrCache.QualifierValues, false ) );
                             }
                             else
                             {
