@@ -171,7 +171,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             }
 
             StringBuilder sb = new StringBuilder();
-            // TODO: What about Worked Holiday Hours??
             sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
 
             var hrContext = new HrContext();
@@ -367,11 +366,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var overtimeHours = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 );
             lOvertimeHours.Text = overtimeHours.ToString( "0.##" );
             lOvertimeHours.Visible = lOvertimeHours.Text.AsDecimal() != 0;
-
-            Label lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Label;
-            var workedHolidayHours = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 );
-            lWorkedHolidayHours.Text = workedHolidayHours.ToString( "0.##" );
-            lWorkedHolidayHours.Visible = lWorkedHolidayHours.Text.AsDecimal() != 0;
 
             Label lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Label;
             lPaidVacationHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );

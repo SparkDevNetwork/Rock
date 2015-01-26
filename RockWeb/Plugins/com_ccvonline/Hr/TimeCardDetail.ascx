@@ -80,7 +80,7 @@
                                             <asp:Literal runat="server" ID="lTimeCardDayName" />
                                         </div>
                                         <div class="col-xs-5">
-                                            <asp:Literal runat="server" ID="lTimeCardDate" />
+                                            <Rock:Badge runat="server" ID="lTimeCardDate" />
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +107,6 @@
                                         </div>
                                         <div class="col-xs-6">
                                             <Rock:Badge runat="server" ID="lWorkedOvertimeHours" BadgeType="Danger" ToolTip="Overtime" />
-                                            <Rock:Badge runat="server" ID="lWorkedHolidayHours" BadgeType="Info" ToolTip="Worked Holiday" />
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +134,7 @@
                                             <asp:Literal runat="server" ID="lTimeCardDayNameEdit" />
                                         </div>
                                         <div class="col-xs-5">
-                                            <asp:Literal runat="server" ID="lTimeCardDateEdit" />
+                                            <Rock:Badge runat="server" ID="lTimeCardDateEdit" />
                                         </div>
                                     </div>
                                 </div>
@@ -199,12 +198,6 @@
                         <div class="col-md-3">Overtime Hours</div>
                         <div class="col-md-1">
                             <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Holiday</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalHolidayWorked" runat="server" />
                         </div>
                     </div>
                     <h4>PTO Hours
@@ -282,12 +275,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h2>History</h2>
-                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
+                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light" >
                                 <Columns>
                                     <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
                                     <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
                                     <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias" />
-                                    <Rock:RockBoundField HeaderText="Notes" DataField="Notes" />
+                                    <Rock:RockBoundField HeaderText="Notes" DataField="Notes" HtmlEncode="false" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

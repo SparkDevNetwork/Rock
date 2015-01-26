@@ -71,7 +71,28 @@ namespace com.ccvonline.Hr.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        public decimal? TotalWorkedDuration { get; set; }
+        public decimal? TotalWorkedDuration
+        {
+            get
+            {
+                // make sure this mirrors the database computed calcuation which is
+                // (DATEDIFF(MINUTE, StartDateTime, isnull(EndDateTime, LunchStartDateTime)) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0)
+                var totalWorkedTimeSpan = ( ( EndDateTime ?? LunchStartDateTime ) - StartDateTime ) - ( ( this.LunchEndDateTime - this.LunchStartDateTime ) ?? TimeSpan.Zero );
+                if ( totalWorkedTimeSpan.HasValue )
+                {
+                    return Convert.ToDecimal( totalWorkedTimeSpan.Value.TotalHours );
+                }
+                else
+                {
+                    return (decimal?)null;
+                }
+            }
+
+            set
+            {
+                //
+            }
+        }
 
         /// <summary>
         /// Gets or sets the paid holiday hours.

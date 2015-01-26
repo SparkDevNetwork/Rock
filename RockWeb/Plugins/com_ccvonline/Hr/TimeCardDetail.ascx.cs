@@ -122,7 +122,23 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
         private List<HoursPerTimeCardDay> _workedRegularHoursCache = null;
         private List<HoursPerTimeCardDay> _workedOvertimeHoursCache = null;
-        private List<HoursPerTimeCardDay> _workedHolidayHoursCache = null;
+        private List<DateTime> _holidayDatesCache = null;
+
+        public List<DateTime> GetHolidayDates( TimeCard timeCard )
+        {
+            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
+
+            if ( timeCardHolidaySchedule != null )
+            {
+                DDay.iCal.Event calEvent = timeCardHolidaySchedule.GetCalenderEvent();
+                if ( calEvent != null )
+                {
+                    return calEvent.GetOccurrences( timeCard.TimeCardPayPeriod.StartDate, timeCard.TimeCardPayPeriod.EndDate ).Select( a => a.Period.StartTime.Date ).ToList();
+                }
+            }
+
+            return new List<DateTime>();
+        }
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptTimeCardDay control.
@@ -136,11 +152,15 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             {
                 var repeaterItem = e.Item;
 
+                bool isHoliday = _holidayDatesCache.Any( a => a == timeCardDay.StartDateTime.Date );
+
                 // Display Only
                 Literal lTimeCardDayName = repeaterItem.FindControl( "lTimeCardDayName" ) as Literal;
                 lTimeCardDayName.Text = timeCardDay.StartDateTime.ToString( "ddd" );
 
-                Literal lTimeCardDate = repeaterItem.FindControl( "lTimeCardDate" ) as Literal;
+                Badge lTimeCardDate = repeaterItem.FindControl( "lTimeCardDate" ) as Badge;
+                lTimeCardDate.BadgeType = isHoliday ? "Info" : string.Empty;
+                lTimeCardDate.ToolTip = isHoliday ? "Holiday" : string.Empty;
                 lTimeCardDate.Text = timeCardDay.StartDateTime.ToString( "MM/dd" );
 
                 Literal lStartDateTime = repeaterItem.FindControl( "lStartDateTime" ) as Literal;
@@ -162,10 +182,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 Badge lWorkedOvertimeHours = repeaterItem.FindControl( "lWorkedOvertimeHours" ) as Badge;
                 var workedOvertimeHoursForDay = _workedOvertimeHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
                 lWorkedOvertimeHours.Text = FormatTimeCardHours( workedOvertimeHoursForDay != null ? workedOvertimeHoursForDay.Hours : 0 );
-
-                Badge lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Badge;
-                var workedHolidayHoursForDay = _workedHolidayHoursCache.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
-                lWorkedHolidayHours.Text = FormatTimeCardHours( workedHolidayHoursForDay != null ? workedHolidayHoursForDay.Hours : 0 );
 
                 Badge lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Badge;
                 lPaidVacationHours.Text = FormatTimeCardHours( timeCardDay.PaidVacationHours );
@@ -189,8 +205,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 Literal lTimeCardDayNameEdit = repeaterItem.FindControl( "lTimeCardDayNameEdit" ) as Literal;
                 lTimeCardDayNameEdit.Text = lTimeCardDayName.Text;
 
-                Literal lTimeCardDateEdit = repeaterItem.FindControl( "lTimeCardDateEdit" ) as Literal;
-                lTimeCardDateEdit.Text = lTimeCardDate.Text;
+                Badge lTimeCardDateEdit = repeaterItem.FindControl( "lTimeCardDateEdit" ) as Badge;
+                lTimeCardDateEdit.BadgeType = isHoliday ? "Info" : string.Empty;
+                lTimeCardDateEdit.ToolTip = isHoliday ? "Holiday" : string.Empty;
+                lTimeCardDateEdit.Text = timeCardDay.StartDateTime.ToString( "MM/dd" );
 
                 // Edit Controls
                 TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
@@ -213,6 +231,13 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 ddlVacationHours.Items.Add( string.Empty );
                 ddlHolidayHours.Items.Clear();
                 ddlHolidayHours.Items.Add( string.Empty );
+
+                if ( isHoliday )
+                {
+                    ddlHolidayHours.Help = "If this is a holiday and you worked this day, set this to 'Auto' to have the system calculate your paid holiday hours.";
+                    ddlHolidayHours.Items.Add( new ListItem( "Auto", "A" ) );
+                }
+
                 ddlSickHours.Items.Clear();
                 ddlSickHours.Items.Add( string.Empty );
 
@@ -225,6 +250,18 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
                 ddlVacationHours.SetValue( ToNearestQtrHour( timeCardDay.PaidVacationHours ).ToString() );
                 ddlHolidayHours.SetValue( ToNearestQtrHour( timeCardDay.PaidHolidayHours ).ToString() );
+
+                if ( isHoliday )
+                {
+                    // if this is a holiday, set the holiday drop-down to "auto" if PaidHolidayHours isn't set, or it is already set to "Half of Worked Hours"
+                    decimal? halfPaidHolidayHours = ToNearestQtrHour( ( timeCardDay.TotalWorkedDuration ?? 0 ) / 2 );
+                    decimal? storedPaidHolidayHours = ToNearestQtrHour( timeCardDay.PaidHolidayHours );
+                    if ( !storedPaidHolidayHours.HasValue || storedPaidHolidayHours == halfPaidHolidayHours )
+                    {
+                        ddlHolidayHours.SetValue( "A" );
+                    }
+                }
+
                 ddlSickHours.SetValue( ToNearestQtrHour( timeCardDay.PaidSickHours ).ToString() );
 
                 RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
@@ -309,7 +346,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             }
             else
             {
-                if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId )  )
+                if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId ) )
                 {
                     // if the current person a global Approver or an approver of the timecard.person, enable the Approve button if is has been submitted.
                     pnlApproverActions.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
@@ -377,9 +414,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             var timeCardDayList = qry.ToList();
 
+            // cache some stuff for rptTimeCardDay_ItemDataBound
             _workedRegularHoursCache = timeCard.GetRegularHours();
             _workedOvertimeHoursCache = timeCard.GetOvertimeHours();
-            _workedHolidayHoursCache = timeCard.GetWorkedHolidayHours();
+            _holidayDatesCache = GetHolidayDates( timeCard );
 
             // bind time card day repeater 
             rptTimeCardDay.DataSource = timeCardDayList;
@@ -393,13 +431,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // Totals
             lTotalRegularWorked.Text = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalOvertimeWorked.Text = timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
-            lTotalHolidayWorked.Text = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
-
             lTotalVacationPaid.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalHolidayPaid.Text = timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lTotalSickPaid.Text = timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
 
-            var totalHours = timeCard.GetTotalWorkedHoursPerDay( true, true ).Sum( a => a.Hours ?? 0 )
+            var totalHours = timeCard.GetTotalWorkedHoursPerDay().Sum( a => a.Hours ?? 0 )
                 + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 )
                 + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 )
                 + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 );
@@ -469,7 +505,19 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             timeCardDay.PaidVacationHours = ddlVacationHours.SelectedValue.AsDecimalOrNull();
 
             RockDropDownList ddlHolidayHours = repeaterItem.FindControl( "ddlHolidayHours" ) as RockDropDownList;
-            timeCardDay.PaidHolidayHours = ddlHolidayHours.SelectedValue.AsDecimalOrNull();
+
+            _holidayDatesCache = GetHolidayDates( timeCardDay.TimeCard );
+
+            bool isHoliday = _holidayDatesCache.Any( a => a == timeCardDay.StartDateTime.Date );
+            if ( isHoliday && ddlHolidayHours.SelectedValue == "A" )
+            {
+                // if they worked on a holiday, they automatically get half of those hours as paid holiday hours
+                timeCardDay.PaidHolidayHours = ToNearestQtrHour( timeCardDay.TotalWorkedDuration / 2 );
+            }
+            else
+            {
+                timeCardDay.PaidHolidayHours = ddlHolidayHours.SelectedValue.AsDecimalOrNull();
+            }
 
             RockDropDownList ddlSickHours = repeaterItem.FindControl( "ddlSickHours" ) as RockDropDownList;
             timeCardDay.PaidSickHours = ddlSickHours.SelectedValue.AsDecimalOrNull();
@@ -507,7 +555,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 timeCardHistory.TimeCardStatus = timeCardDay.TimeCard.TimeCardStatus;
                 timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
                 timeCardHistory.HistoryDateTime = RockDateTime.Now;
-                timeCardHistory.Notes = sbTimeCardDayHistory.AsDelimited( "/n" );
+                timeCardHistory.Notes = sbTimeCardDayHistory.AsDelimited( "<br/>" );
                 timeCardHistoryService.Add( timeCardHistory );
             }
 
