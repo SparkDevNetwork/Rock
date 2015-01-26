@@ -98,10 +98,10 @@ namespace RockWeb.Blocks.WorkFlow
                 stateField.HeaderText = "State";
                 stateField.HtmlEncode = false;
 
-                var formField = new EditField();
-                gWorkflows.Columns.Add( formField );
-                formField.IconCssClass = "fa fa-edit";
-                formField.Click += formField_Click;
+                var manageField = new EditField();
+                gWorkflows.Columns.Add( manageField );
+                manageField.IconCssClass = "fa fa-edit";
+                manageField.Click += gWorkflows_Manage;
 
                 var deleteField = new DeleteField();
                 gWorkflows.Columns.Add( deleteField );
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gWorkflows_Edit( object sender, RowEventArgs e )
+        protected void gWorkflows_Manage( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
         }
@@ -289,11 +289,11 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Handles the Click event of the formField control.
+        /// Handles the Edit event of the gWorkflows control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        void formField_Click( object sender, RowEventArgs e )
+        protected void gWorkflows_Edit( object sender, RowEventArgs e )
         {
             var workflow = new WorkflowService( new RockContext() ).Get( e.RowKeyId );
             if ( workflow != null )

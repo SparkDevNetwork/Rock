@@ -158,6 +158,10 @@
                         <Rock:NumberRangeEditor ID="nreExample" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
                     </div>
 
+                    <a id="RatingInput"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockRating ID="rrRating" runat="server" Label="Rock:RatingInput" /><br />
+                    </div>
 
                     <a id="Pickers"></a>
                     <h1 runat="server">Pickers</h1>

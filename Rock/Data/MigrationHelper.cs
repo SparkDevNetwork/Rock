@@ -3893,8 +3893,9 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
-        /// Adds an action type person attribute value.  Because there's not way to link to another person in target database, person attribute values
-        /// are just set to the first person alias record in target database which will most likely be the Admin, Admin record.
+        /// Adds an action type person attribute value.  Because there's not a way to link to another person in the
+        /// target database, person attribute values are just set to the first person alias record in the target
+        /// database which will most likely be the Admin, Admin record.
         /// </summary>
         /// <param name="actionTypeGuid">The action type unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>

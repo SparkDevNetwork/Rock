@@ -116,6 +116,15 @@ namespace Rock.Client
         public BinaryFile Image { get; set; }
 
         /// <summary />
+        public double? Latitude { get; set; }
+
+        /// <summary />
+        public double? Longitude { get; set; }
+
+        /// <summary />
+        public List<Double[]> GeoFenceCoordinates { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

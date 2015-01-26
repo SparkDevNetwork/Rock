@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Store
                     string appRoot = Server.MapPath( "~/" );
                     string rockShopWorkingDir = appRoot + "App_Data/RockShop";
                     string packageDirectory = string.Format( "{0}/{1} - {2}", rockShopWorkingDir, purchaseResponse.PackageId, purchaseResponse.PackageName );
-                    string sourceFile = installStep.InstallPackageUrl.Replace( "~", "http://www.rockrms.com" );  // todo remove before flight
+                    string sourceFile = installStep.InstallPackageUrl; 
                     string destinationFile = string.Format("{0}/{1} - {2}.plugin", packageDirectory, installStep.VersionId, installStep.VersionLabel);
 
                     // check that the RockShop directory exists
@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.Store
                     Rock.Security.Authorization.Flush();
 
                     // show result message
-                    lMessages.Text = string.Format( "<div class='alert alert-success'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
+                    lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
                 }
             }
             else

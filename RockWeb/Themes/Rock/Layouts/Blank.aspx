@@ -32,7 +32,7 @@
     <form id="form1" runat="server">
         <asp:ScriptManager ID="sManager" runat="server" />
 
-        <asp:UpdateProgress ID="updateProgress" runat="server">
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
             <ProgressTemplate>
                 <div class="updateprogress-status">
                     <div class="spinner">

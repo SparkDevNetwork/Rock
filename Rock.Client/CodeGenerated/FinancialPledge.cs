@@ -32,9 +32,6 @@ namespace Rock.Client
     public partial class FinancialPledge
     {
         /// <summary />
-        public int? PledgeFrequencyValueId { get; set; }
-
-        /// <summary />
         public int? AccountId { get; set; }
 
         /// <summary />
@@ -42,6 +39,9 @@ namespace Rock.Client
 
         /// <summary />
         public decimal TotalAmount { get; set; }
+
+        /// <summary />
+        public int? PledgeFrequencyValueId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }

@@ -43,18 +43,21 @@ namespace Rock.Model
 
             workflow.Process( rockContext, out errorMessages );
 
-            this.Context.WrapTransaction( () =>
+            if ( workflow.IsPersisted )
             {
-                this.Context.SaveChanges();
-                workflow.SaveAttributeValues( rockContext );
-                foreach ( var activity in workflow.Activities )
+                this.Context.WrapTransaction( () =>
                 {
-                    activity.SaveAttributeValues( rockContext );
-                }
-            } );
+                    this.Context.SaveChanges();
+                    workflow.SaveAttributeValues( rockContext );
+                    foreach ( var activity in workflow.Activities )
+                    {
+                        activity.SaveAttributeValues( rockContext );
+                    }
+                } );
 
-            workflow.IsProcessing = false;
-            this.Context.SaveChanges();
+                workflow.IsProcessing = false;
+                this.Context.SaveChanges();
+            }
         }
 
         /// <summary>
