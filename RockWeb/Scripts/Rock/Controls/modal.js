@@ -46,13 +46,16 @@
                 if ($control && $control.length) {
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
-                        $modalBody.height('auto');
+                        $modalBody[0].style.minHeight = "0px";
                         var scrollHeight = $modalBody.prop('scrollHeight');
                         if ($modalBody.outerHeight() != scrollHeight) {
                             // if modalbody didn't already grow to fit (maybe because of a bootstrap dropdown) make modal-body big enough to fit.
-                            $modalBody.outerHeight(scrollHeight);
+                            $modalBody[0].style.minHeight = scrollHeight + "px";
 
-                            // TODO, figure out why resizing doesn't work for person picker in Page Security dialog
+                            // force the resizeDetector to fire
+                            if ($('#dialog').length && $('#dialog')[0].resizedAttached) {
+                                $('#dialog')[0].resizedAttached.call();
+                            }
                         }
                     }
                 }
