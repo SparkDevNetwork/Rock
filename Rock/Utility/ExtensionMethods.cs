@@ -104,6 +104,8 @@ namespace Rock
         /// </summary>
         /// <param name="lavaObject">The liquid object.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
         /// <returns></returns>
         public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null, string preText = "", string postText = "" )
         {
@@ -945,7 +947,7 @@ namespace Rock
         /// Resolve any client ids in the string. This is used with Lava when writing out postback commands.
         /// </summary>
         /// <param name="content">The content.</param>
-        /// <param name="client id">Client id.</param>
+        /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
         public static string ResolveClientIds( this string content, string clientId )
         {

@@ -890,7 +890,8 @@ namespace Rock.Lava
         /// <summary>
         /// creates a postback javascript function
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="command">The command.</param>
         /// <returns></returns>
         public static string Postback( object input, string command )
         {

@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
@@ -31,6 +33,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site Map" )]
     [Category( "CMS" )]
     [Description( "Displays a site map in a tree view." )]
+    [LinkedPage( "Root Page", "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.", false )]
     public partial class SiteMap : RockBlock
     {
         /// <summary>
@@ -82,8 +85,19 @@ namespace RockWeb.Blocks.Cms
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            var allPages = pageService.Queryable( "Pages, Blocks" ).ToList();
-            foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
+            var allPages = pageService.Queryable( "Pages, Blocks" );
+            string rootPage = GetAttributeValue("RootPage");
+            if ( ! string.IsNullOrEmpty( rootPage ) )
+            {
+                Guid pageGuid = rootPage.AsGuid();
+                allPages = allPages.Where( a => a.ParentPage.Guid == pageGuid );
+            }
+            else
+            {
+                allPages = allPages.Where( a => a.ParentPageId == null );
+            }
+
+            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList() )
             {
                 sb.Append( PageNode( page, expandedPageIds, rockContext ) );
             }
