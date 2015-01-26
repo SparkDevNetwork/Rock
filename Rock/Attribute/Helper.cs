@@ -966,7 +966,7 @@ namespace Rock.Attribute
                             value = item.AttributeValues[attribute.Key].Value;
                         }
 
-                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( value, attribute.QualifierValues );
+                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, value, attribute.QualifierValues );
                         
                         if ( string.IsNullOrWhiteSpace( controlHtml ) )
                         {

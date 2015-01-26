@@ -166,7 +166,7 @@ namespace Rock.Model
                 select [a].*, [Level] + 1 as [Level] from [Group] [a]
                 inner join CTE pcte on pcte.ParentGroupId = [a].[Id]
                 )
-                select Id from CTE where Id != {0} order by Level desc
+                select Id from CTE where Id != {0} order by Level
                 ", childGroupId );
 
             // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable

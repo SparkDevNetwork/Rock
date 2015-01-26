@@ -14,7 +14,9 @@
 		{% for member in Group.Members %}
 	
 			{% if member.GroupRole.IsLeader %}
-				<li>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></li>
+				<li>
+          {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+        </li>
 			{% endif %}
 		{% endfor %}
 		</ul>
@@ -24,11 +26,18 @@
 	<div class="col-md-6">
 		{% for groupLocation in Group.GroupLocations %}
 			{% if groupLocation.Location.GeoPoint != '' %}
-				<img src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}" />"
+				<img src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}" />
 			{% endif %}
 		{% endfor %}
 	</div>
 </div>
+
+{% if AllowedActions.Edit == true %}
+  <div class="actions">
+    <a class="btn btn-primary" href="?GroupId={{ Group.Id }}&Action=EditGroup">Edit</a>
+  </div>
+{% endif %}
+
 <p>
 	
 </p>
@@ -39,14 +48,47 @@
 	<ul class="list-unstyled clearfix">
 	{% for member in Group.Members %}
 
-		<li class="margin-b-md margin-r-md clearfix pull-left">
-			<img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" /> 
-			<div class="pull-left">
-				<strong>{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small> <br />
-				<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-			</div>
-		</li>
+		<li class="margin-b-md margin-r-md clearfix pull-left rollover-container">
+			{% if LinkedPages.PersonDetailPage != '' %}
+        <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+      {% endif %}
+      <img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" />
+      <div class="pull-left">
+        <strong>{{ member.Person.FullName }}</strong>
+        <small>({{ member.GroupRole.Name}})</small>
+        <br />
+        <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+      </div>
+
+      {% if AllowedActions.Edit == true %}
+        <div class="pull-left rollover-item">
+          <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+            <i class="fa fa-times"></i>
+          </a>
+          <a href="?Action=EditGroupMember&GroupmemberId={{ member.Id }}&GroupId={{ Group.Id }}" class="margin-l-sm">
+            <i class="fa fa-pencil"></i>
+          </a>
+        </div>
+      {% endif %}
+
+          {% if LinkedPages.PersonDetailPage != '' %}
+        </a>
+      {% endif %}
+   </li>
 		
 	{% endfor %}
 	</ul>
+
+  {% if AllowedActions.Edit == true %}
+    <div class="pull-right margin-b-md">
+      <a href="?Action=AddGroupMember&GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Group Member</a>
+    </div>
+  {% endif %}
 </p>
+
+
+
+
+
+
+<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}">Test me</a>

@@ -8092,7 +8092,7 @@ input.checkin-phone-entry {
 .iScrollVerticalScrollbar,
 .iScrollLoneScrollbar {
   position: absolute;
-  z-index: 9999;
+  z-index: 1;
   width: 7px;
   bottom: 2px;
   top: 2px;
