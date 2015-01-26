@@ -897,7 +897,10 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "parentGroupGuid" ) != null )
                 {
                     var parentGroup = groupService.Get( elemGroup.Attribute( "parentGroupGuid" ).Value.AsGuid() );
-                    group.ParentGroupId = parentGroup.Id;
+                    if ( parentGroup != null )
+                    {
+                        group.ParentGroupId = parentGroup.Id;
+                    }
                 }
 
                 // Set the group's meeting location
