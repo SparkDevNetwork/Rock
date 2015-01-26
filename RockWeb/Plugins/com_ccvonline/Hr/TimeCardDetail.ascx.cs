@@ -646,6 +646,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             if ( approvedEmailTemplateGuid.HasValue )
             {
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                mergeObjects.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
                 mergeObjects.Add( "TimeCard", timeCard );
                 mergeObjects.Add( "Person", timeCard.PersonAlias.Person );
                 mergeObjects.Add( "ApprovedByPerson", this.CurrentPerson );
