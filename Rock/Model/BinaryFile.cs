@@ -145,17 +145,17 @@ namespace Rock.Model
         public string StorageEntitySettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the URL.
+        /// Gets or sets a path to the file that is understandable by the storage provider.
         /// </summary>
         /// <value>
         /// The URL.
         /// </value>
         /// <remarks>
-        /// It us up to the storage provider to save the url value when creating the file
+        /// It us up to the storage provider to save the path value when creating the file
         /// </remarks>
         [MaxLength( 2083 )]
         [DataMember]
-        public string Url { get; set; }
+        public string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the content last modified.
@@ -203,6 +203,30 @@ namespace Rock.Model
         public Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual string Url
+        {
+            get
+            {
+                if ( StorageProvider != null )
+                {
+                    return StorageProvider.GetUrl( this );
+                }
+                else
+                {
+                    return Path;
+                }
+            }
+            private set { }
+        }
+
+        /// <summary>
         /// Gets or sets the content stream.
         /// </summary>
         /// <value>
@@ -216,7 +240,10 @@ namespace Rock.Model
             {
                 if ( _stream == null )
                 {
-                    _stream = StorageProvider.GetContentStream( this );
+                    if ( StorageProvider != null )
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
                 }
                 else
                 {
@@ -237,6 +264,29 @@ namespace Rock.Model
         }
         private Stream _stream;
         private bool _contentIsDirty = false;
+
+        /// <summary>
+        /// Gets the storage settings.
+        /// </summary>
+        /// <value>
+        /// The storage settings.
+        /// </value>
+        [NotMapped]
+        [HideFromReporting]
+        public virtual Dictionary<string,string> StorageSettings
+        {
+            get
+            {
+                try 
+                { 
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>( StorageEntitySettings );
+                }
+                catch
+                {
+                    return new Dictionary<string, string>();
+                }
+            }
+        }
 
         #endregion
 
@@ -300,7 +350,7 @@ namespace Rock.Model
                         {
                             // save the file to the provider's new storage medium
                             StorageProvider.SaveContent( this );
-                            Url = StorageProvider.GetContentUrl( this );
+                            Path = StorageProvider.GetPath( this );
                         }
                     }
                 }
@@ -343,7 +393,7 @@ namespace Rock.Model
                     if ( _contentIsDirty && StorageProvider != null )
                     {
                         StorageProvider.SaveContent( this );
-                        Url = StorageProvider.GetContentUrl( this );
+                        Path = StorageProvider.GetPath( this );
                     }
                 }
             }

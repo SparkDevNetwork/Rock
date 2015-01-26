@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this FinancialPersonSavedAccount target, FinancialPersonSavedAccount source )
         {
             target.PersonAliasId = source.PersonAliasId;
+            target.GroupId = source.GroupId;
             target.ReferenceNumber = source.ReferenceNumber;
             target.Name = source.Name;
             target.MaskedAccountNumber = source.MaskedAccountNumber;

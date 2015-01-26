@@ -32,19 +32,16 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction
     {
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
+        public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary />
         public int TransactionFrequencyValueId { get; set; }
 
         /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
-        public int AuthorizedPersonAliasId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }
@@ -63,6 +60,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsActive { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary />
         public string TransactionCode { get; set; }

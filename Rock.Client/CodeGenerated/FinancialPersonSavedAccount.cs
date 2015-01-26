@@ -32,16 +32,10 @@ namespace Rock.Client
     public partial class FinancialPersonSavedAccount
     {
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
-        public int PersonAliasId { get; set; }
+        public int? GroupId { get; set; }
 
         /// <summary />
         public string ReferenceNumber { get; set; }
@@ -54,6 +48,15 @@ namespace Rock.Client
 
         /// <summary />
         public string TransactionCode { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
+        /// <summary />
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         public EntityType GatewayEntityType { get; set; }

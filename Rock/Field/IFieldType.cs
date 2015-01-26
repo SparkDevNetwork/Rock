@@ -45,10 +45,12 @@ namespace Rock.Field
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        string FormatValueAsHtml( string value, Dictionary<string, ConfigurationValue> configurationValues );
+        string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why

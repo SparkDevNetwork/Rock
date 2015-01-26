@@ -884,5 +884,27 @@ namespace Rock.Lava
         }
 
         #endregion
+
+        #region Object Filters
+
+        /// <summary>
+        /// creates a postback javascript function
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="command">The command.</param>
+        /// <returns></returns>
+        public static string Postback( object input, string command )
+        {
+            if ( input != null )
+            {
+                return string.Format( "javascript:__doPostBack('[ClientId]','{0}^{1}'); return false;", command, input.ToString() );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        #endregion
     }
 }

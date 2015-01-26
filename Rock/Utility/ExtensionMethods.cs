@@ -104,12 +104,17 @@ namespace Rock
         /// </summary>
         /// <param name="lavaObject">The liquid object.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
         /// <returns></returns>
-        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null )
+        public static string lavaDebugInfo( this object lavaObject, RockContext rockContext = null, string preText = "", string postText = "" )
         {
             //return liquidObject.LiquidizeChildren( 0, rockContext ).ToJson();
             StringBuilder lavaDebugPanel = new StringBuilder();
             lavaDebugPanel.Append( "<div class='alert alert-info lava-debug'><h4>Lava Debug Info</h4>" );
+
+            lavaDebugPanel.Append( preText );
+
             lavaDebugPanel.Append( "<p>Below is a listing of available merge fields for this block. Find out more on Lava at <a href='http://www.rockrms.com/lava' target='_blank'>rockrms.com/lava</a>." );
 
             lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
@@ -121,6 +126,8 @@ namespace Rock
                 globalAttributes.Add( "GlobalAttribute", Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null) );
                 lavaDebugPanel.Append(  formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
+
+            lavaDebugPanel.Append( postText );
 
             lavaDebugPanel.Append( "</div>" );
 
@@ -496,7 +503,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
+        /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="whitespace">if set to <c>true</c> whitespace will be treated as a delimiter</param>
@@ -513,7 +520,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns a List of ListItems that contains the values/text in this string that are formatted as either 'value1,value2,value3,...' or 'value1^text1,value2^text2,value3^text3,...'
+        /// Returns a List of ListItems that contains the values/text in this string that are formatted as either 'value1,value2,value3,...' or 'value1^text1,value2^text2,value3^text3,...'.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -537,7 +544,7 @@ namespace Rock
 
         /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
-        /// from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace
+        /// (from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace)
         /// </summary>
         /// <param name="str">The source string.</param>
         /// <param name="oldValue">The value to replace.</param>
@@ -594,7 +601,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds escape character for quotes in a string
+        /// Adds escape character for quotes in a string.
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -607,7 +614,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds Quotes around the specified string and escapes any quotes that are already in the string
+        /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="QuoteChar">The quote character.</param>
@@ -637,7 +644,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
+        /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength.
         /// </summary>
         /// <param name="str"></param>
         /// <param name="maxLength"></param>
@@ -694,7 +701,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Removes any non-numeric characters
+        /// Removes any non-numeric characters.
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
@@ -704,12 +711,12 @@ namespace Rock
         }
 
         /// <summary>
-        /// The true strings for AsBoolean and AsBooleanOrNull
+        /// The true strings for AsBoolean and AsBooleanOrNull.
         /// </summary>
         private static string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
 
         /// <summary>
-        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive)
+        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive).
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
@@ -725,7 +732,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive), null for emptystring/null
+        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive), null for emptystring/null.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -937,7 +944,18 @@ namespace Rock
         }
 
         /// <summary>
-        /// Determines whether [has merge fields] [the specified content].
+        /// Resolve any client ids in the string. This is used with Lava when writing out postback commands.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="clientId">The client identifier.</param>
+        /// <returns></returns>
+        public static string ResolveClientIds( this string content, string clientId )
+        {
+            return content.Replace( "[ClientId]", clientId );
+        }
+
+        /// <summary>
+        /// Determines whether string has merge fields in it.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <returns></returns>
@@ -954,7 +972,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string"
+        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string".
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
@@ -1012,7 +1030,7 @@ namespace Rock
         }
         
         /// <summary>
-        /// HTML Encodes the string
+        /// HTML Encodes the string.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -1089,7 +1107,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Maskeds the specified value.
+        /// Masks the specified value if greater than 4 characters (such as a credit card number).
+        /// For example, the return string becomes "************6789".
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -1126,7 +1145,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Evaluates string and if null or empty returns nullValue instead
+        /// Evaluates string, and if null or empty, returns nullValue instead.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="nullValue">The null value.</param>
@@ -1137,7 +1156,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Compares to.
+        /// Compares to the given value returning true if comparable.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="compareValue">The compare value.</param>
@@ -1236,7 +1255,7 @@ namespace Rock
         #region Boolean Extensions
 
         /// <summary>
-        /// A numeric 1 or 0
+        /// Returns a numeric 1 (if true) or 0 (if false).
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
@@ -1246,7 +1265,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the yes no.
+        /// Returns either "Yes" or "No".
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
@@ -1256,7 +1275,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the true false.
+        /// Returns the string "True" or "False".
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
@@ -1266,7 +1285,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Froms the true false.
+        /// Use AsBoolean() instead.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -1281,7 +1300,7 @@ namespace Rock
         #region DateTime Extensions
 
         /// <summary>
-        /// Returns the age at the current date
+        /// Returns the age at the current date.
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
@@ -1294,7 +1313,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the age at the current date
+        /// Returns the age at the current date.
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
@@ -1408,7 +1427,7 @@ namespace Rock
 
         /// <summary>
         /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
-        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
@@ -1428,7 +1447,7 @@ namespace Rock
         /// <summary>
         /// Returns a string in relative format (x seconds ago, x minutes ago, about an hour ago, in x seconds,
         /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
-        /// 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in long format (ex. November 5, 2011 at 1:57pm) </param>
@@ -1530,7 +1549,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts the date to an Epoch of milliseconds since 1970/1/1
+        /// Converts the date to an Epoch of milliseconds since 1970/1/1.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
@@ -1616,7 +1635,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Parents the update panel.
+        /// Returns the parent update panel for the given control (or null if none is found).
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns></returns>
@@ -1635,7 +1654,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets all controls of Type recursively
+        /// Gets all controls of Type recursively.
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -1658,7 +1677,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets all controls of Type recursively
+        /// Gets all controls of Type recursively.
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -1676,7 +1695,7 @@ namespace Rock
         #region WebControl Extensions
 
         /// <summary>
-        /// Adds a CSS class name to a web control
+        /// Adds a CSS class name to a web control.
         /// </summary>
         /// <param name="webControl">The web control.</param>
         /// <param name="className">Name of the class.</param>
@@ -1715,7 +1734,7 @@ namespace Rock
         #region HtmlControl Extensions
 
         /// <summary>
-        /// Adds a CSS class name to an html control
+        /// Adds a CSS class name to an html control.
         /// </summary>
         /// <param name="htmlControl">The html control.</param>
         /// <param name="className">Name of the class.</param>
@@ -1747,7 +1766,7 @@ namespace Rock
         #region CheckBoxList Extensions
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the Selected property of each item to true for each given matching string values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
@@ -1760,7 +1779,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the Selected property of each item to true for each given matching int values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
@@ -1778,7 +1797,7 @@ namespace Rock
         #region ListControl Extensions
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// Try's to set the selected value, if the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
@@ -1807,7 +1826,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value. If the value does not exist, will set the first item in the list
+        /// Try's to set the selected value. If the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
@@ -1817,7 +1836,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list
+        /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="entity">The entity.</param>
@@ -1853,7 +1872,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Binds to the values of a definedType
+        /// Binds to the values of a definedType.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
@@ -1882,7 +1901,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
+        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
@@ -1974,7 +1993,7 @@ namespace Rock
         #region Enum Extensions
 
         /// <summary>
-        /// Converts to the enum value to it's string value
+        /// Converts to the enum value to it's string value.
         /// </summary>
         /// <param name="eff">The eff.</param>
         /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
@@ -2078,7 +2097,7 @@ namespace Rock
         #region GenericCollection Extensions
 
         /// <summary>
-        /// Concatonate the items
+        /// Concatonate the items.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="items">The items.</param>
@@ -2093,7 +2112,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns></returns>
@@ -2103,7 +2122,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int
+        /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <returns></returns>
@@ -2113,7 +2132,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Joins a dictionary of items
+        /// Joins a dictionary of items.
         /// </summary>
         /// <param name="items">The items.</param>
         /// <param name="delimter">The delimter.</param>
@@ -2205,7 +2224,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Orders the list by the name of a property in descending order
+        /// Orders the list by the name of a property in descending order.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The type of object.</param>
@@ -2229,7 +2248,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Then Orders the list by a a property in descending order
+        /// Then Orders the list by a a property in descending order.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The type of object.</param>
@@ -2307,7 +2326,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Filters a Query to rows that have matching attribute value
+        /// Filters a Query to rows that have matching attribute value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The source.</param>
@@ -2371,7 +2390,7 @@ namespace Rock
         #region Route Extensions
 
         /// <summary>
-        /// Pages the id.
+        /// Returns the page Id of the route or -1 if not found.
         /// </summary>
         /// <param name="route">The route.</param>
         /// <returns></returns>
@@ -2386,7 +2405,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Routes the id.
+        /// Returns the route Id of the route or -1 if not found.
         /// </summary>
         /// <param name="route">The route.</param>
         /// <returns></returns>
@@ -2453,7 +2472,7 @@ namespace Rock
         #region HiddenField Extensions
 
         /// <summary>
-        /// Values as int.
+        /// Returns the values as an int or 0 if not found or not an int.
         /// </summary>
         /// <param name="hiddenField">The hidden field.</param>
         /// <returns></returns>
@@ -2520,7 +2539,7 @@ namespace Rock
         #region Dictionary<TKey, TValue> extension methods
 
         /// <summary>
-        /// Adds or Replaces an item in a Dictionary
+        /// Adds or replaces an item in a Dictionary.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -2540,7 +2559,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds an item to a Dictionary if it doesn't already exist in Dictionary
+        /// Adds an item to a Dictionary if it doesn't already exist in Dictionary.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>

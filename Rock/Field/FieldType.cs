@@ -59,7 +59,7 @@ namespace Rock.Field
         {
             if ( condensed )
             {
-                return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+                return value.Truncate( 100 );
             }
 
             return value;
@@ -68,12 +68,14 @@ namespace Rock.Field
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        public virtual string FormatValueAsHtml( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public virtual string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return FormatValue( null, value, configurationValues, false );
+            return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         #endregion

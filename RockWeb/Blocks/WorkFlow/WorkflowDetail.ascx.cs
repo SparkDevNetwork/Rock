@@ -93,12 +93,6 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
-            if ( !_canEdit && Workflow != null )
-            {
-                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            }
-
             // Add new log entries since they are not serialized
             LogEntries = ViewState["LogEntries"] as List<string>;
             if ( LogEntries == null )
@@ -121,6 +115,8 @@ namespace RockWeb.Blocks.WorkFlow
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             gLog.DataKeyNames = new string[] { "Id" };
             gLog.Actions.ShowAdd = false;
@@ -191,8 +187,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             bool editMode = hfMode.Value == "Edit";
 
-            liLog.Visible = !editMode;
-            divLog.Visible = !editMode;
+            liDetails.Visible = _canEdit;
+            liActivities.Visible = _canEdit;
+            liLog.Visible = _canEdit && !editMode;
+            divLog.Visible = _canEdit && !editMode;
 
             pnlDetailsView.Visible = !editMode;
             pnlDetailsEdit.Visible = editMode;
@@ -523,7 +521,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+                        string formattedValue = field.FormatValueAsHtml( phActivityAttributes, value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -660,12 +658,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 pnlContent.Visible = false;
                 return;
-            }
-
-            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
-            if ( !_canEdit && Workflow != null )
-            {
-                _canEdit = Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
             }
 
             Workflow.LoadAttributes( rockContext );
@@ -819,7 +811,7 @@ namespace RockWeb.Blocks.WorkFlow
                 string value = Workflow.GetAttributeValue( attribute.Key );
 
                 var field = attribute.FieldType.Field;
-                string formattedValue = field.FormatValueAsHtml( value, attribute.QualifierValues );
+                string formattedValue = field.FormatValueAsHtml( phViewAttributes, value, attribute.QualifierValues );
 
                 if ( field is Rock.Field.ILinkableFieldType )
                 {

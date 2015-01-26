@@ -100,17 +100,6 @@ END
     DECLARE @FileSystemEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A97B6002-454E-4890-B529-B99F8F2F376A' )
     DECLARE @AttributeId int 
     DECLARE @DefaultValue nvarchar(max) 
-	DECLARE @ApplicationRoot varchar(400) = ( 
-		SELECT TOP 1 COALESCE( AV.[Value], A.[DefaultValue], '' ) AS [Url]
-		FROM [Attribute] A
-		LEFT OUTER JOIN [AttributeValue] AV ON AV.[AttributeId] = A.[Id]
-		WHERE A.[Guid] = '49AD7AD6-9BAC-4743-B1E8-B917F6271924'
-	)
-
-	IF RIGHT( @ApplicationRoot, 1 ) <> '/' 
-	BEGIN
-		SET @ApplicationRoot = @ApplicationRoot + '/'
-	END
 
 	UPDATE [BinaryFile] SET 
 		[StorageEntityTypeId] = @DatabaseEntityTypeId
@@ -138,11 +127,11 @@ END
     WHERE T.[StorageEntityTypeId] = @FileSystemEntityTypeId
     AND F.[StorageEntitySettings] IS NULL
 
-    UPDATE [BinaryFile] SET Url = @ApplicationRoot + 'GetImage.ashx?guid=' + CAST( [Guid] AS varchar(60) )
+    UPDATE [BinaryFile] SET Url = '~/GetImage.ashx?guid=' + CAST( [Guid] AS varchar(60) )
     WHERE [Url] IS NULL
     AND [MimeType] LIKE 'image%'
 
-    UPDATE [BinaryFile] SET Url = @ApplicationRoot + 'GetFile.ashx?guid=' + CAST( [Guid] AS varchar(60) )
+    UPDATE [BinaryFile] SET Url = '~/GetFile.ashx?guid=' + CAST( [Guid] AS varchar(60) )
     WHERE [Url] IS NULL
 " );
         }
