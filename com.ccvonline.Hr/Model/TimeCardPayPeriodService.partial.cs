@@ -113,14 +113,7 @@ namespace com.ccvonline.Hr.Model
             foreach ( var deptGroup in qryPersonDeptGroup.ToList() )
             {
                 departmentGroupIds.Add( deptGroup.Id );
-
-                // TODO: Use GroupService.GetAncestorIds to do this after next merge from core
-                var parentGroup = deptGroup.ParentGroup;
-                while ( parentGroup != null )
-                {
-                    departmentGroupIds.Add( parentGroup.Id );
-                    parentGroup = parentGroup.ParentGroup;
-                }
+                departmentGroupIds.AddRange( groupService.GetAllAncestorIds( deptGroup.Id ) );
             }
 
             List<Person> approvers = new List<Person>();
