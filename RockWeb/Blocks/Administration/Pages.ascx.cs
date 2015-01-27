@@ -103,14 +103,18 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            int? parentPageId = null;
-            if (_page != null)
-                parentPageId = _page.Id;
+            if ( _page == null )
+            {
+                return;
+            }
 
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(), e.OldIndex, e.NewIndex );
+            pageService.Reorder( pageService.GetByParentPageId( _page.Id ).ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
+
+            Rock.Web.Cache.PageCache.Flush( _page.Id );
+            _page.FlushChildPages();
 
             BindGrid();
         }
