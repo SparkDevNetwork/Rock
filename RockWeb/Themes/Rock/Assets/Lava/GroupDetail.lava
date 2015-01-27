@@ -34,7 +34,7 @@
 
 {% if AllowedActions.Edit == true %}
   <div class="actions">
-    <a class="btn btn-primary" href="?GroupId={{ Group.Id }}&Action=EditGroup">Edit</a>
+    <a class="btn btn-primary" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
   </div>
 {% endif %}
 
@@ -65,7 +65,7 @@
           <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
             <i class="fa fa-times"></i>
           </a>
-          <a href="?Action=EditGroupMember&GroupmemberId={{ member.Id }}&GroupId={{ Group.Id }}" class="margin-l-sm">
+          <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
             <i class="fa fa-pencil"></i>
           </a>
         </div>
@@ -81,14 +81,7 @@
 
   {% if AllowedActions.Edit == true %}
     <div class="pull-right margin-b-md">
-      <a href="?Action=AddGroupMember&GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Group Member</a>
+      <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Group Member</a>
     </div>
   {% endif %}
 </p>
-
-
-
-
-
-
-<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}">Test me</a>
