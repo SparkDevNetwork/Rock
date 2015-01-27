@@ -263,7 +263,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="hexString">The hexadecimal string.</param>
         /// <returns></returns>
-        private static byte[] HexToByte( string hexString )
+        public static byte[] HexToByte( string hexString )
         {
             byte[] returnBytes = new byte[hexString.Length / 2];
             for ( int i = 0; i < returnBytes.Length; i++ )
@@ -273,5 +273,37 @@ namespace Rock.Security
 
             return returnBytes;
         }
+
+        /// <summary>
+        /// Generates the machine key.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string GenerateMachineKey( int length )
+        {
+            RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[length];
+            rngCsp.GetBytes( buff );
+            StringBuilder sb = new StringBuilder( buff.Length * 2 );
+            for ( int i = 0; i < buff.Length; i++ )
+                sb.Append( string.Format( "{0:X2}", buff[i] ) );
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates the encryption key.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string GenerateEncryptionKey( int length )
+        {
+            var rng = System.Security.Cryptography.RNGCryptoServiceProvider.Create();
+            byte[] randomBytes = new byte[length];
+            rng.GetNonZeroBytes( randomBytes );
+            string dataEncryptionKey = Convert.ToBase64String( randomBytes );
+
+            return dataEncryptionKey;
+        }
+
     }
 }
