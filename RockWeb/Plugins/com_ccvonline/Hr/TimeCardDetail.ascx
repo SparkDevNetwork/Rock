@@ -139,7 +139,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-8 col-md-8">
-                                    <asp:Panel ID="pnlEditRow" runat="server" CssClass="row">
+                                    <asp:Panel ID="pnlEditRow" runat="server" CssClass="row js-time-edit-group">
                                         <div class="col-md-3">
                                             <Rock:TimePicker runat="server" ID="tpTimeIn" Placeholder="Enter Time" Label="Time In" />
                                         </div>
@@ -157,6 +157,7 @@
                                             <Rock:RockDropDownList runat="server" ID="ddlVacationHours" Label="Vacation Hrs" />
                                         </div>
                                         <div class="col-md-3">
+                                            <asp:Label ID="lEarnedHolidayHours" runat="server" CssClass="js-earned-holiday-hours badge badge-info" ToolTip="Earned Holiday Hours based on 50% of hours worked" Style="float: right" />
                                             <Rock:RockDropDownList runat="server" ID="ddlHolidayHours" Label="Holiday Hrs" />
                                         </div>
                                         <div class="col-md-3">
@@ -275,7 +276,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h2>History</h2>
-                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light" >
+                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
                                 <Columns>
                                     <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
                                     <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
@@ -305,7 +306,43 @@
                     $parent.find(".gridresponsive-item-view").slideToggle();
                     $parent.find(".gridresponsive-item-edit").slideToggle();
                 });
+
+
+                $(".bootstrap-timepicker").timepicker().on('changeTime.timepicker', function (a, b, c) {
+                    try {
+                        var startTime = parseTime(null, $(this).closest('.js-time-edit-group').find("[id$='tpTimeIn']").val());
+                        var lunchStartTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchOut']").val());
+                        var lunchEndTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchIn']").val());
+                        var endTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpTimeOut']").val());
+                        var totalWorkedMS = ((endTime ? endTime : lunchStartTime) - startTime) - (lunchEndTime - lunchStartTime);
+
+                        // convert to hours and divide in half
+                        var earnedHours = (totalWorkedMS / 1000 / 60 / 60 / 2);
+
+                        // round to nearest .25
+                        earnedHours = Math.round(earnedHours * 4) / 4;
+
+                        $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ " + earnedHours.toFixed(2));
+                    }
+                    catch (e) {
+                        $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ 50%");
+                    }
+                });
             });
+
+            function parseTime(startTime, str) {
+                if (!str)
+                    return null;
+
+                var d = new Date();
+                var time = str.match(/(\d+)(?::(\d\d))?\s*(p?)/i);
+                d.setHours(parseInt(time[1]) + ((parseInt(time[1]) < 12 && time[3]) ? 12 : 0));
+                d.setMinutes(parseInt(time[2]) || 0);
+                if (startTime && startTime > d) {
+                    d.setDate(d.getDate() + 1);
+                }
+                return d;
+            }
 
             // make the window scroll to the specified element.  use setTimeout to have it do it after any other scrolls that happen (like validation)
             function maintainScrollPosition($element) {

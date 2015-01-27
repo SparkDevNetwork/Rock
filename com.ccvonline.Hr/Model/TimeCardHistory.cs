@@ -33,7 +33,6 @@ namespace com.ccvonline.Hr.Model
         [DataMember]
         public int? StatusPersonAliasId { get; set; }
 
-        [MaxLength( 200 )]
         [DataMember]
         public string Notes { get; set; }
 

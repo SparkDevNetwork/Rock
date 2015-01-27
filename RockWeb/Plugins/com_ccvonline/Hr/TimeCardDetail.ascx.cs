@@ -187,13 +187,29 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 lPaidVacationHours.Text = FormatTimeCardHours( timeCardDay.PaidVacationHours );
 
                 Badge lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Badge;
-                lPaidHolidayHours.Text = FormatTimeCardHours( timeCardDay.PaidHolidayHours );
+                decimal earnedHolidayHours = timeCardDay.EarnedHolidayHours ?? 0;
+                if ( earnedHolidayHours != 0 )
+                {
+                    lPaidHolidayHours.Text = FormatTimeCardHours( ( timeCardDay.PaidHolidayHours ?? 0 ) + earnedHolidayHours );
+                    if ( ( timeCardDay.PaidHolidayHours ?? 0 ) != 0 )
+                    {
+                        lPaidHolidayHours.ToolTip = string.Format( "{0} Paid Holiday Hours + {1}", timeCardDay.PaidHolidayHours, earnedHolidayHours );
+                    }
+                    else
+                    {
+                        lPaidHolidayHours.ToolTip = string.Format( "+ {1} Paid Holiday Hours", timeCardDay.PaidHolidayHours, earnedHolidayHours );
+                    }
+                }
+                else
+                {
+                    lPaidHolidayHours.Text = FormatTimeCardHours( timeCardDay.PaidHolidayHours );
+                }
 
                 Badge lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Badge;
                 lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
 
                 Literal lOtherHours = repeaterItem.FindControl( "lOtherHours" ) as Literal;
-                decimal totalOtherHours = timeCardDay.PaidVacationHours ?? 0 + timeCardDay.PaidHolidayHours ?? 0 + timeCardDay.PaidSickHours ?? 0;
+                decimal totalOtherHours = timeCardDay.PaidVacationHours ?? 0 + timeCardDay.TotalHolidayHours ?? 0 + timeCardDay.PaidSickHours ?? 0;
                 lOtherHours.Text = FormatTimeCardHours( totalOtherHours );
 
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
@@ -231,13 +247,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 ddlVacationHours.Items.Add( string.Empty );
                 ddlHolidayHours.Items.Clear();
                 ddlHolidayHours.Items.Add( string.Empty );
-
-                if ( isHoliday )
-                {
-                    ddlHolidayHours.Help = "If this is a holiday and you worked this day, set this to 'Auto' to have the system calculate your paid holiday hours.";
-                    ddlHolidayHours.Items.Add( new ListItem( "Auto", "A" ) );
-                }
-
                 ddlSickHours.Items.Clear();
                 ddlSickHours.Items.Add( string.Empty );
 
@@ -248,21 +257,19 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                     ddlSickHours.Items.Add( hour.ToString( "0.00" ) );
                 }
 
-                ddlVacationHours.SetValue( ToNearestQtrHour( timeCardDay.PaidVacationHours ).ToString() );
-                ddlHolidayHours.SetValue( ToNearestQtrHour( timeCardDay.PaidHolidayHours ).ToString() );
+                ddlVacationHours.SetValue( timeCardDay.PaidVacationHours.ToNearestQtrHour().ToString() );
+                ddlHolidayHours.SetValue( timeCardDay.PaidHolidayHours.ToNearestQtrHour().ToString() );
+                Label lEarnedHolidayHours = repeaterItem.FindControl( "lEarnedHolidayHours" ) as Label;
+                lEarnedHolidayHours.Visible = isHoliday;
 
-                if ( isHoliday )
+                if ( timeCardDay.EarnedHolidayHours.HasValue && timeCardDay.EarnedHolidayHours > 0 )
                 {
-                    // if this is a holiday, set the holiday drop-down to "auto" if PaidHolidayHours isn't set, or it is already set to "Half of Worked Hours"
-                    decimal? halfPaidHolidayHours = ToNearestQtrHour( ( timeCardDay.TotalWorkedDuration ?? 0 ) / 2 );
-                    decimal? storedPaidHolidayHours = ToNearestQtrHour( timeCardDay.PaidHolidayHours );
-                    if ( !storedPaidHolidayHours.HasValue || storedPaidHolidayHours == halfPaidHolidayHours )
-                    {
-                        ddlHolidayHours.SetValue( "A" );
-                    }
+                    // if they have earned hours, show it, even if it isn't a holiday
+                    lEarnedHolidayHours.Visible = true;
+                    lEarnedHolidayHours.Text = string.Format( "+ {0}", timeCardDay.EarnedHolidayHours );
                 }
 
-                ddlSickHours.SetValue( ToNearestQtrHour( timeCardDay.PaidSickHours ).ToString() );
+                ddlSickHours.SetValue( timeCardDay.PaidSickHours.ToNearestQtrHour().ToString() );
 
                 RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
                 tbNotes.Text = timeCardDay.Notes;
@@ -287,10 +294,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// </summary>
         /// <param name="hours">The hours.</param>
         /// <returns></returns>
-        private static decimal? ToNearestQtrHour( decimal? hours )
-        {
-            return hours.HasValue ? hours - ( hours % 0.25M ) : null;
-        }
+
 
         #region Methods
 
@@ -505,19 +509,11 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             timeCardDay.PaidVacationHours = ddlVacationHours.SelectedValue.AsDecimalOrNull();
 
             RockDropDownList ddlHolidayHours = repeaterItem.FindControl( "ddlHolidayHours" ) as RockDropDownList;
+            timeCardDay.PaidHolidayHours = ddlHolidayHours.SelectedValue.AsDecimalOrNull();
 
             _holidayDatesCache = GetHolidayDates( timeCardDay.TimeCard );
-
             bool isHoliday = _holidayDatesCache.Any( a => a == timeCardDay.StartDateTime.Date );
-            if ( isHoliday && ddlHolidayHours.SelectedValue == "A" )
-            {
-                // if they worked on a holiday, they automatically get half of those hours as paid holiday hours
-                timeCardDay.PaidHolidayHours = ToNearestQtrHour( timeCardDay.TotalWorkedDuration / 2 );
-            }
-            else
-            {
-                timeCardDay.PaidHolidayHours = ddlHolidayHours.SelectedValue.AsDecimalOrNull();
-            }
+            timeCardDay.EarnedHolidayHours = timeCardDay.GetEarnedHolidayHours( isHoliday );
 
             RockDropDownList ddlSickHours = repeaterItem.FindControl( "ddlSickHours" ) as RockDropDownList;
             timeCardDay.PaidSickHours = ddlSickHours.SelectedValue.AsDecimalOrNull();

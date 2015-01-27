@@ -281,7 +281,7 @@ namespace com.ccvonline.Hr.Model
             return this.GroupByWeekNum().Select( x => new HoursPerWeek
             {
                 WeekOfYear = x.Key,
-                Hours = x.Value.Sum( xx => xx.PaidHolidayHours )
+                Hours = x.Value.Sum( xx => xx.TotalHolidayHours)
             } ).ToList();
         }
 
