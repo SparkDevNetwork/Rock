@@ -36,8 +36,8 @@
             </div>
 
             <div class="actions">
-                <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSave_Click" />
-                <asp:LinkButton id="lbCancel" runat="server" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSave" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSave_Click" />
+                <asp:LinkButton id="lbCancel" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
 
         </asp:Panel>
@@ -65,8 +65,8 @@
             </div>
 
             <div class="actions">
-                <asp:Button ID="btnSaveGroupMember" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
-                <asp:LinkButton id="btnCancelGroupMember" runat="server" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSaveGroupMember" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
+                <asp:LinkButton id="btnCancelGroupMember" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
         </asp:Panel>
 
