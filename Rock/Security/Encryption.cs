@@ -43,8 +43,10 @@ namespace Rock.Security
         {
             cypherText = null;
             
+            string encryptionKey = Encryption.GetDataEncryptionKey();
+
             // non-web apps might not have the DataEncryptionKey, so check that first since it could happen quite a bit
-            if ( string.IsNullOrWhiteSpace( Encryption.GetDataEncryptionKey() ) )
+            if ( string.IsNullOrWhiteSpace( encryptionKey ) )
             {
                 return false;
             }
@@ -52,7 +54,7 @@ namespace Rock.Security
             {
                 try
                 {
-                    cypherText = EncryptString( plainText );
+                    cypherText = EncryptString( plainText, encryptionKey );
                     return true;
                 }
                 catch
@@ -85,12 +87,24 @@ namespace Rock.Security
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
+            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
+            return EncryptString( plainText, dataEncryptionKey );
+        }
+
+        /// <summary>
+        /// Encrypts the string.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <param name="dataEncryptionKey">The data encryption key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        public static string EncryptString( string plainText, string dataEncryptionKey )
+        {
             if (string.IsNullOrEmpty(plainText))
             {
                 return string.Empty;
             }
 
-            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
@@ -152,12 +166,57 @@ namespace Rock.Security
         /// <param name="cipherText">The text to decrypt.</param>
         public static string DecryptString( string cipherText )
         {
+            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
+            
+            string plainText = null;
+
+            try
+            {
+                plainText = DecryptString( cipherText, dataEncryptionKey );
+            }
+            catch { }
+
+            if ( plainText != null )
+            {
+                return plainText;
+            }
+
+            // Check for any old decryption strings
+            int i = 0;
+            dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
+            while ( !string.IsNullOrWhiteSpace( dataEncryptionKey ) )
+            {
+                try
+                {
+                    plainText = DecryptString( cipherText, dataEncryptionKey );
+                }
+                catch { }
+
+                if ( plainText != null )
+                {
+                    return plainText;
+                }
+
+                i++;
+                dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Decrypts the string.
+        /// </summary>
+        /// <param name="cipherText">The cipher text.</param>
+        /// <param name="dataEncryptionKey">The data encryption key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        public static string DecryptString( string cipherText, string dataEncryptionKey )
+        {
             if ( string.IsNullOrEmpty( cipherText ) )
             {
                 return string.Empty;
             }
-
-            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
 
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {
