@@ -44,6 +44,23 @@ img { .img-responsive(); }
     margin-bottom: @spacing-lg-px;
 }
 
+.container-masthead {
+    background: #fff;
+}
+.container {
+    padding-left: 0;
+    padding-right: 0;
+}
+main.container {
+    background: #fff;
+    padding-left: @grid-gutter-width/2;
+    padding-right: @grid-gutter-width/2;
+    @media (min-width: @screen-sm-min) {
+        padding-left: @grid-gutter-width;
+        padding-right: @grid-gutter-width;
+    }
+}
+
 // Undo appearance of block panels
 .panel.panel-block {
     border: 0;

@@ -15,9 +15,7 @@
       overflow: hidden;
     }
 
-      .masthead-logo {
-        // position: relative;
-        // z-index: 1;
+      .masthead-brand .logo {
         display: block;
         float: left;
         background-image: url(../assets/logo.svg);
@@ -34,13 +32,25 @@
         list-style-type: none;
         text-align: right;
         text-transform: uppercase;
+        letter-spacing: .5px;
         padding: 0 @grid-gutter-width;
-        line-height: 50px;
+        line-height: 40px;
+        padding-top: 5px;
+        padding-bottom: 5px;
       }
 
         .masthead-navitem {
           display: inline-block;
           padding: 0 @grid-gutter-width/2;
+          .transition(opacity .5s);
+
+          &:hover {
+            .opacity(.75);
+          }
+
+          &.active {
+            border-bottom: 2px solid @gray;
+          }
 
           a {
             text-decoration: none;
@@ -51,3 +61,42 @@
     .clearfix();
     background-color: #e9e9e9;
   }
+
+    // this crazy nesting is to undo some default Rock styles, in the future we
+    // could look into changing the block markup
+    .masthead-lower .login-status {
+
+      li { min-width: 0; }
+
+      .nav > li > a {
+        padding: 0;
+        line-height: 40px;
+
+        &:hover,
+        &:focus {
+          background: none;
+        }
+      }
+
+      .profile-photo {
+        height: 40px;
+        width: 40px;
+        float: left;
+        background-size: 100%;
+        // border-radius: 20px;
+        // margin: 10px;
+        margin-right: 10px;
+        .transition(opacity .75s);
+        .opacity(.3);
+
+        filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 3.5+ */
+        filter: gray; /* IE6-9 */
+        -webkit-filter: grayscale(100%); /* Chrome 19+ & Safari 6+ */
+      }
+      &:hover .profile-photo {
+        .opacity(.75);
+        filter: none;
+        -webkit-filter: grayscale(0%);
+      }
+
+    }
