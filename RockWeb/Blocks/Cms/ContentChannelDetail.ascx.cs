@@ -621,7 +621,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( contentChannel.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        string value = attribute.FieldType.Field.FormatValue( null,
+                        string value = attribute.FieldType.Field.FormatValueAsHtml( null,
                             contentChannel.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
                         descriptionList.Add( attribute.Name, value );
                     }

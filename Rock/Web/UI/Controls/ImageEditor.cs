@@ -587,18 +587,22 @@ namespace Rock.Web.UI.Controls
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
                 if ( binaryFile != null )
                 {
-                    Stream croppedImage = CropImage( binaryFile.Data.ContentStream, binaryFile.MimeType );
-
-                    BinaryFile croppedBinaryFile = new BinaryFile();
+                    var croppedBinaryFile = new BinaryFile();
+                    binaryFileService.Add( croppedBinaryFile );
                     croppedBinaryFile.IsTemporary = true;
                     croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
                     croppedBinaryFile.MimeType = binaryFile.MimeType;
                     croppedBinaryFile.FileName = binaryFile.FileName;
                     croppedBinaryFile.Description = binaryFile.Description;
-                    croppedBinaryFile.Data = new BinaryFileData();
-                    croppedBinaryFile.Data.ContentStream = croppedImage;
 
-                    binaryFileService.Add( croppedBinaryFile );
+                    using ( var sourceStream = binaryFile.ContentStream )
+                    {
+                        if ( sourceStream != null )
+                        {
+                            croppedBinaryFile.ContentStream = CropImage( sourceStream, binaryFile.MimeType );
+                        }
+                    }
+
                     rockContext.SaveChanges();
 
                     this.BinaryFileId = croppedBinaryFile.Id;
@@ -727,11 +731,14 @@ namespace Rock.Web.UI.Controls
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
-                    if ( binaryFile.Data != null && binaryFile.Data.ContentStream != null )
+                    using ( var stream = binaryFile.ContentStream )
                     {
-                        var bitMap = new System.Drawing.Bitmap( binaryFile.Data.ContentStream );
-                        _imgCropSource.Width = bitMap.Width;
-                        _imgCropSource.Height = bitMap.Height;
+                        if ( stream != null )
+                        {
+                            var bitMap = new System.Drawing.Bitmap( stream );
+                            _imgCropSource.Width = bitMap.Width;
+                            _imgCropSource.Height = bitMap.Height;
+                        }
                     }
                 }
                 else

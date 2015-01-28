@@ -66,8 +66,8 @@ namespace Rock.Field.Types
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Label = "Field Type";
-            ddl.Help = "Field type to use for selection";
+            ddl.Label = "Control Type";
+            ddl.Help = "The type of control to use for selecting a single value from the list.";
             return controls;
         }
 
@@ -81,7 +81,8 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values",
                 "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
-            configurationValues.Add( "fieldtype", new ConfigurationValue( "Field Type", "Field type to use for selection", "ddl" ) );
+            configurationValues.Add( "fieldtype", new ConfigurationValue( "Control Type", 
+                "The type of control to use for selecting a single value from the list.", "ddl" ) );
 
             if ( controls != null && controls.Count == 2 )
             {

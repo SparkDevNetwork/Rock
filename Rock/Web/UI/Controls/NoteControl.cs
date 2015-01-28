@@ -383,6 +383,23 @@ namespace Rock.Web.UI.Controls
 
         }
 
+        private string NoteTypeName
+        {
+            get
+            {
+                if ( SourceTypeValueId.HasValue )
+                {
+                    var SourceType = DefinedValueCache.Read( SourceTypeValueId.Value );
+                    if ( SourceType != null  )
+                    {
+                        return SourceType.Value;
+                    }
+                }
+
+                return string.Empty;
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -481,7 +498,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
+            if ( NoteTypeName != string.Empty )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "note note-" + NoteTypeName.ToLower().Replace( " ", "" ) );
+            }
+            else
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
+            }
+            
             if ( this.NoteId.HasValue )
             {
                 writer.AddAttribute( "rel", this.NoteId.Value.ToStringSafe() );

@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Administration
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
                             if ( blockControl != null )
                             {
-                                blockControl.SetBlock( block );
+                                blockControl.SetBlock( pageCache, block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
                                     if ( !blockContexts.ContainsKey( context.Name ) )

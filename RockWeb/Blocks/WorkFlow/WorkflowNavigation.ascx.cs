@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     aNew.Controls.Add( new LiteralControl( workflowType.Name ) );
 
-                    if ( IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+                    if ( workflowType.CanManage || IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                     {
                         li.Controls.Add( new LiteralControl( " " ) );
 

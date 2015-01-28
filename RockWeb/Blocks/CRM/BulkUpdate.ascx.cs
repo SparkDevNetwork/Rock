@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Crm
 
     [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
     [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1  )]
-    [TextField( "Note Type", "The note type name (If it doesn't exist it will be created).", false, "Timeline", "", 2 )]
     public partial class BulkUpdate : RockBlock
     {
         #region Fields
@@ -1035,14 +1034,11 @@ namespace RockWeb.Blocks.Crm
                         bool isPrivate = cbIsPrivate.Checked;
 
                         var noteTypeService = new NoteTypeService( rockContext );
-                        var noteService = new NoteService( rockContext );
-
-                        string noteTypeName = GetAttributeValue( "NoteType" );
-                        var noteType = noteTypeService.Get( personEntityTypeId, noteTypeName );
-
+                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
                         if ( noteType != null )
                         {
                             var notes = new List<Note>();
+                            var noteService = new NoteService( rockContext );
 
                             foreach ( int id in ids )
                             {
@@ -1053,7 +1049,6 @@ namespace RockWeb.Blocks.Crm
                                 note.Text = tbNote.Text;
                                 note.IsAlert = cbIsAlert.Checked;
                                 note.NoteType = noteType;
-
                                 notes.Add( note );
                                 noteService.Add( note );
                             }

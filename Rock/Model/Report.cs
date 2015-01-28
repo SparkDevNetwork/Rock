@@ -166,6 +166,25 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Gets the parent security authority for the Report which is its Category
+        /// </summary>
+        /// <value>
+        /// The parent authority of the DataView.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Gets the data source.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>

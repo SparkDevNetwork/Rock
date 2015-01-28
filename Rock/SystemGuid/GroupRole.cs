@@ -147,5 +147,30 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Security Groups
+
+        /// <summary>
+        /// Gets the security group member role.
+        /// </summary>
+        /// <value>
+        /// The role Guid.
+        /// </value>
+        public const string GROUPROLE_SECURITY_GROUP_MEMBER = "00F3AC1C-71B9-4EE5-A30E-4C48C8A0BF1F";
+
+        #endregion
+
+        #region GROUPTYPE_ORGANIZATION_UNIT
+
+        /// <summary>
+        /// Gets the Leader group member role for an Organizational Unit
+        /// </summary>
+        public const string GROUPROLE_ORGANIZATION_UNIT_LEADER = "8438D6C5-DB92-4C99-947B-60E9100F223D";
+
+        /// <summary>
+        /// Gets the Staff group member role for an Organizational Unit
+        /// </summary>
+        public const string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
+
+        #endregion
     }
 }

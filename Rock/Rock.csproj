@@ -36,8 +36,9 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CronExpressionDescriptor">
-      <HintPath>..\packages\CronExpressionDescriptor.1.9.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    <Reference Include="CronExpressionDescriptor, Version=1.12.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CronExpressionDescriptor.1.12.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
@@ -51,45 +52,35 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Humanizer, Version=1.31.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Humanizer">
+      <HintPath>..\packages\Humanizer.1.32.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.3\lib\net40\Microsoft.Data.Edm.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.3\lib\net40\Microsoft.Data.OData.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Services.Client.5.6.3\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50320.36, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Nuget.Core.2.8.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp">
-      <HintPath>..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -98,7 +89,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
-    <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
@@ -116,7 +106,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Spatial.5.6.3\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -132,8 +121,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Twilio.Api">
-      <HintPath>..\packages\Twilio.3.6.11\lib\3.5\Twilio.Api.dll</HintPath>
+    <Reference Include="Twilio.Api, Version=3.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +134,7 @@
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
@@ -187,6 +178,7 @@
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
+    <Compile Include="Attribute\ValueListFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
@@ -222,6 +214,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -273,6 +266,7 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
@@ -293,10 +287,33 @@
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
+    <Compile Include="Store\Package.cs" />
+    <Compile Include="Store\InstalledPackageService.cs" />
+    <Compile Include="Store\Organization.cs" />
+    <Compile Include="Store\OrganizationService.cs" />
+    <Compile Include="Store\PackageInstallStep.cs" />
+    <Compile Include="Store\PurchaseResponse.cs" />
+    <Compile Include="Store\StoreService.cs" />
+    <Compile Include="Store\PackageVersionService.cs" />
+    <Compile Include="Store\PackageVersionRating.cs" />
+    <Compile Include="Store\PackageVersion.cs" />
+    <Compile Include="Store\PackageCategory.cs" />
+    <Compile Include="Store\PackageCategoryService.cs" />
+    <Compile Include="Store\PackageService.cs" />
+    <Compile Include="Store\InstalledPackage.cs" />
+    <Compile Include="Store\Promo.cs" />
+    <Compile Include="Store\PromoService.cs" />
+    <Compile Include="Store\StoreImage.cs" />
+    <Compile Include="Store\StoreModel.cs" />
+    <Compile Include="Store\StoreServiceBase.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
+    <Compile Include="SystemGuid\NoteType.cs" />
+    <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\RockRating.cs" />
+    <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
@@ -454,7 +471,6 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
-    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -818,6 +834,7 @@
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\LogError.cs" />
+    <Compile Include="Workflow\Action\AddNote.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />

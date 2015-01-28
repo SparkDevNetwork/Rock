@@ -16,11 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
+using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -36,7 +37,7 @@ namespace Rock.Rest.Controllers
     public partial class GroupsController
     {
         /// <summary>
-        /// Gets the children.
+        /// Gets the children (obsolete, use the other GetChildren method)
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="rootGroupId">The root group id.</param>
@@ -45,12 +46,33 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
+        [Obsolete( "use the other GetChildren" )]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
+        {
+            return GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds, "" );
+        }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rootGroupId">The root group identifier.</param>
+        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+        /// <param name="includedGroupTypeIds">The included group type ids.</param>
+        /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
+        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId = 0, bool limitToSecurityRoleGroups = false, string includedGroupTypeIds = "", string excludedGroupTypeIds = "" )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
 
-            var qry = ( (GroupService)Service ).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
+            var includedGroupTypeIdList = includedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedGroupTypeIdList = excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+
+            var groupService = (GroupService)Service;
+            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -77,19 +99,23 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            var groupTypes = new List<int>();
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) && groupTypeIds != "0" )
-            {
-                groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-            }
-
             // try to quickly figure out which items have Children
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
-            var qryHasChildrenList = Get()
+            var qryHasChildren = Get()
                 .Where( g =>
                     g.ParentGroupId.HasValue &&
-                    resultIds.Contains( g.ParentGroupId.Value ) &&
-                    ( !groupTypes.Any() || groupTypes.Contains( g.GroupTypeId ) ) )
+                    resultIds.Contains( g.ParentGroupId.Value ) );
+
+            if ( includedGroupTypeIdList.Any() )
+            {
+                qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIdList.Contains( a.GroupTypeId ) );
+            }
+            else if ( excludedGroupTypeIdList.Any() )
+            {
+                qryHasChildren = qryHasChildren.Where( a => !excludedGroupTypeIdList.Contains( a.GroupTypeId ) );
+            }
+
+            var qryHasChildrenList = qryHasChildren
                 .Select( g => g.ParentGroupId.Value )
                 .Distinct()
                 .ToList();
@@ -102,6 +128,94 @@ namespace Rock.Rest.Controllers
 
             return groupNameList.AsQueryable();
         }
+
+        /// <summary>
+        /// Gets the families.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [EnableQuery]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/GetFamilies/{personId}" )]
+        public IQueryable<Group> GetFamilies( int personId )
+        {
+            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            return ( (GroupService)Service )
+                .Queryable( "Campus,GroupLocations.Location,Members.GroupRole" )
+                .Where( g =>
+                    g.GroupType.Guid.Equals( groupTypeGuid ) &&
+                    g.Members.Select( m => m.PersonId ).Contains( personId ) );
+        }
+
+        [Authenticate, Secured]
+        [EnableQuery]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{street}/{city}/{state}/{postalCode}" )]
+        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId,
+            string street, string city, string state, string postalCode )
+        {
+            var fenceGroups = new List<Group>();
+
+            string street2 = string.Empty;
+            string country = GlobalAttributesCache.Read().OrganizationCountry;
+
+            // Get a new location record for the address
+            var rockContext = (RockContext)Service.Context;
+            var location = new LocationService( rockContext ).Get( street, street2, city, state, postalCode, country );
+
+            // If address was geocoded succesfully
+            if ( location.GeoPoint != null )
+            {
+                // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )
+                // where the geofence surrounds the location
+                var groupLocationService = new GroupLocationService( rockContext );
+                foreach ( var fenceGroupLocation in groupLocationService
+                    .Queryable("Group,Location").AsNoTracking()
+                    .Where( gl =>
+                        gl.Group.GroupTypeId == geofenceGroupTypeId &&
+                        gl.Location.GeoFence != null &&
+                        location.GeoPoint.Intersects( gl.Location.GeoFence ) )
+                    .ToList() )
+                {
+                    var fenceGroup = fenceGroups.FirstOrDefault( g => g.Id == fenceGroupLocation.GroupId );
+                    if ( fenceGroup == null )
+                    {
+                        fenceGroup = fenceGroupLocation.Group;
+                        fenceGroups.Add( fenceGroup );
+                    }
+                    fenceGroupLocation.Group = null;
+
+                    // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
+                    // within the fence 
+                    var groups = new List<Group>();
+                    foreach ( var groupLocation in groupLocationService
+                        .Queryable( "Group,Location" ).AsNoTracking()
+                        .Where( gl =>
+                            gl.Group.GroupTypeId == groupTypeId &&
+                            gl.Location.GeoPoint != null &&
+                            gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) )
+                    {
+                        var group = groups.FirstOrDefault( g => g.Id == groupLocation.GroupId );
+                        if ( group == null )
+                        {
+                            group = groupLocation.Group;
+                            group.LoadAttributes();
+                            groups.Add( group );
+                        }
+                        groupLocation.Group = null;
+                    }
+
+                    // Add the group as a child of the fence group 
+                    groups.ForEach( g => fenceGroup.Groups.Add( g ) );
+                }
+            }
+
+            return fenceGroups.AsQueryable();
+        }
+
+        #region MapInfo methods
 
         /// <summary>
         /// Gets the map information.
@@ -461,5 +575,7 @@ namespace Rock.Rest.Controllers
                 Result = result;
             }
         }
+
+        #endregion
     }
 }

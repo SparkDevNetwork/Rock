@@ -396,8 +396,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
                                 if ( binaryFile != null )
                                 {
-                                    // marked the old images as IsTemporary so they will get cleaned up later
-                                    binaryFile.IsTemporary = true;
+                                    binaryFileService.Delete(binaryFile);
                                     rockContext.SaveChanges();
                                 }
                             }

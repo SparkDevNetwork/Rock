@@ -23,6 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a Day of the Week
+    /// stored as int value that can be cast to System.DayOfWeek (where Sunday = 0)
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DayOfWeekFieldAttribute : FieldAttribute

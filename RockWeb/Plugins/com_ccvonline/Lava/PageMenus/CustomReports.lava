@@ -1,0 +1,10 @@
+<div class="panel panel-block"> 
+    <div class="panel-heading"><h4 class="panel-title">Custom Reports</h4></div>
+    <div class="panel-body">
+        <ul>
+        {% for page in Page.Pages %}
+            <li><a  href="{{ page.Url }}">{{ page.Title }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>

@@ -70,6 +70,11 @@ namespace RockWeb.Blocks.Examples
         private static BinaryFileType _binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
+        /// The Binary file type settings
+        /// </summary>
+        private string _binaryFileTypeSettings = string.Empty;
+
+        /// <summary>
         /// The id for the "child" role of a family.
         /// </summary>
         private static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
@@ -87,7 +92,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
-        private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
+        private static EntityType _storageEntityType = _binaryFileType.StorageEntityType;
 
         /// <summary>
         /// The Autnentication Database entity type.
@@ -707,6 +712,18 @@ namespace RockWeb.Blocks.Examples
                 return;
             }
 
+            // Persist the storage type's settings specific to the photo binary file type
+            var settings = new Dictionary<string, string>();
+            if ( _binaryFileType.Attributes == null )
+            {
+                _binaryFileType.LoadAttributes();
+            }
+            foreach ( var attributeValue in _binaryFileType.AttributeValues )
+            {
+                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+            }
+            _binaryFileTypeSettings = settings.ToJson();
+
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
             GroupService groupService = new GroupService( rockContext );
             var allFamilies = rockContext.Groups;
@@ -880,7 +897,10 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "parentGroupGuid" ) != null )
                 {
                     var parentGroup = groupService.Get( elemGroup.Attribute( "parentGroupGuid" ).Value.AsGuid() );
-                    group.ParentGroupId = parentGroup.Id;
+                    if ( parentGroup != null )
+                    {
+                        group.ParentGroupId = parentGroup.Id;
+                    }
                 }
 
                 // Set the group's meeting location
@@ -1750,13 +1770,11 @@ namespace RockWeb.Blocks.Examples
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = _binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( photoUrl );
-            binaryFile.Data = new BinaryFileData();
-            binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
 
             var webClient = new WebClient();
             try
             {
-                binaryFile.Data.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
+                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
 
                 if ( webClient.ResponseHeaders != null )
                 {
@@ -1789,6 +1807,16 @@ namespace RockWeb.Blocks.Examples
                         default:
                             throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
                     }
+                }
+
+                // Because prepost processing is disabled for this rockcontext, need to
+                // manually have the storage provider save the contents of the binary file
+                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
+                binaryFile.StorageEntitySettings = _binaryFileTypeSettings;
+                if ( binaryFile.StorageProvider != null )
+                {
+                    binaryFile.StorageProvider.SaveContent( binaryFile );
+                    binaryFile.Path = binaryFile.StorageProvider.GetPath( binaryFile );
                 }
 
                 var binaryFileService = new BinaryFileService( context );

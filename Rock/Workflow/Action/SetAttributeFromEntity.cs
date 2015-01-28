@@ -36,7 +36,8 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
-    [BooleanField("Use Id instead of Guid", "Most entity attribute field types expect the Guid of the entity (which is used by default). Select this option if the entity's Id should be used instead (should be rare).", false, "", 1, "UseId" )]
+    [BooleanField( "Entity Is Required", "Should an error be returned if the entity is missing or not a valid entity type?", true, "", 1)]
+    [BooleanField( "Use Id instead of Guid", "Most entity attribute field types expect the Guid of the entity (which is used by default). Select this option if the entity's Id should be used instead (should be rare).", false, "", 2, "UseId" )]
     public class SetAttributeToEntity : ActionComponent
     {
         /// <summary>
@@ -100,6 +101,11 @@ namespace Rock.Workflow.Action
             }
             else
             {
+                if ( ! GetAttributeValue( action, "EntityIsRequired" ).AsBoolean(true) )
+                {
+                    return true;
+                }
+
                 errorMessages.Add( "The entity is null or not a Rock IEntity." );
             }
 

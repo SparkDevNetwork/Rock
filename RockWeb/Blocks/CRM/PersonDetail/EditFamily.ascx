@@ -203,7 +203,7 @@
                         $('#<%=modalAddPerson.ServerSaveLink.ClientID%>').on('click', function () {
 
                             // if Save was clicked, set the fields that should be validated based on what tab they are on
-                            if ($('#ctl00_main_ctl23_bid_255_ctl11_ctl00_modalAddPerson_hfActiveTab').val() == "Existing") {
+                            if ($('#<%=hfActiveTab.ClientID%>').val() == "Existing") {
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', false);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', false);

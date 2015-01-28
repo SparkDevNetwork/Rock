@@ -340,7 +340,10 @@ if ($('#{0}').find('.js-modal-visible').val() == '1') {{
     $('body').addClass('modal-open');
     $('#{0}').modal({{
         show: true,
-        manager: '{3}'
+        manager: '{3}',
+        backdrop: 'static',
+        keyboard: false,
+        attentionAnimation: ''
     }});
 }} 
 else {{

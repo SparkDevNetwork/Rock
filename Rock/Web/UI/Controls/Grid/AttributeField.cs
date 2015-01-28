@@ -24,7 +24,10 @@ using Rock.Attribute;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// If DataItem implements IHasAttributes, this gets the Attribute value for the dataitem using DataField as the Attribute.Key.
+    /// Otherwise, it will look in the grid.ObjectList[key] using the DataField as the lookup key.
+    /// Example: If using a Person Grid, the value of the Attribute "FavoriteColor" would be shown in the grid by specifying this grid column
+    /// &lt;Rock:AttributeField DataField="FavoriteColor" HeaderText="Person's Favorite Color" /&gt;
     /// </summary>
     public class AttributeField : RockBoundField
     {
@@ -69,7 +72,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var attrib = dataItem.Attributes[this.DataField];
                         string rawValue = dataItem.GetAttributeValue( this.DataField );
-                        string resultHtml = attrib.FieldType.Field.FormatValue( controlContainer, rawValue, attrib.QualifierValues, true );
+                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( controlContainer, rawValue, attrib.QualifierValues, true );
                         return new HtmlString( resultHtml ?? string.Empty );
                     }
                 }

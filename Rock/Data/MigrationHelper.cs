@@ -1922,7 +1922,10 @@ INSERT INTO [dbo].[Group]
            ,'{2}'
            ,0)
 ";
-            Migration.Sql( string.Format( sql, name, description, guid ) );
+            Migration.Sql( string.Format( sql,
+                name.Replace( "'", "''" ),
+                description.Replace( "'", "''" ), 
+                guid ) );
         }
 
         /// <summary>
@@ -2434,6 +2437,139 @@ INSERT INTO [dbo].[Auth]
         public void DeleteSecurityAuth( string guid )
         {
             Migration.Sql( string.Format( "DELETE FROM [dbo].[Auth] where [Guid] = '{0}'", guid ) );
+        }
+
+        /// <summary>
+        /// Adds the security authentication for rest controller.
+        /// </summary>
+        /// <param name="restControllerClass">The rest controller class.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.RestController";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+    DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [name] = '{0}')
+    DECLARE @ControllerId int = ( SELECT TOP 1 [Id] FROM [RestController] WHERE [ClassName] = '{1}')
+
+    IF @EntityTypeId IS NOT NULL AND @ControllerId IS NOT NULL
+    BEGIN
+
+        DECLARE @groupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = '{5}')
+
+        IF NOT EXISTS ( 
+            SELECT [Id] FROM [dbo].[Auth]
+            WHERE [EntityTypeId] = @entityTypeId
+            AND [EntityId] = @ControllerId
+            AND [Action] = '{3}'
+            AND [SpecialRole] = {6}
+            AND [GroupId] = @groupId
+        )
+        BEGIN
+            INSERT INTO [dbo].[Auth]
+                   ([EntityTypeId]
+                   ,[EntityId]
+                   ,[Order]
+                   ,[Action]
+                   ,[AllowOrDeny]
+                   ,[SpecialRole]
+                   ,[GroupId]
+                   ,[Guid])
+             VALUES
+                   (@EntityTypeId
+                   ,@ControllerId
+                   ,{2}
+                   ,'{3}'
+                   ,'{4}'
+                   ,{6}
+                   ,@groupId
+                   ,'{7}')
+        END
+    END
+";
+            Migration.Sql( string.Format( sql,
+                entityTypeName,                 // 0
+                restControllerClass,            // 1
+                order,                          // 2
+                action,                         // 3
+                ( allow ? "A" : "D" ),          // 4
+                groupGuid,                      // 5
+                specialRole.ConvertToInt(),     // 6
+                authGuid ) );                   // 7
+        }
+
+
+        /// <summary>
+        /// Adds the security authentication for rest action.
+        /// </summary>
+        /// <param name="restActionMethod">The rest action method.</param>
+        /// <param name="restActionPath">The rest action path.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.RestAction";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+    DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [name] = '{0}')
+    DECLARE @ActionId int = ( SELECT TOP 1 [Id] FROM [RestAction] WHERE [ApiId] = '{1}{2}')
+
+    IF @EntityTypeId IS NOT NULL AND @ActionId IS NOT NULL
+    BEGIN
+
+        DECLARE @groupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = '{6}')
+
+        IF NOT EXISTS ( 
+            SELECT [Id] FROM [dbo].[Auth]
+            WHERE [EntityTypeId] = @entityTypeId
+            AND [EntityId] = @ActionId
+            AND [Action] = '{4}'
+            AND [SpecialRole] = {7}
+            AND [GroupId] = @groupId
+        )
+        BEGIN
+            INSERT INTO [dbo].[Auth]
+                   ([EntityTypeId]
+                   ,[EntityId]
+                   ,[Order]
+                   ,[Action]
+                   ,[AllowOrDeny]
+                   ,[SpecialRole]
+                   ,[GroupId]
+                   ,[Guid])
+             VALUES
+                   (@EntityTypeId
+                   ,@ActionId
+                   ,{3}
+                   ,'{4}'
+                   ,'{5}'
+                   ,{7}
+                   ,@groupId
+                   ,'{8}')
+        END
+    END
+";
+            Migration.Sql( string.Format( sql,
+                entityTypeName,                 // 0
+                restActionMethod,               // 1
+                restActionPath,                 // 2
+                order,                          // 3
+                action,                         // 4
+                ( allow ? "A" : "D" ),          // 5
+                groupGuid,                      // 6
+                specialRole.ConvertToInt(),     // 7
+                authGuid ) );                   // 8
         }
 
         #endregion
@@ -3757,8 +3893,9 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
-        /// Adds an action type person attribute value.  Because there's not way to link to another person in target database, person attribute values
-        /// are just set to the first person alias record in target database which will most likely be the Admin, Admin record.
+        /// Adds an action type person attribute value.  Because there's not a way to link to another person in the
+        /// target database, person attribute values are just set to the first person alias record in the target
+        /// database which will most likely be the Admin, Admin record.
         /// </summary>
         /// <param name="actionTypeGuid">The action type unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
@@ -3810,6 +3947,65 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+
+        #endregion
+
+        #region REST Methods
+
+        /// <summary>
+        /// Adds the rest controller.
+        /// </summary>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
+        public void AddRestController( string controllerName, string controllerClass )
+        {
+            Migration.Sql( string.Format( @"
+               
+    DECLARE @ControllerId int = ( SELECT TOP 1 [Id] FROM [RestController] WHERE [ClassName] = '{1}' )
+    IF @ControllerId IS NULL
+    BEGIN
+        
+        INSERT INTO [RestController] ( [Name], [ClassName], [Guid] )
+	    VALUES ( '{0}', '{1}', NEWID() )
+
+	    SET @ControllerId = SCOPE_IDENTITY()
+
+    END
+",
+                    controllerName,
+                    controllerClass
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the rest action.
+        /// </summary>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
+        /// <param name="actionMethod">The action method.</param>
+        /// <param name="actionPath">The action path.</param>
+        public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
+        {
+            AddRestController( controllerName, controllerClass );
+
+            Migration.Sql( string.Format( @"
+               
+    DECLARE @ControllerId int = ( SELECT TOP 1 [Id] FROM [RestController] WHERE [ClassName] = '{0}' )
+    DECLARE @ActionId int = ( SELECT TOP 1 [Id] FROM [RestAction] WHERE [ApiId] = '{1}{2}' )
+    IF @ActionId IS NULL
+    BEGIN
+	
+	    INSERT INTO [RestAction] ( [ControllerId], [Method], [ApiId], [Path], [Guid] )
+	    VALUES ( @ControllerId, '{1}', '{1}{2}', '{2}', NEWID() )
+
+    END
+
+",
+                    controllerClass,
+                    actionMethod,
+                    actionPath
+                    ) );
+        }
 
         #endregion
 

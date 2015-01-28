@@ -333,6 +333,15 @@ namespace Rock.Web.UI.Controls
             set { ViewState["DisplayCount"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        public int NoteCount
+        {
+            get { return ViewState["NoteCount"] as int? ?? 0; }
+            private set { ViewState["NoteCount"] = value; }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -616,7 +625,7 @@ namespace Rock.Web.UI.Controls
             {
                 ShowMoreOption = false;
 
-                int noteCount = 0;
+                int i = 0;
 
                 var qry = new NoteService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
                     .Where( n =>
@@ -634,9 +643,13 @@ namespace Rock.Web.UI.Controls
                         .ThenBy( n => n.CreatedDateTime );
                 }
 
-                foreach ( var note in qry )
+                var notes = qry.ToList();
+
+                NoteCount = notes.Count();
+
+                foreach ( var note in notes )
                 {
-                    if ( noteCount >= DisplayCount )
+                    if ( i >= DisplayCount )
                     {
                         ShowMoreOption = true;
                         break;
@@ -653,7 +666,7 @@ namespace Rock.Web.UI.Controls
                         noteEditor.DeleteButtonClick += note_Updated;
                         Controls.Add( noteEditor );
 
-                        noteCount++;
+                        i++;
                     }
                 }
             }

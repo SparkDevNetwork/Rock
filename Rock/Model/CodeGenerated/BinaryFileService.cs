@@ -111,6 +111,9 @@ namespace Rock.Model
             target.FileName = source.FileName;
             target.MimeType = source.MimeType;
             target.Description = source.Description;
+            target.StorageEntitySettings = source.StorageEntitySettings;
+            target.Path = source.Path;
+            target.ContentLastModified = source.ContentLastModified;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

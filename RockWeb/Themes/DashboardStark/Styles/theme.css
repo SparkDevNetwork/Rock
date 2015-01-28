@@ -434,7 +434,6 @@ img.jcrop-preview {
 }
 .modal.bootbox {
   width: auto;
-  z-index: 1010;
 }
 .bootbox .modal-dialog {
   margin: 0;
@@ -479,6 +478,7 @@ img.jcrop-preview {
     27. List Extensions - additional list options
     28. Key Value Pair Control - styling for key/value pair control
     29. Context Setters
+    30. Paneled List Group - extends the bootstrap list group to behave in a panel
 */
 .picker {
   position: relative;
@@ -1792,6 +1792,17 @@ ul.rocklist .rocklist-item.selected {
 .contextsetter {
   margin-right: 2px;
 }
+ul.list-group-panel {
+  margin: 0;
+}
+ul.list-group-panel .list-group-item {
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid #dddddd;
+}
+ul.list-group-panel .list-group-item:first-child {
+  border: 0;
+}
 /*
     Used to manage styles related to Rock's forms
     
@@ -2288,6 +2299,10 @@ table.display-all td {
 .sticky-table-header > .table-bordered > tfoot > tr:last-child > td {
   border-bottom: 0;
 }
+/*.table-responsive > .table-bordered,
+.table-responsive[data-pattern="priority-columns"] > .table-bordered {
+    border: 1px solid @table-border-color;
+}*/
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: rgba(0, 0, 0, 0.03);
@@ -2309,19 +2324,40 @@ td.wrap-contents {
 .grid {
   margin-bottom: 20px;
 }
-.table-responsive[data-pattern="priority-columns"] {
-  margin-bottom: inherit;
-  border: inherit;
-  border-radius: inherit;
+.grid .grid-table {
+  border: 1px solid #dddddd;
 }
+.grid .grid-table.table-light {
+  border: none;
+}
+.grid.grid-panel .grid-table {
+  border: none !important;
+}
+.grid.grid-panel th:first-child,
+.grid.grid-panel td:first-child {
+  border-left: 0;
+}
+.grid.grid-panel th:last-child,
+.grid.grid-panel td:last-child {
+  border-right: 0;
+}
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+/*.table-responsive[data-pattern="priority-columns"] {
+    margin-bottom: inherit;
+    border: inherit;
+    border-radius: inherit;
+}*/
 .table-wrapper .btn-toolbar {
   display: none;
 }
 .grid-filter {
   background-color: #d5d5d5;
   border-radius: 4px;
-  padding: 0 6px 12px 6px;
-  margin-bottom: -10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #dddddd;
 }
 .grid-filter header {
   border-radius: 4px 4px 0 0;
@@ -2716,6 +2752,44 @@ td.grid-col-actions {
 }
 .panel-note .load-more span {
   margin: 0 12px;
+}
+.note-deny article,
+.note-danger article,
+.note-security article {
+  border-color: #eed3d7;
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.note-deny .actions a,
+.note-danger .actions a,
+.note-security .actions a {
+  color: #b94a48;
+}
+.note-approve article,
+.note-success article {
+  border-color: #d6e9c6;
+  background-color: #dff0d8;
+  color: #468847;
+}
+.note-approve .actions a,
+.note-success .actions a {
+  color: #468847;
+}
+.note-info article {
+  border-color: #bce8f1;
+  background-color: #d9edf7;
+  color: #3a87ad;
+}
+.note-info .actions a {
+  color: #3a87ad;
+}
+.note-warning article {
+  border-color: #fbeed5;
+  background-color: #fcf8e3;
+  color: #c09853;
+}
+.note-warning .actions a {
+  color: #c09853;
 }
 .panel-note-light {
   border: 0;
@@ -4490,7 +4564,7 @@ body.modal-open,
   top: 1%;
 }
 .modal-overflow .modal-body {
-  overflow: auto;
+  /*overflow: auto;*/
   -webkit-overflow-scrolling: touch;
 }
 /* Responsive */
@@ -4881,7 +4955,7 @@ a.help {
   color: #6a6a6a;
 }
 .panel-block .panel-body .grid.grid-panel {
-  margin: -15px;
+  margin: -15px -15px -30px -15px;
 }
 .panel-block .panel-body .grid.grid-panel .grid-filter {
   border-radius: 0;

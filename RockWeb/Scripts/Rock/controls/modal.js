@@ -25,7 +25,7 @@
                 $('#modal-popup').modal('layout');
 
                 $(this.contentWindow).on('resize', function () {
-                    var newHeight = $(this.document.body).prop('scrollHeight')
+                    var newHeight = $(this.document.body).prop('offsetHeight')
                     var $modalPopup = $('#modal-popup');
                     var $modalPopupIFrame = $modalPopup.find('iframe');
                     if ($modalPopupIFrame.height() != newHeight) {
@@ -39,33 +39,46 @@
             $('#modal-popup').fadeTo(0, 0);
             $modalPopupIFrame[0].style.height = 'auto';
             $modalPopupIFrame.attr('src', popupUrl);
-            $('#modal-popup').modal('show');
-
+            $('#modal-popup').modal({
+                show: true,
+                backdrop: 'static',
+                keyboard: false,
+                attentionAnimation: ''
+            });
         },
 
         exports = {
             updateSize: function (controlId) {
+                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
                 var $modalPopupIFrame = $(window.parent.document).find('iframe');
-                if ($modalPopupIFrame[0].style.height != 'auto') {
-                    $modalPopupIFrame[0].style.height = 'auto';
-                    var contentsHeight = $modalPopupIFrame.contents().height();
 
-                    // shrink the iframe in case the contents got smaller
-                    $modalPopupIFrame.height('auto');
-                    var iFrameHeight = $modalPopupIFrame.height();
-                    if (contentsHeight > iFrameHeight)
-                    {
-                        // if the contents are larger than the iFrame, grow the iframe to fit
-                        $modalPopupIFrame.height(contentsHeight);
+                var iframeMode = false;
+
+                if ($modalPopupIFrame.length && $modalPopupIFrame[0].contentWindow == window) {
+                    iframeMode = true;
+                    if ($modalPopupIFrame[0].style.height != 'auto') {
+                        $modalPopupIFrame[0].style.height = 'auto';
+                        var contentsHeight = $modalPopupIFrame.contents().height();
+
+                        // shrink the iframe in case the contents got smaller
+                        $modalPopupIFrame.height('auto');
+                        var iFrameHeight = $modalPopupIFrame.height();
+                        if (contentsHeight > iFrameHeight) {
+                            // if the contents are larger than the iFrame, grow the iframe to fit
+                            $modalPopupIFrame.height(contentsHeight);
+                        }
                     }
                 }
-
-                var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
+                
                 if ($control && $control.length) {
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
-                        // make modal-modal big enough to fit.  Intentionally leave it stretched-out even if needed space shrinks
-                        $modalBody[0].style.minHeight = $modalBody.prop('scrollHeight') + "px";
+                        var scrollHeight = $modalBody.prop('scrollHeight');
+                        if (iframeMode || $modalBody.outerHeight() != scrollHeight) {
+                            // if this is an IFrameModal or if modalbody didn't already grow to fit (maybe because of a bootstrap dropdown) make modal-body big enough to fit.  
+                            // Intentionally leave it stretched-out even if needed space shrinks
+                            $modalBody[0].style.minHeight = scrollHeight + "px";
+                        }
                     }
                 }
             },
