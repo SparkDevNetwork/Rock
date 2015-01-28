@@ -53,21 +53,18 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page", "The page to navigate to for group details.", false, "", "", 0 )]
     [LinkedPage( "Register Page", "The page to navigate to when registering for a group.", false, "", "", 1 )]
 
-    // Custom Settings
-    [GroupTypeField( "Group Type", "The group type to limit selection to.", true, "", "CustomSetting" )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "The group attributes to display as filters.", false, true, "", "CustomSetting" )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "The group attributes to display as a column in the results.", false, true, "", "CustomSetting" )]
-    [BooleanField( "Show Count", "Should the group member count be displayed in list of groups?", false, "CustomSetting" )]
-    [BooleanField( "Show Age", "Should the group member count be displayed in list of groups?", false, "CustomSetting" )]
-    [BooleanField( "Show Proximity", "Should an address input be displayed and the distance displayed to each group?", false, "CustomSetting" )]
-    [GroupTypeField( "Geofenced Group Type", "The group type that should be used as a geofence limit when finding groups.", false, "", "CustomSetting" )]
+    // Filter Settings
+    [GroupTypeField( "Group Type", "", true, "", "CustomSetting" )]
+    [GroupTypeField( "Geofenced Group Type", "", false, "", "CustomSetting" )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
-    [BooleanField( "Show Map", "Should a map of the groups be displayed?", false, "CustomSetting" )]
-    [BooleanField( "Show Fence", "Should geofence boundary be displayed on the map (Requires a Geofence Group Type)?", false, "CustomSetting" )]
-    [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "CustomSetting" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "CustomSetting" )]
-    [ValueListField( "Polygon Colors", "List of colors to use when displaying multiple fences (normally will only have one fence).", false, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
-    [CodeEditorField( "Map Info", "Lava template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    // Map Settings
+    [BooleanField( "Show Map", "", false, "CustomSetting" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "CustomSetting" )]
+    [IntegerField( "Map Height", "", false, 600, "CustomSetting" )]
+    [BooleanField( "Show Fence", "", false, "CustomSetting" )]
+    [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
+    [CodeEditorField( "Map Info", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
 <div style='width:250px'>
 
     <div class='clearfix'>
@@ -87,6 +84,20 @@ namespace RockWeb.Blocks.Groups
 
 </div>
 ", "CustomSetting" )]
+    [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
+
+    // Lava Output Settings
+    [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
+    [CodeEditorField( "Lava Output", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+", "CustomSetting" )]
+    [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
+
+    // Grid Settings
+    [BooleanField( "Show Grid", "", false, "CustomSetting" )]
+    [BooleanField( "Show Proximity", "", false, "CustomSetting" )]
+    [BooleanField( "Show Count", "", false, "CustomSetting" )]
+    [BooleanField( "Show Age", "", false, "CustomSetting" )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
@@ -232,17 +243,26 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "GroupType", GetGroupTypeGuid( gtpGroupType.SelectedGroupTypeId ) );
             SetAttributeValue( "GeofencedGroupType", GetGroupTypeGuid( gtpGeofenceGroupType.SelectedGroupTypeId ) );
-            SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
-            SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
-            SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
-            SetAttributeValue( "AttributeColumns", cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
-            SetAttributeValue( "MapHeight", nbMapHeight.Text );
             SetAttributeValue( "MapStyle", ddlMapStyle.SelectedValue );
+            SetAttributeValue( "MapHeight", nbMapHeight.Text );
             SetAttributeValue( "ShowFence", cbShowFence.Checked.ToString() );
             SetAttributeValue( "PolygonColors", vlPolygonColors.Value );
             SetAttributeValue( "MapInfo", ceMapInfo.Text );
+            SetAttributeValue( "MapInfoDebug", cbMapInfoDebug.Checked.ToString() );
+
+            SetAttributeValue( "ShowLavaOutput", cbShowLavaOutput.Checked.ToString() );
+            SetAttributeValue( "LavaOutput", ceLavaOutput.Text );
+            SetAttributeValue( "LavaOutputDebug", cbLavaOutputDebug.Checked.ToString() );
+
+            SetAttributeValue( "ShowGrid", cbShowGrid.Checked.ToString() );
+            SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
+            SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
+            SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
+            SetAttributeValue( "AttributeColumns", cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+
             SaveAttributeValues();
 
             mdEdit.Hide();
@@ -314,7 +334,6 @@ namespace RockWeb.Blocks.Groups
 
             BindGroupType( gtpGroupType, groupTypes, "GroupType" );
             BindGroupType( gtpGeofenceGroupType, groupTypes, "GeofencedGroupType" );
-
             BindGroupAttributeList();
             foreach ( string attr in GetAttributeValue( "AttributeFilters" ).SplitDelimitedValues() )
             {
@@ -325,11 +344,23 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
+            ddlMapStyle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
+            ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
+            nbMapHeight.Text = GetAttributeValue( "MapHeight" );
+            cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
+            vlPolygonColors.Value = GetAttributeValue( "PolygonColors" );
+            ceMapInfo.Text = GetAttributeValue( "MapInfo" );
+            cbMapInfoDebug.Checked = GetAttributeValue( "MapInfoDebug" ).AsBoolean();
 
+            cbShowLavaOutput.Checked = GetAttributeValue( "ShowLavaOutput" ).AsBoolean();
+            ceLavaOutput.Text = GetAttributeValue( "LavaOutput" );
+            cbLavaOutputDebug.Checked = GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
+
+            cbShowGrid.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
+            cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
             cbShowCount.Checked = GetAttributeValue( "ShowCount" ).AsBoolean();
             cbShowAge.Checked = GetAttributeValue( "ShowAge" ).AsBoolean();
-            cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
-
             foreach ( string attr in GetAttributeValue( "AttributeColumns" ).SplitDelimitedValues() )
             {
                 var li = cblGridAttributes.Items.FindByValue( attr );
@@ -339,14 +370,6 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            ddlMapStyle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
-
-            cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
-            nbMapHeight.Text = GetAttributeValue( "MapHeight" );
-            ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
-            cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
-            vlPolygonColors.Value = GetAttributeValue( "PolygonColors" );
-            ceMapInfo.Text = GetAttributeValue( "MapInfo" );
 
             upnlContent.Update();
         }
@@ -559,7 +582,7 @@ namespace RockWeb.Blocks.Groups
             // Get query of groups of the selected group type
             var rockContext = new RockContext();
             var groupQry = new GroupService( rockContext )
-                .Queryable( "GroupLocations.Location" ).AsNoTracking()
+                .Queryable( "GroupLocations.Location" )
                 .Where( g => g.GroupType.Guid.Equals( groupTypeGuid.Value ) );
 
             // Filter query by any configured attribute filters
@@ -578,7 +601,7 @@ namespace RockWeb.Blocks.Groups
                         if ( expression != null )
                         {
                             var attributeValues = attributeValueService
-                                .Queryable().AsNoTracking()
+                                .Queryable()
                                 .Where( v => v.Attribute.Id == attribute.Id );
 
                             attributeValues = attributeValues.Where( parameterExpression, expression, null );
@@ -589,8 +612,10 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // Run query to get list of matching groups
+            List<GroupLocation> fences = null;
             List<Group> groups = null;
+
+            // Run query to get list of matching groups
             SortProperty sortProperty = gGroups.SortProperty;
             if ( sortProperty != null )
             {
@@ -671,11 +696,11 @@ namespace RockWeb.Blocks.Groups
                 var fenceMapItems = new List<MapItem>();
                 if ( fenceGroupTypeId.HasValue )
                 {
-                    var fences = new List<GroupLocation>();
+                    fences = new List<GroupLocation>();
                     if ( personLocation != null && personLocation.GeoPoint != null )
                     {
                         fences = new GroupLocationService( rockContext )
-                            .Queryable( "Group,Location" ).AsNoTracking()
+                            .Queryable( "Group,Location" )
                             .Where( gl =>
                                 gl.Group.GroupTypeId == fenceGroupTypeId &&
                                 gl.Location.GeoFence != null &&
@@ -717,6 +742,9 @@ namespace RockWeb.Blocks.Groups
                     string detailPageValue = GetAttributeValue("DetailPage");
                     string registerPageValue = GetAttributeValue("RegisterPage");
 
+                    bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
+                    lMapInfoDebug.Visible = showDebug;
+
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
                     foreach ( var gl in groupLocations )
@@ -732,6 +760,12 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "DetailPageLink", new PageReference( detailPageValue, linkedPageParams ).BuildUrl() );
                             mergeFields.Add( "RegisterPageLink", new PageReference( registerPageValue, linkedPageParams ).BuildUrl() );
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
+
+                            if ( showDebug )
+                            {
+                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo();
+                                showDebug = false;
+                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -757,29 +791,63 @@ namespace RockWeb.Blocks.Groups
                 pnlMap.Visible = false;
             }
 
-            // Save the groups into the grid's object list since it is not being bound to actual group objects
-            gGroups.ObjectList = new Dictionary<string, object>();
-            groups.ForEach( g => gGroups.ObjectList.Add( g.Id.ToString(), g ) );
-
-            // Bind the grid
-            gGroups.DataSource = groups.Select( g => new
+            // Should a lava output be displayed
+            if ( GetAttributeValue( "ShowLavaOutput" ).AsBoolean() )
             {
-                Id = g.Id,
-                Name = g.Name,
-                GroupTypeName = g.GroupType.Name,
-                GroupOrder = g.Order,
-                GroupTypeOrder = g.GroupType.Order,
-                Description = g.Description,
-                IsSystem = g.IsSystem,
-                IsActive = g.IsActive,
-                GroupRole = string.Empty,
-                DateAdded = DateTime.MinValue,
-                MemberCount = g.Members.Count(),
-                AverageAge = g.Members.Select( m => m.Person ).Average( p => p.Age ),
-                Distance = distances.Where( d => d.Key == g.Id )
-                    .Select( d => d.Value ).FirstOrDefault()
-            } ).ToList();
-            gGroups.DataBind();
+                string template = GetAttributeValue( "LavaOutput" );
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
+                mergeFields.Add( "Groups", groups );
+                lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
+
+                bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
+                lLavaOutputDebug.Visible = showDebug;
+                if ( showDebug )
+                {
+                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo();
+                }
+
+                pnlLavaOutput.Visible = true;
+            }
+            else
+            {
+                pnlLavaOutput.Visible = false;
+            }
+
+            // Should a grid be displayed
+            if ( GetAttributeValue( "ShowGrid" ).AsBoolean() )
+            {
+                pnlGrid.Visible = true;
+
+                // Save the groups into the grid's object list since it is not being bound to actual group objects
+                gGroups.ObjectList = new Dictionary<string, object>();
+                groups.ForEach( g => gGroups.ObjectList.Add( g.Id.ToString(), g ) );
+
+                // Bind the grid
+                gGroups.DataSource = groups.Select( g => new
+                {
+                    Id = g.Id,
+                    Name = g.Name,
+                    GroupTypeName = g.GroupType.Name,
+                    GroupOrder = g.Order,
+                    GroupTypeOrder = g.GroupType.Order,
+                    Description = g.Description,
+                    IsSystem = g.IsSystem,
+                    IsActive = g.IsActive,
+                    GroupRole = string.Empty,
+                    DateAdded = DateTime.MinValue,
+                    MemberCount = g.Members.Count(),
+                    AverageAge = Math.Round( g.Members.Select( m => m.Person ).Average( p => p.Age ) ?? 0.0D ),
+                    Distance = distances.Where( d => d.Key == g.Id )
+                        .Select( d => d.Value ).FirstOrDefault()
+                } ).ToList();
+                gGroups.DataBind();
+            }
+            else
+            {
+                pnlGrid.Visible = false;
+            }
 
             // Show the results
             pnlResults.Visible = true;
@@ -881,7 +949,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             string locationColor = markerColors[0].Replace( "#", string.Empty );
-            var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             string polygonColors = "\"" + polygonColorList.AsDelimited( "\", \"" ) + "\"";
             string groupColor = ( markerColors.Count > 1 ? markerColors[1] : markerColors[0] ).Replace( "#", string.Empty );
 
