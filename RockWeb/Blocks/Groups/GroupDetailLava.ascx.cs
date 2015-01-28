@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Groups
                                 if ( dbLocation != null )
                                 {
                                     location = new Location();
-                                    location.CopyPropertiesFrom( dbLocation );
+                                    location = dbLocation;
                                 }
 
                                 memberPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( int.Parse( ids[1] ) );
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Groups
                         if ( locpGroupLocation.Location != null )
                         {
                             location = new Location();
-                            location.CopyPropertiesFrom( locpGroupLocation.Location );
+                            location = locpGroupLocation.Location;
                         }
                     }
 
@@ -276,11 +276,11 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                rockContext.WrapTransaction( () =>
-                {
+                //rockContext.WrapTransaction( () =>
+                //{
                     rockContext.SaveChanges();
                     group.SaveAttributeValues( rockContext );
-                } );
+                //} );
             }
 
             this.IsEditingGroup = false;
