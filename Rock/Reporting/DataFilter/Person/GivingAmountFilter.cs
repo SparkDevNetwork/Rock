@@ -276,8 +276,8 @@ function() {
 
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-            DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
-            DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
+            DateTime? startDate = selectionValues[2].AsDateTime();
+            DateTime? endDate = selectionValues[3].AsDateTime(); ;
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
@@ -285,34 +285,46 @@ function() {
                 accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
-            bool limitToAccounts = accountIdList.Any();
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
-                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
-                .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
-                .Where( xx => !limitToAccounts || xx.TransactionDetails.Any( d => accountIdList.Contains( d.AccountId ) ) )
-                .GroupBy( xx => ( xx.AuthorizedPersonAlias != null ? xx.AuthorizedPersonAlias.PersonId : 0 ) ).Select( xx =>
+                .Where( xx => xx.AuthorizedPersonAliasId.HasValue)
+                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
+
+            if (startDate.HasValue)
+            {
+                financialTransactionQry = financialTransactionQry.Where(xx => xx.TransactionDateTime >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                financialTransactionQry = financialTransactionQry.Where(xx => xx.TransactionDateTime < endDate.Value);
+            }
+
+            bool limitToAccounts = accountIdList.Any();
+
+            var financialTransactionDetailsQry = financialTransactionQry
+                .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId ).Select( xx =>
                     new
                     {
                         PersonId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Sum( td => td.Amount ) )
+                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
             if ( comparisonType == ComparisonType.LessThan )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
+                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount < amount );
             }
             else if ( comparisonType == ComparisonType.EqualTo )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount == amount );
+                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount == amount );
             }
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
+                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount >= amount );
             }
 
-            var innerQry = financialTransactionQry.Select( xx => xx.PersonId ).AsQueryable();
+            var innerQry = financialTransactionDetailsQry.Select( xx => xx.PersonId ).AsQueryable();
 
             var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );

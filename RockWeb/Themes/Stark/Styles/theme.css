@@ -192,6 +192,7 @@ img.jcrop-preview {
   border-radius: 3px;
   float: left;
   width: 100%;
+  z-index: 1049;
 }
 .zone-configuration {
   background: #428bca;
@@ -239,7 +240,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 1000;
+  z-index: 1049;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -388,6 +389,7 @@ img.jcrop-preview {
 }
 .modal-content .modal-body {
   color: #333333;
+  text-align: left;
 }
 .modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
@@ -602,40 +604,38 @@ img.jcrop-preview {
   width: 340px;
   height: 190px;
 }
-.banner {
-  color: #ecf0f3;
-  background-color: #428bca;
-  border-radius: 0;
-  border: 0 solid transparent;
-  font-weight: 300;
-  font-size: 14px;
-  padding: 4px 12px;
-  margin: 0 0 15px;
-}
-.banner:before,
-.banner:after {
-  content: " ";
-  display: table;
-}
-.banner:after {
-  clear: both;
-}
-.banner h1 {
-  float: left;
-  margin: 0;
-  font-weight: 300;
-}
-.banner h1 .first-word {
-  font-weight: 700;
-}
-.banner h1 i {
-  margin-right: 15px;
-}
-.banner .label {
-  float: right;
-  margin-top: 15px;
-  margin-left: 15px;
-}
+/*.banner
+{
+    color: @banner-text-color;
+    background-color: @banner-bg;
+    border-radius: @banner-border-radius;
+    border: @banner-border-size solid @banner-border-color;
+    font-weight: @banner-font-weight;
+    font-size: @banner-font-size;
+    padding: @banner-padding;
+    margin: 0 0 @spacing-md-px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+        font-weight: @banner-font-weight;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+
+        i {
+            margin-right: @spacing-md-px;
+        }
+    }
+
+    .label {
+        float: right;
+        margin-top: @spacing-md-px;
+        margin-left: @spacing-md-px;
+    }
+}*/
 ul.rocktree,
 ul.rocktree ul {
   list-style-type: none;

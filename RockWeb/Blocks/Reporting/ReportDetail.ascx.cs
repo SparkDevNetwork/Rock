@@ -1066,7 +1066,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     gReport.Visible = true;
                     gReport.ExportFilename = report.Name;
-                    rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                     SortProperty sortProperty = gReport.SortProperty;
                     if ( sortProperty == null )
                     {
@@ -1091,7 +1090,7 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    gReport.DataSource = report.GetDataSource( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, out errors );
+                    gReport.DataSource = report.GetDataSource( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errors );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )

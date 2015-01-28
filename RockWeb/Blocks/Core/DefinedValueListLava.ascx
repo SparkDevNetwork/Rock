@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DefinedValueListLiquid.ascx.cs" Inherits="RockWeb.Blocks.Core.DefinedValueListLiquid" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DefinedValueListLava.ascx.cs" Inherits="RockWeb.Blocks.Core.DefinedValueListLiquid" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
