@@ -2,7 +2,7 @@
     <ul class="masthead-navitems">
 
 		{% for childPage in Page.Pages %}
-      <li class="masthead-navitem">
+      <li class="masthead-navitem{% if childPage.Current == 'true' %} active{% endif%}">
 				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
       </li>
     {% endfor %}
