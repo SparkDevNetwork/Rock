@@ -383,6 +383,12 @@ namespace Rock.Web.UI
         {
             get
             {
+                // make sure the RockBlockWrappers have added their rockBlocks
+                foreach (var rockBlockWrapper in this.ControlsOfTypeRecursive<RockBlockWrapper>())
+                {
+                    rockBlockWrapper.EnsureBlockControls();
+                }
+
                 return this.ControlsOfTypeRecursive<RockBlock>();
             }
         }
