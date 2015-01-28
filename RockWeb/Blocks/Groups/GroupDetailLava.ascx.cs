@@ -243,7 +243,6 @@ namespace RockWeb.Blocks.Groups
                                 var dbLocation = new LocationService( rockContext ).Get( int.Parse( ids[0] ) );
                                 if ( dbLocation != null )
                                 {
-                                    location = new Location();
                                     location = dbLocation;
                                 }
 
@@ -255,8 +254,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         if ( locpGroupLocation.Location != null )
                         {
-                            location = new Location();
-                            location = locpGroupLocation.Location;
+                            location = new LocationService( rockContext ).Get( locpGroupLocation.Location.Id );
                         }
                     }
 
@@ -272,6 +270,7 @@ namespace RockWeb.Blocks.Groups
 
                         groupLocation.GroupMemberPersonAliasId = memberPersonAliasId;
                         groupLocation.Location = location;
+                        groupLocation.LocationId = groupLocation.Location.Id;
                         groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
                     }
                 }
@@ -383,19 +382,8 @@ namespace RockWeb.Blocks.Groups
                 rptLocationTypes.DataSource = _tabs;
                 rptLocationTypes.DataBind();
             }
-            
-            if ( LocationTypeTab == MEMBER_LOCATION_TAB_TITLE )
-            {
-                pnlMemberSelect.Visible = true;
-                pnlLocationSelect.Visible = false;
-                LocationTypeTab = OTHER_LOCATION_TAB_TITLE;
-            }
-            else if ( LocationTypeTab == OTHER_LOCATION_TAB_TITLE )
-            {
-                pnlMemberSelect.Visible = false;
-                pnlLocationSelect.Visible = true;
-                LocationTypeTab = MEMBER_LOCATION_TAB_TITLE;
-            }
+
+            ShowSelectedPane();
         }
 
         #endregion
@@ -567,7 +555,7 @@ namespace RockWeb.Blocks.Groups
                     pnlGroupEditLocations.Visible = GetAttributeValue( "EnableLocationEdit" ).AsBoolean();
                     if ( GetAttributeValue( "EnableLocationEdit" ).AsBoolean() )
                     {
-                        ConfigureGroupLocationControls( group, new Guid() );
+                        ConfigureGroupLocationControls( group );
 
                         // set location tabs
                         rptLocationTypes.DataSource = _tabs;
@@ -586,7 +574,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         // logic to setup the groups location entry panel
-        private void ConfigureGroupLocationControls( Group group, Guid locationGuid )
+        private void ConfigureGroupLocationControls( Group group )
         {
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
@@ -661,8 +649,47 @@ namespace RockWeb.Blocks.Groups
 
                         LocationTypeTab = (displayMemberTab && ddlMember.Items.Count > 0) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
 
+                        var groupLocation = group.GroupLocations.FirstOrDefault();
+                        if ( groupLocation != null && groupLocation.Location != null )
+                        {
+                            if ( displayOtherTab )
+                            {
+                                locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
+
+                                locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+
+                                if ( groupLocation.Location != null )
+                                {
+                                    locpGroupLocation.Location = new LocationService( rockContext ).Get( groupLocation.Location.Id );
+                                }
+                            }
+
+                            if ( displayMemberTab && ddlMember.Items.Count > 0 && groupLocation.GroupMemberPersonAliasId.HasValue )
+                            {
+                                LocationTypeTab = MEMBER_LOCATION_TAB_TITLE;
+                                int? personId = new PersonAliasService( rockContext ).GetPersonId( groupLocation.GroupMemberPersonAliasId.Value );
+                                if ( personId.HasValue )
+                                {
+                                    ddlMember.SetValue( string.Format( "{0}|{1}", groupLocation.LocationId, personId.Value ) );
+                                }
+                            }
+                            else if ( displayOtherTab )
+                            {
+                                LocationTypeTab = OTHER_LOCATION_TAB_TITLE;
+                            }
+
+                            ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
+                        }
+                        else
+                        {
+                            LocationTypeTab = ( displayMemberTab && ddlMember.Items.Count > 0 ) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
+                        }
+
+
                         rptLocationTypes.DataSource = _tabs;
                         rptLocationTypes.DataBind();
+
+                        ShowSelectedPane();
                     }
                 }
                 else
@@ -682,6 +709,20 @@ namespace RockWeb.Blocks.Groups
             }
 
             return string.Empty;
+        }
+
+        private void ShowSelectedPane()
+        {
+            if ( LocationTypeTab.Equals( MEMBER_LOCATION_TAB_TITLE ) )
+            {
+                pnlMemberSelect.Visible = true;
+                pnlLocationSelect.Visible = false;
+            }
+            else if ( LocationTypeTab.Equals( OTHER_LOCATION_TAB_TITLE ) )
+            {
+                pnlMemberSelect.Visible = false;
+                pnlLocationSelect.Visible = true;
+            }
         }
 
         //
