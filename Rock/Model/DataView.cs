@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
@@ -231,9 +230,10 @@ namespace Rock.Model
         /// Gets the query.
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds,  out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -247,6 +247,11 @@ namespace Rock.Model
                     if ( entityType != null )
                     {
                         System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( databaseTimeoutSeconds.HasValue )
+                        {
+                            reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                        }
+
                         IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
 
                         if ( serviceInstance != null )
