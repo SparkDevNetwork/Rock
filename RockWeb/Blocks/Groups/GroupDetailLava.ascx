@@ -2,8 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
-        <asp:HiddenField id="hfPostbackBind" ClientIDMode="Static" runat="server" />
 
         <asp:Panel ID="pnlGroupView" runat="server">
             <asp:Literal ID="lContent" runat="server"></asp:Literal>
@@ -12,6 +10,9 @@
         </asp:Panel>
         
         <asp:Panel ID="pnlGroupEdit" runat="server" Visible="false">
+            
+            <asp:Literal ID="lGroupEditPreHtml" runat="server" />
+
             <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             
             <div class="row">
@@ -35,14 +36,45 @@
                 </div>
             </div>
 
+            <asp:Panel ID="pnlGroupEditLocations" runat="server">
+                <div class="well">
+                    <h4>Locations</h4>
+                    <ul id="ulNav" runat="server" class="nav nav-pills margin-b-md">
+                        <asp:Repeater ID="rptLocationTypes" runat="server">
+                            <ItemTemplate>
+                                <li class='<%# GetLocationTabClass(Container.DataItem) %>'>
+                                    <asp:LinkButton ID="lbLocationType" runat="server" Text='<%# Container.DataItem %>' OnClick="lbLocationType_Click" CausesValidation="false">
+                                    </asp:LinkButton>
+                                </li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
+
+                    <div class="tabContent">
+                        <asp:Panel ID="pnlMemberSelect" runat="server" Visible="true">
+                            <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
+                        </asp:Panel>
+                        <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
+                            <Rock:LocationPicker ID="locpGroupLocation" runat="server" Label="Location" ValidationGroup="Location" />
+                        </asp:Panel>
+                    </div>
+
+                    <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Value" ValidationGroup="Location" />
+                </div>
+            </asp:Panel>
+
             <div class="actions">
-                <asp:Button ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSave_Click" />
-                <asp:LinkButton id="lbCancel" runat="server" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSaveGroup" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroup_Click" />
+                <asp:LinkButton id="lbCancelGroup" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="lbCancelGroup_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
 
+            <asp:Literal ID="lGroupEditPostHtml" runat="server" />
         </asp:Panel>
 
         <asp:Panel ID="pnlEditGroupMember" runat="server" Visible="false">
+            
+            <asp:Literal ID="lGroupMemberEditPreHtml" runat="server" />
+            
             <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
 
@@ -65,9 +97,12 @@
             </div>
 
             <div class="actions">
-                <asp:Button ID="btnSaveGroupMember" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
-                <asp:LinkButton id="btnCancelGroupMember" runat="server" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSaveGroupMember" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
+                <asp:LinkButton id="btnCancelGroupMember" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
+
+            <asp:Literal ID="lGroupMemberEditPostHtml" runat="server" />
+
         </asp:Panel>
 
     </ContentTemplate>
