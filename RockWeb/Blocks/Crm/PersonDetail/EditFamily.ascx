@@ -119,8 +119,8 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>
 
@@ -203,7 +203,7 @@
                         $('#<%=modalAddPerson.ServerSaveLink.ClientID%>').on('click', function () {
 
                             // if Save was clicked, set the fields that should be validated based on what tab they are on
-                            if ($('#ctl00_main_ctl23_bid_255_ctl11_ctl00_modalAddPerson_hfActiveTab').val() == "Existing") {
+                            if ($('#<%=hfActiveTab.ClientID%>').val() == "Existing") {
                                 enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', true)
                                 enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', false);
                                 enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', false);

@@ -133,6 +133,8 @@
 </html>
 <script>
     Sys.Application.add_load(function () {
-        Rock.controls.modal.updateSize();
+        new ResizeSensor($('#dialog'), function () {
+            $('#modal-popup iframe', window.parent.document).height($('#dialog').height());
+        });
     });
 </script>
