@@ -11,8 +11,13 @@
             }
 
             .gridresponsive-row {
-                margin-bottom: 12px;
+                --margin-bottom: 12px;
                 border-bottom: 1px solid #eaeaea;
+                padding: 12px 0;
+            }
+
+            .gridresponsive-row:nth-child(8) {
+                border-bottom: 24px solid gray;
             }
 
             .gridresponsive-commandcolumn {
@@ -76,10 +81,10 @@
                             <div class="gridresponsive-item-view clickable">
                                 <div class="col-xs-3 col-md-2 col-lg-1">
                                     <div class="row">
-                                        <div class="col-xs-7">
+                                        <div class="col-xs-5">
                                             <asp:Literal runat="server" ID="lTimeCardDayName" />
                                         </div>
-                                        <div class="col-xs-5">
+                                        <div class="col-xs-7">
                                             <Rock:Badge runat="server" ID="lTimeCardDate" />
                                         </div>
                                     </div>
@@ -181,82 +186,105 @@
                     </ItemTemplate>
                 </asp:Repeater>
 
-                <div class="margin-t-md pull-right hidden-sm hidden-xs">
-                    <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span> <span class="label label-danger">Overtime</span>
+                <div class="margin-t-md margin-b-md hidden-sm hidden-xs clearfix">
+                    <div class=" pull-right">
+                        <span class="label label-success">Vacation</span> <span class="label label-info">Holiday</span> <span class="label label-warning">Sick</span> <span class="label label-danger">Overtime</span>
+                    </div>
                 </div>
 
-                <!-- Totals Panel -->
-                <asp:Panel ID="pnlTotals" runat="server">
-                    <h2>Totals:</h2>
-                    <h4>Worked Hours</h4>
-                    <div class="row">
-                        <div class="col-md-3">Regular Hours</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalRegularWorked" runat="server" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Overtime Hours</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
-                        </div>
-                    </div>
-                    <h4>PTO Hours
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-3">Vacation Hours</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalVacationPaid" runat="server" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Holiday Hours</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalHolidayPaid" runat="server" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Sick Hours</div>
-                        <div class="col-md-1">
-                            <asp:Literal ID="lTotalSickPaid" runat="server" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <h4>
-                            <div class="col-md-3">All Hours</div>
-                            <div class="col-md-1">
-                                <strong>
-                                    <asp:Literal ID="lTotalHours" runat="server" />
-                                </strong>
+                <div class="row">
+
+                    <div class="col-md-8">
+
+                        <!-- Actions/Submit Panel -->
+                        <asp:Panel ID="pnlPersonActions" CssClass="js-submit-panel" runat="server">
+                            <h4>Submit</h4>
+                            
+                                    <Rock:NotificationBox ID="nbSubmittedSuccessMessage" runat="server" NotificationBoxType="Success" />
+                                    <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
+                                    <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
+                                    
+                                    <asp:CustomValidator ID="validateAgree" runat="server" ValidationGroup="vgSubmit" ClientValidationFunction="validateCheckbox" ErrorMessage="Agree must be checked" />
+                                    <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
+                                    
+                                    <ol>
+                                        <li>All of the entries on this Time Card for this payroll period are both accurate and complete;</li>
+                                        <li>The entries include all hours worked plus paid time off hours, if any;</li>
+                                        <li>The entries do not include unpaid meal periods or other non-work time; and,</li>
+                                        <li>I have not worked either more or fewer hours than entered.</li>
+                                    </ol>
+
+
+                            <div class="actions margin-t-sm">
+                                <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-submit-panel'))" OnClick="lbSubmit_Click" Text="Submit" />
                             </div>
-                        </h4>
-                    </div>
-                </asp:Panel>
 
-                <!-- Actions/Submit Panel -->
-                <asp:Panel ID="pnlPersonActions" CssClass="js-submit-panel" runat="server">
-                    <h2>Submit</h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbSubmittedSuccessMessage" runat="server" NotificationBoxType="Success" />
-                            <asp:ValidationSummary ID="valSummarySubmit" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgSubmit" />
-                            <Rock:RockDropDownList ID="ddlSubmitTo" runat="server" Label="Submit to" Required="true" ValidationGroup="vgSubmit" />
-                            <Rock:RockCheckBox ID="cbAgree" runat="server" CssClass="js-agree-checkbox" Text="I certify and agree that:" />
-                            <asp:CustomValidator ID="validateAgree" runat="server" ValidationGroup="vgSubmit" ClientValidationFunction="validateCheckbox" ErrorMessage="Agree must be checked" />
-                            <ol>
-                                <li>all of the entries on this Time Card for this payroll period are both accurate and complete;</li>
-                                <li>the entries include all hours worked plus paid time off hours, if any;</li>
-                                <li>the entries do not include unpaid meal periods or other non-work time; and,</li>
-                                <li>I have not worked either more or fewer hours than entered.</li>
-                            </ol>
-                        </div>
+                        </asp:Panel>
+
                     </div>
 
-                    <div class="actions">
-                        <asp:LinkButton runat="server" ID="lbSubmit" CssClass="btn btn-action" ValidationGroup="vgSubmit" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-submit-panel'))" OnClick="lbSubmit_Click" Text="Submit" />
-                    </div>
+                    <div class="col-md-4">
+                         <!-- Totals Panel -->
+                            <asp:Panel ID="pnlTotals" runat="server">
 
-                </asp:Panel>
+                                <h4>Summary of Hours</h4>
+                                
+                                <div>
+                                    <strong>Worked Hours</strong>
+                                    <div class="row">
+                                        <div class="col-xs-8">Regular Hours</div>
+                                        <div class="col-xs-4">
+                                            <asp:Literal ID="lTotalRegularWorked" runat="server" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-8">Overtime Hours</div>
+                                        <div class="col-xs-4">
+                                            <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="margin-t-sm">
+                                    <strong>PTO Hours</strong>
+                                    <div class="row">
+                                        <div class="col-xs-8">Vacation Hours</div>
+                                        <div class="col-xs-4">
+                                            <asp:Literal ID="lTotalVacationPaid" runat="server" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-8">Holiday Hours</div>
+                                        <div class="col-xs-4">
+                                            <asp:Literal ID="lTotalHolidayPaid" runat="server" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-8">Sick Hours</div>
+                                        <div class="col-xs-4">
+                                            <asp:Literal ID="lTotalSickPaid" runat="server" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <h4>
+                                        <div class="col-xs-8">Total Hours</div>
+                                        <div class="col-xs-4">
+                                            <strong>
+                                                <asp:Literal ID="lTotalHours" runat="server" />
+                                            </strong>
+                                        </div>
+                                    </h4>
+                                </div>
+                            </asp:Panel>
+                    </div>
+                    
+                </div>
+
+               
+
+                
 
                 <!-- Actions/Approver-->
                 <asp:Panel ID="pnlApproverActions" CssClass="js-approve-panel" runat="server">
@@ -273,21 +301,17 @@
 
                 <!-- History Panel -->
                 <asp:Panel ID="pnlHistory" runat="server">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h2>History</h2>
-                            <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
-                                <Columns>
-                                    <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
-                                    <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
-                                    <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias" />
-                                    <Rock:RockBoundField HeaderText="Notes" DataField="Notes" HtmlEncode="false" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
-                        <div class="col-md-6">
-                        </div>
-                    </div>
+                    
+                    <h2>History</h2>
+                    <Rock:Grid ID="gHistory" runat="server" AllowPaging="false" AllowSorting="false" DataKeyNames="Id" DisplayType="Light">
+                        <Columns>
+                            <Rock:DateTimeField HeaderText="Date/Time" DataField="HistoryDateTime" />
+                            <Rock:EnumField HeaderText="Status" DataField="TimeCardStatus" />
+                            <Rock:RockBoundField HeaderText="Person" DataField="StatusPersonAlias" />
+                            <Rock:RockBoundField HeaderText="Notes" DataField="Notes" HtmlEncode="false" />
+                        </Columns>
+                    </Rock:Grid>
+
                 </asp:Panel>
 
             </div>
