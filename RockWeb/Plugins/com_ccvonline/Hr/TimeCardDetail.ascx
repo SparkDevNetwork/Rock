@@ -333,6 +333,12 @@
 
 
                 $(".bootstrap-timepicker").timepicker().on('changeTime.timepicker', function (a, b, c) {
+
+                    var $earnedHolidayBadge = $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours');
+                    if (!$earnedHolidayBadge.is(":visible"))  {
+                        return;
+                    }
+
                     try {
                         var startTime = parseTime(null, $(this).closest('.js-time-edit-group').find("[id$='tpTimeIn']").val());
                         var lunchStartTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchOut']").val());
@@ -354,15 +360,15 @@
                         earnedHours = Math.round(earnedHours * 4) / 4;
 
                         if (earnedHours) {
-                            $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ " + earnedHours.toFixed(2));
+                            $earnedHolidayBadge.text("+ " + earnedHours.toFixed(2));
                         }
                         else
                         {
-                            $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text('');
+                            $earnedHolidayBadge.text('');
                         }
                     }
                     catch (e) {
-                        $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ 50%");
+                        $earnedHolidayBadge.text("+ 50%");
                     }
                 });
             });

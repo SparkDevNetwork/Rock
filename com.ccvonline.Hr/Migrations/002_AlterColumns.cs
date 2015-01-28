@@ -15,7 +15,29 @@ namespace com.ccvonline.Hr.Migrations
             Sql(@"
 alter table [_com_ccvonline_Hr_TimeCardDay] drop column [TotalWorkedDuration]
 alter table [_com_ccvonline_Hr_TimeCardDay] add [TotalWorkedDuration]
-as (DATEDIFF(MINUTE, StartDateTime, isnull(EndDateTime, LunchStartDateTime)) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0) persisted");
+as
+(
+case when (EndDateTime is null)
+then 
+ case when (LunchEndDateTime is null)
+ then 
+    -- No EndTime and no LunchStart entered yet    
+    null
+ else
+    -- No EndTime, but they did punch out for lunch
+    DATEDIFF(MINUTE, StartDateTime, LunchStartDateTime) / 60.00
+ end
+else
+ case when (LunchStartDateTime is null or LunchEndDateTime is null)
+ then 
+    --They entered an EndDateTime, but didn't fill out lunch, so don't subtract lunch
+    DATEDIFF(MINUTE, StartDateTime, EndDateTime) / 60.00
+ else
+   -- The entered an EndDateTime, and punched Out and In for Lunch, so subtract lunch
+    (DATEDIFF(MINUTE, StartDateTime, EndDateTime) / 60.00) - (DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00)
+ end
+end
+) persisted" );
         }
 
         public override void Down()

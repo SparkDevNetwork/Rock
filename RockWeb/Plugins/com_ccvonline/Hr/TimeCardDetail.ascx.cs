@@ -260,7 +260,10 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 ddlVacationHours.SetValue( timeCardDay.PaidVacationHours.ToNearestQtrHour().ToString() );
                 ddlHolidayHours.SetValue( timeCardDay.PaidHolidayHours.ToNearestQtrHour().ToString() );
                 Label lEarnedHolidayHours = repeaterItem.FindControl( "lEarnedHolidayHours" ) as Label;
-                lEarnedHolidayHours.Visible = isHoliday;
+                if ( !isHoliday )
+                {
+                    lEarnedHolidayHours.Style[HtmlTextWriterStyle.Display] = "none";
+                }
 
                 if ( timeCardDay.EarnedHolidayHours.HasValue && timeCardDay.EarnedHolidayHours > 0 )
                 {

@@ -75,9 +75,35 @@ namespace com.ccvonline.Hr.Model
         {
             get
             {
-                // make sure this mirrors the database computed calcuation which is
-                // (DATEDIFF(MINUTE, StartDateTime, isnull(EndDateTime, LunchStartDateTime)) / 60.00) - isnull((DATEDIFF(MINUTE, LunchStartDateTime, LunchEndDateTime) / 60.00), 0)
-                var totalWorkedTimeSpan = ( ( EndDateTime ?? LunchStartDateTime ) - StartDateTime ) - ( ( this.LunchEndDateTime - this.LunchStartDateTime ) ?? TimeSpan.Zero );
+                // make sure this mirrors the database computed calcuation (see \com.ccvonline.Hr\Migrations\002_AlterColumns.cs)
+                TimeSpan? totalWorkedTimeSpan;
+                if (!EndDateTime.HasValue)
+                {
+                    if ( !LunchStartDateTime.HasValue)
+                    {
+                        // No EndTime and no LunchStart entered yet
+                        totalWorkedTimeSpan = null;
+                    }
+                    else
+                    {
+                        // No EndTime, but they did punch out for lunch
+                        totalWorkedTimeSpan = LunchStartDateTime.Value - StartDateTime;
+                    }
+                }
+                else
+                {
+                    if ( !LunchStartDateTime.HasValue || !LunchEndDateTime.HasValue )
+                    {
+                        // They entered an EndDateTime, but didn't fill out lunch, so don't subtract lunch
+                        totalWorkedTimeSpan = EndDateTime.Value - StartDateTime;
+                    }
+                    else
+                    {
+                        // The entered an EndDateTime, and punched Out and In for Lunch, so subtract lunch
+                        totalWorkedTimeSpan = ( EndDateTime.Value - StartDateTime ) - ( LunchEndDateTime.Value - LunchStartDateTime );
+                    }
+                }
+                
                 if ( totalWorkedTimeSpan.HasValue )
                 {
                     return Convert.ToDecimal( totalWorkedTimeSpan.Value.TotalHours );
@@ -200,8 +226,15 @@ namespace com.ccvonline.Hr.Model
         /// <returns></returns>
         public virtual decimal? GetEarnedHolidayHours( bool isHoliday )
         {
-            var earnedHours = ( ( this.TotalWorkedDuration ?? 0 ) / 2 );
-            return earnedHours.ToNearestQtrHour();
+            if ( isHoliday )
+            {
+                var earnedHours = ( ( this.TotalWorkedDuration ?? 0 ) / 2 );
+                return earnedHours.ToNearestQtrHour();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion
