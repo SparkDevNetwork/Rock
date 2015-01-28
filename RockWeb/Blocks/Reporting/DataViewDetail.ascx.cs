@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -594,7 +594,7 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+                        var qry = dataView.GetQuery( grid.SortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                         if ( fetchRowCount.HasValue )
                         {
@@ -603,7 +603,6 @@ $(document).ready(function() {
 
                         try
                         {
-                            rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                             grid.DataSource = qry.AsNoTracking().ToList();
                         }
                         catch ( Exception ex )
