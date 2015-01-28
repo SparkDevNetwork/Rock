@@ -12,7 +12,7 @@
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Address is Required" />
+                <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Your Address is Required" />
                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
 
                 <div class="actions">
@@ -29,6 +29,12 @@
                     <div id="map_wrapper">
                         <div id="map_canvas" class="mapping"></div>
                     </div>
+                    <asp:Literal ID="lMapInfoDebug" runat="server" />
+                </asp:Panel>
+
+                <asp:Panel ID="pnlLavaOutput" runat="server" CssClass="margin-v-sm">
+                    <asp:Literal ID="lLavaOverview" runat="server" />
+                    <asp:Literal ID="lLavaOutputDebug" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlGrid" runat="server" CssClass="margin-v-sm" >
@@ -38,7 +44,7 @@
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                 <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                                 <Rock:RockBoundField DataField="MemberCount" HeaderText="Members" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                <Rock:RockBoundField DataField="AverageAge" HeaderText="Average Age" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                <Rock:RockBoundField DataField="AverageAge" HeaderText="Average Age" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 <Rock:RockBoundField DataField="Distance" HeaderText="Distance" DataFormatString="{0:N2} M" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             </Columns>
                         </Rock:Grid>
@@ -59,49 +65,95 @@
 
                             <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupFinderSettings"  />
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" Help="The type of groups that should be displayed."
-                                        AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" ValidationGroup="GroupFinderSettings" />
-                                    <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type Filter" 
-                                        Help="A 'parent' group type that defines a geofenced boundary to limit groups to. Using this option will result in an address field being displayed for user to enter their address so that the correct geofence group can be determined." 
-                                        ValidationGroup="GroupFinderSettings" />
-                                    <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Attribute Filters" RepeatDirection="Horizontal" 
-                                        Help="The attributes that should be available for user to filter groups by." ValidationGroup="GroupFinderSettings" />
+                            <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filter Settings" Expanded="true">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" Help="The type of groups to look for."
+                                            AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type" 
+                                            Help="An optional group type that contains groups with geographic boundary (fence). If specified, user will be prompted for their address, and only groups that are located in the same geographic boundary ( as defined by one or more groups of this type ) will be displayed." 
+                                            ValidationGroup="GroupFinderSettings" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes" 
-                                        Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
-                                    <Rock:RockCheckBox ID="cbShowAge" runat="server" Label="Show Average Age" Text="Yes" 
-                                        Help="Should the average group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
-                                    <Rock:RockCheckBox ID="cbProximity" runat="server" Label="Show Proximity" Text="Yes" 
-                                        Help="Should the distance to each group be displayed? Using this option will result in an address field being displayed for user to enter their address so the distance to each group can be calculated." ValidationGroup="GroupFinderSettings" />
-                                    <Rock:RockCheckBoxList ID="cblGridAttributes" runat="server" Label="Attribute Columns" RepeatDirection="Horizontal" 
-                                        Help="The group attribute values that should be displayed in the result grid." ValidationGroup="GroupFinderSettings" />
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Group Attribute Filters" RepeatDirection="Horizontal" 
+                                            Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
+                                    </div>
                                 </div>
-                            </div>
+                            </Rock:PanelWidget>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbShowMap" runat="server" Label="Show Map" Text="Yes" 
-                                        Help="Should a map be displayed with the location of each group?" ValidationGroup="GroupFinderSettings" />
-                                    <Rock:NumberBox ID="nbMapHeight" runat="server" Label="Map Height" 
-                                        Help="The pixel height to use for the map." ValidationGroup="GroupFinderSettings" />
-                                    <Rock:RockDropDownList ID="ddlMapStyle" runat="server" Label="Map Style" 
-                                        Help="The map theme that should be used for styling the map." ValidationGroup="GroupFinderSettings" />
+                            <Rock:PanelWidget ID="wpMap" runat="server" Title="Map">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowMap" runat="server" Label="Map" Text="Yes" 
+                                            Help="Should a map be displayed that shows the location of each group?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockDropDownList ID="ddlMapStyle" runat="server" Label="Map Style" 
+                                            Help="The map theme that should be used for styling the map." ValidationGroup="GroupFinderSettings" />
+                                        <Rock:NumberBox ID="nbMapHeight" runat="server" Label="Map Height" 
+                                            Help="The pixel height to use for the map." ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes" 
+                                            Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
+                                            Help="The list of colors to use when displaying multiple fences ( their should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence" Text="Yes" 
-                                        Help="If a Geofence group type was selected, should the group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
-                                    <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
-                                        Help="List of colors to use when displaying multiple fences (normally will only have one fence)." ValidationGroup="GroupFinderSettings" />
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Group Window Contents" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
+                                            Help="The Lava template to use for formatting the group information that is displayed when user clicks the group marker on the map." 
+                                            ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbMapInfoDebug" runat="server" Text="Show Lava Debug Info" />
+                                    </div>
                                 </div>
-                            </div>
+                            </Rock:PanelWidget>
 
-                            <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Map Info Window Contents" EditorMode="Liquid" EditorTheme="Rock" Height="200" 
-                                Help="The Lava template to use for formatting the group information on map. To suppress the window provide a blank template." 
-                                ValidationGroup="GroupFinderSettings" />
- 
+                            <Rock:PanelWidget ID="wpLavaOutput" runat="server" Title="Lava">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowLavaOutput" runat="server" Label="Show Formatted Output" Text="Yes" 
+                                            Help="Should the matching groups be merged with a Lava template and displayed to the user as formatted output?" ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:CodeEditor ID="ceLavaOutput" runat="server" Label="Lava Template" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
+                                            Help="The Lava template to use for formatting the matching groups." 
+                                            ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbLavaOutputDebug" runat="server" Text="Show Lava Debug Info" />
+                                    </div>
+                                </div>
+                            </Rock:PanelWidget>
+
+                            <Rock:PanelWidget ID="wpGrid" runat="server" Title="Grid">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowGrid" runat="server" Label="Show Grid" Text="Yes" 
+                                            Help="Should a grid be displayed showing the matching groups?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbProximity" runat="server" Label="Show Distance" Text="Yes" 
+                                            Help="Should the distance to each group be displayed? Using this option will require the user to enter their address when searching for groups." ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes" 
+                                            Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbShowAge" runat="server" Label="Show Average Age" Text="Yes" 
+                                            Help="Should the average group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBoxList ID="cblGridAttributes" runat="server" Label="Group Attribute Columns" RepeatDirection="Horizontal" 
+                                            Help="The group attribute values that should be displayed in the result grid." ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                </div>
+                            </Rock:PanelWidget>
+
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </Content>
