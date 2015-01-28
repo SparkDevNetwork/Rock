@@ -277,7 +277,7 @@ function() {
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
             DateTime? startDate = selectionValues[2].AsDateTime();
-            DateTime? endDate = selectionValues[3].AsDateTime(); ;
+            DateTime? endDate = selectionValues[3].AsDateTime();
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
@@ -285,20 +285,20 @@ function() {
                 accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
-            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()).Id;
+            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
-                .Where( xx => xx.AuthorizedPersonAliasId.HasValue)
+                .Where( xx => xx.AuthorizedPersonAliasId.HasValue )
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
-            if (startDate.HasValue)
+            if ( startDate.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where(xx => xx.TransactionDateTime >= startDate.Value);
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime >= startDate.Value );
             }
 
-            if (endDate.HasValue)
+            if ( endDate.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where(xx => xx.TransactionDateTime < endDate.Value);
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < endDate.Value );
             }
 
             bool limitToAccounts = accountIdList.Any();
