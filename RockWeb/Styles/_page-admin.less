@@ -22,6 +22,7 @@
     border-radius: 3px;
     float: left;
     width: 100%;
+    z-index: @zindex-modal - 1;
 }
 
 .zone-configuration {
@@ -76,7 +77,7 @@
     position: absolute;
     top: 2px;
     width: 26px;
-    z-index: 1000;
+    z-index: @zindex-modal - 1;
 }
 
 .block-instance.outline 
