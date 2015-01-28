@@ -82,39 +82,37 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                LocationPickerMode pickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
-
-                if ( string.IsNullOrWhiteSpace( _hfCurrentPickerMode.Value ) )
+                var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
+                if ( !currentPickerMode.HasValue )
                 {
                     if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
                     {
-                        pickerMode = LocationPickerMode.Address;
+                        currentPickerMode = LocationPickerMode.Address;
                     }
                     else if ( ( this.AllowedPickerModes & LocationPickerMode.Point ) == LocationPickerMode.Point )
                     {
-                        pickerMode = LocationPickerMode.Point;
+                        currentPickerMode = LocationPickerMode.Point;
                     }
                     else if ( ( this.AllowedPickerModes & LocationPickerMode.Polygon ) == LocationPickerMode.Polygon )
                     {
-                        pickerMode = LocationPickerMode.Polygon;
+                        currentPickerMode = LocationPickerMode.Polygon;
                     }
                     else
                     {
-                        pickerMode = LocationPickerMode.Named;
+                        currentPickerMode = LocationPickerMode.Named;
                     }
 
-                    CurrentPickerMode = pickerMode;
+                    CurrentPickerMode = currentPickerMode.Value;
                 }
 
-                return pickerMode;
+                return currentPickerMode.Value;
             }
 
             set
             {
-                EnsureChildControls();
-                _hfCurrentPickerMode.Value = value.ConvertToString( false );
+                ViewState["CurrentPickerMode"] = value;
             }
+
         }
 
         /// <summary>
@@ -261,6 +259,42 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            int? locationId = ViewState["LocationId"] as int?;
+            if ( locationId.HasValue )
+            {
+                var location = new LocationService( new RockContext() ).Get( locationId.Value );
+                if ( location != null )
+                {
+                    this.Location = location;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves any state that was modified after the <see cref="M:System.Web.UI.WebControls.Style.TrackViewState" /> method was invoked.
+        /// </summary>
+        /// <returns>
+        /// An object that contains the current view state of the control; otherwise, if there is no view state associated with the control, null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var location = this.Location;
+            if ( location != null )
+            {
+                ViewState["LocationId"] = location.Id;
+            }
+
+            return base.SaveViewState();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -432,6 +466,8 @@ namespace Rock.Web.UI.Controls
             {
                 return;
             }
+
+            CurrentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
 
             _radNamed.Checked = eventArgument == "Named";
             _radAddress.Checked = eventArgument == "Address";
