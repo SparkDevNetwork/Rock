@@ -314,7 +314,14 @@
                         var lunchStartTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchOut']").val());
                         var lunchEndTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchIn']").val());
                         var endTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpTimeOut']").val());
-                        var totalWorkedMS = ((endTime ? endTime : lunchStartTime) - startTime) - (lunchEndTime - lunchStartTime);
+                        var totalWorkedMS = 0;
+                        if (endTime) {
+                            var lunchMS = lunchEndTime && lunchStartTime ? (lunchEndTime - lunchStartTime) : 0;
+                            totalWorkedMS = (endTime - startTime) - lunchMS;
+                        }
+                        else if (lunchStartTime) {
+                            totalWorkedMS = lunchStartTime - startTime;
+                        }
 
                         // convert to hours and divide in half
                         var earnedHours = (totalWorkedMS / 1000 / 60 / 60 / 2);
@@ -322,7 +329,13 @@
                         // round to nearest .25
                         earnedHours = Math.round(earnedHours * 4) / 4;
 
-                        $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ " + earnedHours.toFixed(2));
+                        if (earnedHours) {
+                            $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ " + earnedHours.toFixed(2));
+                        }
+                        else
+                        {
+                            $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text('');
+                        }
                     }
                     catch (e) {
                         $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours').text("+ 50%");
