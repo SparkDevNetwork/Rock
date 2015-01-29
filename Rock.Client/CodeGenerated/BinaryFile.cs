@@ -53,7 +53,7 @@ namespace Rock.Client
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary />
-        public string Url { get; set; }
+        public string Path { get; set; }
 
         /// <summary />
         public DateTime? ContentLastModified { get; set; }
