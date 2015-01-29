@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             StatusFilter = ViewState["StatusFilter"] as bool?;
             SelectedChannelId = ViewState["SelectedChannelId"] as int?;
 
-            GetData();
+            //GetData();
         }
 
         protected override void OnInit( EventArgs e )
@@ -340,7 +340,9 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( c => c.Count > 0 );
             }
 
-            rptChannels.DataSource = qry.ToList();
+            var contentChannels = qry.ToList();
+
+            rptChannels.DataSource = contentChannels;
             rptChannels.DataBind();
 
             ContentChannel selectedChannel = null;
@@ -353,8 +355,11 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault();
             }
 
-            if ( selectedChannel != null )
+            if ( selectedChannel != null && contentChannels.Count > 0 )
             {
+                // show the content item panel
+                divItemPanel.Visible = true;
+                
                 AddColumns( selectedChannel );
 
                 var itemQry = itemService.Queryable()
@@ -425,15 +430,11 @@ namespace RockWeb.Blocks.Cms
                 } ).ToList();
                 gContentChannelItems.DataBind();
 
-                gfFilter.Visible = true;
-                gContentChannelItems.Visible = true;
-
                 lContentChannelItems.Text = selectedChannel.Name + " Items";
             }
             else
             {
-                gfFilter.Visible = false;
-                gContentChannelItems.Visible = false;
+                divItemPanel.Visible = false;
             }
 
         }
