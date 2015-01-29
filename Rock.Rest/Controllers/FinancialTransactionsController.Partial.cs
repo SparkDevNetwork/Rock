@@ -44,9 +44,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialTransactions/PostScanned" )]
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
-            financialTransactionScannedCheck.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
-            financialTransactionScannedCheck.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicr );
-            FinancialTransaction financialTransaction = FinancialTransaction.FromJson( financialTransactionScannedCheck.ToJson() );
+            FinancialTransaction financialTransaction = financialTransactionScannedCheck.FinancialTransaction;
+            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
+            financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicr );
             return this.Post( financialTransaction );
         }
 
@@ -172,16 +172,16 @@ namespace Rock.Rest.Controllers
                 CurrencyTypeValueName = a.CurrencyTypeValue.Value,
                 a.Summary,
                 Account = a.TransactionDetails.FirstOrDefault().Account,
-                TotalAmount = a.TransactionDetails.Sum( d=> d.Amount)
+                TotalAmount = a.TransactionDetails.Sum( d => d.Amount )
             } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
-            dataTable.Columns.Add( "TransactionDateTime", typeof(DateTime) );
+            dataTable.Columns.Add( "TransactionDateTime", typeof( DateTime ) );
             dataTable.Columns.Add( "CurrencyTypeValueName" );
             dataTable.Columns.Add( "Summary" );
-            dataTable.Columns.Add( "AccountId", typeof(int) );
+            dataTable.Columns.Add( "AccountId", typeof( int ) );
             dataTable.Columns.Add( "AccountName" );
-            dataTable.Columns.Add( "Amount", typeof(decimal) );
+            dataTable.Columns.Add( "Amount", typeof( decimal ) );
 
             var list = selectQry.ToList();
 
