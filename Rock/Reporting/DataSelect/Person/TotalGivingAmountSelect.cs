@@ -19,9 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -239,8 +236,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-            DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
-            DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
+            DateTime? startDate = selectionValues[2].AsDateTime();
+            DateTime? endDate = selectionValues[3].AsDateTime();
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
@@ -248,13 +245,27 @@ namespace Rock.Reporting.DataSelect.Person
                 accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
-            bool limitToAccounts = accountIdList.Any();
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionDetailService( context ).Queryable()
                 .Where( xx => xx.Transaction.TransactionTypeValueId == transactionTypeContributionId )
-                .Where( xx => xx.Transaction.TransactionDateTime >= startDate && xx.Transaction.TransactionDateTime < endDate )
-                .Where( xx => !limitToAccounts || accountIdList.Contains( xx.AccountId ) );
+                .Where( xx => xx.Transaction.AuthorizedPersonAliasId.HasValue );
+
+            if ( startDate.HasValue )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime >= startDate.Value );
+            }
+
+            if ( endDate.HasValue )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < endDate.Value );
+            }
+
+            bool limitToAccounts = accountIdList.Any();
+            if ( limitToAccounts )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => accountIdList.Contains( xx.AccountId ) );
+            }
 
             if ( comparisonType == ComparisonType.LessThan )
             {
@@ -272,7 +283,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personTotalAmountQry = new PersonService( context ).Queryable()
                 .Select( p => financialTransactionQry
                 .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
-                .Sum( aa => aa.Amount) );
+                .Sum( aa => aa.Amount ) );
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personTotalAmountQry, entityIdProperty, "p" );
 
