@@ -200,7 +200,7 @@ function() {
 
             var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker, cbCombineGiving };
 
-            SetSelection( entityType, controls, string.Format( "{0}||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            SetSelection( entityType, controls, string.Format( "{0}|||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
