@@ -94,11 +94,23 @@ function() {
     var totalAmount = $('.number-box', $content).find('input').val();
     var startDate = $('.date-range-picker', $content).find('input:first').val();
     var endDate = $('.date-range-picker', $content).find('input:last').val();
-    
+    var combineGiving = $('[id$=""cbCombineGiving""]', $content).is(':checked')
     var accountPicker = $('.js-account-picker', $content);
     var accountNames = accountPicker.find('.selected-names').text()
 
-    return 'Giving amount total ' + comparisonText.toLowerCase() + ' $' + totalAmount + ' to accounts:' + accountNames  + ' between ' + startDate + ' and ' + endDate;
+    var result = '';    
+    if (combineGiving) {
+        result += 'Combined Giving amount total ';
+    }
+    else {
+        result += 'Giving amount total ';
+    }
+    result += comparisonText.toLowerCase() + ' $' + totalAmount; 
+    result += ' to accounts:' + accountNames;
+    result += ' between ' + startDate + ' and ' + endDate;
+    
+
+    return result;
 }
 ";
         }
@@ -127,13 +139,20 @@ function() {
                     accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
                 }
 
+                bool combineGiving = false;
+                if ( selectionValues.Length >= 6 )
+                {
+                    combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
+                }
+
                 result = string.Format(
-                    "Giving amount total {0} {1} {2} between {3} and {4}",
+                    "{5}Giving amount total {0} {1} {2} between {3} and {4}",
                     comparisonType.ConvertToString().ToLower(),
                     amount.ToString( "C" ),
                     !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
                     startDate.ToShortDateString(),
-                    endDate.ToShortDateString() );
+                    endDate.ToShortDateString(),
+                    combineGiving ? "Combined " : string.Empty);
             }
 
             return result;
@@ -146,7 +165,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var comparisonControl = ComparisonHelper.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
-            comparisonControl.ID = filterControl.ID + "_0";
+            comparisonControl.ID = filterControl.ID + "_comparisonControl";
             filterControl.Controls.Add( comparisonControl );
 
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -154,7 +173,7 @@ function() {
             NumberBox numberBoxAmount = new NumberBox();
             numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
             numberBoxAmount.NumberType = ValidationDataType.Currency;
-            numberBoxAmount.ID = filterControl.ID + "_1";
+            numberBoxAmount.ID = filterControl.ID + "_numberBoxAmount";
             numberBoxAmount.Label = "Amount";
 
             filterControl.Controls.Add( numberBoxAmount );
@@ -167,12 +186,19 @@ function() {
             filterControl.Controls.Add( accountPicker );
 
             DateRangePicker dateRangePicker = new DateRangePicker();
-            dateRangePicker.ID = filterControl.ID + "_2";
+            dateRangePicker.ID = filterControl.ID + "_dateRangePicker";
             dateRangePicker.Label = "Date Range";
             dateRangePicker.Required = true;
             filterControl.Controls.Add( dateRangePicker );
 
-            var controls = new Control[4] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker };
+            RockCheckBox cbCombineGiving = new RockCheckBox();
+            cbCombineGiving.ID = filterControl.ID + "_cbCombineGiving";
+            cbCombineGiving.Label = "Combine Giving";
+            cbCombineGiving.CssClass = "js-combine-giving";
+            cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
+            filterControl.Controls.Add( cbCombineGiving );
+
+            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker, cbCombineGiving };
 
             SetSelection( entityType, controls, string.Format( "{0}||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
@@ -211,7 +237,10 @@ function() {
             }
 
             DateRangePicker dateRangePicker = controls[3] as DateRangePicker;
-            return string.Format( "{0}|{1}|{2}|{3}|{4}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids );
+
+            RockCheckBox cbCombineGiving = controls[4] as RockCheckBox;
+
+            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids, cbCombineGiving.Checked );
         }
 
         /// <summary>
@@ -229,6 +258,7 @@ function() {
                 var numberBox = controls[1] as NumberBox;
                 var accountPicker = controls[2] as AccountPicker;
                 var dateRangePicker = controls[3] as DateRangePicker;
+                var cbCombineGiving = controls[4] as RockCheckBox;
 
                 comparisonControl.SetValue( selectionValues[0] );
                 decimal? amount = selectionValues[1].AsDecimal();
@@ -252,6 +282,11 @@ function() {
                     {
                         accountPicker.SetValues( accounts );
                     }
+                }
+
+                if ( selectionValues.Length >= 6 )
+                {
+                    cbCombineGiving.Checked = selectionValues[5].AsBooleanOrNull() ?? false;
                 }
             }
         }
@@ -285,6 +320,12 @@ function() {
                 accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
+            bool combineGiving = false;
+            if ( selectionValues.Length >= 6 )
+            {
+                combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
+            }
+
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
@@ -303,8 +344,11 @@ function() {
 
             bool limitToAccounts = accountIdList.Any();
 
-            var financialTransactionDetailsQry = financialTransactionQry
-                .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId ).Select( xx =>
+            // query transactions for individuals.  
+            // If CombineGiving, exclude people that are Giving Group, and we'll get those when we union with CombineGiving
+            var financialTransactionDetailsIndividualQry = financialTransactionQry.Where( a => !combineGiving || !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
+                .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId
+                ).Select( xx =>
                     new
                     {
                         PersonId = xx.Key,
@@ -313,21 +357,65 @@ function() {
 
             if ( comparisonType == ComparisonType.LessThan )
             {
-                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount < amount );
+                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount < amount );
             }
             else if ( comparisonType == ComparisonType.EqualTo )
             {
-                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount == amount );
+                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount == amount );
             }
             else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
-                financialTransactionDetailsQry = financialTransactionDetailsQry.Where( xx => xx.TotalAmount >= amount );
+                financialTransactionDetailsIndividualQry = financialTransactionDetailsIndividualQry.Where( xx => xx.TotalAmount >= amount );
             }
 
-            var innerQry = financialTransactionDetailsQry.Select( xx => xx.PersonId ).AsQueryable();
+            var innerQryIndividual = financialTransactionDetailsIndividualQry.Select( xx => xx.PersonId ).AsQueryable();
+
+            IQueryable<int> qryTransactionPersonIds;
+
+            if ( combineGiving )
+            {
+                // if CombineGiving=true, do another query to total by GivingGroupId for people with GivingGroupId specified
+                var financialTransactionDetailsGivingGroupQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
+                .GroupBy( xx => new
+                {
+                    xx.AuthorizedPersonAlias.Person.GivingGroupId
+                } ).Select( xx =>
+                    new
+                    {
+                        GivingGroupId = xx.Key,
+                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
+                    } );
+
+                if ( comparisonType == ComparisonType.LessThan )
+                {
+                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount < amount );
+                }
+                else if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount == amount );
+
+                }
+                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+                {
+                    financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount >= amount );
+                }
+
+                var groupMemberService = new GroupMemberService( rockContext );
+                IQueryable<int> innerQryGivingGroupPersons = groupMemberService.Queryable()
+                    .Where( a => financialTransactionDetailsGivingGroupQry.Select( xx => xx.GivingGroupId ).AsQueryable().Any( gg => gg.GivingGroupId == a.GroupId ) )
+                    .Select( s => s.PersonId );
+
+                // include people that either give as individuals or are members of a giving group
+                qryTransactionPersonIds = innerQryIndividual.Union( innerQryGivingGroupPersons );
+            }
+            else
+            {
+                // don't factor in GivingGroupId.  Only include people that are directly associated with the transaction
+                qryTransactionPersonIds = innerQryIndividual;
+            }
 
             var qry = new PersonService( rockContext ).Queryable()
-                .Where( p => innerQry.Any( xx => xx == p.Id ) );
+                       .Where( p => qryTransactionPersonIds.Any( xx => xx == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
