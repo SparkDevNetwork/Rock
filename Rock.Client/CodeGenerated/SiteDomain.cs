@@ -32,13 +32,16 @@ namespace Rock.Client
     public partial class SiteDomain
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public string Domain { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
         public int SiteId { get; set; }
-
-        /// <summary />
-        public string Domain { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

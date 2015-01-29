@@ -32,40 +32,43 @@ namespace Rock.Client
     public partial class FinancialPersonSavedAccount
     {
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int? GroupId { get; set; }
-
-        /// <summary />
-        public string ReferenceNumber { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string MaskedAccountNumber { get; set; }
-
-        /// <summary />
-        public string TransactionCode { get; set; }
-
-        /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
+        public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />
         public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
-        public EntityType GatewayEntityType { get; set; }
-
-        /// <summary />
         public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public EntityType GatewayEntityType { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
+        /// <summary />
+        public int? GroupId { get; set; }
+
+        /// <summary />
+        public string MaskedAccountNumber { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public string ReferenceNumber { get; set; }
+
+        /// <summary />
+        public string TransactionCode { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -78,9 +81,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

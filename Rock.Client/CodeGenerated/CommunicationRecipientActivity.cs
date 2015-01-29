@@ -32,16 +32,19 @@ namespace Rock.Client
     public partial class CommunicationRecipientActivity
     {
         /// <summary />
-        public int CommunicationRecipientId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public DateTime ActivityDateTime { get; set; }
 
         /// <summary />
+        public string ActivityDetail { get; set; }
+
+        /// <summary />
         public string ActivityType { get; set; }
 
         /// <summary />
-        public string ActivityDetail { get; set; }
+        public int CommunicationRecipientId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -54,9 +57,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -87,19 +87,19 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this History target, History source )
         {
-            target.IsSystem = source.IsSystem;
-            target.CategoryId = source.CategoryId;
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
+            target.Id = source.Id;
             target.Caption = source.Caption;
-            target.Summary = source.Summary;
-            target.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            target.CategoryId = source.CategoryId;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.IsSystem = source.IsSystem;
             target.RelatedEntityId = source.RelatedEntityId;
+            target.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            target.Summary = source.Summary;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

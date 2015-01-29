@@ -32,22 +32,25 @@ namespace Rock.Client
     public partial class Layout
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int SiteId { get; set; }
-
-        /// <summary />
-        public string FileName { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
+        public ICollection<Block> Blocks { get; set; }
 
         /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public ICollection<Block> Blocks { get; set; }
+        public string FileName { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int SiteId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -60,9 +63,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

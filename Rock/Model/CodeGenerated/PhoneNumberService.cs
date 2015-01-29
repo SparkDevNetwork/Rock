@@ -87,21 +87,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PhoneNumber target, PhoneNumber source )
         {
-            target.IsSystem = source.IsSystem;
-            target.PersonId = source.PersonId;
+            target.Id = source.Id;
             target.CountryCode = source.CountryCode;
+            target.Description = source.Description;
+            target.Extension = source.Extension;
+            target.IsMessagingEnabled = source.IsMessagingEnabled;
+            target.IsSystem = source.IsSystem;
+            target.IsUnlisted = source.IsUnlisted;
             target.Number = source.Number;
             target.NumberFormatted = source.NumberFormatted;
-            target.Extension = source.Extension;
             target.NumberTypeValueId = source.NumberTypeValueId;
-            target.IsMessagingEnabled = source.IsMessagingEnabled;
-            target.IsUnlisted = source.IsUnlisted;
-            target.Description = source.Description;
+            target.PersonId = source.PersonId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

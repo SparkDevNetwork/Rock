@@ -93,22 +93,22 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ContentChannel target, ContentChannel source )
         {
-            target.ContentChannelTypeId = source.ContentChannelTypeId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.IconCssClass = source.IconCssClass;
-            target.RequiresApproval = source.RequiresApproval;
-            target.EnableRss = source.EnableRss;
+            target.Id = source.Id;
             target.ChannelUrl = source.ChannelUrl;
-            target.ItemUrl = source.ItemUrl;
-            target.TimeToLive = source.TimeToLive;
+            target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.ContentControlType = source.ContentControlType;
+            target.Description = source.Description;
+            target.EnableRss = source.EnableRss;
+            target.IconCssClass = source.IconCssClass;
+            target.ItemUrl = source.ItemUrl;
+            target.Name = source.Name;
+            target.RequiresApproval = source.RequiresApproval;
             target.RootImageDirectory = source.RootImageDirectory;
+            target.TimeToLive = source.TimeToLive;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

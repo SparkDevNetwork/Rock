@@ -32,13 +32,16 @@ namespace Rock.Client
     public partial class FinancialTransactionRefund
     {
         /// <summary />
-        public int? RefundReasonValueId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string RefundReasonSummary { get; set; }
 
         /// <summary />
         public DefinedValue RefundReasonValue { get; set; }
+
+        /// <summary />
+        public int? RefundReasonValueId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,19 +32,22 @@ namespace Rock.Client
     public partial class Following
     {
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int EntityId { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
-
-        /// <summary />
         public EntityType EntityType { get; set; }
 
         /// <summary />
+        public int EntityTypeId { get; set; }
+
+        /// <summary />
         public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -57,9 +60,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
