@@ -150,6 +150,64 @@ namespace Rock.Net
             this.UploadString( new Uri( rockBaseUri, rockLoginUrl ), loginParameters.ToJson() );
         }
 
+        public class IdResult
+        {
+            public int Id { get; set; }
+        }
+
+        /// <summary>
+        /// Gets the identifier from unique identifier.
+        /// </summary>
+        /// <param name="getPath">The get path.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        public int GetIdFromGuid( string getPath, Guid guid )
+        {
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+
+            Uri requestUri = new Uri( rockBaseUri, string.Format("{0}?$filter=Guid eq guid'{1}'&$select=Id", getPath, guid));
+
+            HttpContent resultContent;
+            HttpError httpError = null;
+            int result = 0;
+
+            httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
+            {
+                resultContent = postTask.Result.Content;
+
+                if ( postTask.Result.IsSuccessStatusCode )
+                {
+                    resultContent.ReadAsStringAsync().ContinueWith( s =>
+                    {
+                        var stringResult = s.Result;
+                        var oResult = JsonConvert.DeserializeObject<List<IdResult>>( s.Result ).FirstOrDefault();
+                        result = oResult.Id;
+                    } ).Wait();
+                }
+                else
+                {
+                    resultContent.ReadAsStringAsync().ContinueWith( s =>
+                    {
+#if DEBUG
+                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result;
+                        httpError = new HttpError( debugResult );
+#else                            
+                            // just get the simple error message, don't expose exception details to user
+                            httpError = new HttpError( postTask.Result.ReasonPhrase );
+#endif
+                    } ).Wait();
+                }
+            } ).Wait();
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the data.
         /// </summary>
@@ -242,7 +300,7 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data) where T : IEntity
+        public void PostData<T>( string postPath, T data)
         {
             PostPutData( postPath, data, HttpMethod.Post );
         }
@@ -266,7 +324,7 @@ namespace Rock.Net
         /// <param name="data">The data.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <exception cref="Rock.Net.HttpErrorException"></exception>
-        private void PostPutData<T>( string postPath, T data, HttpMethod httpMethod ) where T : IEntity
+        private void PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
         {
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
@@ -314,10 +372,17 @@ namespace Rock.Net
             }
             else
             {
-                // PUT is for UPDATEs
-                Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", data.Id ) );
+                if ( data is IEntity )
+                {
+                    // PUT is for UPDATEs
+                    Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", ( data as IEntity ).Id ) );
 
-                httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+                    httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+                }
+                else
+                {
+                    throw new Exception( "Data must be of type IEntity to do PUTS" );
+                }
             }
 
             if ( httpError != null )
