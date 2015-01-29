@@ -32,19 +32,25 @@ namespace Rock.Client
     public partial class Device
     {
         /// <summary />
-        public int DeviceTypeValueId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public int? LocationId { get; set; }
+        public DefinedValue DeviceType { get; set; }
+
+        /// <summary />
+        public int DeviceTypeValueId { get; set; }
 
         /// <summary />
         public string IPAddress { get; set; }
+
+        /// <summary />
+        public int? LocationId { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public int? PrinterDeviceId { get; set; }
@@ -54,9 +60,6 @@ namespace Rock.Client
 
         /// <summary />
         public int /* PrintTo*/ PrintToOverride { get; set; }
-
-        /// <summary />
-        public DefinedValue DeviceType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -69,9 +72,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

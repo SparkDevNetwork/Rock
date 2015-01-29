@@ -87,10 +87,10 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this MetricCategory target, MetricCategory source )
         {
-            target.MetricId = source.MetricId;
-            target.CategoryId = source.CategoryId;
-            target.Order = source.Order;
             target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
+            target.MetricId = source.MetricId;
+            target.Order = source.Order;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

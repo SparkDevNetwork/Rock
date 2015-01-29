@@ -32,25 +32,67 @@ namespace Rock.Client
     public partial class GroupType
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public bool AllowMultipleLocations { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
+        public int /* PrintTo*/ AttendancePrintTo { get; set; }
 
         /// <summary />
-        public string GroupTerm { get; set; }
+        public int /* AttendanceRule*/ AttendanceRule { get; set; }
 
         /// <summary />
-        public string GroupMemberTerm { get; set; }
+        public ICollection<GroupType> ChildGroupTypes { get; set; }
+
+        /// <summary />
+        public GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary />
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary />
-        public bool AllowMultipleLocations { get; set; }
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary />
+        public string GroupMemberTerm { get; set; }
+
+        /// <summary />
+        public string GroupTerm { get; set; }
+
+        /// <summary />
+        public DefinedValue GroupTypePurposeValue { get; set; }
+
+        /// <summary />
+        public int? GroupTypePurposeValueId { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
+        public int? InheritedGroupTypeId { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public ICollection<GroupTypeRole> Roles { get; set; }
 
         /// <summary />
         public bool ShowInGroupList { get; set; }
@@ -59,46 +101,7 @@ namespace Rock.Client
         public bool ShowInNavigation { get; set; }
 
         /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
         public bool TakesAttendance { get; set; }
-
-        /// <summary />
-        public int /* AttendanceRule*/ AttendanceRule { get; set; }
-
-        /// <summary />
-        public int /* PrintTo*/ AttendancePrintTo { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int? InheritedGroupTypeId { get; set; }
-
-        /// <summary />
-        public int /* GroupLocationPickerMode*/ LocationSelectionMode { get; set; }
-
-        /// <summary />
-        public bool? EnableLocationSchedules { get; set; }
-
-        /// <summary />
-        public int? GroupTypePurposeValueId { get; set; }
-
-        /// <summary />
-        public ICollection<GroupType> ChildGroupTypes { get; set; }
-
-        /// <summary />
-        public ICollection<GroupTypeRole> Roles { get; set; }
-
-        /// <summary />
-        public ICollection<GroupTypeLocationType> LocationTypes { get; set; }
-
-        /// <summary />
-        public GroupTypeRole DefaultGroupRole { get; set; }
-
-        /// <summary />
-        public DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -111,9 +114,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,16 +32,25 @@ namespace Rock.Client
     public partial class PersonDuplicate
     {
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public int? Capacity { get; set; }
+
+        /// <summary />
+        public double? ConfidenceScore { get; set; }
 
         /// <summary />
         public int DuplicatePersonAliasId { get; set; }
 
         /// <summary />
+        public bool IgnoreUntilScoreChanges { get; set; }
+
+        /// <summary />
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
         /// <summary />
-        public bool IgnoreUntilScoreChanges { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
         public int? Score { get; set; }
@@ -50,13 +59,7 @@ namespace Rock.Client
         public string ScoreDetail { get; set; }
 
         /// <summary />
-        public int? Capacity { get; set; }
-
-        /// <summary />
         public int? TotalCapacity { get; set; }
-
-        /// <summary />
-        public double? ConfidenceScore { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -69,9 +72,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

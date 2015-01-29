@@ -95,6 +95,7 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
         {
+            target.Id = source.Id;
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;
             target.Route = source.Route;
@@ -102,7 +103,6 @@ namespace Rock.Model
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

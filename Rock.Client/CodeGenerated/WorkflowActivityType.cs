@@ -32,13 +32,10 @@ namespace Rock.Client
     public partial class WorkflowActivityType
     {
         /// <summary />
-        public bool? IsActive { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int WorkflowTypeId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
+        public ICollection<WorkflowActionType> ActionTypes { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -47,10 +44,16 @@ namespace Rock.Client
         public bool IsActivatedWithWorkflow { get; set; }
 
         /// <summary />
+        public bool? IsActive { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
-        public ICollection<WorkflowActionType> ActionTypes { get; set; }
+        public int WorkflowTypeId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -63,9 +66,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

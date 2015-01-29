@@ -32,22 +32,25 @@ namespace Rock.Client
     public partial class Communication
     {
         /// <summary />
-        public int? SenderPersonAliasId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Subject { get; set; }
-
-        /// <summary />
-        public bool IsBulkCommunication { get; set; }
+        public List<string> AdditionalMergeFields { get; set; }
 
         /// <summary />
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary />
-        public int /* CommunicationStatus*/ Status { get; set; }
+        public bool IsBulkCommunication { get; set; }
 
         /// <summary />
-        public int? ReviewerPersonAliasId { get; set; }
+        public EntityType MediumEntityType { get; set; }
+
+        /// <summary />
+        public int? MediumEntityTypeId { get; set; }
+
+        /// <summary />
+        public ICollection<CommunicationRecipient> Recipients { get; set; }
 
         /// <summary />
         public DateTime? ReviewedDateTime { get; set; }
@@ -56,22 +59,22 @@ namespace Rock.Client
         public string ReviewerNote { get; set; }
 
         /// <summary />
-        public int? MediumEntityTypeId { get; set; }
+        public PersonAlias ReviewerPersonAlias { get; set; }
+
+        /// <summary />
+        public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
-        public PersonAlias ReviewerPersonAlias { get; set; }
+        public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        public ICollection<CommunicationRecipient> Recipients { get; set; }
+        public int /* CommunicationStatus*/ Status { get; set; }
 
         /// <summary />
-        public EntityType MediumEntityType { get; set; }
-
-        /// <summary />
-        public List<string> AdditionalMergeFields { get; set; }
+        public string Subject { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -84,9 +87,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,10 +32,10 @@ namespace Rock.Client
     public partial class BinaryFileType
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public bool AllowCaching { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -44,34 +44,37 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public int? StorageEntityTypeId { get; set; }
-
-        /// <summary />
-        public bool AllowCaching { get; set; }
-
-        /// <summary />
-        public bool RequiresViewSecurity { get; set; }
-
-        /// <summary />
-        public int? MaxWidth { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public int? MaxHeight { get; set; }
 
         /// <summary />
-        public int /* PreferredFormat*/ PreferredFormat { get; set; }
+        public int? MaxWidth { get; set; }
 
         /// <summary />
-        public int /* PreferredResolution*/ PreferredResolution { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
         public int /* PreferredColorDepth*/ PreferredColorDepth { get; set; }
 
         /// <summary />
+        public int /* PreferredFormat*/ PreferredFormat { get; set; }
+
+        /// <summary />
         public bool PreferredRequired { get; set; }
 
         /// <summary />
+        public int /* PreferredResolution*/ PreferredResolution { get; set; }
+
+        /// <summary />
+        public bool RequiresViewSecurity { get; set; }
+
+        /// <summary />
         public EntityType StorageEntityType { get; set; }
+
+        /// <summary />
+        public int? StorageEntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -84,9 +87,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

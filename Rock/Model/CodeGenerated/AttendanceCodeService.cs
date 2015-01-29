@@ -93,9 +93,9 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this AttendanceCode target, AttendanceCode source )
         {
-            target.IssueDateTime = source.IssueDateTime;
-            target.Code = source.Code;
             target.Id = source.Id;
+            target.Code = source.Code;
+            target.IssueDateTime = source.IssueDateTime;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
