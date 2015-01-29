@@ -220,8 +220,21 @@ namespace RockWeb.Blocks.CheckIn
 
             ViewStateList<GroupType> groupTypeViewStateList = new ViewStateList<GroupType>();
             groupTypeViewStateList.AddAll( groupTypeList );
-
             ViewState["CheckinGroupTypes"] = groupTypeViewStateList;
+
+            // save each GroupTypes' Groups to ViewState (since GroupType.Groups are not Serialized)
+            var groupTypeGroupsList = new List<Group>();
+            foreach (var groupType in groupTypeList)
+            {
+                foreach ( var group in groupType.Groups )
+                {
+                    groupTypeGroupsList.Add( group );
+                }
+            }
+
+            ViewStateList<Group> checkinGroupTypesGroups = new ViewStateList<Group>();
+            checkinGroupTypesGroups.AddAll( groupTypeGroupsList );
+            ViewState["CheckinGroupTypesGroups"] = checkinGroupTypesGroups;
 
             // save all the checkinlabels for all the grouptypes (recursively) to viewstate
             GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
@@ -250,6 +263,22 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             ViewStateList<GroupType> groupTypeViewStateList = ViewState["CheckinGroupTypes"] as ViewStateList<GroupType>;
+
+            // load each GroupTypes' Groups from ViewState (since GroupType.Groups are not Serialized)
+            ViewStateList<Group> checkinGroupTypesGroups = ViewState["CheckinGroupTypesGroups"] as ViewStateList<Group>;
+            foreach ( var groupTypeGroups in checkinGroupTypesGroups.GroupBy( g => g.GroupType.Guid ) )
+            {
+                var groupType = groupTypeViewStateList.FirstOrDefault(a => a.Guid == groupTypeGroups.Key);
+                
+                if (groupType != null)
+                {
+                    groupType.Groups = new List<Group>();
+                    foreach (var group in groupTypeGroups)
+                    {
+                        groupType.Groups.Add(group);
+                    }
+                }
+            }
 
             foreach ( var groupType in groupTypeViewStateList )
             {
