@@ -138,9 +138,16 @@ namespace Rock.Reporting.DataSelect.Person
             dateRangePicker.Required = true;
             parentControl.Controls.Add( dateRangePicker );
 
-            var controls = new Control[4] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker };
+            RockCheckBox cbCombineGiving = new RockCheckBox();
+            cbCombineGiving.ID = parentControl.ID + "_cbCombineGiving";
+            cbCombineGiving.Label = "Combine Giving";
+            cbCombineGiving.CssClass = "js-combine-giving";
+            cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
+            parentControl.Controls.Add( cbCombineGiving );
 
-            SetSelection( controls, string.Format( "{0}||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker, cbCombineGiving };
+
+            SetSelection( controls, string.Format( "{0}|||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -175,7 +182,10 @@ namespace Rock.Reporting.DataSelect.Person
             }
 
             DateRangePicker dateRangePicker = controls[3] as DateRangePicker;
-            return string.Format( "{0}|{1}|{2}|{3}|{4}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids );
+
+            RockCheckBox cbCombineGiving = controls[4] as RockCheckBox;
+
+            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids, cbCombineGiving.Checked );
         }
 
         /// <summary>
@@ -192,6 +202,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var numberBox = controls[1] as NumberBox;
                 var accountPicker = controls[2] as AccountPicker;
                 var dateRangePicker = controls[3] as DateRangePicker;
+                var cbCombineGiving = controls[4] as RockCheckBox;
 
                 comparisonControl.SetValue( selectionValues[0] );
                 decimal? amount = selectionValues[1].AsDecimal();
@@ -215,6 +226,11 @@ namespace Rock.Reporting.DataSelect.Person
                     {
                         accountPicker.SetValues( accounts );
                     }
+                }
+
+                if ( selectionValues.Length >= 6 )
+                {
+                    cbCombineGiving.Checked = selectionValues[5].AsBooleanOrNull() ?? false;
                 }
             }
         }
@@ -243,6 +259,12 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+            }
+
+            bool combineGiving = false;
+            if ( selectionValues.Length >= 6 )
+            {
+                combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
@@ -280,10 +302,27 @@ namespace Rock.Reporting.DataSelect.Person
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
             }
 
-            var personTotalAmountQry = new PersonService( context ).Queryable()
+            IQueryable<decimal> personTotalAmountQry;
+            if ( combineGiving )
+            {
+                //// if combineGiving..
+                // if they aren't in a giving group, sum up transactions amounts by the person
+                // if they are in a giving group, sum up transactions amounts by the persons that are in the person's giving group
+                personTotalAmountQry = new PersonService( context ).Queryable()
+                                .Select( p => financialTransactionQry
+                                .Where( ww =>
+                                    ( !p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
+                                    ||
+                                    ( p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.Person.GivingGroupId == p.GivingGroupId ) )
+                                .Sum( aa => aa.Amount ) );
+            }
+            else
+            {
+                personTotalAmountQry = new PersonService( context ).Queryable()
                 .Select( p => financialTransactionQry
                 .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
                 .Sum( aa => aa.Amount ) );
+            }
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personTotalAmountQry, entityIdProperty, "p" );
 
