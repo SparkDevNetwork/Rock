@@ -1,0 +1,14 @@
+.gridresponsive-header {
+  background-color: #efefef;
+  margin-top: -15px;
+}
+.gridresponsive-row {
+  border-bottom: 1px solid #efefef;
+  padding: 12px 0;
+}
+.gridresponsive-row:nth-child(8) {
+  border-bottom: 24px solid #f4f4f4;
+}
+.gridresponsive-commandcolumn {
+  text-align: right;
+}

@@ -43,6 +43,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_ccvonline/Hr/Styles/hr.css" ) );
         }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             {
                 ShowDetail();
             }
+         
         }
 
         #endregion

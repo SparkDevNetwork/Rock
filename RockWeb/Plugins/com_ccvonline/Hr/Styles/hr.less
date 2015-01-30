@@ -1,0 +1,22 @@
+@grid-column-header-bg: #efefef;
+
+.gridresponsive-header {
+    background-color: @grid-column-header-bg;
+    margin-top: -15px;
+}
+
+.gridresponsive-item {
+}
+
+.gridresponsive-row {
+    border-bottom: 1px solid @grid-column-header-bg;
+    padding: 12px 0;
+}
+
+.gridresponsive-row:nth-child(8) {
+    border-bottom: 24px solid lighten(@grid-column-header-bg, 2%);
+}
+
+.gridresponsive-commandcolumn {
+    text-align: right;
+}

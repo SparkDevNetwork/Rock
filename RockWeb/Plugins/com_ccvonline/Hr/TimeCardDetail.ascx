@@ -2,29 +2,6 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <style>
-            .gridresponsive-header {
-                background-color: #eaeaea;
-            }
-
-            .gridresponsive-item {
-            }
-
-            .gridresponsive-row {
-                --margin-bottom: 12px;
-                border-bottom: 1px solid #eaeaea;
-                padding: 12px 0;
-            }
-
-            .gridresponsive-row:nth-child(8) {
-                border-bottom: 24px solid gray;
-            }
-
-            .gridresponsive-commandcolumn {
-                text-align: right;
-            }
-        </style>
-
         <asp:HiddenField ID="hfTimeCardId" runat="server" />
         <asp:HiddenField ID="hfEditMode" runat="server" />
 
@@ -33,13 +10,11 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1>
-                    <asp:Literal ID="lTimeCardPersonName" runat="server" />
+                <h1 class="panel-title">
+                    <i class="fa fa-clock-o"></i> <asp:Literal ID="lTimeCardPersonName" runat="server" />
                 </h1>
 
-                <h1 class="panel-title">
-                    <asp:Literal ID="lTitle" runat="server" Text="Pay Period" />
-                </h1>
+                (<asp:Literal ID="lTitle" runat="server" Text="Pay Period" />)
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblSubTitle" runat="server" LabelType="Info" Text="Status" />
