@@ -1113,12 +1113,13 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-.title {
-  font-weight: 300;
-}
-.title .first-word {
-  font-weight: 700;
-}
+/*.title {
+    font-weight: @title-default-weight;
+
+    .first-word {
+        font-weight: @title-firstword-weight;
+    }
+}*/
 .code-editor {
   position: relative;
 }
@@ -1126,7 +1127,7 @@ fieldset .actions {
   background-color: #83758f;
 }
 .label-type {
-  background-color: #5697d0;
+  background-color: #567d8c;
 }
 .label-communicationstatus-approved {
   background-color: #5cb85c;
@@ -1141,7 +1142,7 @@ fieldset .actions {
   background-color: #f0ad4e;
 }
 .label-communicationstatus-transient {
-  background-color: #5697d0;
+  background-color: #567d8c;
 }
 .datepicker {
   padding: 10px;
