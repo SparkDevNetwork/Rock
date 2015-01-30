@@ -4091,10 +4091,11 @@ iframe.email-body {
   -webkit-user-select: none;
 }
 /*
-    Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
-    
-    1. Colors - creates utility classes for each of the accent colors
-    2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
 
 */
 .accent-color {
