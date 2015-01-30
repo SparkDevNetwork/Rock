@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web.UI;
 
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,25 +32,7 @@ namespace Rock.Field.Types
     public class RatingFieldType : FieldType
     {
 
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condsed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            int rating = value.AsInteger();
-            var sb = new StringBuilder();
-            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
-            {
-                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-o" : "" );
-            }
-
-            return sb.ToString();
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -110,21 +94,6 @@ namespace Rock.Field.Types
                 ( (NumberBox)controls[0] ).Text = configurationValues["max"].Value;
         }
 
-
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            int max = GetMaxRating(configurationValues);
-            return new RockRating { ID = id, Max = max }; 
-        }
-
         /// <summary>
         /// Gets the maximum rating.
         /// </summary>
@@ -143,6 +112,66 @@ namespace Rock.Field.Types
 
             return 5;
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condsed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            int rating = value.AsInteger();
+            var sb = new StringBuilder();
+            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
+            {
+                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-o" : "" );
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            int max = GetMaxRating(configurationValues);
+            return new RockRating { ID = id, Max = max }; 
+        }
+
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        #endregion
 
     }
 }

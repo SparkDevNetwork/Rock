@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
+
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -28,6 +28,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class IntegerFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
@@ -39,27 +42,9 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="required"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public override bool IsValid( string value, bool required, out string message )
-        {
-            if ( !string.IsNullOrWhiteSpace(value) )
-            {
-                int result;
-                if ( !Int32.TryParse( value, out result ) )
-                {
-                    message = "The input provided is not a valid integer.";
-                    return true;
-                }
-            }
+        #endregion
 
-            return base.IsValid( value, required, out message );
-        }
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -75,6 +60,32 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="required"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool IsValid( string value, bool required, out string message )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                int result;
+                if ( !Int32.TryParse( value, out result ) )
+                {
+                    message = "The input provided is not a valid integer.";
+                    return true;
+                }
+            }
+
+            return base.IsValid( value, required, out message );
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
         /// <value>
@@ -85,18 +96,7 @@ namespace Rock.Field.Types
             get { return ComparisonHelper.NumericFilterComparisonTypes; }
         }
 
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( string id )
-        {
-            var numberBox = new NumberBox();
-            numberBox.ID = string.Format( "{0}_numberBox", id );
-            numberBox.AddCssClass( "js-filter-control" );
-            return numberBox;
-        }
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

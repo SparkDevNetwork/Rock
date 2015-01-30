@@ -190,11 +190,18 @@ namespace Rock.Reporting
                         ComparisonType.EndsWith;
 
         /// <summary>
-        /// Gets the comparison types typically used for Guid fields
+        /// Gets the comparison types typically used for select or boolean fields
         /// </summary>
-        public const ComparisonType GuidFilterComparisonTypes =
+        public const ComparisonType BinaryFilterComparisonTypes =
                         ComparisonType.EqualTo |
                         ComparisonType.NotEqualTo;
+
+        /// <summary>
+        /// Gets the comparison types typically used for list fields
+        /// </summary>
+        public const ComparisonType ContainsFilterComparisonTypes =
+                        ComparisonType.Contains |
+                        ComparisonType.DoesNotContain;
 
         /// <summary>
         /// Gets the comparison types typically used for numeric fields

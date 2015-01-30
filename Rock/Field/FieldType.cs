@@ -45,50 +45,7 @@ namespace Rock.Field
 
         #endregion
 
-        #region Format Value
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            if ( condensed )
-            {
-                return value.Truncate( 100 );
-            }
-
-            return value;
-        }
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public virtual string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            return FormatValue( parentControl, value, configurationValues, condensed );
-        }
-
-        #endregion
-
         #region Configuration 
-
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        public virtual HorizontalAlign AlignValue
-        {
-            get { return HorizontalAlign.Left; }
-        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -125,6 +82,49 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         public virtual void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( condensed )
+            {
+                return value.Truncate( 100 );
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public virtual string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         #endregion
@@ -215,13 +215,13 @@ namespace Rock.Field
             col1.ID = string.Format( "{0}_col1", id );
             row.Controls.Add( col1 );
             col1.AddCssClass( "col-sm-4" );
-            col1.Controls.Add( FilterCompareControl( id ) );
+            col1.Controls.Add( FilterCompareControl( configurationValues, id ) );
 
             HtmlGenericControl col2 = new HtmlGenericControl( "div" );
             col2.ID = string.Format( "{0}_col2", id );
             row.Controls.Add( col2 );
             col2.AddCssClass( "col-sm-8" );
-            col2.Controls.Add( FilterValueControl( id ) );
+            col2.Controls.Add( FilterValueControl( configurationValues, id ) );
 
             return row;
         }
@@ -230,9 +230,10 @@ namespace Rock.Field
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public virtual Control FilterCompareControl( string id )
+        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         { 
             RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, false );
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
@@ -248,20 +249,24 @@ namespace Rock.Field
         /// </value>
         public virtual ComparisonType FilterComparisonType
         {
-            get { return ComparisonHelper.StringFilterComparisonTypes; }
+            get { return ComparisonHelper.BinaryFilterComparisonTypes; }
         }
 
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public virtual Control FilterValueControl( string id )
-        { 
-            var tbText = new RockTextBox();
-            tbText.ID = string.Format( "{0}_tbText", id );
-            tbText.AddCssClass( "js-filter-control" );
-            return tbText;
+        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var control = EditControl( configurationValues, id );
+            control.ID = string.Format( "{0}_ctlCompareValue", id );
+            if ( control is WebControl )
+            {
+                ( (WebControl)control ).AddCssClass( "js-filter-control" );
+            }
+            return control;
         }
 
         /// <summary>
@@ -279,7 +284,7 @@ namespace Rock.Field
                 try
                 {
                     values.Add( GetFilterCompareValue( filterControl.Controls[0].Controls[0] ) );
-                    values.Add( GetFilterValueValue( filterControl.Controls[1].Controls[0] ) );
+                    values.Add( GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues ) );
                 }
                 catch { }
             }
@@ -307,16 +312,11 @@ namespace Rock.Field
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public virtual string GetFilterValueValue( Control control )
+        public virtual string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var tbText = control as RockTextBox;
-            if ( tbText != null )
-            {
-                return tbText.Text;
-            }
-
-            return string.Empty;
+            return GetEditValue( control, configurationValues );
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace Rock.Field
                 try
                 {
                     SetFilterCompareValue( filterControl.Controls[0].Controls[0], filterValues.Count > 0 ? filterValues[0] : string.Empty );
-                    SetFilterValueValue( filterControl.Controls[1].Controls[0], filterValues.Count > 1 ? filterValues[1] : string.Empty );
+                    SetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues, filterValues.Count > 1 ? filterValues[1] : string.Empty );
                 }
                 catch { }
             }
@@ -356,14 +356,11 @@ namespace Rock.Field
         /// Sets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public virtual void SetFilterValueValue( Control control, string value )
+        public virtual void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var tbText = control as RockTextBox;
-            if ( tbText != null )
-            {
-                tbText.Text = value;
-            }
+            SetEditValue( control, configurationValues, value );
         }
 
         /// <summary>
@@ -371,29 +368,19 @@ namespace Rock.Field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <returns></returns>
-        public virtual Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, string propertyName, List<string> filterValues )
+        public virtual Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
         {
             if ( filterValues.Count >= 2 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
 
                 string comparisonValue = filterValues[0];
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    ConstantExpression constantExpression;
-                    if ( propertyExpression.Type == typeof( Guid ) )
-                    {
-                        constantExpression = Expression.Constant( filterValues[1].AsGuid() );
-                    }
-                    else
-                    {
-                        constantExpression = Expression.Constant( filterValues[1] );
-                    }
-
+                    ConstantExpression constantExpression = Expression.Constant( filterValues[1] );
                     return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                 }
             }

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Constants;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -32,6 +32,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class GroupTypeFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
         private const string GROUP_TYPE_PURPOSE_VALUE_GUID = "groupTypePurposeValueGuid";
         
         /// <summary>
@@ -44,7 +47,81 @@ namespace Rock.Field.Types
             configKeys.Add( GROUP_TYPE_PURPOSE_VALUE_GUID );
             return configKeys;
         }
-        
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var ddl = new RockDropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
+            ddl.BindToDefinedType( definedType, true );
+            ddl.Label = "Purpose";
+            ddl.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( GROUP_TYPE_PURPOSE_VALUE_GUID, new ConfigurationValue( "Purpose", "An optional setting to limit the selection of group types to those that have the selected purpose.", string.Empty ) );
+
+            if ( controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is DropDownList )
+            {
+                int? definedValueId = ( (DropDownList)controls[0] ).SelectedValueAsInt();
+                if ( definedValueId.HasValue )
+                {
+                    var definedValue = DefinedValueCache.Read( definedValueId.Value );
+                    if ( definedValue != null )
+                    {
+                        configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value = definedValue.Guid.ToString();
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
+            {
+                Guid? definedValueGuid = configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID].Value.AsGuidOrNull();
+                if ( definedValueGuid.HasValue )
+                {
+                    var definedValue = DefinedValueCache.Read( definedValueGuid.Value );
+                    if ( definedValue != null )
+                    {
+                        ( (DropDownList)controls[0] ).SetValue( definedValue.Id.ToString() );
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -69,6 +146,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion 
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -144,6 +225,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -197,5 +282,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

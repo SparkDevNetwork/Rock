@@ -30,6 +30,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class ColorFieldType : FieldType
     {
+
+        #region Edit Control
+
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
@@ -85,6 +88,8 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
 
     }
 }

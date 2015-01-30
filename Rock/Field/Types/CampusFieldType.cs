@@ -17,6 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,6 +34,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -53,6 +60,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -125,6 +136,121 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var cbList = new RockCheckBoxList();
+            cbList.ID = string.Format( "{0}_cbList", id );
+            cbList.AddCssClass( "js-filter-control" );
+            cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+            var campusList = CampusCache.All();
+            if ( campusList.Any() )
+            {
+                foreach ( var campus in campusList )
+                {
+                    ListItem listItem = new ListItem( campus.Name, campus.Guid.ToString() );
+                    cbList.Items.Add( listItem );
+                }
+
+                return cbList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            List<string> cblValues = new List<string>();
+
+            if ( filterControl != null && filterControl is RockCheckBoxList )
+            {
+                CheckBoxList cbl = (CheckBoxList)filterControl;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    if ( li.Selected )
+                    {
+                        cblValues.Add( li.Value );
+                    }
+                }
+
+                values.Add( cblValues.AsDelimited<string>( "," ) );
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues"></param>
+        public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterControl != null && filterControl is CheckBoxList && filterValues.Any() )
+            {
+                string value = filterValues[0];
+                if ( value != null )
+                {
+                    List<string> values = new List<string>();
+                    values.AddRange( value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
+
+                    CheckBoxList cbl = (CheckBoxList)filterControl;
+                    foreach ( ListItem li in cbl.Items )
+                    {
+                        li.Selected = values.Contains( li.Value );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <returns></returns>
+        public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+
+                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( selectedValues.Any() )
+                {
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -182,5 +308,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

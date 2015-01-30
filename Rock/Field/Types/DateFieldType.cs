@@ -16,10 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -32,51 +33,8 @@ namespace Rock.Field.Types
     [Serializable]
     public class DateFieldType : FieldType
     {
-        /// <summary>
-        /// Formats date display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
 
-            DateTime? dateValue = value.AsDateTime();
-            if ( dateValue.HasValue )
-            {
-                formattedValue = dateValue.Value.ToShortDateString();
-
-                if ( configurationValues != null &&
-                    configurationValues.ContainsKey( "format" ) &&
-                    !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
-                {
-                    try
-                    {
-                        formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
-                    }
-                    catch
-                    {
-                        formattedValue = dateValue.Value.ToShortDateString();
-                    }
-                }
-
-                if ( !condensed )
-                {
-                    if ( configurationValues != null &&
-                        configurationValues.ContainsKey( "displayDiff" ) )
-                    {
-                        bool displayDiff = false;
-                        if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
-                            formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -164,6 +122,60 @@ namespace Rock.Field.Types
             return values;
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            DateTime? dateValue = value.AsDateTime();
+            if ( dateValue.HasValue )
+            {
+                formattedValue = dateValue.Value.ToShortDateString();
+
+                if ( configurationValues != null &&
+                    configurationValues.ContainsKey( "format" ) &&
+                    !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
+                {
+                    try
+                    {
+                        formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
+                    }
+                    catch
+                    {
+                        formattedValue = dateValue.Value.ToShortDateString();
+                    }
+                }
+
+                if ( !condensed )
+                {
+                    if ( configurationValues != null &&
+                        configurationValues.ContainsKey( "displayDiff" ) )
+                    {
+                        bool displayDiff = false;
+                        if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
+                            formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -223,6 +235,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
@@ -237,9 +253,10 @@ namespace Rock.Field.Types
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public override Control FilterValueControl( string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var datePicker = new DatePicker();
             datePicker.ID = string.Format( "{0}_dtPicker", id );
@@ -252,8 +269,9 @@ namespace Rock.Field.Types
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string GetFilterValueValue( Control control )
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var datePicker = control as DatePicker;
             if ( datePicker != null )
@@ -275,8 +293,9 @@ namespace Rock.Field.Types
         /// Sets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
-        public override void SetFilterValueValue( Control control, string value )
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var datePicker = control as DatePicker;
             if ( datePicker != null )
@@ -300,6 +319,30 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <returns></returns>
+        public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+        {
+            if ( filterValues.Count >= 2 && filterValues[1].StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var valueParts = filterValues[1].Split( ':' );
+                if ( valueParts.Length > 1 )
+                {
+                    DateTime currentDate = RockDateTime.Today.AddDays( valueParts[1].AsIntegerOrNull() ?? 0 );
+                    filterValues[1] = currentDate.ToString( "o" );
+                }
+            }
+
+            return base.FilterExpression( serviceInstance, parameterExpression, filterValues );
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

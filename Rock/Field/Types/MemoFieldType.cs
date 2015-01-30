@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,20 +28,10 @@ namespace Rock.Field.Types
     /// </summary>
     public class MemoFieldType : FieldType
     {
-        private const string NUMBER_OF_ROWS = "numberofrows";
 
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            return base.FormatValueAsHtml( parentControl, value, configurationValues, condensed ).ConvertCrLfToHtmlBr();
-        }
+        #region Configuration
+
+        private const string NUMBER_OF_ROWS = "numberofrows";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -107,6 +98,27 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return base.FormatValueAsHtml( parentControl, value, configurationValues, condensed ).ConvertCrLfToHtmlBr();
+        }
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -128,6 +140,40 @@ namespace Rock.Field.Types
 
             return tb;
         }
+
+        #endregion
+
+        #region FilterControl
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var tbValue = new RockTextBox();
+            tbValue.ID = string.Format( "{0}_ctlCompareValue", id );
+            tbValue.AddCssClass( "js-filter-control" );
+            return tbValue;
+        }
+
+        #endregion
 
     }
 }

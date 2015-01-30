@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
+
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -29,6 +29,8 @@ namespace Rock.Field.Types
     public class DecimalFieldType : FieldType
     {
 
+        #region Formatting 
+
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
@@ -40,6 +42,25 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var numberBox = new NumberBox { ID = id }; 
+            numberBox.NumberType = System.Web.UI.WebControls.ValidationDataType.Double;
+            return numberBox;
+        }
+        
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
@@ -64,6 +85,10 @@ namespace Rock.Field.Types
             return base.IsValid( value, required, out message );
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
@@ -75,33 +100,7 @@ namespace Rock.Field.Types
             get { return ComparisonHelper.NumericFilterComparisonTypes; }
         }
 
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( string id )
-        {
-            var numberBox = new NumberBox();
-            numberBox.ID = string.Format( "{0}_numberBox", id );
-            numberBox.AddCssClass( "js-filter-control" );
-            numberBox.NumberType = System.Web.UI.WebControls.ValidationDataType.Double;
-            return numberBox;
-        }
+        #endregion
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            var numberBox = new NumberBox { ID = id }; 
-            numberBox.NumberType = System.Web.UI.WebControls.ValidationDataType.Double;
-            return numberBox;
-        }
     }
 }

@@ -17,8 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -28,6 +32,9 @@ namespace Rock.Field.Types
     /// </summary>
     public abstract class SelectFromListFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -41,6 +48,10 @@ namespace Rock.Field.Types
             var valueGuidList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
             return this.ListSource.Where( a => valueGuidList.Contains( a.Key.AsGuid() ) ).Select( s => s.Value ).ToList().AsDelimited( "," );
         }
+
+        #endregion
+
+        #region Edit Control 
 
         /// <summary>
         /// Gets the list source.
@@ -122,5 +133,86 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var ddlList = new RockDropDownList();
+            ddlList.ID = string.Format( "{0}_ddlList", id );
+            ddlList.AddCssClass( "js-filter-control" );
+
+            if ( ListSource.Any() )
+            {
+                foreach ( var item in ListSource )
+                {
+                    ListItem listItem = new ListItem( item.Value, item.Key );
+                    ddlList.Items.Add( listItem );
+                }
+
+                return ddlList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            List<string> cblValues = new List<string>();
+
+            if ( filterControl != null && filterControl is RockDropDownList )
+            {
+                values.Add( ( (RockDropDownList)filterControl ).SelectedValue );
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Sets the filter value.
+        /// </summary>
+        /// <param name="filterControl"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues"></param>
+        public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterControl != null && filterControl is RockDropDownList && filterValues.Any() )
+            {
+                ( (RockDropDownList)filterControl ).SetValue( filterValues[0] );
+            }
+        }
+
+        #endregion
+
     }
 }

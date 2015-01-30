@@ -29,6 +29,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class ImageFieldType : BinaryFileFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -79,6 +82,10 @@ namespace Rock.Field.Types
 
             return string.Empty;
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -148,6 +155,8 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

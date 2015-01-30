@@ -14,11 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using Rock.Data;
-using Rock.Model;
+
+using Rock.Reporting;
 
 namespace Rock.Field.Types
 {
@@ -28,6 +27,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class AudioUrlFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -68,5 +70,26 @@ namespace Rock.Field.Types
             // value was null
             return null;
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        #endregion
+
     }
 }

@@ -33,6 +33,8 @@ namespace Rock.Field.Types
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
 
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -77,6 +79,10 @@ namespace Rock.Field.Types
 
             return value;
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -145,6 +151,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -198,5 +208,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

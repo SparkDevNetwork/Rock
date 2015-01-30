@@ -522,7 +522,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if (attributeFilter != null && attributeFilter.Controls.Count > 0 )
                     {
                         var filterValues = attribute.FieldType.Field.GetFilterValues( attributeFilter.Controls[0], attribute.QualifierValues );
-                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, "Value", filterValues );
+                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, filterValues );
                         if ( expression != null )
                         {
                             var attributeValues = attributeValueService
