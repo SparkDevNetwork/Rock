@@ -30,7 +30,14 @@ namespace Rock.Data
         /// <value>
         /// The defined type GUID.
         /// </value>
-        public Guid DefinedTypeGuid { get; set; }
+        public Guid? DefinedTypeGuid { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueAttribute"/> class.
+        /// </summary>
+        public DefinedValueAttribute()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueAttribute" /> class.
