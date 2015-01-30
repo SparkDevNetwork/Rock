@@ -34,6 +34,10 @@
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
 
+
+// Spacing & Media Query Helpers
+// -------------------------
+
 // spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
 @spacing-sm: 0.25;
 @spacing-md: 0.5;
@@ -44,6 +48,19 @@
 @spacing-md-px: @grid-gutter-width * @spacing-md;
 @spacing-lg-px: @grid-gutter-width * @spacing-lg;
 @spacing-xl-px: @grid-gutter-width * @spacing-xl;
+
+// Media queries
+// Example usage:
+// @media @sm {
+//   body {
+//     background: red;
+//   }
+// }
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
 
 // Page Styling
 // -------------------------
@@ -122,15 +139,15 @@
 @title-firstword-weight: @font-weight-bold;
 @title-default-weight: @font-weight-light;
 
-// Banner 
+// Banner
 @banner-text-color: @accent-bold-text-color;
 @banner-font-weight: @title-default-weight;
 @banner-firstword-weight: @title-firstword-weight;
 @banner-font-size: 14px;
 @banner-bg: @accent-bold-color;
 @banner-border-radius: 0;
-@banner-border-color: transparent;  
-@banner-border-size: 0;  
+@banner-border-color: transparent;
+@banner-border-size: 0;
 @banner-padding: 4px 12px;
 
 // Treeview //todo needed?
@@ -155,8 +172,8 @@
 @smartsearch-border-color: #2c2c2c;
 @smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
 @smartsearch-input-text-color: @header-text-color;
-@smartsearch-input-selection-background: #2e2e2e; 
-@smartsearch-input-selection-text-color: #fff; 
+@smartsearch-input-selection-background: #2e2e2e;
+@smartsearch-input-selection-text-color: #fff;
 
 // Custom Labels
 @label-campus-bg: #83758f;
@@ -176,7 +193,7 @@
 @btn-authenication-border:      darken(@accent-color, 5%);
 
 // Scrollbar Items
-@scroll-track-color: #aaa; 
+@scroll-track-color: #aaa;
 @scroll-thumb-color: #ccc;
 
 // Block Specific
