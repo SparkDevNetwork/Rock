@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock;
+
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -32,6 +30,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class TimeFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Formats time display
         /// </summary>
@@ -52,6 +53,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -110,6 +115,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
@@ -121,59 +130,7 @@ namespace Rock.Field.Types
             get { return ComparisonHelper.DateFilterComparisonTypes; }
         }
 
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( string id )
-        {
-            var timePicker = new TimePicker();
-            timePicker.ID = string.Format( "{0}_timePicker", id );
-            timePicker.AddCssClass( "js-filter-control" );
-            return timePicker;
-        }
+        #endregion
 
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue( Control control )
-        {
-            var timePicker = control as TimePicker;
-            if ( timePicker != null && timePicker.SelectedTime.HasValue )
-            {
-                return timePicker.SelectedTime.Value.ToString( "o" );
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue( Control control, string value )
-        {
-            var timePicker = control as TimePicker;
-            if ( timePicker != null )
-            {
-                timePicker.SelectedTime = value.AsTimeSpan();
-            }
-        }
-
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
-        {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.TIME;
-            return filterConfig;
-        }
     }
 }

@@ -16,12 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Constants;
-using Rock.Model;
-using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -32,6 +26,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class DayOfWeekFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -53,7 +50,11 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
-        
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -122,5 +123,8 @@ namespace Rock.Field.Types
             filterConfig.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
             return filterConfig;
         }
+
+        #endregion
+
     }
 }

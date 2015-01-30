@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Field
 {
@@ -27,41 +28,8 @@ namespace Rock.Field
     /// </summary>
     public interface IFieldType
     {
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
 
-        /// <summary>
-        /// Formats the value based on the type and qualifiers
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
-
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
-
-        /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        bool IsValid( string value, bool required, out string message );
+        #region Configuration
 
         /// <summary>
         /// Gets a list of the configuration keys.
@@ -89,6 +57,39 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues );
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
+
+        /// <summary>
+        /// Formats the value based on the type and qualifiers
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
+
+        #endregion
+
+        #region Edit Control 
+
         /// <summary>
         /// Creates an HTML control.
         /// </summary>
@@ -114,6 +115,21 @@ namespace Rock.Field
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
         /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsValid( string value, bool required, out string message );
+
+        #endregion
+
+        #region Filter Control 
+
+        /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -122,7 +138,7 @@ namespace Rock.Field
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id );
 
         /// <summary>
-        /// Gets the filter value.
+        /// Gets the filter values.
         /// </summary>
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -142,10 +158,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <returns></returns>
-        Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, string propertyName, List<string> filterValues );
+        Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues );
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
@@ -154,9 +169,16 @@ namespace Rock.Field
         /// <returns></returns>
         Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute );
 
+        #endregion
+
+        #region Event Handlers 
+
         /// <summary>
         /// Occurs when a qualifier is updated.
         /// </summary>
         event EventHandler QualifierUpdated;
+
+        #endregion
+
     }
 }

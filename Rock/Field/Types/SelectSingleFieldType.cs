@@ -21,8 +21,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Model;
-using Rock.Reporting;
+
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,6 +33,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class SelectSingleFieldType : FieldType
     {
+
+        #region Configuration
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -116,6 +119,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -138,6 +145,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -200,8 +211,6 @@ namespace Rock.Field.Types
 
         }
 
-        
-
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
@@ -231,6 +240,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -242,7 +255,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
             {
                 var cbList = new RockCheckBoxList();
-                cbList.ID = string.Format( "{0}_tbText", id );
+                cbList.ID = string.Format( "{0}_cbList", id );
                 cbList.AddCssClass( "js-filter-control" );
                 cbList.RepeatDirection = RepeatDirection.Horizontal;
 
@@ -294,8 +307,13 @@ namespace Rock.Field.Types
             {
                 CheckBoxList cbl = (CheckBoxList)filterControl;
                 foreach ( ListItem li in cbl.Items )
+                {
                     if ( li.Selected )
+                    {
                         cblValues.Add( li.Value );
+                    }
+                }
+
                 values.Add( cblValues.AsDelimited<string>( "," ) );
             }
 
@@ -310,7 +328,7 @@ namespace Rock.Field.Types
         /// <param name="filterValues"></param>
         public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
         {
-            if ( filterControl != null && filterValues.Any() )
+            if ( filterControl != null && filterControl is CheckBoxList && filterValues.Any() )
             {
                 string value = filterValues[0];
                 if ( value != null )
@@ -318,21 +336,20 @@ namespace Rock.Field.Types
                     List<string> values = new List<string>();
                     values.AddRange( value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
 
-                    if ( filterControl != null && filterControl is CheckBoxList )
-                    {
-                        CheckBoxList cbl = (CheckBoxList)filterControl;
-                        foreach ( ListItem li in cbl.Items )
-                            li.Selected = values.Contains( li.Value );
+                    CheckBoxList cbl = (CheckBoxList)filterControl;
+                    foreach ( ListItem li in cbl.Items )
+                    { 
+                        li.Selected = values.Contains( li.Value );
                     }
                 }
             }
         }
 
-        public override System.Linq.Expressions.Expression FilterExpression( Data.IService serviceInstance, System.Linq.Expressions.ParameterExpression parameterExpression, string propertyName, List<string> filterValues )
+        public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
         {
             if ( filterValues.Count == 1 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
 
                 List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 if ( selectedValues.Any() )
@@ -344,6 +361,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

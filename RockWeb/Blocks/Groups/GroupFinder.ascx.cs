@@ -285,6 +285,17 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the Click event of the btnClear control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnClear_Click( object sender, EventArgs e )
+        {
+            acAddress.SetValues(null);
+            BuildDynamicControls();
+        }   
+     
+        /// <summary>
         /// Handles the RowSelected event of the gGroups control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -409,16 +420,7 @@ namespace RockWeb.Blocks.Groups
                 acAddress.Visible = true;
                 if ( CurrentPerson != null )
                 {
-                    var homeLocation = CurrentPerson.GetHomeLocation();
-                    if ( homeLocation != null )
-                    {
-                        acAddress.Street1 = homeLocation.Street1;
-                        acAddress.Street2 = homeLocation.Street2;
-                        acAddress.City = homeLocation.City;
-                        acAddress.State = homeLocation.State;
-                        acAddress.PostalCode = homeLocation.PostalCode;
-                        acAddress.Country = homeLocation.Country;
-                    }
+                    acAddress.SetValues( CurrentPerson.GetHomeLocation() );
                 }
 
                 btnSearch.Visible = true;
@@ -597,7 +599,7 @@ namespace RockWeb.Blocks.Groups
                     if ( filterControl != null )
                     {
                         var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, "Value", filterValues );
+                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, filterValues );
                         if ( expression != null )
                         {
                             var attributeValues = attributeValueService

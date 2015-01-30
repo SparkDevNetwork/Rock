@@ -16,11 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Constants;
-using Rock.Extension;
+
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,33 +30,8 @@ namespace Rock.Field.Types
     /// </summary>
     public class ComponentFieldType : FieldType
     {
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                Guid entityTypeGuid = value.AsGuid();
-                if ( entityTypeGuid != Guid.Empty )
-                {
-                    var entityType = EntityTypeCache.Read( entityTypeGuid );
-                    if ( entityType != null )
-                    {
-                        formattedValue = entityType.FriendlyName;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -120,6 +93,42 @@ namespace Rock.Field.Types
                 ( (TextBox)controls[0] ).Text = configurationValues["container"].Value;
             }
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Guid entityTypeGuid = value.AsGuid();
+                if ( entityTypeGuid != Guid.Empty )
+                {
+                    var entityType = EntityTypeCache.Read( entityTypeGuid );
+                    if ( entityType != null )
+                    {
+                        formattedValue = entityType.FriendlyName;
+                    }
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -185,5 +194,8 @@ namespace Rock.Field.Types
                 picker.SelectedValue = guid.ToString().ToUpper();
             }
         }
+
+        #endregion
+
     }
 }

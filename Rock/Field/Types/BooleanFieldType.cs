@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -28,58 +27,8 @@ namespace Rock.Field.Types
     /// </summary>
     public class BooleanFieldType : FieldType
     {
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-            bool boolValue = value.AsBooleanOrNull() ?? false;
 
-            if ( boolValue )
-            {
-                if ( condensed )
-                {
-                    formattedValue = "Y";
-                }
-                else
-                {
-                    if ( configurationValues.ContainsKey( "truetext" ) )
-                    {
-                        formattedValue = configurationValues["truetext"].Value;
-                    }
-                    else
-                    {
-                        formattedValue = "Yes";
-                    }
-                }
-            }
-            else
-            {
-                if ( condensed )
-                {
-                    formattedValue = "N";
-                }
-                else
-                {
-                    if ( configurationValues.ContainsKey( "falsetext" ) )
-                    {
-                        formattedValue = configurationValues["falsetext"].Value;
-                    }
-                    else
-                    {
-                        formattedValue = "No";
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -161,26 +110,66 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
         /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// Returns the field's current value(s)
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsValid( string value, bool required, out string message )
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            bool boolValue = false;
-            if ( !bool.TryParse( value, out boolValue ) )
+            string formattedValue = string.Empty;
+            bool boolValue = value.AsBooleanOrNull() ?? false;
+
+            if ( boolValue )
             {
-                message = "Invalid boolean value";
-                return false;
+                if ( condensed )
+                {
+                    formattedValue = "Y";
+                }
+                else
+                {
+                    if ( configurationValues.ContainsKey( "truetext" ) )
+                    {
+                        formattedValue = configurationValues["truetext"].Value;
+                    }
+                    else
+                    {
+                        formattedValue = "Yes";
+                    }
+                }
+            }
+            else
+            {
+                if ( condensed )
+                {
+                    formattedValue = "N";
+                }
+                else
+                {
+                    if ( configurationValues.ContainsKey( "falsetext" ) )
+                    {
+                        formattedValue = configurationValues["falsetext"].Value;
+                    }
+                    else
+                    {
+                        formattedValue = "No";
+                    }
+                }
             }
 
-            return base.IsValid( value, required, out message );
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
@@ -240,6 +229,29 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsValid( string value, bool required, out string message )
+        {
+            bool boolValue = false;
+            if ( !bool.TryParse( value, out boolValue ) )
+            {
+                message = "Invalid boolean value";
+                return false;
+            }
+
+            return base.IsValid( value, required, out message );
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews

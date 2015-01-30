@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -29,6 +29,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class VideoFileFieldType : FileFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -88,5 +91,8 @@ namespace Rock.Field.Types
             // value or binaryfile was null
             return null;
         }
+
+        #endregion
+
     }
 }

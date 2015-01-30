@@ -19,11 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock;
-using Rock.Constants;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,53 +34,12 @@ namespace Rock.Field.Types
     [Serializable]
     public class DefinedValueFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                bool useDescription = false;
-                if ( !condensed &&
-                     configurationValues != null &&
-                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
-                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
-                {
-                    useDescription = true;
-                }
-
-                var names = new List<string>();
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid guid = Guid.Empty;
-                    if ( Guid.TryParse( guidValue, out guid ) )
-                    {
-                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                        if ( definedValue != null )
-                        {
-                            names.Add( useDescription ? definedValue.Description : definedValue.Value );
-                        }
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
-        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -199,6 +157,58 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                bool useDescription = false;
+                if ( !condensed &&
+                     configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+                {
+                    useDescription = true;
+                }
+
+                var names = new List<string>();
+                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid guid = Guid.Empty;
+                    if ( Guid.TryParse( guidValue, out guid ) )
+                    {
+                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        if ( definedValue != null )
+                        {
+                            names.Add( useDescription ? definedValue.Description : definedValue.Value );
+                        }
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -326,32 +336,46 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the filter compare control.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute)
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-
-            if ( attribute.QualifierValues.ContainsKey( DEFINED_TYPE_KEY ) )
-            {
-                int? definedTypeId = attribute.QualifierValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
-                if (definedTypeId.HasValue)
-                {
-                    var definedType = Rock.Web.Cache.DefinedTypeCache.Read( definedTypeId.Value );
-                    if (definedType != null)
-                    {
-                        filterConfig.DefinedTypeGuid = definedType.Guid;
-                    }
-                }
-            }
-
-            return filterConfig;
+            bool allowMultiple =  configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean();
+            RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( allowMultiple ? ComparisonHelper.ContainsFilterComparisonTypes : ComparisonHelper.BinaryFilterComparisonTypes, false );
+            ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
+            ddlCompare.AddCssClass( "js-filter-compare" );
+            return ddlCompare;
         }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
+            foreach( var keyVal in configurationValues )
+            {
+                overrideConfigValues.Add( keyVal.Key, keyVal.Value );
+            }
+            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "false" ) );
+
+            return base.FilterValueControl( overrideConfigValues, id );
+        }
+
+        #endregion
+
+        #region Entity Methods
 
         /// <summary>
         /// Gets the edit value as the IEntity.Id
@@ -410,5 +434,35 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+
+            if ( attribute.QualifierValues.ContainsKey( DEFINED_TYPE_KEY ) )
+            {
+                int? definedTypeId = attribute.QualifierValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
+                if ( definedTypeId.HasValue )
+                {
+                    var definedType = Rock.Web.Cache.DefinedTypeCache.Read( definedTypeId.Value );
+                    if ( definedType != null )
+                    {
+                        filterConfig.DefinedTypeGuid = definedType.Guid;
+                    }
+                }
+            }
+
+            return filterConfig;
+        }
+
     }
 }

@@ -213,7 +213,7 @@ namespace Rock.Reporting.DataFilter
                     RockDropDownList ddlText;
                     if ( entityField.PropertyType == typeof( Guid ) )
                     {
-                        ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.GuidFilterComparisonTypes );
+                        ddlText = ComparisonHelper.ComparisonControl( ComparisonHelper.BinaryFilterComparisonTypes );
                     }
                     else
                     {

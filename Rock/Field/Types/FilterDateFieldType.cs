@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,44 +29,8 @@ namespace Rock.Field.Types
     [Serializable]
     public class FilterDateFieldType : DateFieldType
     {
-        /// <summary>
-        /// Formats date display
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            if ( !string.IsNullOrWhiteSpace(value) )
-            {
-                if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    var valueParts = value.Split( ':' );
-                    if ( valueParts.Length > 1 )
-                    {
-                        int daysOffset = valueParts[1].AsInteger();
-                        if ( daysOffset != 0)
-                        {
-                            return "Current Date " + ( daysOffset > 0 ? " plus " : " minus " ) + Math.Abs(daysOffset).ToString() + " days";
-                        }
-                    }
 
-                    return "Current Date";
-                }
-                else
-                {
-                    var dateValue = value.AsDateTime();
-                    if (dateValue.HasValue)
-                    {
-                        return dateValue.Value.ToShortDateString();
-                    }
-                }
-            } 
-
-            return base.FormatValue( parentControl, value, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -138,6 +100,42 @@ namespace Rock.Field.Types
 
             return values;
         }
+
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var valueParts = value.Split( ':' );
+                if ( valueParts.Length > 1 )
+                {
+                    int daysOffset = valueParts[1].AsInteger();
+                    if ( daysOffset != 0 )
+                    {
+                        return "Current Date " + ( daysOffset > 0 ? " plus " : " minus " ) + Math.Abs( daysOffset ).ToString() + " days";
+                    }
+                }
+
+                return "Current Date";
+            }
+
+            return base.FormatValue( parentControl, value, configurationValues, condensed );
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -209,6 +207,16 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            // This field type does not support filtering ( it should only ever be used as a filter )
+            return null;
+        }
+        #endregion
 
         /// <summary>
         /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
