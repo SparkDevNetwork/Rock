@@ -113,11 +113,20 @@ namespace Rock.Reporting
                     if ( definedValueAttribute != null )
                     {
                         // Defined Value Properties
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                        var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
-                        entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                        entityProperty.DefinedTypeGuid = definedType.Guid;
+                        Guid? definedTypeGuid = ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid;
+                        if ( definedTypeGuid.HasValue )
+                        {
+                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                            var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
+                            entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                            entityProperty.DefinedTypeGuid = definedType.Guid;
+                        }
+                        else
+                        {
+                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
+                        }
                     }
                     else
                     {
