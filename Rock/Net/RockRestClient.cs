@@ -22,8 +22,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Newtonsoft.Json;
-using Rock.Data;
-using Rock.Security;
 
 namespace Rock.Net
 {
@@ -146,7 +144,7 @@ namespace Rock.Net
         public void Login( string username, string password, string rockLoginUrl = "api/auth/login" )
         {
             this.Headers[HttpRequestHeader.ContentType] = "application/json";
-            LoginParameters loginParameters = new LoginParameters { Username = username, Password = password };
+            var loginParameters = new { Username = username, Password = password };
             this.UploadString( new Uri( rockBaseUri, rockLoginUrl ), loginParameters.ToJson() );
         }
 
@@ -166,7 +164,7 @@ namespace Rock.Net
         {
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
 
-            Uri requestUri = new Uri( rockBaseUri, string.Format("{0}?$filter=Guid eq guid'{1}'&$select=Id", getPath, guid));
+            Uri requestUri = new Uri( rockBaseUri, string.Format( "{0}?$filter=Guid eq guid'{1}'&$select=Id", getPath, guid ) );
 
             HttpContent resultContent;
             HttpError httpError = null;
@@ -300,7 +298,7 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data)
+        public void PostData<T>( string postPath, T data )
         {
             PostPutData( postPath, data, HttpMethod.Post );
         }
@@ -311,7 +309,7 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PutData<T>( string postPath, T data ) where T : IEntity
+        public void PutData<T>( string postPath, T data )
         {
             PostPutData( postPath, data, HttpMethod.Put );
         }
@@ -361,8 +359,6 @@ namespace Rock.Net
 #endif
                     } ).Wait();
                 }
-                
-                
             } );
 
             if ( httpMethod == HttpMethod.Post )
@@ -372,16 +368,17 @@ namespace Rock.Net
             }
             else
             {
-                if ( data is IEntity )
+                int? id = data.GetPropertyValue( "Id" ) as int?;
+                if ( id != null )
                 {
                     // PUT is for UPDATEs
-                    Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", ( data as IEntity ).Id ) );
+                    Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", id ) );
 
                     httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
                 }
                 else
                 {
-                    throw new Exception( "Data must be of type IEntity to do PUTS" );
+                    throw new Exception( "Data must be have an 'Id' property to do PUTS" );
                 }
             }
 
@@ -440,8 +437,6 @@ namespace Rock.Net
 #endif
                     } ).Wait();
                 }
-
-
             } );
 
             // POST is for INSERTs
@@ -507,8 +502,8 @@ namespace Rock.Net
         public string GetXml( string getPath, int maxWaitMilliseconds = -1, string odataFilter = null )
         {
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/xml"));
-            
+            httpClient.DefaultRequestHeaders.Accept.Add( new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue( "application/xml" ) );
+
             Uri requestUri;
 
             if ( !string.IsNullOrWhiteSpace( odataFilter ) )
@@ -526,7 +521,6 @@ namespace Rock.Net
 
             try
             {
-
                 httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     if ( postTask.Result.IsSuccessStatusCode )
@@ -541,8 +535,7 @@ namespace Rock.Net
                     {
                         throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
                     }
-
-               } ).Wait();
+                } ).Wait();
             }
             catch ( AggregateException ex )
             {
