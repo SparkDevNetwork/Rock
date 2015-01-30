@@ -263,7 +263,7 @@ namespace Rock.Model
 
             person.LoadAttributes();
 
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == new Guid( "0B187C81-2106-4875-82B6-FBF1277AE23B" ) ) ).Select( a => a.Key );
 
             foreach ( string attrib in discAttributes )
             {
@@ -323,7 +323,7 @@ namespace Rock.Model
         {
             person.LoadAttributes();
 
-            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == new Guid( "0B187C81-2106-4875-82B6-FBF1277AE23B" ) ) ).Select( a => a.Key );
 
             foreach ( string attrib in discAttributes )
             {
