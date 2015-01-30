@@ -1,0 +1,14 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# You can install the EditorConfig plugin for Visual studio using
+# the Extension Manager.
+
+# top-most EditorConfig file
+root = true
+
+# LESS files that compile to CSS
+[*.less]
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+

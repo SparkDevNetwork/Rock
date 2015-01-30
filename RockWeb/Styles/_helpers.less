@@ -1,64 +1,93 @@
 ﻿/*
-    Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
-    
-    1. Colors - creates utility classes for each of the accent colors
-    2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Variables - specific variables for sizing classes and media query helpers
+  2. Colors - creates utility classes for each of the accent colors
+  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
 
 */
 
 
-// 1. Colors
+// 1. Variables
+// -------------------------
+
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
+@spacing-sm-px: @grid-gutter-width * @spacing-sm;
+@spacing-md-px: @grid-gutter-width * @spacing-md;
+@spacing-lg-px: @grid-gutter-width * @spacing-lg;
+@spacing-xl-px: @grid-gutter-width * @spacing-xl;
+
+// Media queries
+// Example usage:
+// @media @sm {
+//   body {
+//     background: red;
+//   }
+// }
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+
+
+// 2. Colors
 // -------------------------
 
 // accent color
 .accent-color {
-    background-color: @accent-color;
-    color: @accent-text-color;
+  background-color: @accent-color;
+  color: @accent-text-color;
 }
 
 .accent-color-bordered {
-    background-color: @accent-color;
-    color: @accent-text-color;
-    border: 1px solid darken(@accent-color, 10%);
+  background-color: @accent-color;
+  color: @accent-text-color;
+  border: 1px solid darken(@accent-color, 10%);
 }
 
 // accent light color
 .accent-light-color {
-    background-color: @accent-light-color;
-    color: @accent-light-text-color;
+  background-color: @accent-light-color;
+  color: @accent-light-text-color;
 }
 
 .accent-light-color-bordered {
-    background-color: @accent-light-color;
-    color: @accent-light-text-color;
-    border: 1px solid darken(@accent-light-color, 10%);
+  background-color: @accent-light-color;
+  color: @accent-light-text-color;
+  border: 1px solid darken(@accent-light-color, 10%);
 }
 
 // accent semibold color
 .accent-semibold-color {
-    background-color: @accent-semibold-color;
-    color: @accent-semibold-text-color;
+  background-color: @accent-semibold-color;
+  color: @accent-semibold-text-color;
 }
 
 .accent-semibold-color-bordered {
-    background-color: @accent-semibold-color;
-    color: @accent-semibold-text-color;
-    border: 1px solid darken(@accent-semibold-color, 10%);
+  background-color: @accent-semibold-color;
+  color: @accent-semibold-text-color;
+  border: 1px solid darken(@accent-semibold-color, 10%);
 }
 
 // accent bold color
 .accent-bold-color {
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
+  background-color: @accent-bold-color;
+  color: @accent-bold-text-color;
 }
 
 .accent-bold-color-bordered {
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
-    border: 1px solid darken(@accent-bold-color, 10%);
+  background-color: @accent-bold-color;
+  color: @accent-bold-text-color;
+  border: 1px solid darken(@accent-bold-color, 10%);
 }
 
-// 2. Spacing (note: default @grid-gutter-width is 30px in BS3)
+// 3. Spacing (note: default @grid-gutter-width is 30px in BS3)
 // -------------------------
 
 // all (top, bottom, right, left)
