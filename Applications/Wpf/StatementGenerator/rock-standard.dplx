@@ -12,7 +12,7 @@
 					<eventDriven connectionString=""></eventDriven>
 				</query>
 				<header id="TranListHeader" height="45.5">
-					<label text="Date" font="HelveticaBold" width="72" id="lblDate" height="14" x="6" y="30" fontSize="10"/>
+					<label text="Date" font="HelveticaBold" id="lblDate" height="14" y="30" fontSize="10" x="12" width="65.1"/>
 					<label font="HelveticaBold" width="72" height="14" fontSize="10" text="Type" id="lblCurrencyTypeValueName" x="57" y="30"/>
 					<label font="HelveticaBold" height="14" fontSize="10" id="lblAccounts" text="Account(s)" x="284.5" width="213.5" y="30"/>
 					<label font="HelveticaBold" id="lblAmount" text="Amount" height="14" align="right" fontSize="10" width="99.1" x="171" y="30"/>
@@ -24,7 +24,7 @@
 					<recordBox x="390" y="6" height="18" width="108" id="rbTopTotalAmount" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00"/>
 				</header>
 				<detail autoSplit="true" id="TranListDetail" height="15">
-					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" fontSize="9" dataFormat="M/dd/yyyy" align="right" width="45" x="0" y="2"/>
+					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" fontSize="9" dataFormat="M/dd/yyyy" align="right" x="0" y="2" width="50"/>
 					<recordBox dataFormat="" height="14" fontSize="9" field="CurrencyTypeValueName" id="rbCurrencyTypeValueName" x="56.5" width="114" y="2"/>
 					<recordBox height="14" width="100" field="Amount" align="right" fontSize="9" dataFormat="$#,##0.00" id="rbAmount" x="172" y="2"/>
 					<subReport id="TransactionDetailReport" x="285" width="257.1" y="2">
