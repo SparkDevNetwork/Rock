@@ -171,30 +171,50 @@ namespace Rock.Rest.Controllers
                 a.TransactionDateTime,
                 CurrencyTypeValueName = a.CurrencyTypeValue.Value,
                 a.Summary,
-                Account = a.TransactionDetails.FirstOrDefault().Account,
-                TotalAmount = a.TransactionDetails.Sum( d => d.Amount )
+                Details = a.TransactionDetails.Select( d => new
+                {
+                    d.AccountId,
+                    AccountName = d.Account.Name,
+                    a.Summary,
+                    d.Amount
+                } ).OrderBy( x => x.AccountName ),
             } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
             dataTable.Columns.Add( "TransactionDateTime", typeof( DateTime ) );
             dataTable.Columns.Add( "CurrencyTypeValueName" );
             dataTable.Columns.Add( "Summary" );
-            dataTable.Columns.Add( "AccountId", typeof( int ) );
-            dataTable.Columns.Add( "AccountName" );
             dataTable.Columns.Add( "Amount", typeof( decimal ) );
+            dataTable.Columns.Add( "Details", typeof( DataTable ) );
 
             var list = selectQry.ToList();
 
             dataTable.BeginLoadData();
             foreach ( var fieldItems in list )
             {
+                DataTable detailTable = new DataTable( "transaction_details" );
+                detailTable.Columns.Add( "AccountId", typeof( int ) );
+                detailTable.Columns.Add( "AccountName" );
+                detailTable.Columns.Add( "Summary" );
+                detailTable.Columns.Add( "Amount", typeof( decimal ) );
+                foreach ( var detail in fieldItems.Details )
+                {
+                    var detailArray = new object[] {
+                        detail.AccountId,
+                        detail.AccountName,
+                        detail.Summary,
+                        detail.Amount
+                    };
+
+                    detailTable.Rows.Add( detailArray );
+                }
+
                 var itemArray = new object[] {
                     fieldItems.TransactionDateTime,
                     fieldItems.CurrencyTypeValueName,
                     fieldItems.Summary,
-                    fieldItems.Account.Id,
-                    fieldItems.Account.Name,
-                    fieldItems.TotalAmount
+                    fieldItems.Details.Sum(a => a.Amount),
+                    detailTable
                 };
 
                 dataTable.Rows.Add( itemArray );
