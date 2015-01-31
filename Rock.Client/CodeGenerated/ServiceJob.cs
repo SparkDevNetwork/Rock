@@ -32,16 +32,7 @@ namespace Rock.Client
     public partial class ServiceJob
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public bool? IsActive { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Assembly { get; set; }
@@ -53,7 +44,13 @@ namespace Rock.Client
         public string CronExpression { get; set; }
 
         /// <summary />
-        public DateTime? LastSuccessfulRunDateTime { get; set; }
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool? IsActive { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public DateTime? LastRunDateTime { get; set; }
@@ -62,13 +59,19 @@ namespace Rock.Client
         public int? LastRunDurationSeconds { get; set; }
 
         /// <summary />
+        public string LastRunSchedulerName { get; set; }
+
+        /// <summary />
         public string LastStatus { get; set; }
 
         /// <summary />
         public string LastStatusMessage { get; set; }
 
         /// <summary />
-        public string LastRunSchedulerName { get; set; }
+        public DateTime? LastSuccessfulRunDateTime { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public string NotificationEmails { get; set; }
@@ -87,9 +90,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

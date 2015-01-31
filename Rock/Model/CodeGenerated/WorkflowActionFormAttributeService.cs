@@ -87,20 +87,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this WorkflowActionFormAttribute target, WorkflowActionFormAttribute source )
         {
-            target.WorkflowActionFormId = source.WorkflowActionFormId;
+            target.Id = source.Id;
             target.AttributeId = source.AttributeId;
-            target.Order = source.Order;
-            target.IsVisible = source.IsVisible;
+            target.HideLabel = source.HideLabel;
             target.IsReadOnly = source.IsReadOnly;
             target.IsRequired = source.IsRequired;
-            target.HideLabel = source.HideLabel;
-            target.PreHtml = source.PreHtml;
+            target.IsVisible = source.IsVisible;
+            target.Order = source.Order;
             target.PostHtml = source.PostHtml;
+            target.PreHtml = source.PreHtml;
+            target.WorkflowActionFormId = source.WorkflowActionFormId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

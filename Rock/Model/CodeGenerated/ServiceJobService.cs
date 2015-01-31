@@ -87,26 +87,26 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ServiceJob target, ServiceJob source )
         {
-            target.IsSystem = source.IsSystem;
-            target.IsActive = source.IsActive;
-            target.Name = source.Name;
-            target.Description = source.Description;
+            target.Id = source.Id;
             target.Assembly = source.Assembly;
             target.Class = source.Class;
             target.CronExpression = source.CronExpression;
-            target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
+            target.Description = source.Description;
+            target.IsActive = source.IsActive;
+            target.IsSystem = source.IsSystem;
             target.LastRunDateTime = source.LastRunDateTime;
             target.LastRunDurationSeconds = source.LastRunDurationSeconds;
+            target.LastRunSchedulerName = source.LastRunSchedulerName;
             target.LastStatus = source.LastStatus;
             target.LastStatusMessage = source.LastStatusMessage;
-            target.LastRunSchedulerName = source.LastRunSchedulerName;
+            target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
+            target.Name = source.Name;
             target.NotificationEmails = source.NotificationEmails;
             target.NotificationStatus = source.NotificationStatus;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

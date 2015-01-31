@@ -32,16 +32,16 @@ namespace Rock.Client
     public partial class WorkflowActionFormAttribute
     {
         /// <summary />
-        public int WorkflowActionFormId { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public Attribute Attribute { get; set; }
 
         /// <summary />
         public int AttributeId { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public bool IsVisible { get; set; }
+        public bool HideLabel { get; set; }
 
         /// <summary />
         public bool IsReadOnly { get; set; }
@@ -50,16 +50,19 @@ namespace Rock.Client
         public bool IsRequired { get; set; }
 
         /// <summary />
-        public bool HideLabel { get; set; }
+        public bool IsVisible { get; set; }
 
         /// <summary />
-        public string PreHtml { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
         public string PostHtml { get; set; }
 
         /// <summary />
-        public Attribute Attribute { get; set; }
+        public string PreHtml { get; set; }
+
+        /// <summary />
+        public int WorkflowActionFormId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -72,9 +75,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

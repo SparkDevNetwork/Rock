@@ -99,15 +99,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ContentChannelType target, ContentChannelType source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.DateRangeType = source.DateRangeType;
             target.DisablePriority = source.DisablePriority;
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

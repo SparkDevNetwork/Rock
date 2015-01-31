@@ -63,12 +63,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -105,20 +99,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
         {
-            target.IsTemporary = source.IsTemporary;
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
-            target.FileName = source.FileName;
-            target.MimeType = source.MimeType;
-            target.Description = source.Description;
-            target.StorageEntitySettings = source.StorageEntitySettings;
-            target.Path = source.Path;
             target.ContentLastModified = source.ContentLastModified;
+            target.Description = source.Description;
+            target.FileName = source.FileName;
+            target.IsSystem = source.IsSystem;
+            target.IsTemporary = source.IsTemporary;
+            target.MimeType = source.MimeType;
+            target.Path = source.Path;
+            target.StorageEntitySettings = source.StorageEntitySettings;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

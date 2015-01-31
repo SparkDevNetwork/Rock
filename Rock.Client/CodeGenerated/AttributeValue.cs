@@ -32,7 +32,10 @@ namespace Rock.Client
     public partial class AttributeValue
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public Attribute Attribute { get; set; }
 
         /// <summary />
         public int AttributeId { get; set; }
@@ -41,16 +44,16 @@ namespace Rock.Client
         public int? EntityId { get; set; }
 
         /// <summary />
-        public string Value { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
-        public decimal? ValueAsNumeric { get; set; }
+        public string Value { get; set; }
 
         /// <summary />
         public DateTime? ValueAsDateTime { get; set; }
 
         /// <summary />
-        public Attribute Attribute { get; set; }
+        public decimal? ValueAsNumeric { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -63,9 +66,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

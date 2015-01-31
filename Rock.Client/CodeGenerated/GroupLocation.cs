@@ -32,13 +32,19 @@ namespace Rock.Client
     public partial class GroupLocation
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
         public int GroupId { get; set; }
 
         /// <summary />
-        public int LocationId { get; set; }
+        public DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary />
         public int? GroupLocationTypeValueId { get; set; }
+
+        /// <summary />
+        public int? GroupMemberPersonAliasId { get; set; }
 
         /// <summary />
         public bool IsMailingLocation { get; set; }
@@ -47,13 +53,10 @@ namespace Rock.Client
         public bool IsMappedLocation { get; set; }
 
         /// <summary />
-        public int? GroupMemberPersonAliasId { get; set; }
-
-        /// <summary />
         public Location Location { get; set; }
 
         /// <summary />
-        public DefinedValue GroupLocationTypeValue { get; set; }
+        public int LocationId { get; set; }
 
         /// <summary />
         public ICollection<Schedule> Schedules { get; set; }
@@ -69,9 +72,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

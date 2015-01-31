@@ -93,21 +93,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this WorkflowActionType target, WorkflowActionType source )
         {
+            target.Id = source.Id;
             target.ActivityTypeId = source.ActivityTypeId;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.EntityTypeId = source.EntityTypeId;
-            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
-            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
-            target.WorkflowFormId = source.WorkflowFormId;
             target.CriteriaAttributeGuid = source.CriteriaAttributeGuid;
             target.CriteriaComparisonType = source.CriteriaComparisonType;
             target.CriteriaValue = source.CriteriaValue;
+            target.EntityTypeId = source.EntityTypeId;
+            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
+            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.WorkflowFormId = source.WorkflowFormId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

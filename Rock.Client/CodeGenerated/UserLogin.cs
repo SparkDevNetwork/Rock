@@ -32,31 +32,16 @@ namespace Rock.Client
     public partial class UserLogin
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public string ApiKey { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
-
-        /// <summary />
-        public string UserName { get; set; }
-
-        /// <summary />
-        public bool? IsConfirmed { get; set; }
-
-        /// <summary />
-        public DateTime? LastActivityDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? LastLoginDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? LastPasswordChangedDateTime { get; set; }
-
-        /// <summary />
-        public bool? IsOnLine { get; set; }
-
-        /// <summary />
-        public bool? IsLockedOut { get; set; }
-
-        /// <summary />
-        public DateTime? LastLockedOutDateTime { get; set; }
 
         /// <summary />
         public int? FailedPasswordAttemptCount { get; set; }
@@ -65,16 +50,34 @@ namespace Rock.Client
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
 
         /// <summary />
-        public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
+        public bool? IsConfirmed { get; set; }
 
         /// <summary />
-        public string ApiKey { get; set; }
+        public bool? IsLockedOut { get; set; }
+
+        /// <summary />
+        public bool? IsOnLine { get; set; }
+
+        /// <summary />
+        public DateTime? LastActivityDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastLockedOutDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastLoginDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastPasswordChangedDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
         /// <summary />
         public int? PersonId { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public string UserName { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -87,9 +90,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

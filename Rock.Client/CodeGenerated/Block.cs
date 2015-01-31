@@ -32,40 +32,43 @@ namespace Rock.Client
     public partial class Block
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int? PageId { get; set; }
-
-        /// <summary />
-        public int? LayoutId { get; set; }
+        public BlockType BlockType { get; set; }
 
         /// <summary />
         public int BlockTypeId { get; set; }
 
         /// <summary />
-        public string Zone { get; set; }
+        public string CssClass { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int? LayoutId { get; set; }
 
         /// <summary />
         public string Name { get; set; }
 
         /// <summary />
-        public string CssClass { get; set; }
-
-        /// <summary />
-        public string PreHtml { get; set; }
-
-        /// <summary />
-        public string PostHtml { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
         public int OutputCacheDuration { get; set; }
 
         /// <summary />
-        public BlockType BlockType { get; set; }
+        public int? PageId { get; set; }
+
+        /// <summary />
+        public string PostHtml { get; set; }
+
+        /// <summary />
+        public string PreHtml { get; set; }
+
+        /// <summary />
+        public string Zone { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -78,9 +81,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

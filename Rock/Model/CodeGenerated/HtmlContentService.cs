@@ -87,20 +87,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this HtmlContent target, HtmlContent source )
         {
-            target.BlockId = source.BlockId;
-            target.EntityValue = source.EntityValue;
-            target.Version = source.Version;
-            target.Content = source.Content;
-            target.IsApproved = source.IsApproved;
+            target.Id = source.Id;
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedDateTime = source.ApprovedDateTime;
-            target.StartDateTime = source.StartDateTime;
+            target.BlockId = source.BlockId;
+            target.Content = source.Content;
+            target.EntityValue = source.EntityValue;
             target.ExpireDateTime = source.ExpireDateTime;
+            target.IsApproved = source.IsApproved;
+            target.StartDateTime = source.StartDateTime;
+            target.Version = source.Version;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -32,31 +32,34 @@ namespace Rock.Client
     public partial class Note
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int NoteTypeId { get; set; }
-
-        /// <summary />
-        public int? EntityId { get; set; }
-
-        /// <summary />
-        public int? SourceTypeValueId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Caption { get; set; }
 
         /// <summary />
+        public int? EntityId { get; set; }
+
+        /// <summary />
         public bool? IsAlert { get; set; }
 
         /// <summary />
-        public string Text { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public NoteType NoteType { get; set; }
 
         /// <summary />
+        public int NoteTypeId { get; set; }
+
+        /// <summary />
         public DefinedValue SourceType { get; set; }
+
+        /// <summary />
+        public int? SourceTypeValueId { get; set; }
+
+        /// <summary />
+        public string Text { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -69,9 +72,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,64 +32,67 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
         public int AuthorizedPersonAliasId { get; set; }
-
-        /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public DateTime StartDate { get; set; }
-
-        /// <summary />
-        public DateTime? EndDate { get; set; }
-
-        /// <summary />
-        public int? NumberOfPayments { get; set; }
-
-        /// <summary />
-        public DateTime? NextPaymentDate { get; set; }
-
-        /// <summary />
-        public DateTime? LastStatusUpdateDateTime { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
-        public int? GatewayEntityTypeId { get; set; }
-
-        /// <summary />
-        public string TransactionCode { get; set; }
-
-        /// <summary />
-        public string GatewayScheduleId { get; set; }
 
         /// <summary />
         public DateTime? CardReminderDate { get; set; }
 
         /// <summary />
-        public DateTime? LastRemindedDate { get; set; }
+        public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />
-        public EntityType GatewayEntityType { get; set; }
-
-        /// <summary />
-        public DefinedValue TransactionFrequencyValue { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
+
+        /// <summary />
+        public DateTime? EndDate { get; set; }
+
+        /// <summary />
+        public EntityType GatewayEntityType { get; set; }
+
+        /// <summary />
+        public int? GatewayEntityTypeId { get; set; }
+
+        /// <summary />
+        public string GatewayScheduleId { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public DateTime? LastRemindedDate { get; set; }
+
+        /// <summary />
+        public DateTime? LastStatusUpdateDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? NextPaymentDate { get; set; }
+
+        /// <summary />
+        public int? NumberOfPayments { get; set; }
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
+
+        /// <summary />
+        public DateTime StartDate { get; set; }
+
+        /// <summary />
+        public string TransactionCode { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionFrequencyValue { get; set; }
+
+        /// <summary />
+        public int TransactionFrequencyValueId { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransaction> Transactions { get; set; }
@@ -105,9 +108,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

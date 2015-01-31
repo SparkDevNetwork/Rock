@@ -221,15 +221,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this EntityType target, EntityType source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
             target.FriendlyName = source.FriendlyName;
+            target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsSecured = source.IsSecured;
-            target.IsCommon = source.IsCommon;
-            target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
-            target.Id = source.Id;
+            target.Name = source.Name;
+            target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -32,13 +32,16 @@ namespace Rock.Client
     public partial class PluginMigration
     {
         /// <summary />
-        public string PluginAssemblyName { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public string MigrationName { get; set; }
 
         /// <summary />
         public int MigrationNumber { get; set; }
 
         /// <summary />
-        public string MigrationName { get; set; }
+        public string PluginAssemblyName { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
