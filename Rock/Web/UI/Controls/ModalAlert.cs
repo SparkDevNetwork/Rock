@@ -46,7 +46,7 @@ namespace Rock.Web.UI.Controls
         public void Show( string message, ModalAlertType alertType )
         {
             //string script = "bootbox.alert('" + message + "');";
-            string script = string.Format( "bootbox.alert('<h4>{0}</h4>{1}');", alertType.ConvertToString(), message );
+            string script = string.Format( "bootbox.alert('<h4>{0}</h4>{1}');", alertType.ConvertToString(), message.EscapeQuotes() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), ScriptKey, script, true );
         }
 

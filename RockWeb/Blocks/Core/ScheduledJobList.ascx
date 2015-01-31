@@ -22,6 +22,7 @@
                             <Rock:RockBoundField DataField="LastStatusMessage" HeaderText="Last Status Message" SortExpression="LastStatusMessage" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:EditField OnClick="gScheduledJobs_RunNow" IconCssClass="fa fa-play" HeaderText="Run Now" ToolTip="Run Now" />
                             <Rock:DeleteField OnClick="gScheduledJobs_Delete" />
                         </Columns>
                     </Rock:Grid>
