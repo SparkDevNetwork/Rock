@@ -32,13 +32,16 @@ namespace Rock.Client
     public partial class EntitySetItem
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public int EntityId { get; set; }
+
+        /// <summary />
         public int EntitySetId { get; set; }
 
         /// <summary />
         public int Order { get; set; }
-
-        /// <summary />
-        public int EntityId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

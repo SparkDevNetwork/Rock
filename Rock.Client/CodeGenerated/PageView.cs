@@ -32,40 +32,40 @@ namespace Rock.Client
     public partial class PageView
     {
         /// <summary />
-        public int? PageId { get; set; }
-
-        /// <summary />
-        public int? SiteId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public DateTime? DateTimeViewed { get; set; }
-
-        /// <summary />
-        public string UserAgent { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string ClientType { get; set; }
 
         /// <summary />
-        public string Url { get; set; }
-
-        /// <summary />
-        public string PageTitle { get; set; }
-
-        /// <summary />
-        public Guid? SessionId { get; set; }
+        public DateTime? DateTimeViewed { get; set; }
 
         /// <summary />
         public string IpAddress { get; set; }
 
         /// <summary />
+        public int? PageId { get; set; }
+
+        /// <summary />
+        public string PageTitle { get; set; }
+
+        /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public Guid? SessionId { get; set; }
+
+        /// <summary />
+        public int? SiteId { get; set; }
+
+        /// <summary />
+        public string Url { get; set; }
+
+        /// <summary />
+        public string UserAgent { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

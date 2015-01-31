@@ -32,25 +32,10 @@ namespace Rock.Client
     public partial class WorkflowActionType
     {
         /// <summary />
-        public int? WorkflowFormId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int ActivityTypeId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int EntityTypeId { get; set; }
-
-        /// <summary />
-        public bool IsActionCompletedOnSuccess { get; set; }
-
-        /// <summary />
-        public bool IsActivityCompletedOnSuccess { get; set; }
 
         /// <summary />
         public Guid? CriteriaAttributeGuid { get; set; }
@@ -65,7 +50,25 @@ namespace Rock.Client
         public EntityType EntityType { get; set; }
 
         /// <summary />
+        public int EntityTypeId { get; set; }
+
+        /// <summary />
+        public bool IsActionCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        public bool IsActivityCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public WorkflowActionForm WorkflowForm { get; set; }
+
+        /// <summary />
+        public int? WorkflowFormId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -78,9 +81,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

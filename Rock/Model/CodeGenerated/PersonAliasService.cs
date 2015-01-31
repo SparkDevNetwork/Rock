@@ -471,11 +471,11 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PersonAlias target, PersonAlias source )
         {
+            target.Id = source.Id;
+            target.AliasPersonGuid = source.AliasPersonGuid;
+            target.AliasPersonId = source.AliasPersonId;
             target.Name = source.Name;
             target.PersonId = source.PersonId;
-            target.AliasPersonId = source.AliasPersonId;
-            target.AliasPersonGuid = source.AliasPersonGuid;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

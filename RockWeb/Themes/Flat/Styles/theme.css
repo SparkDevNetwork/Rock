@@ -1115,12 +1115,13 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-.title {
-  font-weight: 300;
-}
-.title .first-word {
-  font-weight: 700;
-}
+/*.title {
+    font-weight: @title-default-weight;
+
+    .first-word {
+        font-weight: @title-firstword-weight;
+    }
+}*/
 .code-editor {
   position: relative;
 }
@@ -1128,7 +1129,7 @@ fieldset .actions {
   background-color: #83758f;
 }
 .label-type {
-  background-color: #1bd3af;
+  background-color: #567d8c;
 }
 .label-communicationstatus-approved {
   background-color: #18bc9c;
@@ -1143,7 +1144,7 @@ fieldset .actions {
   background-color: #f39c12;
 }
 .label-communicationstatus-transient {
-  background-color: #1bd3af;
+  background-color: #567d8c;
 }
 .datepicker {
   padding: 10px;
@@ -4091,10 +4092,12 @@ iframe.email-body {
   -webkit-user-select: none;
 }
 /*
-    Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
-    
-    1. Colors - creates utility classes for each of the accent colors
-    2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Variables - specific variables for sizing classes and media query helpers
+  2. Colors - creates utility classes for each of the accent colors
+  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
 
 */
 .accent-color {
@@ -5379,12 +5382,6 @@ html[xmlns] .slides {
     */
 main {
   display: block;
-}
-img {
-  display: block;
-  width: 100% \9;
-  max-width: 100%;
-  height: auto;
 }
 .navbar {
   position: static;

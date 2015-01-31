@@ -87,17 +87,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this CommunicationTemplate target, CommunicationTemplate source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.Description = source.Description;
+            target.MediumDataJson = source.MediumDataJson;
+            target.MediumEntityTypeId = source.MediumEntityTypeId;
+            target.Name = source.Name;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.Subject = source.Subject;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
-            target.MediumDataJson = source.MediumDataJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

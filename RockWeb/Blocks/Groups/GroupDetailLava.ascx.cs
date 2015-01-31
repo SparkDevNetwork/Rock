@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -172,6 +173,7 @@ namespace RockWeb.Blocks.Groups
 
                 // set attributes
                 groupMember.LoadAttributes();
+                phGroupMemberAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, "", true );
             }
         }
@@ -190,6 +192,21 @@ namespace RockWeb.Blocks.Groups
             {
                 BlockSetup();
             }
+
+            // add a navigate event to cature when someone presses the back button
+            var sm = ScriptManager.GetCurrent( Page );
+            sm.EnableSecureHistoryState = false;
+            sm.Navigate += sm_Navigate;
+
+        }
+
+        void sm_Navigate( object sender, HistoryEventArgs e )
+        {
+            // show the view mode
+            pnlGroupEdit.Visible = false;
+            pnlGroupView.Visible = true;
+            pnlEditGroupMember.Visible = false;
+            DisplayViewGroup();
         }
 
         #endregion
@@ -295,6 +312,9 @@ namespace RockWeb.Blocks.Groups
             pnlGroupEdit.Visible = false;
             pnlGroupView.Visible = true;
             this.IsEditingGroup = false;
+
+            var sm = ScriptManager.GetCurrent( Page );
+            sm.AddHistoryPoint( "Action", "ViewGroup" );
         }
 
         protected void btnSaveGroupMember_Click( object sender, EventArgs e )
@@ -370,6 +390,9 @@ namespace RockWeb.Blocks.Groups
             pnlEditGroupMember.Visible = false;
             pnlGroupView.Visible = true;
             this.IsEditingGroupMember = false;
+
+            var sm = ScriptManager.GetCurrent( Page );
+            sm.AddHistoryPoint( "Action", "ViewGroup" );
         }
 
         protected void lbLocationType_Click( object sender, EventArgs e )
@@ -397,6 +420,7 @@ namespace RockWeb.Blocks.Groups
         private void RouteAction()
         {
             int groupMemberId = 0;
+            var sm = ScriptManager.GetCurrent( Page );
 
             if ( Request.Form["__EVENTARGUMENT"] != null )
             {
@@ -418,6 +442,7 @@ namespace RockWeb.Blocks.Groups
                             pnlGroupView.Visible = false;
                             pnlEditGroupMember.Visible = false;
                             DisplayEditGroup();
+                            sm.AddHistoryPoint("Action", "EditGroup");
                             break;
 
                         case "AddGroupMember":
@@ -427,6 +452,7 @@ namespace RockWeb.Blocks.Groups
                         case "EditGroupMember":
                             groupMemberId = int.Parse( parameters );
                             DisplayEditGroupMember( groupMemberId );
+                            sm.AddHistoryPoint( "Action", "EditMember" );
                             break;
 
                         case "DeleteGroupMember":
@@ -784,6 +810,7 @@ namespace RockWeb.Blocks.Groups
 
             // set attributes
             groupMember.LoadAttributes();
+            phGroupMemberAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, "", true );
 
             this.IsEditingGroupMember = true;

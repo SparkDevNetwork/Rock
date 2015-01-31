@@ -32,13 +32,19 @@ namespace Rock.Client
     public partial class FinancialPledge
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
         public int? AccountId { get; set; }
+
+        /// <summary />
+        public DateTime EndDate { get; set; }
 
         /// <summary />
         public int? PersonAliasId { get; set; }
 
         /// <summary />
-        public decimal TotalAmount { get; set; }
+        public DefinedValue PledgeFrequencyValue { get; set; }
 
         /// <summary />
         public int? PledgeFrequencyValueId { get; set; }
@@ -47,10 +53,7 @@ namespace Rock.Client
         public DateTime StartDate { get; set; }
 
         /// <summary />
-        public DateTime EndDate { get; set; }
-
-        /// <summary />
-        public DefinedValue PledgeFrequencyValue { get; set; }
+        public decimal TotalAmount { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -63,9 +66,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,19 +32,22 @@ namespace Rock.Client
     public partial class WorkflowAction
     {
         /// <summary />
-        public int ActivityId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int ActionTypeId { get; set; }
 
         /// <summary />
-        public DateTime? LastProcessedDateTime { get; set; }
+        public int ActivityId { get; set; }
 
         /// <summary />
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
         public string FormAction { get; set; }
+
+        /// <summary />
+        public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -57,9 +60,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

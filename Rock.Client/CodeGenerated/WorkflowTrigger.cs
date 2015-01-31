@@ -32,10 +32,10 @@ namespace Rock.Client
     public partial class WorkflowTrigger
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public bool? IsActive { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -47,22 +47,22 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
-        public int WorkflowTypeId { get; set; }
+        public bool? IsActive { get; set; }
 
         /// <summary />
-        public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public string WorkflowName { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public int /* WorkflowTriggerType*/ WorkflowTriggerType { get; set; }
 
         /// <summary />
         public WorkflowType WorkflowType { get; set; }
 
         /// <summary />
-        public int Id { get; set; }
+        public int WorkflowTypeId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

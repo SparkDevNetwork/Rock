@@ -32,40 +32,43 @@ namespace Rock.Client
     public partial class ContentChannel
     {
         /// <summary />
-        public int ContentChannelTypeId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool RequiresApproval { get; set; }
-
-        /// <summary />
-        public bool EnableRss { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string ChannelUrl { get; set; }
 
         /// <summary />
-        public string ItemUrl { get; set; }
+        public ContentChannelType ContentChannelType { get; set; }
 
         /// <summary />
-        public int? TimeToLive { get; set; }
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary />
         public int /* ContentControlType*/ ContentControlType { get; set; }
 
         /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool EnableRss { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
+        public string ItemUrl { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public bool RequiresApproval { get; set; }
+
+        /// <summary />
         public string RootImageDirectory { get; set; }
 
         /// <summary />
-        public ContentChannelType ContentChannelType { get; set; }
+        public int? TimeToLive { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -78,9 +81,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

@@ -32,13 +32,25 @@ namespace Rock.Client
     public partial class PhoneNumber
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int PersonId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string CountryCode { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public string Extension { get; set; }
+
+        /// <summary />
+        public bool IsMessagingEnabled { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public bool IsUnlisted { get; set; }
 
         /// <summary />
         public string Number { get; set; }
@@ -47,22 +59,13 @@ namespace Rock.Client
         public string NumberFormatted { get; set; }
 
         /// <summary />
-        public string Extension { get; set; }
+        public DefinedValue NumberTypeValue { get; set; }
 
         /// <summary />
         public int? NumberTypeValueId { get; set; }
 
         /// <summary />
-        public bool IsMessagingEnabled { get; set; }
-
-        /// <summary />
-        public DefinedValue NumberTypeValue { get; set; }
-
-        /// <summary />
-        public bool IsUnlisted { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int PersonId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -75,9 +78,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

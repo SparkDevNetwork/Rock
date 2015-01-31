@@ -32,19 +32,22 @@ namespace Rock.Client
     public partial class FieldType
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Assembly { get; set; }
 
         /// <summary />
         public string Class { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -57,9 +60,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

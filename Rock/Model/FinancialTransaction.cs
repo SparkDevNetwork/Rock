@@ -352,8 +352,17 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
-    public class FinancialTransactionScannedCheck : FinancialTransaction
+    public class FinancialTransactionScannedCheck
     {
+        /// <summary>
+        /// Gets or sets the financial transaction.
+        /// </summary>
+        /// <value>
+        /// The financial transaction.
+        /// </value>
+        [DataMember]
+        public FinancialTransaction FinancialTransaction { get; set; }
+
         /// <summary>
         /// Gets or sets the scanned check MICR.
         /// </summary>

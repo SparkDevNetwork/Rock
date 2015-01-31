@@ -87,17 +87,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
         {
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.GroupId = source.GroupId;
-            target.PersonId = source.PersonId;
-            target.GroupRoleId = source.GroupRoleId;
             target.GroupMemberStatus = source.GroupMemberStatus;
+            target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
