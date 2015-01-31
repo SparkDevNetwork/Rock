@@ -152,7 +152,7 @@
 
                                 <div class="col-md-2 pull-right gridresponsive-commandcolumn">
                                     <asp:LinkButton runat="server" ID="lbSave" CssClass="btn btn-success btn-sm js-item-save margin-b-sm" OnClick="lbSave_Click"><i class="fa fa-check"></i></asp:LinkButton>
-                                    <a runat="server" id="lbCancel" class="btn btn-warning btn-sm js-item-cancel margin-b-sm"><i class="fa fa-minus"></i></a>
+                                    <a runat="server" id="lbCancel" class="btn btn-default btn-sm js-item-cancel margin-b-sm"><i class="fa fa-chevron-up"></i></a>
                                 </div>
 
                             </div>
@@ -310,9 +310,6 @@
                 $(".bootstrap-timepicker").timepicker().on('changeTime.timepicker', function (a, b, c) {
 
                     var $earnedHolidayBadge = $(this).closest('.js-time-edit-group').find('.js-earned-holiday-hours');
-                    if (!$earnedHolidayBadge.is(":visible"))  {
-                        return;
-                    }
 
                     try {
                         var startTime = parseTime(null, $(this).closest('.js-time-edit-group').find("[id$='tpTimeIn']").val());
@@ -334,7 +331,7 @@
                         // round to nearest .25
                         earnedHours = Math.round(earnedHours * 4) / 4;
 
-                        if (earnedHours) {
+                        if (earnedHours && $earnedHolidayBadge.data('is-holiday')) {
                             $earnedHolidayBadge.text("+ " + earnedHours.toFixed(2));
                         }
                         else
@@ -343,6 +340,7 @@
                         }
                     }
                     catch (e) {
+                        debugger
                         $earnedHolidayBadge.text("+ 50%");
                     }
                 });

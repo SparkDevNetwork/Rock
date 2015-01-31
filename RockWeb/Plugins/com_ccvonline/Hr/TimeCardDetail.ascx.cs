@@ -231,7 +231,14 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
                 // Edit Controls
                 TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
-                tpTimeIn.SelectedTime = timeCardDay.StartDateTime.TimeOfDay;
+                if ( timeCardDay.StartDateTime.TimeOfDay != TimeSpan.Zero || (timeCardDay.TotalWorkedDuration ?? 0) > 0 )
+                {
+                    tpTimeIn.SelectedTime = timeCardDay.StartDateTime.TimeOfDay;
+                }
+                else
+                {
+                    tpTimeIn.SelectedTime = null;
+                }
 
                 TimePicker tpLunchOut = repeaterItem.FindControl( "tpLunchOut" ) as TimePicker;
                 tpLunchOut.SelectedTime = timeCardDay.LunchStartDateTime.HasValue ? timeCardDay.LunchStartDateTime.Value.TimeOfDay : (TimeSpan?)null;
@@ -263,6 +270,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 ddlVacationHours.SetValue( timeCardDay.PaidVacationHours.ToNearestQtrHour().ToString() );
                 ddlHolidayHours.SetValue( timeCardDay.PaidHolidayHours.ToNearestQtrHour().ToString() );
                 Label lEarnedHolidayHours = repeaterItem.FindControl( "lEarnedHolidayHours" ) as Label;
+                lEarnedHolidayHours.Attributes["data-is-holiday"] = isHoliday ? "1" : string.Empty;
                 if ( !isHoliday )
                 {
                     lEarnedHolidayHours.Style[HtmlTextWriterStyle.Display] = "none";
@@ -271,7 +279,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 if ( timeCardDay.EarnedHolidayHours.HasValue && timeCardDay.EarnedHolidayHours > 0 )
                 {
                     // if they have earned hours, show it, even if it isn't a holiday
-                    lEarnedHolidayHours.Visible = true;
+                    lEarnedHolidayHours.Style[HtmlTextWriterStyle.Display] = "block";
                     lEarnedHolidayHours.Text = string.Format( "+ {0}", timeCardDay.EarnedHolidayHours );
                 }
 
@@ -471,7 +479,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             }
 
             // TimeCard History grid
-            var historyQry = timeCardHistoryService.Queryable().Where( a => a.TimeCardId == timeCard.Id ).OrderBy( a => a.HistoryDateTime );
+            var historyQry = timeCardHistoryService.Queryable().Where( a => a.TimeCardId == timeCard.Id ).OrderByDescending( a => a.HistoryDateTime );
             gHistory.DataSource = historyQry.ToList();
             gHistory.DataBind();
         }
@@ -493,14 +501,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             var timeCardDay = timeCardDayService.Get( timeCardDayId.AsInteger() );
 
             TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
-            if ( !tpTimeIn.SelectedTime.HasValue )
-            {
-                tpTimeIn.ShowErrorMessage( "Start Time is required" );
-                return;
-            }
 
             var timeCardDate = timeCardDay.StartDateTime.Date;
-            timeCardDay.StartDateTime = timeCardDate + tpTimeIn.SelectedTime.Value;
+            timeCardDay.StartDateTime = timeCardDate + (tpTimeIn.SelectedTime ?? TimeSpan.Zero);
 
             TimePicker tpLunchOut = repeaterItem.FindControl( "tpLunchOut" ) as TimePicker;
             timeCardDay.LunchStartDateTime = GetTimeCardTimeValue( repeaterItem, timeCardDay, tpLunchOut );
