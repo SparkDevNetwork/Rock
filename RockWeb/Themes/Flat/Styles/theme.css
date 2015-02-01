@@ -4136,6 +4136,9 @@ iframe.email-body {
   color: #ffffff;
   border: 1px solid #128f76;
 }
+.padding-all-none {
+  padding: 0 !important;
+}
 .padding-all-sm {
   padding: 7.5px !important;
 }
@@ -4148,6 +4151,9 @@ iframe.email-body {
 .padding-all-xl {
   padding: 60px !important;
 }
+.margin-all-none {
+  margin: 0 !important;
+}
 .margin-all-sm {
   margin: 7.5px !important;
 }
@@ -4159,6 +4165,10 @@ iframe.email-body {
 }
 .margin-all-xl {
   margin: 60px !important;
+}
+.padding-v-none {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 .padding-v-sm {
   padding-top: 7.5px !important;
@@ -4176,6 +4186,10 @@ iframe.email-body {
   padding-top: 60px !important;
   padding-bottom: 60px !important;
 }
+.margin-v-none {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 .margin-v-sm {
   margin-top: 7.5px !important;
   margin-bottom: 7.5px !important;
@@ -4191,6 +4205,10 @@ iframe.email-body {
 .margin-v-xl {
   margin-top: 60px !important;
   margin-bottom: 60px !important;
+}
+.padding-h-none {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 .padding-h-sm {
   padding-right: 7.5px !important;
@@ -4208,6 +4226,10 @@ iframe.email-body {
   padding-right: 60px !important;
   padding-left: 60px !important;
 }
+.margin-h-none {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
 .margin-h-sm {
   margin-right: 7.5px !important;
   margin-left: 7.5px !important;
@@ -4224,6 +4246,9 @@ iframe.email-body {
   margin-right: 60px !important;
   margin-left: 60px !important;
 }
+.padding-t-none {
+  padding-top: 0 !important;
+}
 .padding-t-sm {
   padding-top: 7.5px !important;
 }
@@ -4235,6 +4260,9 @@ iframe.email-body {
 }
 .padding-t-xl {
   padding-top: 60px !important;
+}
+.margin-t-none {
+  margin-top: 0 !important;
 }
 .margin-t-sm {
   margin-top: 7.5px !important;
@@ -4248,77 +4276,95 @@ iframe.email-body {
 .margin-t-xl {
   margin-top: 60px !important;
 }
+.padding-b-none {
+  padding-bottom: 0 !important;
+}
 .padding-b-sm {
-  padding-bottom: 7.5px;
+  padding-bottom: 7.5px !important;
 }
 .padding-b-md {
-  padding-bottom: 15px;
+  padding-bottom: 15px !important;
 }
 .padding-b-lg {
-  padding-bottom: 30px;
+  padding-bottom: 30px !important;
 }
 .padding-b-xl {
-  padding-bottom: 60px;
+  padding-bottom: 60px !important;
+}
+.margin-b-none {
+  margin-bottom: 0 !important;
 }
 .margin-b-sm {
-  margin-bottom: 7.5px;
+  margin-bottom: 7.5px !important;
 }
 .margin-b-md {
-  margin-bottom: 15px;
+  margin-bottom: 15px !important;
 }
 .margin-b-lg {
-  margin-bottom: 30px;
+  margin-bottom: 30px !important;
 }
 .margin-b-xl {
-  margin-bottom: 60px;
+  margin-bottom: 60px !important;
+}
+.padding-r-none {
+  padding-right: 0 !important;
 }
 .padding-r-sm {
-  padding-right: 7.5px;
+  padding-right: 7.5px !important;
 }
 .padding-r-md {
-  padding-right: 15px;
+  padding-right: 15px !important;
 }
 .padding-r-lg {
-  padding-right: 30px;
+  padding-right: 30px !important;
 }
 .padding-r-xl {
-  padding-right: 60px;
+  padding-right: 60px !important;
+}
+.margin-r-none {
+  margin-right: 0 !important;
 }
 .margin-r-sm {
-  margin-right: 7.5px;
+  margin-right: 7.5px !important;
 }
 .margin-r-md {
-  margin-right: 15px;
+  margin-right: 15px !important;
 }
 .margin-r-lg {
-  margin-right: 30px;
+  margin-right: 30px !important;
 }
 .margin-r-xl {
-  margin-right: 60px;
+  margin-right: 60px !important;
+}
+.padding-l-none {
+  padding-left: 0 !important;
 }
 .padding-l-sm {
-  padding-left: 7.5px;
+  padding-left: 7.5px !important;
 }
 .padding-l-md {
-  padding-left: 15px;
+  padding-left: 15px !important;
 }
 .padding-l-lg {
-  padding-left: 30px;
+  padding-left: 30px !important;
 }
 .padding-l-xl {
-  padding-left: 60px;
+  padding-left: 60px !important;
+}
+.margin-l-none {
+  margin-left: 0 !important;
 }
 .margin-l-sm {
-  margin-left: 7.5px;
+  margin-left: 7.5px !important;
 }
 .margin-l-md {
-  margin-left: 15px;
+  margin-left: 15px !important;
 }
 .margin-l-lg {
-  margin-left: 30px;
+  margin-left: 30px !important;
 }
 .margin-l-xl {
-  margin-left: 60px;
+  margin-left: 60px !important;
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
