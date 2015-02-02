@@ -413,11 +413,9 @@ img.jcrop-preview {
   border-radius: 0 0 4px 4px;
 }
 .modal {
-  position: fixed;
   top: 50%;
   left: 50%;
   width: 750px;
-  margin-left: 0px;
   background-color: #ffffff;
 }
 .modal-body {
