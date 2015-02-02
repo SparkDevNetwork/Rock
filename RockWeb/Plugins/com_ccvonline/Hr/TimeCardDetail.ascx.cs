@@ -59,7 +59,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             {
                 ShowDetail();
             }
-         
         }
 
         #endregion
@@ -231,7 +230,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
                 // Edit Controls
                 TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
-                if ( timeCardDay.StartDateTime.TimeOfDay != TimeSpan.Zero || (timeCardDay.TotalWorkedDuration ?? 0) > 0 )
+                if ( timeCardDay.StartDateTime.TimeOfDay != TimeSpan.Zero || ( timeCardDay.TotalWorkedDuration ?? 0 ) > 0 )
                 {
                     tpTimeIn.SelectedTime = timeCardDay.StartDateTime.TimeOfDay;
                 }
@@ -302,13 +301,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         }
 
         #endregion
-
-        /// <summary>
-        /// To the nearest QTR hour.
-        /// </summary>
-        /// <param name="hours">The hours.</param>
-        /// <returns></returns>
-
 
         #region Methods
 
@@ -503,7 +495,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
 
             var timeCardDate = timeCardDay.StartDateTime.Date;
-            timeCardDay.StartDateTime = timeCardDate + (tpTimeIn.SelectedTime ?? TimeSpan.Zero);
+            timeCardDay.StartDateTime = timeCardDate + ( tpTimeIn.SelectedTime ?? TimeSpan.Zero );
 
             TimePicker tpLunchOut = repeaterItem.FindControl( "tpLunchOut" ) as TimePicker;
             timeCardDay.LunchStartDateTime = GetTimeCardTimeValue( repeaterItem, timeCardDay, tpLunchOut );
@@ -666,51 +658,27 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApprove_Click( object sender, EventArgs e )
         {
-            var hrContext = new HrContext();
-
             int timeCardId = hfTimeCardId.Value.AsInteger();
-            var timeCardService = new TimeCardService( hrContext );
-            var timeCard = timeCardService.Get( timeCardId );
-            if ( timeCard == null )
-            {
-                return;
-            }
-
-            timeCard.TimeCardStatus = TimeCardStatus.Approved;
-            timeCard.ApprovedByPersonAliasId = this.CurrentPersonAliasId;
-
-            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
-            var timeCardHistory = new TimeCardHistory();
-            timeCardHistory.TimeCardId = timeCard.Id;
-            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
-            timeCardHistory.StatusPersonAliasId = this.CurrentPersonAliasId;
-            timeCardHistory.HistoryDateTime = RockDateTime.Now;
-
-            // NOTE: if status was already Approved, still log it as history
-            timeCardHistory.Notes = string.Format( "Approved by {0}", this.CurrentPersonAlias );
-
-            timeCardHistoryService.Add( timeCardHistory );
-
-            hrContext.SaveChanges();
 
             // Send an email (if specified) after timecard is marked approved
             Guid? approvedEmailTemplateGuid = GetAttributeValue( "ApprovedEmail" ).AsGuidOrNull();
 
-            if ( approvedEmailTemplateGuid.HasValue )
-            {
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
-                mergeObjects.Add( "TimeCard", timeCard );
-                mergeObjects.Add( "Person", timeCard.PersonAlias.Person );
-                mergeObjects.Add( "ApprovedByPerson", this.CurrentPerson );
+            var timeCardService = new TimeCardService( new HrContext() );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( timeCard.PersonAlias.Person.Email, mergeObjects ) );
-                Email.Send( approvedEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+            if ( timeCardService.ApproveTimeCard( timeCardId, this.RockPage, approvedEmailTemplateGuid ) )
+            {
+                nbApprovedSuccessMessage.Text = string.Format( "Successfully approved by {0}", this.CurrentPersonAlias );
+                nbApprovedSuccessMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbApprovedSuccessMessage.Visible = true;
+            }
+            else
+            {
+                // shouldn't happen, but just in case
+                nbApprovedSuccessMessage.Text = string.Format( "Error approving timecard" );
+                nbApprovedSuccessMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbApprovedSuccessMessage.Visible = true;
             }
 
-            nbApprovedSuccessMessage.Text = string.Format( "Successfully approved by {0}", this.CurrentPersonAlias );
-            nbApprovedSuccessMessage.Visible = true;
             ShowDetail();
         }
     }

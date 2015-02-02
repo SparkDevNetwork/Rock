@@ -17,6 +17,7 @@
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
+                    <Rock:NotificationBox runat="server" ID="nbApproveSuccess" NotificationBoxType="Success" Dismissable="true" Text="The selected time cards were successfully approved." Visible="false" />
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected" OnRowDataBound="gList_RowDataBound">
                         <Columns>
                             <Rock:SelectField />

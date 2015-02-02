@@ -202,18 +202,18 @@
                          <!-- Totals Panel -->
                             <asp:Panel ID="pnlTotals" runat="server">
 
-                                <h4>Summary of Hours</h4>
+                                <h4>Totals:</h4>
                                 
                                 <div>
                                     <strong>Worked Hours</strong>
                                     <div class="row">
-                                        <div class="col-xs-8">Regular Hours</div>
+                                        <div class="col-xs-8">&nbsp;Regular</div>
                                         <div class="col-xs-4">
                                             <asp:Literal ID="lTotalRegularWorked" runat="server" />
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-xs-8">Overtime Hours</div>
+                                        <div class="col-xs-8">&nbsp;Overtime</div>
                                         <div class="col-xs-4">
                                             <asp:Literal ID="lTotalOvertimeWorked" runat="server" />
                                         </div>
@@ -221,7 +221,6 @@
                                 </div>
 
                                 <div class="margin-t-sm">
-                                    <strong>PTO Hours</strong>
                                     <div class="row">
                                         <div class="col-xs-8">Vacation Hours</div>
                                         <div class="col-xs-4">
@@ -244,7 +243,7 @@
 
                                 <div class="row">
                                     <h4>
-                                        <div class="col-xs-8">Total Hours</div>
+                                        <div class="col-xs-8">All Hours</div>
                                         <div class="col-xs-4">
                                             <strong>
                                                 <asp:Literal ID="lTotalHours" runat="server" />
