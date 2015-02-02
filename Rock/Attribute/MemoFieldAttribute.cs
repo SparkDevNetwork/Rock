@@ -29,6 +29,10 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class MemoFieldAttribute : FieldAttribute
     {
+
+        private const string NUMBER_OF_ROWS = "numberofrows";
+        private const string ALLOW_HTML = "allowhtml";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
         /// </summary>
@@ -39,9 +43,17 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public MemoFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
+        /// <param name="numberOfRows">The number of rows.</param>
+        /// <param name="allowHtml">if set to <c>true</c> [allow HTML].</param>
+        public MemoFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", 
+            int order = 0, string key = null, int numberOfRows = 3, bool allowHtml = false )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.MemoFieldType ).FullName)
-        {            
+        {
+            var rowConfig = new Field.ConfigurationValue( numberOfRows.ToString() );
+            FieldConfigurationValues.Add( NUMBER_OF_ROWS, rowConfig );
+
+            var htmlConfig = new Field.ConfigurationValue( allowHtml.ToString() );
+            FieldConfigurationValues.Add( ALLOW_HTML, htmlConfig );
         }
 
     }
