@@ -87,20 +87,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialPersonSavedAccount target, FinancialPersonSavedAccount source )
         {
-            target.PersonAliasId = source.PersonAliasId;
-            target.GroupId = source.GroupId;
-            target.ReferenceNumber = source.ReferenceNumber;
-            target.Name = source.Name;
-            target.MaskedAccountNumber = source.MaskedAccountNumber;
-            target.TransactionCode = source.TransactionCode;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.Id = source.Id;
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+            target.GroupId = source.GroupId;
+            target.MaskedAccountNumber = source.MaskedAccountNumber;
+            target.Name = source.Name;
+            target.PersonAliasId = source.PersonAliasId;
+            target.ReferenceNumber = source.ReferenceNumber;
+            target.TransactionCode = source.TransactionCode;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

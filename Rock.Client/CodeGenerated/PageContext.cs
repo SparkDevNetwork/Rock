@@ -32,16 +32,19 @@ namespace Rock.Client
     public partial class PageContext
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int PageId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Entity { get; set; }
 
         /// <summary />
         public string IdParameter { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int PageId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -54,9 +57,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

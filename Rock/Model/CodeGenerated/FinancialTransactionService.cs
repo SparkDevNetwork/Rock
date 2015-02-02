@@ -93,26 +93,26 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FinancialTransaction target, FinancialTransaction source )
         {
+            target.Id = source.Id;
             target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
             target.BatchId = source.BatchId;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-            target.TransactionDateTime = source.TransactionDateTime;
-            target.TransactionCode = source.TransactionCode;
-            target.Summary = source.Summary;
-            target.TransactionTypeValueId = source.TransactionTypeValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.SourceTypeValueId = source.SourceTypeValueId;
             target.CheckMicrEncrypted = source.CheckMicrEncrypted;
             target.CheckMicrHash = source.CheckMicrHash;
-            target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
             target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             target.ProcessedDateTime = source.ProcessedDateTime;
+            target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.SourceTypeValueId = source.SourceTypeValueId;
+            target.Summary = source.Summary;
+            target.TransactionCode = source.TransactionCode;
+            target.TransactionDateTime = source.TransactionDateTime;
+            target.TransactionTypeValueId = source.TransactionTypeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

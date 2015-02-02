@@ -32,10 +32,16 @@ namespace Rock.Client
     public partial class Category
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
-        public int? ParentCategoryId { get; set; }
+        public ICollection<Category> ChildCategories { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -47,25 +53,22 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public string HighlightColor { get; set; }
 
         /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public string HighlightColor { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
-        public ICollection<Category> ChildCategories { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public int Order { get; set; }
+
+        /// <summary />
+        public int? ParentCategoryId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -78,9 +81,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

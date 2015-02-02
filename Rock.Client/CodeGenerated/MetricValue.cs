@@ -32,34 +32,37 @@ namespace Rock.Client
     public partial class MetricValue
     {
         /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public long DateTimeStamp { get; set; }
+
+        /// <summary />
+        public int? EntityId { get; set; }
+
+        /// <summary />
+        public int MetricId { get; set; }
+
+        /// <summary />
+        public DateTime? MetricValueDateTime { get; set; }
+
+        /// <summary />
         public int /* MetricValueType*/ MetricValueType { get; set; }
+
+        /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public string SeriesId { get; set; }
 
         /// <summary />
         public string XValue { get; set; }
 
         /// <summary />
         public decimal? YValue { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int MetricId { get; set; }
-
-        /// <summary />
-        public string Note { get; set; }
-
-        /// <summary />
-        public DateTime? MetricValueDateTime { get; set; }
-
-        /// <summary />
-        public int? EntityId { get; set; }
-
-        /// <summary />
-        public long DateTimeStamp { get; set; }
-
-        /// <summary />
-        public string SeriesId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -72,9 +75,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

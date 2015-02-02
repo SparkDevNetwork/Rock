@@ -64,12 +64,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
@@ -111,21 +105,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Group target, Group source )
         {
-            target.IsSystem = source.IsSystem;
-            target.ParentGroupId = source.ParentGroupId;
-            target.GroupTypeId = source.GroupTypeId;
-            target.CampusId = source.CampusId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.IsSecurityRole = source.IsSecurityRole;
-            target.IsActive = source.IsActive;
-            target.Order = source.Order;
+            target.Id = source.Id;
             target.AllowGuests = source.AllowGuests;
+            target.CampusId = source.CampusId;
+            target.Description = source.Description;
+            target.GroupTypeId = source.GroupTypeId;
+            target.IsActive = source.IsActive;
+            target.IsSecurityRole = source.IsSecurityRole;
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.ParentGroupId = source.ParentGroupId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

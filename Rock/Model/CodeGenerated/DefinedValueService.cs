@@ -127,22 +127,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring Person,ConnectionStatusValueId 
-            
-            // ignoring Person,MaritalStatusValueId 
-            
-            // ignoring Person,RecordStatusReasonValueId 
-            
-            // ignoring Person,RecordStatusValueId 
-            
-            // ignoring Person,RecordTypeValueId 
-            
-            // ignoring Person,ReviewReasonValueId 
-            
-            // ignoring Person,SuffixValueId 
-            
-            // ignoring Person,TitleValueId 
  
             if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
@@ -185,16 +169,16 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this DefinedValue target, DefinedValue source )
         {
-            target.IsSystem = source.IsSystem;
+            target.Id = source.Id;
             target.DefinedTypeId = source.DefinedTypeId;
+            target.Description = source.Description;
+            target.IsSystem = source.IsSystem;
             target.Order = source.Order;
             target.Value = source.Value;
-            target.Description = source.Description;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

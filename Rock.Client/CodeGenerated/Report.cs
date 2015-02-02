@@ -32,34 +32,37 @@ namespace Rock.Client
     public partial class Report
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public int? CategoryId { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
-
-        /// <summary />
-        public int? DataViewId { get; set; }
-
-        /// <summary />
-        public int? FetchTop { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public Category Category { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public int? CategoryId { get; set; }
 
         /// <summary />
         public DataView DataView { get; set; }
+
+        /// <summary />
+        public int? DataViewId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
+
+        /// <summary />
+        public int? FetchTop { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public ICollection<ReportField> ReportFields { get; set; }
@@ -75,9 +78,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

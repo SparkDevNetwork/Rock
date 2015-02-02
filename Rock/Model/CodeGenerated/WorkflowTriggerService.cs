@@ -87,15 +87,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this WorkflowTrigger target, WorkflowTrigger source )
         {
-            target.IsSystem = source.IsSystem;
-            target.IsActive = source.IsActive;
+            target.Id = source.Id;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.WorkflowTypeId = source.WorkflowTypeId;
-            target.WorkflowTriggerType = source.WorkflowTriggerType;
+            target.IsActive = source.IsActive;
+            target.IsSystem = source.IsSystem;
             target.WorkflowName = source.WorkflowName;
-            target.Id = source.Id;
+            target.WorkflowTriggerType = source.WorkflowTriggerType;
+            target.WorkflowTypeId = source.WorkflowTypeId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

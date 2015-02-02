@@ -32,46 +32,49 @@ namespace Rock.Client
     public partial class FinancialAccount
     {
         /// <summary />
-        public int? ParentAccountId { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string PublicName { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool IsTaxDeductible { get; set; }
-
-        /// <summary />
-        public string GlCode { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
-        public DateTime? StartDate { get; set; }
-
-        /// <summary />
-        public DateTime? EndDate { get; set; }
-
-        /// <summary />
-        public int? AccountTypeValueId { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public DefinedValue AccountTypeValue { get; set; }
 
         /// <summary />
+        public int? AccountTypeValueId { get; set; }
+
+        /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public ICollection<FinancialAccount> ChildAccounts { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public DateTime? EndDate { get; set; }
+
+        /// <summary />
+        public string GlCode { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsTaxDeductible { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public int? ParentAccountId { get; set; }
+
+        /// <summary />
+        public string PublicName { get; set; }
+
+        /// <summary />
+        public DateTime? StartDate { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -84,9 +87,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

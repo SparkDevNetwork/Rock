@@ -87,15 +87,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this RestAction target, RestAction source )
         {
+            target.Id = source.Id;
+            target.ApiId = source.ApiId;
             target.ControllerId = source.ControllerId;
             target.Method = source.Method;
-            target.ApiId = source.ApiId;
             target.Path = source.Path;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
