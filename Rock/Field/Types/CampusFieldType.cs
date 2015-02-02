@@ -227,10 +227,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="propertyName">Name of the property.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <returns></returns>
-        public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+         public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
         {
             if ( filterValues.Count == 1 )
             {

@@ -345,6 +345,13 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <returns></returns>
         public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
         {
             if ( filterValues.Count == 1 )

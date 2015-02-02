@@ -140,6 +140,12 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             // Filtering is not supported by this fieldtype
