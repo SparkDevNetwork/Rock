@@ -53,7 +53,7 @@
                 <h4>Item Permissions</h4>
                 
                 <div class="grid">
-                    <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">
+                    <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user" EnableResponsiveTable="false">
                         <Columns>
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
