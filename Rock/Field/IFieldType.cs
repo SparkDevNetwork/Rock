@@ -148,9 +148,9 @@ namespace Rock.Field
         /// <summary>
         /// Sets the filter value.
         /// </summary>
-        /// <param name="filterControls">The filter controls.</param>
+        /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValue">The filter value.</param>
+        /// <param name="filterValues">The filter values.</param>
         void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
 
         /// <summary>

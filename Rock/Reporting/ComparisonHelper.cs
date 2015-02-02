@@ -157,6 +157,7 @@ namespace Rock.Reporting
         /// Gets a dropdownlist of the supported comparison types
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
         public static RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes, bool required = true )
         {
