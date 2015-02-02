@@ -25,6 +25,7 @@
                     $(this).height(newHeight);
                 }
 
+                $('body').addClass('modal-open');
                 $('#modal-popup').modal('layout');
             });
 
@@ -69,6 +70,8 @@
                     $('#modal-popup').modal('hide');
 
                 }, 0);
+
+                $('body').removeClass('modal-open');
 
                 if (msg && msg != '') {
 

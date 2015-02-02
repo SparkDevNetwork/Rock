@@ -656,7 +656,7 @@ order by [parentTable], [columnName]
 
             var interfaces = type.GetInterfaces();
 
-            foreach ( var property in type.GetProperties() )
+            foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
                 var getMethod = property.GetGetMethod();
                 if ( getMethod.IsVirtual )
@@ -702,7 +702,7 @@ order by [parentTable], [columnName]
         /// <param name="type"></param>
         private void WriteRockClientFile( string rootFolder, Type type )
         {
-            var dataMembers = type.GetProperties()
+            var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute( typeof( DataMemberAttribute ) ) != null )
                 .Where( a => a.GetCustomAttribute( typeof( NotMappedAttribute ) ) == null );
                 
@@ -774,5 +774,35 @@ order by [parentTable], [columnName]
             WriteFile( file, sb );
         }
 
+    }
+
+    public static class HelperExtensions
+    {
+        public static PropertyInfo[] SortByStandardOrder( this PropertyInfo[] properties )
+        {
+            string[] baseModelPropertyTypeNames = new string[] {"Id", "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId" };
+            var result = new List<PropertyInfo>();
+
+            // Have Standard Order by "Id", <alphabetic list of other fields>, "CreatedDateTime", "ModifiedDateTime", "CreatedByPersonAliasId", "ModifiedByPersonAliasId", "Guid", "ForeignId"
+            result.AddRange( properties.Where( a => !baseModelPropertyTypeNames.Contains( a.Name ) ).OrderBy( a => a.Name ));
+            
+            foreach ( var name in baseModelPropertyTypeNames )
+            {
+                var property = properties.FirstOrDefault( a => a.Name == name );
+                if ( property != null )
+                {
+                    if ( property.Name == "Id" )
+                    {
+                        result.Insert( 0, property );
+                    }
+                    else
+                    {
+                        result.Add( property );
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
     }
 }

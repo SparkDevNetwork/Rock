@@ -173,14 +173,16 @@ namespace Rock.Model
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                 entityType.IsEntity = !type.Value.GetCustomAttributes( typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute), false ).Any();
                 entityType.IsSecured = false;
-                entityTypes.Add( type.Key, entityType );
+                entityTypes.Add( type.Key.ToLower(), entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ) ) )
             {
-                if ( entityTypes.ContainsKey( type.Key ) )
+                string key = type.Key.ToLower();
+
+                if ( entityTypes.ContainsKey( key ) )
                 {
-                    entityTypes[type.Key].IsSecured = true;
+                    entityTypes[key].IsSecured = true;
                 }
                 else
                 {
@@ -190,7 +192,7 @@ namespace Rock.Model
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Key, entityType );
+                    entityTypes.Add( key, entityType );
                 }
             }
 
@@ -199,12 +201,15 @@ namespace Rock.Model
 
             // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
             foreach ( var oldEntityType in entityTypeService.Queryable()
-                .Where( e => !entityTypes.Keys.Contains( e.Name ) && ( e.IsEntity || e.IsSecured ) )
+                .Where( e => e.IsEntity || e.IsSecured )
                 .ToList() )
             {
-                oldEntityType.IsSecured = false;
-                oldEntityType.IsEntity = false;
-                oldEntityType.AssemblyName = null;
+                if ( !entityTypes.Keys.Contains( oldEntityType.Name.ToLower() ) )
+                {
+                    oldEntityType.IsSecured = false;
+                    oldEntityType.IsEntity = false;
+                    oldEntityType.AssemblyName = null;
+                }
             }
 
             // Update any existing entities
@@ -212,19 +217,23 @@ namespace Rock.Model
                 .Where( e => entityTypes.Keys.Contains( e.Name ) )
                 .ToList() )
             {
-                var entityType = entityTypes[existingEntityType.Name];
+                var key = existingEntityType.Name.ToLower();
 
-                if ( existingEntityType.IsEntity != entityType.IsEntity ||
+                var entityType = entityTypes[key];
+
+                if ( existingEntityType.Name != entityType.Name || 
+                    existingEntityType.IsEntity != entityType.IsEntity ||
                     existingEntityType.IsSecured != entityType.IsSecured ||
                     existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
                     existingEntityType.AssemblyName != entityType.AssemblyName )
                 {
+                    existingEntityType.Name = entityType.Name;
                     existingEntityType.IsEntity = entityType.IsEntity;
                     existingEntityType.IsSecured = entityType.IsSecured;
                     existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
                     existingEntityType.AssemblyName = entityType.AssemblyName;
                 }
-                entityTypes.Remove( entityType.Name );
+                entityTypes.Remove( key );
             }
 
             // Add the newly discovered entities 

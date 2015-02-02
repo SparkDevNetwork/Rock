@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -23,16 +24,15 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Security;
 
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Check-in Configuration" )]
     [Category( "Check-in" )]
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region ViewState and Dynamic Controls
 
@@ -220,12 +220,26 @@ namespace RockWeb.Blocks.CheckIn
 
             ViewStateList<GroupType> groupTypeViewStateList = new ViewStateList<GroupType>();
             groupTypeViewStateList.AddAll( groupTypeList );
-
             ViewState["CheckinGroupTypes"] = groupTypeViewStateList;
+
+            // get all GroupTypes' editors to save groups and labels
+            var recursiveGroupTypeEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().ToList();
+
+            // save each GroupTypes' Groups to ViewState (since GroupType.Groups are not Serialized)
+            var groupTypeGroupsList = new List<Group>();
+            foreach ( var editor in recursiveGroupTypeEditors )
+            {
+                var groupType = editor.GetCheckinGroupType( rockContext );
+                groupTypeGroupsList.AddRange( groupType.Groups );
+            }
+
+            ViewStateList<Group> checkinGroupTypesGroups = new ViewStateList<Group>();
+            checkinGroupTypesGroups.AddAll( groupTypeGroupsList );
+            ViewState["CheckinGroupTypesGroups"] = checkinGroupTypesGroups;
 
             // save all the checkinlabels for all the grouptypes (recursively) to viewstate
             GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
-            foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().ToList() )
+            foreach ( var checkinGroupTypeEditor in recursiveGroupTypeEditors )
             {
                 GroupTypeCheckinLabelAttributesState.Add( checkinGroupTypeEditor.GroupTypeGuid, checkinGroupTypeEditor.CheckinLabels );
             }
@@ -249,8 +263,27 @@ namespace RockWeb.Blocks.CheckIn
             phCheckinGroupTypes.Controls.Clear();
             var rockContext = new RockContext();
 
+            // GroupTypeViewStateList only contains parent GroupTypes, so get all the child GroupTypes and assign their groups
             ViewStateList<GroupType> groupTypeViewStateList = ViewState["CheckinGroupTypes"] as ViewStateList<GroupType>;
+            var allGroupTypesList = groupTypeViewStateList.Flatten<GroupType>( gt => gt.ChildGroupTypes );
 
+            // load each GroupTypes' Groups from ViewState (since GroupType.Groups are not Serialized)
+            ViewStateList<Group> checkinGroupTypesGroups = ViewState["CheckinGroupTypesGroups"] as ViewStateList<Group>;
+            foreach ( var groupTypeGroups in checkinGroupTypesGroups.GroupBy( g => g.GroupType.Guid ) )
+            {
+                var groupType = allGroupTypesList.FirstOrDefault( a => a.Guid == groupTypeGroups.Key );
+
+                if ( groupType != null )
+                {
+                    groupType.Groups = new List<Group>();
+                    foreach ( var group in groupTypeGroups )
+                    {
+                        groupType.Groups.Add( group );
+                    }
+                }
+            }
+
+            // Build out Parent GroupTypes controls (Child GroupTypes controls are built recursively)
             foreach ( var groupType in groupTypeViewStateList )
             {
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, rockContext );
@@ -318,7 +351,7 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             foreach ( var childGroupType in groupType.ChildGroupTypes
-                .Where( t => t.Guid != groupType.Guid)
+                .Where( t => t.Guid != groupType.Guid )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
@@ -518,7 +551,7 @@ namespace RockWeb.Blocks.CheckIn
             groupEditor.Parent.Controls.Remove( groupEditor );
         }
 
-        #endregion
+        #endregion ViewState and Dynamic Controls
 
         #region CheckinLabel Add/Delete
 
@@ -542,7 +575,7 @@ namespace RockWeb.Blocks.CheckIn
             ddlCheckinLabel.AutoPostBack = false;
             ddlCheckinLabel.Required = true;
             ddlCheckinLabel.Items.Add( new ListItem() );
-            
+
             var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) && a.IsTemporary == false ).OrderBy( a => a.FileName ).ToList();
 
             foreach ( var item in list )
@@ -598,11 +631,11 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
-            
+
             pnlDetails.Visible = true;
         }
 
-        #endregion
+        #endregion CheckinLabel Add/Delete
 
         #region Location Add/Delete
 
@@ -619,7 +652,7 @@ namespace RockWeb.Blocks.CheckIn
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
             checkinGroupEditor.Expanded = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
-            
+
             mdLocationPicker.Show();
         }
 
@@ -675,7 +708,7 @@ namespace RockWeb.Blocks.CheckIn
             mdLocationPicker.Hide();
         }
 
-        #endregion
+        #endregion Location Add/Delete
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -739,7 +772,7 @@ namespace RockWeb.Blocks.CheckIn
                 rockContext.SaveChanges();
 
                 // Add/Update grouptypes and groups that are in the UI
-                // Note:  We'll have to save all the groupTypes without changing the DB value of ChildGroupTypes, then come around again and save the ChildGroupTypes 
+                // Note:  We'll have to save all the groupTypes without changing the DB value of ChildGroupTypes, then come around again and save the ChildGroupTypes
                 // since the ChildGroupTypes may not exist in the database yet
                 foreach ( GroupType groupTypeUI in groupTypesToAddUpdate )
                 {
@@ -929,7 +962,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             // limit to child group types that are not Templates
             int[] templateGroupTypes = new int[] {
-                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id, 
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id,
                 DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER).Id
             };
 
@@ -1041,7 +1074,7 @@ namespace RockWeb.Blocks.CheckIn
 
             // limit to child group types that are not Templates
             int[] templateGroupTypes = new int[] {
-                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id, 
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id,
                 DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER).Id
             };
 

@@ -32,19 +32,19 @@ namespace Rock.Client
     public partial class GroupTypeRole
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int? GroupTypeId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int? GroupTypeId { get; set; }
+
+        /// <summary />
+        public bool IsLeader { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public int? MaxCount { get; set; }
@@ -53,7 +53,10 @@ namespace Rock.Client
         public int? MinCount { get; set; }
 
         /// <summary />
-        public bool IsLeader { get; set; }
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -66,9 +69,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

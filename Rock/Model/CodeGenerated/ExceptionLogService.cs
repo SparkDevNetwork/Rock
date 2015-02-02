@@ -87,25 +87,25 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this ExceptionLog target, ExceptionLog source )
         {
-            target.ParentId = source.ParentId;
-            target.SiteId = source.SiteId;
-            target.PageId = source.PageId;
-            target.HasInnerException = source.HasInnerException;
-            target.StatusCode = source.StatusCode;
-            target.ExceptionType = source.ExceptionType;
+            target.Id = source.Id;
+            target.Cookies = source.Cookies;
             target.Description = source.Description;
+            target.ExceptionType = source.ExceptionType;
+            target.Form = source.Form;
+            target.HasInnerException = source.HasInnerException;
+            target.PageId = source.PageId;
+            target.PageUrl = source.PageUrl;
+            target.ParentId = source.ParentId;
+            target.QueryString = source.QueryString;
+            target.ServerVariables = source.ServerVariables;
+            target.SiteId = source.SiteId;
             target.Source = source.Source;
             target.StackTrace = source.StackTrace;
-            target.PageUrl = source.PageUrl;
-            target.ServerVariables = source.ServerVariables;
-            target.QueryString = source.QueryString;
-            target.Form = source.Form;
-            target.Cookies = source.Cookies;
+            target.StatusCode = source.StatusCode;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

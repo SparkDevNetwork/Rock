@@ -32,49 +32,52 @@ namespace Rock.Client
     public partial class Group
     {
         /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int? ParentGroupId { get; set; }
-
-        /// <summary />
-        public int GroupTypeId { get; set; }
-
-        /// <summary />
-        public int? CampusId { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool IsSecurityRole { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public bool? AllowGuests { get; set; }
 
         /// <summary />
-        public GroupType GroupType { get; set; }
+        public Campus Campus { get; set; }
 
         /// <summary />
-        public Campus Campus { get; set; }
+        public int? CampusId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public ICollection<GroupLocation> GroupLocations { get; set; }
 
         /// <summary />
         public ICollection<Group> Groups { get; set; }
 
         /// <summary />
+        public GroupType GroupType { get; set; }
+
+        /// <summary />
+        public int GroupTypeId { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsSecurityRole { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
         public ICollection<GroupMember> Members { get; set; }
 
         /// <summary />
-        public ICollection<GroupLocation> GroupLocations { get; set; }
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public int? ParentGroupId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -87,9 +90,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

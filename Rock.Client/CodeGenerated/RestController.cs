@@ -32,13 +32,16 @@ namespace Rock.Client
     public partial class RestController
     {
         /// <summary />
-        public string Name { get; set; }
+        public int Id { get; set; }
+
+        /// <summary />
+        public ICollection<RestAction> Actions { get; set; }
 
         /// <summary />
         public string ClassName { get; set; }
 
         /// <summary />
-        public ICollection<RestAction> Actions { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -51,9 +54,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

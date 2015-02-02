@@ -34,16 +34,6 @@
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
 
-// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
-@spacing-sm: 0.25;
-@spacing-md: 0.5;
-@spacing-lg: 1;
-@spacing-xl: 2;
-
-@spacing-sm-px: @grid-gutter-width * @spacing-sm;
-@spacing-md-px: @grid-gutter-width * @spacing-md;
-@spacing-lg-px: @grid-gutter-width * @spacing-lg;
-@spacing-xl-px: @grid-gutter-width * @spacing-xl;
 
 // Page Styling
 // -------------------------
@@ -64,6 +54,7 @@
 @modal-footer-text-color: @gray;
 @modal-dropshadow-color: #464646;
 // see bootstrap variables for additional modal styles
+
 
 // Components
 // -------------------------
@@ -118,26 +109,6 @@
 @widget-header-bg-dark: @accent-bold-color;
 @widget-header-text-color-dark: @accent-bold-text-color;
 
-// Titles
-@title-firstword-weight: @font-weight-bold;
-@title-default-weight: @font-weight-light;
-
-// Banner 
-@banner-text-color: @accent-bold-text-color;
-@banner-font-weight: @title-default-weight;
-@banner-firstword-weight: @title-firstword-weight;
-@banner-font-size: 14px;
-@banner-bg: @accent-bold-color;
-@banner-border-radius: 0;
-@banner-border-color: transparent;  
-@banner-border-size: 0;  
-@banner-padding: 4px 12px;
-
-// Treeview //todo needed?
-@tree-selected-bg: @accent-bold-color;
-@tree-selected-color: @accent-bold-text-color;
-@tree-hover-bg: @accent-light-color;
-@tree-hover-color: @text-color;
 
 // Page List
 @pagelist-bg: @accent-color;
@@ -155,12 +126,12 @@
 @smartsearch-border-color: #2c2c2c;
 @smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
 @smartsearch-input-text-color: @header-text-color;
-@smartsearch-input-selection-background: #2e2e2e; 
-@smartsearch-input-selection-text-color: #fff; 
+@smartsearch-input-selection-background: #2e2e2e;
+@smartsearch-input-selection-text-color: #fff;
 
 // Custom Labels
 @label-campus-bg: #83758f;
-@label-type-bg: lighten(@banner-bg, 5%);
+@label-type-bg: #567d8c;
 
 // Custom Buttons
 @btn-action-color:              @accent-semibold-text-color;
@@ -176,7 +147,7 @@
 @btn-authenication-border:      darken(@accent-color, 5%);
 
 // Scrollbar Items
-@scroll-track-color: #aaa; 
+@scroll-track-color: #aaa;
 @scroll-thumb-color: #ccc;
 
 // Block Specific

@@ -32,19 +32,19 @@ namespace Rock.Client
     public partial class AttributeQualifier
     {
         /// <summary />
-        public bool IsSystem { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int AttributeId { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public string Key { get; set; }
 
         /// <summary />
         public string Value { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }

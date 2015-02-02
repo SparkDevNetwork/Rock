@@ -93,17 +93,17 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Schedule target, Schedule source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
+            target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+            target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
             target.Description = source.Description;
             target.iCalendarContent = source.iCalendarContent;
-            target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
-            target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
-            target.CategoryId = source.CategoryId;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

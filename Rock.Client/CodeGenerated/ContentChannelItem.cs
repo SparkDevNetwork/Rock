@@ -32,22 +32,7 @@ namespace Rock.Client
     public partial class ContentChannelItem
     {
         /// <summary />
-        public int ContentChannelId { get; set; }
-
-        /// <summary />
-        public int ContentChannelTypeId { get; set; }
-
-        /// <summary />
-        public string Title { get; set; }
-
-        /// <summary />
-        public string Content { get; set; }
-
-        /// <summary />
-        public int Priority { get; set; }
-
-        /// <summary />
-        public int /* ContentChannelItemStatus*/ Status { get; set; }
+        public int Id { get; set; }
 
         /// <summary />
         public int? ApprovedByPersonAliasId { get; set; }
@@ -56,7 +41,19 @@ namespace Rock.Client
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary />
-        public DateTime StartDateTime { get; set; }
+        public string Content { get; set; }
+
+        /// <summary />
+        public ContentChannel ContentChannel { get; set; }
+
+        /// <summary />
+        public int ContentChannelId { get; set; }
+
+        /// <summary />
+        public ContentChannelType ContentChannelType { get; set; }
+
+        /// <summary />
+        public int ContentChannelTypeId { get; set; }
 
         /// <summary />
         public DateTime? ExpireDateTime { get; set; }
@@ -65,10 +62,16 @@ namespace Rock.Client
         public string Permalink { get; set; }
 
         /// <summary />
-        public ContentChannel ContentChannel { get; set; }
+        public int Priority { get; set; }
 
         /// <summary />
-        public ContentChannelType ContentChannelType { get; set; }
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary />
+        public int /* ContentChannelItemStatus*/ Status { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
@@ -81,9 +84,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int Id { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
