@@ -87,12 +87,12 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
         {
-            target.ViewerPersonAliasId = source.ViewerPersonAliasId;
-            target.TargetPersonAliasId = source.TargetPersonAliasId;
-            target.ViewDateTime = source.ViewDateTime;
+            target.Id = source.Id;
             target.IpAddress = source.IpAddress;
             target.Source = source.Source;
-            target.Id = source.Id;
+            target.TargetPersonAliasId = source.TargetPersonAliasId;
+            target.ViewDateTime = source.ViewDateTime;
+            target.ViewerPersonAliasId = source.ViewerPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

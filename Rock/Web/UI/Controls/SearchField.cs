@@ -45,7 +45,7 @@ namespace Rock.Web.UI.Controls
             ScriptManager.RegisterStartupScript( this, this.GetType(), "search-field-" + this.ID, script, true );
 
             this.CssClass = "searchinput";
-            this.AccessKey = "s";
+            this.AccessKey = "q";
         }
 
         /// <summary>

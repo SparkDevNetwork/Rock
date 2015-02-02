@@ -87,22 +87,22 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Block target, Block source )
         {
-            target.IsSystem = source.IsSystem;
-            target.PageId = source.PageId;
-            target.LayoutId = source.LayoutId;
+            target.Id = source.Id;
             target.BlockTypeId = source.BlockTypeId;
-            target.Zone = source.Zone;
-            target.Order = source.Order;
-            target.Name = source.Name;
             target.CssClass = source.CssClass;
-            target.PreHtml = source.PreHtml;
-            target.PostHtml = source.PostHtml;
+            target.IsSystem = source.IsSystem;
+            target.LayoutId = source.LayoutId;
+            target.Name = source.Name;
+            target.Order = source.Order;
             target.OutputCacheDuration = source.OutputCacheDuration;
+            target.PageId = source.PageId;
+            target.PostHtml = source.PostHtml;
+            target.PreHtml = source.PreHtml;
+            target.Zone = source.Zone;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -87,20 +87,20 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Workflow target, Workflow source )
         {
-            target.WorkflowTypeId = source.WorkflowTypeId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Status = source.Status;
-            target.IsProcessing = source.IsProcessing;
+            target.Id = source.Id;
             target.ActivatedDateTime = source.ActivatedDateTime;
-            target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.Description = source.Description;
             target.InitiatorPersonAliasId = source.InitiatorPersonAliasId;
+            target.IsProcessing = source.IsProcessing;
+            target.LastProcessedDateTime = source.LastProcessedDateTime;
+            target.Name = source.Name;
+            target.Status = source.Status;
+            target.WorkflowTypeId = source.WorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

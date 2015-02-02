@@ -87,30 +87,30 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PrayerRequest target, PrayerRequest source )
         {
-            target.FirstName = source.FirstName;
-            target.LastName = source.LastName;
-            target.Email = source.Email;
-            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            target.CategoryId = source.CategoryId;
-            target.Text = source.Text;
-            target.Answer = source.Answer;
-            target.EnteredDateTime = source.EnteredDateTime;
-            target.ExpirationDate = source.ExpirationDate;
-            target.GroupId = source.GroupId;
+            target.Id = source.Id;
             target.AllowComments = source.AllowComments;
-            target.IsUrgent = source.IsUrgent;
-            target.IsPublic = source.IsPublic;
-            target.IsActive = source.IsActive;
-            target.IsApproved = source.IsApproved;
-            target.FlagCount = source.FlagCount;
-            target.PrayerCount = source.PrayerCount;
+            target.Answer = source.Answer;
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            target.CategoryId = source.CategoryId;
+            target.Email = source.Email;
+            target.EnteredDateTime = source.EnteredDateTime;
+            target.ExpirationDate = source.ExpirationDate;
+            target.FirstName = source.FirstName;
+            target.FlagCount = source.FlagCount;
+            target.GroupId = source.GroupId;
+            target.IsActive = source.IsActive;
+            target.IsApproved = source.IsApproved;
+            target.IsPublic = source.IsPublic;
+            target.IsUrgent = source.IsUrgent;
+            target.LastName = source.LastName;
+            target.PrayerCount = source.PrayerCount;
+            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            target.Text = source.Text;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
