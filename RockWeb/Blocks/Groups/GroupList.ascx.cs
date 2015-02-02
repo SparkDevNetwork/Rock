@@ -61,13 +61,58 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
-            gfSettings.Visible = ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean();
+            gfSettings.Visible = GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false;
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
             gGroups.DataKeyNames = new string[] { "Id" };
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
+
+            // set up Grid based on Block Settings and Context
+            bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
+            bool showActiveStatusColumn = GetAttributeValue( "DisplayActiveStatusColumn" ).AsBoolean();
+            bool showSystemColumn = GetAttributeValue( "DisplaySystemColumn" ).AsBoolean();
+
+            if ( !showDescriptionColumn )
+            {
+                gGroups.TooltipField = "Description";
+            }
+
+            Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
+            boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).AsBoolean();
+            boundFields["Description"].Visible = showDescriptionColumn;
+
+            Dictionary<string, BoolField> boolFields = gGroups.Columns.OfType<BoolField>().ToDictionary( a => a.DataField );
+            boolFields["IsActive"].Visible = showActiveStatusColumn;
+            boolFields["IsSystem"].Visible = showSystemColumn;
+
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
+            {
+                var personContext = ContextEntity<Person>();
+                if ( personContext != null )
+                {
+                    boundFields["GroupRole"].Visible = true;
+                    boundFields["DateAdded"].Visible = true;
+                    boundFields["MemberCount"].Visible = false;
+
+                    gGroups.Actions.ShowAdd = false;
+                    gGroups.IsDeleteEnabled = false;
+                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
+                }
+
+            }
+            else
+            {
+                bool canEdit = IsUserAuthorized( Authorization.EDIT );
+                gGroups.Actions.ShowAdd = canEdit;
+                gGroups.IsDeleteEnabled = canEdit;
+
+                boundFields["GroupRole"].Visible = false;
+                boundFields["DateAdded"].Visible = false;
+                boundFields["MemberCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).AsBoolean();
+            }
 
             BindFilter();
         }
@@ -256,7 +301,7 @@ namespace RockWeb.Blocks.Groups
             // Find all the Group Types
             var groupTypeIds = GetAvailableGroupTypes();
 
-            if ( ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean() )
+            if ( GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false )
             {
                 int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsIntegerOrNull();
                 if ( groupTypeFilter.HasValue )
@@ -274,38 +319,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
-            bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
-            bool showActiveStatusColumn = GetAttributeValue( "DisplayActiveStatusColumn" ).AsBoolean();
-            bool showSystemColumn = GetAttributeValue( "DisplaySystemColumn" ).AsBoolean();
-
-            if ( !showDescriptionColumn )
-            {
-                gGroups.TooltipField = "Description";
-            }
-
-            Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).AsBoolean();
-            boundFields["Description"].Visible = showDescriptionColumn;
-
-            Dictionary<string, BoolField> boolFields = gGroups.Columns.OfType<BoolField>().ToDictionary( a => a.DataField );
-            boolFields["IsActive"].Visible = showActiveStatusColumn;
-            boolFields["IsSystem"].Visible = showSystemColumn;
 
             // Person context will exist if used on a person detail page
-            int personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
             {
                 var personContext = ContextEntity<Person>();
                 if ( personContext != null )
                 {
-                    boundFields["GroupRole"].Visible = true;
-                    boundFields["DateAdded"].Visible = true;
-                    boundFields["MemberCount"].Visible = false;
-
-                    gGroups.Actions.ShowAdd = false;
-                    gGroups.IsDeleteEnabled = false;
-                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
-
                     var qry = new GroupMemberService( rockContext ).Queryable( true )
                         .Where( m =>
                             m.PersonId == personContext.Id &&
@@ -346,14 +367,6 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                bool canEdit = IsUserAuthorized( Authorization.EDIT );
-                gGroups.Actions.ShowAdd = canEdit;
-                gGroups.IsDeleteEnabled = canEdit;
-
-                boundFields["GroupRole"].Visible = false;
-                boundFields["DateAdded"].Visible = false;
-                boundFields["MemberCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).AsBoolean() ;
-
                 var qry = new GroupService( rockContext ).Queryable()
                     .Where( g =>
                         groupTypeIds.Contains( g.GroupTypeId ) &&
