@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
@@ -41,13 +40,13 @@ namespace RockWeb.Blocks.Administration
     [Description( "Displays the page properties." )]
     public partial class PageProperties : RockBlock
     {
-
         #region Fields
 
         private int? _pageId = null;
-        // Import/Export hidden until we have time to get it working again.
-        //private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
-        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings" } ;
+
+        //// Import/Export hidden until we have time to get it working again.
+        //// private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
+        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings" };
 
         #endregion
 
@@ -85,13 +84,13 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
-                int pageId = int.MinValue;
-                if ( int.TryParse( PageParameter( "Page" ), out pageId ) )
+                int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
+                if ( pageId.HasValue )
                 {
                     // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
-                    ppParentPage.HiddenPageIds = new int[] { pageId };
-                    
-                    var pageCache = Rock.Web.Cache.PageCache.Read( pageId );
+                    ppParentPage.HiddenPageIds = new int[] { pageId.Value };
+
+                    var pageCache = Rock.Web.Cache.PageCache.Read( pageId.Value );
 
                     DialogPage dialogPage = this.Page as DialogPage;
                     if ( dialogPage != null )
@@ -217,7 +216,6 @@ namespace RockWeb.Blocks.Administration
             }
 
             base.OnLoad( e );
-
         }
 
         #endregion
@@ -243,11 +241,16 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSite control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
         {
             LoadLayouts( new RockContext(), SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
         }
-        
+
         /// <summary>
         /// Handles the OnSave event of the masterPage control.
         /// </summary>
@@ -358,7 +361,7 @@ namespace RockWeb.Blocks.Administration
                 page.PageDisplayIcon = cbPageIcon.Checked;
                 page.PageDisplayDescription = cbPageDescription.Checked;
 
-                page.DisplayInNavWhen = (DisplayInNavWhen)Enum.Parse( typeof( DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                page.DisplayInNavWhen = ddlMenuWhen.SelectedValue.ConvertToEnumOrNull<DisplayInNavWhen>() ?? DisplayInNavWhen.WhenAllowed;
                 page.MenuDisplayDescription = cbMenuDescription.Checked;
                 page.MenuDisplayIcon = cbMenuIcon.Checked;
                 page.MenuDisplayChildPages = cbMenuChildPages.Checked;
@@ -369,10 +372,9 @@ namespace RockWeb.Blocks.Administration
                 page.RequiresEncryption = cbRequiresEncryption.Checked;
                 page.EnableViewState = cbEnableViewState.Checked;
                 page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
+                page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
                 page.Description = tbDescription.Text;
                 page.HeaderContent = ceHeaderContent.Text;
-
 
                 // update PageContexts
                 foreach ( var pageContext in page.PageContexts.ToList() )
@@ -396,7 +398,6 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-
                 // save page and it's routes
                 if ( page.IsValid )
                 {
@@ -413,7 +414,7 @@ namespace RockWeb.Blocks.Administration
                                 RouteTable.Routes.Remove( existingRoute );
                             }
                         }
-                        
+
                         // Add any routes that were added
                         if ( addedRoutes.Contains( pageRoute.Route ) )
                         {
@@ -438,10 +439,14 @@ namespace RockWeb.Blocks.Administration
                     string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
                 }
-
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbExport_Click( object sender, EventArgs e )
         {
             if ( _pageId.HasValue )
@@ -449,14 +454,14 @@ namespace RockWeb.Blocks.Administration
                 var pageService = new PageService( new RockContext() );
                 var page = pageService.Get( _pageId.Value );
                 var packageService = new PackageService();
-                var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
+                var pageName = page.InternalName.Replace( " ", "_" ) + ( cbExportChildren.Checked ? "_wChildPages" : string.Empty );
                 using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
                 {
                     EnableViewState = false;
                     Response.Clear();
                     Response.ContentType = "application/octet-stream";
                     Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".nupkg" );
-                    Response.Charset = "";
+                    Response.Charset = string.Empty;
                     Response.BinaryWrite( stream.ToArray() );
                     Response.Flush();
                     Response.End();
@@ -464,6 +469,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbImport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbImport_Click( object sender, EventArgs e )
         {
             var page = PageCache.Read( _pageId ?? 0 );
@@ -483,7 +493,7 @@ namespace RockWeb.Blocks.Administration
 
                 var packageService = new PackageService();
                 bool importResult;
-                
+
                 importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, page.Id, page.Layout.SiteId );
 
                 if ( !importResult )
@@ -509,6 +519,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the ServerValidate event of the cvPageRoute control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvPageRoute_ServerValidate( object source, ServerValidateEventArgs args )
         {
             var errorMessages = new List<string>();
@@ -520,8 +535,10 @@ namespace RockWeb.Blocks.Administration
                 pageRoute.Guid = Guid.NewGuid();
                 if ( !pageRoute.IsValid )
                 {
-                    errorMessages.Add( string.Format( "The '{0}' route is invalid: {1}", route,
-                    pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
+                    errorMessages.Add( string.Format( 
+                        "The '{0}' route is invalid: {1}",
+                        route,
+                        pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
                 }
             }
 
@@ -534,7 +551,11 @@ namespace RockWeb.Blocks.Administration
 
         #region Methods
 
-        private void LoadSites(RockContext rockContext)
+        /// <summary>
+        /// Loads the sites.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
             foreach ( Site site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ) )
@@ -543,13 +564,18 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        private void LoadLayouts(RockContext rockContext, SiteCache Site)
+        /// <summary>
+        /// Loads the layouts.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="site">The site.</param>
+        private void LoadLayouts( RockContext rockContext, SiteCache site )
         {
-            LayoutService.RegisterLayouts( Request.MapPath( "~" ), Site );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), site );
 
             ddlLayout.Items.Clear();
             var layoutService = new LayoutService( rockContext );
-            foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
+            foreach ( var layout in layoutService.GetBySiteId( site.Id ) )
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
             }
@@ -579,7 +605,7 @@ namespace RockWeb.Blocks.Administration
             {
                 return "active";
             }
-            
+
             return string.Empty;
         }
 
@@ -619,6 +645,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-
     }
 }
