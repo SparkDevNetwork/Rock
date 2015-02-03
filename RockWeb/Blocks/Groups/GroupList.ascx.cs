@@ -61,6 +61,33 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            ApplyBlockSettings();
+
+            BindFilter();
+
+            this.BlockUpdated += GroupList_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlGroupList );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            if ( !Page.IsPostBack )
+            {
+                BindGrid();
+            }
+
+            base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Applies the block settings.
+        /// </summary>
+        private void ApplyBlockSettings()
+        {
             gfSettings.Visible = GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false;
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
@@ -113,22 +140,17 @@ namespace RockWeb.Blocks.Groups
                 boundFields["DateAdded"].Visible = false;
                 boundFields["MemberCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).AsBoolean();
             }
-
-            BindFilter();
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Handles the BlockUpdated event of the GroupList control.
         /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void GroupList_BlockUpdated( object sender, EventArgs e )
         {
-            if ( !Page.IsPostBack )
-            {
-                BindGrid();
-            }
-
-            base.OnLoad( e );
+            ApplyBlockSettings();
+            BindFilter();
         }
 
         #endregion
