@@ -41,6 +41,7 @@
             this.cbClient = new System.Windows.Forms.CheckBox();
             this.lblAssemblyPath = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -162,11 +163,21 @@
             this.label1.TabIndex = 10;
             this.label1.Text = "Assembly:";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.Location = new System.Drawing.Point(400, 410);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(212, 23);
+            this.progressBar1.TabIndex = 11;
+            this.progressBar1.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(624, 441);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblAssemblyPath);
             this.Controls.Add(this.cbClient);
@@ -200,6 +211,7 @@
         private System.Windows.Forms.CheckBox cbClient;
         private System.Windows.Forms.Label lblAssemblyPath;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
