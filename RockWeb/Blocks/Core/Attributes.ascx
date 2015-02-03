@@ -26,7 +26,7 @@
                                 <Rock:RockBoundField
                                     DataField="Id"
                                     HeaderText="Id"
-                                    SortExpression="EntityType.FriendlyName"
+                                    SortExpression="Id"
                                     ItemStyle-Wrap="false"
                                     ItemStyle-HorizontalAlign="Right"
                                     HeaderStyle-HorizontalAlign="Right" />
