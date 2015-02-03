@@ -38,65 +38,63 @@
                             </div>
                         </asp:Panel> 
                     </div>
+
+                    <asp:Panel ID="pnlShare" runat="server">
+                        <div class="sharebutton clearfix">
+                            <a ID="sharebutton" class="btn btn-success btn-xs pull-right" data-toggle="collapse" data-target="#sharepanel"><i class="fa fa-share-alt"></i> Share <i id="chevron-toggle" class="fa fa-chevron-down"></i> </a>
+                        </div>
+                        <div id="sharepanel" class="collapse">
+                            <asp:ValidationSummary ID="valSummary" runat="server" DisplayMode="BulletList" CssClass="alert alert-danger" 
+                                ValidationGroup="sharegroup" HeaderText="Please correct the following..." />
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group margin-b-md">
+                                        <input type="text" ID="starttime" class="form-control" />
+                                        <span class="input-group-btn">
+                                            <a ID="btnStartTime" class="btn btn-default" onclick="javascript: GetVideoStartTime()" >Start</a>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="input-group margin-b-md">
+                                        <input ID="endtime" class="form-control" />
+                                        <span class="input-group-btn">
+                                            <a ID="btnEndTime" class="btn btn-default" onclick="javascript: GetVideoEndTime()">End</a>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <input id="totaltime" class="form-control  margin-b-md" placeholder="Total" disabled />
+                                </div>
+                            </div>
+
+                            <br />
+
+                            <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" 
+                                TextMode="Email" ValidationGroup="sharegroup" Required="true" />
+
+                            <Rock:RockTextBox ID="tbEmailFrom" runat="server" Label="From" TextMode="Email" />
+
+                            <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" Help="The URL link will automatically be appended to this message." 
+                                CssClass="form-control" Rows="3" TextMode="MultiLine" />
+
+                            <Rock:RockTextBox ID="tbLink" runat="server" Label="Link" Help="This URL link will be included automatically in the email message." 
+                                TextMode="Url" CssClass="js-urltextbox" ValidationGroup="sharegroup" Required="true" RequiredErrorMessage="A link hasn't been created yet.  Please set a start and end point." />
+
+                            <Rock:BootstrapButton ID="btnSendEmail" runat="server" Text="Send" OnClick="btnSendEmail_Click" CssClass="btn btn-default pull-right" 
+                                CausesValidation="true" ValidationGroup="sharegroup" /> 
+
+                        </div>
+
+                    </asp:Panel>
                 </div>
             </div>
         </asp:Panel>
             
-        <asp:Panel ID="pnlShare" runat="server">
-            <div class="sharebutton">
-                <a ID="sharebutton" class="btn btn-success btn-xs pull-right" data-toggle="collapse" data-target="#sharepanel"><i class="fa fa-share-alt"></i> Share <i id="chevron-toggle" class="fa fa-chevron-down"></i> </a>
-            </div>
-            <br />   
-            <div id="sharepanel" class="panel panel-default collapse">
-                <div class="panel-body">
-
-                    <asp:ValidationSummary ID="valSummary" runat="server" DisplayMode="BulletList" CssClass="alert alert-danger" 
-                        ValidationGroup="sharegroup" HeaderText="Please correct the following..." />
-
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="input-group">
-                                <input type="text" ID="starttime" class="form-control" />
-                                <span class="input-group-btn">
-                                    <a ID="btnStartTime" class="btn btn-default" onclick="javascript: GetVideoStartTime()" >Start</a>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-4">
-                            <div class="input-group">
-                                <input ID="endtime" class="form-control" />
-                                <span class="input-group-btn">
-                                    <a ID="btnEndTime" class="btn btn-default" onclick="javascript: GetVideoEndTime()">End</a>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-4">
-                            <input id="totaltime" class="form-control" placeholder="Total" />
-                        </div>
-                    </div>
-
-                    <br />
-
-                    <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" 
-                        TextMode="Email" ValidationGroup="sharegroup" Required="true" />
-
-                    <Rock:RockTextBox ID="tbEmailFrom" runat="server" Label="From" TextMode="Email" />
-
-                    <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" Help="The URL link will automatically be appended to this message." 
-                        CssClass="form-control" Rows="3" TextMode="MultiLine" />
-
-                    <Rock:RockTextBox ID="tbLink" runat="server" Label="Link" Help="This URL link will be included automatically in the email message." 
-                        TextMode="Url" CssClass="js-urltextbox" ValidationGroup="sharegroup" Required="true" RequiredErrorMessage="A link hasn't been created yet.  Please set a start and end point." />
-
-                    <Rock:BootstrapButton ID="btnSendEmail" runat="server" Text="Send" OnClick="btnSendEmail_Click" CssClass="btn btn-default pull-right" 
-                        CausesValidation="true" ValidationGroup="sharegroup" /> 
-
-                </div>
-            </div> 
-
-        </asp:Panel>
+        
     </ContentTemplate>
 </asp:UpdatePanel>
 

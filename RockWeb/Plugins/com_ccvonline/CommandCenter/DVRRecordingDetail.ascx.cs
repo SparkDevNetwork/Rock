@@ -83,7 +83,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 string clipStart = PageParameter( "ClipStart" );
                 string clipDuration = PageParameter( "ClipDuration" );
 
-                hfBaseUrl.Value = Request.Url.OriginalString.Split('?')[0];
+                // Using an uri to remove the port number from the url
+                var url = new Uri( Request.Url.OriginalString.Split('?')[0] );
+                hfBaseUrl.Value = url.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
 
                 RecordingService service = new RecordingService( new CommandCenterContext() );
                 var rockContext = new RockContext();
@@ -130,6 +132,18 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => ( g.WeekendDate == weekendDateTime ) &&
                                                 ( g.Campus.Guid == campusGuid ) &&
                                                 ( g.Venue == venue ) );
+
+
+                    if ( CurrentUser.Person != null )
+                    {
+                        Person currentPerson = CurrentUser.Person;
+
+                        if ( !String.IsNullOrWhiteSpace( currentPerson.Email ) && currentPerson.Email.IsValidEmail() )
+                        {
+                            tbEmailFrom.Text = currentPerson.Email;
+                        }                
+                    }
+                    
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = true;
