@@ -58,6 +58,13 @@ namespace Rock.Apps.CheckScannerUtility
             lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
+            Uri rockUrl = new Uri( txtRockUrl.Text );
+            var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+            if ( !validSchemes.Contains( rockUrl.Scheme ) )
+            {
+                txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+            }
+
             RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
 
             string userName = txtUsername.Text;
