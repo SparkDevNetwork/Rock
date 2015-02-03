@@ -53,6 +53,9 @@ namespace RockWeb.Blocks.Finance
             gAccounts.DataKeyNames = new string[] { "Id" };
             gAccounts.ShowActionRow = false;
 
+            gCurrencyTypes.DataKeyNames = new string[] { "Id" };
+            gCurrencyTypes.ShowActionRow = false;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -331,7 +334,7 @@ namespace RockWeb.Blocks.Finance
                     .Add( "Transaction / Control / Variance", amountFormat )
                     .Add( "Accounting Code", batch.AccountingSystemCode )
                     .Html;
-
+                //Account Summary
                 gAccounts.DataSource = batch.Transactions
                     .SelectMany( t => t.TransactionDetails )
                     .GroupBy( d => new
@@ -348,6 +351,28 @@ namespace RockWeb.Blocks.Finance
                     .OrderBy( s => s.Name )
                     .ToList();
                 gAccounts.DataBind();
+
+                //Currency Summary
+                gCurrencyTypes.DataSource = batch.Transactions
+                    .Select(t=> new
+                    {
+                        CurrencyTypeValue=t.CurrencyTypeValue,
+                        TotalAmount = t.TotalAmount
+                    }) 
+                    .GroupBy( c => new
+                    {
+                        CurrencyId = c.CurrencyTypeValue.Id,
+                        CurrencyName = c.CurrencyTypeValue.Value
+                    } )
+                    .Select( s => new
+                    {
+                        Id = s.Key.CurrencyId,
+                        Name = s.Key.CurrencyName,
+                        Amount = s.Sum( a => (decimal?)a.TotalAmount ) ?? 0.0M
+                    } )
+                    .OrderBy( s => s.Name )
+                    .ToList();
+                gCurrencyTypes.DataBind();
             }
         }
 
