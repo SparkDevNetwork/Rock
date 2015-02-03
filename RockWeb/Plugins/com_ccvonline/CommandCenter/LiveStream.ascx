@@ -44,7 +44,7 @@
                         live: true,
                         provider: 'rtmp',
                         scaling: 'scale',
-                        onStart: function () { MutePlayers(); }
+                        onStart: function () { SetupPlayers(); }
                     },
                     showErrors: false
 			    });
@@ -72,7 +72,7 @@
     // mute all videos on load except the first one.  This logic
     // is used instead of .First() because flow player does not 
     // support it.
-    function MutePlayers() {
+    function SetupPlayers() {
         var counter = 0;
         $f('*').each(function () {
             counter++;
