@@ -63,10 +63,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring EntityType,MultiValueFieldTypeId 
-            
-            // ignoring EntityType,SingleValueFieldTypeId 
+ 
+            if ( new Service<EntityType>( Context ).Queryable().Any( a => a.MultiValueFieldTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, EntityType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EntityType>( Context ).Queryable().Any( a => a.SingleValueFieldTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, EntityType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
