@@ -18,8 +18,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     [Category( "CCV > Command Center" )]
     [Description("Used for viewing live venue streams.")]
 
-    [CampusField("Campus", "Only show streams from a specific campus", false, order: 0)]
-    [TextField("Venue", "Only shows streams for a specfic venue. i.e. Command Center", false, order: 1)]
+    [CampusesField("Campus", "Only shows streams from selected campuses. If none are selected, all campuses will be shown.", false, order: 0)]
+    [TextField("Venue", "Only shows streams for a specfic venue.", false, order: 1)]
     public partial class LiveStream : RockBlock
     {
         #region Base Control Methods
@@ -56,15 +56,14 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         private List<string[]> GetDatasource()
         {
             string configuredVenue = GetAttributeValue( "Venue" );
-            Guid? campusGuid = GetAttributeValue( "Campus" ).AsGuidOrNull();
+            string campusGuids = GetAttributeValue( "Campus" );
 
             var datasource = new List<string[]>();
 
             var campuses = CampusCache.All();
             var campusStreams = campuses
-                .Where( c =>
-                    !campusGuid.HasValue ||
-                    c.Guid == campusGuid.Value )
+                .Where( c => campusGuids.Contains( c.Guid.ToString() )
+                        || String.IsNullOrWhiteSpace( campusGuids ) )
                 .Select( c => new
                 {
                     Id = c.Id.ToString(),
