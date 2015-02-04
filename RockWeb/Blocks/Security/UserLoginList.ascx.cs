@@ -36,7 +36,6 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "User Login List" )]
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
-
     [ContextAware]
     public partial class UserLoginList : Rock.Web.UI.RockBlock
     {
@@ -45,7 +44,7 @@ namespace RockWeb.Blocks.Security
         private int? _personId = null;
         private bool _canEdit = false;
 
-        #endregion
+        #endregion Fields
 
         #region Base Control Methods
 
@@ -107,13 +106,12 @@ namespace RockWeb.Blocks.Security
                 }
 
                 ShowDialog();
-
             }
 
             base.OnLoad( e );
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -350,7 +348,7 @@ namespace RockWeb.Blocks.Security
         {
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -373,11 +371,11 @@ namespace RockWeb.Blocks.Security
         private void BindGrid()
         {
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null)
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null )
             {
                 return;
             }
-    
+
             var qry = new UserLoginService( new RockContext() ).Queryable()
                 .Where( l => !_personId.HasValue || l.PersonId == _personId.Value );
 
@@ -478,7 +476,7 @@ namespace RockWeb.Blocks.Security
             }
 
             tbUserName.Text = userLogin.UserName;
-            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? true;
+            cbIsConfirmed.Checked = userLogin.IsConfirmed ?? false;
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
             if ( userLogin.EntityType != null )
             {
@@ -563,7 +561,6 @@ namespace RockWeb.Blocks.Security
             hfActiveDialog.Value = string.Empty;
         }
 
-
-        #endregion
-}
+        #endregion Methods
+    }
 }
