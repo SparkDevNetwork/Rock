@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Control Methods
+        #endregion
 
         #region Events
 
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Security
             tbKey.Text = key;
         }
 
-        #endregion Events
+        #endregion
 
         #region Internal Methods
 
@@ -268,6 +268,6 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        #endregion Internal Methods
+        #endregion
     }
 }
