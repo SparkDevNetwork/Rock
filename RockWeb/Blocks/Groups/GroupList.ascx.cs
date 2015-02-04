@@ -46,10 +46,11 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 7 )]
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 8 )]
     [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 9 )]
+    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 10 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
-        public int _groupTypesCount = 0;
+        private int _groupTypesCount = 0;
 
         #region Control Methods
 
@@ -91,6 +92,9 @@ namespace RockWeb.Blocks.Groups
             gfSettings.Visible = GetAttributeValue( "DisplayFilter" ).AsBooleanOrNull() ?? false;
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
 
+            // only show the user active filter if the block setting doesn't already restrict it
+            ddlActiveFilter.Visible = GetAttributeValue( "LimittoActiveStatus" ) == "all";
+
             gGroups.DataKeyNames = new string[] { "Id" };
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
@@ -128,7 +132,6 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
                 }
-
             }
             else
             {
@@ -151,6 +154,7 @@ namespace RockWeb.Blocks.Groups
         {
             ApplyBlockSettings();
             BindFilter();
+            BindGrid();
         }
 
         #endregion
@@ -195,6 +199,16 @@ namespace RockWeb.Blocks.Groups
                     if ( groupType != null )
                     {
                         e.Value = groupType.Name;
+                    }
+
+                    break;
+
+                case "Active Status":
+
+                    // if the ActiveFilter control is hidden (because there is a block setting that overrides it), don't filter by Active Status
+                    if (!ddlActiveFilter.Visible)
+                    {
+                        e.Value = string.Empty;
                     }
 
                     break;
@@ -342,6 +356,38 @@ namespace RockWeb.Blocks.Groups
 
             bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
 
+            var qryGroups = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
+
+            string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
+
+            if ( limitToActiveStatus == "all" && gfSettings.Visible )
+            {
+                // Filter by active/inactive unless the block settings restrict it
+                if ( ddlActiveFilter.SelectedIndex > -1 )
+                {
+                    if ( ddlActiveFilter.SelectedValue == "inactive" )
+                    {
+                        qryGroups = qryGroups.Where( a => a.IsActive == false );
+                    }
+                    else if ( ddlActiveFilter.SelectedValue == "active" )
+                    {
+                        qryGroups = qryGroups.Where( a => a.IsActive == true );
+                    }
+                }
+            }
+            else if ( limitToActiveStatus != "all")
+            {
+                // filter by the block settinf for Active Status
+                if ( limitToActiveStatus == "inactive")
+                {
+                    qryGroups = qryGroups.Where( a => a.IsActive == false );
+                }
+                else if ( limitToActiveStatus == "active" )
+                {
+                    qryGroups = qryGroups.Where( a => a.IsActive == true );
+                }
+            }
+
             // Person context will exist if used on a person detail page
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
@@ -349,24 +395,10 @@ namespace RockWeb.Blocks.Groups
                 var personContext = ContextEntity<Person>();
                 if ( personContext != null )
                 {
+                    // limit to Groups that the person is a member of
                     var qry = new GroupMemberService( rockContext ).Queryable( true )
-                        .Where( m =>
-                            m.PersonId == personContext.Id &&
-                            groupTypeIds.Contains( m.Group.GroupTypeId ) &&
-                            ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
-
-                    // Filter by active/inactive
-                    if ( ddlActiveFilter.SelectedIndex > -1 )
-                    {
-                        if ( ddlActiveFilter.SelectedValue == "inactive" )
-                        {
-                            qry = qry.Where( a => a.Group.IsActive == false );
-                        }
-                        else if ( ddlActiveFilter.SelectedValue == "active" )
-                        {
-                            qry = qry.Where( a => a.Group.IsActive == true );
-                        }
-                    }
+                        .Where( m => m.PersonId == personContext.Id )
+                        .Join( qryGroups, gm => gm.GroupId, g => g.Id, ( gm, g ) => new { Group = g, GroupMember = gm } );
 
                     gGroups.DataSource = qry
                         .Select( m => new
@@ -378,8 +410,8 @@ namespace RockWeb.Blocks.Groups
                                 GroupTypeOrder = m.Group.GroupType.Order,
                                 Description = m.Group.Description,
                                 IsSystem = m.Group.IsSystem,
-                                GroupRole = m.GroupRole.Name,
-                                DateAdded = m.CreatedDateTime,
+                                GroupRole = m.GroupMember.GroupRole.Name,
+                                DateAdded = m.GroupMember.CreatedDateTime,
                                 IsActive = m.Group.IsActive,
                                 MemberCount = 0
                             } )
@@ -389,25 +421,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                var qry = new GroupService( rockContext ).Queryable()
-                    .Where( g =>
-                        groupTypeIds.Contains( g.GroupTypeId ) &&
-                        ( !onlySecurityGroups || g.IsSecurityRole ) );
-
-                // Filter by active/inactive
-                if ( ddlActiveFilter.SelectedIndex > -1 )
-                {
-                    if ( ddlActiveFilter.SelectedValue == "inactive" )
-                    {
-                        qry = qry.Where( a => a.IsActive == false );
-                    }
-                    else if ( ddlActiveFilter.SelectedValue == "active" )
-                    {
-                        qry = qry.Where( a => a.IsActive == true );
-                    }
-                }
-
-                gGroups.DataSource = qry.Select( g => new
+                gGroups.DataSource = qryGroups.Select( g => new
                         {
                             Id = g.Id,
                             Name = g.Name,
