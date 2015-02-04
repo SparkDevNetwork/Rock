@@ -38,7 +38,7 @@ namespace Rock.Rest.Controllers
             {
                 // let the model whether is should automatically load attributes for the specified type
                 System.Web.HttpContext.Current.Items["LoadAttributes"] = ( System.Web.HttpContext.Current.Request.Params["LoadAttributes"] ?? "F" ).AsBooleanOrNull();
-                System.Web.HttpContext.Current.Items["LoadAttributesEntityType"] = typeof( T );
+                System.Web.HttpContext.Current.Items["LoadAttributesEntityType"] = typeof( GroupMember );
                 var rockContext = new Rock.Data.RockContext();
                 return new GroupMemberService( rockContext ).Queryable( true );
             }
