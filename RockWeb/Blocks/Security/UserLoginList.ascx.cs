@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Security
         private int? _personId = null;
         private bool _canEdit = false;
 
-        #endregion Fields
+        #endregion
 
         #region Base Control Methods
 
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Security
             base.OnLoad( e );
         }
 
-        #endregion Base Control Methods
+        #endregion
 
         #region Events
 
@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Security
         {
         }
 
-        #endregion Events
+        #endregion
 
         #region Methods
 
@@ -561,6 +561,6 @@ namespace RockWeb.Blocks.Security
             hfActiveDialog.Value = string.Empty;
         }
 
-        #endregion Methods
+        #endregion
     }
 }
