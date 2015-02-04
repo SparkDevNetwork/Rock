@@ -56,6 +56,7 @@ namespace Rock.Data
         /// The modified date time.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
