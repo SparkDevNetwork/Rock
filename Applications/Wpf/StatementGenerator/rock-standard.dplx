@@ -48,7 +48,7 @@
 				<text>#AddressPersonNames#
 #Street1##IIF(len(trim(Street2)),"
 ")##Street2#
-#City#, #State# #PostalCode#</text>
+#City##IIF(len(trim(City)),",")# #State# #PostalCode#</text>
 			</recordArea>
 			<subReport id="OrganizationInfoReport" x="0" y="0" width="250">
 				<query id="OrgInfoQuery">

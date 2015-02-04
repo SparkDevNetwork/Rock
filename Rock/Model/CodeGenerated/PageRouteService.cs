@@ -51,14 +51,30 @@ namespace Rock.Model
         public bool CanDelete( PageRoute item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Site,DefaultPageRouteId 
-            
-            // ignoring Site,LoginPageRouteId 
-            
-            // ignoring Site,PageNotFoundPageRouteId 
-            
-            // ignoring Site,RegistrationPageRouteId 
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.LoginPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.PageNotFoundPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.RegistrationPageRouteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

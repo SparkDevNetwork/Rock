@@ -409,7 +409,7 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains('!') )
+                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains('!') || string.IsNullOrEmpty(checkNumber) )
                     {
                         scannedDoc.BadMicr = true;
                         rangerScanner.StopFeeding();

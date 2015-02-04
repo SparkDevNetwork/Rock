@@ -343,7 +343,8 @@ if ($('#{0}').find('.js-modal-visible').val() == '1') {{
         manager: '{3}',
         backdrop: 'static',
         keyboard: false,
-        attentionAnimation: ''
+        attentionAnimation: '',
+        modalOverflow: true
     }});
 }} 
 else {{
