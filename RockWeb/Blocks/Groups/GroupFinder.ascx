@@ -108,7 +108,7 @@
                                         <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Group Window Contents" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
                                             Help="The Lava template to use for formatting the group information that is displayed when user clicks the group marker on the map." 
                                             ValidationGroup="GroupFinderSettings" />
-                                        <Rock:RockCheckBox ID="cbMapInfoDebug" runat="server" Text="Show Lava Debug Info" />
+                                        <Rock:RockCheckBox ID="cbMapInfoDebug" runat="server" Text="Enable Debug" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>
@@ -127,7 +127,7 @@
                                         <Rock:CodeEditor ID="ceLavaOutput" runat="server" Label="Lava Template" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
                                             Help="The Lava template to use for formatting the matching groups." 
                                             ValidationGroup="GroupFinderSettings" />
-                                        <Rock:RockCheckBox ID="cbLavaOutputDebug" runat="server" Text="Show Lava Debug Info" />
+                                        <Rock:RockCheckBox ID="cbLavaOutputDebug" runat="server" Text="Enable Debug" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>
