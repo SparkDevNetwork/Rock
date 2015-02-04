@@ -23,6 +23,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute for selecting an item from a drop down list.
+    /// listSource Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomDropdownListFieldAttribute : FieldAttribute
