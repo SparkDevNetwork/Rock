@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.UI;
 
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -26,6 +27,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class HtmlFieldType : FieldType
     {
+
+        #region Configuration
+
         private const string TOOLBAR = "toolbar";
         private const string DOCUMENT_FOLDER_ROOT = "documentfolderroot";
         private const string IMAGE_FOLDER_ROOT = "imagefolderroot";
@@ -147,6 +151,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -187,5 +195,41 @@ namespace Rock.Field.Types
 
             return editor;
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override Model.ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.StringFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var tbValue = new RockTextBox();
+            tbValue.ID = string.Format( "{0}_ctlCompareValue", id );
+            tbValue.AddCssClass( "js-filter-control" );
+            return tbValue;
+        }
+
+        #endregion
+
     }
 }

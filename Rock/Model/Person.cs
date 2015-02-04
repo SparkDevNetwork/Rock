@@ -1721,6 +1721,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the home location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static Location GetHomeLocation ( this Person person )
+        {
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            foreach ( var family in person.GetFamilies() )
+            {
+                var loc = family.GroupLocations
+                    .Where( l =>
+                        l.GroupLocationTypeValue.Guid.Equals( homeAddressGuid ) &&
+                        l.IsMappedLocation )
+                    .Select( l => l.Location )
+                    .FirstOrDefault();
+                if ( loc != null )
+                {
+                    return loc;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets a queryable collection of <see cref="Rock.Model.Person"/> entities containing the Person's family.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve family members for.</param>

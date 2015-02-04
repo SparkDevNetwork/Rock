@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -32,6 +32,86 @@ namespace Rock.Field.Types
     /// </summary>
     public class BinaryFileFieldType : FieldType, IEntityFieldType
     {
+
+        #region Configuration
+
+        private const string BINARY_FILE_TYPE = "binaryFileType";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( BINARY_FILE_TYPE );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var ddl = new RockDropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Items.Clear();
+            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
+                .Queryable()
+                .OrderBy( f => f.Name )
+                .Select( f => new { f.Guid, f.Name } ) )
+            {
+                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower() ) );
+            }
+            ddl.Label = "File Type";
+            ddl.Help = "File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( BINARY_FILE_TYPE, new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
+
+            if ( controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is DropDownList )
+            {
+                configurationValues[BINARY_FILE_TYPE].Value = ( (DropDownList)controls[0] ).SelectedValue;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value.ToLower() );
+            }
+        }
+
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -76,76 +156,9 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
-        /// <summary>
-        /// Returns a list of the configuration keys
-        /// </summary>
-        /// <returns></returns>
-        public override List<string> ConfigurationKeys()
-        {
-            var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "binaryFileType" );
-            return configKeys;
-        }
+        #endregion
 
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            var controls = base.ConfigurationControls();
-
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Items.Clear();
-            ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
-                .Queryable()
-                .OrderBy( f => f.Name )
-                .Select( f => new { f.Guid, f.Name } ) )
-            {
-                ddl.Items.Add( new ListItem( ft.Name, ft.Guid.ToString().ToLower() ) );
-            }
-            ddl.Label = "File Type";
-            ddl.Help = "File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'";
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "binaryFileType", new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
-
-            if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DropDownList )
-            {
-                configurationValues["binaryFileType"].Value = ( (DropDownList)controls[0] ).SelectedValue;
-            }
-
-            return configurationValues;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "binaryFileType" ) )
-            {
-                ( (DropDownList)controls[0] ).SetValue( configurationValues["binaryFileType"].Value.ToLower() );
-            }
-        }
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -159,9 +172,9 @@ namespace Rock.Field.Types
         {
             var control = new BinaryFilePicker { ID = id };
 
-            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuidOrNull();
+                control.BinaryFileTypeGuid = configurationValues[BINARY_FILE_TYPE].Value.AsGuidOrNull();
             }
 
             return control;
@@ -213,6 +226,27 @@ namespace Rock.Field.Types
                 picker.SetValue( binaryFile );
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This field type does not support filtering
+            return null;
+        }
+
+        #endregion
+
+        #region Entity Methods
 
         /// <summary>
         /// Gets the edit value as the IEntity.Id
@@ -274,5 +308,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

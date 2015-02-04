@@ -159,6 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
             // m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
             Expression andExpression = Expression.And( personCompare, groupTypeCompare );
 
+            
             // m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
             var compare = new Expression[] {
                 Expression.Constant(groupMembers),

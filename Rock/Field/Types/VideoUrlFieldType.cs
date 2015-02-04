@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Field.Types
 {
@@ -28,6 +25,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class VideoUrlFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -79,5 +79,25 @@ namespace Rock.Field.Types
             // value was null
             return null;
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
+      
     }
 }

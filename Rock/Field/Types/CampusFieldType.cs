@@ -17,6 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,6 +34,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -53,6 +60,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -125,6 +136,146 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the filter compare control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+            return lbl;
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var cbList = new RockCheckBoxList();
+            cbList.ID = string.Format( "{0}_cbList", id );
+            cbList.AddCssClass( "js-filter-control" );
+            cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+            var campusList = CampusCache.All();
+            if ( campusList.Any() )
+            {
+                foreach ( var campus in campusList )
+                {
+                    ListItem listItem = new ListItem( campus.Name, campus.Guid.ToString() );
+                    cbList.Items.Add( listItem );
+                }
+
+                return cbList;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = new List<string>();
+
+            if ( control != null && control is CheckBoxList )
+            {
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    if ( li.Selected )
+                    {
+                        values.Add( li.Value );
+                    }
+                }
+            }
+
+            return values.AsDelimited( "," );
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
+        {
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is CheckBoxList && value != null )
+            {
+                var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    li.Selected = values.Contains( li.Value );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the filters expression.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( selectedValues.Any() )
+                {
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Entity Methods
+
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -182,5 +333,8 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
     }
 }

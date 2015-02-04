@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            if ( _batch != null )
+            if ( UserCanEdit && _batch != null )
             {
                 string script = string.Format( @"
     $('#{0}').change(function( e ){{

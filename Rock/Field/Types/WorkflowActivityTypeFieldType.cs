@@ -32,7 +32,14 @@ namespace Rock.Field.Types
     [Serializable]
     public class WorkflowActivityFieldType : FieldType
     {
+
+        #region Configuration
+
         private const string WORKFLOW_TYPE_KEY = "WorkflowType";
+
+        #endregion
+
+        #region Formatting
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -47,10 +54,10 @@ namespace Rock.Field.Types
             string formattedValue = string.Empty;
 
             Guid guid = value.AsGuid();
-            if (!guid.IsEmpty())
-            { 
+            if ( !guid.IsEmpty() )
+            {
                 var workflowType = GetContextWorkflowType();
-                if (workflowType != null)
+                if ( workflowType != null )
                 {
                     formattedValue = workflowType.ActivityTypes
                         .Where( a => a.Guid.Equals( guid ) )
@@ -58,9 +65,9 @@ namespace Rock.Field.Types
                         .FirstOrDefault();
                 }
 
-                if (string.IsNullOrWhiteSpace(formattedValue))
+                if ( string.IsNullOrWhiteSpace( formattedValue ) )
                 {
-                    formattedValue = new WorkflowActivityTypeService(new RockContext()).Queryable()
+                    formattedValue = new WorkflowActivityTypeService( new RockContext() ).Queryable()
                         .Where( a => a.Guid.Equals( guid ) )
                         .Select( a => a.Name )
                         .FirstOrDefault();
@@ -70,6 +77,10 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
 
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -160,5 +171,24 @@ namespace Rock.Field.Types
             return null;
         }
 
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
+      
     }
 }

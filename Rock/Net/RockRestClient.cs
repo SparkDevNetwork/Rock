@@ -148,8 +148,17 @@ namespace Rock.Net
             this.UploadString( new Uri( rockBaseUri, rockLoginUrl ), loginParameters.ToJson() );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class IdResult
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
         }
 

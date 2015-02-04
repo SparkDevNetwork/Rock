@@ -133,6 +133,9 @@ namespace Rock.CodeGeneration
 
             Cursor = Cursors.WaitCursor;
 
+            progressBar1.Visible = true;
+            progressBar1.Maximum = cblModels.CheckedItems.Count;
+            progressBar1.Value = 0;
             if ( cblModels.CheckedItems.Count > 0 )
             {
                 var rootFolder = RootFolder();
@@ -140,6 +143,7 @@ namespace Rock.CodeGeneration
                 {
                     foreach ( object item in cblModels.CheckedItems )
                     {
+                        progressBar1.Value++;
                         Type type = (Type)item;
 
                         // only generate Service and REST for IEntity types
@@ -165,6 +169,7 @@ namespace Rock.CodeGeneration
                 }
             }
 
+            progressBar1.Visible = false;
             Cursor = Cursors.Default;
 
             MessageBox.Show( "Files have been generated" );
@@ -308,7 +313,12 @@ namespace Rock.CodeGeneration
         {
             public string Table { get; set; }
             public string Column { get; set; }
+            public bool IsPartOfPrimaryKey { get; set; }
             public bool Ignore { get; set; }
+            public override string ToString()
+            {
+                return string.Format( "{0} | {1} {2} {3}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null );
+            }
         }
 
         /// <summary>
@@ -338,6 +348,7 @@ select
   OBJECT_NAME([fk].[parent_object_id]) [parentTable], 
   OBJECT_NAME([fk].[referenced_object_id]) [refTable], 
   [cc].[name] [columnName],
+  isnull(OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey'), 0) [IsPrimaryKey],
   [fk].[delete_referential_action] [CascadeAction]
 from 
 sys.foreign_key_columns [fkc]
@@ -345,6 +356,8 @@ join sys.foreign_keys [fk]
 on fkc.constraint_object_id = fk.object_id
 join sys.columns cc
 on fkc.parent_column_id = cc.column_id
+left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE [kcu]
+on kcu.COLUMN_NAME = cc.Name and kcu.TABLE_NAME = OBJECT_NAME([fk].[parent_object_id]) and OBJECTPROPERTY(OBJECT_ID('[' + kcu.constraint_name + ']'), 'IsPrimaryKey') = 1
 where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
@@ -369,6 +382,7 @@ order by [parentTable], [columnName]
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
+                bool isPrimaryKey = (int)reader["IsPrimaryKey"] == 1;
                 bool ignoreCanDelete = false;
 
                 Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ) );
@@ -384,11 +398,10 @@ order by [parentTable], [columnName]
                     }
                 }
 
-                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, Ignore = ignoreCanDelete } );
+                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete } );
             }
 
-            // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
-            List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Table ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
+            parentTableColumnNameList = parentTableColumnNameList.OrderBy( a => a.Table ).ThenBy( a => a.Column ).ToList();
 
             string canDeleteBegin = string.Format( @"
         /// <summary>
@@ -414,7 +427,8 @@ order by [parentTable], [columnName]
                     continue;
                 }
 
-                if ( parentTablesToIgnore.Contains( item.Table ) || item.Ignore )
+                // detect associative table where the foreign key column is also part of the primary key.  EF will automatically take care of it on the DELETE
+                if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
 @"            

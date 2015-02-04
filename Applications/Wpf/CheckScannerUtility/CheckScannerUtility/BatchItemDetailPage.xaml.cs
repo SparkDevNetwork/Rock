@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -70,7 +70,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( images.Count > 0 )
             {
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl, images[0].BinaryFileId );
+                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[0].BinaryFileId );
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
@@ -86,7 +86,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( images.Count > 1 )
             {
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl, images[1].BinaryFileId );
+                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[1].BinaryFileId );
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
