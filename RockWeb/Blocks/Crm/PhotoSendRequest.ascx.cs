@@ -415,6 +415,11 @@ namespace RockWeb.Blocks.Crm
             if ( template != null )
             {
                 var mediumData = template.MediumData;
+                if ( !mediumData.ContainsKey( "FromAddress" ) )
+                {
+                    throw new Exception( string.Format( "The '{0}' communication template is missing a From address.", template.Name ) );
+                }
+
                 if ( !mediumData.ContainsKey( "Subject" ) )
                 {
                     mediumData.Add( "Subject", template.Subject );
@@ -434,6 +439,10 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
+            }
+            else
+            {
+                throw new Exception( "The communication template appears to be missing." );
             }
         }
 
