@@ -803,7 +803,10 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaOutput" );
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
+                if ( fences != null )
+                {
+                    mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
+                }
                 mergeFields.Add( "Groups", groups );
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 

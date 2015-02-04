@@ -403,14 +403,18 @@ namespace Rock.Field
                 // If two more values, then it is a comparison and a value
                 else if ( filterValues.Count >= 2 )
                 {
-                    ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
-                    if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                    string comparisonValue = filterValues[0];
+                    if ( comparisonValue != "0" )
                     {
-                        return comparisonType.ConvertToString();
-                    }
-                    else
-                    {
-                        return string.Format( "{0} {1}", comparisonType.ConvertToString(), FormatFilterValueValue( configurationValues, filterValues[1] ) );
+                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
+                        if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                        {
+                            return comparisonType.ConvertToString();
+                        }
+                        else
+                        {
+                            return string.Format( "{0} {1}", comparisonType.ConvertToString(), FormatFilterValueValue( configurationValues, filterValues[1] ) );
+                        }
                     }
                 }
             }
