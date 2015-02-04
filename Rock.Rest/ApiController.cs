@@ -76,6 +76,9 @@ namespace Rock.Rest
         [EnableQuery]
         public virtual IQueryable<T> Get()
         {
+            // let the model whether is should automatically load attributes for the specified type
+            System.Web.HttpContext.Current.Items["LoadAttributes"] = ( System.Web.HttpContext.Current.Request.Params["LoadAttributes"] ?? "F" ).AsBooleanOrNull();
+            System.Web.HttpContext.Current.Items["LoadAttributesEntityType"] = typeof( T );
             var result = Service.Queryable();
             return result;
         }
@@ -85,6 +88,9 @@ namespace Rock.Rest
         [ActionName( "GetById" )]
         public virtual T GetById( int id )
         {
+            // let the model whether is should automatically load attributes for the specified type
+            System.Web.HttpContext.Current.Items["LoadAttributes"] = ( System.Web.HttpContext.Current.Request.Params["LoadAttributes"] ?? "F" ).AsBooleanOrNull();
+            System.Web.HttpContext.Current.Items["LoadAttributesEntityType"] = typeof( T );
             T model;
             if ( !Service.TryGet( id, out model ) )
             {
@@ -99,6 +105,9 @@ namespace Rock.Rest
         [EnableQuery]
         public virtual T Get( [FromODataUri] int key )
         {
+            // let the model whether is should automatically load attributes for the specified type
+            System.Web.HttpContext.Current.Items["LoadAttributes"] = ( System.Web.HttpContext.Current.Request.Params["LoadAttributes"] ?? "F" ).AsBooleanOrNull();
+            System.Web.HttpContext.Current.Items["LoadAttributesEntityType"] = typeof( T );
             T model;
             if ( !Service.TryGet( key, out model ) )
             {

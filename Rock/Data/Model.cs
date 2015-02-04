@@ -486,7 +486,38 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues
+        {
+            get
+            {
+                // If we are in a REST Api call, check to see if we need to automatically load attributes for this type
+                var context = System.Web.HttpContext.Current;
+                if ( context != null )
+                {
+                    if ( context.Items != null )
+                    {
+                        if ( (bool?)context.Items["LoadAttributes"] ?? false )
+                        {
+                            if ( (Type)context.Items["LoadAttributesEntityType"] == this.GetType() )
+                            {
+                                if ( _attributeValues == null )
+                                {
+                                    this.LoadAttributes();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return _attributeValues;
+            }
+
+            set
+            {
+                _attributeValues = value;
+            }
+        }
+        private Dictionary<string, Rock.Model.AttributeValue> _attributeValues;
 
         /// <summary>
         /// Gets the attribute value defaults.
