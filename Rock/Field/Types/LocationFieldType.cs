@@ -28,6 +28,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class LocationFieldType : FieldType, IEntityFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -53,6 +56,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value ( as Guid )
@@ -117,6 +124,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Entity Methods
+        
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -170,5 +181,25 @@ namespace Rock.Field.Types
 
             return null;
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
+
     }
 }

@@ -37,7 +37,8 @@
                 show: true,
                 backdrop: 'static',
                 keyboard: false,
-                attentionAnimation: ''
+                attentionAnimation: '',
+                modalOverflow: true
             });
         },
 

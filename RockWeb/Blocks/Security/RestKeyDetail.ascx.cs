@@ -86,6 +86,8 @@ namespace RockWeb.Blocks.Security
                 else
                 {
                     personService.Add( restUser );
+                    rockContext.SaveChanges();
+                    restUser.Aliases.Add( new PersonAlias { AliasPersonId = restUser.Id, AliasPersonGuid = restUser.Guid } );
                 }
 
                 // the rest user name gets saved as the last name on a person

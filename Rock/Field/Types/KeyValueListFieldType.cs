@@ -16,13 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Data;
 
 namespace Rock.Field.Types
 {
@@ -32,30 +28,8 @@ namespace Rock.Field.Types
     [Serializable]
     public class KeyValueListFieldType : ValueListFieldType
     {
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
 
-            string[] KeyValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            if ( KeyValues.Length == 1 )
-            {
-                formattedValue = "1 Key Value Pair";
-            }
-            else
-            {
-                formattedValue = string.Format( "{0:N0} Key Value Pairs", KeyValues.Length );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-        }
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -151,6 +125,46 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" );
+
+            var values = new List<string>();
+            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            foreach ( string nameValue in nameValues )
+            {
+                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( nameAndValue.Length == 2 && isDefinedType )
+                {
+                    var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                    if ( definedValue != null )
+                    {
+                        nameAndValue[1] = definedValue.Value;
+                    }
+                }
+
+                values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+            }
+
+            return values.AsDelimited( ", " );
+        }
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Edits the control.
         /// </summary>
@@ -212,5 +226,25 @@ namespace Rock.Field.Types
                 ( (KeyValueList)control ).Value = value;
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            // This fieldtype does not support filtering
+            return null;
+        }
+
+        #endregion
+      
     }
 }

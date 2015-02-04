@@ -30,6 +30,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class GroupTypeGroupFieldType : FieldType
     {
+
+        #region Configuration
+
         /// <summary>
         /// Configuration Key for Group Picker Label
         /// </summary>
@@ -101,6 +104,10 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -146,6 +153,10 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -241,5 +252,8 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
     }
 }

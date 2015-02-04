@@ -131,26 +131,40 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            Guid? groupLocationTypeValueGuid = selection.AsGuidOrNull();
+            string[] values = selection.Split( '|' );
+            Guid groupLocationTypeValueGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            AddressNamePart addressNamePart = AddressNamePart.Full;
 
-            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService( context ).Get( familyGuid ).Id;
+            if ( values.Length >= 1 )
+            {
+                groupLocationTypeValueGuid = values[0].AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            }
 
-            var groupMemberQuery = new GroupMemberService( context ).Queryable();
+            if ( values.Length >= 2 )
+            {
+                addressNamePart = values[1].ConvertToEnumOrNull<AddressNamePart>() ?? AddressNamePart.Full;
+            }
 
-            // NOTE: This builds the FullAddress similar to how Location.ToString() does, but using SQL functions (selecting the entire Location record then doing ToString() is slow)
+            string addressTypeId = DefinedValueCache.Read( groupLocationTypeValueGuid ).Id.ToString();
+            string addressComponent = addressNamePart.ConvertToString( false );
             var personLocationQuery = new PersonService( context ).Queryable()
-                .Select( p =>
-                    groupMemberQuery
-                    .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
-                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.PostalCode ).Replace( "  ", " " ) )
-                    .FirstOrDefault() );
+                .Select( p => RockUdfHelper.ufnCrm_GetAddress( p.Id, addressTypeId, addressComponent ) );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
+            return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
+        }
 
-            return selectExpression;
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum AddressNamePart
+        {
+            Full,
+            Street1,
+            Street2,
+            City,
+            State,
+            PostalCode,
+            Country
         }
 
         /// <summary>
@@ -173,7 +187,18 @@ namespace Rock.Reporting.DataSelect.Person
             locationTypeList.Label = "Address Type";
             parentControl.Controls.Add( locationTypeList );
 
-            return new System.Web.UI.Control[] { locationTypeList };
+            RockRadioButtonList addressPartRadioButtonList = new RockRadioButtonList();
+            addressPartRadioButtonList.Items.Clear();
+            addressPartRadioButtonList.BindToEnum<AddressNamePart>( false );
+
+            // default to first one
+            addressPartRadioButtonList.SelectedIndex = 0;
+            addressPartRadioButtonList.ID = parentControl.ID + "_addressPartRadioButtonList";
+            addressPartRadioButtonList.Label = "Address Part";
+            addressPartRadioButtonList.Help = "Select the part of the address to show in the grid, or select Full to show the full address";
+            parentControl.Controls.Add( addressPartRadioButtonList );
+
+            return new System.Web.UI.Control[] { locationTypeList, addressPartRadioButtonList };
         }
 
         /// <summary>
@@ -194,16 +219,9 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 1 )
-            {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
-                if ( dropDownList != null )
-                {
-                    return dropDownList.SelectedValue;
-                }
-            }
-
-            return null;
+            RockDropDownList locationTypeList = controls[0] as RockDropDownList;
+            RockRadioButtonList addressPartRadioButtonList = controls[1] as RockRadioButtonList;
+            return string.Format( "{0}|{1}", locationTypeList.SelectedValue, addressPartRadioButtonList.SelectedValue );
         }
 
         /// <summary>
@@ -213,13 +231,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 1 )
+            RockDropDownList locationTypeList = controls[0] as RockDropDownList;
+            RockRadioButtonList addressPartRadioButtonList = controls[1] as RockRadioButtonList;
+            string[] values = selection.Split( '|' );
+
+            if ( values.Length >= 1 )
             {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
-                if ( dropDownList != null )
-                {
-                    dropDownList.SetValue( selection );
-                }
+                locationTypeList.SetValue( values[0] );
+            }
+
+            if ( values.Length >= 2 )
+            {
+                addressPartRadioButtonList.SetValue( values[1] );
             }
         }
 

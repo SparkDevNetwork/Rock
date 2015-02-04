@@ -18,20 +18,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a workflow type picker 
+    /// Field Type used to display a workflow type picker with option to select multiple
     /// </summary>
     [Serializable]
-    public class WorkflowTypesFieldType : FieldType, IEntityFieldType
+    public class WorkflowTypesFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -72,6 +74,10 @@ namespace Rock.Field.Types
 
         }
 
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -82,7 +88,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new WorkflowTypePicker { ID = id, AllowMultiSelect = true }; 
+            return new WorkflowTypePicker { ID = id, AllowMultiSelect = true };
         }
 
         /// <summary>
@@ -144,58 +150,41 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new WorkflowTypeService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
-        }
+        #endregion
+
+        #region FilterControl
 
         /// <summary>
-        /// Sets the edit value from IEntity.Id value
+        /// Gets the filter value control.
         /// </summary>
-        /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var item = new WorkflowTypeService( new RockContext() ).Get( id ?? 0 );
-            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
-            SetEditValue( control, configurationValues, guidValue );
+            var control = base.FilterValueControl(configurationValues, id, required );
+            WorkflowTypePicker workflowTypePicker = (WorkflowTypePicker)control;
+            workflowTypePicker.Required = required;
+            workflowTypePicker.AllowMultiSelect = false;
+            return control;
         }
 
         /// <summary>
-        /// Gets the entity.
+        /// Gets the type of the filter comparison.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value )
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
         {
-            return GetEntity( value, null );
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public IEntity GetEntity( string value, RockContext rockContext )
-        {
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
+            get
             {
-                rockContext = rockContext ?? new RockContext();
-                return new WorkflowTypeService( rockContext ).Get( guid.Value );
+                return ComparisonHelper.ContainsFilterComparisonTypes;
             }
-
-            return null;
         }
+
+        #endregion
+
     }
 }
