@@ -31,15 +31,18 @@ namespace Rock.Apps.StatementGenerator
         public SelectDateRangePage()
         {
             InitializeComponent();
-            if ( !dpStartDate.SelectedDate.HasValue )
-            {
-                DateTime firstDayOfYear = new DateTime(DateTime.Now.Year, 1, 1);
-                dpStartDate.SelectedDate = firstDayOfYear;
-            }
 
-            if ( !dpEndDate.SelectedDate.HasValue )
+            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
+            dpStartDate.SelectedDate = ReportOptions.Current.StartDate ?? firstDayOfYear;
+
+            if ( ReportOptions.Current.EndDate.HasValue )
             {
-                dpEndDate.SelectedDate = DateTime.Now.Date;
+                // set displayed EndDate to 1 day before since user would expect the entire full day of enddate to be included
+                dpEndDate.SelectedDate = ReportOptions.Current.EndDate.Value.AddDays( -1 );
+            }
+            else
+            {
+                dpEndDate.SelectedDate = ReportOptions.Current.EndDate ?? DateTime.Now.Date;
             }
         }
 
