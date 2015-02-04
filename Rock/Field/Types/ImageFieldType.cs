@@ -158,14 +158,5 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
-        {
-            return null;
-        }
     }
 }

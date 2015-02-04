@@ -134,8 +134,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id );
+        Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required );
 
         /// <summary>
         /// Gets the filter values.
@@ -154,20 +155,40 @@ namespace Rock.Field
         void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
 
         /// <summary>
-        /// Gets the filters expression.
+        /// Formats the filter values.
         /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <returns></returns>
-        Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues );
+        string FormatFilterValues( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues );
 
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the filter format script.
         /// </summary>
-        /// <param name="attribute">The attribute.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="title">The title.</param>
         /// <returns></returns>
-        Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute );
+        string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title );
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType );
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
 
         #endregion
 

@@ -343,8 +343,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var keyVal in configurationValues )
@@ -353,7 +354,7 @@ namespace Rock.Field.Types
             }
             overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "false" ) );
             
-            return  base.FilterValueControl( overrideConfigValues, id );
+            return  base.FilterValueControl( overrideConfigValues, id, required );
         }
 
         #endregion

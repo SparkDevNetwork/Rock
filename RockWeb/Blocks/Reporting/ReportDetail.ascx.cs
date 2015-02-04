@@ -948,7 +948,7 @@ namespace RockWeb.Blocks.Reporting
                             selectedEntityFields.Add( columnIndex, entityField );
 
                             BoundField boundField;
-                            if ( entityField.DefinedTypeGuid.HasValue )
+                            if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
                             {
                                 boundField = new DefinedValueField();
                             }
@@ -1045,7 +1045,7 @@ namespace RockWeb.Blocks.Reporting
                         selectedEntityFields.Add( columnIndex, entityField );
 
                         BoundField boundField;
-                        if ( entityField.DefinedTypeGuid.HasValue )
+                        if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() ) )
                         {
                             boundField = new DefinedValueField();
                         }

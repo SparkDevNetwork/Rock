@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -204,24 +206,31 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             HtmlGenericControl row = new HtmlGenericControl( "div" );
             row.ID = id;
             row.AddCssClass( "row" );
+            row.AddCssClass( "field-criteria" );
+
+            var compareControl = FilterCompareControl( configurationValues, id, required );
+            var valueControl = FilterValueControl( configurationValues, id, required );
+
+            bool isLabel = compareControl is Label;
 
             HtmlGenericControl col1 = new HtmlGenericControl( "div" );
             col1.ID = string.Format( "{0}_col1", id );
             row.Controls.Add( col1 );
-            col1.AddCssClass( "col-sm-4" );
-            col1.Controls.Add( FilterCompareControl( configurationValues, id ) );
+            col1.AddCssClass( isLabel ? "col-md-2" : "col-md-4" );
+            col1.Controls.Add( compareControl );
 
             HtmlGenericControl col2 = new HtmlGenericControl( "div" );
             col2.ID = string.Format( "{0}_col2", id );
             row.Controls.Add( col2 );
-            col2.AddCssClass( "col-sm-8" );
-            col2.Controls.Add( FilterValueControl( configurationValues, id ) );
+            col2.AddCssClass( isLabel ? "col-md-10" : "col-md-8" );
+            col2.Controls.Add( valueControl );
 
             return row;
         }
@@ -232,10 +241,11 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         { 
-            RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, false );
+            RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
             ddlCompare.AddCssClass( "js-filter-compare" );
             return ddlCompare;
@@ -257,8 +267,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             var control = EditControl( configurationValues, id );
             control.ID = string.Format( "{0}_ctlCompareValue", id );
@@ -283,8 +294,17 @@ namespace Rock.Field
             {
                 try
                 {
-                    values.Add( GetFilterCompareValue( filterControl.Controls[0].Controls[0] ) );
-                    values.Add( GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues ) );
+                    string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0] );
+                    if (compare != null )
+                    {
+                        values.Add( compare );
+                    }
+
+                    string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                    if ( value != null )
+                    {
+                        values.Add( value );
+                    }
                 }
                 catch { }
             }
@@ -332,7 +352,8 @@ namespace Rock.Field
                 try
                 {
                     SetFilterCompareValue( filterControl.Controls[0].Controls[0], filterValues.Count > 0 ? filterValues[0] : string.Empty );
-                    SetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues, filterValues.Count > 1 ? filterValues[1] : string.Empty );
+                    string value = filterValues.Count > 1 ? filterValues[1] : filterValues.Count > 0 ? filterValues[0] : string.Empty;
+                    SetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues, value );
                 }
                 catch { }
             }
@@ -364,23 +385,120 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the filters expression.
+        /// Formats the filter values.
         /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <returns></returns>
-        public virtual Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+        public virtual string FormatFilterValues( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        {
+            if ( filterValues != null && filterValues.Any() )
+            {
+                // If just one value, then it is likely just a value
+                if ( filterValues.Count == 1 )
+                {
+                    return "is " + FormatFilterValueValue( configurationValues, filterValues[0] );
+                }
+
+                // If two more values, then it is a comparison and a value
+                else if ( filterValues.Count >= 2 )
+                {
+                    ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
+                    if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                    {
+                        return comparisonType.ConvertToString();
+                    }
+                    else
+                    {
+                        return string.Format( "{0} {1}", comparisonType.ConvertToString(), FormatFilterValueValue( configurationValues, filterValues[1] ) );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public virtual string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            return string.Format( "'{0}'", FormatValue( null, value, configurationValues, false ) );
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public virtual string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            return string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", titleJs );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public virtual Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
         {
             if ( filterValues.Count >= 2 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                string comparisonValue = filterValues[0];
+                if ( comparisonValue != "0" )
+                {
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
 
+                    var type = propertyType;
+                    bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
+                    if ( isNullableType )
+                    {
+                        type = Nullable.GetUnderlyingType( type );
+                    }
+
+                    object value = Convert.ChangeType( filterValues[1], type );
+
+                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                    ConstantExpression constantExpression = Expression.Constant( value, type );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public virtual Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count >= 2 )
+            {
                 string comparisonValue = filterValues[0];
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    ConstantExpression constantExpression = Expression.Constant( filterValues[1] );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    ConstantExpression constantExpression = Expression.Constant( filterValues[1], typeof( string ) );
+
                     return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                 }
             }
@@ -412,24 +530,5 @@ namespace Rock.Field
 
         #endregion
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <returns></returns>
-        public virtual Rock.Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
-        {
-            var entityField = new Rock.Reporting.EntityField();
-            entityField.Name = attribute.Name;
-            entityField.Title = attribute.Name.SplitCase();
-            entityField.AttributeGuid = attribute.Guid;
-            entityField.FieldKind = Reporting.FieldKind.Attribute;
-            entityField.PropertyType = null;
-
-            entityField.ControlCount = 2;
-            entityField.FilterFieldType = SystemGuid.FieldType.TEXT;
-            
-            return entityField;
-        }
     }
 }
