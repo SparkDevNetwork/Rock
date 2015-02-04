@@ -150,6 +150,7 @@ namespace RockWeb.Blocks.Security
                     userLogin.UserName = Guid.NewGuid().ToString();
                 }
 
+                userLogin.IsConfirmed = true;
                 userLogin.ApiKey = tbKey.Text;
                 userLogin.PersonId = restUser.Id;
                 userLogin.EntityTypeId = entityType.Id;
