@@ -145,8 +145,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             // Filtering is not supported by this fieldtype
             return null;
@@ -154,16 +155,5 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
-        {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.DECIMAL;
-            return filterConfig;
-        }
     }
 }

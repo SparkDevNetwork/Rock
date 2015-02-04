@@ -73,13 +73,37 @@ namespace Rock.Reporting
             {
                 comparisonExpression = Expression.Equal( valueExpression, value );
             }
-            else if ( comparisonType == ComparisonType.GreaterThan )
+            else if ( comparisonType == ComparisonType.GreaterThan ||
+                comparisonType == ComparisonType.GreaterThanOrEqualTo ||
+                comparisonType == ComparisonType.LessThan ||
+                comparisonType == ComparisonType.LessThanOrEqualTo )
             {
-                comparisonExpression = Expression.GreaterThan( valueExpression, value );
-            }
-            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-            {
-                comparisonExpression = Expression.GreaterThanOrEqual( valueExpression, value );
+                Expression leftExpression = valueExpression;
+                Expression rightExpression = value;
+
+                if ( valueExpression.Type == typeof( string ) )
+                {
+                    var method = valueExpression.Type.GetMethod( "CompareTo", new[] { typeof( string ) } );
+                    leftExpression = Expression.Call( valueExpression, method, value );
+                    rightExpression = Expression.Constant( 0 );
+                }
+
+                if ( comparisonType == ComparisonType.GreaterThan )
+                {
+                    comparisonExpression = Expression.GreaterThan( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+                {
+                    comparisonExpression = Expression.GreaterThanOrEqual( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.LessThan )
+                {
+                    comparisonExpression = Expression.LessThan( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
+                {
+                    comparisonExpression = Expression.LessThanOrEqual( leftExpression, rightExpression );
+                }
             }
             else if ( comparisonType == ComparisonType.IsBlank )
             {
@@ -121,14 +145,6 @@ namespace Rock.Reporting
                         comparisonExpression = Expression.Constant( true );
                     }
                 }
-            }
-            else if ( comparisonType == ComparisonType.LessThan )
-            {
-                comparisonExpression = Expression.LessThan( valueExpression, value );
-            }
-            else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
-            {
-                comparisonExpression = Expression.LessThanOrEqual( valueExpression, value );
             }
             else if ( comparisonType == ComparisonType.NotEqualTo )
             {

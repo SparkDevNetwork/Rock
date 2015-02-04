@@ -160,13 +160,16 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var control = base.FilterValueControl( configurationValues, id );
+            var control = base.FilterValueControl( configurationValues, id, required );
             if ( control is AccountPicker )
             {
-                ( (AccountPicker)control ).AllowMultiSelect = false;
+                var accountPicker = (AccountPicker)control;
+                accountPicker.AllowMultiSelect = false;
+                accountPicker.Required = required;
             }
             return control;
         }

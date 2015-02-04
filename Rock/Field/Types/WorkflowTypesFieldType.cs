@@ -159,11 +159,14 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var control = base.FilterValueControl(configurationValues, id);
-            ( (WorkflowTypePicker)control ).AllowMultiSelect = false;
+            var control = base.FilterValueControl(configurationValues, id, required );
+            WorkflowTypePicker workflowTypePicker = (WorkflowTypePicker)control;
+            workflowTypePicker.Required = required;
+            workflowTypePicker.AllowMultiSelect = false;
             return control;
         }
 

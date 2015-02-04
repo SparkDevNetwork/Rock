@@ -141,12 +141,29 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
+        /// Gets the filter compare control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
         /// <returns></returns>
-        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+            return lbl;
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required"></param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             var cbList = new RockCheckBoxList();
             cbList.ID = string.Format( "{0}_cbList", id );
@@ -169,55 +186,65 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filter value.
+        /// Gets the filter compare value.
         /// </summary>
-        /// <param name="filterControl"></param>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var values = new List<string>();
 
-            List<string> cblValues = new List<string>();
-
-            if ( filterControl != null && filterControl is RockCheckBoxList )
+            if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)filterControl;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
                     {
-                        cblValues.Add( li.Value );
+                        values.Add( li.Value );
                     }
                 }
-
-                values.Add( cblValues.AsDelimited<string>( "," ) );
             }
 
-            return values;
+            return values.AsDelimited( "," );
         }
 
         /// <summary>
-        /// Sets the filter value.
+        /// Sets the filter compare value.
         /// </summary>
-        /// <param name="filterControl"></param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues"></param>
-        public override void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
         {
-            if ( filterControl != null && filterControl is CheckBoxList && filterValues.Any() )
-            {
-                string value = filterValues[0];
-                if ( value != null )
-                {
-                    List<string> values = new List<string>();
-                    values.AddRange( value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
+        }
 
-                    CheckBoxList cbl = (CheckBoxList)filterControl;
-                    foreach ( ListItem li in cbl.Items )
-                    {
-                        li.Selected = values.Contains( li.Value );
-                    }
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is CheckBoxList && value != null )
+            {
+                var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach ( ListItem li in cbl.Items )
+                {
+                    li.Selected = values.Contains( li.Value );
                 }
             }
         }
@@ -225,19 +252,18 @@ namespace Rock.Field.Types
         /// <summary>
         /// Gets the filters expression.
         /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-         public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
             if ( filterValues.Count == 1 )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-
                 List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 if ( selectedValues.Any() )
                 {
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                     ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
                     return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
                 }

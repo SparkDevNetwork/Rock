@@ -255,8 +255,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             var datePicker = new DatePicker();
             datePicker.ID = string.Format( "{0}_dtPicker", id );
@@ -321,39 +322,157 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filters expression.
+        /// Formats the filter value value.
         /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="filterValues">The filter values.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
         /// <returns></returns>
-        public override Expression FilterExpression( IService serviceInstance, ParameterExpression parameterExpression, List<string> filterValues )
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( filterValues.Count >= 2 && filterValues[1].StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
-                var valueParts = filterValues[1].Split( ':' );
+                DateTime currentDate = RockDateTime.Today;
+
+                var valueParts = value.Split( ':' );
                 if ( valueParts.Length > 1 )
                 {
-                    DateTime currentDate = RockDateTime.Today.AddDays( valueParts[1].AsIntegerOrNull() ?? 0 );
-                    filterValues[1] = currentDate.ToString( "o" );
+                    int? days = valueParts[1].AsIntegerOrNull();
+                    if ( days.HasValue && days.Value != 0 )
+                    {
+                        if ( days > 0)
+                        {
+                            return string.Format( "Current Date plus {0} days", days.Value );
+                        }
+                        else
+                        {
+                            return string.Format( "Current Date minus {0} days", -days.Value );
+                        }
+                    }
+                }
+
+                return "Current Date";
+            }
+            else
+            {
+                var date = value.AsDateTime();
+                if ( date.HasValue )
+                {
+                    return date.Value.ToShortDateString();
                 }
             }
 
-            return base.FilterExpression( serviceInstance, parameterExpression, filterValues );
+            return value;
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+
+            var format = @"
+var useCurrentDateOffset = $('.js-current-date-checkbox', $selectedContent).is(':checked');
+var dateValue = '';
+if (useCurrentDateOffset) {{
+    var daysOffset = $('.js-current-date-offset', $selectedContent).val();
+    if (daysOffset > 0) {{
+        dateValue = 'Current Date plus ' + daysOffset + ' days'; 
+    }}
+    else if (daysOffset < 0) {{
+        dateValue = 'Current Date minus ' + -daysOffset + ' days'; 
+    }}
+    else {{
+        dateValue = 'Current Date';
+    }}
+}}
+else {{
+   dateValue = ( $('input', $selectedContent).filter(':visible').length ?  (' ' +  $('input', $selectedContent).filter(':visible').val()  + ' ') : '' );
+}}
+result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue";
+
+            return string.Format( format, titleJs );
+
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        {
+            if ( filterValues.Count >= 2 )
+            {
+                filterValues[1] = parseRelativeValue( filterValues[1] );
+            }
+
+            return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
+        }
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count >= 2 )
+            {
+                string comparisonValue = filterValues[0];
+
+                filterValues[1] = parseRelativeValue( filterValues[1] );
+
+                DateTime date = filterValues[1].AsDateTime() ?? DateTime.MinValue;
+
+                ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsDateTime" );
+                ConstantExpression constantExpression = Expression.Constant( date, typeof( DateTime ) );
+
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Checks to see if value is for 'current' date and if so, adjusts the date value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private string parseRelativeValue( string value )
+        {
+            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+            {
+                DateTime currentDate = RockDateTime.Today;
+
+                var valueParts = value.Split( ':' );
+
+                if ( valueParts.Length > 1 )
+                {
+                    currentDate = currentDate.AddDays( valueParts[1].AsIntegerOrNull() ?? 0 );
+                }
+
+                return currentDate.ToString( "o" );
+            }
+
+            return value;
         }
 
         #endregion
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
-        {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.FILTER_DATE;
-            return filterConfig;
-        }
     }
 }

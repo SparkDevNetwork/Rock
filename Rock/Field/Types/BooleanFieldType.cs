@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +16,11 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -253,17 +256,167 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Filter Control
+
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Gets the filter compare control.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-            return filterConfig;
+            var lbl = new Label();
+            lbl.ID = string.Format( "{0}_lIs", id );
+            lbl.AddCssClass( "data-view-filter-label" );
+            lbl.Text = "Is";
+            return lbl;
         }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var ddl = new RockDropDownList();
+            ddl.ID = string.Format( "{0}_ctlCompareValue", id );
+            ddl.AddCssClass( "js-filter-control" );
+
+            if ( !required )
+            {
+                ddl.Items.Add( new ListItem() );
+            }
+            ddl.Items.Add( new ListItem( "True", "True" ) );
+            ddl.Items.Add( new ListItem( "False", "False" ) );
+            return ddl;
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public override string GetFilterCompareValue( Control control )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var ddl = control as DropDownList;
+            if (ddl != null )
+            {
+                return ddl.SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Sets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterCompareValue( Control control, string value )
+        {
+        }
+
+        /// <summary>
+        /// Sets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var ddl = control as DropDownList;
+            if ( ddl != null )
+            {
+                ddl.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue(Dictionary<string,ConfigurationValue> configurationValues, string value)
+        {
+            return value;
+        }
+
+        /// <summary>
+        /// Gets the filter format script.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <param name="title">The title.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
+        /// a '$selectedContent' should be used to limit script to currently selected filter fields
+        /// </remarks>
+        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
+        {
+            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
+            return string.Format( "result = '{0} is ' + $('select', $selectedContent).find(':selected').text()", titleJs );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+                ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+            }
+
+            return null;
+        }
+
+        #endregion
+
     }
 }

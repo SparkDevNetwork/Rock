@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.WorkFlow
                     gfWorkflows.Controls.Add( wrapper );
                     wrapper.ID = "filter_" + attribute.Id.ToString();
                     wrapper.Label = attribute.Name;
-                    var filterControl = attributeCache.FieldType.Field.FilterControl( attributeCache.QualifierValues, wrapper.ID );
+                    var filterControl = attributeCache.FieldType.Field.FilterControl( attributeCache.QualifierValues, wrapper.ID, false );
                     if ( filterControl != null )
                     {
                         wrapper.Controls.Add( filterControl );
@@ -522,7 +522,7 @@ namespace RockWeb.Blocks.WorkFlow
                     if (attributeFilter != null && attributeFilter.Controls.Count > 0 )
                     {
                         var filterValues = attribute.FieldType.Field.GetFilterValues( attributeFilter.Controls[0], attribute.QualifierValues );
-                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, filterValues );
+                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                         if ( expression != null )
                         {
                             var attributeValues = attributeValueService

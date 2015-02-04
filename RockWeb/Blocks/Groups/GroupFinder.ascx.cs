@@ -293,6 +293,10 @@ namespace RockWeb.Blocks.Groups
         {
             acAddress.SetValues(null);
             BuildDynamicControls();
+
+            pnlMap.Visible = false;
+            pnlLavaOutput.Visible = false;
+            pnlGrid.Visible = false;
         }   
      
         /// <summary>
@@ -497,7 +501,7 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var attribute in AttributeFilters )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString() );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
                     if ( control is IRockControl )
                     {
                         var rockControl = (IRockControl)control;
@@ -599,7 +603,7 @@ namespace RockWeb.Blocks.Groups
                     if ( filterControl != null )
                     {
                         var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                        var expression = attribute.FieldType.Field.FilterExpression( attributeValueService, parameterExpression, filterValues );
+                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                         if ( expression != null )
                         {
                             var attributeValues = attributeValueService

@@ -229,12 +229,18 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             var ddlList = new RockDropDownList();
             ddlList.ID = string.Format( "{0}_ddlList", id );
             ddlList.AddCssClass( "js-filter-control" );
+
+            if ( !required )
+            {
+                ddlList.Items.Add( new ListItem() );
+            }
 
             var control = EditControl( configurationValues, id );
             if ( control is RockCheckBoxList )
@@ -294,17 +300,5 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
-        /// </summary>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
-        {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.ControlCount = 1;
-            filterConfig.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-            return filterConfig;
-        }
     }
 }
