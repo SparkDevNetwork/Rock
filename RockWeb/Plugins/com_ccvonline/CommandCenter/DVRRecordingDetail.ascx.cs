@@ -131,19 +131,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 {
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => ( g.WeekendDate == weekendDateTime ) &&
                                                 ( g.Campus.Guid == campusGuid ) &&
-                                                ( g.Venue == venue ) );
-
-
-                    if ( CurrentUser.Person != null )
-                    {
-                        Person currentPerson = CurrentUser.Person;
-
-                        if ( !String.IsNullOrWhiteSpace( currentPerson.Email ) && currentPerson.Email.IsValidEmail() )
-                        {
-                            tbEmailFrom.Text = currentPerson.Email;
-                        }                
-                    }
-                    
+                                                ( g.Venue == venue ) );                   
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = true;
@@ -204,55 +192,20 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         /// </summary>
         private void SendMessage()
         {
-            var recipients = new List<string>();
+            var recipients = new List<RecipientData>();
             var orgFrom = GlobalAttributesCache.Read().GetValue( "OrganizationEmail" );
 
-            string to = tbEmailTo.Text;
-            if( !string.IsNullOrWhiteSpace( to ) )
+            Guid? commandCenterEmailTemplateGuid = new Guid( "1F88430F-D1B6-4819-BFC1-57E13B4B2098" );
+                
+            if ( commandCenterEmailTemplateGuid.HasValue )
             {
-                recipients.Add( to );
-            }
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                mergeObjects.Add( "Person", this.CurrentPerson );
+                mergeObjects.Add( "RecordingUrl", tbLink.Text );
+                mergeObjects.Add( "RecordingMessage", tbEmailMessage.Text );
 
-            if ( recipients.Any() )
-            {
-                var mediumData = new Dictionary<string, string>();
-
-                if ( !string.IsNullOrWhiteSpace( tbEmailFrom.Text ) )
-                {
-                    mediumData.Add( "From", tbEmailFrom.Text );                   
-                }
-                else
-                {
-                    mediumData.Add( "From", orgFrom );
-                }
-
-                mediumData.Add( "Subject", "Command Center Recording" );
-
-                string videoLink = "<a href='" + tbLink.Text + "'>Video Clip</a>";
-
-                if ( !string.IsNullOrWhiteSpace( tbEmailMessage.Text ) )
-                {
-                    mediumData.Add( "Body", "<html><body><p>" + tbEmailMessage.Text + "</p><p>"+ videoLink + "</p></body></html>" );
-                }
-                else
-                {
-                    mediumData.Add( "Body", "<html><body><p>" + videoLink + "</p></body></html>" );
-                }
-
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );               
-                if ( mediumEntity != null )
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
-                            transport.Send( mediumData, recipients, appRoot, string.Empty );
-                        }
-                    }
-                }
+                recipients.Add( new RecipientData( tbEmailTo.Text, mergeObjects ) );
+                Email.Send( commandCenterEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
         }
 

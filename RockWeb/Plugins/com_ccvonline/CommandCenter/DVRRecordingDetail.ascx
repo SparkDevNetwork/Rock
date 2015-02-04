@@ -76,8 +76,6 @@
                             <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" 
                                 TextMode="Email" ValidationGroup="sharegroup" Required="true" />
 
-                            <Rock:RockTextBox ID="tbEmailFrom" runat="server" Label="From" TextMode="Email" />
-
                             <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" Help="The URL link will automatically be appended to this message." 
                                 CssClass="form-control" Rows="3" TextMode="MultiLine" />
 
