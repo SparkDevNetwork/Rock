@@ -451,6 +451,7 @@ namespace RockWeb.Blocks.Utility
             var renameFolderName = tbRenameFolderName.Text;
             if ( IsValidFolderName( renameFolderName ) )
             {
+                mdRenameFolder.Hide();
                 try
                 {
                     string selectedPhysicalFolder = GetSelectedPhysicalFolder();
@@ -501,6 +502,7 @@ namespace RockWeb.Blocks.Utility
         {
             if ( IsValidFolderName( tbNewFolderName.Text ) )
             {
+                mdCreateFolder.Hide();
                 try
                 {
                     string selectedPhysicalFolder = GetSelectedPhysicalFolder();
