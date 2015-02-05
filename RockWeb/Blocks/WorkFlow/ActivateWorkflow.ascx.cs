@@ -55,16 +55,23 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnInit( e );
 
             // Notify the Rock Administrators that an obsolete block is being used
-            var pageReference = new Rock.Web.PageReference( GetAttributeValue( "WorkflowEntryPage" ) );
-            string subject = string.Format( "Your '{0}' site is using an obsolete block!", RockPage.Site.Name );
-            string message = string.Format( @"Your '{0}' site is still using the 'Activate Workflow' block on page:
+            try
+            {
+                var pageReference = new Rock.Web.PageReference( GetAttributeValue( "WorkflowEntryPage" ) );
+                string subject = string.Format( "Your '{0}' site is using an obsolete block!", RockPage.Site.Name );
+                string message = string.Format( @"Your '{0}' site is still using the 'Activate Workflow' block on page:
 {1}!<br/><br/>The Activate Workflow block has been deprecated and will be removed during a future update. 
 This block was previously used to activate a workflow, set attribute values from any existing query string parameters, 
 and then redirect the user to a page with the Workflow Entry block. Because the Workflow Entry block now also 
 supports setting attribute values from query string parameters, the Activate Workflow block is no 
 longer needed.<br/><br/>Please update any place that links to page ID: {1}, to instead link directly to the Workflow 
 Entry page (Page ID: {2}).", RockPage.Site.Name, RockPage.PageId, pageReference.PageId );
-            Rock.Communication.Email.NotifyAdmins( subject, message );
+                Rock.Communication.Email.NotifyAdmins( subject, message );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+            }
 
             // Pass all the query string parameters to the entry page
             var pageParams = new Dictionary<string, string>();
