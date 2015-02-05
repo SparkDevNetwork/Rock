@@ -64,8 +64,12 @@ img { .img-responsive(); }
 .container-fixed(@gutter: @grid-gutter-width) {
   margin-right: auto;
   margin-left: auto;
-  padding-left:  (@gutter);
-  padding-right: (@gutter);
+  padding-left:  (@gutter / 2);
+  padding-right: (@gutter / 2);
+  @media (min-width: @screen-sm-min) {
+    padding-left:  (@gutter);
+    padding-right: (@gutter);
+  }
   &:extend(.clearfix all);
 }
 
