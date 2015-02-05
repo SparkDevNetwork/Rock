@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -256,6 +259,57 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public override bool IsAuthorized( string action, Person person, RockContext rockContext = null )
+        {
+            // Check to see if user is authorized using normal authorization rules
+            bool authorized = base.IsAuthorized( action, person, rockContext );
+
+            // If the user is not authorized for group through normal security roles, and this is a logged
+            // in user trying to view or edit, check to see if they should be allowed based on their role
+            // in the group.
+            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.EDIT ) )
+            {
+                // Get the cached group type
+                rockContext = rockContext ?? new RockContext();
+                var groupType = GroupTypeCache.Read( this.GroupTypeId, rockContext );
+                if ( groupType != null )
+                {
+                    // For each occurrence of this person in this group, check to see if their role is valid
+                    // for the group type and if the role grants them authorization
+                    foreach ( int roleId in new GroupMemberService(rockContext)
+                        .Queryable().AsNoTracking()
+                        .Where( m =>
+                            m.PersonId == person.Id &&
+                            m.GroupId == this.Id && 
+                            m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Select( m => m.GroupRoleId ) )
+                    {
+                        var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                        if ( role != null )
+                        {
+                            if ( action == Authorization.VIEW && role.CanView )
+                            {
+                                return true;
+                            }
+                            if ( action == Authorization.EDIT && role.CanEdit )
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return authorized;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.

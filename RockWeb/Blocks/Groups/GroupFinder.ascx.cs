@@ -425,7 +425,6 @@ namespace RockWeb.Blocks.Groups
             if ( fenceTypeGuid.HasValue || GetAttributeValue( "ShowProximity" ).AsBoolean() )
             {
                 acAddress.Visible = true;
-                btnClear.Visible = true;
                 if ( CurrentPerson != null )
                 {
                     acAddress.SetValues( CurrentPerson.GetHomeLocation() );
@@ -436,7 +435,6 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 acAddress.Visible = false;
-                btnClear.Visible = false;
 
                 // Check to see if there's any attribute filters
                 if ( AttributeFilters.Any() )
@@ -451,6 +449,8 @@ namespace RockWeb.Blocks.Groups
                     pnlResults.Visible = true;
                 }
             }
+
+            btnClear.Visible = btnSearch.Visible;
 
             // If we've already displayed results, then re-display them
             if ( pnlResults.Visible )
@@ -773,7 +773,14 @@ namespace RockWeb.Blocks.Groups
                             linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
                             linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
                             mergeFields.Add( "LinkedPages", linkedPages );
- 
+
+                            // add collection of allowed security actions
+                            Dictionary<string, object> securityActions = new Dictionary<string, object>();
+                            securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                            securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                            securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                            mergeFields.Add( "AllowedActions", securityActions );
+
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
 
                             if ( showDebug )
