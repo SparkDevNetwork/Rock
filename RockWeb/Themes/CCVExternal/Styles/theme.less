@@ -40,25 +40,50 @@ h1, h2, h3, h4, h5, h6,
 
 img { .img-responsive(); }
 
-.announcement-rotator {
-    margin-bottom: @spacing-lg-px;
+// .announcement-rotator {
+//     margin-bottom: @spacing-lg-px;
+// }
+
+// .container-masthead {
+//     background: #fff;
+// }
+// .container {
+//     padding-left: 0;
+//     padding-right: 0;
+// }
+// main.container {
+//     background: #fff;
+//     padding-left: @grid-gutter-width/2;
+//     padding-right: @grid-gutter-width/2;
+//     @media (min-width: @screen-sm-min) {
+//         padding-left: @grid-gutter-width;
+//         padding-right: @grid-gutter-width;
+//     }
+// }
+
+.container-fixed(@gutter: @grid-gutter-width) {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left:  (@gutter);
+  padding-right: (@gutter);
+  &:extend(.clearfix all);
 }
 
-.container-masthead {
-    background: #fff;
-}
-.container {
+.container-full {
     padding-left: 0;
     padding-right: 0;
 }
-main.container {
-    background: #fff;
-    padding-left: @grid-gutter-width/2;
-    padding-right: @grid-gutter-width/2;
-    @media (min-width: @screen-sm-min) {
-        padding-left: @grid-gutter-width;
-        padding-right: @grid-gutter-width;
+
+.wrapper {
+    overflow: hidden;
+}
+    .wrapper-inner {
+        box-shadow: 0 0 25px rgba(0,0,0,0.1);
     }
+
+main.main > .wrapper-inner,
+.main-feature > .wrapper-inner {
+    padding-top: @grid-gutter-width;
 }
 
 // Undo appearance of block panels
