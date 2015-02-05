@@ -88,6 +88,8 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+
+            gVersions.GridRebind += gVersions_GridRebind;
         }
 
         /// <summary>
@@ -278,6 +280,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbShowVersionGrid_Click( object sender, EventArgs e )
         {
+            // make sure grid goes back to first page
+            gVersions.PageIndex = 0;
             BindGrid();
             pnlVersionGrid.Visible = true;
             pnlEdit.Visible = false;
@@ -341,7 +345,7 @@ namespace RockWeb.Blocks.Cms
                 } ).ToList();
 
             gVersions.DataSource = versions;
-            gVersions.GridRebind += gVersions_GridRebind;
+            
             gVersions.DataBind();
         }
 
