@@ -1,6 +1,6 @@
 ﻿<div class="row announcement-list">
   {% for item in Items %}
-  <div class="col-md-4 col-xs-6 announcement">
+  <div class="col-md-3 col-xs-6 announcement">
     <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
       <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
     </a>
@@ -10,7 +10,7 @@
       <a class="view-details btn btn-default" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" role="button">View details »</a>
     </p> -->
   </div>
-  {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
+  {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
   {% if breakNow == 0 -%}
 </div>
 <div class="row announcement-list">

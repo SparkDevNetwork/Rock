@@ -13524,6 +13524,12 @@ main.main > .wrapper-inner,
 .main-feature > .wrapper-inner {
   padding-top: 30px;
 }
+.announcement-list {
+  margin-bottom: -30px;
+}
+.announcement-list .announcement {
+  margin-bottom: 30px;
+}
 .panel.panel-block {
   border: 0;
   box-shadow: none;
