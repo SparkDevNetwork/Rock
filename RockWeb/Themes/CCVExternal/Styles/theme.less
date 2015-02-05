@@ -69,6 +69,13 @@ img { .img-responsive(); }
   &:extend(.clearfix all);
 }
 
+// Large screen / wide desktop
+@container-large-desktop:      ((1160px + @grid-gutter-width*2));
+//** For `@screen-lg-min` and up.
+@container-lg:                 @container-large-desktop;
+
+@screen-lg:                  1242px;
+
 .container-full {
     padding-left: 0;
     padding-right: 0;
