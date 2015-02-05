@@ -114,6 +114,8 @@
                 var $el = $('#' + options.aFileName);
                 $('#' + options.hfFileId).val('0');
                 $el.attr('href', '#');
+                $el.text('');
+                $el.removeClass('file-exists');
 
                 if (options.postbackScript) {
                     eval(options.postbackScript);
