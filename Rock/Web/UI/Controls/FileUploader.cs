@@ -577,8 +577,15 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.Write( @"
-                    <div class='js-upload-progress upload-progress' style='display:none'>
-                        <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+                    <div class='js-upload-progress updateprogress-status' style='display:none;text-align:center'>
+                        <div class='spinner'>
+                          <div class='rect1'></div>
+                          <div class='rect2'></div>
+                          <div class='rect3'></div>
+                          <div class='rect4'></div>
+                          <div class='rect5'></div>
+                        </div>
+                        <span class='progress-percent'></span>
                     </div>" );
 
                 if (this.DisplayMode == UploaderDisplayMode.Button)

@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool CanEdit { get; set; }
+
+        /// <summary />
+        public bool CanView { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />

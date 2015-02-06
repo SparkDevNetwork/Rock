@@ -1168,6 +1168,10 @@ namespace RockWeb.Blocks.Groups
             string groupTerm = string.IsNullOrWhiteSpace( tbGroupTerm.Text ) ? "Group" : tbGroupTerm.Text;
             string memberTerm = string.IsNullOrWhiteSpace( tbGroupMemberTerm.Text ) ? "Member" : tbGroupMemberTerm.Text;
 
+            cbIsLeader.Checked = groupTypeRole.IsLeader;
+            cbCanView.Checked = groupTypeRole.CanView;
+            cbCanEdit.Checked = groupTypeRole.CanEdit;
+
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
                 "The minimum number of {0} in this {1} that are required to have this role.",
@@ -1241,6 +1245,9 @@ namespace RockWeb.Blocks.Groups
 
             groupTypeRole.Name = tbRoleName.Text;
             groupTypeRole.Description = tbRoleDescription.Text;
+            groupTypeRole.IsLeader = cbIsLeader.Checked;
+            groupTypeRole.CanView = cbCanView.Checked;
+            groupTypeRole.CanEdit = cbCanEdit.Checked;
 
             int result;
 

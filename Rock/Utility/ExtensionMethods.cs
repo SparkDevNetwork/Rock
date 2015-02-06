@@ -1698,7 +1698,7 @@ namespace Rock
         /// </summary>
         /// <param name="webControl">The web control.</param>
         /// <param name="className">Name of the class.</param>
-        public static void AddCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
+        public static WebControl AddCssClass( this WebControl webControl, string className )
         {
             string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
@@ -1707,7 +1707,10 @@ namespace Rock
             {
                 css += " " + className;
             }
+
             webControl.CssClass = css.Trim();
+
+            return webControl;
         }
 
         /// <summary>
@@ -1715,7 +1718,7 @@ namespace Rock
         /// </summary>
         /// <param name="webControl">The web control.</param>
         /// <param name="className">Name of the class.</param>
-        public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
+        public static WebControl RemoveCssClass( this WebControl webControl, string className )
         {
             string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
@@ -1726,6 +1729,8 @@ namespace Rock
             }
 
             webControl.CssClass = css.Trim();
+
+            return webControl;
         }
 
         #endregion WebControl Extensions

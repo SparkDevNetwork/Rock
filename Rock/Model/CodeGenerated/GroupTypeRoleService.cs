@@ -100,6 +100,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupTypeRole target, GroupTypeRole source )
         {
             target.Id = source.Id;
+            target.CanEdit = source.CanEdit;
+            target.CanView = source.CanView;
             target.Description = source.Description;
             target.GroupTypeId = source.GroupTypeId;
             target.IsLeader = source.IsLeader;

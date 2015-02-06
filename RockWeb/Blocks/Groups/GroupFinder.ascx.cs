@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Block for people to find a group that matches their search parameters." )]
 
     // Block Properties
-    [LinkedPage( "Detail Page", "The page to navigate to for group details.", false, "", "", 0 )]
+    [LinkedPage( "Group Detail Page", "The page to navigate to for group details.", false, "", "", 0 )]
     [LinkedPage( "Register Page", "The page to navigate to when registering for a group.", false, "", "", 1 )]
 
     // Filter Settings
@@ -65,24 +65,27 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
     [CodeEditorField( "Map Info", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
-<div style='width:250px'>
+<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
 
-    <div class='clearfix'>
-        <h4 class='pull-left' style='margin-top: 0;'>{{ Group.Name }}</h4> 
-    </div>
-    
-    <div class='clearfix'>
-		{% if Location.Address && Location.Address != '' %}
-			<strong>{{ Location.Type }}</strong>
-			<br>{{ Location.Address }}
-		{% endif %}
-    </div>
-    
-	<br>
-	<a class='btn btn-xs btn-action' href='~/Page/999?Group={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
-	<a class='btn btn-xs btn-action' href='~/Page/888?Group={{ Group.Id }}'>Register</a>
-
+<div class='margin-b-sm'>
+{% for attribute in Group.AttributeValues %}
+    <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+{% endfor %}
 </div>
+
+<div class='margin-v-sm'>
+{% if Location.FormattedHtmlAddress && Location.FormattedHtmlAddress != '' %}
+	{{ Location.FormattedHtmlAddress }}
+{% endif %}
+</div>
+
+{% if LinkedPages.GroupDetailPage != '' %}
+    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% endif %}
+
+{% if LinkedPages.RegisterPage != '' %}
+    <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+{% endif %}
 ", "CustomSetting" )]
     [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
@@ -306,7 +309,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroups_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "Group", e.RowKeyId );
+            NavigateToLinkedPage( "GroupDetailPage", "GroupId", e.RowKeyId );
         }
 
         /// <summary>
@@ -316,7 +319,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void registerColumn_Click( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "RegisterPage", "Group", e.RowKeyId );
+            NavigateToLinkedPage( "RegisterPage", "GroupId", e.RowKeyId );
         }
 
         /// <summary>
@@ -446,6 +449,8 @@ namespace RockWeb.Blocks.Groups
                     pnlResults.Visible = true;
                 }
             }
+
+            btnClear.Visible = btnSearch.Visible;
 
             // If we've already displayed results, then re-display them
             if ( pnlResults.Visible )
@@ -745,8 +750,8 @@ namespace RockWeb.Blocks.Groups
                 {
 
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
-                    string detailPageValue = GetAttributeValue("DetailPage");
-                    string registerPageValue = GetAttributeValue("RegisterPage");
+                    //string detailPageValue = GetAttributeValue("DetailPage");
+                    //string registerPageValue = GetAttributeValue("RegisterPage");
 
                     bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
                     lMapInfoDebug.Visible = showDebug;
@@ -763,13 +768,24 @@ namespace RockWeb.Blocks.Groups
                             var mergeFields = new Dictionary<string, object>();
                             mergeFields.Add( "Group", gl.Group );
                             mergeFields.Add( "Location", gl.Location );
-                            mergeFields.Add( "DetailPageLink", new PageReference( detailPageValue, linkedPageParams ).BuildUrl() );
-                            mergeFields.Add( "RegisterPageLink", new PageReference( registerPageValue, linkedPageParams ).BuildUrl() );
+
+                            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                            linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+                            linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                            mergeFields.Add( "LinkedPages", linkedPages );
+
+                            // add collection of allowed security actions
+                            Dictionary<string, object> securityActions = new Dictionary<string, object>();
+                            securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                            securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                            securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                            mergeFields.Add( "AllowedActions", securityActions );
+
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
 
                             if ( showDebug )
                             {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo();
+                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo(null, "<span class='label label-info'>Lava used for the map window.</span>", "");
                                 showDebug = false;
                             }
 
@@ -803,7 +819,15 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaOutput" );
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
+                if ( fences != null )
+                {
+                    mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );
+                }
+                else
+                {
+                    mergeFields.Add( "Fences", new Dictionary<string, object>() );
+                }
+
                 mergeFields.Add( "Groups", groups );
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 
@@ -811,7 +835,7 @@ namespace RockWeb.Blocks.Groups
                 lLavaOutputDebug.Visible = showDebug;
                 if ( showDebug )
                 {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo();
+                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo(null, "<span class='label label-info'>Lava used for the summary info.</span>");
                 }
 
                 pnlLavaOutput.Visible = true;
@@ -1000,8 +1024,6 @@ namespace RockWeb.Blocks.Groups
 
         function initializeMap() {{
 
-            debugger;
-
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
@@ -1090,13 +1112,13 @@ namespace RockWeb.Blocks.Groups
                 if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
                     google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {{
                         return function () {{
-                            $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('alert alert-danger');
+                            $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
                         }}
                     }})(marker, i));
 
                     google.maps.event.addListener(marker, 'mouseout', (function (marker, i) {{
                         return function () {{
-                            $(""tr[datakey='"" + mapItem.EntityId + ""']"").removeClass('alert alert-danger');
+                            $(""tr[datakey='"" + mapItem.EntityId + ""']"").removeClass('row-highlight');
                         }}
                     }})(marker, i));
 
