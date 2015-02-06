@@ -34,17 +34,16 @@
                 submit: options.submitFunction,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
-                    //$el.find('.imageupload-dropzone').hide();
-                    $el.find('.js-upload-progress').show();
+                    $el.find('.js-upload-progress').rockFadeIn();
                 },
                 progressall: function (e, data) {
-                    var $el = $('#' + options.controlId).closest('.imageupload-group');
+                    // var $el = $('#' + options.controlId).closest('.imageupload-group');
                     // implement this to show progress percentage
                 },
                 stop: function (e) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
                     $el.find('.js-upload-progress').hide();
-                    $el.find('.imageupload-dropzone').show();
+                    $el.find('.imageupload-dropzone').rockFadeIn();
                 },
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);

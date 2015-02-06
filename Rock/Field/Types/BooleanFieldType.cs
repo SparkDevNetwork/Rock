@@ -408,7 +408,7 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
+                ConstantExpression constantExpression = Expression.Constant( filterValues[0] );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
                 return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
             }

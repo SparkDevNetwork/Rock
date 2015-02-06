@@ -262,7 +262,10 @@ namespace Rock.Model
                     if ( entry.State == System.Data.Entity.EntityState.Modified ||
                         entry.State == System.Data.Entity.EntityState.Deleted )
                     {
-                        oldBinaryFileGuid = entry.OriginalValues["Value"].ToString().AsGuidOrNull();
+                        if ( entry.OriginalValues["Value"] != null )
+                        {
+                            oldBinaryFileGuid = entry.OriginalValues["Value"].ToString().AsGuidOrNull();
+                        }
                     }
 
                     if ( oldBinaryFileGuid.HasValue )

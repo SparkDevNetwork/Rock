@@ -82,6 +82,10 @@ td.wrap-contents { // keep cells from scrolling off screen
     border: 0;
 }
 
+.table-responsive[data-pattern="priority-columns"] {
+    position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
+}
+
 /*.table-responsive[data-pattern="priority-columns"] {
     margin-bottom: inherit;
     border: inherit;
@@ -345,6 +349,13 @@ td.grid-col-actions {
     }
     
  }
+
+tr.row-highlight {
+    td {
+        background-color: @accent-bold-color !important;
+        color: @accent-bold-text-color !important;
+    }
+}
 
 // 10. Responsive Overrides
 // -------------------------

@@ -130,74 +130,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember = new GroupMember { Id = 0 };
                     groupMember.GroupId = hfGroupId.ValueAsInt();
-
-                    // check to see if the person is alread a member of the gorup/role
-                    var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
-                        hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
-
-                    if ( existingGroupMember != null )
-                    {
-                        // if so, don't add and show error message
-                        var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
-
-                        nbErrorMessage.Title = "Person Exists";
-                        nbErrorMessage.Text = string.Format( 
-                            "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
-                            person.FullName,
-                            ddlGroupRole.SelectedItem.Text,
-                            role.GroupType.GroupTerm,
-                            RockPage.PageId,
-                            existingGroupMember.Id );
-                        return;
-                    }
                 }
                 else
                 {
                     // load existing group member
                     groupMember = groupMemberService.Get( groupMemberId );
-                }
-
-                int memberCountInRole = new GroupMemberService( rockContext ).Queryable()
-                    .Where( m =>
-                        m.GroupId == groupMember.GroupId &&
-                        m.GroupRoleId == role.Id &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active )
-                    .Count();
-
-                bool roleMembershipAboveMax = false;
-
-                // if adding new active group member..
-                if ( groupMemberId.Equals( 0 ) && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
-                {
-                    // verify that active count has not exceeded the max
-                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                    {
-                        roleMembershipAboveMax = true;
-                    }
-                }
-                else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != rblStatus.SelectedValueAsEnum<GroupMemberStatus>() )
-                        && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
-                {
-                    // if existing group member changing role or status..
-                    // verify that active count has not exceeded the max
-                    if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
-                    {
-                        roleMembershipAboveMax = true;
-                    }
-                }
-
-                // show error if above max.. do not proceed
-                if ( roleMembershipAboveMax )
-                {
-                    nbErrorMessage.Title = string.Format( "Maximum {0} Exceeded", role.Name.Pluralize() );
-                    nbErrorMessage.Text = string.Format( 
-                        "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
-                        role.Name.Pluralize(), 
-                        role.GroupType.GroupTerm, 
-                        role.MaxCount,
-                        role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
-
-                    return;
                 }
 
                 groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
@@ -213,8 +150,11 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                if ( !groupMember.IsValid )
+                cvGroupMember.IsValid = groupMember.IsValid;
+
+                if ( !cvGroupMember.IsValid )
                 {
+                    cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                     return;
                 }
 
