@@ -1715,9 +1715,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static IQueryable<Group> GetFamilies( this Person person )
+        public static IQueryable<Group> GetFamilies( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilies( person != null ? person.Id : 0 );
+            rockContext = rockContext ?? new RockContext();
+            return new PersonService( rockContext ).GetFamilies( person != null ? person.Id : 0 );
         }
 
         /// <summary>
