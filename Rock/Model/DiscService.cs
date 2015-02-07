@@ -357,7 +357,7 @@ namespace Rock.Model
                         Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], personalityType );
                         break;
                     case AttributeKeys.LastSaveDate:
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString() );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString( "o" ) );
                         break;
                 }
             }
