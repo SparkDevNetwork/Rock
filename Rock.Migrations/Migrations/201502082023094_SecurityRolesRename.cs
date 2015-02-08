@@ -31,7 +31,7 @@ namespace Rock.Migrations
         {
             Sql( @"-- change group type and name of the background check administration group
 UPDATE [Group]
-	SET [Name] = 'RSG - Background Check Administration'
+	SET [Name] = 'RSR - Background Check Administration'
 		, [GroupTypeId] = 1
 		, [IsSecurityRole] = 1
 	WHERE [Guid] = 'A6BCC49E-103F-46B0-8BAC-84EA03FF04D5'
@@ -42,11 +42,11 @@ UPDATE [GroupMember]
 
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Rock Administration'
+	SET [Name] = 'RSR - Rock Administration'
 	WHERE [Name] = 'Rock Administrators'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Staff Workers'
+	SET [Name] = 'RSR - Staff Workers'
 	WHERE [Name] = 'Staff Users'
 
 UPDATE [Group]
@@ -58,27 +58,27 @@ UPDATE [Group]
 	WHERE [Name] = 'Website Content Editors'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Finance Administration'
+	SET [Name] = 'RSR - Finance Administration'
 	WHERE [Name] = 'Finance Administrators'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Finance Worker'
+	SET [Name] = 'RSR - Finance Worker'
 	WHERE [Name] = 'Finance Users'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Communication Administration'
+	SET [Name] = 'RSR - Communication Administration'
 	WHERE [Name] = 'Communication Administrators'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Staff Like Workers'
+	SET [Name] = 'RSR - Staff Like Workers'
 	WHERE [Name] = 'Staff-Like Users'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Prayer Administration'
+	SET [Name] = 'RSR - Prayer Administration'
 	WHERE [Name] = 'Prayer Administrators'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Prayer Access'
+	SET [Name] = 'RSR - Prayer Access'
 	WHERE [Name] = 'Prayer Team'
 
 UPDATE [Group]
@@ -86,15 +86,15 @@ UPDATE [Group]
 	WHERE [Name] = 'Check-in Devices'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Pastoral Workers'
+	SET [Name] = 'RSR - Pastoral Workers'
 	WHERE [Name] = 'Pastoral Staff'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Data Integrity Worker'
+	SET [Name] = 'RSR - Data Integrity Worker'
 	WHERE [Name] = 'Data Integrity User'
 
 UPDATE [Group]
-	SET [Name] = 'RSG - Safety & Security Workers'
+	SET [Name] = 'RSR - Safety & Security Workers'
 	WHERE [Name] = 'Safety & Security Team'
 " );
         }
