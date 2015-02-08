@@ -128,6 +128,10 @@
     <Compile Include="Migrations\201502082023094_SecurityRolesRename.Designer.cs">
       <DependentUpon>201502082023094_SecurityRolesRename.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.cs" />
+    <Compile Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.Designer.cs">
+      <DependentUpon>201502082106367_UpdateSecuritySettings-PageNames.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1472,6 +1476,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502082023094_SecurityRolesRename.resx">
       <DependentUpon>201502082023094_SecurityRolesRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502082106367_UpdateSecuritySettings-PageNames.resx">
+      <DependentUpon>201502082106367_UpdateSecuritySettings-PageNames.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
