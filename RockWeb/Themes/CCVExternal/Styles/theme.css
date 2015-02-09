@@ -13673,9 +13673,6 @@ img {
   max-width: 100%;
   height: auto;
 }
-html {
-  background: #fff;
-}
 body {
   max-width: 1920px;
   margin-left: auto;
@@ -13695,10 +13692,15 @@ main {
   margin-bottom: 30px;
 }
 .announcement-list {
-  margin-bottom: -30px;
+  margin-bottom: -60px;
+  background: #e9e9e9;
+  padding-top: 30px;
 }
 .announcement-list .announcement {
   margin-bottom: 30px;
+}
+.announcement-list .announcement img {
+  border-radius: 6px;
 }
 .panel.panel-block {
   border: 0;
