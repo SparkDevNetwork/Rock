@@ -32,6 +32,7 @@
 	</remarks>
 	<code>
 		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1  -- year 2014 statements for all persons
+        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1  -- year 2014 statements for Ted Decker
 	</code>
 </doc>
 */
@@ -133,11 +134,10 @@ BEGIN
 	) [pg]
 	CROSS APPLY 
 		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId]) [pn]
-	JOIN 
+	LEFT OUTER JOIN (
+    SELECT l.*, gl.GroupId from
 		[GroupLocation] [gl] 
-	ON 
-		[gl].[GroupId] = [pg].[GroupId]
-	JOIN
+	LEFT OUTER JOIN
 		[Location] [l]
 	ON 
 		[l].[Id] = [gl].[LocationId]
@@ -145,6 +145,9 @@ BEGIN
 		[gl].[IsMailingLocation] = 1
 	AND
 		[gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
+        ) [l] 
+        ON 
+		[l].[GroupId] = [pg].[GroupId]
 	
 	ORDER BY
 	CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END

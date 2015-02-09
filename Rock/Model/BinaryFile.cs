@@ -200,7 +200,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
-        public Storage.ProviderComponent StorageProvider { get; private set; }
+        public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
         /// Gets the URL.

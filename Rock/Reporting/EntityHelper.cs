@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
 using Rock.Data;
@@ -95,10 +96,18 @@ namespace Rock.Reporting
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.BOOLEAN.AsGuid() );
                     }
 
-                    // Date properties
+                    // Datetime properties
                     else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
                     {
-                        entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE.AsGuid() );
+                        var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
+                        if ( colAttr != null && ( (ColumnAttribute)colAttr ).TypeName == "Date" )
+                        {
+                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE.AsGuid() );
+                        }
+                        else
+                        {
+                            entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.DATE_TIME.AsGuid() );
+                        }
                     }
 
                     // Decimal properties

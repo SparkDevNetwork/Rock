@@ -7,9 +7,10 @@
         <asp:Repeater runat="server" ID="rptPhotos" OnItemDataBound="rptPhotos_ItemDataBound">
             <ItemTemplate>
                 <div class="photoupload-photo">
-                    <Rock:ImageEditor ID="imgedPhoto" runat="server" Label="Name" ButtonText="<i class='fa fa-pencil'></i> Select Photo" 
+                    <Rock:ImageEditor ID="imgedPhoto" runat="server" Label="Photo" ButtonText="<i class='fa fa-pencil'></i> Select Photo" 
                         ButtonCssClass="btn btn-primary btn-sm margin-t-sm" CommandArgument='<%# Eval("Id") %>' 
-                        OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false" />
+                        OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false"
+                        BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                 </div>
             </ItemTemplate>
         </asp:Repeater>

@@ -37,7 +37,7 @@
                             You may obtain a copy of the License at
                         </p>
 
-                        <p style="text-align: center;"><a href="">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+                        <p style="text-align: center;"><a href="http://www.apache.org/licenses/LICENSE-2.0.html">http://www.apache.org/licenses/LICENSE-2.0</a></p>
 
                         <p>
                             Unless required by applicable law or agreed to in writing, software

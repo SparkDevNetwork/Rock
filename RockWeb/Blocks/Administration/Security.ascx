@@ -59,7 +59,7 @@
                         <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user" EnableResponsiveTable="false">
                             <Columns>
                                 <Rock:ReorderField />
-                                <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                                <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                                 <Rock:RockTemplateField>
                                     <HeaderTemplate>Allow or Deny</HeaderTemplate>
                                     <HeaderStyle HorizontalAlign="Left" />
@@ -93,7 +93,7 @@
                     <div class="grid">
                         <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
                             <Columns>
-                                <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                                <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                                 <Rock:RockTemplateField>
                                     <HeaderTemplate>Allow or Deny</HeaderTemplate>
                                     <HeaderStyle HorizontalAlign="Left" />
@@ -102,7 +102,7 @@
                                         <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockBoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                                <Rock:RockBoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                             </Columns>
                         </Rock:Grid>
                     </div>

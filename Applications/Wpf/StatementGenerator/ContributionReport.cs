@@ -38,7 +38,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The start date.
         /// </value>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -181,9 +181,12 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
+            // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
+            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
+
             _contributionStatementOptionsREST = new Rock.Net.RestParameters.ContributionStatementOptions
             {
-                StartDate = Options.StartDate,
+                StartDate = Options.StartDate ?? firstDayOfYear,
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
                 PersonId = Options.PersonId,
