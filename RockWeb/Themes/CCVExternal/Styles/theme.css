@@ -3047,12 +3047,10 @@ pre code {
   overflow-y: scroll;
 }
 .container {
-  padding-left: 15px;
-  padding-right: 15px;
   margin-right: auto;
   margin-left: auto;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 @media (min-width: 768px) {
   .container {
@@ -3070,12 +3068,10 @@ pre code {
   }
 }
 .container-fluid {
-  padding-left: 15px;
-  padding-right: 15px;
   margin-right: auto;
   margin-left: auto;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .row {
   margin-left: -15px;
@@ -7551,10 +7547,6 @@ button.close {
 .dl-horizontal dd:after,
 .container:before,
 .container:after,
-.container:before,
-.container:after,
-.container-fluid:before,
-.container-fluid:after,
 .container-fluid:before,
 .container-fluid:after,
 .row:before,
@@ -7585,8 +7577,6 @@ button.close {
 .clearfix:after,
 .dl-horizontal dd:after,
 .container:after,
-.container:after,
-.container-fluid:after,
 .container-fluid:after,
 .row:after,
 .form-horizontal .form-group:after,
@@ -13201,6 +13191,9 @@ div.aspNetDisabled {
     content: '' !important;
   }
 }
+.masthead {
+  margin-bottom: 30px;
+}
 .masthead-upper {
   background-color: #1d1d1d;
   padding: 30px 0;
@@ -13510,19 +13503,26 @@ img {
   max-width: 100%;
   height: auto;
 }
-.container-full {
+.announcement-rotator {
+  margin-bottom: 30px;
+}
+.container-masthead {
+  background: #fff;
+}
+.container {
   padding-left: 0;
   padding-right: 0;
 }
-.wrapper {
-  overflow: hidden;
+main.container {
+  background: #fff;
+  padding-left: 15px;
+  padding-right: 15px;
 }
-.wrapper-inner {
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
-}
-main.main > .wrapper-inner,
-.main-feature > .wrapper-inner {
-  padding-top: 30px;
+@media (min-width: 768px) {
+  main.container {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
 }
 .announcement-list {
   margin-bottom: -30px;

@@ -51,8 +51,8 @@
 
     <form id="form1" runat="server">
 
-        <header class="masthead wrapper">
-            <div class="container container-full wrapper-inner">
+        <div class="container">
+            <header class="masthead">
                 <div class="masthead-upper">
                     <div class="masthead-brand">
                         <Rock:Zone Name="Header" runat="server" />
@@ -64,25 +64,23 @@
                 <div class="masthead-lower">
                     <Rock:Zone Name="Login" runat="server" />
                 </div>
-            </div>
-        </header>
+            </header>
+        </div>
 
         <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
-	    <footer class="wrapper">
-            <div class="container container-full wrapper-inner">
+	    <footer>
+            <div class="container">
 
                 <hr />
 
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:Zone Name="Footer" runat="server" />
-                        </div>
-                    </div>
-                </div>
+                <div class="row">
+			        <div class="col-md-12">
+				        <Rock:Zone Name="Footer" runat="server" />
+			        </div>
+		        </div>
 
             </div>
 	    </footer>
