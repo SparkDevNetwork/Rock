@@ -13673,26 +13673,26 @@ img {
   max-width: 100%;
   height: auto;
 }
+html {
+  background: #fff;
+}
+body {
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+}
+main {
+  margin-bottom: 60px;
+}
+.mainfooter {
+  background: #333;
+  color: #fff;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
 .announcement-rotator {
   margin-bottom: 30px;
-}
-.container-masthead {
-  background: #fff;
-}
-.container {
-  padding-left: 0;
-  padding-right: 0;
-}
-main.container {
-  background: #fff;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  main.container {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
 }
 .announcement-list {
   margin-bottom: -30px;

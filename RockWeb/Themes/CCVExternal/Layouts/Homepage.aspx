@@ -15,11 +15,11 @@
 </asp:Content>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-    
+
 	<main class="container">
-        
+
         <!-- Start Content Area -->
-        
+
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>
@@ -53,6 +53,6 @@
         <!-- End Content Area -->
 
 	</main>
-        
+
 </asp:Content>
 

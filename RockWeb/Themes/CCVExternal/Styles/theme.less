@@ -40,25 +40,29 @@ h1, h2, h3, h4, h5, h6,
 
 img { .img-responsive(); }
 
-.announcement-rotator {
-    margin-bottom: @spacing-lg-px;
+html {
+  background: #fff;
+}
+body {
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 25px rgba(0,0,0,0.1);
 }
 
-.container-masthead {
-    background: #fff;
+main {
+  margin-bottom: @grid-gutter-width*2;
 }
-.container {
-    padding-left: 0;
-    padding-right: 0;
+
+.mainfooter {
+  background: #333;
+  color: #fff;
+  padding-top: @grid-gutter-width;
+  padding-bottom: @grid-gutter-width;
 }
-main.container {
-    background: #fff;
-    padding-left: @grid-gutter-width/2;
-    padding-right: @grid-gutter-width/2;
-    @media (min-width: @screen-sm-min) {
-        padding-left: @grid-gutter-width;
-        padding-right: @grid-gutter-width;
-    }
+
+.announcement-rotator {
+    margin-bottom: @spacing-lg-px;
 }
 
 .announcement-list {

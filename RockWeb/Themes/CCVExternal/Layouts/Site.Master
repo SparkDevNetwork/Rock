@@ -51,7 +51,7 @@
 
     <form id="form1" runat="server">
 
-        <div class="container">
+        <div class="">
             <header class="masthead">
                 <div class="masthead-upper">
                     <div class="masthead-brand">
@@ -71,10 +71,8 @@
 
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
-	    <footer>
+	    <footer class="mainfooter">
             <div class="container">
-
-                <hr />
 
                 <div class="row">
 			        <div class="col-md-12">
