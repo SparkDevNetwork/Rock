@@ -1714,6 +1714,7 @@ namespace Rock.Model
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static IQueryable<Group> GetFamilies( this Person person, RockContext rockContext = null )
         {

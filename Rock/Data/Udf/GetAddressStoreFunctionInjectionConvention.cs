@@ -25,6 +25,11 @@ namespace Rock.Data
     /// </summary>
     public class GetAddressStoreFunctionInjectionConvention : IStoreModelConvention<EdmModel>
     {
+        /// <summary>
+        /// Applies the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="model">The model.</param>
         public void Apply( EdmModel item, DbModel model )
         {
             var personIdParameter = FunctionParameter.Create(
