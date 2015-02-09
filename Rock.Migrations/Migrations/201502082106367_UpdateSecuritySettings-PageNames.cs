@@ -133,7 +133,22 @@ SET @SecurityExists = (SELECT COUNT(*) FROM AUTH WHERE [EntityTypeId] = @Channel
 		VALUES
 			(@ChannelEntityTypeId, @ExternalSiteAdChannelId, 0, 'Administrate', 'A', 0, @WebAdminGroupId, 'c6c72677-060f-b4bf-4e94-2fe5e96e278b')
 END" );
-        
+
+            //
+            // Move the Content Channel admin pages under 'Admin Tools > CMS Configuration'
+            //
+            Sql( @"DECLARE @CmsConfigPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
+                    UPDATE [Page]
+	                    SET [ParentPageId] = @CmsConfigPageId
+		                    , [Order] = 12
+	                    WHERE [Guid] = '37E3D602-5D7D-4818-BCAA-C67EBB301E55'
+
+                    UPDATE [Page]
+	                    SET [ParentPageId] = @CmsConfigPageId
+		                    , [Order] = 13
+	                    WHERE [Guid] = '8ADCE4B2-8E95-4FA3-89C4-06A883E8145E'
+                    " );
+
         }
         
         /// <summary>
@@ -167,6 +182,22 @@ END" );
 	                    SET [ParentPageId] = @PeoplePageId
 		                    , [Order] = 9
 	                    WHERE [Guid] = '325B50D6-545D-461A-9CB7-72B001E82F21'" );
+
+            //
+            // Move the Content Channel admin pages under 'Admin Tools > Communications'
+            //
+            Sql( @"DECLARE @CommPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '199DC522-F4D6-4D82-AF44-3C16EE9D2CDA')
+                    UPDATE [Page]
+	                    SET [ParentPageId] = @CommPageId
+		                    , [Order] = 9
+	                    WHERE [Guid] = '37E3D602-5D7D-4818-BCAA-C67EBB301E55'
+
+                    UPDATE [Page]
+	                    SET [ParentPageId] = @CommPageId
+		                    , [Order] = 9
+	                    WHERE [Guid] = '8ADCE4B2-8E95-4FA3-89C4-06A883E8145E'
+                    " );
+
 
             //
             // remove added security
