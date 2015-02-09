@@ -43,6 +43,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
         {
             base.OnInit( e );
 
+            BindFilter();
+
             bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -80,7 +82,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             btnApprove.CausesValidation = false;
 
             btnApprove.Text = @"
-<i class='fa fa-thumbs-up' title='Approve'></i>
+<i class='fa fa-check' title='Approve'></i>
 ";
             btnApprove.Click += btnApprove_Click;
 
@@ -90,8 +92,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
             gList.Actions.AddCustomActionControl( customControls );
         }
-
-        
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -110,9 +110,51 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             }
         }
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            ddlTimeCardStatusFilter.BindToEnum<TimeCardStatus>( true );
+
+            // Set the Active Status
+            var itemActiveStatus = ddlTimeCardStatusFilter.Items.FindByValue( gfSettings.GetUserPreference( "TimeCardStatus" ) );
+            if ( itemActiveStatus != null )
+            {
+                itemActiveStatus.Selected = true;
+            }
+        }
+
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.SaveUserPreference( "TimeCardStatus", "Time Card Status", ddlTimeCardStatusFilter.SelectedValue );
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Gfs the settings_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "TimeCardStatus":
+                    var timeCardStatus = e.Value.ConvertToEnumOrNull<TimeCardStatus>();
+                    e.Value = timeCardStatus.HasValue ? timeCardStatus.Value.ConvertToString( true ) : string.Empty;
+                    break;
+            }
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -321,7 +363,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // NOTE: BindGrid() already limits TimeCards to only ones that the current person can approve, so no need to re-check
             foreach ( var timeCard in selectedTimeCardsQry.ToList() )
             {
-                if (!timeCardService.ApproveTimeCard( timeCard.Id, this.RockPage, approvedEmailTemplateGuid ))
+                if ( !timeCardService.ApproveTimeCard( timeCard.Id, this.RockPage, approvedEmailTemplateGuid ) )
                 {
                     // shouldn't happen, but just in case
                     someNotApproved = true;
@@ -378,6 +420,12 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 // unless the current user has the Global Approve role, limit cards to approvees
                 var staffPersonIds = TimeCardPayPeriodService.GetApproveesForPerson( hrContext, this.CurrentPerson );
                 qry = qry.Where( a => staffPersonIds.Contains( a.PersonAlias.PersonId ) );
+            }
+
+            var timeCardStatus = gfSettings.GetUserPreference( "TimeCardStatus" ).ConvertToEnumOrNull<TimeCardStatus>();
+            if ( timeCardStatus.HasValue )
+            {
+                qry = qry.Where( a => a.TimeCardStatus == timeCardStatus );
             }
 
             SortProperty sortProperty = gList.SortProperty;
@@ -437,6 +485,24 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lEmployeeNumber.Text = employeeId;
             Literal lDepartment = repeaterItem.FindControl( "lDepartment" ) as Literal;
             lDepartment.Text = departmentId;
+
+            Badge lTimeCardStatus = repeaterItem.FindControl( "lTimeCardStatus" ) as Badge;
+            lTimeCardStatus.Text = timeCard.TimeCardStatus.ConvertToString( true );
+            switch ( timeCard.TimeCardStatus )
+            {
+                case TimeCardStatus.Approved:
+                    lTimeCardStatus.BadgeType = "Success";
+                    break;
+                case TimeCardStatus.Submitted:
+                    lTimeCardStatus.BadgeType = "Warning";
+                    break;
+                case TimeCardStatus.Exported:
+                    lTimeCardStatus.BadgeType = "Default";
+                    break;
+                default:
+                    lTimeCardStatus.BadgeType = "Info";
+                    break;
+            }
 
             Label lRegularHours = repeaterItem.FindControl( "lRegularHours" ) as Label;
             var regularHours = timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 );

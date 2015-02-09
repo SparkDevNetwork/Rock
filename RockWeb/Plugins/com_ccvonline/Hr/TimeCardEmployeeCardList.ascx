@@ -17,6 +17,10 @@
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="gfSettings_DisplayFilterValue" OnApplyFilterClick="gfSettings_ApplyFilterClick">
+                        <Rock:RockDropDownList ID="ddlTimeCardStatusFilter" runat="server" Label="Status">
+                        </Rock:RockDropDownList>
+                    </Rock:GridFilter>
                     <Rock:NotificationBox runat="server" ID="nbApproveSuccess" NotificationBoxType="Success" Dismissable="true" Text="The selected time cards were successfully approved." Visible="false" />
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected" OnRowDataBound="gList_RowDataBound">
                         <Columns>
@@ -34,7 +38,12 @@
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
 
-                            <Rock:EnumField DataField="TimeCardStatus" HeaderText="Status" SortExpression="TimeCardStatus" />
+                            <Rock:RockTemplateField HeaderText="Status" SortExpression="TimeCardStatus">
+                                <ItemTemplate>
+                                    <Rock:Badge ID="lTimeCardStatus" runat="server" />
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
+
                             <Rock:RockTemplateField HeaderText="Hours">
                                 <ItemTemplate>
                                     <asp:Label runat="server" ID="lRegularHours" CssClass="js-hour-type badge badge-default" data-toggle="tooltip" data-placement="top" title="Regular" />

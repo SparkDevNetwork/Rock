@@ -209,11 +209,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
                 Badge lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Badge;
                 lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
-
-                Literal lOtherHours = repeaterItem.FindControl( "lOtherHours" ) as Literal;
+                
                 decimal totalOtherHours = timeCardDay.PaidVacationHours ?? 0 + timeCardDay.TotalHolidayHours ?? 0 + timeCardDay.PaidSickHours ?? 0;
-                lOtherHours.Text = FormatTimeCardHours( totalOtherHours );
-
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
                 lTotalHours.Text = FormatTimeCardHours( timeCardDay.TotalWorkedDuration + totalOtherHours );
 
@@ -495,7 +492,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             TimePicker tpTimeIn = repeaterItem.FindControl( "tpTimeIn" ) as TimePicker;
 
             var timeCardDate = timeCardDay.StartDateTime.Date;
-            timeCardDay.StartDateTime = timeCardDate + ( tpTimeIn.SelectedTime ?? TimeSpan.Zero );
+            timeCardDay.StartDateTime = timeCardDate + ( tpTimeIn.SelectedTime ?? TimeSpan.Zero ).ToNearestQtrHour();
 
             TimePicker tpLunchOut = repeaterItem.FindControl( "tpLunchOut" ) as TimePicker;
             timeCardDay.LunchStartDateTime = GetTimeCardTimeValue( repeaterItem, timeCardDay, tpLunchOut );
@@ -574,7 +571,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 var timeCardDate = timeCardDay.StartDateTime.Date;
 
                 // round to the nearest 15 minute
-                tpTimePicker.SelectedTime = TimeSpan.FromMinutes( 15 * Math.Round( tpTimePicker.SelectedTime.Value.TotalMinutes / 15 ) );
+                tpTimePicker.SelectedTime = tpTimePicker.SelectedTime.ToNearestQtrHour();
 
                 if ( tpTimePicker.SelectedTime < timeCardDay.StartDateTime.TimeOfDay )
                 {

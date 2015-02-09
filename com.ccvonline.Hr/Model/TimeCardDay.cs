@@ -280,5 +280,32 @@ namespace com.ccvonline.Hr.Model
         {
             return hours - ( hours % 0.25M );
         }
+
+        /// <summary>
+        /// Rounds a TimeSpan to the nearest QTR Hour
+        /// </summary>
+        /// <param name="timeSpan">The time span.</param>
+        /// <returns></returns>
+        public static TimeSpan ToNearestQtrHour( this TimeSpan timeSpan )
+        {
+            return TimeSpan.FromMinutes( 15 * Math.Round( timeSpan.TotalMinutes / 15 ) );
+        }
+
+        /// <summary>
+        /// Rounds a TimeSpan to the nearest QTR Hour
+        /// </summary>
+        /// <param name="timeSpan">The time span.</param>
+        /// <returns></returns>
+        public static TimeSpan? ToNearestQtrHour( this TimeSpan? timeSpan )
+        {
+            if ( timeSpan.HasValue )
+            {
+                return timeSpan.Value.ToNearestQtrHour();
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

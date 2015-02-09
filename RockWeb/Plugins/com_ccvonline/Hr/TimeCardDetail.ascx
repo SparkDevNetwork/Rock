@@ -40,12 +40,7 @@
                             <div class="col-xs-6"><strong>Overtime Hrs</strong></div>
                         </div>
                     </div>
-                    <div class="col-md-2 hidden-xs hidden-sm">
-                        <div class="row">
-                            <strong>Other Hrs</strong>
-                        </div>
-                    </div>
-                    <div class="col-xs-3 hidden-md hidden-lg"><strong>Other Hrs</strong></div>
+                    <div class="col-xs-2 col-md-1 col-lg-1"><strong>Other Hrs</strong></div>
                     <div class="col-xs-2 col-md-1 col-lg-1"><strong>Total Hrs</strong></div>
                     <div class="col-md-4 col-lg-2 hidden-xs hidden-sm"><strong>Note</strong></div>
                 </div>
@@ -90,13 +85,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2 hidden-xs hidden-sm">
+                                <div class="col-xs-3 col-md-2">
                                     <Rock:Badge runat="server" ID="lPaidVacationHours" BadgeType="Success" ToolTip="Vacation" />
                                     <Rock:Badge runat="server" ID="lPaidHolidayHours" BadgeType="Info" ToolTip="Paid Holiday" />
                                     <Rock:Badge runat="server" ID="lPaidSickHours" BadgeType="Warning" ToolTip="Sick" />
-                                </div>
-                                <div class="col-xs-3 hidden-md hidden-lg">
-                                    <asp:Literal runat="server" ID="lOtherHours" />
                                 </div>
                                 <div class="col-xs-2 col-md-1 col-lg-1">
                                     <asp:Literal runat="server" ID="lTotalHours" />
@@ -269,7 +261,7 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-action" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-approve-panel'))" OnClick="btnApprove_Click" Text="Approve" />
+                        <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-success" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-approve-panel'))" OnClick="btnApprove_Click" Text="<i class='fa fa-check'> Approve</i>" />
                     </div>
                 </asp:Panel>
 
@@ -316,7 +308,10 @@
                         var lunchEndTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpLunchIn']").val());
                         var endTime = parseTime(startTime, $(this).closest('.js-time-edit-group').find("[id$='tpTimeOut']").val());
                         var totalWorkedMS = 0;
-                        if (endTime) {
+                        if (!startTime) {
+                            totalWorkedMS = 0;
+                        }
+                        else if (endTime) {
                             var lunchMS = lunchEndTime && lunchStartTime ? (lunchEndTime - lunchStartTime) : 0;
                             totalWorkedMS = (endTime - startTime) - lunchMS;
                         }
@@ -362,7 +357,7 @@
             // make the window scroll to the specified element.  use setTimeout to have it do it after any other scrolls that happen (like validation)
             function maintainScrollPosition($element) {
                 setTimeout(function () {
-                    var scrollPosition = $element.position().top;
+                    var scrollPosition = $element.offset().top;
                     $(window).scrollTop(scrollPosition);
                 }, 0)
             }
