@@ -397,7 +397,11 @@ namespace Rock.Field
                 // If just one value, then it is likely just a value
                 if ( filterValues.Count == 1 )
                 {
-                    return "is " + FormatFilterValueValue( configurationValues, filterValues[0] );
+                    string filterValue = FormatFilterValueValue( configurationValues, filterValues[0] );
+                    if ( !string.IsNullOrWhiteSpace( filterValue ) )
+                    {
+                        return "is " + filterValue;
+                    }
                 }
 
                 // If two more values, then it is a comparison and a value
@@ -430,7 +434,13 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            return string.Format( "'{0}'", FormatValue( null, value, configurationValues, false ) );
+            string formattedValue = FormatValue( null, value, configurationValues, false );
+            if ( !string.IsNullOrWhiteSpace( formattedValue ) )
+            {
+                return string.Format( "'{0}'", formattedValue );
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
