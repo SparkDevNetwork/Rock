@@ -10,6 +10,8 @@
             </div>
             <div class="panel-body">
 
+	            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+
                 <div class="grid grid-panel">
             	    <Rock:GridFilter ID="gfWorkflows" runat="server">
                 	    <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
@@ -21,10 +23,8 @@
                             <asp:ListItem Selected="True" Text="Active" Value="Active" />
                             <asp:ListItem Selected="True" Text="Completed" Value="Completed" />
                         </Rock:RockCheckBoxList>
+                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
 	                </Rock:GridFilter>
-
-	                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-
 	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
 	                    <Columns>
 	                        <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
