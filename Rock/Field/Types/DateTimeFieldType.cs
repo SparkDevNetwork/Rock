@@ -76,6 +76,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+
             if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
                 DateTime currentDate = RockDateTime.Today;
