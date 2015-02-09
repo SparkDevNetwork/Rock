@@ -42,6 +42,19 @@ namespace Rock.Migrations
 	    [FriendlyName] = 'Add Workflow Note',
 	    [Guid] = 'F6532683-9797-4F16-8DB7-8B413EDC8AD7'
     WHERE [Name] = 'Rock.Workflow.Action.AddNote'
+
+    -- Delete an entity type that might have already been created by Rock
+    DELETE [EntityType]
+    WHERE [Name] = 'Rock.Workflow.Action.SetAttributeFromEntity'
+    AND [Guid] <> '972F19B9-598B-474B-97A4-50E56E7B59D2'
+
+    -- Rename the entity type
+    UPDATE [EntityType] SET
+	    [Name] = 'Rock.Workflow.Action.SetAttributeFromEntity',
+	    [AssemblyName] = 'Rock.Workflow.Action.SetAttributeFromEntity, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null',
+	    [FriendlyName] = 'Set Attribute From Entity',
+	    [Guid] = '972F19B9-598B-474B-97A4-50E56E7B59D2'
+    WHERE [Name] = 'Rock.Workflow.Action.SetAttributeToEntity'
 " );
         }
         
@@ -63,7 +76,22 @@ namespace Rock.Migrations
 	    [FriendlyName] = 'Add Note',
 	    [Guid] = 'F6532683-9797-4F16-8DB7-8B413EDC8AD7'
     WHERE [Name] = 'Rock.Workflow.Action.AddWorkflowNote'
+
+    -- Delete an entity type that might have already been created by Rock
+    DELETE [EntityType]
+    WHERE [Name] = 'Rock.Workflow.Action.SetAttributeToEntity'
+    AND [Guid] <> '972F19B9-598B-474B-97A4-50E56E7B59D2'
+
+    -- Rename the entity type
+    UPDATE [EntityType] SET
+	    [Name] = 'Rock.Workflow.Action.SetAttributeToEntity',
+	    [AssemblyName] = 'Rock.Workflow.Action.SetAttributeToEntity, Rock, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null',
+	    [FriendlyName] = 'Set Attribute To Entity',
+	    [Guid] = '972F19B9-598B-474B-97A4-50E56E7B59D2'
+    WHERE [Name] = 'Rock.Workflow.Action.SetAttributeFromEntity'
 " );
+
+
         }
     }
 }
