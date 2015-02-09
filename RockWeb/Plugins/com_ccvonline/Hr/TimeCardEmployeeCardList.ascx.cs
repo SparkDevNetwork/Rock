@@ -26,6 +26,8 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
     [LinkedPage( "Detail Page", order: 0 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Employee Number Attribute", "Select the Person Attribute that is used for the person's employee number.", order: 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Payroll Department Attribute", "Select the Person Attribute that is used for the person's payroll department to be included in the export.", order: 2 )]
+
+    [SystemEmailField( "Approved Email", "The email to send when a time card is approved as part of the bulk-approve. If not specified, an email will not be sent.", false )]
     public partial class TimeCardEmployeeCardList : Rock.Web.UI.RockBlock
     {
         private AttributeCache employeeNumberAttribute = null;
@@ -71,8 +73,25 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
             ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
 
-            gList.Actions.AddCustomActionControl( btnExport );
+            var btnApprove = new LinkButton();
+            btnApprove.ID = "btnApprove";
+            btnApprove.CssClass = "btn btn-default btn-sm";
+            btnApprove.ToolTip = "Approve";
+            btnApprove.CausesValidation = false;
+
+            btnApprove.Text = @"
+<i class='fa fa-thumbs-up' title='Approve'></i>
+";
+            btnApprove.Click += btnApprove_Click;
+
+            Panel customControls = new Panel();
+            customControls.Controls.Add( btnExport );
+            customControls.Controls.Add( btnApprove );
+
+            gList.Actions.AddCustomActionControl( customControls );
         }
+
+        
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -170,10 +189,6 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 return;
             }
 
-            StringBuilder sb = new StringBuilder();
-            // TODO: What about Worked Holiday Hours??
-            sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
-
             var hrContext = new HrContext();
             var timeCardService = new TimeCardService( hrContext );
             var selectedTimeCardsQry = timeCardService.Queryable().Where( a => selectedTimeCardIds.Contains( a.Id ) );
@@ -193,6 +208,9 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 mdGridWarning.Show( "Time cards must be approved before they are exported.", ModalAlertType.Warning );
                 return;
             }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "Employee Name,Employee_Number,Department,RegHr,OvtHr,VacHr,Holiday,SickHr" );
 
             foreach ( var timeCard in selectedTimeCardsQry.ToList() )
             {
@@ -259,6 +277,67 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             this.Page.Response.Write( sb.ToString() );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnApprove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApprove_Click( object sender, EventArgs e )
+        {
+            var selectedTimeCardIds = gList.SelectedKeys.Select( a => a.ToString().AsInteger() ).ToList();
+            if ( !selectedTimeCardIds.Any() )
+            {
+                mdGridWarning.Show( "Please select at least one time card to approve", ModalAlertType.Warning );
+                return;
+            }
+
+            var hrContext = new HrContext();
+            var timeCardService = new TimeCardService( hrContext );
+            var selectedTimeCardsQry = timeCardService.Queryable().Where( a => selectedTimeCardIds.Contains( a.Id ) );
+            if ( gList.SortProperty != null )
+            {
+                selectedTimeCardsQry = selectedTimeCardsQry.Sort( gList.SortProperty );
+            }
+            else
+            {
+                selectedTimeCardsQry = selectedTimeCardsQry.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
+            }
+
+            // prevent them from approve if any of the selected cards are not 'submitted'
+            TimeCardStatus[] okToApproveStatuses = new TimeCardStatus[] { TimeCardStatus.Submitted };
+            if ( selectedTimeCardsQry.Any( a => !okToApproveStatuses.Contains( a.TimeCardStatus ) ) )
+            {
+                mdGridWarning.Show( "Time cards must be submitted before they are approved.", ModalAlertType.Warning );
+                return;
+            }
+
+            // Send an email (if specified) after timecard is marked approved
+            Guid? approvedEmailTemplateGuid = GetAttributeValue( "ApprovedEmail" ).AsGuidOrNull();
+
+            bool someNotApproved = false;
+
+            // NOTE: BindGrid() already limits TimeCards to only ones that the current person can approve, so no need to re-check
+            foreach ( var timeCard in selectedTimeCardsQry.ToList() )
+            {
+                if (!timeCardService.ApproveTimeCard( timeCard.Id, this.RockPage, approvedEmailTemplateGuid ))
+                {
+                    // shouldn't happen, but just in case
+                    someNotApproved = true;
+                }
+            }
+
+            if ( someNotApproved )
+            {
+                mdGridWarning.Show( "Oops, some time cards were not able to be approved. Try again.", ModalAlertType.Alert );
+            }
+            else
+            {
+                nbApproveSuccess.Visible = true;
+            }
+
+            BindGrid();
         }
 
         #endregion
@@ -350,7 +429,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
                 if ( payrollDepartmentAttribute != null )
                 {
                     var departmentIdValue = timeCard.PersonAlias.Person.GetAttributeValue( payrollDepartmentAttribute.Key );
-                    departmentId = employeeNumberAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
+                    departmentId = payrollDepartmentAttribute.FieldType.Field.FormatValue( null, departmentIdValue, payrollDepartmentAttribute.QualifierValues, false );
                 }
             }
 
@@ -368,17 +447,12 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             lOvertimeHours.Text = overtimeHours.ToString( "0.##" );
             lOvertimeHours.Visible = lOvertimeHours.Text.AsDecimal() != 0;
 
-            Label lWorkedHolidayHours = repeaterItem.FindControl( "lWorkedHolidayHours" ) as Label;
-            var workedHolidayHours = timeCard.GetWorkedHolidayHours().Sum( a => a.Hours ?? 0 );
-            lWorkedHolidayHours.Text = workedHolidayHours.ToString( "0.##" );
-            lWorkedHolidayHours.Visible = lWorkedHolidayHours.Text.AsDecimal() != 0;
-
             Label lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Label;
             lPaidVacationHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lPaidVacationHours.Visible = lPaidVacationHours.Text.AsDecimal() != 0;
 
             Label lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Label;
-            lPaidHolidayHours.Text = timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
+            lPaidHolidayHours.Text = timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ).ToString( "0.##" );
             lPaidHolidayHours.Visible = lPaidHolidayHours.Text.AsDecimal() != 0;
 
             Label lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Label;

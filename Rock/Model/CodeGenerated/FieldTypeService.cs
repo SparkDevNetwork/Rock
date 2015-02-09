@@ -63,10 +63,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring EntityType,MultiValueFieldTypeId 
-            
-            // ignoring EntityType,SingleValueFieldTypeId 
+ 
+            if ( new Service<EntityType>( Context ).Queryable().Any( a => a.MultiValueFieldTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, EntityType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EntityType>( Context ).Queryable().Any( a => a.SingleValueFieldTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, EntityType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -103,16 +111,16 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this FieldType target, FieldType source )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
+            target.Id = source.Id;
             target.Assembly = source.Assembly;
             target.Class = source.Class;
+            target.Description = source.Description;
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

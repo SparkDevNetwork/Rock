@@ -808,6 +808,8 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             ContextHelper.AddConfigurations( modelBuilder );
+
+            modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
         }
 
     }

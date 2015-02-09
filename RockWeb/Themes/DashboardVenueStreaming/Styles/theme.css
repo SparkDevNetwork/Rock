@@ -5419,22 +5419,8 @@ fieldset[disabled] .btn-primary.active {
 .fullscreen-toggle i:before {
   content: "\f065";
 }
-header {
-  background-image: linear-gradient(#3c3c3c, #111111);
-  color: #bbbbbb;
-  min-height: 36px;
-}
 main {
   background-color: #1A1A1A;
-}
-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background-image: linear-gradient(#3c3c3c, #111111);
-  color: #3a3a3a;
-  min-height: 50px;
-  padding-top: 24px;
 }
 @media (min-width: 992px) {
   .container {

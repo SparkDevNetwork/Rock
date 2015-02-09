@@ -63,9 +63,10 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
             gBatchList.DataKeyNames = new string[] { "Id" };
-            gBatchList.Actions.ShowAdd = true;
+            gBatchList.Actions.ShowAdd = UserCanEdit;
             gBatchList.Actions.AddClick += gBatchList_Add;
             gBatchList.GridRebind += gBatchList_GridRebind;
+            gBatchList.IsDeleteEnabled = UserCanEdit;
 
             ddlAction = new RockDropDownList();
             ddlAction.ID = "ddlAction";
@@ -209,15 +210,18 @@ namespace RockWeb.Blocks.Finance
             var batch = batchService.Get( e.RowKeyId );
             if ( batch != null )
             {
-                string errorMessage;
-                if ( !batchService.CanDelete( batch, out errorMessage ) )
+                if ( UserCanEdit || batch.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson, rockContext ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
+                    string errorMessage;
+                    if ( !batchService.CanDelete( batch, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
-                batchService.Delete( batch );
-                rockContext.SaveChanges();
+                    batchService.Delete( batch );
+                    rockContext.SaveChanges();
+                }
             }
 
             BindGrid();

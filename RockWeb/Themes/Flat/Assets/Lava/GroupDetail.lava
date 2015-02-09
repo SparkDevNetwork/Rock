@@ -1,52 +1,112 @@
+
+{% for groupLocation in Group.GroupLocations %}
+{% if groupLocation.Location.GeoPoint != '' %}
+
+<div class="packagesummary-image"
+     style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2') no-repeat center;
+                width: 100%;
+                height: 200px;">
+</div>
+
+{% endif %}
+{% endfor %}
+
+
+
 <h1>{{ Group.Name }}</h1>
 
 {{ Group.Description }}
 
 <div class="row">
-	<div class="col-md-6">
-		<h4>Group Details:</h4>
-		{% for attribute in Group.AttributeValues %}
-			<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
-		{% endfor %}
+  <div class="col-md-6">
+    <h4>Group Details:</h4>
+    {% for attribute in Group.AttributeValues %}
+    <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+    {% endfor %}
+  </div>
 
-		<h4>Leaders:</h4>
-		<ul>
-		{% for member in Group.Members %}
-	
-			{% if member.GroupRole.IsLeader %}
-				<li>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small></li>
-			{% endif %}
-		{% endfor %}
-		</ul>
+  <div class="col-md-6">
+    <h4>Leaders:</h4>
+    <ul>
+      {% for member in Group.Members %}
 
-	</div>
-
-	<div class="col-md-6">
-		{% for groupLocation in Group.GroupLocations %}
-			{% if groupLocation.Location.GeoPoint != '' %}
-				<img src="https://maps.googleapis.com/maps/api/staticmap?size=400x200&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}" />"
-			{% endif %}
-		{% endfor %}
-	</div>
+      {% if member.GroupRole.IsLeader %}
+      <li>
+        {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
 </div>
-<p>
-	
-</p>
+
+{% if AllowedActions.Edit == true %}
+<div class="actions margin-t-md">
+  <a class="btn btn-primary" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
+</div>
+{% endif %}
 
 
-<p>
-	<h4>Roster:</h4>
-	<ul class="list-unstyled clearfix">
-	{% for member in Group.Members %}
+<h4 class="margin-t-lg">Roster:</h4>
 
-		<li class="margin-b-md margin-r-md clearfix pull-left">
-			<img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" /> 
-			<div class="pull-left">
-				<strong>{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small> <br />
-				<a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-			</div>
-		</li>
-		
-	{% endfor %}
-	</ul>
+{% for member in Group.Members %}
+
+{% assign loopcycle = forloop.index0 | Modulo:2 %}
+
+{% if loopcycle == 0 or forloop.first %}
+<div class="row">
+  {% endif %}
+
+  <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+    {% if LinkedPages.PersonDetailPage != '' %}
+    <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+      {% endif %}
+      <img src="{{ member.Person.PhotoUrl }}" height="40" class="pull-left margin-r-sm" />
+      <div class="pull-left">
+        <strong>{{ member.Person.FullName }}</strong>
+        <small>({{ member.GroupRole.Name}})</small>
+
+        {% for phone in member.Person.PhoneNumbers %}
+        <br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+        {% endfor %}
+
+        {% assign memberAddress =  member.Person | Address:'Home' %}
+        {% if memberAddress != '' %}
+        <br />{{ member.Person | Address:'Home' }}
+        {% endif %}
+
+        <br />
+        <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+      </div>
+
+      {% if AllowedActions.Edit == true %}
+      <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+        <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+          <i class="fa fa-times"></i>
+        </a>
+        <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+          <i class="fa fa-pencil"></i>
+        </a>
+      </div>
+      {% endif %}
+
+      {% if LinkedPages.PersonDetailPage != '' %}
+    </a>
+    {% endif %}
+  </div>
+
+  {% if loopcycle != 0 or forloop.last %}
+</div>
+{% endif %}
+
+{% endfor %}
+
+
+{% if AllowedActions.Edit == true %}
+<div class="pull-right margin-b-md">
+  <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
+    <i class="fa fa-plus"></i> Group Member
+  </a>
+</div>
+{% endif %}
 </p>

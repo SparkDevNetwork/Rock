@@ -23,11 +23,11 @@ namespace com.ccvonline.Hr.Model
             TimeCardPayPeriod currentPayPeriod = GetCurrentPayPeriod();
             if ( currentPayPeriod == null )
             {
-                // assume 14 PayPeriods starting on first Saturday of Year
+                // assume 14-day PayPeriods starting on firstPayPeriodStartDate
                 DateTime currentDate = RockDateTime.Today;
 
                 var payPeriodEnd = firstPayPeriodStartDate.AddDays( 14 );
-                while ( payPeriodEnd < currentDate )
+                while ( payPeriodEnd <= currentDate )
                 {
                     payPeriodEnd = payPeriodEnd.AddDays( 14 );
                 }
@@ -49,7 +49,7 @@ namespace com.ccvonline.Hr.Model
         public TimeCardPayPeriod GetCurrentPayPeriod()
         {
             var currentDate = RockDateTime.Today;
-            return this.Queryable().Where( a => currentDate >= a.StartDate && currentDate <= a.EndDate ).FirstOrDefault();
+            return this.Queryable().Where( a => currentDate >= a.StartDate && currentDate < a.EndDate ).FirstOrDefault();
         }
 
         /// <summary>
@@ -113,14 +113,7 @@ namespace com.ccvonline.Hr.Model
             foreach ( var deptGroup in qryPersonDeptGroup.ToList() )
             {
                 departmentGroupIds.Add( deptGroup.Id );
-
-                // TODO: Use GroupService.GetAncestorIds to do this after next merge from core
-                var parentGroup = deptGroup.ParentGroup;
-                while ( parentGroup != null )
-                {
-                    departmentGroupIds.Add( parentGroup.Id );
-                    parentGroup = parentGroup.ParentGroup;
-                }
+                departmentGroupIds.AddRange( groupService.GetAllAncestorIds( deptGroup.Id ) );
             }
 
             List<Person> approvers = new List<Person>();

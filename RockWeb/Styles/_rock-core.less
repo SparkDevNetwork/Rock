@@ -17,6 +17,10 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
+// import the following files as less files so they are concatenated properly
+@import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
+@import (less) "./bootstrap-modal/bootstrap-modal.css";
+
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_components.less";
@@ -40,15 +44,12 @@
 
 @import "_scroll.less";
 @import "_global-variables.less";
-@import "_plugin-extensions.less";
+@import "_helpers.less";
 
 @import "_ck-editor.less";
 
 @import "./Bootstrap/mixins.less";
 
-// import the following files as less files so they are concatenated properly
-@import (less) "./bootstrap-modal/bootstrap-modal-bs3patch.css";
-@import (less) "./bootstrap-modal/bootstrap-modal.css";
 
 
 

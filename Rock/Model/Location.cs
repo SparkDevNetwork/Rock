@@ -387,6 +387,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted address.
         /// </value>
+        [LavaInclude]
         public virtual string FormattedAddress
         {
             get { return GetFullStreetAddress(); }
@@ -398,6 +399,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted HTML address.
         /// </value>
+        [LavaInclude]
         public virtual string FormattedHtmlAddress
         {
             get { return FormattedAddress.ConvertCrLfToHtmlBr(); }

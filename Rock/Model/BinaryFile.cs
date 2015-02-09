@@ -200,7 +200,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
-        public Storage.ProviderComponent StorageProvider { get; private set; }
+        public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
         /// Gets the URL.
@@ -277,14 +277,19 @@ namespace Rock.Model
         {
             get
             {
-                try 
-                { 
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>( StorageEntitySettings );
-                }
-                catch
+                if ( !string.IsNullOrWhiteSpace( StorageEntitySettings ) )
                 {
-                    return new Dictionary<string, string>();
+                    try
+                    {
+                        return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>( StorageEntitySettings );
+                    }
+                    catch
+                    {
+                        // intentionally ignore error and just let it return an empty dictionary
+                    }
                 }
+
+                return new Dictionary<string, string>();
             }
         }
 

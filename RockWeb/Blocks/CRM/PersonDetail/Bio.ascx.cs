@@ -171,14 +171,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.GraduationDate.HasValue )
                     {
-                        lGraduation.Text = string.Format( "{0} {1}",
+                        lGraduation.Text = string.Format( "<small>({0} {1})</small>",
                             Person.GraduationDate.Value.CompareTo( RockDateTime.Today ) <= 0 ? "Graduated " : "Graduates ",
                             Person.GraduationDate.Value.Year );
 
                         string grade = Person.GradeFormatted;
                         if ( grade != string.Empty )
                         {
-                            lGrade.Text = string.Format( "<small>({0})</small>", grade );
+                            lGrade.Text = string.Format( "{0}", grade );
                         }
                     }
 

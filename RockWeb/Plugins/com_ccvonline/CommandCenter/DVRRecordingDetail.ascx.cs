@@ -59,8 +59,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             // selected.
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.11.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
             RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
         }
@@ -83,7 +83,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 string clipStart = PageParameter( "ClipStart" );
                 string clipDuration = PageParameter( "ClipDuration" );
 
-                hfBaseUrl.Value = Request.Url.OriginalString.Split('?')[0];
+                // Using an uri to remove the port number from the url
+                var url = new Uri( Request.Url.OriginalString.Split('?')[0] );
+                hfBaseUrl.Value = url.GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
 
                 RecordingService service = new RecordingService( new CommandCenterContext() );
                 var rockContext = new RockContext();
@@ -129,7 +131,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 {
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => ( g.WeekendDate == weekendDateTime ) &&
                                                 ( g.Campus.Guid == campusGuid ) &&
-                                                ( g.Venue == venue ) );
+                                                ( g.Venue == venue ) );                   
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = true;
@@ -190,55 +192,20 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         /// </summary>
         private void SendMessage()
         {
-            var recipients = new List<string>();
+            var recipients = new List<RecipientData>();
             var orgFrom = GlobalAttributesCache.Read().GetValue( "OrganizationEmail" );
 
-            string to = tbEmailTo.Text;
-            if( !string.IsNullOrWhiteSpace( to ) )
+            Guid? commandCenterEmailTemplateGuid = new Guid( "1F88430F-D1B6-4819-BFC1-57E13B4B2098" );
+                
+            if ( commandCenterEmailTemplateGuid.HasValue )
             {
-                recipients.Add( to );
-            }
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                mergeObjects.Add( "Person", this.CurrentPerson );
+                mergeObjects.Add( "RecordingUrl", tbLink.Text );
+                mergeObjects.Add( "RecordingMessage", tbEmailMessage.Text );
 
-            if ( recipients.Any() )
-            {
-                var mediumData = new Dictionary<string, string>();
-
-                if ( !string.IsNullOrWhiteSpace( tbEmailFrom.Text ) )
-                {
-                    mediumData.Add( "From", tbEmailFrom.Text );                   
-                }
-                else
-                {
-                    mediumData.Add( "From", orgFrom );
-                }
-
-                mediumData.Add( "Subject", "Command Center Recording" );
-
-                string videoLink = "<a href='" + tbLink.Text + "'>Video Clip</a>";
-
-                if ( !string.IsNullOrWhiteSpace( tbEmailMessage.Text ) )
-                {
-                    mediumData.Add( "Body", "<html><body><p>" + tbEmailMessage.Text + "</p><p>"+ videoLink + "</p></body></html>" );
-                }
-                else
-                {
-                    mediumData.Add( "Body", "<html><body><p>" + videoLink + "</p></body></html>" );
-                }
-
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );               
-                if ( mediumEntity != null )
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
-                            transport.Send( mediumData, recipients, appRoot, string.Empty );
-                        }
-                    }
-                }
+                recipients.Add( new RecipientData( tbEmailTo.Text, mergeObjects ) );
+                Email.Send( commandCenterEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
         }
 

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
-using com.voracitySolutions.TextToWorkflow;
+using com.voracitysolutions.TextToWorkflow;
 
 public class TextToWorkflowTwilio : IHttpHandler
 {    

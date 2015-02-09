@@ -20,11 +20,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
-using Rock;
-using Rock.Constants;
 using Rock.Data;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,39 +33,11 @@ namespace Rock.Field.Types
     /// </summary>
     public class AttributeFieldType : FieldType
     {
+
+        #region Configuration
+
         private const string ENTITY_TYPE_KEY = "entitytype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
-
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var names = new List<string>();
-                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
-                {
-                    var attribute = AttributeCache.Read( guid );
-                    if ( attribute != null )
-                    {
-                        names.Add( attribute.Name );
-                    }
-                }
-
-                formattedValue = names.AsDelimited( ", " );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
-        }
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -143,7 +113,7 @@ namespace Rock.Field.Types
 
                 if ( controls[1] != null && controls[1] is CheckBox )
                 {
-                    configurationValues[ ALLOW_MULTIPLE_KEY ].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                    configurationValues[ALLOW_MULTIPLE_KEY].Value = ( (CheckBox)controls[1] ).Checked.ToString();
                 }
             }
 
@@ -166,7 +136,7 @@ namespace Rock.Field.Types
                     if ( entityTypeGuid.HasValue )
                     {
                         var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
-                        if ( entityType != null)
+                        if ( entityType != null )
                         {
                             value = entityType.Id.ToString();
                         }
@@ -181,6 +151,45 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var names = new List<string>();
+                foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
+                {
+                    var attribute = AttributeCache.Read( guid );
+                    if ( attribute != null )
+                    {
+                        names.Add( attribute.Name );
+                    }
+                }
+
+                formattedValue = names.AsDelimited( ", " );
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+
+        }
+
+        #endregion
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -193,14 +202,14 @@ namespace Rock.Field.Types
         {
             ListControl editControl;
 
-            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
+            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                editControl = new RockCheckBoxList { ID = id }; 
+                editControl = new RockCheckBoxList { ID = id };
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new RockDropDownList { ID = id }; 
+                editControl = new RockDropDownList { ID = id };
                 editControl.Items.Add( new ListItem() );
             }
 
@@ -216,7 +225,7 @@ namespace Rock.Field.Types
                         var attributes = attributeService.GetByEntityTypeId( entityType.Id );
                         if ( attributes.Any() )
                         {
-                            foreach ( var attribute in attributes )
+                            foreach ( var attribute in attributes.OrderBy( a => a.Name ) )
                             {
                                 editControl.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
                             }
@@ -310,5 +319,45 @@ namespace Rock.Field.Types
                 }
             }
         }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonHelper.ContainsFilterComparisonTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            var overrideConfigValues = new Dictionary<string, ConfigurationValue>();
+            foreach ( var keyVal in configurationValues )
+            {
+                overrideConfigValues.Add( keyVal.Key, keyVal.Value );
+            }
+            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "false" ) );
+            
+            return  base.FilterValueControl( overrideConfigValues, id, required );
+        }
+
+        #endregion
+
     }
 }

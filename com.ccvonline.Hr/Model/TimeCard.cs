@@ -158,57 +158,16 @@ namespace com.ccvonline.Hr.Model
         /// <summary>
         /// Totals the worked hours per week.
         /// </summary>
-        /// <param name="includeRegularDates">if set to <c>true</c> [include regular dates].</param>
-        /// <param name="includeHolidayDates">if set to <c>true</c> [include holiday dates].</param>
         /// <returns></returns>
-        public List<HoursPerTimeCardDay> GetTotalWorkedHoursPerDay( bool includeRegularDates, bool includeHolidayDates )
+        public List<HoursPerTimeCardDay> GetTotalWorkedHoursPerDay()
         {
-            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
-            List<DateTime> holidayDates = new List<DateTime>();
-            if ( timeCardHolidaySchedule != null )
-            {
-                DDay.iCal.Event calEvent = timeCardHolidaySchedule.GetCalenderEvent();
-                if ( calEvent != null )
-                {
-                    holidayDates = calEvent.GetOccurrences( this.TimeCardPayPeriod.StartDate, this.TimeCardPayPeriod.EndDate ).Select( a => a.Period.StartTime.Date ).ToList();
-                }
-            }
-
             var timeCardDaysQry = TimeCardDays.AsQueryable();
-
-            // note: coded as "else ifs vs if,if" to make it more readable
-            if ( includeRegularDates && !includeHolidayDates )
-            {
-                timeCardDaysQry = timeCardDaysQry.Where( a => !holidayDates.Contains( a.StartDateTime.Date ) );
-            }
-            else if ( !includeRegularDates && includeHolidayDates )
-            {
-                timeCardDaysQry = timeCardDaysQry.Where( a => holidayDates.Contains( a.StartDateTime.Date ) );
-            }
-            else if ( !includeRegularDates && !includeHolidayDates )
-            {
-                timeCardDaysQry = timeCardDaysQry.Where( a => 1 == 0 );
-            }
-            else
-            {
-                // include all worked hours if includeRegularDates and includeHolidayDates
-            }
 
             return timeCardDaysQry.Select( x => new HoursPerTimeCardDay
             {
                 TimeCardDay = x,
                 Hours = x.TotalWorkedDuration
             } ).ToList();
-        }
-
-        /// <summary>
-        /// Gets the worked holiday hours.
-        /// </summary>
-        /// <returns></returns>
-        public List<HoursPerTimeCardDay> GetWorkedHolidayHours()
-        {
-            // Number of hours/week where the person worked on a holiday 
-            return GetTotalWorkedHoursPerDay( false, true );
         }
 
         /// <summary>
@@ -219,7 +178,7 @@ namespace com.ccvonline.Hr.Model
         {
             /// Number of hours/week where the person worked, up to 40 hours, then subtract HolidayWorkedHours()
             /// The idea is that if a person is getting paid extra for HolidayWorkedHours, those won't count towards regular time
-            var totalWorkedHoursPerWeekMax40 = this.GetTotalWorkedHoursPerDay( true, true ).Select( a => new HoursPerTimeCardDay
+            var totalWorkedHoursPerWeekMax40 = this.GetTotalWorkedHoursPerDay().Select( a => new HoursPerTimeCardDay
             {
                 TimeCardDay = a.TimeCardDay,
                 Hours = a.Hours
@@ -256,18 +215,7 @@ namespace com.ccvonline.Hr.Model
                 totalRegularByWeek[weekOfYear] = totalRegular;
             }
 
-            var totalWorkedHolidayHours = GetWorkedHolidayHours();
-
             var regularHours = totalWorkedHoursPerWeekMax40.ToList();
-            foreach ( var week in regularHours )
-            {
-                var holidayHours = totalWorkedHolidayHours.FirstOrDefault( a => a.TimeCardDay.Id == week.TimeCardDay.Id );
-                if ( holidayHours != null )
-                {
-                    week.Hours = week.Hours - holidayHours.Hours;
-                }
-            }
-
             return regularHours;
         }
 
@@ -277,10 +225,8 @@ namespace com.ccvonline.Hr.Model
         /// <returns></returns>
         public List<HoursPerTimeCardDay> GetOvertimeHours()
         {
-            // Overtime hours is TotalWorkedHoursPerWeek(true, true) – RegularHours() – HolidayWorkedHours() 
-            var totalWorkedHoursPerDay = this.GetTotalWorkedHoursPerDay( true, true );
+            var totalWorkedHoursPerDay = this.GetTotalWorkedHoursPerDay();
             var regularHoursPerDay = this.GetRegularHours();
-            var workedHolidayHoursPerDay = this.GetWorkedHolidayHours();
 
             var overtimeHours = totalWorkedHoursPerDay;
             foreach ( var day in overtimeHours )
@@ -289,12 +235,6 @@ namespace com.ccvonline.Hr.Model
                 if ( regularHours != null )
                 {
                     day.Hours = day.Hours - regularHours.Hours;
-                }
-
-                var holidayWorkedHours = workedHolidayHoursPerDay.FirstOrDefault( a => a.TimeCardDay.Id == day.TimeCardDay.Id );
-                if ( holidayWorkedHours != null )
-                {
-                    day.Hours = day.Hours - holidayWorkedHours.Hours;
                 }
             }
 
@@ -341,7 +281,7 @@ namespace com.ccvonline.Hr.Model
             return this.GroupByWeekNum().Select( x => new HoursPerWeek
             {
                 WeekOfYear = x.Key,
-                Hours = x.Value.Sum( xx => xx.PaidHolidayHours )
+                Hours = x.Value.Sum( xx => xx.TotalHolidayHours)
             } ).ToList();
         }
 

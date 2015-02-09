@@ -93,10 +93,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring DataView,EntityTypeId 
-            
-            // ignoring DataView,TransformEntityTypeId 
+ 
+            if ( new Service<DataView>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<DataView>( Context ).Queryable().Any( a => a.TransformEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
@@ -139,10 +147,18 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring History,EntityTypeId 
-            
-            // ignoring History,RelatedEntityTypeId 
+ 
+            if ( new Service<History>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<History>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
@@ -221,15 +237,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this EntityType target, EntityType source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
             target.FriendlyName = source.FriendlyName;
+            target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsSecured = source.IsSecured;
-            target.IsCommon = source.IsCommon;
-            target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
-            target.Id = source.Id;
+            target.Name = source.Name;
+            target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -84,8 +84,10 @@
             _showBlockConfig = function () {
                 $('.zone-configuration').hide();
                 $('.zone-instance').removeClass('outline');
+                $('body').removeClass('zone-highlight');
                 $('.block-configuration').toggle();
                 $('.block-instance').toggleClass('outline');
+                $('body').toggleClass('block-highlight');
 
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
@@ -152,7 +154,9 @@
             _showPageZones = function () {
                 $('.block-configuration').hide();
                 $('.block-instance').removeClass('outline');
+                $('body').removeClass('block-highlight');
                 $('.zone-instance').toggleClass('outline');
+                $('body').toggleClass('zone-highlight');
                 $('.zone-configuration').toggle();
 
                 // Bind the zone configure icon so that edit icons are displayed on hover

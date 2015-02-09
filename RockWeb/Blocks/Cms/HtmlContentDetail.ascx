@@ -53,10 +53,10 @@
 
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" Height="440">
+                            <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" >
 
                                 <div class="grid">
-                                    <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Light" ShowActionRow="false">
+                                    <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Full" ShowActionRow="false" AllowPaging="true" PageSize="10">
                                         <Columns>
                                             <Rock:RockBoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
                                             <Rock:RockBoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />

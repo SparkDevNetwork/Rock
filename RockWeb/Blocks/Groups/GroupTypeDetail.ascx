@@ -113,11 +113,13 @@
 
                     <Rock:PanelWidget ID="wpRoles" runat="server" Title="Roles">
                         <div class="grid">
-                            <Rock:Grid ID="gGroupTypeRoles" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Role">
+                            <Rock:Grid ID="gGroupTypeRoles" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Role" TooltipField="Description">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsLeader" HeaderText="Is Leader" />
+                                    <Rock:BoolField DataField="CanView" HeaderText="Can View" />
+                                    <Rock:BoolField DataField="CanEdit" HeaderText="Can Edit" />
                                     <Rock:RockBoundField DataField="MinCount" HeaderText="Minimum Required" DataFormatString="{0:N0}" />
                                     <Rock:RockBoundField DataField="MaxCount" HeaderText="Maximum Allowed" DataFormatString="{0:N0}" />
                                     <Rock:RockTemplateField HeaderText="Default">
@@ -242,8 +244,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -276,12 +278,15 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" />
-                        <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" />
-                        <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
-                            ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
+                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Text="Yes" Help="Are people with this role in group considered a 'Leader' of the group?" />
+                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                      </div>
                     <div class="col-md-6">
+                        <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
+                        <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" Help="The maximum number of people with this role that group shold allow." />
+                        <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate" 
+                            ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
                         <asp:PlaceHolder ID="phGroupTypeRoleAttributes" runat="server" />
                     </div>
                 </div>

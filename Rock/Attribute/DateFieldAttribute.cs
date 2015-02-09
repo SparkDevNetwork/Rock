@@ -20,13 +20,13 @@ using Rock.Field.Types;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field attribute for selecting a DateTime.
+    /// Field attribute for selecting a Date.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DateFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DateFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="DateFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -35,10 +35,13 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        /// <param name="allowCurrentOption">if set to <c>true</c> [allow current option].</param>
         public DateFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "",
-            int order = 0, string key = null)
+            int order = 0, string key = null, bool allowCurrentOption = false )
             : base( name, description, required, defaultValue, category, order, key, typeof( DateFieldType ).FullName )
         {
+            var displayCurrentConfigValue = new Field.ConfigurationValue( allowCurrentOption.ToString() );
+            FieldConfigurationValues.Add( "displayCurrentOption", displayCurrentConfigValue );
         }
     }
 }

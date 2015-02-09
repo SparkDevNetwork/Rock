@@ -766,7 +766,7 @@ $(document).ready(function() {
                                 if ( entityField != null )
                                 {
                                     string value = Request.QueryString[key];
-                                    switch ( entityField.FilterFieldType.ToUpper() )
+                                    switch ( entityField.FieldType.Guid.ToString().ToUpper() )
                                     {
                                         case Rock.SystemGuid.FieldType.DAY_OF_WEEK:
                                         case Rock.SystemGuid.FieldType.SINGLE_SELECT:
@@ -964,17 +964,17 @@ $(document).ready(function() {
                         }
 
                         // Re-sort fields
-                        int index = 1;
-                        var sortedEntityFields = new List<Rock.Reporting.EntityField>();
+                        int index = 0;
+                        var sortedFields = new List<Rock.Reporting.EntityField>();
                         foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
                         {
                             entityProperty.Index = index;
-                            index += entityProperty.ControlCount;
-                            sortedEntityFields.Add( entityProperty );
+                            index++;
+                            sortedFields.Add( entityProperty );
                         }
 
                         // Save new fields to cache ( which report field will use instead of reading them again )
-                        HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedEntityFields;
+                        HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedFields;
                     }
 
                     return entityFields;

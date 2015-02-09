@@ -87,15 +87,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PersonBadge target, PersonBadge source )
         {
-            target.Name = source.Name;
+            target.Id = source.Id;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
+            target.Name = source.Name;
             target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

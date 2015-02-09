@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <summary>
         /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
         /// </summary>
-        private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
+        private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK", "F4G", "D4M" };
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that used a specified code on a specified date.
@@ -70,7 +70,7 @@ namespace Rock.Model
             {
                 // Find a good unique code for today
                 while ( code == string.Empty ||
-                    noGood.Any( s => s == code ) ||
+                    noGood.Any( s => code.Contains(s) ) ||
                     service.Get( RockDateTime.Today, code ).Any() )
                 {
                     code = GenerateRandomCode( codeLength );

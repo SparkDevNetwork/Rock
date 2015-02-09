@@ -15,6 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -25,6 +29,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class IntegerFieldType : FieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
@@ -36,6 +43,23 @@ namespace Rock.Field.Types
             }
         }
 
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new NumberBox { ID = id };
+        }
+
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
@@ -45,7 +69,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool IsValid( string value, bool required, out string message )
         {
-            if ( !string.IsNullOrWhiteSpace(value) )
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 int result;
                 if ( !Int32.TryParse( value, out result ) )
@@ -58,29 +82,42 @@ namespace Rock.Field.Types
             return base.IsValid( value, required, out message );
         }
 
+        #endregion
+
+        #region Filter Control
+
         /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
+        /// Gets the type of the filter comparison.
         /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
         {
-            return new NumberBox { ID = id }; 
+            get { return ComparisonHelper.NumericFilterComparisonTypes; }
         }
 
         /// <summary>
-        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// Geta a filter expression for an attribute value.
         /// </summary>
-        /// <param name="attribute"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
         /// <returns></returns>
-        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
-            var filterConfig = base.GetFilterConfig( attribute );
-            filterConfig.FilterFieldType = SystemGuid.FieldType.INTEGER;
-            return filterConfig;
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
+                ConstantExpression constantExpression = Expression.Constant( filterValues[0].AsDecimal(), typeof( decimal ) );
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+            }
+
+            return null;
         }
+
+        #endregion
+
     }
 }

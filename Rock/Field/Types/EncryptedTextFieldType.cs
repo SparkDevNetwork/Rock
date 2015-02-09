@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock.Security;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -30,6 +28,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class EncryptedTextFieldType : TextFieldType
     {
+
+        #region Formatting
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -42,6 +43,10 @@ namespace Rock.Field.Types
         {
             return base.FormatValue( parentControl, Encryption.DecryptString( value ), configurationValues, condensed );
         }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Reads new values entered by the user for the field
@@ -64,5 +69,16 @@ namespace Rock.Field.Types
         {
             base.SetEditValue( control, configurationValues, Encryption.DecryptString( value ) );
         }
+
+        #endregion
+
+        #region Filter Control
+
+        // Note: Even though this is a 'text' type field, the base default binary comparison is used instead of being overridden with 
+        // string comparison type like other 'text' fields, because comparisons like 'Starts with', 'Contains', etc. can't be performed
+        // on the encrypted text.  Only a binary comparison can be performed.
+
+        #endregion
+
     }
 }

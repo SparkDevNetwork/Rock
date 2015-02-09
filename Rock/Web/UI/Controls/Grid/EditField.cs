@@ -52,6 +52,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the tool tip.
+        /// </summary>
+        /// <value>
+        /// The tool tip.
+        /// </value>
+        public string ToolTip
+        {
+            get
+            {
+                string toolTip = ViewState["ToolTip"] as string;
+                if ( string.IsNullOrWhiteSpace( toolTip ) )
+                {
+                    toolTip = "Edit";
+                    ViewState["ToolTip"] = toolTip;
+                }
+                return toolTip;
+            }
+            set
+            {
+                ViewState["ToolTip"] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EditField" /> class.
         /// </summary>
         public EditField()
@@ -130,10 +154,11 @@ namespace Rock.Web.UI.Controls
             {
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
+
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CausesValidation = false;
                 lbEdit.CssClass = "btn btn-default btn-sm";
-                lbEdit.ToolTip = "Edit";
+                lbEdit.ToolTip = editField.ToolTip;
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add("class", editField.IconCssClass);

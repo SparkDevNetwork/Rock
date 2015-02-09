@@ -194,7 +194,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string script = "$('div.rock-rating > input').rating();";
+            string script = "$('input.rock-rating-input').rating();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-rating", script, true );
         }
 
@@ -237,6 +237,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
+            this.AddCssClass( "rock-rating-input" );
             this.AddCssClass( "form-control" );
             this.Attributes["data-max"] = Max.ToString();
             base.RenderControl( writer );

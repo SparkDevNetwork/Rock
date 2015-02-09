@@ -30,6 +30,7 @@ using System.Web.UI.WebControls;
 using DotLiquid;
 using OfficeOpenXml;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -1296,6 +1297,9 @@ namespace Rock.Web.UI.Controls
                     columnCounter++;
                 }
 
+                // Get any defined value columns
+                List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+
                 // Get any attribute columns
                 List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
                 foreach ( var attributeField in attributeFields )
@@ -1314,11 +1318,31 @@ namespace Rock.Web.UI.Controls
                         columnCounter++;
 
                         object propValue = prop.GetValue( item, null );
-
                         string value = "";
                         if ( propValue != null )
                         {
-                            if ( propValue is IEnumerable<object> )
+                            var definedValueAttribute = prop.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+                            if ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) )
+                            {
+                                int definedValueId = 0;
+
+                                if ( prop.PropertyType == typeof( int? ) )
+                                {
+                                    definedValueId = (int?)propValue ?? 0;
+                                }
+                                else if ( prop.PropertyType == typeof( int ) )
+                                {
+                                    definedValueId = (int)propValue;
+                                }
+
+                                if ( definedValueId > 0 )
+                                {
+                                    var definedValue = DefinedValueCache.Read( definedValueId );
+                                    value = definedValue != null ? definedValue.Value : definedValueId.ToString();
+                                }
+                            }
+
+                            else if ( propValue is IEnumerable<object> )
                             {
                                 value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( "," );
                             }

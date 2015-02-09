@@ -87,19 +87,19 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this Auth target, Auth source )
         {
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Order = source.Order;
+            target.Id = source.Id;
             target.Action = source.Action;
             target.AllowOrDeny = source.AllowOrDeny;
-            target.SpecialRole = source.SpecialRole;
-            target.PersonAliasId = source.PersonAliasId;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.GroupId = source.GroupId;
+            target.Order = source.Order;
+            target.PersonAliasId = source.PersonAliasId;
+            target.SpecialRole = source.SpecialRole;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
-            target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

@@ -835,6 +835,10 @@ namespace Rock.Web.UI
                             }
 
                             FindZone( block.Zone ).Controls.Add( control );
+                            if ( control is RockBlockWrapper )
+                            {
+                                ( (RockBlockWrapper)control ).EnsureBlockControls();
+                            }
 
                         }
                     }

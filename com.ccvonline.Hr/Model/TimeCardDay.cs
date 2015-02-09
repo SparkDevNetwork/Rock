@@ -71,7 +71,54 @@ namespace com.ccvonline.Hr.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        public decimal? TotalWorkedDuration { get; set; }
+        public decimal? TotalWorkedDuration
+        {
+            get
+            {
+                // make sure this mirrors the database computed calcuation (see \com.ccvonline.Hr\Migrations\002_AlterColumns.cs)
+                TimeSpan? totalWorkedTimeSpan;
+                if (!EndDateTime.HasValue)
+                {
+                    if ( !LunchStartDateTime.HasValue)
+                    {
+                        // No EndTime and no LunchStart entered yet
+                        totalWorkedTimeSpan = null;
+                    }
+                    else
+                    {
+                        // No EndTime, but they did punch out for lunch
+                        totalWorkedTimeSpan = LunchStartDateTime.Value - StartDateTime;
+                    }
+                }
+                else
+                {
+                    if ( !LunchStartDateTime.HasValue || !LunchEndDateTime.HasValue )
+                    {
+                        // They entered an EndDateTime, but didn't fill out lunch, so don't subtract lunch
+                        totalWorkedTimeSpan = EndDateTime.Value - StartDateTime;
+                    }
+                    else
+                    {
+                        // The entered an EndDateTime, and punched Out and In for Lunch, so subtract lunch
+                        totalWorkedTimeSpan = ( EndDateTime.Value - StartDateTime ) - ( LunchEndDateTime.Value - LunchStartDateTime );
+                    }
+                }
+                
+                if ( totalWorkedTimeSpan.HasValue )
+                {
+                    return Convert.ToDecimal( totalWorkedTimeSpan.Value.TotalHours );
+                }
+                else
+                {
+                    return (decimal?)null;
+                }
+            }
+
+            set
+            {
+                //
+            }
+        }
 
         /// <summary>
         /// Gets or sets the paid holiday hours.
@@ -81,6 +128,15 @@ namespace com.ccvonline.Hr.Model
         /// </value>
         [DataMember]
         public decimal? PaidHolidayHours { get; set; }
+
+        /// <summary>
+        /// Gets or sets the earned holiday hours (earned because they worked on a holiday)
+        /// </summary>
+        /// <value>
+        /// The earned holiday hours.
+        /// </value>
+        [DataMember]
+        public decimal? EarnedHolidayHours { get; set; }
 
         /// <summary>
         /// Gets or sets the paid vacation hours.
@@ -115,6 +171,27 @@ namespace com.ccvonline.Hr.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the total holiday hours.
+        /// </summary>
+        /// <value>
+        /// The total holiday hours.
+        /// </value>
+        public decimal? TotalHolidayHours
+        {
+            get
+            {
+                if ( EarnedHolidayHours.HasValue )
+                {
+                    return ( PaidHolidayHours ?? 0 ) + ( EarnedHolidayHours ?? 0 );
+                }
+                else
+                {
+                    return PaidHolidayHours;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the time card.
         /// </summary>
         /// <value>
@@ -139,7 +216,25 @@ namespace com.ccvonline.Hr.Model
         /// <returns></returns>
         public virtual bool HasHoursEntered()
         {
-            return TotalWorkedDuration > 0 || PaidHolidayHours > 0 || PaidSickHours > 0 || PaidVacationHours > 0;
+            return TotalWorkedDuration > 0 || TotalHolidayHours > 0 || PaidSickHours > 0 || PaidVacationHours > 0;
+        }
+
+        /// <summary>
+        /// Gets the earned holiday hours.
+        /// </summary>
+        /// <param name="isHoliday">if set to <c>true</c> [is holiday].</param>
+        /// <returns></returns>
+        public virtual decimal? GetEarnedHolidayHours( bool isHoliday )
+        {
+            if ( isHoliday )
+            {
+                var earnedHours = ( ( this.TotalWorkedDuration ?? 0 ) / 2 );
+                return earnedHours.ToNearestQtrHour();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -156,6 +251,34 @@ namespace com.ccvonline.Hr.Model
         public TimeCardDayConfiguration()
         {
             this.HasRequired( a => a.TimeCard ).WithMany( a => a.TimeCardDays ).HasForeignKey( a => a.TimeCardId ).WillCascadeOnDelete( true );
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ExtensionMethods
+    {
+        /// <summary>
+        /// Rounds an Hour (as Decimal) to the nearest QTR hour.
+        /// Example: ToNearestQtrHr(1.55) = 1.50;
+        /// </summary>
+        /// <param name="hours">The hours.</param>
+        /// <returns></returns>
+        public static decimal? ToNearestQtrHour( this decimal? hours )
+        {
+            return hours.HasValue ? hours.Value.ToNearestQtrHour() : (decimal?)null;
+        }
+
+        /// <summary>
+        /// Rounds an Hour (as Decimal) to the nearest QTR hour.
+        /// Example: ToNearestQtrHr(1.55) = 1.50;
+        /// </summary>
+        /// <param name="hours">The hours.</param>
+        /// <returns></returns>
+        public static decimal ToNearestQtrHour( this decimal hours )
+        {
+            return hours - ( hours % 0.25M );
         }
     }
 }

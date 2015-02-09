@@ -333,7 +333,10 @@ namespace RockWeb.Blocks.Core
             {
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
-                btnDelete.Visible = categoryService.CanDelete(category, out errorMessage);
+                btnDelete.Visible = true;
+                btnDelete.Enabled = categoryService.CanDelete(category, out errorMessage);
+                btnDelete.ToolTip = btnDelete.Enabled ? string.Empty : errorMessage;
+
                 if ( category.Id > 0 )
                 {
                     ShowReadonlyDetails( category );
