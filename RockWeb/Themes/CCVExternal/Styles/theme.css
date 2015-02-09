@@ -3047,16 +3047,12 @@ pre code {
   overflow-y: scroll;
 }
 .container {
-  margin-right: auto;
-  margin-left: auto;
   padding-left: 15px;
   padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .container {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 @media (min-width: 768px) {
   .container {
@@ -3074,16 +3070,12 @@ pre code {
   }
 }
 .container-fluid {
-  margin-right: auto;
-  margin-left: auto;
   padding-left: 15px;
   padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .container-fluid {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 .row {
   margin-left: -15px;
