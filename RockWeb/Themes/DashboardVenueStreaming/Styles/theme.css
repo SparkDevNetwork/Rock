@@ -174,6 +174,275 @@
 img.jcrop-preview {
   max-width: none;
 }
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Boostrap 3 patch for for bootstrap-modal. Include BEFORE bootstrap-modal.css!
+ */
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+  margin-right: 0;
+}
+.modal {
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  padding: 0;
+  width: 500px;
+  margin-left: -250px;
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+}
+.modal.container {
+  max-width: none;
+}
+/*!
+ * Bootstrap Modal
+ *
+ * Copyright Jordan Schroter
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+.modal-open {
+  overflow: hidden;
+}
+/* add a scroll bar to stop page from jerking around */
+.modal-open.page-overflow .page-container,
+.modal-open.page-overflow .page-container .navbar-fixed-top,
+.modal-open.page-overflow .page-container .navbar-fixed-bottom,
+.modal-open.page-overflow .modal-scrollable {
+  overflow-y: scroll;
+}
+@media (max-width: 979px) {
+  .modal-open.page-overflow .page-container .navbar-fixed-top,
+  .modal-open.page-overflow .page-container .navbar-fixed-bottom {
+    overflow-y: visible;
+  }
+}
+.modal-scrollable {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+.modal {
+  outline: none;
+  position: absolute;
+  margin-top: 0;
+  top: 50%;
+  overflow: visible;
+  /* allow content to popup out (i.e tooltips) */
+}
+.modal.fade {
+  top: -100%;
+  -webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+  transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+}
+.modal.fade.in {
+  top: 50%;
+}
+.modal-body {
+  max-height: none;
+  overflow: visible;
+}
+.modal.modal-absolute {
+  position: absolute;
+  z-index: 950;
+}
+.modal .loading-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 6px;
+}
+.modal-backdrop.modal-absolute {
+  position: absolute;
+  z-index: 940;
+}
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+  background: #fff;
+}
+.modal.container {
+  width: 940px;
+  margin-left: -470px;
+}
+/* Modal Overflow */
+.modal-overflow.modal {
+  top: 1%;
+}
+.modal-overflow.modal.fade {
+  top: -100%;
+}
+.modal-overflow.modal.fade.in {
+  top: 1%;
+}
+.modal-overflow .modal-body {
+  /*overflow: auto;*/
+  -webkit-overflow-scrolling: touch;
+}
+/* Responsive */
+@media (min-width: 1200px) {
+  .modal.container {
+    width: 1170px;
+    margin-left: -585px;
+  }
+}
+@media (max-width: 979px) {
+  .modal,
+  .modal.container,
+  .modal.modal-overflow {
+    top: 1%;
+    right: 1%;
+    left: 1%;
+    bottom: auto;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .modal.fade.in,
+  .modal.container.fade.in,
+  .modal.modal-overflow.fade.in {
+    top: 1%;
+    bottom: auto;
+  }
+  .modal-body,
+  .modal-overflow .modal-body {
+    position: static;
+    margin: 0;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .modal-footer,
+  .modal-overflow .modal-footer {
+    position: static;
+  }
+}
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -12px 0 0 -12px;
+}
+/*
+Animate.css - http://daneden.me/animate
+Licensed under the ☺ license (http://licence.visualidiot.com/)
+
+Copyright (c) 2012 Dan Eden*/
+.animated {
+  -webkit-animation-duration: 1s;
+  -moz-animation-duration: 1s;
+  -o-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  -moz-animation-fill-mode: both;
+  -o-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+@-webkit-keyframes shake {
+  0%,
+  100% {
+    -webkit-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -webkit-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -webkit-transform: translateX(10px);
+  }
+}
+@-moz-keyframes shake {
+  0%,
+  100% {
+    -moz-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -moz-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -moz-transform: translateX(10px);
+  }
+}
+@-o-keyframes shake {
+  0%,
+  100% {
+    -o-transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    -o-transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    -o-transform: translateX(10px);
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+.shake {
+  -webkit-animation-name: shake;
+  -moz-animation-name: shake;
+  -o-animation-name: shake;
+  animation-name: shake;
+}
 /*
     Used to manage styles related to the CMS admin UI for on page editing
     
@@ -192,6 +461,7 @@ img.jcrop-preview {
   border-radius: 3px;
   float: left;
   width: 100%;
+  z-index: 1049;
 }
 .zone-configuration {
   background: #428bca;
@@ -239,7 +509,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 1000;
+  z-index: 1049;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -342,11 +612,8 @@ img.jcrop-preview {
     Used to manage styles related to modal dialog.
 
 */
-.rock-modal-frame {
-  width: 750px;
-  -moz-box-shadow: #464646 18px 18px 80px 0px;
-  -webkit-box-shadow: #464646 18px 18px 80px 0px;
-  box-shadow: #464646 18px 18px 80px 0px;
+.modal-overflow.modal {
+  top: 48px;
 }
 .modal-content {
   border: 0;
@@ -358,7 +625,6 @@ img.jcrop-preview {
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
-  border-radius: 4px 4px 0 0;
 }
 .modal-content .modal-header:before,
 .modal-content .modal-header:after {
@@ -388,6 +654,7 @@ img.jcrop-preview {
 }
 .modal-content .modal-body {
   color: #333333;
+  text-align: left;
 }
 .modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
@@ -409,12 +676,8 @@ img.jcrop-preview {
   border-radius: 0 0 4px 4px;
 }
 .modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 750px;
-  margin-left: 0px;
   background-color: #ffffff;
+  margin-top: 20px;
 }
 .modal-body {
   padding: 8px 12px 12px 12px;
@@ -602,40 +865,38 @@ img.jcrop-preview {
   width: 340px;
   height: 190px;
 }
-.banner {
-  color: #ecf0f3;
-  background-color: #428bca;
-  border-radius: 0;
-  border: 0 solid transparent;
-  font-weight: 300;
-  font-size: 14px;
-  padding: 4px 12px;
-  margin: 0 0 15px;
-}
-.banner:before,
-.banner:after {
-  content: " ";
-  display: table;
-}
-.banner:after {
-  clear: both;
-}
-.banner h1 {
-  float: left;
-  margin: 0;
-  font-weight: 300;
-}
-.banner h1 .first-word {
-  font-weight: 700;
-}
-.banner h1 i {
-  margin-right: 15px;
-}
-.banner .label {
-  float: right;
-  margin-top: 15px;
-  margin-left: 15px;
-}
+/*.banner
+{
+    color: @banner-text-color;
+    background-color: @banner-bg;
+    border-radius: @banner-border-radius;
+    border: @banner-border-size solid @banner-border-color;
+    font-weight: @banner-font-weight;
+    font-size: @banner-font-size;
+    padding: @banner-padding;
+    margin: 0 0 @spacing-md-px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+        font-weight: @banner-font-weight;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+
+        i {
+            margin-right: @spacing-md-px;
+        }
+    }
+
+    .label {
+        float: right;
+        margin-top: @spacing-md-px;
+        margin-left: @spacing-md-px;
+    }
+}*/
 ul.rocktree,
 ul.rocktree ul {
   list-style-type: none;
@@ -1113,12 +1374,13 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-.title {
-  font-weight: 300;
-}
-.title .first-word {
-  font-weight: 700;
-}
+/*.title {
+    font-weight: @title-default-weight;
+
+    .first-word {
+        font-weight: @title-firstword-weight;
+    }
+}*/
 .code-editor {
   position: relative;
 }
@@ -1477,6 +1739,7 @@ fieldset .actions {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transform: translate(0, 0);
   content: "\f093";
   padding-right: .25em;
 }
@@ -2345,6 +2608,9 @@ td.wrap-contents {
 .table-responsive.table-no-border {
   border: 0;
 }
+.table-responsive[data-pattern="priority-columns"] {
+  position: static;
+}
 /*.table-responsive[data-pattern="priority-columns"] {
     margin-bottom: inherit;
     border: inherit;
@@ -2527,6 +2793,10 @@ td.grid-col-actions {
 }
 .table > tbody > tr.grid-section-header:hover > td {
   background-color: #eeeeee !important;
+}
+tr.row-highlight td {
+  background-color: #428bca !important;
+  color: #ecf0f3 !important;
 }
 .table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th,
 .table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th,
@@ -4089,10 +4359,12 @@ iframe.email-body {
   -webkit-user-select: none;
 }
 /*
-    Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
-    
-    1. Colors - creates utility classes for each of the accent colors
-    2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+
+  Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
+
+  1. Variables - specific variables for sizing classes and media query helpers
+  2. Colors - creates utility classes for each of the accent colors
+  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
 
 */
 .accent-color {
@@ -4131,6 +4403,9 @@ iframe.email-body {
   color: #ecf0f3;
   border: 1px solid #3071a9;
 }
+.padding-all-none {
+  padding: 0 !important;
+}
 .padding-all-sm {
   padding: 7.5px !important;
 }
@@ -4143,6 +4418,9 @@ iframe.email-body {
 .padding-all-xl {
   padding: 60px !important;
 }
+.margin-all-none {
+  margin: 0 !important;
+}
 .margin-all-sm {
   margin: 7.5px !important;
 }
@@ -4154,6 +4432,10 @@ iframe.email-body {
 }
 .margin-all-xl {
   margin: 60px !important;
+}
+.padding-v-none {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 .padding-v-sm {
   padding-top: 7.5px !important;
@@ -4171,6 +4453,10 @@ iframe.email-body {
   padding-top: 60px !important;
   padding-bottom: 60px !important;
 }
+.margin-v-none {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 .margin-v-sm {
   margin-top: 7.5px !important;
   margin-bottom: 7.5px !important;
@@ -4186,6 +4472,10 @@ iframe.email-body {
 .margin-v-xl {
   margin-top: 60px !important;
   margin-bottom: 60px !important;
+}
+.padding-h-none {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 .padding-h-sm {
   padding-right: 7.5px !important;
@@ -4203,6 +4493,10 @@ iframe.email-body {
   padding-right: 60px !important;
   padding-left: 60px !important;
 }
+.margin-h-none {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
 .margin-h-sm {
   margin-right: 7.5px !important;
   margin-left: 7.5px !important;
@@ -4219,6 +4513,9 @@ iframe.email-body {
   margin-right: 60px !important;
   margin-left: 60px !important;
 }
+.padding-t-none {
+  padding-top: 0 !important;
+}
 .padding-t-sm {
   padding-top: 7.5px !important;
 }
@@ -4230,6 +4527,9 @@ iframe.email-body {
 }
 .padding-t-xl {
   padding-top: 60px !important;
+}
+.margin-t-none {
+  margin-top: 0 !important;
 }
 .margin-t-sm {
   margin-top: 7.5px !important;
@@ -4243,77 +4543,95 @@ iframe.email-body {
 .margin-t-xl {
   margin-top: 60px !important;
 }
+.padding-b-none {
+  padding-bottom: 0 !important;
+}
 .padding-b-sm {
-  padding-bottom: 7.5px;
+  padding-bottom: 7.5px !important;
 }
 .padding-b-md {
-  padding-bottom: 15px;
+  padding-bottom: 15px !important;
 }
 .padding-b-lg {
-  padding-bottom: 30px;
+  padding-bottom: 30px !important;
 }
 .padding-b-xl {
-  padding-bottom: 60px;
+  padding-bottom: 60px !important;
+}
+.margin-b-none {
+  margin-bottom: 0 !important;
 }
 .margin-b-sm {
-  margin-bottom: 7.5px;
+  margin-bottom: 7.5px !important;
 }
 .margin-b-md {
-  margin-bottom: 15px;
+  margin-bottom: 15px !important;
 }
 .margin-b-lg {
-  margin-bottom: 30px;
+  margin-bottom: 30px !important;
 }
 .margin-b-xl {
-  margin-bottom: 60px;
+  margin-bottom: 60px !important;
+}
+.padding-r-none {
+  padding-right: 0 !important;
 }
 .padding-r-sm {
-  padding-right: 7.5px;
+  padding-right: 7.5px !important;
 }
 .padding-r-md {
-  padding-right: 15px;
+  padding-right: 15px !important;
 }
 .padding-r-lg {
-  padding-right: 30px;
+  padding-right: 30px !important;
 }
 .padding-r-xl {
-  padding-right: 60px;
+  padding-right: 60px !important;
+}
+.margin-r-none {
+  margin-right: 0 !important;
 }
 .margin-r-sm {
-  margin-right: 7.5px;
+  margin-right: 7.5px !important;
 }
 .margin-r-md {
-  margin-right: 15px;
+  margin-right: 15px !important;
 }
 .margin-r-lg {
-  margin-right: 30px;
+  margin-right: 30px !important;
 }
 .margin-r-xl {
-  margin-right: 60px;
+  margin-right: 60px !important;
+}
+.padding-l-none {
+  padding-left: 0 !important;
 }
 .padding-l-sm {
-  padding-left: 7.5px;
+  padding-left: 7.5px !important;
 }
 .padding-l-md {
-  padding-left: 15px;
+  padding-left: 15px !important;
 }
 .padding-l-lg {
-  padding-left: 30px;
+  padding-left: 30px !important;
 }
 .padding-l-xl {
-  padding-left: 60px;
+  padding-left: 60px !important;
+}
+.margin-l-none {
+  margin-left: 0 !important;
 }
 .margin-l-sm {
-  margin-left: 7.5px;
+  margin-left: 7.5px !important;
 }
 .margin-l-md {
-  margin-left: 15px;
+  margin-left: 15px !important;
 }
 .margin-l-lg {
-  margin-left: 30px;
+  margin-left: 30px !important;
 }
 .margin-l-xl {
-  margin-left: 60px;
+  margin-left: 60px !important;
 }
 .cke_dialog_contents {
   background-color: #ffffff !important;
@@ -4439,275 +4757,6 @@ a.cke_dialog_ui_button_ok:active {
 .ck-files img.file-browser-image {
   width: 50px;
   height: 50px;
-}
-/*!
- * Bootstrap Modal
- *
- * Copyright Jordan Schroter
- * Licensed under the Apache License v2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Boostrap 3 patch for for bootstrap-modal. Include BEFORE bootstrap-modal.css!
- */
-body.modal-open,
-.modal-open .navbar-fixed-top,
-.modal-open .navbar-fixed-bottom {
-  margin-right: 0;
-}
-.modal {
-  left: 50%;
-  bottom: auto;
-  right: auto;
-  padding: 0;
-  width: 500px;
-  margin-left: -250px;
-  background-color: #ffffff;
-  border: 1px solid #999999;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
-  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
-  background-clip: padding-box;
-}
-.modal.container {
-  max-width: none;
-}
-/*!
- * Bootstrap Modal
- *
- * Copyright Jordan Schroter
- * Licensed under the Apache License v2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- */
-.modal-open {
-  overflow: hidden;
-}
-/* add a scroll bar to stop page from jerking around */
-.modal-open.page-overflow .page-container,
-.modal-open.page-overflow .page-container .navbar-fixed-top,
-.modal-open.page-overflow .page-container .navbar-fixed-bottom,
-.modal-open.page-overflow .modal-scrollable {
-  overflow-y: scroll;
-}
-@media (max-width: 979px) {
-  .modal-open.page-overflow .page-container .navbar-fixed-top,
-  .modal-open.page-overflow .page-container .navbar-fixed-bottom {
-    overflow-y: visible;
-  }
-}
-.modal-scrollable {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  overflow: auto;
-}
-.modal {
-  outline: none;
-  position: absolute;
-  margin-top: 0;
-  top: 50%;
-  overflow: visible;
-  /* allow content to popup out (i.e tooltips) */
-}
-.modal.fade {
-  top: -100%;
-  -webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-  -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-  -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-  transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-}
-.modal.fade.in {
-  top: 50%;
-}
-.modal-body {
-  max-height: none;
-  overflow: visible;
-}
-.modal.modal-absolute {
-  position: absolute;
-  z-index: 950;
-}
-.modal .loading-mask {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-radius: 6px;
-}
-.modal-backdrop.modal-absolute {
-  position: absolute;
-  z-index: 940;
-}
-.modal-backdrop,
-.modal-backdrop.fade.in {
-  opacity: 0.7;
-  filter: alpha(opacity=70);
-  background: #fff;
-}
-.modal.container {
-  width: 940px;
-  margin-left: -470px;
-}
-/* Modal Overflow */
-.modal-overflow.modal {
-  top: 1%;
-}
-.modal-overflow.modal.fade {
-  top: -100%;
-}
-.modal-overflow.modal.fade.in {
-  top: 1%;
-}
-.modal-overflow .modal-body {
-  /*overflow: auto;*/
-  -webkit-overflow-scrolling: touch;
-}
-/* Responsive */
-@media (min-width: 1200px) {
-  .modal.container {
-    width: 1170px;
-    margin-left: -585px;
-  }
-}
-@media (max-width: 979px) {
-  .modal,
-  .modal.container,
-  .modal.modal-overflow {
-    top: 1%;
-    right: 1%;
-    left: 1%;
-    bottom: auto;
-    width: auto !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .modal.fade.in,
-  .modal.container.fade.in,
-  .modal.modal-overflow.fade.in {
-    top: 1%;
-    bottom: auto;
-  }
-  .modal-body,
-  .modal-overflow .modal-body {
-    position: static;
-    margin: 0;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  .modal-footer,
-  .modal-overflow .modal-footer {
-    position: static;
-  }
-}
-.loading-spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin: -12px 0 0 -12px;
-}
-/*
-Animate.css - http://daneden.me/animate
-Licensed under the ☺ license (http://licence.visualidiot.com/)
-
-Copyright (c) 2012 Dan Eden*/
-.animated {
-  -webkit-animation-duration: 1s;
-  -moz-animation-duration: 1s;
-  -o-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-fill-mode: both;
-  -moz-animation-fill-mode: both;
-  -o-animation-fill-mode: both;
-  animation-fill-mode: both;
-}
-@-webkit-keyframes shake {
-  0%,
-  100% {
-    -webkit-transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    -webkit-transform: translateX(-10px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    -webkit-transform: translateX(10px);
-  }
-}
-@-moz-keyframes shake {
-  0%,
-  100% {
-    -moz-transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    -moz-transform: translateX(-10px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    -moz-transform: translateX(10px);
-  }
-}
-@-o-keyframes shake {
-  0%,
-  100% {
-    -o-transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    -o-transform: translateX(-10px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    -o-transform: translateX(10px);
-  }
-}
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-10px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(10px);
-  }
-}
-.shake {
-  -webkit-animation-name: shake;
-  -moz-animation-name: shake;
-  -o-animation-name: shake;
-  animation-name: shake;
 }
 ::selection {
   background: #5279a0;
@@ -5419,8 +5468,22 @@ fieldset[disabled] .btn-primary.active {
 .fullscreen-toggle i:before {
   content: "\f065";
 }
+header {
+  background-image: linear-gradient(#3c3c3c, #111111);
+  color: #bbbbbb;
+  min-height: 36px;
+}
 main {
   background-color: #1A1A1A;
+}
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-image: linear-gradient(#3c3c3c, #111111);
+  color: #3a3a3a;
+  min-height: 50px;
+  padding-top: 24px;
 }
 @media (min-width: 992px) {
   .container {
