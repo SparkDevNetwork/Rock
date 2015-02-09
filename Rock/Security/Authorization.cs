@@ -805,7 +805,7 @@ namespace Rock.Security
                                 Person person = personService.Get( PersonId.Value );
                                 if ( person != null )
                                 {
-                                    return person.FullName + " (User)";
+                                    return person.FullName + " <small>(User)</small>";
                                 }
                             }
                             catch { }
@@ -818,7 +818,8 @@ namespace Rock.Security
                                 var role = Role.Read( GroupId.Value );
                                 if ( role != null )
                                 {
-                                    return role.Name + " (Role)";
+                                    return ( role.IsSecurityTypeGroup ? "" : "GROUP - " ) +
+                                        role.Name + " <small>(Role)</small>";
                                 }
                             }
                             catch { }

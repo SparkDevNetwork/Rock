@@ -3,11 +3,8 @@
 
 */
 
-.rock-modal-frame { // used by both the iframe modal and the in-window modal
-    width: 750px;
-    -moz-box-shadow:    @modal-dropshadow-color 18px 18px 80px 0px;
-    -webkit-box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
-    box-shadow: @modal-dropshadow-color 18px 18px 80px 0px;
+.modal-overflow.modal {
+    top: 48px;
 }
 
 .modal-content {
@@ -20,7 +17,6 @@
         color: @modal-header-text-color;
         padding: 5px 15px;
         min-height: 34px;
-        border-radius: @border-radius-base @border-radius-base 0 0;
         .clearfix();
 
         h3 {
@@ -78,12 +74,8 @@
 }
 
 .modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 750px;
-  margin-left: 0px;
   background-color: @body-bg;
+  margin-top: 20px;
 }
 
 

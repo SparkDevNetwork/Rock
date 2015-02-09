@@ -45,6 +45,14 @@ namespace Rock.Security
         public string Name { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is security type group.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is security type group; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSecurityTypeGroup { get; private set; }
+
+        /// <summary>
         /// Gets the users that belong to the role
         /// </summary>
         public List<string> Users { get; private set; }
@@ -97,6 +105,7 @@ namespace Rock.Security
                     role.Id = groupModel.Id;
                     role.Name = groupModel.Name;
                     role.Users = new List<string>();
+                    role.IsSecurityTypeGroup = groupModel.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
                     foreach ( Rock.Model.GroupMember member in groupModel.Members )
                     {
@@ -121,9 +130,13 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
+            Guid securityRoleGuid = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+
             Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
             foreach ( int id in groupService.Queryable()
-                .Where( g => g.IsSecurityRole == true )
+                .Where( g => 
+                    g.GroupType.Guid.Equals(securityRoleGuid) ||
+                    g.IsSecurityRole == true )
                 .OrderBy( g => g.Name )
                 .Select( g => g.Id )
                 .ToList() )

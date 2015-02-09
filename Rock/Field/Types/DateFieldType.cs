@@ -20,7 +20,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
+using Rock;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -45,6 +45,7 @@ namespace Rock.Field.Types
             var keys = base.ConfigurationKeys();
             keys.Add( "format" );
             keys.Add( "displayDiff" );
+            keys.Add( "displayCurrentOption" );
             return keys;
         }
 
@@ -59,13 +60,21 @@ namespace Rock.Field.Types
             var textbox = new RockTextBox();
             controls.Add( textbox );
             textbox.Label = "Date Format";
-            textbox.Help = "The format string to use for date (default is system short date)";
+            textbox.Help = "The format string to use for date (default is system short date).";
 
             var cbDisplayDiff = new RockCheckBox();
             controls.Add( cbDisplayDiff );
-            cbDisplayDiff.Label = "Display Date Span";
+            cbDisplayDiff.Label = "Display as Elapsed Time";
             cbDisplayDiff.Text = "Yes";
-            cbDisplayDiff.Help = "Display the number of years between value and current date";
+            cbDisplayDiff.Help = "Display value as an elapsed time.";
+
+            var cbDisplayCurrent = new RockCheckBox();
+            controls.Add( cbDisplayCurrent );
+            cbDisplayCurrent.AutoPostBack = true;
+            cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
+            cbDisplayCurrent.Label = "Display Current Option";
+            cbDisplayCurrent.Text = "Yes";
+            cbDisplayCurrent.Help = "Include option to specify value as the current date.";
 
             return controls;
         }
@@ -92,6 +101,12 @@ namespace Rock.Field.Types
                 {
                     ( (CheckBox)controls[1] ).Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
                 }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox &&
+                    configurationValues.ContainsKey( "displayCurrentOption" ) )
+                {
+                    ( (CheckBox)controls[2] ).Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
+                }
             }
         }
 
@@ -103,8 +118,9 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             var values = base.ConfigurationValues( controls );
-            values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date)", "" ) );
-            values.Add( "displayDiff", new ConfigurationValue( "Display Date Span", "Display the number of years between value and current date", "False" ) );
+            values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date).", "" ) );
+            values.Add( "displayDiff", new ConfigurationValue( "Display as Elapsed Time", "Display value as an elapsed time.", "False" ) );
+            values.Add( "displayCurrentOption", new ConfigurationValue( "Display Current Option", "Include option to specify value as the current date.", "False" ) );
 
             if ( controls != null )
             {
@@ -116,6 +132,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
                 {
                     values["displayDiff"].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
+                {
+                    values["displayCurrentOption"].Value = ( (CheckBox)controls[2] ).Checked.ToString();
                 }
             }
 
@@ -136,40 +157,67 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            DateTime? dateValue = value.AsDateTime();
-            if ( dateValue.HasValue )
+            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
-                formattedValue = dateValue.Value.ToShortDateString();
+                DateTime currentDate = RockDateTime.Today;
 
-                if ( configurationValues != null &&
-                    configurationValues.ContainsKey( "format" ) &&
-                    !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
+                var valueParts = value.Split( ':' );
+                if ( valueParts.Length > 1 )
                 {
-                    try
+                    int? days = valueParts[1].AsIntegerOrNull();
+                    if ( days.HasValue && days.Value != 0 )
                     {
-                        formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
-                    }
-                    catch
-                    {
-                        formattedValue = dateValue.Value.ToShortDateString();
+                        if ( days > 0 )
+                        {
+                            return string.Format( "Current Date plus {0} days", days.Value );
+                        }
+                        else
+                        {
+                            return string.Format( "Current Date minus {0} days", -days.Value );
+                        }
                     }
                 }
 
-                if ( !condensed )
+                return "Current Date";
+            }
+            else
+            {
+                string formattedValue = string.Empty;
+
+                DateTime? dateValue = value.AsDateTime();
+                if ( dateValue.HasValue )
                 {
+                    formattedValue = dateValue.Value.ToShortDateString();
+
                     if ( configurationValues != null &&
-                        configurationValues.ContainsKey( "displayDiff" ) )
+                        configurationValues.ContainsKey( "format" ) &&
+                        !String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
                     {
-                        bool displayDiff = false;
-                        if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
-                            formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
+                        try
+                        {
+                            formattedValue = dateValue.Value.ToString( configurationValues["format"].Value );
+                        }
+                        catch
+                        {
+                            formattedValue = dateValue.Value.ToShortDateString();
+                        }
+                    }
+
+                    if ( !condensed )
+                    {
+                        if ( configurationValues != null &&
+                            configurationValues.ContainsKey( "displayDiff" ) )
+                        {
+                            bool displayDiff = false;
+                            if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
+                                formattedValue += " (" + dateValue.ToElapsedString( true, false ) + ")";
+                        }
                     }
                 }
+
+                return formattedValue;
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
         #endregion
@@ -186,7 +234,11 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new DatePicker { ID = id }; 
+            var datePicker = new DatePicker { ID = id }; 
+            datePicker.DisplayCurrentOption = configurationValues != null &&
+                configurationValues.ContainsKey( "displayCurrentOption" ) &&
+                configurationValues["displayCurrentOption"].Value.AsBoolean();
+            return datePicker;
         }
 
         /// <summary>
@@ -197,20 +249,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (control != null)
+            var dp = control as DatePicker;
+            if ( dp != null )
             {
-                var dtp = control as DatePicker;
-                if (dtp != null )
+                if ( dp.DisplayCurrentOption && dp.IsCurrentDateOffset )
                 {
-                    if ( dtp.SelectedDate.HasValue )
-                    {
-                        // serialize the date using ISO 8601 standard
-                        return dtp.SelectedDate.Value.ToString( "o" );
-                    }
+                    return string.Format( "CURRENT:{0}", dp.CurrentDateOffsetDays );
+                }
+                else if ( dp.SelectedDate.HasValue )
+                {
+                    return dp.SelectedDate.Value.ToString( "o" );
                 }
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>
@@ -221,15 +273,24 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null ) 
+            var dp = control as DatePicker;
+            if ( dp != null )
             {
-                var dtp = control as DatePicker;
-                if ( dtp != null )
+                if ( dp.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    dp.IsCurrentDateOffset = true;
+                    var valueParts = value.Split( ':' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        dp.CurrentDateOffsetDays = valueParts[1].AsInteger();
+                    }
+                }
+                else
                 {
                     var dt = value.AsDateTime();
                     if ( dt.HasValue )
                     {
-                        dtp.SelectedDate = dt;
+                        dp.SelectedDate = dt;
                     }
                 }
             }
@@ -265,105 +326,7 @@ namespace Rock.Field.Types
             datePicker.DisplayCurrentOption = true;
             return datePicker;
         }
-
-        /// <summary>
-        /// Gets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var datePicker = control as DatePicker;
-            if ( datePicker != null )
-            {
-                if ( datePicker.IsCurrentDateOffset )
-                {
-                    return string.Format( "CURRENT:{0}", datePicker.CurrentDateOffsetDays );
-                }
-                else if ( datePicker.SelectedDate.HasValue )
-                {
-                    return datePicker.SelectedDate.Value.ToString( "o" );
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the filter value value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            var datePicker = control as DatePicker;
-            if ( datePicker != null )
-            {
-                if ( datePicker.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    datePicker.IsCurrentDateOffset = true;
-                    var valueParts = value.Split( ':' );
-                    if ( valueParts.Length > 1 )
-                    {
-                        datePicker.CurrentDateOffsetDays = valueParts[1].AsIntegerOrNull() ?? 0;
-                    }
-                }
-                else
-                {
-                    var dt = value.AsDateTime();
-                    if ( dt.HasValue )
-                    {
-                        datePicker.SelectedDate = dt;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Formats the filter value value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
-            if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
-            {
-                DateTime currentDate = RockDateTime.Today;
-
-                var valueParts = value.Split( ':' );
-                if ( valueParts.Length > 1 )
-                {
-                    int? days = valueParts[1].AsIntegerOrNull();
-                    if ( days.HasValue && days.Value != 0 )
-                    {
-                        if ( days > 0)
-                        {
-                            return string.Format( "Current Date plus {0} days", days.Value );
-                        }
-                        else
-                        {
-                            return string.Format( "Current Date minus {0} days", -days.Value );
-                        }
-                    }
-                }
-
-                return "Current Date";
-            }
-            else
-            {
-                var date = value.AsDateTime();
-                if ( date.HasValue )
-                {
-                    return date.Value.ToShortDateString();
-                }
-            }
-
-            return value;
-        }
-
+        
         /// <summary>
         /// Gets the filter format script.
         /// </summary>
@@ -396,7 +359,7 @@ if (useCurrentDateOffset) {{
 else {{
    dateValue = ( $('input', $selectedContent).filter(':visible').length ?  (' ' +  $('input', $selectedContent).filter(':visible').val()  + ' ') : '' );
 }}
-result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue";
+result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \'' + dateValue + '\''";
 
             return string.Format( format, titleJs );
 
@@ -415,7 +378,7 @@ result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' +
         {
             if ( filterValues.Count >= 2 )
             {
-                filterValues[1] = parseRelativeValue( filterValues[1] );
+                filterValues[1] = ParseRelativeValue( filterValues[1] );
             }
 
             return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
@@ -434,7 +397,7 @@ result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' +
             {
                 string comparisonValue = filterValues[0];
 
-                filterValues[1] = parseRelativeValue( filterValues[1] );
+                filterValues[1] = ParseRelativeValue( filterValues[1] );
 
                 DateTime date = filterValues[1].AsDateTime() ?? DateTime.MinValue;
 
@@ -453,7 +416,7 @@ result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' +
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        private string parseRelativeValue( string value )
+        public virtual string ParseRelativeValue( string value )
         {
             if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
@@ -463,7 +426,7 @@ result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' +
 
                 if ( valueParts.Length > 1 )
                 {
-                    currentDate = currentDate.AddDays( valueParts[1].AsIntegerOrNull() ?? 0 );
+                    currentDate = currentDate.AddDays( valueParts[1].AsInteger() );
                 }
 
                 return currentDate.ToString( "o" );

@@ -26,6 +26,15 @@ namespace Rock.Data
     /// </summary>
     public static class DbMetadataExtensions
     {
+        /// <summary>
+        /// Creates the and add function.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="returnValues">The return values.</param>
+        /// <param name="body">The body.</param>
+        /// <returns></returns>
         public static EdmFunction CreateAndAddFunction( this EdmModel item, string name,
             IList<FunctionParameter> parameters, IList<FunctionParameter> returnValues, string body = null )
         {

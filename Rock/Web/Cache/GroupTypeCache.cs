@@ -584,6 +584,46 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum count.
+        /// </summary>
+        /// <value>
+        /// The maximum count.
+        /// </value>
+        public int? MaxCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum count.
+        /// </summary>
+        /// <value>
+        /// The minimum count.
+        /// </value>
+        public int? MinCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is leader.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can view.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanView { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
         /// </summary>
         /// <param name="role">The role.</param>
@@ -593,6 +633,11 @@ namespace Rock.Web.Cache
             Guid = role.Guid;
             Name = role.Name;
             Order = role.Order;
+            MaxCount = role.MaxCount;
+            MinCount = role.MinCount;
+            IsLeader = role.IsLeader;
+            CanView = role.CanView;
+            CanEdit = role.CanEdit;
         }
     }
 }

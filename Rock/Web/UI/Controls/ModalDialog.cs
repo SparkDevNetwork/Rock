@@ -206,6 +206,10 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
             _hfModalVisible.Value = "0";
+
+            // make sure the close script gets fired, even if the modal isn't rendered
+            string hideScript = string.Format("Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID);
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
         }
 
         /// <summary>
@@ -329,38 +333,23 @@ namespace Rock.Web.UI.Controls
         protected void RegisterJavaScript()
         {
             string scriptFormat = @"
-var modalClose_{0} = function() {{
-    $('#{0}').modal('hide');
-    if (!$('.modal').is(':visible')) {{
-        $('body').removeClass('modal-open');
-    }}
-}}
-
 if ($('#{0}').find('.js-modal-visible').val() == '1') {{
-    $('body').addClass('modal-open');
-    $('#{0}').modal({{
-        show: true,
-        manager: '{3}',
-        backdrop: 'static',
-        keyboard: false,
-        attentionAnimation: '',
-        modalOverflow: true
-    }});
+    Rock.controls.modal.showModalDialog($('#{0}'), '{3}');
 }} 
 else {{
-    modalClose_{0}();
+    Rock.controls.modal.closeModalDialog($('#{0}'));
 }}
 
 $('#{0}').find('.js-modaldialog-close-link, .js-modaldialog-cancel-link').click(function () {{
     {1}
     $('#{0}').find('.js-modal-visible').val('0');
-    modalClose_{0}();
+    Rock.controls.modal.closeModalDialog($('#{0}'));
 }});
 
 $('#{0}').find('.js-modaldialog-save-link').click(function () {{
     {2}
     $('#{0}').find('.js-modal-visible').val('0');
-    modalClose_{0}();
+    Rock.controls.modal.closeModalDialog($('#{0}'));
 }});
 
 ";
