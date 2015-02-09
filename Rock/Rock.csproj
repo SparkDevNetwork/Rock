@@ -840,7 +840,7 @@
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\LogError.cs" />
-    <Compile Include="Workflow\Action\AddNote.cs" />
+    <Compile Include="Workflow\Action\AddWorkflowNote.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
