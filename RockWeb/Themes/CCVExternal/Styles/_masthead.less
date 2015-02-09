@@ -64,39 +64,33 @@
 
     // this crazy nesting is to undo some default Rock styles, in the future we
     // could look into changing the block markup
-    .masthead-lower .login-status {
+    .masthead-lower .loginstatus,
+    .masthead-lower .contextsetter {
+
+      margin: 0;
+
+      // for mobile
+      .dropdown {
+        text-align: left;
+      }
 
       li { min-width: 0; }
 
-      .nav > li > a {
-        padding: 0;
+      li > a {
         line-height: 40px;
-
-        &:hover,
-        &:focus {
-          background: none;
-        }
       }
 
-      .profile-photo {
-        height: 40px;
-        width: 40px;
-        float: left;
-        background-size: 100%;
-        // border-radius: 20px;
-        // margin: 10px;
-        margin-right: 10px;
-        .transition(opacity .75s);
-        .opacity(.3);
-
-        filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 3.5+ */
-        filter: gray; /* IE6-9 */
-        -webkit-filter: grayscale(100%); /* Chrome 19+ & Safari 6+ */
-      }
-      &:hover .profile-photo {
-        .opacity(.75);
-        filter: none;
-        -webkit-filter: grayscale(0%);
-      }
-
+    }
+    .masthead-lower .contextsetter a {
+      text-transform: uppercase;
+      color: @gray-light;
+      font-weight: 600;
+    }
+    .masthead-lower .loginstatus a {
+      color: @gray-light;
+      font-style: italic;
+    }
+    @media @sm {
+      .masthead-lower .contextsetter a { padding: 0 @grid-gutter-width; }
+      .masthead-lower .loginstatus a { padding: 0 @grid-gutter-width/4; }
     }
