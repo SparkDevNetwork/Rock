@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.Administration
                             r.GroupId == rule.GroupId ) )
                     {
                         var myRule = new MyAuthRule( rule );
-                        myRule.EntityTitle = string.Format( "{0} ({1})", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
+                        myRule.EntityTitle = string.Format( "{0} <small>({1})</small>", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
                         parentRules.Add( myRule );
                     }
                 }
@@ -598,9 +598,12 @@ namespace RockWeb.Blocks.Administration
             ddlRoles.Items.Add( new ListItem( "[All Authenticated Users]", "-2" ) );
             ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
+            var securityRoleType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            
             foreach ( var role in Role.AllRoles() )
             {
-                ddlRoles.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
+                string name = role.IsSecurityTypeGroup ? role.Name : "GROUP - " + role.Name;
+                ddlRoles.Items.Add( new ListItem( name, role.Id.ToString() ) );
             }
         }
 

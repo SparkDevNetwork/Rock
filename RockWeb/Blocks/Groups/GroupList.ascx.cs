@@ -421,10 +421,14 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                var roleGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : 0;
+                bool useRolePrefix = onlySecurityGroups || groupTypeIds.Contains( roleGroupTypeId );
+
                 gGroups.DataSource = qryGroups.Select( g => new
                         {
                             Id = g.Id,
-                            Name = g.Name,
+                            Name = (( useRolePrefix && g.GroupType.Id != roleGroupTypeId ) ? "GROUP - " : "" ) + g.Name,
                             GroupTypeName = g.GroupType.Name,
                             GroupOrder = g.Order,
                             GroupTypeOrder = g.GroupType.Order,
