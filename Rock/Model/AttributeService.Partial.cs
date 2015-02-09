@@ -80,9 +80,26 @@ namespace Rock.Model
                 query = query.Where( t => !t.EntityTypeId.HasValue );
             }
 
-            return query.Where( t =>
-                t.EntityTypeQualifierColumn == entityQualifierColumn &&
-                t.EntityTypeQualifierValue == entityQualifierValue );
+            if ( string.IsNullOrWhiteSpace(entityQualifierColumn ) )
+            {
+                query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" );
+            }
+            else
+            {
+                query = query.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn );
+            }
+
+            if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
+            {
+                query = query.Where( t => t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" );
+            }
+            else
+            {
+                query = query.Where( t => t.EntityTypeQualifierValue == entityQualifierValue );
+            }
+
+            return query;
+
         }
 
         /// <summary>
@@ -120,7 +137,10 @@ namespace Rock.Model
             var query = Queryable( "Categories,AttributeQualifiers" );
             query = query.Where( t => !t.EntityTypeId.HasValue);
 
-            return query.Where( t => t.EntityTypeQualifierColumn == string.Empty &&  t.EntityTypeQualifierValue == string.Empty);
+            return query
+                .Where( t =>
+                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) && 
+                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ) );
         }
 
         /// <summary>
