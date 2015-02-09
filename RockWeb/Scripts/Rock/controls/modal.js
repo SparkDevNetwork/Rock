@@ -4,6 +4,7 @@
     Rock.controls = Rock.controls || {};
 
     Rock.controls.modal = (function () {
+        // shows the IFrame #modal-popup modal
         var _showModalPopup = function (sender, popupUrl) {
             var $modalPopup = $('#modal-popup');
             var $modalPopupIFrame = $modalPopup.find('iframe');
@@ -37,11 +38,27 @@
                 show: true,
                 backdrop: 'static',
                 keyboard: false,
-                attentionAnimation: ''
+                attentionAnimation: '',
+                modalOverflow: true
+            });
+        },
+
+        // shows a non-IFrame modal dialog control
+        _showModalControl = function ($modalDialog, managerId) {
+            $('body').addClass('modal-open');
+            $modalDialog.modal({
+                show: true,
+                manager: managerId,
+                backdrop: 'static',
+                keyboard: false,
+                attentionAnimation: '',
+                modalOverflow: true
             });
         },
 
         exports = {
+            // updates the side of the modal that the control is in.  
+            // this function works for both the IFrame modal and ModalDialog control
             updateSize: function (controlId) {
                 var $control = typeof (controlId) == 'string' ? $('#' + controlId) : $(controlId);
                 if ($control && $control.length) {
@@ -62,6 +79,7 @@
                 }
 
             },
+            // closes the #modal-popup modal (IFrame Modal)
             close: function (msg) {
                 // do a setTimeout so this fires after the postback
                 $('#modal-popup').hide();
@@ -84,10 +102,27 @@
                     }
                 }
             },
+            // closes a ModalDialog control (non-IFrame Modal) 
+            closeModalDialog: function ($modalDialog) {
+                if ($modalDialog && $modalDialog.length && $modalDialog.modal) {
+                    $modalDialog.modal('hide');
+                }
+
+                // if all modals are closed, remove the modal-open class from body
+                if (!$('.modal').is(':visible')) {
+                    {
+                        $('body').removeClass('modal-open');
+                    }
+                }
+            },
+            // shows the #modal-popup modal (IFrame Modal)
             show: function (sender, popupUrl, detailsId, postbackUrl) {
                 _showModalPopup(sender, popupUrl);
             },
-
+            // shows a ModalDialog control (non-IFrame Modal) 
+            showModalDialog: function ($modalDialog, managerId) {
+                _showModalControl($modalDialog, managerId);
+            },
         };
 
         return exports;

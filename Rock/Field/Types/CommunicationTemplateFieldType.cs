@@ -14,22 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+
     /// <summary>
     /// Field Type to select 0 or more communication templates 
     /// </summary>
     public class CommunicationTemplateFieldType : FieldType
     {
+
+        #region Edit Control
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -85,5 +89,8 @@ namespace Rock.Field.Types
                     ( (ListControl)control ).SelectedValue = value;
             }
         }
+
+        #endregion
+
     }
 }

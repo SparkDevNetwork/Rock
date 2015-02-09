@@ -1714,10 +1714,37 @@ namespace Rock.Model
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static IQueryable<Group> GetFamilies( this Person person )
+        public static IQueryable<Group> GetFamilies( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetFamilies( person != null ? person.Id : 0 );
+            rockContext = rockContext ?? new RockContext();
+            return new PersonService( rockContext ).GetFamilies( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets the home location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static Location GetHomeLocation ( this Person person )
+        {
+            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            foreach ( var family in person.GetFamilies() )
+            {
+                var loc = family.GroupLocations
+                    .Where( l =>
+                        l.GroupLocationTypeValue.Guid.Equals( homeAddressGuid ) &&
+                        l.IsMappedLocation )
+                    .Select( l => l.Location )
+                    .FirstOrDefault();
+                if ( loc != null )
+                {
+                    return loc;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

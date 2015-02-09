@@ -134,6 +134,7 @@
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
@@ -209,14 +210,17 @@
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
+    <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
+    <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
+    <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
+    <Compile Include="Field\Types\DateTimeFieldType.cs" />
     <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
-    <Compile Include="Field\Types\FilterDateFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
@@ -235,7 +239,7 @@
     <Compile Include="Field\Types\VideoFileFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
-    <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
@@ -558,7 +562,7 @@
     <Compile Include="Field\Types\CampusFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
-    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
       <SubType>Code</SubType>

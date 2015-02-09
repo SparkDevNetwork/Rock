@@ -315,6 +315,11 @@ namespace RockWeb.Blocks.Utility
                     string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                     string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
                     string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
+
+                    // put the file timestamp as part of the url to that changed files are loaded from the server instead of the browser cache
+                    var fileDateTime = File.GetLastWriteTimeUtc( filePath );
+                    imageUrl += "&timeStamp=" + fileDateTime.Ticks.ToString();
+                    
                     string nameHtml = string.Format(
                         nameHtmlFormat,
                         HttpUtility.HtmlEncode( relativeFilePath ),
@@ -451,6 +456,7 @@ namespace RockWeb.Blocks.Utility
             var renameFolderName = tbRenameFolderName.Text;
             if ( IsValidFolderName( renameFolderName ) )
             {
+                mdRenameFolder.Hide();
                 try
                 {
                     string selectedPhysicalFolder = GetSelectedPhysicalFolder();
@@ -501,6 +507,7 @@ namespace RockWeb.Blocks.Utility
         {
             if ( IsValidFolderName( tbNewFolderName.Text ) )
             {
+                mdCreateFolder.Hide();
                 try
                 {
                     string selectedPhysicalFolder = GetSelectedPhysicalFolder();

@@ -73,13 +73,37 @@ namespace Rock.Reporting
             {
                 comparisonExpression = Expression.Equal( valueExpression, value );
             }
-            else if ( comparisonType == ComparisonType.GreaterThan )
+            else if ( comparisonType == ComparisonType.GreaterThan ||
+                comparisonType == ComparisonType.GreaterThanOrEqualTo ||
+                comparisonType == ComparisonType.LessThan ||
+                comparisonType == ComparisonType.LessThanOrEqualTo )
             {
-                comparisonExpression = Expression.GreaterThan( valueExpression, value );
-            }
-            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-            {
-                comparisonExpression = Expression.GreaterThanOrEqual( valueExpression, value );
+                Expression leftExpression = valueExpression;
+                Expression rightExpression = value;
+
+                if ( valueExpression.Type == typeof( string ) )
+                {
+                    var method = valueExpression.Type.GetMethod( "CompareTo", new[] { typeof( string ) } );
+                    leftExpression = Expression.Call( valueExpression, method, value );
+                    rightExpression = Expression.Constant( 0 );
+                }
+
+                if ( comparisonType == ComparisonType.GreaterThan )
+                {
+                    comparisonExpression = Expression.GreaterThan( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+                {
+                    comparisonExpression = Expression.GreaterThanOrEqual( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.LessThan )
+                {
+                    comparisonExpression = Expression.LessThan( leftExpression, rightExpression );
+                }
+                else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
+                {
+                    comparisonExpression = Expression.LessThanOrEqual( leftExpression, rightExpression );
+                }
             }
             else if ( comparisonType == ComparisonType.IsBlank )
             {
@@ -122,14 +146,6 @@ namespace Rock.Reporting
                     }
                 }
             }
-            else if ( comparisonType == ComparisonType.LessThan )
-            {
-                comparisonExpression = Expression.LessThan( valueExpression, value );
-            }
-            else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
-            {
-                comparisonExpression = Expression.LessThanOrEqual( valueExpression, value );
-            }
             else if ( comparisonType == ComparisonType.NotEqualTo )
             {
                 comparisonExpression = Expression.NotEqual( valueExpression, value );
@@ -157,10 +173,15 @@ namespace Rock.Reporting
         /// Gets a dropdownlist of the supported comparison types
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public static RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
+        public static RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes, bool required = true )
         {
             var ddl = new RockDropDownList();
+            if ( !required )
+            {
+                ddl.Items.Add( new ListItem( string.Empty, "0" ) );
+            }
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
             {
                 if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )
@@ -186,11 +207,18 @@ namespace Rock.Reporting
                         ComparisonType.EndsWith;
 
         /// <summary>
-        /// Gets the comparison types typically used for Guid fields
+        /// Gets the comparison types typically used for select or boolean fields
         /// </summary>
-        public const ComparisonType GuidFilterComparisonTypes =
+        public const ComparisonType BinaryFilterComparisonTypes =
                         ComparisonType.EqualTo |
                         ComparisonType.NotEqualTo;
+
+        /// <summary>
+        /// Gets the comparison types typically used for list fields
+        /// </summary>
+        public const ComparisonType ContainsFilterComparisonTypes =
+                        ComparisonType.Contains |
+                        ComparisonType.DoesNotContain;
 
         /// <summary>
         /// Gets the comparison types typically used for numeric fields

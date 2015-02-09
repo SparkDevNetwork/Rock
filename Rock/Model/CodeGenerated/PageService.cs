@@ -59,14 +59,30 @@ namespace Rock.Model
             }  
             
             // ignoring PageView,PageId 
-            
-            // ignoring Site,DefaultPageId 
-            
-            // ignoring Site,LoginPageId 
-            
-            // ignoring Site,PageNotFoundPageId 
-            
-            // ignoring Site,RegistrationPageId 
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.LoginPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.PageNotFoundPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.RegistrationPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
