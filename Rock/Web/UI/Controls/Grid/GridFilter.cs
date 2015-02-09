@@ -386,6 +386,7 @@ namespace Rock.Web.UI.Controls
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs" /> class.
             /// </summary>
             /// <param name="key">The key.</param>
+            /// <param name="name">The name.</param>
             /// <param name="value">The value.</param>
             public DisplayFilterValueArgs( string key, string name, string value )
             {
@@ -406,12 +407,41 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Helper class for user preferences
+        /// </summary>
         public class UserPreference
         {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
             public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
             public string Value { get; set; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="UserPreference"/> class.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="name">The name.</param>
+            /// <param name="value">The value.</param>
             public UserPreference( string key, string name, string value )
             {
                 Key = key;
