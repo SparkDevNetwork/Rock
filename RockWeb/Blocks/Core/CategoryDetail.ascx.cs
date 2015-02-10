@@ -63,8 +63,7 @@ namespace RockWeb.Blocks.Core
             }
             entityTypeQualifierProperty = GetAttributeValue( "EntityTypeQualifierProperty" );
             entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
-            
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName );
+                        
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
         }
 
@@ -345,6 +344,11 @@ namespace RockWeb.Blocks.Core
                 {
                     ShowEditDetails( category );
                 }
+            }
+
+            if ( btnDelete.Visible && btnDelete.Enabled )
+            {
+                btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Category.FriendlyTypeName.ToLower() );
             }
         }
 
