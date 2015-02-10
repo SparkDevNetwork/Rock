@@ -4502,10 +4502,6 @@ a.cke_dialog_ui_button_ok:active {
   background: #5279a0;
   color: #ffffff;
 }
-small {
-  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  margin-top: 2px;
-}
 .clickable {
   cursor: pointer;
 }
