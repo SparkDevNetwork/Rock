@@ -136,6 +136,10 @@
     <Compile Include="Migrations\201502091626293_AddWorkflowNote.Designer.cs">
       <DependentUpon>201502091626293_AddWorkflowNote.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502101527075_AddMySettingsPage.cs" />
+    <Compile Include="Migrations\201502101527075_AddMySettingsPage.Designer.cs">
+      <DependentUpon>201502101527075_AddMySettingsPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1486,6 +1490,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502091626293_AddWorkflowNote.resx">
       <DependentUpon>201502091626293_AddWorkflowNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502101527075_AddMySettingsPage.resx">
+      <DependentUpon>201502101527075_AddMySettingsPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
