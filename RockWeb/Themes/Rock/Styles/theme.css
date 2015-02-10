@@ -1753,10 +1753,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
-  margin-left: -18px;
-  top: 50%;
-  margin-top: -37px;
+  left: 115%;
+  top: -20%;
   opacity: 0.3;
 }
 .updateprogress-status {
