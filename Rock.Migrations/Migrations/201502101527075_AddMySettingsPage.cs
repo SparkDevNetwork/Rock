@@ -44,6 +44,9 @@ namespace Rock.Migrations
             // Attrib Value for Block:Login Status, Attribute:My Settings Page , Layout: Left Sidebar, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "791A6AA0-D498-4795-BB5F-21609175826F", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", @"cf54e680-2e02-4f16-b54b-a2f2d29cd932" );
 
+            // Attrib Value for Block:Login Status, Attribute:My Settings Page , Layout: Person Profile, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "19C2140D-498A-4675-B8A2-18B281736F6E", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", @"cf54e680-2e02-4f16-b54b-a2f2d29cd932" );
+
             // Attrib Value for Block:Login Status, Attribute:My Settings Page , Layout: Right Sidebar, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "2356DEDC-803F-4782-A8E9-D0D88393EC2E", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", @"cf54e680-2e02-4f16-b54b-a2f2d29cd932" );
 
