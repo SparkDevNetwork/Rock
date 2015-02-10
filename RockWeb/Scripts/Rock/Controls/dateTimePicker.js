@@ -14,8 +14,8 @@
                     dateFormat = options.format;
                 }
 
-                var $dp = $('#' + options.id + "_date");
-                var $tp = $('#' + options.id + "_time");
+                var $dp = $('#' + options.id + " .js-datetime-date");
+                var $tp = $('#' + options.id + " .js-datetime-time");
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $dp.datepicker({
