@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Security
 
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
+    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -72,6 +73,7 @@ namespace RockWeb.Blocks.Security
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "PersonId", currentPerson.Id.ToString() );
+                
                 var myProfileUrl = LinkedPageUrl( "MyProfilePage", queryParams );
                 if ( !string.IsNullOrWhiteSpace( myProfileUrl ) )
                 {
@@ -80,6 +82,16 @@ namespace RockWeb.Blocks.Security
                 else
                 {
                     phMyProfile.Visible = false;
+                }
+
+                var mySettingsUrl = LinkedPageUrl( "MySettingsPage", null );
+                if ( !string.IsNullOrWhiteSpace( mySettingsUrl ) )
+                {
+                    hlMySettings.NavigateUrl = mySettingsUrl;
+                }
+                else
+                {
+                    phMySettings.Visible = false;
                 }
 
                 lbLoginLogout.Text = "Logout";
@@ -91,6 +103,7 @@ namespace RockWeb.Blocks.Security
                 phHello.Visible = false;
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;
+                phMySettings.Visible = false;
                 lbLoginLogout.Text = "Login";
             }
 
