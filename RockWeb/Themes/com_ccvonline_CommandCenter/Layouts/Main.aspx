@@ -4,12 +4,14 @@
     		
 <header>
     <div class="container">
-        <div class="pull-left">
-            <Rock:Zone Name="HeaderLeft" runat="server" />
-        </div>	
-	    <div class="pull-right">
-            <Rock:Zone Name="HeaderRight" runat="server" />
-	    </div>
+        <div class="row">
+            <div class="col-md-6">
+                <Rock:Zone Name="HeaderLeft" runat="server" />
+            </div>
+            <div class="col-md-6">
+                <Rock:Zone Name="HeaderRight" runat="server" />
+            </div>
+        </div>
     </div>
 </header>
    
