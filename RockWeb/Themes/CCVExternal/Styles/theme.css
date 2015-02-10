@@ -13460,6 +13460,7 @@ div.aspNetDisabled {
 }
 .masthead-lower .loginstatus li > a,
 .masthead-lower .contextsetter li > a {
+  font-size: .9em;
   line-height: 40px;
 }
 .masthead-lower .contextsetter a {
