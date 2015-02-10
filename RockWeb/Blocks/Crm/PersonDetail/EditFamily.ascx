@@ -82,7 +82,7 @@
                                             <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:AddressControl ID="acAddress" runat="server" />
+                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true"/>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
