@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, string.Empty, string.Empty, "Grade Label", "The label for items that refer to the grade that the person is in.", 0, "Grade", "20A402B4-4098-4040-948E-0C20E44780DD" );
+            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT, string.Empty, string.Empty, "Grade Label", "The label for items that refer to the grade that the person is in.", 0, "Grade", "20A402B4-4098-4040-948E-0C20E44780DD", "core.GradeLabel" );
 
             RockMigrationHelper.AddDefinedType( "Global", "School Grades", "Used to calculate school classes/grades in a way that can be modified for internationalization.", "24E5A79F-1E62-467A-AD5D-0D10A2328B4D", @"" );
 

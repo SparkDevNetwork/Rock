@@ -943,11 +943,17 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid )
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core.' prefix</param>
+        public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid, string key = null )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
                 throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                key = name.Replace( " ", string.Empty );
             }
 
             EnsureEntityTypeExists( entityTypeName );
@@ -980,7 +986,7 @@ namespace Rock.Data
 ",
                     entityTypeName,
                     fieldTypeGuid,
-                    name.Replace( " ", string.Empty ),
+                    key,
                     name,
                     description.Replace( "'", "''" ),
                     order,
@@ -1139,9 +1145,15 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid )
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core attribute for the entity, specify the key with a 'core.' prefix</param>
+        public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
             EnsureEntityTypeExists( entityTypeName );
+
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                key = name.Replace( " ", string.Empty );
+            }
 
             Migration.Sql( string.Format( @"
                  
@@ -1186,7 +1198,7 @@ namespace Rock.Data
 ",
                     entityTypeName,
                     fieldTypeGuid,
-                    name.Replace( " ", string.Empty ),
+                    key,
                     name,
                     description.Replace( "'", "''" ),
                     order,
@@ -1209,8 +1221,14 @@ namespace Rock.Data
         /// <param name="order">The order.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid )
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core.' prefix</param>
+        public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = name.Replace( " ", string.Empty );
+            }
+            
             Migration.Sql( string.Format( @"
                  
                 DECLARE @FieldTypeId int
@@ -1236,7 +1254,7 @@ namespace Rock.Data
 ",
                     "", // no entity; keeps {#} the same as AddEntityAttribute()
                     fieldTypeGuid,
-                    name.Replace( " ", string.Empty ),
+                    key,
                     name,
                     description.Replace( "'", "''" ),
                     order,
@@ -3096,7 +3114,7 @@ INSERT INTO [dbo].[Auth]
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="name">The name.</param>
-        /// <param name="key">The key.</param>
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core person attribute, specify the key with a 'core.' prefix</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>
@@ -3104,7 +3122,6 @@ INSERT INTO [dbo].[Auth]
         /// <param name="guid">The unique identifier.</param>
         public void UpdatePersonAttribute( string fieldTypeGuid, string categoryGuid, string name, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
         {
-
             Migration.Sql( string.Format( @"
                 
                 DECLARE @FieldTypeId int
