@@ -237,9 +237,8 @@ END
 
             Sql( @"
     UPDATE [AttributeValue] 
-    SET [Value] = '{% if Person.LastCheckIn == null %}F{% endif %}'
+    SET [Value] = '{% if Person.FirstTime == true %}F{% endif %}'
     WHERE [Guid] = 'F9D654E2-B715-4C6A-B875-AC690B21B3E8'
-    AND [Value] = '{% if Person.LastCheckIn == '''' %}F{% endif %}'
 " );
         }
 
