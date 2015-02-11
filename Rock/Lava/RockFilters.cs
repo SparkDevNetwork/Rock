@@ -660,7 +660,11 @@ namespace Rock.Lava
                     .FirstOrDefault( a => a.Key.Equals(attributeKey, StringComparison.OrdinalIgnoreCase));
                 if (attribute != null )
                 {
-                    rawValue = globalAttributeCache.GetValue( attributeKey );
+                    // Get the value
+                    string theValue = globalAttributeCache.GetValue( attributeKey );
+
+                    // Global attributes may reference other global attributes, so try to resolve this value again
+                    rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
                 }
             }
 
