@@ -852,7 +852,8 @@ END:VCALENDAR
                 if ( calendarEvent.DTStart != null )
                 {
                     _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
-                    _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
+                    int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
+                    _tbDurationHours.Text = hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
                 }
                 else
@@ -1057,7 +1058,6 @@ END:VCALENDAR
             _tbDurationHours.CssClass = "input-width-md";
             _tbDurationHours.AppendText = "hrs&nbsp;";
             _tbDurationHours.MinimumValue = "0";
-            _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Compilation;
 
@@ -30,5 +31,43 @@ namespace Rock.Model
     /// </summary>
     public partial class ScheduleService 
     {
+        /// <summary>
+        /// Parses the attributes associated with a group type and returns a list of the selected
+        /// schedules for any and all attributes associated with the group type that are a 'Schedules' 
+        /// field type.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Schedule> GetGroupTypeSchedules( GroupType groupType )
+        {
+            var scheduleGuids = new List<Guid>();
+
+            if ( groupType != null )
+            {
+                if ( groupType.Attributes == null )
+                {
+                    groupType.LoadAttributes( (RockContext)this.Context );
+                }
+
+                Guid? scheduleAttributeType = Rock.SystemGuid.FieldType.SCHEDULES.AsGuid();
+                foreach ( var attribute in groupType.Attributes.Select( a => a.Value ) )
+                {
+                    if ( attribute.FieldType.Guid.Equals( scheduleAttributeType ) )
+                    {
+                        var value = groupType.GetAttributeValue( attribute.Key );
+                        foreach ( string splitValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            Guid? guid = splitValue.AsGuidOrNull();
+                            if ( guid.HasValue && !scheduleGuids.Contains( guid.Value ) )
+                            {
+                                scheduleGuids.Add( guid.Value );
+                            }
+                        }
+                    }
+                }
+            }
+
+            return Queryable().AsNoTracking()
+                .Where( s => scheduleGuids.Contains( s.Guid ) );
+        }
     }
 }
