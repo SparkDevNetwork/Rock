@@ -2016,24 +2016,34 @@ SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
 DECLARE @entityTypeId int
 SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,0
-           ,{2}
-           ,'{3}'
-           ,'{4}'
-           ,{5}
-           ,@groupId
-           ,'{6}')
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = 0
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {5}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,0
+               ,{2}
+               ,'{3}'
+               ,'{4}'
+               ,{5}
+               ,@groupId
+               ,'{6}')
+END
 ";
             Migration.Sql( string.Format( sql, 
                 groupGuid ?? Guid.Empty.ToString(), // {0}
@@ -2092,24 +2102,35 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @pageId int
 SET @pageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,@pageId
-           ,{6}
-           ,'{3}'
-           ,'{7}'
-           ,{4}
-           ,@groupId
-           ,'{5}')
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @pageId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId 
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@pageId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
+
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
@@ -2219,24 +2240,34 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @binaryFileTypeId int
 SET @binaryFileTypeId = (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,@binaryFileTypeId
-           ,{6}
-           ,'{3}'
-           ,'{7}'
-           ,{4}
-           ,@groupId
-           ,'{5}')
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @binaryFileTypeId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@binaryFileTypeId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, binaryFileTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
                 ( allow ? "A" : "D" ) ) );
@@ -2287,24 +2318,35 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @groupTypeId int
 SET @groupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,@groupTypeId
-           ,{6}
-           ,'{3}'
-           ,'{7}'
-           ,{4}
-           ,@groupId
-           ,'{5}')
+
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @groupTypeId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@groupTypeId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, groupTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
                 ( allow ? "A" : "D" ) ) );
@@ -2356,24 +2398,34 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @attributeId int
 SET @attributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,@attributeId
-           ,{6}
-           ,'{3}'
-           ,'{7}'
-           ,{4}
-           ,@groupId
-           ,'{5}')
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @attributeId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@attributeId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, attributeGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
@@ -2425,24 +2477,34 @@ SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
 DECLARE @categoryId int
 SET @categoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{2}')
 
-INSERT INTO [dbo].[Auth]
-           ([EntityTypeId]
-           ,[EntityId]
-           ,[Order]
-           ,[Action]
-           ,[AllowOrDeny]
-           ,[SpecialRole]
-           ,[GroupId]
-           ,[Guid])
-     VALUES
-           (@entityTypeId
-           ,@categoryId
-           ,{6}
-           ,'{3}'
-           ,'{7}'
-           ,{4}
-           ,@groupId
-           ,'{5}')
+IF NOT EXISTS ( 
+    SELECT [Id] FROM [dbo].[Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @categoryId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@categoryId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
 ";
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, categoryGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
