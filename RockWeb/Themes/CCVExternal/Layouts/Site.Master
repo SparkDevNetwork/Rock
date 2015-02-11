@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
@@ -56,14 +56,22 @@
             <header class="masthead">
                 <div class="masthead-upper">
                     <div class="masthead-brand">
+                        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                            <i class="fa fa-bars"></i>
+                        </button>
                         <Rock:Zone Name="Header" runat="server" />
                     </div>
+
                     <nav class="masthead-nav">
-                        <Rock:Zone Name="Navigation" runat="server" />
+                        <div class="navbar-collapse collapse">
+                            <Rock:Zone Name="Navigation" runat="server" />
+                        </div>
                     </nav>
                 </div>
                 <div class="masthead-lower">
-                    <Rock:Zone Name="Login" runat="server" />
+                    <div class="navbar-collapse collapse">
+                        <Rock:Zone Name="Login" runat="server" />
+                    </div>
                 </div>
             </header>
         </div>

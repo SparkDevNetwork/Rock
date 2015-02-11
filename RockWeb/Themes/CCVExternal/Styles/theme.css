@@ -5314,7 +5314,6 @@ div.aspNetDisabled {
 }
 .masthead-upper {
   background-color: #1d1d1d;
-  padding: 30px 0;
 }
 .masthead-upper:before,
 .masthead-upper:after {
@@ -5324,12 +5323,31 @@ div.aspNetDisabled {
 .masthead-upper:after {
   clear: both;
 }
+@media (min-width: 768px) {
+  .masthead-upper {
+    padding: 30px 0;
+  }
+}
 .masthead-upper a {
   color: #fff;
 }
+.masthead .navbar-toggle {
+  margin: 0;
+  color: #eeeeee;
+  background: #333;
+  border-radius: 0;
+  padding: 12px 15px 13px;
+}
+.masthead .navbar-toggle.collapsed {
+  background: none;
+}
 .masthead-brand {
-  float: left;
   overflow: hidden;
+}
+@media (min-width: 768px) {
+  .masthead-brand {
+    float: left;
+  }
 }
 .masthead-brand .logo {
   display: block;
@@ -5339,16 +5357,25 @@ div.aspNetDisabled {
   min-width: 235px;
   margin-left: -15px;
 }
+.navbar-collapse {
+  box-shadow: none;
+}
 .masthead-navitems {
   margin: 0;
   list-style-type: none;
-  text-align: right;
   text-transform: uppercase;
   letter-spacing: .5px;
-  padding: 0 30px;
   line-height: 40px;
   padding-top: 5px;
   padding-bottom: 5px;
+  text-align: center;
+  padding: 15px 0;
+}
+@media (min-width: 768px) {
+  .masthead-navitems {
+    text-align: right;
+    padding: 0 30px;
+  }
 }
 .masthead-navitem {
   display: inline-block;

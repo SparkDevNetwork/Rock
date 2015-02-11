@@ -5,14 +5,29 @@
   .masthead-upper {
     .clearfix();
     background-color: #1d1d1d;
-    padding: @grid-gutter-width 0;
+    @media @sm {
+      padding: @grid-gutter-width 0;
+    }
 
     a { color: #fff; }
   }
 
+    .masthead .navbar-toggle {
+      margin: 0;
+      color: @gray-lighter;
+      background: #333;
+      border-radius: 0;
+      padding: 12px 15px 13px;
+      &.collapsed {
+        background: none;
+      }
+    }
+
     .masthead-brand {
-      float: left;
       overflow: hidden;
+      @media @sm {
+        float: left;
+      }
     }
 
       .masthead-brand .logo {
@@ -27,35 +42,43 @@
     .masthead-nav {
     }
 
-      .masthead-navitems {
-        margin: 0;
-        list-style-type: none;
-        text-align: right;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        padding: 0 @grid-gutter-width;
-        line-height: 40px;
-        padding-top: 5px;
-        padding-bottom: 5px;
+      .navbar-collapse {
+        box-shadow: none;
       }
 
-        .masthead-navitem {
-          display: inline-block;
-          padding: 0 @grid-gutter-width/2;
-          .transition(opacity .5s);
-
-          &:hover {
-            .opacity(.75);
-          }
-
-          &.active {
-            border-bottom: 2px solid @gray;
-          }
-
-          a {
-            text-decoration: none;
+        .masthead-navitems {
+          margin: 0;
+          list-style-type: none;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+          line-height: 40px;
+          padding-top: 5px;
+          padding-bottom: 5px;
+          text-align: center;
+          padding: @grid-gutter-width/2 0;
+          @media @sm {
+            text-align: right;
+            padding: 0 @grid-gutter-width;
           }
         }
+
+          .masthead-navitem {
+            display: inline-block;
+            padding: 0 @grid-gutter-width/2;
+            .transition(opacity .5s);
+
+            &:hover {
+              .opacity(.75);
+            }
+
+            &.active {
+              border-bottom: 2px solid @gray;
+            }
+
+            a {
+              text-decoration: none;
+            }
+          }
 
   .masthead-lower {
     .clearfix();
@@ -91,7 +114,8 @@
       color: @gray-light;
       font-style: italic;
     }
-    @media @sm {
-      .masthead-lower .contextsetter a { padding: 0 @grid-gutter-width; }
-      .masthead-lower .loginstatus a { padding: 0 @grid-gutter-width/4; }
-    }
+
+@media @sm {
+  .masthead-lower .contextsetter a { padding: 0 @grid-gutter-width; }
+  .masthead-lower .loginstatus a { padding: 0 @grid-gutter-width/4; }
+}

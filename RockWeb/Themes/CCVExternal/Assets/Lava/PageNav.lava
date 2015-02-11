@@ -6,6 +6,11 @@
 				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
       </li>
     {% endfor %}
+      <li class="masthead-navitem">
+        <a data-toggle="collapse" href="#subnav" aria-expanded="false" aria-controls="subnav">
+          <div class="menu-icon"><span class="lines"></span></div> Menu
+        </a>
+      </li>
 
     </ul>
 {% endif %}
