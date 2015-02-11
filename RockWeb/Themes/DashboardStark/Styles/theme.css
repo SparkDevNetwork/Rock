@@ -1820,6 +1820,44 @@ fieldset .actions {
     -webkit-transform: scaleY(1);
   }
 }
+.groupmembers {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+.groupmembers .member {
+  float: left;
+  margin-right: 15px;
+  margin-bottom: 15px;
+  min-width: 160px;
+  border-radius: 4px;
+}
+.groupmembers .member .person-image {
+  border: 1px solid #999999;
+  float: left;
+  margin-right: 7.5px;
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+}
+.groupmembers .member .member-information {
+  float: left;
+}
+.groupmembers .member h4 {
+  font-size: 16px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin: 0;
+}
+.groupmembers .member small {
+  display: block;
+  line-height: 16px;
+  margin: 0;
+}
+.groupmembers .member .btn {
+  margin-top: 6px;
+}
 .well-message {
   text-align: center;
 }
@@ -1849,41 +1887,6 @@ fieldset .actions {
   background-color: #fcf8e3;
   color: #c09853;
   border-color: #fbeed5;
-}
-ul.groupmembers {
-  list-style: none;
-  margin: 6px 0;
-  padding: 0;
-}
-ul.groupmembers li.member {
-  float: left;
-  margin-right: 15px;
-  margin-bottom: 15px;
-  min-width: 140px;
-  border-radius: 4px;
-}
-ul.groupmembers li.member .person-image {
-  border: 1px solid #999999;
-  float: left;
-  margin-right: 7.5px;
-  display: inline-block;
-  width: 60px;
-  height: 60px;
-}
-ul.groupmembers li.member h4 {
-  font-size: 16px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin: 0;
-}
-ul.groupmembers li.member small {
-  display: block;
-  line-height: 16px;
-  margin: 0;
-}
-ul.groupmembers li.member .btn {
-  margin-top: 6px;
 }
 .loginstatus > li {
   min-width: 160px;
@@ -3615,15 +3618,13 @@ table.attribute-grid tr th:nth-child(3) {
   margin-top: 12px;
 }
 .editfamily-list li.member {
-  max-width: 200px;
+  min-width: 200px;
 }
 .editfamily-list li.member .radio {
-  width: 65px;
-  float: left;
   margin: 0;
 }
-.editfamily-list li.member h4 {
-  height: 38px;
+.editfamily-list .groupmembers h4 {
+  margin-bottom: 4px;
 }
 span.field-name {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
