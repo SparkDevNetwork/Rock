@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
-                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && ( !_entityId.HasValue || _entityId.Value == 0 ) )
                     {
                         Rock.Web.Cache.GlobalAttributesCache.Flush();
                     }
