@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gContentChannelItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gContentChannelItems.DataSource = itemQry.ToList().Select( i => new
+                gContentChannelItems.DataSource = items.Select( i => new
                 {
                     i.Id,
                     i.Guid,
