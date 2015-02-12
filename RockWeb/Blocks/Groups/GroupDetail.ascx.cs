@@ -306,6 +306,17 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                // If group has a unique schedule, delete the schedule record.
+                if ( group.ScheduleId.HasValue )
+                {
+                    var scheduleService = new ScheduleService( rockContext );
+                    var schedule = scheduleService.Get( group.ScheduleId.Value );
+                    if ( schedule != null && string.IsNullOrEmpty(schedule.Name) )
+                    {
+                        scheduleService.Delete(schedule);
+                    }
+                }
+
                 groupService.Delete( group );
 
                 rockContext.SaveChanges();
@@ -363,7 +374,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                group = groupService.Queryable( "GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
+                group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
                 wasSecurityRole = group.IsSecurityRole;
 
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
@@ -414,6 +425,51 @@ namespace RockWeb.Blocks.Groups
             group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+
+            string iCalendarContent = string.Empty;
+
+            // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
+            var scheduleType = rblScheduleSelect.SelectedValue;
+            if ( scheduleType == "Unique" )
+            {
+                iCalendarContent = sbSchedule.iCalendarContent;
+                var calEvent = Schedule.GetCalenderEvent( iCalendarContent );
+                if ( calEvent == null || calEvent.DTStart == null )
+                {
+                    scheduleType = "None";
+                }
+            }
+
+            int? oldUniqueScheduleId = hfUniqueScheduleId.Value.AsIntegerOrNull();
+            if ( scheduleType == "Unique" )
+            {
+                if ( !oldUniqueScheduleId.HasValue || group.Schedule == null )
+                {
+                    group.Schedule = new Schedule();
+                }
+                group.Schedule.iCalendarContent = iCalendarContent;
+            }
+            else
+            {
+                // If group did have a unique schedule, delete that schedule
+                if ( oldUniqueScheduleId.HasValue )
+                {
+                    var schedule = scheduleService.Get( oldUniqueScheduleId.Value );
+                    if ( schedule != null && string.IsNullOrEmpty(schedule.Name) )
+                    {
+                        scheduleService.Delete(schedule);
+                    }
+                }
+
+                if ( scheduleType == "Named" )
+                {
+                    group.ScheduleId = spSchedule.SelectedValueAsId();
+                }
+                else
+                {
+                    group.ScheduleId = null;
+                }
+            }
 
             if ( group.ParentGroupId == group.Id )
             {
@@ -667,6 +723,16 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblScheduleSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void rblScheduleSelect_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetScheduleDisplay();
+        }
+
         #endregion
 
         #region Internal Methods
@@ -844,6 +910,37 @@ namespace RockWeb.Blocks.Groups
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
 
+            bool canAdminister = UserCanAdministrate || group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            rblScheduleSelect.Enabled = canAdminister;
+            spSchedule.Enabled = canAdminister;
+            sbSchedule.Enabled = canAdminister;
+
+            if ( group.Schedule != null )
+            {
+                if ( string.IsNullOrWhiteSpace( group.Schedule.Name ))
+                {
+                    rblScheduleSelect.SelectedValue = "Unique";
+                    spSchedule.SetValue( null );
+                    hfUniqueScheduleId.Value = group.Schedule.Id.ToString();
+                    sbSchedule.iCalendarContent = group.Schedule.iCalendarContent;
+                }
+                else
+                {
+                    rblScheduleSelect.SelectedValue = "Named";
+                    spSchedule.SetValue( group.Schedule );
+                    hfUniqueScheduleId.Value = string.Empty;
+                    sbSchedule.iCalendarContent = string.Empty;
+                }
+            }
+            else
+            {
+                rblScheduleSelect.SelectedValue = "None";
+                spSchedule.SetValue( null );
+                hfUniqueScheduleId.Value = string.Empty;
+                sbSchedule.iCalendarContent = string.Empty;
+            }
+            SetScheduleDisplay();
+
             var rockContext = new RockContext();
 
             var groupService = new GroupService( rockContext );
@@ -983,6 +1080,11 @@ namespace RockWeb.Blocks.Groups
             if ( group.ParentGroup != null )
             {
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
+            }
+
+            if ( group.Schedule != null )
+            {
+                descriptionList.Add( "Schedule", group.Schedule.ToString() );
             }
 
             if ( group.Campus != null )
@@ -1755,6 +1857,32 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.DataBind();
         }
 
+        private void SetScheduleDisplay()
+        {
+            switch ( rblScheduleSelect.SelectedValue )
+            {
+                case "None":
+                    {
+                        spSchedule.Visible = false;
+                        sbSchedule.Visible = false;
+                        break;
+                    }
+                case "Unique":
+                    {
+                        spSchedule.Visible = false;
+                        sbSchedule.Visible = true;
+                        break;
+                    }
+                case "Named":
+                    {
+                        spSchedule.Visible = true;
+                        sbSchedule.Visible = false;
+                        break;
+                    }
+            }
+        }
+
         #endregion
+
     }
 }

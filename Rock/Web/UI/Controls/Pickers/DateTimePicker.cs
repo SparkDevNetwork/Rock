@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
                     DateTime? timeResult = _time.Text.AsDateTime();
                     if ( timeResult.HasValue )
                     {
-                        result.Value.Add( timeResult.Value.TimeOfDay );
+                        result = result.Value.Add( timeResult.Value.TimeOfDay );
                     }
 
                     return result;
