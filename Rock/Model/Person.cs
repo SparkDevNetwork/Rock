@@ -938,14 +938,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the grade level of the person based on their high school graduation date.  Grade levels are -1 for prekindergarten, 0 for kindergarten, 1 for first grade, etc. or null if they have no graduation date or if no 'GradeTransitionDate' is configured.
+        /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
         /// <value>
-        /// The Person's grade level based on their Graduation Date. If no graduation date is provided or the GradeTransitionDate is not provided, returns null.
+        /// The grade offset.
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual int? Grade
+        public virtual int? GradeOffset
         {
             get
             {
@@ -955,29 +955,36 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade their in
-                    DateTime transitionDate;
+                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade (gradeOffset) they're in
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( !DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
+                    {
+                        // if the next graduation mm/dd won't happen until next year, refactor the graduationdate to the prior year
+                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationdate to the prior year
+                        // in other words, we are treating the grade transition date as the last day of the "school" year
+                        DateTime graduationDateRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationDate.Value : this.GraduationDate.Value.AddYears( -1 );
+
+                        int offsetYears = graduationDateRefactor.Year - RockDateTime.Now.Year;
+                        return offsetYears;
+                    }
+                    else
                     {
                         return null;
                     }
-
-                    int gradeMaxFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - RockDateTime.Now.Year );
                 }
             }
 
             set
             {
-                if ( value.HasValue && value.Value <= 12 )
+                if ( value.HasValue && value >= 0 )
                 {
-                    DateTime transitionDate;
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
                     {
-                        int gradeFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                        GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
+                        int gradeOffsetFactorRefactor = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value - 1;
+                        GraduationDate = transitionDate.Value.AddYears( -gradeOffsetFactorRefactor );
                     }
                 }
                 else
@@ -999,25 +1006,18 @@ namespace Rock.Model
         {
             get
             {
-                int? grade = Grade;
-                if ( grade.HasValue )
+                int? gradeOffset = GradeOffset;
+
+                if ( gradeOffset.HasValue )
                 {
-                    switch ( grade.Value )
+                    var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                    if ( schoolGrades != null )
                     {
-                        case 0: { return "Kindergarten"; }
-                        case 1: { return "1st Grade"; }
-                        case 2: { return "2nd Grade"; }
-                        case 3: { return "3rd Grade"; }
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                        case 9:
-                        case 10:
-                        case 11:
-                        case 12: { return string.Format( "{0}th Grade", grade.Value ); }
-                        default: { return string.Empty; }
+                        var schoolGradeValue = schoolGrades.DefinedValues.OrderByDescending( a => a.Value ).Where( a => a.Value.AsDecimalOrNull() <= gradeOffset.Value ).FirstOrDefault();
+                        if (schoolGradeValue != null)
+                        {
+                            return schoolGradeValue.Description;
+                        }
                     }
                 }
 

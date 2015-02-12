@@ -1479,7 +1479,13 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "grade" ) != null )
                     {
-                        person.Grade = int.Parse( personElem.Attribute( "grade" ).Value.Trim() );
+                        int? grade = personElem.Attribute( "grade" ).Value.AsIntegerOrNull();
+                        if (grade.HasValue)
+                        {
+                            // convert the grade (0-12 where 12 = Senior), to a GradeOffset (12-0 where 12 = K and 0 = Senior)
+                            int gradeOffset = 12 - grade.Value;
+                            person.GradeOffset = gradeOffset >= 0 ? gradeOffset : (int?)null;
+                        }
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
                     {

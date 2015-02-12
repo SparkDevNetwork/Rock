@@ -139,13 +139,26 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( ddlIntegerCompare );
             controls.Add( ddlIntegerCompare );
 
-            var numberBox = new NumberBox();
-            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-            numberBox.AddCssClass( "js-filter-control" );
-            filterControl.Controls.Add( numberBox );
-            controls.Add( numberBox );
+            var ddlGradeDefinedValue = new DropDownList();
+            ddlGradeDefinedValue.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            ddlGradeDefinedValue.AddCssClass( "js-filter-control" );
 
-            numberBox.FieldName = "Grade";
+            ddlGradeDefinedValue.Items.Clear();
+            // add blank item as first item
+            ddlGradeDefinedValue.Items.Add( new ListItem() );
+
+            var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades != null )
+            {
+                foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+                {
+                    string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
+                    ddlGradeDefinedValue.Items.Add( new ListItem( string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation, schoolGrade.Guid.ToString() ) );
+                }
+            }
+
+            filterControl.Controls.Add( ddlGradeDefinedValue );
+            controls.Add( ddlGradeDefinedValue );
 
             return controls.ToArray();
         }
@@ -160,8 +173,8 @@ namespace Rock.Reporting.DataFilter.Person
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
-            NumberBox nbValue = controls[1] as NumberBox;
-            
+            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
+
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
@@ -170,11 +183,11 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
-            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
+            ddlGradeDefinedValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            nbValue.RenderControl( writer );
+            ddlGradeDefinedValue.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -191,9 +204,9 @@ namespace Rock.Reporting.DataFilter.Person
         public override string GetSelection( Type entityType, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
-            NumberBox nbValue = controls[1] as NumberBox;
+            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
 
-            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, nbValue.Text );
+            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, ddlGradeDefinedValue.SelectedValue );
         }
 
         /// <summary>
@@ -207,12 +220,12 @@ namespace Rock.Reporting.DataFilter.Person
             var values = selection.Split( '|' );
 
             DropDownList ddlCompare = controls[0] as DropDownList;
-            NumberBox nbValue = controls[1] as NumberBox;
+            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
 
             if ( values.Length == 2 )
             {
                 ddlCompare.SelectedValue = values[0];
-                nbValue.Text = values[1];
+                ddlGradeDefinedValue.SetValue( values[1] );
             }
         }
 
@@ -228,20 +241,43 @@ namespace Rock.Reporting.DataFilter.Person
         {
             // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
             DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            int? gradeMaxFactorReactor = null;
-            int currentYear = RockDateTime.Now.Year;
+            
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-            int? gradeValue = values[1].AsIntegerOrNull();
+            Guid? gradeDefinedValueGuid = values[1].AsGuidOrNull();
+            DefinedTypeCache gradeDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            DefinedValueCache gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
+            int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
-            if ( gradeTransitionDate.HasValue )
+            if ( gradeTransitionDate.HasValue && gradeOffset.HasValue)
             {
-                gradeMaxFactorReactor = ( RockDateTime.Now < gradeTransitionDate ) ? 12 : 13;
-                var personEqualGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) == gradeValue ) );
-                BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personEqualGradeQuery, parameterExpression, "p" ) as BinaryExpression;
-                BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
-                return result;
+                var currentYear = RockDateTime.Now.Year;
+                int graduationDateAdjustor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
+
+
+                /// TODO figure out how to convert to compare query
+
+                
+                if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    // special case for equal since Grades can be combined (instead of 6th and 7th, they just call it Jr. High)
+                    var personEqualGradeQuery = personGradeQuery.Where( p =>
+                        ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate ) - graduationDateAdjustor ) <= gradeOffset 
+                        &&
+                        ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate ) - graduationDateAdjustor ) < ( gradeOffset + 1 )
+                        );
+                        
+                    Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personEqualGradeQuery, parameterExpression, "p" );
+                    return result;
+                }
+                else
+                {
+                    var personBaseEqualGradeQuery = personGradeQuery.Where( p => ( ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate )  - graduationDateAdjustor ) == gradeOffset.Value ) );
+                    BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personBaseEqualGradeQuery, parameterExpression, "p" ) as BinaryExpression;
+                    BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
+                    return result;
+                }
             }
             else
             {

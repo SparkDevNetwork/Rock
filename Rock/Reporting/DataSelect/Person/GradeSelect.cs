@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -73,8 +74,24 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( int? ); }
+            get { return typeof( DateTime? ); }
         }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            var result = new CallbackField();
+            result.OnFormatDataValue += FormatGridDataValue;
+
+            return result;
+        }
+
+        
 
         /// <summary>
         /// Gets the default column header text.
@@ -108,6 +125,19 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Handles the OnFormatDataValue event of the CallbackField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void FormatGridDataValue( object sender, CallbackField.CallbackEventArgs e )
+        {
+            var fakePerson = new Rock.Model.Person();
+            fakePerson.GraduationDate = e.DataValue as DateTime?;
+            e.FormattedValue = fakePerson.GradeFormatted;
+        }
+        
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -116,27 +146,14 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            // NOTE: this.GetGridField returns a CallbackField and the grade grid output is figured out up in this.FormatGridDataValue 
+            // the callback needs the GraduationDate to format the Grade output
+            var personGradeQuery = new PersonService( context ).Queryable()
+                    .Select( p => p.GraduationDate );
 
-            if (gradeTransitionDate.HasValue)
-            {
-                int gradeMaxFactorReactor = ( RockDateTime.Now < gradeTransitionDate ) ? 12 : 13;
-                int currentYear = RockDateTime.Now.Year;
-                
-                //// have SQL Server do the same thing that Person.Grade {get; } does
-                var personGradeQuery = new PersonService( context ).Queryable()
-                    .Select( p => gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate) - currentYear) );
+            var selectGradeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, entityIdProperty, "p" );
 
-                var selectGradeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, entityIdProperty, "p" );
-
-                return selectGradeExpression;
-            }
-            else
-            {
-                // no grade transition date defined, so just return null
-                return Expression.Constant( null, typeof( int? ) );
-            }
+            return selectGradeExpression;
         }
 
         /// <summary>
