@@ -260,22 +260,7 @@ namespace Rock.Model
         /// </value>
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
-
-            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
-            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-            DDay.iCal.Event calendarEvent = null;
-            if ( calendarList.Count > 0 )
-            {
-                var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                if ( calendar != null )
-                {
-                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                }
-            }
-
-            return calendarEvent;
+            return Schedule.GetCalenderEvent( iCalendarContent );
         }
 
         /// <summary>
@@ -593,6 +578,35 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.ToFriendlyScheduleText();
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the calender event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+
+            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+            DDay.iCal.Event calendarEvent = null;
+            if ( calendarList.Count > 0 )
+            {
+                var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                if ( calendar != null )
+                {
+                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                }
+            }
+
+            return calendarEvent;
         }
 
         #endregion

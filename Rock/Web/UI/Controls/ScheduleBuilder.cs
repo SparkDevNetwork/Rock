@@ -837,12 +837,14 @@ END:VCALENDAR
                     calendar = calendarList[0] as DDay.iCal.iCalendar;
                     if ( calendar == null )
                     {
+                        _radOneTime.Checked = true;
                         _iCalendarContent = iCalendarContentEmptyEvent;
                         return;
                     }
                 }
                 else
                 {
+                    _radOneTime.Checked = true;
                     _iCalendarContent = iCalendarContentEmptyEvent;
                     return;
                 }

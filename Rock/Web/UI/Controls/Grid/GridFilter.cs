@@ -290,7 +290,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetUserPreference( string key )
         {
-            return _userPreferences.Where( p => p.Key == key).Select( p => p.Value).FirstOrDefault();
+            return _userPreferences.Where( p => p.Key == key ).Select( p => p.Value ).FirstOrDefault() ?? string.Empty;
         }
 
         /// <summary>
