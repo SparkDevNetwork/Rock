@@ -31,8 +31,9 @@
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
 	</remarks>
 	<code>
-		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1  -- year 2014 statements for all persons
-        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1  -- year 2014 statements for Ted Decker
+		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 0, 1 -- year 2014 statements for all persons that have a mailing address
+        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1, 1 -- year 2014 statements for all persons regardless of mailing address
+        EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1, 1  -- year 2014 statements for Ted Decker
 	</code>
 </doc>
 */
@@ -41,6 +42,7 @@ ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
 	, @EndDate datetime
 	, @AccountIds varchar(max) 
 	, @PersonId int -- NULL means all persons
+    , @IncludeIndividualsWithNoAddress bit 
 	, @OrderByPostalCode bit
 AS
 BEGIN
@@ -72,10 +74,12 @@ BEGIN
 			)
 	)
 
-	SELECT 
+	SELECT * FROM (
+    SELECT 
 		  [pg].[PersonId]
 		, [pg].[GroupId]
 		, [pn].[PersonNames] [AddressPersonNames]
+        , case when l.Id is null then 0 else 1 end [HasAddress]
 		, [l].[Street1]
 		, [l].[Street2]
 		, [l].[City]
@@ -148,7 +152,9 @@ BEGIN
         ) [l] 
         ON 
 		[l].[GroupId] = [pg].[GroupId]
-	
-	ORDER BY
+    ) n
+    WHERE n.HasAddress = 1 or @IncludeIndividualsWithNoAddress = 1
+    ORDER BY
 	CASE WHEN @OrderByPostalCode = 1 THEN PostalCode END
+    
 END

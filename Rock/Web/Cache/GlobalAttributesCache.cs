@@ -248,7 +248,7 @@ namespace Rock.Web.Cache
                 var attributes = attributeService.GetGlobalAttributes();
                 var attributeValues = attributeValueService.Queryable()
                     .Where( v =>
-                        !v.EntityId.HasValue &&
+                        (!v.EntityId.HasValue || v.EntityId.Value == 0) &&
                         attributes.Select( a => a.Id ).ToList().Contains( v.AttributeId ) )
                     .ToList();
 

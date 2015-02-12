@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatementGenerator", "..\..\Applications\Wpf\StatementGenerator\StatementGenerator.csproj", "{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}"
 EndProject
@@ -15,6 +15,8 @@ Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "StatementGeneratorInstall",
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "..\..\DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Client", "..\..\Rock.Client\Rock.Client.csproj", "{6EA64BB9-9740-453A-939B-DF43AD9AC164}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,16 @@ Global
 		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
 		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.SingleImage|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

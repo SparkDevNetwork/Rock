@@ -82,6 +82,15 @@ namespace Rock.CheckIn
         public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this is the person's first time checking in.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [first checkin]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool FirstTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the the unique code for check-in labels
         /// </summary>
         /// <value>
@@ -152,7 +161,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "SecurityCode" };
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
                 if ( this.Person != null )
                 {
                     availableKeys.AddRange( this.Person.AvailableKeys );
@@ -178,6 +187,7 @@ namespace Rock.CheckIn
                {
                    case "FamilyMember": return FamilyMember;
                    case "LastCheckIn": return LastCheckIn;
+                   case "FirstTime": return FirstTime;
                    case "SecurityCode": return SecurityCode;
                    default: return Person[key];
                }
@@ -191,7 +201,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "SecurityCode" };
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;

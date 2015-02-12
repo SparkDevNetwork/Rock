@@ -38,7 +38,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The title label
         /// </summary>
-        private HiddenField _hfTitle;
+        private HiddenFieldWithClass _hfTitle;
+
+        /// <summary>
+        /// The hidden field to tell validator to disable vrm for _hfTitle
+        /// </summary>
+        private HiddenField _hfTitleDisableVrm;
 
         /// <summary>
         /// The delete button
@@ -219,9 +224,16 @@ $('.js-stop-immediate-propagation').click(function (event) {
             Controls.Add( _hfExpanded );
             _hfExpanded.Value = "False";
 
-            _hfTitle = new HiddenField();
+            _hfTitle = new HiddenFieldWithClass();
+            _hfTitle.ValidateRequestMode = System.Web.UI.ValidateRequestMode.Disabled;
             _hfTitle.ID = "_hfTitle";
+            _hfTitle.CssClass = "js-header-title-hidden";
             Controls.Add( _hfTitle );
+
+            _hfTitleDisableVrm = new HiddenField();
+            _hfTitleDisableVrm.ID = _hfTitle.ID + "_dvrm";
+            _hfTitleDisableVrm.Value = "True";
+            Controls.Add( _hfTitleDisableVrm ); 
 
             _lbDelete = new LinkButton();
             _lbDelete.ID = "_lbDelete";
@@ -276,8 +288,8 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // Hidden Field to track Title
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
                 _hfTitle.RenderControl( writer );
+                _hfTitleDisableVrm.RenderControl( writer );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title" );
                 if ( Expanded )
@@ -389,6 +401,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                     List<Control> alreadyRenderedControls = new List<Control>();
                     alreadyRenderedControls.Add( _hfExpanded );
                     alreadyRenderedControls.Add( _hfTitle );
+                    alreadyRenderedControls.Add( _hfTitleDisableVrm );
                     alreadyRenderedControls.Add( _lbDelete );
                     if ( this.HeaderControls != null )
                     {

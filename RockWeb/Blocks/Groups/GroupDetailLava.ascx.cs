@@ -506,51 +506,44 @@ namespace RockWeb.Blocks.Groups
                 }
                 var group = qry.FirstOrDefault();
 
-                // check security on the group
-                if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson ) || group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Group", group );
+
+                // add linked pages
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                // add collection of allowed security actions
+                Dictionary<string, object> securityActions = new Dictionary<string, object>();
+                securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                mergeFields.Add( "AllowedActions", securityActions );
+
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                string template = GetAttributeValue( "LavaTemplate" );
+
+                // show debug info
+                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", group );
+                    string postbackCommands = @"<h5>Available Postback Commands</h5>
+                                                <ul>
+                                                    <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
+                                                    <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
+                                                    <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
+                                                    <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
+                                                </ul>";
 
-                    // add linked pages
-                    Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                    linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
-                    mergeFields.Add( "LinkedPages", linkedPages );
-
-                    // add collection of allowed security actions
-                    Dictionary<string, object> securityActions = new Dictionary<string, object>();
-                    securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
-                    securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
-                    securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
-                    mergeFields.Add( "AllowedActions", securityActions );
-
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                    string template = GetAttributeValue( "LavaTemplate" );
-
-                    // show debug info
-                    if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                    {
-                        string postbackCommands = @"<h5>Available Postback Commands</h5>
-                                                    <ul>
-                                                        <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
-                                                        <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
-                                                        <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
-                                                        <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
-                                                    </ul>";
-
-                        lDebug.Visible = true;
-                        lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
-                    }
-
-                    lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
                 }
-                else
-                {
-                    lContent.Text = "<div class='alert alert-warning'>You do not have access to view this group.</div>";
-                }
+
+                lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+
             }
             else
             {
