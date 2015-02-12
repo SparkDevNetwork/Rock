@@ -1374,13 +1374,6 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-/*.title {
-    font-weight: @title-default-weight;
-
-    .first-word {
-        font-weight: @title-firstword-weight;
-    }
-}*/
 .code-editor {
   position: relative;
 }
@@ -5212,6 +5205,7 @@ div.aspNetDisabled {
     7. Responsive Overrides
     8. Side Navbar
     9. Person Details
+    10. First Word Weight
 
 */
 /*#region
@@ -5741,5 +5735,14 @@ body.navbar-side-close #content-wrapper {
 }
 .personprofile .pagetabs {
   margin-bottom: 12px;
+}
+/*#endregion */
+/*#region
+// 10. First Word Weight  */
+.title {
+  font-weight: 300;
+}
+.title .first-word {
+  font-weight: 900;
 }
 /*#endregion */

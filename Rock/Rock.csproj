@@ -135,6 +135,7 @@
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\DateTimeFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
     <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -953,7 +955,7 @@
     <Compile Include="Field\Types\SelectMultiFieldType.cs" />
     <Compile Include="Field\Types\PersonFieldType.cs" />
     <Compile Include="Field\Types\DecimalFieldType.cs" />
-    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
     <Compile Include="Field\Types\DateFieldType.cs" />
     <Compile Include="Field\Types\ImageFieldType.cs" />

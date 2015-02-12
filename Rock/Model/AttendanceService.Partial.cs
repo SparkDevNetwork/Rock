@@ -70,7 +70,8 @@ namespace Rock.Model
                     a.StartDateTime < endDate &&
                     !a.EndDateTime.HasValue &&
                     a.LocationId == locationId &&
-                    a.DidAttend );
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value );
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
-            var qry = Queryable().AsNoTracking().Where( a => a.DidAttend );
+            var qry = Queryable().AsNoTracking().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
 
             if ( startDate.HasValue )
             {

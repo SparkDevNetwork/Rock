@@ -66,6 +66,16 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
+                            <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
+                                <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" >
+                                    <asp:ListItem Text="None" Value="None" />
+                                    <asp:ListItem Text="Unique" Value="Unique" />
+                                    <asp:ListItem Text="Named Schedule" Value="Named" />
+                                </Rock:RockRadioButtonList>
+                                <Rock:SchedulePicker ID="spSchedule" runat="server" AllowMultiSelect="false" Visible="false" />
+                                <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" />
+                            </Rock:RockControlWrapper>
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
@@ -129,8 +139,14 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <asp:Literal ID="lblMainDetails" runat="server" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6 location-maps">
                                 <asp:PlaceHolder ID="phMaps" runat="server" />
