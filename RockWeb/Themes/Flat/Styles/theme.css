@@ -1376,13 +1376,6 @@ div.tagsinput .tags_clear {
 fieldset .actions {
   margin-top: 12px;
 }
-/*.title {
-    font-weight: @title-default-weight;
-
-    .first-word {
-        font-weight: @title-firstword-weight;
-    }
-}*/
 .code-editor {
   position: relative;
 }
