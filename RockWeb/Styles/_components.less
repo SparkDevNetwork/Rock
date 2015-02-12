@@ -882,17 +882,6 @@ fieldset .actions {
     margin-top: 12px;
 }
 
-
-// 12. Titles
-// ------------------------
-/*.title {
-    font-weight: @title-default-weight;
-
-    .first-word {
-        font-weight: @title-firstword-weight;
-    }
-}*/
-
 // 13. Code Editor
 // -------------------------
 .code-editor {
@@ -1338,10 +1327,8 @@ fieldset .actions {
     .upload-progress {
         position: absolute;
         z-index: 2;
-        left: 50%;
-        margin-left: -18px;
-        top: 50%;
-        margin-top: -37px;
+        left: 115%;
+        top: -20%;
         opacity: 0.3;
     }
 }
@@ -1422,6 +1409,51 @@ fieldset .actions {
 // 19. Group List
 // -------------------------
 
+.groupmembers {
+    list-style: none;
+    margin: 6px 0;
+    padding: 0;
+
+    .member {
+        float: left;
+        margin-right: @spacing-md-px;
+        margin-bottom: @spacing-md-px;
+        min-width: 160px;
+        border-radius: @border-radius-base;
+
+        .person-image {
+            border: 1px solid @accent-semibold-color;
+            float: left;
+            margin-right: 7.5px;
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+        }
+
+        .member-information {
+            float: left;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: @font-weight-semibold;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        small {
+            display: block;
+            line-height: 16px;
+            margin: 0;
+        }
+
+        .btn {
+            margin-top: 6px;
+        }
+    }
+}
+
 // 20. Well Messages
 // -------------------------
 .well-message {
@@ -1462,46 +1494,7 @@ fieldset .actions {
     }
 }
 
-ul.groupmembers {
-    list-style: none;
-    margin: 6px 0;
-    padding: 0;
 
-    li.member {
-        float: left;
-        margin-right: @spacing-md-px;
-        margin-bottom: @spacing-md-px;
-        min-width: 140px;
-        border-radius: @border-radius-base;
-
-        .person-image {
-            border: 1px solid @accent-semibold-color;
-            float: left;
-            margin-right: 7.5px;
-            display: inline-block;
-            width: 60px;
-            height: 60px;
-        }
-
-        h4 {
-            font-size: 16px;
-            font-weight: @font-weight-semibold;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin: 0;
-        }
-
-        small {
-            display: block;
-            line-height: 16px;
-            margin: 0;
-        }
-
-        .btn {
-            margin-top: 6px;
-        }
-    }
-}
 
 // 21. Security Controls
 // -------------------------

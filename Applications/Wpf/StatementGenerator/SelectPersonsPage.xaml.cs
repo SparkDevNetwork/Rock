@@ -95,6 +95,8 @@ namespace Rock.Apps.StatementGenerator
                 }
             }
 
+            ReportOptions.Current.IncludeIndividualsWithNoAddress = ckIncludeIndividualsWithNoAddress.IsChecked ?? false;
+
             SelectAccountsPage nextPage = new SelectAccountsPage();
             this.NavigationService.Navigate( nextPage );
         }
@@ -112,12 +114,14 @@ namespace Rock.Apps.StatementGenerator
                 {
                     txtPersonSearch.Visibility = Visibility.Visible;
                     grdPersons.Visibility = Visibility.Visible;
+                    ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Hidden;
                     
                 }
                 else
                 {
                     txtPersonSearch.Visibility = Visibility.Hidden;
                     grdPersons.Visibility = Visibility.Hidden;
+                    ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Visible;
                 }
             }
         }

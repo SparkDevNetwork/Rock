@@ -2126,6 +2126,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; return a null for items that could not be converted to a guid
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<Guid?> AsGuidOrNullList( this IEnumerable<string> items )
+        {
+            return items.Select( a => a.AsGuidOrNull() ).ToList();
+        }
+
+        /// <summary>
         /// Converts a List&lt;string&gt; to List&lt;int&gt; only returning items that could be converted to a int.
         /// </summary>
         /// <param name="items">The items.</param>

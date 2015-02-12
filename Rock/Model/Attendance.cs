@@ -15,11 +15,11 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -144,12 +144,26 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool DidAttend
-        {
-            get { return _didAttend; }
-            set { _didAttend = value; }
-        }
-        private bool _didAttend = true;
+        public bool? DidAttend { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RSVP.
+        /// </summary>
+        /// <value>
+        /// The RSVP.
+        /// </value>
+        [DataMember]
+        public RSVP RSVP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a response note to an RSVP
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string Response { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
@@ -252,17 +266,25 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
+
             StringBuilder sb = new StringBuilder();
 
-            sb.Append( ( PersonAlias != null && PersonAlias.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
-            sb.Append( DidAttend ? "attended " : "did not attend " );
-            sb.Append( Group != null ? Group.ToStringSafe() + " " : "" );
-            sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
-            if ( EndDateTime.HasValue )
+            if ( DidAttend.HasValue )
             {
-                sb.AppendFormat( "until {0} at {1} ", EndDateTime.Value.ToShortDateString(), EndDateTime.Value.ToShortTimeString() );
+                sb.Append( ( PersonAlias != null && PersonAlias.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
+                sb.Append( DidAttend.Value ? "attended " : "did not attend " );
+                sb.Append( Group != null ? Group.ToStringSafe() + " " : "" );
+                if ( DidAttend.HasValue && DidAttend.Value )
+                {
+                    sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
+                    if ( EndDateTime.HasValue )
+                    {
+                        sb.AppendFormat( "until {0} at {1} ", EndDateTime.Value.ToShortDateString(), EndDateTime.Value.ToShortTimeString() );
+                    }
+                }
+
+                sb.Append( Location != null ? "in " + Location.ToStringSafe() : "" );
             }
-            sb.Append( Location != null ? "in " + Location.ToStringSafe() : "" );
 
             return sb.ToString().Trim();
 
@@ -345,6 +367,28 @@ namespace Rock.Model
         /// Each schedule (from Attendance.ScheduleId) is it's own series
         /// </summary>
         Schedule = 3
+    }
+
+    /// <summary>
+    /// RSVP Response
+    /// </summary>
+    public enum RSVP
+    {
+        /// <summary>
+        /// No
+        /// </summary>
+        No = 0,
+
+        /// <summary>
+        /// Yes
+        /// </summary>
+        Yes = 1,
+
+        /// <summary>
+        /// Maybe
+        /// </summary>
+        Maybe = 2,
+
     }
 
     #endregion

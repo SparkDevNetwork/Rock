@@ -47,11 +47,15 @@ namespace RockWeb.Blocks.Security
             base.OnInit( e );
 
             var myAccountUrl = LinkedPageUrl( "MyAccountPage" );
-            if ( string.IsNullOrWhiteSpace( myAccountUrl ) )
+            
+            if ( !string.IsNullOrWhiteSpace( myAccountUrl ) )
             {
-                myAccountUrl = ResolveRockUrl( "~/MyAccount" );
+                hlMyAccount.NavigateUrl = myAccountUrl;
             }
-            hlMyAccount.NavigateUrl = myAccountUrl;
+            else
+            {
+                phMyAccount.Visible = false;
+            }
         }
 
         /// <summary>
@@ -69,8 +73,12 @@ namespace RockWeb.Blocks.Security
                 lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.NickName );
 
                 var currentUser = CurrentUser;
-                phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
-
+                if ( currentUser == null || !currentUser.IsAuthenticated )
+                {
+                    phMyAccount.Visible = false;
+                    phMySettings.Visible = false;
+                }
+                
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "PersonId", currentPerson.Id.ToString() );
                 
