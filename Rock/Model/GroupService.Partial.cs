@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -447,6 +448,136 @@ namespace Rock.Model
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets group occurrence data for the selected group
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="loadAttendanceData">if set to <c>true</c> [load attendance data].</param>
+        /// <returns></returns>
+        public List<GroupOccurrence> GetGroupOccurrences( Group group, bool loadAttendanceData = true )
+        {
+            var groupOccurrences = new List<GroupOccurrence>();
+
+            if ( group != null )
+            {
+                var rockContext = (RockContext)this.Context;
+
+                // Check to see if this group has a DayOfWeek and/or Time attribute defined.  
+                // If so, it will be used to offset occurrence start times.
+
+                DayOfWeek? dow = null;
+                TimeSpan time = TimeSpan.MinValue; ;
+
+                Guid? dayOfWeekAttributeType = Rock.SystemGuid.FieldType.DAY_OF_WEEK.AsGuid();
+                Guid? timeAttributeType = Rock.SystemGuid.FieldType.TIME.AsGuid();
+
+                if ( group.Attributes == null )
+                {
+                    group.LoadAttributes( rockContext );
+                }
+
+                foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
+                {
+                    if ( attribute.FieldType.Guid.Equals( dayOfWeekAttributeType ) )
+                    {
+                        int? dowValue = group.GetAttributeValue( attribute.Key ).AsIntegerOrNull();
+                        if ( dowValue.HasValue )
+                        {
+                            dow = (DayOfWeek)dowValue.Value;
+                        }
+
+                    }
+                    else if ( attribute.FieldType.Guid.Equals( timeAttributeType ) )
+                    {
+                        if ( !TimeSpan.TryParse( group.GetAttributeValue( attribute.Key ), out time ) )
+                        {
+                            time = TimeSpan.MinValue;
+                        }
+                    }
+                }
+
+                var scheduleService = new ScheduleService( rockContext );
+                var schedules = scheduleService.GetGroupTypeSchedules( group.GroupType ).ToList();
+
+                foreach ( var schedule in schedules )
+                {
+                    DDay.iCal.Event calEvent = schedule.GetCalenderEvent();
+                    if ( calEvent != null )
+                    {
+                        foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, RockDateTime.Now ) )
+                        {
+                            groupOccurrences.Add( new GroupOccurrence( schedule.Id, occurrence, dow, time ) );
+                        }
+                    }
+                }
+
+                if ( loadAttendanceData && groupOccurrences.Any() )
+                {
+                    var scheduleIds = groupOccurrences.Select( o => o.ScheduleId ).Distinct().ToList();
+                    var minStartValue = groupOccurrences.Min( o => o.OccurrenceStartDateTime );
+                    var maxEndValue = groupOccurrences.Max( o => o.OccurrenceEndDateTime );
+
+                    var attendanceData = new AttendanceService( rockContext )
+                        .Queryable( "PersonAlias" ).AsNoTracking()
+                        .Where( a =>
+                            a.GroupId == group.Id &&
+                            a.ScheduleId != null &&
+                            scheduleIds.Contains( a.ScheduleId.Value ) &&
+                            a.StartDateTime >= minStartValue &&
+                            a.StartDateTime < maxEndValue )
+                        .ToList();
+
+                    foreach ( var occurrence in groupOccurrences )
+                    {
+                        occurrence.Attendance = attendanceData
+                            .Where( a =>
+                                a.StartDateTime >= occurrence.OccurrenceStartDateTime &&
+                                a.StartDateTime < occurrence.OccurrenceEndDateTime )
+                            .ToList();
+
+                        occurrence.AttendanceEntered = occurrence.Attendance
+                            .Where( a => a.PersonAliasId.HasValue ).Any();
+
+                        occurrence.DidNotMeet = !occurrence.AttendanceEntered && 
+                            occurrence.Attendance.Where( a => !a.PersonAliasId.HasValue ).Any();
+                    }
+
+                }
+
+            }
+
+            return groupOccurrences;
+
+        }
+
+        /// <summary>
+        /// Loads the attendance data.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="occurrence">The occurrence.</param>
+        public void LoadAttendanceData ( Group group, GroupOccurrence occurrence )
+        {
+            if ( group != null && occurrence != null )
+            {
+                var attendanceData = new AttendanceService( (RockContext)this.Context )
+                    .Queryable( "PersonAlias" ).AsNoTracking()
+                    .Where( a =>
+                        a.GroupId == group.Id &&
+                        a.ScheduleId == occurrence.ScheduleId &&
+                        a.StartDateTime >= occurrence.OccurrenceStartDateTime &&
+                        a.StartDateTime < occurrence.OccurrenceEndDateTime )
+                    .ToList();
+
+                occurrence.Attendance = attendanceData;
+
+                occurrence.AttendanceEntered = occurrence.Attendance
+                    .Where( a => a.PersonAliasId.HasValue ).Any();
+
+                occurrence.DidNotMeet = !occurrence.AttendanceEntered &&
+                    occurrence.Attendance.Where( a => !a.PersonAliasId.HasValue ).Any();
             }
         }
 

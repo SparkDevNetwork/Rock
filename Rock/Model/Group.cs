@@ -84,6 +84,16 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
@@ -183,6 +193,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Schedule Schedule { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -341,6 +360,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -363,6 +383,126 @@ namespace Rock.Model
             : base( "Circular Reference in Group Parents" )
         {
         }
+    }
+
+    #endregion
+
+    #region Helper Classes
+
+    /// <summary>
+    /// Helper class for grouping attendance records associated with group into logical occurrences based on 
+    /// a given schedule
+    /// </summary>
+    public class GroupOccurrence
+    {
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int ScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logical occurrence start date time.
+        /// </summary>
+        /// <value>
+        /// The occurrence start date time.
+        /// </value>
+        public DateTime OccurrenceStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logical occurrence end date time.
+        /// </summary>
+        /// <value>
+        /// The occurrence end date time.
+        /// </value>
+        public DateTime OccurrenceEndDateTime { get; set; }
+
+        /// <summary>
+        /// If the group has a DayOfWeek and/or Time attribute, this 
+        /// property will represent the OccurrenceStartDateTime offset 
+        /// by the group's day of week and or time.
+        /// </summary>
+        /// <value>
+        /// The group date time.
+        /// </value>
+        public DateTime GroupDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether any valid attendance records
+        /// exist for this occurrence ( records with a valid person alias id )
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AttendanceEntered { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether group did not meet during this
+        /// occurrence period. This is determined by the absence of any valid
+        /// attendance records (records with a person alias id), but with at least
+        /// one attendance record with a null person alias id.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [did not meet]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DidNotMeet { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance records associated with this occurrence
+        /// </summary>
+        /// <value>
+        /// The attendance.
+        /// </value>
+        public List<Attendance> Attendance { get; set; }
+
+        /// <summary>
+        /// Gets the number of people attended.
+        /// </summary>
+        /// <value>
+        /// The attended.
+        /// </value>
+        public int NumberAttended
+        {
+            get
+            {
+                return Attendance
+                    .Where( a => a.PersonAliasId.HasValue )
+                    .Select( a => a.PersonAliasId )
+                    .Distinct()
+                    .Count();
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupOccurrence"/> class.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="occurrence">The occurrence.</param>
+        /// <param name="dow">The dow.</param>
+        /// <param name="time">The time.</param>
+        public GroupOccurrence( int scheduleId, DDay.iCal.Occurrence occurrence, DayOfWeek? dow, TimeSpan time )
+        {
+            ScheduleId = scheduleId;
+            OccurrenceStartDateTime = occurrence.Period.StartTime.Value;
+            OccurrenceEndDateTime = occurrence.Period.EndTime.Value;
+            GroupDateTime = OccurrenceStartDateTime;
+
+            if ( dow.HasValue )
+            {
+                while ( GroupDateTime.DayOfWeek != dow.Value && GroupDateTime < OccurrenceStartDateTime.AddDays( 7 ) )
+                {
+                    GroupDateTime = GroupDateTime.AddDays( 1 );
+                }
+            }
+
+            if ( time != TimeSpan.MinValue )
+            {
+                GroupDateTime = GroupDateTime.Date.Add( time );
+            }
+        }
+
     }
 
     #endregion
