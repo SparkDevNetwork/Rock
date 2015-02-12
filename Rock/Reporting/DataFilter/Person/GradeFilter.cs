@@ -65,6 +65,16 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        /// <summary>
+        /// Gets the grade label from GlobalAttributes
+        /// </summary>
+        /// <returns></returns>
+        private string GetGlobalGradeLabel()
+        {
+            var value = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
+        }
+
         #region Public Methods
 
         /// <summary>
@@ -77,7 +87,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Grade";
+            return GetGlobalGradeLabel();
         }
 
         /// <summary>
@@ -91,7 +101,16 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"'Grade ' + $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' ) ";
+            return string.Format( @"
+function() {{
+  var compareText = $('.js-filter-compare', $content).find(':selected').text();
+  var compareValue = $('.js-filter-control', $content).filter(':visible').length ? $('.js-filter-control', $content).find(':selected').text() : '';
+  var result = '{0} ' + compareText + ' ' + compareValue;
+  
+  return result;
+}}
+", GetGlobalGradeLabel().EscapeQuotes());
+            
         }
 
         /// <summary>
@@ -105,23 +124,25 @@ namespace Rock.Reporting.DataFilter.Person
             var values = selection.Split( '|' );
             if ( values.Length == 1 )
             {
-                return string.Format( "Grade is {0}", values[0] );
+                return string.Format( "{0} is {1}", GetGlobalGradeLabel(), values[0] );
             }
             else if ( values.Length >= 2 )
             {
+                var gradeNameValue = DefinedValueCache.Read( values[1].AsGuid() );
+                string gradeDescription = gradeNameValue != null ? gradeNameValue.Description : "??";
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
                 {
-                    return string.Format( "Grade {0}", comparisonType.ConvertToString() );
+                    return string.Format( "{0} {1}", GetGlobalGradeLabel(), comparisonType.ConvertToString() );
                 }
                 else
                 {
-                    return string.Format( "Grade {0} '{1}'", comparisonType.ConvertToString(), values[1] );
+                    return string.Format( "{0} {1} '{2}'", GetGlobalGradeLabel(), comparisonType.ConvertToString(), gradeDescription );
                 }
             }
             else
             {
-                return "Grade Filter";
+                return GetGlobalGradeLabel() + " Filter";
             }
         }
 
@@ -139,11 +160,12 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( ddlIntegerCompare );
             controls.Add( ddlIntegerCompare );
 
-            var ddlGradeDefinedValue = new DropDownList();
+            var ddlGradeDefinedValue = new RockDropDownList();
             ddlGradeDefinedValue.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
             ddlGradeDefinedValue.AddCssClass( "js-filter-control" );
 
             ddlGradeDefinedValue.Items.Clear();
+
             // add blank item as first item
             ddlGradeDefinedValue.Items.Add( new ListItem() );
 
@@ -152,8 +174,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
                 {
-                    string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
-                    ddlGradeDefinedValue.Items.Add( new ListItem( string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation, schoolGrade.Guid.ToString() ) );
+                    ddlGradeDefinedValue.Items.Add( new ListItem( schoolGrade.Description, schoolGrade.Guid.ToString() ) );
                 }
             }
 
@@ -173,7 +194,7 @@ namespace Rock.Reporting.DataFilter.Person
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
-            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
+            RockDropDownList ddlGradeDefinedValue = controls[1] as RockDropDownList;
 
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -182,7 +203,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
+            ComparisonType comparisonType = (ComparisonType)ddlCompare.SelectedValue.AsInteger();
             ddlGradeDefinedValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
@@ -204,7 +225,7 @@ namespace Rock.Reporting.DataFilter.Person
         public override string GetSelection( Type entityType, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
-            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
+            RockDropDownList ddlGradeDefinedValue = controls[1] as RockDropDownList;
 
             return string.Format( "{0}|{1}", ddlCompare.SelectedValue, ddlGradeDefinedValue.SelectedValue );
         }
@@ -220,7 +241,7 @@ namespace Rock.Reporting.DataFilter.Person
             var values = selection.Split( '|' );
 
             DropDownList ddlCompare = controls[0] as DropDownList;
-            DropDownList ddlGradeDefinedValue = controls[1] as DropDownList;
+            RockDropDownList ddlGradeDefinedValue = controls[1] as RockDropDownList;
 
             if ( values.Length == 2 )
             {
@@ -241,55 +262,177 @@ namespace Rock.Reporting.DataFilter.Person
         {
             // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
             DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            
+
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             Guid? gradeDefinedValueGuid = values[1].AsGuidOrNull();
             DefinedTypeCache gradeDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
             DefinedValueCache gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
+
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
-            if ( gradeTransitionDate.HasValue && gradeOffset.HasValue)
+            // if the next MM/DD of a graduation isn't until next year, treat next year as the current school year
+            int currentYearAdjustor = 0;
+            if ( gradeTransitionDate.HasValue && !( RockDateTime.Now < gradeTransitionDate ) )
             {
-                var currentYear = RockDateTime.Now.Year;
-                int graduationDateAdjustor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
+                currentYearAdjustor = 1;
+            }
+            
+            var currentSchoolYearDateTime = RockDateTime.Now.AddYears( currentYearAdjustor );
 
+            if ( gradeTransitionDate.HasValue && gradeOffset.HasValue )
+            {
+                /*
+                 * example (assuming defined values are the stock values):
+                 * Billy graduates in 2020, the transition date is 6/1
+                 * In other words, Billy graduates on 6/1/2020
+                 * and current date is Feb 1, 2015.  
+                 
+                 * Stock Example:
+                 * 9th Grade offset is 3
+                 * 8th Grade offset is 4
+                 * 7th Grade offset is 5
+                 * 6th Grade offset is 6
+                 * Billy graduates on 6/1/2020 and current date is Feb 1, 2015
+                 * Therefore, his current grade offset is 5 yrs, which would mean he is in 7th grade
+                 *                  * 
+                 * If the filter is: 
+                 *      Equal to 7th grade...
+                 *          7th Graders would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 5 and GreaterThan 4
+                 *      Not-Equal to 7th grade...
+                 *          7th Graders would not be included. 
+                 *          Grade offset must be LessThanOrEqualTo 4 or GreaterThan 5
+                 *      Less than 7th grade..
+                 *          7th Graders would not be included, 6th and younger would be included. 
+                 *          Grade offset must be GreaterThan 5
+                 *      Less than or Equal to 7th grade..
+                 *          7th Graders and younger would be included. 
+                 *          Grade offset must be GreaterThan 4
+                 *      Greater than 7th grade..
+                 *          7th Graders would not be included, 8th Graders and older would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 4
+                 *      Greater than or Equal to 7th grade..
+                 *          7th Graders and older would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 5
+                 *          
+                 * Combined Example:
+                 * High School offset is 3
+                 * Jr High offset is 5
+                 * K-6 offset is 12
+                 * Billy graduates on 6/1/2020 and current date is Feb 1, 2015
+                 * Therefore, his current grade offset is 5 yrs, which would mean he is in Jr High
+                 * 
+                 * If the filter is: 
+                 *      Equal to Jr High...
+                 *          Jr High would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 5 and GreaterThan 3
+                 *      Not-Equal to Jr High...
+                 *          Jr High would not be included. 
+                 *          Grade offset must be LessThanOrEqualTo 3 or GreaterThan 5
+                 *      Less than Jr High..
+                 *          Jr High would not be included, K-6 and younger would be included. 
+                 *          Grade offset must be GreaterThan 5
+                 *      Less than or Equal to Jr High..
+                 *          Jr High and younger would be included. 
+                 *          Grade offset must be GreaterThan 3
+                 *      Greater than Jr High..
+                 *          Jr High would not be included, High School and older would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 3
+                 *      Greater than or Equal to Jr High..
+                 *          Jr High and older would be included. 
+                 *          Grade offset must be LessThanOrEqualTo 5
+                 */
 
-                /// TODO figure out how to convert to compare query
+                DefinedValueCache nextGradeDefinedValue = gradeDefinedType.DefinedValues
+                        .OrderByDescending( a => a.Value.AsInteger() ).Where( a => a.Value.AsInteger() < gradeOffset ).FirstOrDefault();
+                int nextGradeOffset = nextGradeDefinedValue != null ? nextGradeDefinedValue.Value.AsInteger() : -1;
 
-                
-                if ( comparisonType == ComparisonType.EqualTo )
+                switch ( comparisonType )
                 {
-                    // special case for equal since Grades can be combined (instead of 6th and 7th, they just call it Jr. High)
-                    var personEqualGradeQuery = personGradeQuery.Where( p =>
-                        ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate ) - graduationDateAdjustor ) <= gradeOffset 
-                        &&
-                        ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate ) - graduationDateAdjustor ) < ( gradeOffset + 1 )
-                        );
-                        
-                    Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personEqualGradeQuery, parameterExpression, "p" );
-                    return result;
+                    case ComparisonType.EqualTo:
+                        // Include people who have have a grade offset LessThanOrEqualTo selected grade's offset, but GreaterThan the next grade's offset
+                        personGradeQuery = personGradeQuery.Where( p => SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) <= gradeOffset
+                            && SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) > nextGradeOffset );
+                        break;
+
+                    case ComparisonType.NotEqualTo:
+                        // Include people who have have a grade offset LessThanOrEqualTo next grade's offset, or GreaterThan the selected grade's offset (and not already graduated)
+                        personGradeQuery = personGradeQuery.Where( p => ( SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) <= nextGradeOffset
+                            || SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) > gradeOffset )
+                            && SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) >= 0 );
+                        break;
+
+                    case ComparisonType.LessThan:
+                        // Grade offset must be GreaterThan selected grade's offset
+                        personGradeQuery = personGradeQuery.Where( p => SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) > gradeOffset );
+                        break;
+
+                    case ComparisonType.LessThanOrEqualTo:
+                        // Grade offset must be GreaterThan next grade's offset
+                        personGradeQuery = personGradeQuery.Where( p => SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) > nextGradeOffset );
+                        break;
+
+                    case ComparisonType.GreaterThan:
+                        // Grade offset must be LessThanOrEqualTo next grade's offset (and not already graduated)
+                        personGradeQuery = personGradeQuery.Where( p => SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) <= nextGradeOffset
+                            && SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) >= 0 );
+                        break;
+
+                    case ComparisonType.GreaterThanOrEqualTo:
+                        // Grade offset must be LessThanOrEqualTo selected grade's offset (and not already graduated)
+                        personGradeQuery = personGradeQuery.Where( p => SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) <= gradeOffset
+                            && SqlFunctions.DateDiff( "year", currentSchoolYearDateTime, p.GraduationDate ) >= 0 );
+                        break;
+
+                    case ComparisonType.IsBlank:
+                        // only return people that don't have a graduation date
+                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationDate.HasValue );
+                        break;
+
+                    case ComparisonType.IsNotBlank:
+                        // only return people that have a graduation date
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationDate.HasValue );
+                        break;
                 }
-                else
-                {
-                    var personBaseEqualGradeQuery = personGradeQuery.Where( p => ( ( currentYear - SqlFunctions.DatePart( "year", p.GraduationDate )  - graduationDateAdjustor ) == gradeOffset.Value ) );
-                    BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personBaseEqualGradeQuery, parameterExpression, "p" ) as BinaryExpression;
-                    BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
-                    return result;
-                }
+
+                Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, parameterExpression, "p" );
+                return result;
             }
             else
             {
-                if ( comparisonType == ComparisonType.IsBlank )
+                if ( !gradeTransitionDate.HasValue )
                 {
-                    // if no gradeTransitionDate, return true (everybody has a blank grade)
-                    personGradeQuery = personGradeQuery.Where( p => true );
+                    if ( comparisonType == ComparisonType.IsBlank )
+                    {
+                        // if no gradeTransitionDate, return true (everybody has a blank grade)
+                        personGradeQuery = personGradeQuery.Where( p => true );
+                    }
+                    else
+                    {
+                        // if no gradeTransitionDate, return false (nobody has a grade)
+                        personGradeQuery = personGradeQuery.Where( p => false );
+                    }
                 }
                 else
                 {
-                    // if no gradeTransitionDate, return false (nobody has a grade)
-                    personGradeQuery = personGradeQuery.Where( p => false );
+                    // there is a grade transition date, but the selected gradeOffset is null
+                    if ( comparisonType == ComparisonType.IsBlank )
+                    {
+                        // if trying to find people without a Grade only include people that don't have a graduation date or already graduated
+                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationDate.HasValue || p.GraduationDate.Value < currentSchoolYearDateTime );
+                    }
+                    else if ( comparisonType == ComparisonType.IsNotBlank )
+                    {
+                        // if trying to find people with a Grade only include people that have a graduation date and haven't already graduated
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationDate.HasValue && !( p.GraduationDate.Value < currentSchoolYearDateTime ) );
+                    }
+                    else
+                    {
+                        // if no grade selected and they are comparing return false (nobody meets the condition since the condition is invalid)
+                        personGradeQuery = personGradeQuery.Where( p => false );
+                    }
                 }
 
                 return FilterExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, parameterExpression, "p" );

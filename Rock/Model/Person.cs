@@ -1013,7 +1013,8 @@ namespace Rock.Model
                     var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                     if ( schoolGrades != null )
                     {
-                        var schoolGradeValue = schoolGrades.DefinedValues.OrderByDescending( a => a.Value ).Where( a => a.Value.AsDecimalOrNull() <= gradeOffset.Value ).FirstOrDefault();
+                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
                         if (schoolGradeValue != null)
                         {
                             return schoolGradeValue.Description;
