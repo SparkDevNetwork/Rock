@@ -91,8 +91,6 @@ namespace Rock.Reporting.DataSelect.Person
             return result;
         }
 
-        
-
         /// <summary>
         /// Gets the default column header text.
         /// </summary>
