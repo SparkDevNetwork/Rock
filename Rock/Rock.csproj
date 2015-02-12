@@ -323,6 +323,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
     <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
