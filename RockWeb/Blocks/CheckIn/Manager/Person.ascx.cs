@@ -236,7 +236,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.ScheduleId.HasValue &&
                         a.GroupId.HasValue &&
                         a.LocationId.HasValue &&
-                        a.DidAttend &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value &&
                         scheduleIds.Contains( a.ScheduleId.Value ) )
                     .OrderByDescending( a => a.StartDateTime )
                     .Take( 20 )
