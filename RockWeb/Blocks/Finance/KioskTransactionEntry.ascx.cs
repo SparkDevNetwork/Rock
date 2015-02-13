@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Finance
         protected void lbAccountEntryBack_Click( object sender, EventArgs e )
         {
             HidePanels();
-            pnlGivingUnitSelect.Visible = true;
+            ShowGivingUnitSelectPanel();
         }
         protected void lbAccountEntryCancel_Click( object sender, EventArgs e )
         {
@@ -327,7 +327,6 @@ namespace RockWeb.Blocks.Finance
                     tb.PrependText = "<i class='fa fa-dollar'></i>";
                     tb.ID = "tbAccount_" + account.Id;
                     tb.Attributes.Add( "name", tb.ID );
-                    //tb.Attributes.Add( "placeholder", "$0.00" );
                     tb.Attributes.Add( "type", "number" );
 
                     if ( firstAccount )
