@@ -461,71 +461,39 @@ namespace Rock.Model
         {
             var groupOccurrences = new List<GroupOccurrence>();
 
-            if ( group != null )
+            Schedule schedule = null;
+
+            var rockContext = (RockContext)this.Context;
+
+            if ( group != null && group.ScheduleId.HasValue )
             {
-                var rockContext = (RockContext)this.Context;
-
-                // Check to see if this group has a DayOfWeek and/or Time attribute defined.  
-                // If so, it will be used to offset occurrence start times.
-
-                DayOfWeek? dow = null;
-                TimeSpan time = TimeSpan.MinValue; ;
-
-                Guid? dayOfWeekAttributeType = Rock.SystemGuid.FieldType.DAY_OF_WEEK.AsGuid();
-                Guid? timeAttributeType = Rock.SystemGuid.FieldType.TIME.AsGuid();
-
-                if ( group.Attributes == null )
+                schedule = group.Schedule;
+                if ( schedule == null )
                 {
-                    group.LoadAttributes( rockContext );
+                    schedule = new ScheduleService( rockContext ).Get( group.ScheduleId.Value );
                 }
+            }
 
-                foreach ( var attribute in group.Attributes.Select( a => a.Value ) )
+            if ( schedule != null )
+            {
+                DDay.iCal.Event calEvent = schedule.GetCalenderEvent();
+                if ( calEvent != null )
                 {
-                    if ( attribute.FieldType.Guid.Equals( dayOfWeekAttributeType ) )
+                    foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, RockDateTime.Now ) )
                     {
-                        int? dowValue = group.GetAttributeValue( attribute.Key ).AsIntegerOrNull();
-                        if ( dowValue.HasValue )
-                        {
-                            dow = (DayOfWeek)dowValue.Value;
-                        }
-
-                    }
-                    else if ( attribute.FieldType.Guid.Equals( timeAttributeType ) )
-                    {
-                        if ( !TimeSpan.TryParse( group.GetAttributeValue( attribute.Key ), out time ) )
-                        {
-                            time = TimeSpan.MinValue;
-                        }
-                    }
-                }
-
-                var scheduleService = new ScheduleService( rockContext );
-                var schedules = scheduleService.GetGroupTypeSchedules( group.GroupType ).ToList();
-
-                foreach ( var schedule in schedules )
-                {
-                    DDay.iCal.Event calEvent = schedule.GetCalenderEvent();
-                    if ( calEvent != null )
-                    {
-                        foreach ( var occurrence in calEvent.GetOccurrences( schedule.EffectiveStartDate.Value, RockDateTime.Now ) )
-                        {
-                            groupOccurrences.Add( new GroupOccurrence( schedule.Id, occurrence, dow, time ) );
-                        }
+                        groupOccurrences.Add( new GroupOccurrence( schedule.Id, occurrence ) );
                     }
                 }
 
                 if ( loadAttendanceData && groupOccurrences.Any() )
                 {
-                    var scheduleIds = groupOccurrences.Select( o => o.ScheduleId ).Distinct().ToList();
-                    var minStartValue = groupOccurrences.Min( o => o.OccurrenceStartDateTime );
-                    var maxEndValue = groupOccurrences.Max( o => o.OccurrenceEndDateTime );
+                    var minStartValue = groupOccurrences.Min( o => o.StartDateTime );
+                    var maxEndValue = groupOccurrences.Max( o => o.EndDateTime );
 
                     var attendanceData = new AttendanceService( rockContext )
                         .Queryable( "PersonAlias" ).AsNoTracking()
                         .Where( a =>
                             a.GroupId == group.Id &&
-                            a.ScheduleId != null &&
-                            scheduleIds.Contains( a.ScheduleId.Value ) &&
                             a.StartDateTime >= minStartValue &&
                             a.StartDateTime < maxEndValue )
                         .ToList();
@@ -534,15 +502,9 @@ namespace Rock.Model
                     {
                         occurrence.Attendance = attendanceData
                             .Where( a =>
-                                a.StartDateTime >= occurrence.OccurrenceStartDateTime &&
-                                a.StartDateTime < occurrence.OccurrenceEndDateTime )
+                                a.StartDateTime >= occurrence.StartDateTime &&
+                                a.StartDateTime < occurrence.EndDateTime )
                             .ToList();
-
-                        occurrence.AttendanceEntered = occurrence.Attendance
-                            .Where( a => a.PersonAliasId.HasValue ).Any();
-
-                        occurrence.DidNotMeet = !occurrence.AttendanceEntered && 
-                            occurrence.Attendance.Where( a => !a.PersonAliasId.HasValue ).Any();
                     }
 
                 }
@@ -566,18 +528,11 @@ namespace Rock.Model
                     .Queryable( "PersonAlias" ).AsNoTracking()
                     .Where( a =>
                         a.GroupId == group.Id &&
-                        a.ScheduleId == occurrence.ScheduleId &&
-                        a.StartDateTime >= occurrence.OccurrenceStartDateTime &&
-                        a.StartDateTime < occurrence.OccurrenceEndDateTime )
+                        a.StartDateTime >= occurrence.StartDateTime &&
+                        a.StartDateTime < occurrence.EndDateTime )
                     .ToList();
 
                 occurrence.Attendance = attendanceData;
-
-                occurrence.AttendanceEntered = occurrence.Attendance
-                    .Where( a => a.PersonAliasId.HasValue ).Any();
-
-                occurrence.DidNotMeet = !occurrence.AttendanceEntered &&
-                    occurrence.Attendance.Where( a => !a.PersonAliasId.HasValue ).Any();
             }
         }
 

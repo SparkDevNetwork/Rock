@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Groups
                 _group.LoadAttributes( _rockContext );
                 _canView = true;
 
-                gOccurrences.DataKeyNames = new string[] { "OccurrenceStartDateTime" };
+                gOccurrences.DataKeyNames = new string[] { "StartDateTime" };
                 gOccurrences.ShowActionRow = false;
                 gOccurrences.AllowPaging = false;
                 gOccurrences.AllowSorting = false;
@@ -107,9 +107,12 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gOccurrences_Edit( object sender, RowEventArgs e )
         {
+            // The iCalendar date format is returned as UTC kind date, so we need to manually format it instead of using 'o'
+            string occurrenceDate = ( (DateTime)e.RowKeyValue ).ToString( "yyyy-MM-ddTHH:mm:ss" );
+
             var qryParams = new Dictionary<string, string> { 
                 { "GroupId", _group.Id.ToString() },
-                { "Occurrence", ( (DateTime)e.RowKeyValue ).ToString( "o" ) } };
+                { "Occurrence", occurrenceDate } };
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -137,7 +140,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var occurrences = new GroupService( _rockContext ).GetGroupOccurrences( _group );
 
-                gOccurrences.DataSource = occurrences.OrderByDescending( o => o.OccurrenceStartDateTime ).ToList();
+                gOccurrences.DataSource = occurrences.OrderByDescending( o => o.StartDateTime ).ToList();
                 gOccurrences.DataBind();
             }
         }
