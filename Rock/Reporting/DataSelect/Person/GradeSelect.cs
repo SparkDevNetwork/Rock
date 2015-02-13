@@ -74,7 +74,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( DateTime? ); }
+            get { return typeof( int? ); }
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
         protected void FormatGridDataValue( object sender, CallbackField.CallbackEventArgs e )
         {
             var fakePerson = new Rock.Model.Person();
-            fakePerson.GraduationDate = e.DataValue as DateTime?;
+            fakePerson.GraduationYear = e.DataValue as int?;
             e.FormattedValue = fakePerson.GradeFormatted;
         }
         
@@ -145,9 +145,9 @@ namespace Rock.Reporting.DataSelect.Person
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // NOTE: this.GetGridField returns a CallbackField and the grade grid output is figured out up in this.FormatGridDataValue 
-            // the callback needs the GraduationDate to format the Grade output
+            // the callback needs the GraduationYear to format the Grade output
             var personGradeQuery = new PersonService( context ).Queryable()
-                    .Select( p => p.GraduationDate );
+                    .Select( p => p.GraduationYear );
 
             var selectGradeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, entityIdProperty, "p" );
 

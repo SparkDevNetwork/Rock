@@ -270,13 +270,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
                     History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
 
-                    DateTime? graduationDate = null;
+                    int? graduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        graduationYear = ypGraduation.SelectedYear.Value;
                     }
-                    History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, graduationDate );
-                    person.GraduationDate = graduationDate;
+                    History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, graduationYear );
+                    person.GraduationYear = graduationYear;
 
                     History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
                     person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
@@ -455,9 +455,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             bpBirthDay.SelectedDate = Person.BirthDate;
 
-            if ( Person.GraduationDate.HasValue )
+            if ( Person.GraduationYear.HasValue )
             {
-                ypGraduation.SelectedYear = Person.GraduationDate.Value.Year;
+                ypGraduation.SelectedYear = Person.GraduationYear.Value;
             }
             else
             {

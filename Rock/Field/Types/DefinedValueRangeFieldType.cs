@@ -284,8 +284,8 @@ namespace Rock.Field.Types
                     string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
                     if ( valuePair.Length == 2 )
                     {
-                        lowerValueControl.SetValue( valuePair[0] );
-                        upperValueControl.SetValue( valuePair[1] );
+                        lowerValueControl.SetValue( valuePair[0].AsGuidOrNull() );
+                        upperValueControl.SetValue( valuePair[1].AsGuidOrNull() );
                     }
                 }
             }

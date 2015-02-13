@@ -1489,7 +1489,7 @@ namespace RockWeb.Blocks.Examples
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
                     {
-                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                        person.GraduationYear = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) ).Year;
                     }
 
                     // Now, if their age was given we'll change the given birth year to make them
