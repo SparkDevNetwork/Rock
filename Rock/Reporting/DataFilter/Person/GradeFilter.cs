@@ -350,50 +350,50 @@ function() {{
                 int nextGradeOffset = nextGradeDefinedValue != null ? nextGradeDefinedValue.Value.AsInteger() : -1;
 
                 switch ( comparisonType )
-                {
+                { 
                     case ComparisonType.EqualTo:
                         // Include people who have have a grade offset LessThanOrEqualTo selected grade's offset, but GreaterThan the next grade's offset
-                        personGradeQuery = personGradeQuery.Where( p => currentSchoolYear - p.GraduationYear <= gradeOffset
-                            && currentSchoolYear - p.GraduationYear > nextGradeOffset );
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear <= gradeOffset
+                            && p.GraduationYear - currentSchoolYear > nextGradeOffset );
                         break;
 
                     case ComparisonType.NotEqualTo:
                         // Include people who have have a grade offset LessThanOrEqualTo next grade's offset, or GreaterThan the selected grade's offset (and not already graduated)
-                        personGradeQuery = personGradeQuery.Where( p => ( currentSchoolYear - p.GraduationYear <= nextGradeOffset
-                            || currentSchoolYear - p.GraduationYear > gradeOffset )
-                            && currentSchoolYear - p.GraduationYear >= 0 );
+                        personGradeQuery = personGradeQuery.Where( p => ( p.GraduationYear - currentSchoolYear <= nextGradeOffset
+                            || p.GraduationYear - currentSchoolYear > gradeOffset )
+                            && p.GraduationYear - currentSchoolYear >= 0 );
                         break;
 
                     case ComparisonType.LessThan:
                         // Grade offset must be GreaterThan selected grade's offset
-                        personGradeQuery = personGradeQuery.Where( p => currentSchoolYear - p.GraduationYear > gradeOffset );
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear > gradeOffset );
                         break;
 
                     case ComparisonType.LessThanOrEqualTo:
                         // Grade offset must be GreaterThan next grade's offset
-                        personGradeQuery = personGradeQuery.Where( p => currentSchoolYear - p.GraduationYear > nextGradeOffset );
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear > nextGradeOffset );
                         break;
 
                     case ComparisonType.GreaterThan:
                         // Grade offset must be LessThanOrEqualTo next grade's offset (and not already graduated)
-                        personGradeQuery = personGradeQuery.Where( p => currentSchoolYear - p.GraduationYear <= nextGradeOffset
-                            && currentSchoolYear - p.GraduationYear >= 0 );
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear <= nextGradeOffset
+                            && p.GraduationYear - currentSchoolYear >= 0 );
                         break;
 
                     case ComparisonType.GreaterThanOrEqualTo:
                         // Grade offset must be LessThanOrEqualTo selected grade's offset (and not already graduated)
-                        personGradeQuery = personGradeQuery.Where( p => currentSchoolYear - p.GraduationYear <= gradeOffset
-                            && currentSchoolYear - p.GraduationYear >= 0 );
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear - currentSchoolYear <= gradeOffset
+                            && p.GraduationYear - currentSchoolYear >= 0 );
                         break;
 
                     case ComparisonType.IsBlank:
-                        // only return people that don't have a graduation year
-                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationYear.HasValue );
+                        // only return people that don't have a graduation year, or have already graduated
+                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationYear.HasValue || (p.GraduationYear - currentSchoolYear) < 0 );
                         break;
 
                     case ComparisonType.IsNotBlank:
-                        // only return people that have a graduation date
-                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear.HasValue );
+                        // only return people that have a graduation date, and haven't graduated yet
+                        personGradeQuery = personGradeQuery.Where( p => p.GraduationYear.HasValue && ( p.GraduationYear - currentSchoolYear ) >= 0 );
                         break;
                 }
 

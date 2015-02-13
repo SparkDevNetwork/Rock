@@ -65,7 +65,7 @@
                                 <Rock:RockDropDownList ID="ddlMaritalStatus" runat="server" />
                                 <div class="row">
                                     <div class="col-xs-5">
-                                        <Rock:RockDropDownList ID="ddlGrade" runat="server" />
+                                        <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" Label="" />
                                     </div>
                                     <div class="col-xs-7">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
