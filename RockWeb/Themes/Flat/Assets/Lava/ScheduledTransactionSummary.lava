@@ -1,0 +1,39 @@
+<div class="row margin-b-md">
+
+    <div class="col-md-6">
+        <h1 class="condensed">Hello, {{CurrentPerson.NickName}}</h1>
+    </div>
+
+    <div class="col-md-6">
+        {% if ScheduledTransactions.size == 1 %}
+            <p>
+                You currently have <span class='label label-default'>1</span> giving profile active.
+            </p>
+            <p>
+                {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
+                    Next gift is in {{ScheduledTransactions[0].DaysTillNextPayment}} days.
+                {% else %}
+                    Next gift is scheduled for today.
+                {% endif %}
+                
+                {% if ScheduledTransactions[0].LastPaymentDate != null %}
+                    {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
+                        Last gift was {{ScheduledTransactions[0].DaysSinceLastPayment}} days ago.
+                    {% else %}
+                        Last gift was today.
+                    {% endif %}
+                {% endif %}
+            </p>
+        {% elsif ScheduledTransactions.size > 1 %}
+            You currently have <span class='label label-default'>{{ScheduledTransactions.size}}</span> 
+            giving profiles active.
+        {% else %}
+            You currently have no active profiles.
+        {% endif %}
+        <div class="clearfix">
+            <a class="btn btn-default pull-left" href="{{LinkedPages.ManageScheduledTransactionsPage}}">Manage</a> 
+            <a class="btn btn-default pull-right" href="{{LinkedPages.TransactionHistoryPage}}">View History</a>
+        </div>
+        <a class="btn btn-primary btn-block margin-t-md" href="{{LinkedPages.TransactionEntryPage}}">Give Now</a>
+    </div>
+</div>
