@@ -60,7 +60,7 @@
                     <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" />
                 </div>
 
-                <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />
+                <Rock:NotificationBox ID="nbError" CssClass="margin-t-lg" runat="server" Visible="false" NotificationBoxType="Danger" Dismissable="true" />
 
             </div>
 
