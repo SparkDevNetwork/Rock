@@ -32,9 +32,20 @@ main {
 // 3. Theme Styling
 // -------------------------
 
+header {
+    .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+}
+
+footer {
+    .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 24px;
+}
+
 .form-control {
     font-size: 32px;
     height: 64px;
     font-weight: @font-weight-bold;
-    padding: 20px;
+    --padding: 20px;
 }
