@@ -131,12 +131,21 @@ namespace Rock.Communication.Transport
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
-                // From
+                // From - if none is set, use the one in the Organization's GlobalAttributes.
                 string fromAddress = communication.GetMediumDataValue( "FromAddress" );
+                if ( string.IsNullOrWhiteSpace( fromAddress ) )
+                {
+                    fromAddress = globalAttributes.GetValue( "OrganizationEmail" );
+                }
+
+                string fromName = communication.GetMediumDataValue( "FromName" );
+                if ( string.IsNullOrWhiteSpace( fromName ) )
+                {
+                    fromName = globalAttributes.GetValue( "OrganizationName" );
+                }
+
                 MailMessage message = new MailMessage();
-                message.From = new MailAddress(
-                    fromAddress,
-                    communication.GetMediumDataValue( "FromName" ) );
+                message.From = new MailAddress( fromAddress, fromName );
 
                 // Reply To
                 string replyTo = communication.GetMediumDataValue( "ReplyTo" );
