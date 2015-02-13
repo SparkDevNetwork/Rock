@@ -276,15 +276,13 @@ namespace Rock.Model
         public DateTime? AnniversaryDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Person's projected or actual high school graduation date. The month and date will match the "Grade Transition Date" global attribute. This value is used to determine what grade a student is in.
+        /// Gets or sets the date of the Person's projected or actual high school graduation year. This value is used to determine what grade a student is in.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the Person's projected or actual high school graduation date.  This value will be null if a Graduation Date is an adult, not known, not applicable or the
-        /// Person has not entered school.
+        /// The Person's projected or actual high school graduation year
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime? GraduationDate { get; set; }
+        public int? GraduationYear { get; set; }
 
         /// <summary>
         /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
@@ -949,7 +947,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( !GraduationDate.HasValue )
+                if ( !GraduationYear.HasValue )
                 {
                     return null;
                 }
@@ -960,12 +958,12 @@ namespace Rock.Model
                     var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
                     if ( transitionDate.HasValue )
                     {
-                        // if the next graduation mm/dd won't happen until next year, refactor the graduationdate to the prior year
-                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationdate to the prior year
+                        // if the next graduation mm/dd won't happen until next year, refactor the graduationyear to the prior year
+                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationyear to the prior year
                         // in other words, we are treating the grade transition date as the last day of the "school" year
-                        DateTime graduationDateRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationDate.Value : this.GraduationDate.Value.AddYears( -1 );
+                        int graduationYearRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationYear.Value : ( this.GraduationYear.Value - 1 );
 
-                        int offsetYears = graduationDateRefactor.Year - RockDateTime.Now.Year;
+                        int offsetYears = graduationYearRefactor - RockDateTime.Now.Year;
                         return offsetYears;
                     }
                     else
@@ -983,14 +981,29 @@ namespace Rock.Model
                     var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
                     if ( transitionDate.HasValue )
                     {
-                        int gradeOffsetFactorRefactor = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value - 1;
-                        GraduationDate = transitionDate.Value.AddYears( -gradeOffsetFactorRefactor );
+                        int gradeOffsetFactorRefactorYear = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value - 1;
+                        GraduationYear = transitionDate.Value.Year -gradeOffsetFactorRefactorYear;
                     }
                 }
                 else
                 {
-                    GraduationDate = null;
+                    GraduationYear = null;
                 }
+            }
+        }
+
+        [NotMapped]
+        [DataMember]
+        public virtual bool? HasGraduated
+        {
+            get
+            {
+                if ( GradeOffset.HasValue )
+                {
+                    return GradeOffset >= 0;
+                }
+
+                return null;
             }
         }
 
@@ -1015,7 +1028,7 @@ namespace Rock.Model
                     {
                         var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
                         var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                        if (schoolGradeValue != null)
+                        if ( schoolGradeValue != null )
                         {
                             return schoolGradeValue.Description;
                         }
@@ -1728,7 +1741,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Location GetHomeLocation ( this Person person )
+        public static Location GetHomeLocation( this Person person )
         {
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
             foreach ( var family in person.GetFamilies() )

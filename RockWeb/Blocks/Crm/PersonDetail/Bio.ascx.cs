@@ -169,11 +169,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lGender.Text = Person.Gender.ToString();
 
-                    if ( Person.GraduationDate.HasValue )
+                    if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                     {
                         lGraduation.Text = string.Format( "<small>({0} {1})</small>",
-                            Person.GraduationDate.Value.CompareTo( RockDateTime.Today ) <= 0 ? "Graduated " : "Graduates ",
-                            Person.GraduationDate.Value.Year );
+                            Person.HasGraduated.Value  ? "Graduated " : "Graduates ",
+                            Person.GraduationYear.Value );
 
                         string grade = Person.GradeFormatted;
                         if ( grade != string.Empty )

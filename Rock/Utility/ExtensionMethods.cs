@@ -1801,7 +1801,7 @@ namespace Rock
         #region ListControl Extensions
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value, if the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
@@ -1830,13 +1830,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value. If the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value. If the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( this ListControl listControl, int? value )
         {
             listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Tries to set the selected value. If the value does not exist, will set the first item in the list.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this ListControl listControl, Guid? value )
+        {
+            listControl.SetValue( value == null ? "" : value.ToString() );
         }
 
         /// <summary>
