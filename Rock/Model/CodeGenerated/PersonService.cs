@@ -99,7 +99,7 @@ namespace Rock.Model
             target.FirstName = source.FirstName;
             target.Gender = source.Gender;
             target.GivingGroupId = source.GivingGroupId;
-            target.GraduationDate = source.GraduationDate;
+            target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.IsDeceased = source.IsDeceased;
             target.IsEmailActive = source.IsEmailActive;

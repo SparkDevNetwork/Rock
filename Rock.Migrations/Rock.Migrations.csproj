@@ -152,6 +152,10 @@
     <Compile Include="Migrations\201502121513468_GroupSchedule.Designer.cs">
       <DependentUpon>201502121513468_GroupSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201502131814119_GraduationYear.cs" />
+    <Compile Include="Migrations\201502131814119_GraduationYear.Designer.cs">
+      <DependentUpon>201502131814119_GraduationYear.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.cs" />
     <Compile Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.Designer.cs">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
@@ -1514,6 +1518,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502121513468_GroupSchedule.resx">
       <DependentUpon>201502121513468_GroupSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502131814119_GraduationYear.resx">
+      <DependentUpon>201502131814119_GraduationYear.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 2.0\Version 1.2.0\201411052043158_UpdateLiquidIncludes.resx">
       <DependentUpon>201411052043158_UpdateLiquidIncludes.cs</DependentUpon>
