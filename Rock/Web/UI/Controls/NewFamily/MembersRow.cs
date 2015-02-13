@@ -46,7 +46,7 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
         private DropDownList _ddlConnectionStatus;
-        private RockDropDownList _ddlGrade;
+        private RockDropDownList _ddlGradeOffset;
 
         private LinkButton _lbDelete;
 
@@ -185,15 +185,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the grade.
+        /// Gets or sets the grade offset.
         /// </summary>
         /// <value>
-        /// The grade.
+        /// The grade offset.
         /// </value>
-        public int? Grade
+        public int? GradeOffset
         {
-            get { return _ddlGrade.SelectedValueAsInt(); }
-            set { SetListValue( _ddlGrade, value ); }
+            get { return _ddlGradeOffset.SelectedValueAsInt(); }
+            set { SetListValue( _ddlGradeOffset, value ); }
         }
 
         /// <summary>
@@ -257,12 +257,12 @@ namespace Rock.Web.UI.Controls
             get 
             {
                 EnsureChildControls();
-                return _ddlGrade.Required;
+                return _ddlGradeOffset.Required;
             }
             set
             {
                 EnsureChildControls();
-                _ddlGrade.Required = value;
+                _ddlGradeOffset.Required = value;
             }
         }
 
@@ -286,7 +286,7 @@ namespace Rock.Web.UI.Controls
                 _tbLastName.ValidationGroup = value;
                 _rblGender.ValidationGroup = value;
                 _dpBirthdate.ValidationGroup = value;
-                _ddlGrade.ValidationGroup = value;
+                _ddlGradeOffset.ValidationGroup = value;
             }
         }
 
@@ -304,7 +304,7 @@ namespace Rock.Web.UI.Controls
             _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
             _ddlConnectionStatus = new DropDownList();
-            _ddlGrade = new RockDropDownList();
+            _ddlGradeOffset = new RockDropDownList();
             _lbDelete = new LinkButton();
         }
 
@@ -324,7 +324,7 @@ namespace Rock.Web.UI.Controls
             _rblGender.ID = "_rblGender";
             _dpBirthdate.ID = "_dtBirthdate";
             _ddlConnectionStatus.ID = "_ddlConnectionStatus";
-            _ddlGrade.ID = "_ddlGrade";
+            _ddlGradeOffset.ID = "_ddlGrade";
             _lbDelete.ID = "_lbDelete";
 
             Controls.Add( _rblRole );
@@ -335,7 +335,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _rblGender );
             Controls.Add( _dpBirthdate );
             Controls.Add( _ddlConnectionStatus );
-            Controls.Add( _ddlGrade );
+            Controls.Add( _ddlGradeOffset );
             Controls.Add( _lbDelete );
 
             _rblRole.RepeatDirection = RepeatDirection.Vertical;
@@ -374,23 +374,23 @@ namespace Rock.Web.UI.Controls
             _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
             _dpBirthdate.Required = false;
 
-            _ddlGrade.CssClass = "form-control";
-            _ddlGrade.RequiredErrorMessage = "Grade is required for all children";
-            _ddlGrade.Items.Clear();
-            _ddlGrade.Items.Add( new ListItem( "", "" ) );
-            _ddlGrade.Items.Add( new ListItem( "K", "0" ) );
-            _ddlGrade.Items.Add( new ListItem( "1st", "1" ) );
-            _ddlGrade.Items.Add( new ListItem( "2nd", "2" ) );
-            _ddlGrade.Items.Add( new ListItem( "3rd", "3" ) );
-            _ddlGrade.Items.Add( new ListItem( "4th", "4" ) );
-            _ddlGrade.Items.Add( new ListItem( "5th", "5" ) );
-            _ddlGrade.Items.Add( new ListItem( "6th", "6" ) );
-            _ddlGrade.Items.Add( new ListItem( "7th", "7" ) );
-            _ddlGrade.Items.Add( new ListItem( "8th", "8" ) );
-            _ddlGrade.Items.Add( new ListItem( "9th", "9" ) );
-            _ddlGrade.Items.Add( new ListItem( "10th", "10" ) );
-            _ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
-            _ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
+            _ddlGradeOffset.CssClass = "form-control";
+            _ddlGradeOffset.RequiredErrorMessage = "Grade is required for all children";
+            _ddlGradeOffset.Items.Clear();
+            _ddlGradeOffset.Items.Add( new ListItem( "", "" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "K", "0" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "1st", "1" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "2nd", "2" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "3rd", "3" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "4th", "4" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "5th", "5" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "6th", "6" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "7th", "7" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "8th", "8" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "9th", "9" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "10th", "10" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "11th", "11" ) );
+            _ddlGradeOffset.Items.Add( new ListItem( "12th", "12" ) );
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDelete.Controls.Add( iDelete );
@@ -456,7 +456,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 if ( ShowGrade )
                 {
-                    _ddlGrade.RenderControl( writer );
+                    _ddlGradeOffset.RenderControl( writer );
                 }
                 writer.RenderEndTag();
 

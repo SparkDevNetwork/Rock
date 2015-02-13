@@ -452,12 +452,12 @@ namespace RockWeb.Blocks.Crm
 
                 if ( SelectedFields.Contains( ddlGrade.ClientID ) )
                 {
-                    DateTime? newGraduationDate = null;
+                    int? newGraduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        newGraduationYear = ypGraduation.SelectedYear.Value;
                     }
-                    EvaluateChange( changes, "Graduation Date", newGraduationDate );
+                    EvaluateChange( changes, "Graduation Year", newGraduationYear );
                 }
 
                 if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
@@ -719,10 +719,10 @@ namespace RockWeb.Blocks.Crm
                     Gender newGender = ddlGender.SelectedValue.ConvertToEnum<Gender>();
                     int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
 
-                    DateTime? newGraduationDate = null;
+                    int? newGraduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        newGraduationYear = ypGraduation.SelectedYear.Value;
                     }
 
                     int? newCampusId = cpCampus.SelectedCampusId;
@@ -802,8 +802,8 @@ namespace RockWeb.Blocks.Crm
 
                         if ( SelectedFields.Contains( ddlGrade.ClientID ) )
                         {
-                            History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, newGraduationDate );
-                            person.GraduationDate = newGraduationDate;
+                            History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, newGraduationYear );
+                            person.GraduationYear = newGraduationYear;
                         }
 
                         if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )

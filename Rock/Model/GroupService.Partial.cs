@@ -264,7 +264,7 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
                         History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
                         History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
-                        History.EvaluateChange( demographicChanges, "Graduation Date", null, person.GraduationDate );
+                        History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
                         History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
                         History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
                         History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
