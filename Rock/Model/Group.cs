@@ -395,13 +395,6 @@ namespace Rock.Model
     /// </summary>
     public class GroupOccurrence
     {
-        /// <summary>
-        /// Gets or sets the schedule identifier.
-        /// </summary>
-        /// <value>
-        /// The schedule identifier.
-        /// </value>
-        public int ScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the logical occurrence start date time.
@@ -409,7 +402,7 @@ namespace Rock.Model
         /// <value>
         /// The occurrence start date time.
         /// </value>
-        public DateTime OccurrenceStartDateTime { get; set; }
+        public DateTime StartDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the logical occurrence end date time.
@@ -417,37 +410,40 @@ namespace Rock.Model
         /// <value>
         /// The occurrence end date time.
         /// </value>
-        public DateTime OccurrenceEndDateTime { get; set; }
+        public DateTime EndDateTime { get; set; }
 
         /// <summary>
-        /// If the group has a DayOfWeek and/or Time attribute, this 
-        /// property will represent the OccurrenceStartDateTime offset 
-        /// by the group's day of week and or time.
-        /// </summary>
-        /// <value>
-        /// The group date time.
-        /// </value>
-        public DateTime GroupDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether any valid attendance records
-        /// exist for this occurrence ( records with a valid person alias id )
+        /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
         /// </value>
-        public bool AttendanceEntered { get; set; }
+        public bool AttendanceEntered
+        {
+            get
+            {
+                return Attendance != null && Attendance.Any();
+            }
+        }
 
         /// <summary>
-        /// Gets or sets a value indicating whether group did not meet during this
-        /// occurrence period. This is determined by the absence of any valid
-        /// attendance records (records with a person alias id), but with at least
-        /// one attendance record with a null person alias id.
+        /// Gets a value indicating whether group did not meet during this
+        /// occurrence period. This is determined by not having any 
+        /// attendance records with a non-null 'DidAttend' value, and at least 
+        /// one attendance record with a null 'DidAttend' value.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [did not meet]; otherwise, <c>false</c>.
         /// </value>
-        public bool DidNotMeet { get; set; }
+        public bool DidNotMeet
+        {
+            get
+            {
+                return Attendance != null &&
+                    !Attendance.Where( a => a.DidAttend.HasValue ).Any() &&
+                    Attendance.Where( a => !a.DidAttend.HasValue ).Any();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the attendance records associated with this occurrence
@@ -468,7 +464,10 @@ namespace Rock.Model
             get
             {
                 return Attendance
-                    .Where( a => a.PersonAliasId.HasValue )
+                    .Where( a => 
+                        a.PersonAliasId.HasValue &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value )
                     .Select( a => a.PersonAliasId )
                     .Distinct()
                     .Count();
@@ -482,25 +481,10 @@ namespace Rock.Model
         /// <param name="occurrence">The occurrence.</param>
         /// <param name="dow">The dow.</param>
         /// <param name="time">The time.</param>
-        public GroupOccurrence( int scheduleId, DDay.iCal.Occurrence occurrence, DayOfWeek? dow, TimeSpan time )
+        public GroupOccurrence( int scheduleId, DDay.iCal.Occurrence occurrence )
         {
-            ScheduleId = scheduleId;
-            OccurrenceStartDateTime = occurrence.Period.StartTime.Value;
-            OccurrenceEndDateTime = occurrence.Period.EndTime.Value;
-            GroupDateTime = OccurrenceStartDateTime;
-
-            if ( dow.HasValue )
-            {
-                while ( GroupDateTime.DayOfWeek != dow.Value && GroupDateTime < OccurrenceStartDateTime.AddDays( 7 ) )
-                {
-                    GroupDateTime = GroupDateTime.AddDays( 1 );
-                }
-            }
-
-            if ( time != TimeSpan.MinValue )
-            {
-                GroupDateTime = GroupDateTime.Date.Add( time );
-            }
+            StartDateTime = occurrence.Period.StartTime.Value;
+            EndDateTime = occurrence.Period.EndTime.Value;
         }
 
     }
