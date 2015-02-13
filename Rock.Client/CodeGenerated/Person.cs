@@ -74,7 +74,7 @@ namespace Rock.Client
         public int? GivingGroupId { get; set; }
 
         /// <summary />
-        public DateTime? GraduationDate { get; set; }
+        public int? GraduationYear { get; set; }
 
         /// <summary />
         public string InactiveReasonNote { get; set; }

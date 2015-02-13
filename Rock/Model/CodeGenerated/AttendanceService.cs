@@ -98,6 +98,8 @@ namespace Rock.Model
             target.Note = source.Note;
             target.PersonAliasId = source.PersonAliasId;
             target.QualifierValueId = source.QualifierValueId;
+            target.Response = source.Response;
+            target.RSVP = source.RSVP;
             target.ScheduleId = source.ScheduleId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.StartDateTime = source.StartDateTime;

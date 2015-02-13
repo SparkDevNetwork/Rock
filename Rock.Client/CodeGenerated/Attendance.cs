@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? DeviceId { get; set; }
 
         /// <summary />
-        public bool DidAttend { get; set; }
+        public bool? DidAttend { get; set; }
 
         /// <summary />
         public DateTime? EndDateTime { get; set; }
@@ -72,6 +72,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? QualifierValueId { get; set; }
+
+        /// <summary />
+        public string Response { get; set; }
+
+        /// <summary />
+        public int /* RSVP*/ RSVP { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }
