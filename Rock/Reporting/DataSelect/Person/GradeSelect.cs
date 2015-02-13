@@ -62,7 +62,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Grade";
+                return GetGlobalGradeLabel();
             }
         }
 
@@ -101,13 +101,23 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Grade";
+                return GetGlobalGradeLabel();
             }
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the grade label from GlobalAttributes
+        /// </summary>
+        /// <returns></returns>
+        private string GetGlobalGradeLabel()
+        {
+            var value = GlobalAttributesCache.Read().GetValue( "core.GradeLabel" );
+            return string.IsNullOrWhiteSpace( value ) ? "Grade" : value;
+        }
 
         /// <summary>
         /// Gets the title.
@@ -119,7 +129,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Grade";
+            return GetGlobalGradeLabel();
         }
 
         /// <summary>

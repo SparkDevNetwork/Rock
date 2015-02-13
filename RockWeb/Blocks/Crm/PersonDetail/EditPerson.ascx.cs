@@ -43,8 +43,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to edit a person." )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-        DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -71,70 +69,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            ddlGradeOffset.Items.Clear();
-            // add blank item as first item
-            ddlGradeOffset.Items.Add( new ListItem() );
-
-            var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-            if ( schoolGrades != null )
-            {
-                foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
-                {
-                    string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
-                    ddlGradeOffset.Items.Add( new ListItem( string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation , schoolGrade.Value) );
-                }
-            }
-
-            int maxGradeOffset = schoolGrades.DefinedValues.Select( a => a.Value.AsInteger() ).Max();
-
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            if ( gradeTransitionDate.HasValue )
-            {
-                _gradeTransitionDate = gradeTransitionDate.Value;
-            }
-            
-            // add a year if the next graduation mm/dd won't happen until next year
-            int gradeOffsetRefactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 0 : 1;
-
-            string gradeSelectionScriptFormat = @"
-    $('#{0}').change(function(){{
-        var selectedGradeOffsetValue = $(this).val();
-        if ( selectedGradeOffsetValue == '') {{
-            $('#{1}').val('');
-        }} else {{
-            $('#{1}').val( {2} + ( {3} + parseInt( selectedGradeOffsetValue ) ) );
-        }} 
-    }});
-
-    $('#{1}').change(function(){{
-        var selectedYearValue = $(this).val();
-        if (selectedYearValue == '') {{
-            $('#{0}').val('');
-        }} else {{
-            var gradeOffset = ( parseInt( selectedYearValue ) - {4} ) - {3};
-            if (gradeOffset >= 0 ) {{
-                $('#{0}').val(gradeOffset.toString());
-
-                // if there is a gap in gradeOffsets (grade is combined), keep trying if we haven't hit an actual offset yet
-                while (!$('#{0}').val() && gradeOffset <= {5}) {{
-                    $('#{0}').val(gradeOffset++);
-                }}
-            }} else {{
-                $('#{0}').val('');
-            }}
-        }}
-    }});";
-            string script = string.Format(
-                gradeSelectionScriptFormat, 
-                ddlGradeOffset.ClientID,     // {0}
-                ypGraduation.ClientID,       // {1}
-                _gradeTransitionDate.Year,   // {2}
-                gradeOffsetRefactor,   // {3}
-                RockDateTime.Now.Year, // {4}
-                maxGradeOffset // {5}
-                );     
-            
-            ScriptManager.RegisterStartupScript( ddlGradeOffset, ddlGradeOffset.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
+            ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker(ypGraduation), true );
 
             string smsScript = @"
     $('.js-sms-number').click(function () {
@@ -467,19 +402,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person.GradeOffset.HasValue )
             {
                 int gradeOffset = Person.GradeOffset.Value;
-                var maxGradeOffset = ddlGradeOffset.Items.OfType<ListItem>().Select( a => a.Value.AsInteger() ).Max();
+                var maxGradeOffset = ddlGradePicker.MaxGradeOffset; ;
                 
                 // keep trying until we find a Grade that has a gradeOffset that that includes the Person's gradeOffset (for example, there might be combined grades)
-                while ( !ddlGradeOffset.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset)
+                while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
                 {
                     gradeOffset++;
                 }
-             
-                ddlGradeOffset.SetValue( gradeOffset );
+
+                ddlGradePicker.SetValue( gradeOffset );
             }
             else
             {
-                ddlGradeOffset.SelectedIndex = 0;
+                ddlGradePicker.SelectedIndex = 0;
             }
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
