@@ -7,55 +7,35 @@
 
         <asp:Panel id="pnlDetails" runat="server">
 
+            <h3><asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
             <h4>Enter Attendance For: <asp:Literal ID="lOccurrenceDate" runat="server" /></h4>
 
             <div class="actions">
-                <asp:HyperLink ID="aPrev" runat="server" Text="Previous Week" CssClass="btn btn-default" />
-                <asp:HyperLink ID="aNext" runat="server" Text="Previous Week" CssClass="btn btn-default" />
+                <asp:HyperLink ID="aPrev" runat="server" Text="Previous" CssClass="btn btn-default" />
+                <asp:HyperLink ID="aNext" runat="server" Text="Next" CssClass="btn btn-default" />
             </div>
 
-            <Rock:RockCheckBox ID="cbDidNotMeet" runat="server" Text="We Did Not Meet" />
+            <div class="row">
+                <div class="col-md-12">
+                    <Rock:RockCheckBox ID="cbDidNotMeet" runat="server" Text="We Did Not Meet" />
+                </div>
+            </div>
 
-            <div class="group-attendance-roster">
-                <asp:ListView ID="lvMembers" runat="server" OnItemCommand="lvMembers_ItemCommand">
-                    <LayoutTemplate>
-                        <ul class="roster-list">
-                            <li id="itemPlaceHolder" runat="server"></li>
-                        </ul>
-                    </LayoutTemplate>
-                    <ItemTemplate>
-                        <li id="li1" runat="server">
+            <div class="row group-attendance-roster">
+                <div class="col-md-12">
+                    <asp:ListView ID="lvMembers" runat="server">
+                        <ItemTemplate>
                             <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
                             <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# Eval("FullName") %>' />
-                            <asp:LinkButton ID="lbDelete" runat="server" CausesValidation="false" CommandArgument='<%# Eval("Id") %>' CssClass="js-remove-member" ><i class="fa fa-delete"></i></asp:LinkButton>
-                        </li>
-                    </ItemTemplate>
-                </asp:ListView>
+                        </ItemTemplate>
+                    </asp:ListView>
+                </div>
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-Primary" OnClick="lbSave_Click" CausesValidation="false" />
-                <asp:LinkButton ID="lbAdd" runat="server" Text="Add New Person to the Group" CssClass="btn btn-Link" OnClick="lbAdd_Click" CausesValidation="false" />
+                <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
             </div>
 
-            <div class="group-attendance-pending">
-                <h4>Pending Members</h4>
-                <asp:ListView ID="lvPending" runat="server" OnItemCommand="lvPending_ItemCommand">
-                    <LayoutTemplate>
-                        <ul class="pending-list">
-                            <li id="itemPlaceHolder" runat="server"></li>
-                        </ul>
-                    </LayoutTemplate>
-                    <ItemTemplate>
-                        <li id="Li2" runat="server">
-                            <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
-                            <asp:Label ID="lblName" runat="server" Text='<%# Eval("FullName") %>' />
-                            <asp:LinkButton ID="lbAdd" runat="server" CausesValidation="false" CommandArgument='<%# Eval("Id") %>' CssClass="js-add-member" ><i class="fa fa-plus"></i></asp:LinkButton>
-                        </li>
-                    </ItemTemplate>
-                </asp:ListView>
-            
-            </div>
         </asp:Panel>
 
     </ContentTemplate>

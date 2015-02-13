@@ -45,6 +45,10 @@ namespace RockWeb.Blocks.Groups
         private Group _group = null;
         private bool _canEdit = false;
 
+        private GroupOccurrence prevOccurrence = null;
+        private GroupOccurrence thisOccurrence = null;
+        private GroupOccurrence nextOccurrence = null;
+
         #endregion
 
         #region Control Methods
@@ -76,6 +80,8 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
+            GetOccurrenceItems();
+
             if ( !Page.IsPostBack )
             {
                 pnlDetails.Visible = _canEdit;
@@ -98,47 +104,89 @@ namespace RockWeb.Blocks.Groups
 
         #region Events
 
-
-        protected void lvMembers_ItemCommand( object sender, ListViewCommandEventArgs e )
-        {
-
-        }
-        protected void lvPending_ItemCommand( object sender, ListViewCommandEventArgs e )
-        {
-
-        }
         protected void lbSave_Click( object sender, EventArgs e )
         {
+            if ( _group != null && _group.ScheduleId.HasValue && thisOccurrence != null )
+            {
+                var rockContext = new RockContext();
+                var attendanceService = new AttendanceService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
 
-        }
-        protected void lbAdd_Click( object sender, EventArgs e )
-        {
+                var existingAttendees = attendanceService.Queryable()
+                        .Where( a =>
+                            a.GroupId == _group.Id &&
+                            a.ScheduleId == _group.ScheduleId &&
+                            a.StartDateTime == thisOccurrence.StartDateTime )
+                        .ToList();
 
+                if ( cbDidNotMeet.Checked )
+                {
+                    foreach( var attendance in existingAttendees )
+                    {
+                        attendance.DidAttend = null;
+                    }
+                }
+
+                foreach ( var item in lvMembers.Items )
+                {
+                    var hfMember = item.FindControl( "hfMember" ) as HiddenField;
+                    var cbMember = item.FindControl( "cbMember" ) as CheckBox;
+
+                    if ( hfMember != null && cbMember != null )
+                    {
+                        int personId = hfMember.ValueAsInt();
+
+                        var attendance = existingAttendees
+                            .Where( a => a.PersonAlias.PersonId == personId )
+                            .FirstOrDefault();
+
+                        if ( attendance == null )
+                        {
+                            int? personAliasId = personAliasService.GetPrimaryAliasId( personId );
+                            if ( personAliasId.HasValue )
+                            {
+                                attendance = new Attendance();
+                                attendance.GroupId = _group.Id;
+                                attendance.ScheduleId = _group.ScheduleId;
+                                attendance.PersonAliasId = personAliasId;
+                                attendance.StartDateTime = thisOccurrence.StartDateTime;
+                                attendanceService.Add( attendance );
+                            }
+                        }
+
+                        if ( attendance != null )
+                        {
+                            if ( cbDidNotMeet.Checked )
+                            {
+                                attendance.DidAttend = null;
+                            }
+                            else
+                            {
+                                attendance.DidAttend = cbMember.Checked;
+                            }
+                        }
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         #endregion
 
         #region Internal Methods
 
-        /// <summary>
-        /// Binds the group members grid.
-        /// </summary>
-        protected void ShowDetails()
+        private void GetOccurrenceItems()
         {
             DateTime? occurrenceDate = PageParameter( "Occurrence" ).AsDateTime();
             if ( _group != null )
             {
-                GroupOccurrence prevOccurrence = null;
-                GroupOccurrence thisOccurrence = null;
-                GroupOccurrence nextOccurrence = null;
-
-                var groupService = new GroupService(_rockContext);
-                var groupMemberService = new GroupMemberService( _rockContext );
+                lGroupName.Text = _group.Name;
 
                 // Get all the occurrences for this group ( without loading attendance yet )
-                var occurrences = groupService
+                var occurrences = new GroupService(_rockContext)
                     .GetGroupOccurrences( _group, false )
-                    .OrderBy( o => o.OccurrenceStartDateTime )
+                    .OrderBy( o => o.StartDateTime )
                     .ToList();
 
                 // If occurrences were found, loop through them looking for the selected occurrence
@@ -149,7 +197,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         for ( int i = 0; i < occurrences.Count; i++ )
                         {
-                            if ( occurrences[i].OccurrenceStartDateTime == occurrenceDate.Value )
+                            if ( occurrences[i].StartDateTime == occurrenceDate.Value )
                             {
                                 thisOccurrence = occurrences[i];
                                 if ( i > 0 )
@@ -172,91 +220,93 @@ namespace RockWeb.Blocks.Groups
                         {
                             prevOccurrence = occurrences[occurrences.Count - 2];
                         }
+
                     }
+                }
+            }
+        }
 
-                    // Configure 'Previous' Button
-                    if ( prevOccurrence != null )
-                    {
-                        var pageReference = CurrentPageReference;
-                        pageReference.Parameters.AddOrReplace( "Occurrence", prevOccurrence.OccurrenceStartDateTime.ToString("o"));
-                        aPrev.NavigateUrl = pageReference.BuildUrl();
-                        aPrev.Visible = true;
-                    }
-                    else
-                    {
-                        aPrev.Visible = false;
-                    }
+        /// <summary>
+        /// Binds the group members grid.
+        /// </summary>
+        protected void ShowDetails()
+        {
+            if ( thisOccurrence != null )
+            {
 
-                    // Configure 'Next' Button
-                    if ( nextOccurrence != null )
-                    {
-                        var pageReference = CurrentPageReference;
-                        pageReference.Parameters.AddOrReplace( "Occurrence", nextOccurrence.OccurrenceStartDateTime.ToString("o"));
-                        aNext.NavigateUrl = pageReference.BuildUrl();
-                        aNext.Visible = true;
-                    }
-                    else
-                    {
-                        aNext.Visible = false;
-                    }
+                lOccurrenceDate.Text = thisOccurrence.StartDateTime.ToShortDateString();
 
-                    // Load the attendance for the selected occurrence
-                    groupService.LoadAttendanceData( _group, thisOccurrence );
-
-                    // Get the list of people who attended
-                    var attendedIds = thisOccurrence.Attendance
-                        .Where( a => a.DidAttend )
-                        .Select( a => a.PersonAlias.PersonId )
-                        .ToList();
-
-                    // Add any existing active members not on that list
-                    var unattendedIds = groupMemberService
-                        .Queryable().AsNoTracking()
-                        .Where( m =>
-                            m.GroupId == _group.Id &&
-                            m.GroupMemberStatus == GroupMemberStatus.Active &&
-                            !attendedIds.Contains ( m.PersonId ) )
-                        .Select( m => m.PersonId )
-                        .ToList();
-
-                    // Bind the attendance roster
-                    lvMembers.DataSource = new PersonService( _rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( p => attendedIds.Contains(p.Id) || unattendedIds.Contains( p.Id ) )
-                        .OrderBy( p => p.LastName )
-                        .ThenBy( p => p.NickName )
-                        .Select( p => new {
-                            Id = p.Id,
-                            Attended = attendedIds.Contains(p.Id),
-                            FullName = p.NickName + " " + p.LastName
-                        })
-                        .ToList();
-                    lvMembers.DataBind();
-
-                    lvPending.DataSource = groupMemberService
-                        .Queryable().AsNoTracking()
-                        .Where( m => 
-                            m.GroupId == _group.Id &&
-                            m.GroupMemberStatus == GroupMemberStatus.Pending )
-                        .OrderBy( m => m.Person.LastName )
-                        .ThenBy( m => m.Person.NickName )
-                        .Select( m => new {
-                            Id = m.PersonId,
-                            FullName = m.Person.NickName + " " + m.Person.LastName
-                        })
-                        .ToList();
-                    lvPending.DataBind();
+                // Configure 'Previous' Button
+                if ( prevOccurrence != null )
+                {
+                    var pageReference = CurrentPageReference;
+                    pageReference.Parameters.AddOrReplace( "Occurrence", prevOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
+                    aPrev.NavigateUrl = pageReference.BuildUrl();
+                    aPrev.Visible = true;
                 }
                 else
                 {
-                    nbNotice.Heading = "No Occurrences";
-                    nbNotice.Text = "<p>There are currently not any active occurrences for selected group to take attendance for.</p>";
-                    nbNotice.NotificationBoxType = NotificationBoxType.Warning;
-                    nbNotice.Visible = true;
-
-                    pnlDetails.Visible = false;
+                    aPrev.Visible = false;
                 }
 
+                // Configure 'Next' Button
+                if ( nextOccurrence != null )
+                {
+                    var pageReference = CurrentPageReference;
+                    pageReference.Parameters.AddOrReplace( "Occurrence", nextOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
+                    aNext.NavigateUrl = pageReference.BuildUrl();
+                    aNext.Visible = true;
+                }
+                else
+                {
+                    aNext.Visible = false;
+                }
+
+
+                // Load the attendance for the selected occurrence
+                new GroupService( _rockContext ).LoadAttendanceData( _group, thisOccurrence );
+
+                cbDidNotMeet.Checked = thisOccurrence.DidNotMeet;
+
+                // Get the list of people who attended
+                var attendedIds = thisOccurrence.Attendance
+                    .Where( a => a.DidAttend.HasValue && a.DidAttend.Value )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .ToList();
+
+                // Add any existing active members not on that list
+                var unattendedIds = new GroupMemberService( _rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.GroupId == _group.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        !attendedIds.Contains( m.PersonId ) )
+                    .Select( m => m.PersonId )
+                    .ToList();
+
+                // Bind the attendance roster
+                lvMembers.DataSource = new PersonService( _rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( p => attendedIds.Contains( p.Id ) || unattendedIds.Contains( p.Id ) )
+                    .OrderBy( p => p.LastName )
+                    .ThenBy( p => p.NickName )
+                    .Select( p => new
+                    {
+                        Id = p.Id,
+                        Attended = attendedIds.Contains( p.Id ),
+                        FullName = p.NickName + " " + p.LastName
+                    } )
+                    .ToList();
+                lvMembers.DataBind();
+            }
+            else
+            {
+                nbNotice.Heading = "No Occurrences";
+                nbNotice.Text = "<p>There are currently not any active occurrences for selected group to take attendance for.</p>";
+                nbNotice.NotificationBoxType = NotificationBoxType.Warning;
+                nbNotice.Visible = true;
+
+                pnlDetails.Visible = false;
             }
 
         }
@@ -268,25 +318,15 @@ namespace RockWeb.Blocks.Groups
     Sys.Application.add_load(function () {{
 
         if ($('#{0}').is(':checked')) {{
-            $('ul.roster-list').hide();
+            $('div.group-attendance-roster').hide();
         }}
 
         $('#{0}').click(function () {{
             if ($(this).is(':checked')) {{
-                $('ul.roster-list').hide('fast');
+                $('div.group-attendance-roster').hide('fast');
             }} else {{
-                $('ul.roster-list').show('fast');
+                $('div.group-attendance-roster').show('fast');
             }}
-        }});
-
-        $('ul.roster-list .js-remove-member').click(function () {{
-            var memberName = $(this).prev().find('label').html();
-            return confirm('Are you sure you want to remove ' + memberName + ' from your group?');
-        }});
-
-        $('ul.pending .js-add-member').click(function () {{
-            var memberName = $(this).prev().children('label').html();
-            return confirm('Add ' + memberName + ' to your group?');
         }});
 
     }});
