@@ -5000,7 +5000,14 @@ h6.condensed {
 div.aspNetDisabled {
   opacity: 0.5;
 }
-/* Ten Key Keypad */
+/*
+    Used to manage styles for specific blocks.
+
+    1. Key Pad
+    2. Scroller
+    3. Kiosk Components
+
+*/
 .tenkey {
   width: 320px;
 }
@@ -5017,6 +5024,87 @@ div.aspNetDisabled {
   font-size: 20px;
   font-weight: 300;
   padding-top: 28px;
+}
+.scrollpanel {
+  position: absolute;
+  z-index: 1;
+  top: 45px;
+  bottom: 48px;
+  width: 100%;
+  overflow: hidden;
+}
+.scroller {
+  padding-right: 24px;
+  position: absolute;
+  z-index: 1;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  width: 100%;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
+}
+.iScrollIndicator {
+  box-sizing: border-box;
+  position: absolute;
+  border: 1px solid #adaeaf;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+  width: 100%;
+  transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
+  -webkit-transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
+  display: block;
+  height: 8px;
+  transform: translate(0px, 0px) translateZ(0px);
+  background-color: #000000;
+  opacity: .3;
+}
+.iScrollVerticalScrollbar,
+.iScrollLoneScrollbar {
+  position: absolute;
+  z-index: 1;
+  width: 7px;
+  bottom: 2px;
+  top: 2px;
+  right: 1px;
+  overflow: hidden;
+}
+.btn-kioskselect {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-bottom: 12px;
+}
+.btn-kioskselect small {
+  font-weight: 300;
+  margin-left: 16px;
+}
+.btn-kiosk {
+  font-weight: 300;
+  font-size: 24px;
+}
+.btn-kiosk-lg {
+  min-height: 120px;
+  width: 100%;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 110px;
 }
 @media print {
   @page {
@@ -5044,9 +5132,34 @@ div.aspNetDisabled {
 main {
   display: block;
 }
+header {
+  /* needed to ensure correct height calculation in jQuery for scroll panel */
+}
+header:before,
+header:after {
+  content: " ";
+  display: table;
+}
+header:after {
+  clear: both;
+}
+footer {
+  /* needed to ensure correct height calculation in jQuery for scroll panel */
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 24px;
+}
+footer:before,
+footer:after {
+  content: " ";
+  display: table;
+}
+footer:after {
+  clear: both;
+}
 .form-control {
   font-size: 32px;
   height: 64px;
   font-weight: 700;
-  padding: 20px;
+  --padding: 20px;
 }
