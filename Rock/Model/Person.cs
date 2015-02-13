@@ -1000,7 +1000,7 @@ namespace Rock.Model
             {
                 if ( GradeOffset.HasValue )
                 {
-                    return GradeOffset >= 0;
+                    return GradeOffset < 0;
                 }
 
                 return null;

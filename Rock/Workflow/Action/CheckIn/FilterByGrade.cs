@@ -89,12 +89,13 @@ namespace Rock.Workflow.Action.CheckIn
                             // if the group type specifies a min grade (max gradeOffset)...
                             if ( maxGradeDefinedValue != null )
                             {
-                                int? maxGradeOffset = maxGradeDefinedValue.Value.AsIntegerOrNull();
-                                if ( maxGradeOffset.HasValue )
+                                // NOTE: minGradeOffset is actually based on the MAX Grade since GradeOffset's are Years Until Graduation
+                                int? minGradeOffset = maxGradeDefinedValue.Value.AsIntegerOrNull();
+                                if ( minGradeOffset.HasValue )
                                 {
                                     // remove if the person does not have a grade or if their grade offset is more than the max offset (too young)
                                     // example person is in 3rd grade (offset 9) and range is 4th to 6th (offset 6 to 8)
-                                    if ( !personsGradeOffset.HasValue || personsGradeOffset > maxGradeOffset.Value )
+                                    if ( !personsGradeOffset.HasValue || personsGradeOffset < minGradeOffset.Value )
                                     {
                                         if ( remove )
                                         {
@@ -113,12 +114,13 @@ namespace Rock.Workflow.Action.CheckIn
                             // if the group type specifies a max grade (min gradeOffset)...
                             if ( minGradeDefinedValue != null )
                             {
-                                int? minGradeOffset = minGradeDefinedValue.Value.AsIntegerOrNull();
-                                if ( minGradeOffset.HasValue )
+                                // NOTE: maxGradeOffset is actually based on the MIN Grade since GradeOffset's are Years Until Graduation
+                                int? maxGradeOffset = minGradeDefinedValue.Value.AsIntegerOrNull();
+                                if ( maxGradeOffset.HasValue )
                                 {
                                     // remove if the person does not have a grade or if their grade offset is less than the min offset (too old)
                                     // example person is in 7rd grade (offset 5) and range is 4th to 6th (offset 6 to 8)
-                                    if ( !personsGradeOffset.HasValue || personsGradeOffset < minGradeOffset )
+                                    if ( !personsGradeOffset.HasValue || personsGradeOffset > maxGradeOffset )
                                     {
                                         if ( remove )
                                         {
