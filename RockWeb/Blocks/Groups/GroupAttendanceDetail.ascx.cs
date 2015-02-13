@@ -21,13 +21,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
+
 using Rock;
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -44,10 +42,9 @@ namespace RockWeb.Blocks.Groups
         private RockContext _rockContext = null;
         private Group _group = null;
         private bool _canEdit = false;
-
-        private GroupOccurrence prevOccurrence = null;
-        private GroupOccurrence thisOccurrence = null;
-        private GroupOccurrence nextOccurrence = null;
+        private GroupOccurrence _prevOccurrence = null;
+        private GroupOccurrence _thisOccurrence = null;
+        private GroupOccurrence _nextOccurrence = null;
 
         #endregion
 
@@ -104,9 +101,14 @@ namespace RockWeb.Blocks.Groups
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            if ( _group != null && _group.ScheduleId.HasValue && thisOccurrence != null )
+            if ( _group != null && _group.ScheduleId.HasValue && _thisOccurrence != null )
             {
                 var rockContext = new RockContext();
                 var attendanceService = new AttendanceService( rockContext );
@@ -116,12 +118,12 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.GroupId == _group.Id &&
                             a.ScheduleId == _group.ScheduleId &&
-                            a.StartDateTime == thisOccurrence.StartDateTime )
+                            a.StartDateTime == _thisOccurrence.StartDateTime )
                         .ToList();
 
                 if ( cbDidNotMeet.Checked )
                 {
-                    foreach( var attendance in existingAttendees )
+                    foreach ( var attendance in existingAttendees )
                     {
                         attendance.DidAttend = null;
                     }
@@ -149,7 +151,7 @@ namespace RockWeb.Blocks.Groups
                                 attendance.GroupId = _group.Id;
                                 attendance.ScheduleId = _group.ScheduleId;
                                 attendance.PersonAliasId = personAliasId;
-                                attendance.StartDateTime = thisOccurrence.StartDateTime;
+                                attendance.StartDateTime = _thisOccurrence.StartDateTime;
                                 attendanceService.Add( attendance );
                             }
                         }
@@ -169,6 +171,36 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
+
+                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the lvPendingMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewCommandEventArgs"/> instance containing the event data.</param>
+        protected void lvPendingMembers_ItemCommand( object sender, ListViewCommandEventArgs e )
+        {
+            if ( _group != null && e.CommandName == "Add" )
+            {
+                int personId = e.CommandArgument.ToString().AsInteger();
+
+                var rockContext = new RockContext();
+
+                foreach ( var groupMember in new GroupMemberService( rockContext )
+                    .GetByGroupIdAndPersonId( _group.Id, personId ) )
+                {
+                    if ( groupMember.GroupMemberStatus == GroupMemberStatus.Pending )
+                    {
+                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    }
+                }
+
+                rockContext.SaveChanges();
+
+                ShowDetails();
             }
         }
 
@@ -176,6 +208,9 @@ namespace RockWeb.Blocks.Groups
 
         #region Internal Methods
 
+        /// <summary>
+        /// Gets the occurrence items.
+        /// </summary>
         private void GetOccurrenceItems()
         {
             DateTime? occurrenceDate = PageParameter( "Occurrence" ).AsDateTime();
@@ -184,7 +219,7 @@ namespace RockWeb.Blocks.Groups
                 lGroupName.Text = _group.Name;
 
                 // Get all the occurrences for this group ( without loading attendance yet )
-                var occurrences = new GroupService(_rockContext)
+                var occurrences = new GroupService( _rockContext )
                     .GetGroupOccurrences( _group, false )
                     .OrderBy( o => o.StartDateTime )
                     .ToList();
@@ -199,26 +234,26 @@ namespace RockWeb.Blocks.Groups
                         {
                             if ( occurrences[i].StartDateTime == occurrenceDate.Value )
                             {
-                                thisOccurrence = occurrences[i];
+                                _thisOccurrence = occurrences[i];
                                 if ( i > 0 )
                                 {
-                                    prevOccurrence = occurrences[i - 1];
+                                    _prevOccurrence = occurrences[i - 1];
                                 }
                                 if ( i < occurrences.Count - 1 )
                                 {
-                                    nextOccurrence = occurrences[i + 1];
+                                    _nextOccurrence = occurrences[i + 1];
                                 }
                             }
                         }
                     }
 
                     // If the selected occurrence was not found or one was not specified, use the last one in list
-                    if ( thisOccurrence == null )
+                    if ( _thisOccurrence == null )
                     {
-                        thisOccurrence = occurrences.Last();
+                        _thisOccurrence = occurrences.Last();
                         if ( occurrences.Count >= 2 )
                         {
-                            prevOccurrence = occurrences[occurrences.Count - 2];
+                            _prevOccurrence = occurrences[occurrences.Count - 2];
                         }
 
                     }
@@ -231,16 +266,16 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         protected void ShowDetails()
         {
-            if ( thisOccurrence != null )
+            if ( _thisOccurrence != null )
             {
 
-                lOccurrenceDate.Text = thisOccurrence.StartDateTime.ToShortDateString();
+                lOccurrenceDate.Text = _thisOccurrence.StartDateTime.ToShortDateString();
 
                 // Configure 'Previous' Button
-                if ( prevOccurrence != null )
+                if ( _prevOccurrence != null )
                 {
                     var pageReference = CurrentPageReference;
-                    pageReference.Parameters.AddOrReplace( "Occurrence", prevOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
+                    pageReference.Parameters.AddOrReplace( "Occurrence", _prevOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
                     aPrev.NavigateUrl = pageReference.BuildUrl();
                     aPrev.Visible = true;
                 }
@@ -250,10 +285,10 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // Configure 'Next' Button
-                if ( nextOccurrence != null )
+                if ( _nextOccurrence != null )
                 {
                     var pageReference = CurrentPageReference;
-                    pageReference.Parameters.AddOrReplace( "Occurrence", nextOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
+                    pageReference.Parameters.AddOrReplace( "Occurrence", _nextOccurrence.StartDateTime.ToString( "yyyy-MM-ddTHH:mm:ss" ) );
                     aNext.NavigateUrl = pageReference.BuildUrl();
                     aNext.Visible = true;
                 }
@@ -264,18 +299,20 @@ namespace RockWeb.Blocks.Groups
 
 
                 // Load the attendance for the selected occurrence
-                new GroupService( _rockContext ).LoadAttendanceData( _group, thisOccurrence );
+                new GroupService( _rockContext ).LoadAttendanceData( _group, _thisOccurrence );
 
-                cbDidNotMeet.Checked = thisOccurrence.DidNotMeet;
+                cbDidNotMeet.Checked = _thisOccurrence.DidNotMeet;
 
                 // Get the list of people who attended
-                var attendedIds = thisOccurrence.Attendance
+                var attendedIds = _thisOccurrence.Attendance
                     .Where( a => a.DidAttend.HasValue && a.DidAttend.Value )
                     .Select( a => a.PersonAlias.PersonId )
                     .ToList();
 
+                var groupMemberService = new GroupMemberService( _rockContext );
+
                 // Add any existing active members not on that list
-                var unattendedIds = new GroupMemberService( _rockContext )
+                var unattendedIds = groupMemberService
                     .Queryable().AsNoTracking()
                     .Where( m =>
                         m.GroupId == _group.Id &&
@@ -298,6 +335,26 @@ namespace RockWeb.Blocks.Groups
                     } )
                     .ToList();
                 lvMembers.DataBind();
+
+                // Bind the pending members
+                var pendingMembers = groupMemberService
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.GroupId == _group.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Pending )
+                    .OrderBy( m => m.Person.LastName )
+                    .ThenBy( m => m.Person.NickName )
+                    .Select( m => new
+                    {
+                        Id = m.PersonId,
+                        FullName = m.Person.NickName + " " + m.Person.LastName
+                    } )
+                    .ToList();
+
+                pnlPendingMembers.Visible = pendingMembers.Any();
+                lvPendingMembers.DataSource = pendingMembers;
+                lvPendingMembers.DataBind();
+
             }
             else
             {
@@ -329,13 +386,26 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
+        $('.js-add-member').click(function ( e ) {{
+            e.preventDefault();
+            var $a = $(this);
+            var memberName = $(this).parent().find('span').html();
+            Rock.dialogs.confirm('Add ' + memberName + ' to your group?', function (result) {{
+                if (result) {{
+                    eval($a.prop('href'));
+                }}
+            }});
+        }});
+
     }});
+
 ", cbDidNotMeet.ClientID );
 
             ScriptManager.RegisterStartupScript( cbDidNotMeet, cbDidNotMeet.GetType(), "group-attendance-detail", script, true );
         }
 
         #endregion
+
     }
-    
+
 }
