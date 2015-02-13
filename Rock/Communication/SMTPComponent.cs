@@ -130,6 +130,7 @@ namespace Rock.Communication.Transport
             {
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
                 string fromAddress = communication.GetMediumDataValue( "FromAddress" );
@@ -143,6 +144,10 @@ namespace Rock.Communication.Transport
                 {
                     fromName = globalAttributes.GetValue( "OrganizationName" );
                 }
+
+                // Resolve any possible merge fields in the from address
+                fromAddress = fromAddress.ResolveMergeFields( globalConfigValues );
+                fromName = fromName.ResolveMergeFields( globalConfigValues );
 
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress( fromAddress, fromName );
@@ -210,8 +215,6 @@ namespace Rock.Communication.Transport
                 var personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
                 var communicationEntityTypeId = EntityTypeCache.Read("Rock.Model.Communication" ).Id;
                 var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext).Id;
-
-                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
                 bool recipientFound = true;
                 while ( recipientFound )
@@ -325,6 +328,11 @@ namespace Rock.Communication.Transport
 
             if ( !string.IsNullOrWhiteSpace( from ) )
             {
+                // Resolve any possible merge fields in the from address
+                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                from = from.ResolveMergeFields( globalConfigValues );
+                fromName = fromName.ResolveMergeFields( globalConfigValues );
+
                 MailMessage message = new MailMessage();
                 if (string.IsNullOrWhiteSpace(fromName))
                 {
@@ -357,8 +365,6 @@ namespace Rock.Communication.Transport
                 message.Priority = MailPriority.Normal;
 
                 var smtpClient = GetSmtpClient();
-
-                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
                 foreach ( var recipientData in recipients )
                 {
@@ -428,6 +434,11 @@ namespace Rock.Communication.Transport
 
                 if ( !string.IsNullOrWhiteSpace( from ) )
                 {
+                    // Resolve any possible merge fields in the from address
+                    var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                    from = from.ResolveMergeFields( globalConfigValues );
+                    fromName = fromName.ResolveMergeFields( globalConfigValues );
+
                     MailMessage message = new MailMessage();
 
                     if ( string.IsNullOrWhiteSpace( fromName ) )
@@ -504,6 +515,10 @@ namespace Rock.Communication.Transport
 
                 if ( !string.IsNullOrWhiteSpace( from ) )
                 {
+                    // Resolve any possible merge fields in the from address
+                    var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                    from = from.ResolveMergeFields( globalConfigValues );
+
                     MailMessage message = new MailMessage();
                     message.From = new MailAddress( from );
 
@@ -537,13 +552,11 @@ namespace Rock.Communication.Transport
                     smtpClient.Send( message );
                 }
             }
-
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
             }
         }
-
 
         /// <summary>
         /// Adds any additional headers.
@@ -554,6 +567,10 @@ namespace Rock.Communication.Transport
         {
         }
         
+        /// <summary>
+        /// Creates an SmtpClient using this Server, Port and SSL settings.
+        /// </summary>
+        /// <returns></returns>
         private SmtpClient GetSmtpClient()
         {
             // Create SMTP Client
@@ -570,6 +587,11 @@ namespace Rock.Communication.Transport
             return smtpClient;
         }
 
+        /// <summary>
+        /// Splits (on a comma) the string into a List of recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <returns>A list of strings</returns>
         private List<string> SplitRecipient( string recipients )
         {
             if ( String.IsNullOrWhiteSpace( recipients ) )
@@ -578,6 +600,14 @@ namespace Rock.Communication.Transport
                 return new List<string>( recipients.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
         }
 
+        /// <summary>
+        /// Checks to make sure the sender's email address domain is one from the
+        /// SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.  If it is not
+        /// it will replace the From address with the one defined by the OrganizationEmail
+        /// global attribute.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="globalAttributes">The global attributes.</param>
         private void CheckSafeSender( MailMessage message, GlobalAttributesCache globalAttributes )
         {
             if ( message != null && message.From != null )
