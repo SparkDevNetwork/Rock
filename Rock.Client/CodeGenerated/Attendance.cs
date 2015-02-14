@@ -53,6 +53,9 @@ namespace Rock.Client
         public bool? DidAttend { get; set; }
 
         /// <summary />
+        public bool? DidNotOccur { get; set; }
+
+        /// <summary />
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
@@ -68,13 +71,13 @@ namespace Rock.Client
         public int? PersonAliasId { get; set; }
 
         /// <summary />
+        public bool? Processed { get; set; }
+
+        /// <summary />
         public DefinedValue Qualifier { get; set; }
 
         /// <summary />
         public int? QualifierValueId { get; set; }
-
-        /// <summary />
-        public string Response { get; set; }
 
         /// <summary />
         public int /* RSVP*/ RSVP { get; set; }

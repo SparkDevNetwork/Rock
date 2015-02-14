@@ -26,6 +26,17 @@ namespace Rock.Attribute
     {
         private const string DEFINED_TYPE_KEY = "definedtype";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueRangeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
         public DefinedValueRangeFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueRangeFieldType ).FullName )
         {

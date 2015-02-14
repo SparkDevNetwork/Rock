@@ -992,6 +992,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the has graduated.
+        /// </summary>
+        /// <value>
+        /// The has graduated.
+        /// </value>
         [NotMapped]
         [DataMember]
         public virtual bool? HasGraduated
