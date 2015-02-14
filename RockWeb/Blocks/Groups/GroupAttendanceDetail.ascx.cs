@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Groups
         private RockContext _rockContext = null;
         private Group _group = null;
         private bool _canEdit = false;
-        private GroupOccurrence _prevOccurrence = null;
-        private GroupOccurrence _thisOccurrence = null;
-        private GroupOccurrence _nextOccurrence = null;
+        private ScheduleOccurrence _prevOccurrence = null;
+        private ScheduleOccurrence _thisOccurrence = null;
+        private ScheduleOccurrence _nextOccurrence = null;
 
         #endregion
 
@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Groups
                     foreach ( var attendance in existingAttendees )
                     {
                         attendance.DidAttend = null;
+                        attendance.DidNotOccur = true;
                     }
                 }
 
@@ -161,10 +162,12 @@ namespace RockWeb.Blocks.Groups
                             if ( cbDidNotMeet.Checked )
                             {
                                 attendance.DidAttend = null;
+                                attendance.DidNotOccur = true;
                             }
                             else
                             {
                                 attendance.DidAttend = cbMember.Checked;
+                                attendance.DidNotOccur = null;
                             }
                         }
                     }
@@ -219,7 +222,7 @@ namespace RockWeb.Blocks.Groups
                 lGroupName.Text = _group.Name;
 
                 // Get all the occurrences for this group ( without loading attendance yet )
-                var occurrences = new GroupService( _rockContext )
+                var occurrences = new ScheduleService( _rockContext )
                     .GetGroupOccurrences( _group, false )
                     .OrderBy( o => o.StartDateTime )
                     .ToList();
@@ -299,9 +302,9 @@ namespace RockWeb.Blocks.Groups
 
 
                 // Load the attendance for the selected occurrence
-                new GroupService( _rockContext ).LoadAttendanceData( _group, _thisOccurrence );
+                new ScheduleService( _rockContext ).LoadAttendanceData( _group, _thisOccurrence );
 
-                cbDidNotMeet.Checked = _thisOccurrence.DidNotMeet;
+                cbDidNotMeet.Checked = _thisOccurrence.DidNotOccur;
 
                 // Get the list of people who attended
                 var attendedIds = _thisOccurrence.Attendance
