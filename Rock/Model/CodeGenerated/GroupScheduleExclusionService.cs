@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Schedule Service class
+    /// GroupScheduleExclusion Service class
     /// </summary>
-    public partial class ScheduleService : Service<Schedule>
+    public partial class GroupScheduleExclusionService : Service<GroupScheduleExclusion>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleService"/> class
+        /// Initializes a new instance of the <see cref="GroupScheduleExclusionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ScheduleService(RockContext context) : base(context)
+        public GroupScheduleExclusionService(RockContext context) : base(context)
         {
         }
 
@@ -48,21 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Schedule item, out string errorMessage )
+        public bool CanDelete( GroupScheduleExclusion item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Group.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Metric>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Metric.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -70,44 +58,37 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ScheduleExtensionMethods
+    public static partial class GroupScheduleExclusionExtensionMethods
     {
         /// <summary>
-        /// Clones this Schedule object to a new Schedule object
+        /// Clones this GroupScheduleExclusion object to a new GroupScheduleExclusion object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Schedule Clone( this Schedule source, bool deepCopy )
+        public static GroupScheduleExclusion Clone( this GroupScheduleExclusion source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Schedule;
+                return source.Clone() as GroupScheduleExclusion;
             }
             else
             {
-                var target = new Schedule();
+                var target = new GroupScheduleExclusion();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Schedule object to this Schedule object
+        /// Copies the properties from another GroupScheduleExclusion object to this GroupScheduleExclusion object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Schedule target, Schedule source )
+        public static void CopyPropertiesFrom( this GroupScheduleExclusion target, GroupScheduleExclusion source )
         {
             target.Id = source.Id;
-            target.CategoryId = source.CategoryId;
-            target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
-            target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
-            target.Description = source.Description;
-            target.iCalendarContent = source.iCalendarContent;
-            target.Name = source.Name;
-            target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;
-            target.WeeklyTimeOfDay = source.WeeklyTimeOfDay;
+            target.GroupTypeId = source.GroupTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

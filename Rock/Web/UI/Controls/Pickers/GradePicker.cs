@@ -136,6 +136,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the javascript for year picker.
+        /// </summary>
+        /// <param name="ypGraduationYear">The yp graduation year.</param>
+        /// <returns></returns>
         public string GetJavascriptForYearPicker( YearPicker ypGraduationYear)
         {
             DateTime gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );

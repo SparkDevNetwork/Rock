@@ -63,7 +63,20 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public class CallbackEventArgs : EventArgs
         {
+            /// <summary>
+            /// Gets or sets the data value.
+            /// </summary>
+            /// <value>
+            /// The data value.
+            /// </value>
             public object DataValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the formatted value.
+            /// </summary>
+            /// <value>
+            /// The formatted value.
+            /// </value>
             public string FormattedValue { get; set; }
         }
     }
