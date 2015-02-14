@@ -214,6 +214,15 @@ namespace Rock.Model
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the allowed schedule types.
+        /// </summary>
+        /// <value>
+        /// The allowed schedule types.
+        /// </value>
+        [DataMember]
+        public ScheduleType AllowedScheduleTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type
         /// </summary>
         /// <value>

@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
-                var occurrences = new GroupService( _rockContext ).GetGroupOccurrences( _group );
+                var occurrences = new ScheduleService( _rockContext ).GetGroupOccurrences( _group );
 
                 gOccurrences.DataSource = occurrences.OrderByDescending( o => o.StartDateTime ).ToList();
                 gOccurrences.DataBind();
@@ -147,7 +147,6 @@ namespace RockWeb.Blocks.Groups
 
 
         #endregion
-
 
     }
     

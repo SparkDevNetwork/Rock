@@ -451,6 +451,15 @@ namespace RockWeb.Blocks.Groups
                 role.CopyPropertiesFrom( roleState );
             }
 
+            ScheduleType allowedScheduleTypes = ScheduleType.None;
+            foreach( ListItem li in cblScheduleTypes.Items )
+            {
+                if ( li.Selected )
+                {
+                    allowedScheduleTypes = allowedScheduleTypes | (ScheduleType)li.Value.AsInteger();
+                }
+            }
+
             GroupLocationPickerMode locationSelectionMode = GroupLocationPickerMode.None;
             foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
@@ -470,6 +479,7 @@ namespace RockWeb.Blocks.Groups
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
@@ -608,6 +618,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.Roles.Add( memberRole );
                 groupType.DefaultGroupRole = memberRole;
 
+                groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
             }
 
@@ -701,8 +712,14 @@ namespace RockWeb.Blocks.Groups
             cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
             cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
 
+            cblScheduleTypes.Enabled = !groupType.IsSystem;
+            foreach ( ListItem li in cblScheduleTypes.Items )
+            {
+                ScheduleType scheduleType = (ScheduleType)li.Value.AsInteger();
+                li.Selected = ( groupType.AllowedScheduleTypes & scheduleType ) == scheduleType;
+            }
+
             cblLocationSelectionModes.Enabled = !groupType.IsSystem;
-            cblLocationSelectionModes.Enabled = true;
             foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
                 GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger();
@@ -817,6 +834,11 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns( int? groupTypeId )
         {
             ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
+
+            cblScheduleTypes.Items.Clear();
+            cblScheduleTypes.Items.Add( new ListItem( "Weekly", "1" ) );
+            cblScheduleTypes.Items.Add( new ListItem( "Custom", "2" ) );
+            cblScheduleTypes.Items.Add( new ListItem( "Named", "4" ) );
 
             cblLocationSelectionModes.Items.Clear();
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );

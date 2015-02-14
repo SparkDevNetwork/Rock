@@ -431,6 +431,14 @@ namespace Rock.Data
         public DbSet<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public DbSet<GroupScheduleExclusion> GroupScheduleExclusions { get; set; }
+
+        /// <summary>
         /// Gets or sets the Group Types.
         /// </summary>
         /// <value>

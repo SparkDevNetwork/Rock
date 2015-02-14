@@ -65,17 +65,7 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
-                            <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
-                                <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" >
-                                    <asp:ListItem Text="None" Value="None" />
-                                    <asp:ListItem Text="Unique" Value="Unique" />
-                                    <asp:ListItem Text="Named Schedule" Value="Named" />
-                                </Rock:RockRadioButtonList>
-                                <Rock:SchedulePicker ID="spSchedule" runat="server" AllowMultiSelect="false" Visible="false" />
-                                <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
-                                <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" />
-                            </Rock:RockControlWrapper>
+                        <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
@@ -87,6 +77,20 @@
                                     </Columns>
                                 </Rock:Grid>
                             </div>
+                            <asp:Panel ID="pnlSchedule" runat="server" Visible="false">
+                                <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" /> 
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <Rock:DayOfWeekPicker ID="dowWeekly" runat="server" CssClass="input-width-md" Visible="false" Label="Day of the Week" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <Rock:TimePicker ID="timeWeekly" runat="server" Visible="false" Label="Time of Day" />
+                                    </div>
+                                </div>
+                                <Rock:SchedulePicker ID="spSchedule" runat="server" AllowMultiSelect="false" Visible="false" Label="Named Schedule" />
+                                <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" Label="Custom Schedule" />
+                            </asp:Panel>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">

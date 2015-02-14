@@ -137,14 +137,6 @@ namespace Rock.Model
         [DataMember]
         public DateTime? EndDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets a flag indicating if the person attended.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool? DidAttend { get; set; }
 
         /// <summary>
         /// Gets or sets the RSVP.
@@ -156,14 +148,31 @@ namespace Rock.Model
         public RSVP RSVP { get; set; }
 
         /// <summary>
-        /// Gets or sets a response note to an RSVP
+        /// Gets or sets a flag indicating if the person attended.
         /// </summary>
         /// <value>
-        /// The response.
+        /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
-        [MaxLength( 200 )]
         [DataMember]
-        public string Response { get; set; }
+        public bool? DidAttend { get; set; }
+
+        /// <summary>
+        /// Gets or sets the did not occur.
+        /// </summary>
+        /// <value>
+        /// The did not occur.
+        /// </value>
+        [DataMember]
+        public bool? DidNotOccur { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processed.
+        /// </summary>
+        /// <value>
+        /// The processed.
+        /// </value>
+        [DataMember]
+        public bool? Processed { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
