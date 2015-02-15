@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "com.ccvonline.Hr" )]
+[assembly: AssemblyTitle( "church.ccv.Hr" )]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct( "com.ccvonline.Hr" )]
+[assembly: AssemblyProduct( "church.ccv.Hr" )]
 [assembly: AssemblyCopyright( "Copyright ©  2015" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

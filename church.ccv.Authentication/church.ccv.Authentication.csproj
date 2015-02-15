@@ -7,8 +7,8 @@
     <ProjectGuid>{10702916-BB67-4BE9-A507-E1F8932BD05F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.ccvonline.Authentication</RootNamespace>
-    <AssemblyName>com.ccvonline.Authentication</AssemblyName>
+    <RootNamespace>church.ccv.Authentication</RootNamespace>
+    <AssemblyName>church.ccv.Authentication</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

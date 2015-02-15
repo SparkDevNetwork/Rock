@@ -7,8 +7,8 @@
     <ProjectGuid>{629A186E-1ED2-49BC-95D4-76D65950AE73}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.ccvonline.Residency</RootNamespace>
-    <AssemblyName>com.ccvonline.Residency</AssemblyName>
+    <RootNamespace>church.ccv.Residency</RootNamespace>
+    <AssemblyName>church.ccv.Residency</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

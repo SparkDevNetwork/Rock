@@ -21,12 +21,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "com.ccvonline.Residency" )]
+[assembly: AssemblyTitle( "church.ccv.Residency" )]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct( "com.ccvonline.Residency" )]
-[assembly: AssemblyCopyright( "Copyright ©  2014" )]
+[assembly: AssemblyProduct( "church.ccv.Residency" )]
+[assembly: AssemblyCopyright( "Copyright ©  2015" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
