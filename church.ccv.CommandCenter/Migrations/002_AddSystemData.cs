@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Rock.Plugin;
 
-namespace com.ccvonline.CommandCenter.Migrations
+namespace church.ccv.CommandCenter.Migrations
 {
     [MigrationNumber( 2, "1.0.8" )]
     public class AddSystemData : Migration

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ProjectDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.ProjectDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ProjectDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.ProjectDetail" %>
 
 <!-- just to help do css intellisense at design time  -->
 <link rel="stylesheet" type="text/css" href="~/Themes/Rock/Styles/bootstrap.css" visible="false" />
@@ -25,12 +25,12 @@
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:NotificationBox ID="nbCloneMessage" runat="server" />
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Name" />
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="church.ccv.Residency.Model.Project, church.ccv.Residency" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="church.ccv.Residency.Model.Project, church.ccv.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge" />
                             <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
                             <Rock:RockLiteral ID="lblTrack" runat="server" Label="Track" />
                             <Rock:RockLiteral ID="lblCompetency" runat="server" Label="Competency" />
-                            <Rock:DataTextBox ID="tbMinAssessmentCountDefault" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="MinAssessmentCountDefault"
+                            <Rock:DataTextBox ID="tbMinAssessmentCountDefault" runat="server" SourceTypeName="church.ccv.Residency.Model.Project, church.ccv.Residency" PropertyName="MinAssessmentCountDefault"
                                 Label="Default # of Assessments" Help="Set this to specify the default minimum number of assessments of this project that a person must complete." CssClass="input-mini" />
                         </div>
                     </div>

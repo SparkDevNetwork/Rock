@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TimeCardDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Hr.TimeCardDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TimeCardDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Hr.TimeCardDetail" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 

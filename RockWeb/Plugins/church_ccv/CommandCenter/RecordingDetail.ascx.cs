@@ -26,11 +26,11 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using com.ccvonline.CommandCenter.Model;
-using com.ccvonline.CommandCenter.Data;
+using church.ccv.CommandCenter.Model;
+using church.ccv.CommandCenter.Data;
 using Rock.Web.Cache;
 
-namespace RockWeb.Plugins.com_ccvonline.CommandCenter
+namespace RockWeb.Plugins.church_ccv.CommandCenter
 {
     /// <summary>
     /// 

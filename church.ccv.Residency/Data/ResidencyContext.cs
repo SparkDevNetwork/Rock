@@ -21,9 +21,9 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Model;
 
-namespace com.ccvonline.Residency.Data
+namespace church.ccv.Residency.Data
 {
     /// <summary>
     /// 

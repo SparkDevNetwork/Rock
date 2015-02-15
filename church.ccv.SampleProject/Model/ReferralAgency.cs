@@ -6,12 +6,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using com.ccvonline.SampleProject.Data;
+using church.ccv.SampleProject.Data;
 
 using Rock.Data;
 using Rock.Model;
 
-namespace com.ccvonline.SampleProject.Model
+namespace church.ccv.SampleProject.Model
 {
     /// <summary>
     /// A Referral Agency

@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using com.ccvonline.Hr.Data;
+using church.ccv.Hr.Data;
 
-namespace com.ccvonline.Hr.Model
+namespace church.ccv.Hr.Model
 {
     /// <summary>
     /// 
@@ -75,7 +75,7 @@ namespace com.ccvonline.Hr.Model
         {
             get
             {
-                // make sure this mirrors the database computed calcuation (see \com.ccvonline.Hr\Migrations\002_AlterColumns.cs)
+                // make sure this mirrors the database computed calcuation (see \church.ccv.Hr\Migrations\002_AlterColumns.cs)
                 TimeSpan? totalWorkedTimeSpan;
                 if (!EndDateTime.HasValue)
                 {

@@ -25,7 +25,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace com.ccvonline.Hr.Model
+namespace church.ccv.Hr.Model
 {
     /// <summary>
     /// TimeCardPayPeriod Service class
@@ -36,7 +36,7 @@ namespace com.ccvonline.Hr.Model
         /// Initializes a new instance of the <see cref="TimeCardPayPeriodService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public TimeCardPayPeriodService(com.ccvonline.Hr.Data.HrContext context) : base(context)
+        public TimeCardPayPeriodService(church.ccv.Hr.Data.HrContext context) : base(context)
         {
         }
 

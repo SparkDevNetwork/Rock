@@ -28,10 +28,10 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using com.ccvonline.CommandCenter.Model;
-using com.ccvonline.CommandCenter.Data;
+using church.ccv.CommandCenter.Model;
+using church.ccv.CommandCenter.Data;
 
-namespace RockWeb.Plugins.com_ccvonline.CommandCenter
+namespace RockWeb.Plugins.church_ccv.CommandCenter
 {
     /// <summary>
     /// 
@@ -57,12 +57,12 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             // Using the newest version of flowplayer and plugins (as of 9/1/2014) for this block since it works best
             // for DVR playback.  The older versions would struggle to play video when a different recording was
             // selected.
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf" );
-            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
-            RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
+            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf" );
+            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
+            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf" );
+            RockPage.AddScriptLink( "~/Plugins/church_ccv/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
+            RockPage.AddCSSLink( "~/Plugins/church_ccv/CommandCenter/Styles/commandcenter.css" );
         }
 
         /// <summary>

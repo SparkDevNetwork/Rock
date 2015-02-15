@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.CompetencyPersonProjectAssessmentDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.CompetencyPersonProjectAssessmentDetail" %>
 
 <asp:UpdatePanel ID="upCompetencyPersonProjectAssessmentDetail" runat="server">
     <ContentTemplate>
@@ -28,8 +28,8 @@
                             <Rock:PersonPicker ID="ppAssessor" runat="server" Label="Assessor" />
                             <Rock:DateTimePicker ID="dtpAssessmentDateTime" runat="server" Label="Assessment Date/Time" Required="true" />
                             <Rock:RockLiteral ID="lblOverallRating" runat="server" Label="Overall Rating" />
-                            <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessment, com.ccvonline.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
-                            <Rock:DataTextBox ID="tbResidentComments" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessment, com.ccvonline.Residency" PropertyName="ResidentComments" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="church.ccv.Residency.Model.CompetencyPersonProjectAssessment, church.ccv.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbResidentComments" runat="server" SourceTypeName="church.ccv.Residency.Model.CompetencyPersonProjectAssessment, church.ccv.Residency" PropertyName="ResidentComments" TextMode="MultiLine" Rows="3" />
                         </div>
                     </div>
 

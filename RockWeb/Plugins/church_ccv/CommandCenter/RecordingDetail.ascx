@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RecordingDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.CommandCenter.RecordingDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RecordingDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.CommandCenter.RecordingDetail" %>
 
 <asp:UpdatePanel ID="upRecordings" runat="server">
     <ContentTemplate>
@@ -14,12 +14,12 @@
                     <asp:Literal ID="lActionTitle" runat="server"></asp:Literal></legend>
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <Rock:CampusPicker ID="cpCampus" runat="server" />
-                <Rock:DataTextBox ID="tbApp" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="App" />
-                <Rock:DatePicker ID="dpDate" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Date" />
-                <Rock:DataTextBox ID="tbStream" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="StreamName" />
-                <Rock:DataTextBox ID="tbVenue" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Venue" />
-                <Rock:DataTextBox ID="tbLabel" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Label" />
-                <Rock:DataTextBox ID="tbRecording" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="RecordingName" CssClass="input-xlarge" />
+                <Rock:DataTextBox ID="tbApp" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="App" />
+                <Rock:DatePicker ID="dpDate" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="Date" />
+                <Rock:DataTextBox ID="tbStream" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="StreamName" />
+                <Rock:DataTextBox ID="tbVenue" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="Venue" />
+                <Rock:DataTextBox ID="tbLabel" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="Label" />
+                <Rock:DataTextBox ID="tbRecording" runat="server" SourceTypeName="church.ccv.CommandCenter.Model.Recording, church.ccv.CommandCenter" PropertyName="RecordingName" CssClass="input-xlarge" />
                 <Rock:RockTextBox ID="lStarted" runat="server" Label="Started" />
                 <Rock:RockTextBox ID="lStartResponse" runat="server" Label="Start Response" />
                 <Rock:RockTextBox ID="lStopped" runat="server" Label="Stopped" />

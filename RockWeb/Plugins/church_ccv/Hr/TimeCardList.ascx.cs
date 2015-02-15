@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using com.ccvonline.Hr.Data;
-using com.ccvonline.Hr.Model;
+using church.ccv.Hr.Data;
+using church.ccv.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.Hr
+namespace RockWeb.Plugins.church_ccv.Hr
 {
     /// <summary>
     /// 

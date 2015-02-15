@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LiveStream.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.CommandCenter.LiveStream" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LiveStream.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.CommandCenter.LiveStream" %>
 
 <div style="max-width: 500px;" class="container">
     <Rock:NotificationBox id="ntbAlert" runat="server" NotificationBoxType="Danger" Visible="false" Text="There are currently no streams available." />

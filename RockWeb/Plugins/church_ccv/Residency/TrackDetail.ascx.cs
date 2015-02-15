@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Linq;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -29,7 +29,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using System.ComponentModel;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Track Detail" )]
     [Category( "CCV > Residency" )]

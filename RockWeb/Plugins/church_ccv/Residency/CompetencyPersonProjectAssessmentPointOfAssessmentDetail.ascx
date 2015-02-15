@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectAssessmentPointOfAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.CompetencyPersonProjectAssessmentPointOfAssessmentDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectAssessmentPointOfAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.CompetencyPersonProjectAssessmentPointOfAssessmentDetail" %>
 
 <asp:UpdatePanel ID="upCompetencyPersonProjectAssessmentPointOfAssessmentDetail" runat="server">
     <ContentTemplate>
@@ -21,7 +21,7 @@
                         <div class="col-md-6">
                             <asp:Literal ID="lblMainDetailsCol1" runat="server" />
                             <Rock:NumberBox ID="tbRating" runat="server" Label="Rating" MaximumValue="5" MinimumValue="1" />
-                            <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessmentPointOfAssessment, com.ccvonline.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="church.ccv.Residency.Model.CompetencyPersonProjectAssessmentPointOfAssessment, church.ccv.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
                         </div>
                         <div class="col-md-6">
                             <asp:Literal ID="lblMainDetailsCol2" runat="server" />

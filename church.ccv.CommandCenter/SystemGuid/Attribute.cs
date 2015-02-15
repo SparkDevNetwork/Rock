@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace com.ccvonline.CommandCenter.SystemGuid
+namespace church.ccv.CommandCenter.SystemGuid
 {
     /// <summary>
     /// System Attribute Guids

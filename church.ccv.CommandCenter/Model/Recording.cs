@@ -8,11 +8,11 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.ccvonline.CommandCenter.Data;
+using church.ccv.CommandCenter.Data;
 
 using Rock.Model;
 
-namespace com.ccvonline.CommandCenter.Model
+namespace church.ccv.CommandCenter.Model
 {
     /// <summary>
     /// 

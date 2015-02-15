@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.CompetencyDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.CompetencyDetail" %>
 
 <!-- just to help do css intellisense at design time  -->
 <link rel="stylesheet" type="text/css" href="~/Themes/Rock/Styles/bootstrap.css" visible="false" />
@@ -21,9 +21,9 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="Name" />
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                            <Rock:DataTextBox ID="tbGoals" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="Goals" TextMode="MultiLine" Rows="12" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbGoals" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="Goals" TextMode="MultiLine" Rows="12" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
@@ -31,9 +31,9 @@
 
                             <Rock:PersonPicker ID="ppTeacherOfRecord" runat="server" Label="Teacher of Record" />
                             <Rock:PersonPicker ID="ppFacilitator" runat="server" Label="Facilitator" />
-                            <Rock:DataTextBox ID="tbCreditHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="CreditHours" />
-                            <Rock:DataTextBox ID="tbSupervisionHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="SupervisionHours" />
-                            <Rock:DataTextBox ID="tbImplementationHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="ImplementationHours" />
+                            <Rock:DataTextBox ID="tbCreditHours" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="CreditHours" />
+                            <Rock:DataTextBox ID="tbSupervisionHours" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="SupervisionHours" />
+                            <Rock:DataTextBox ID="tbImplementationHours" runat="server" SourceTypeName="church.ccv.Residency.Model.Competency, church.ccv.Residency" PropertyName="ImplementationHours" />
                         </div>
                     </div>
 

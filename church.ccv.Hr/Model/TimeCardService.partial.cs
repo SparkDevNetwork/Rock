@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using com.ccvonline.Hr.Data;
+using church.ccv.Hr.Data;
 using Rock;
 using Rock.Communication;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace com.ccvonline.Hr.Model
+namespace church.ccv.Hr.Model
 {
     /// <summary>
     /// 

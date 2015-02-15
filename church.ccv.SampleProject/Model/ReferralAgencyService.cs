@@ -1,7 +1,7 @@
-using com.ccvonline.SampleProject.Data;
+using church.ccv.SampleProject.Data;
 using Rock.Model;
 
-namespace com.ccvonline.SampleProject.Model
+namespace church.ccv.SampleProject.Model
 {
     /// <summary>
     /// 

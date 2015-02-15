@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ProjectPointOfAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.ProjectPointOfAssessmentDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ProjectPointOfAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.ProjectPointOfAssessmentDetail" %>
 
 <!-- just to help do css intellisense at design time  -->
 <link rel="stylesheet" type="text/css" href="~/Themes/Rock/Styles/bootstrap.css" visible="false" />
@@ -23,7 +23,7 @@
                     <div class="col-md-12">
                         <Rock:RockDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" Label="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
                         <Rock:RockLiteral ID="lblAssessmentOrder" runat="server" Label="Assessment #" />
-                        <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="com.ccvonline.Residency.Model.ProjectPointOfAssessment, com.ccvonline.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" />
+                        <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="church.ccv.Residency.Model.ProjectPointOfAssessment, church.ccv.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" />
                         <Rock:RockCheckBox ID="cbIsPassFail" runat="server" Label="Graded as Pass/Fail" />
                     </div>
                 </div>

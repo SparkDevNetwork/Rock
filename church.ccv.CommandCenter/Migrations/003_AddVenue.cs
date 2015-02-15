@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Rock.Plugin;
 
-namespace com.ccvonline.CommandCenter.Migrations
+namespace church.ccv.CommandCenter.Migrations
 {
     [MigrationNumber( 3, "1.0.10" )]
     class AddVenue : Migration

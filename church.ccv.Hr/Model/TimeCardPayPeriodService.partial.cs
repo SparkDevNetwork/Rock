@@ -6,7 +6,7 @@ using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace com.ccvonline.Hr.Model
+namespace church.ccv.Hr.Model
 {
     /// <summary>
     /// 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TrackDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.TrackDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TrackDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.TrackDetail" %>
 
 <asp:UpdatePanel ID="upTrackDetail" runat="server">
     <ContentTemplate>
@@ -19,8 +19,8 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Name" />
-                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="church.ccv.Residency.Model.Track, church.ccv.Residency" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="church.ccv.Residency.Model.Track, church.ccv.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                                 <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
                             </div>
                         </div>

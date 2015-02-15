@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Linq;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.ComponentModel;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Project Grading Form" )]
     [Category( "CCV > Residency" )]

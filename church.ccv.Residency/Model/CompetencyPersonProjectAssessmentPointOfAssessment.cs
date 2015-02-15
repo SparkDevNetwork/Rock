@@ -24,9 +24,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.ccvonline.Residency.Data;
+using church.ccv.Residency.Data;
 
-namespace com.ccvonline.Residency.Model
+namespace church.ccv.Residency.Model
 {
     [Table( "_com_ccvonline_Residency_CompetencyPersonProjectAssessmentPointOfAssessment" )]
     [DataContract]

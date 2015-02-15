@@ -1,6 +1,6 @@
 ﻿using Rock.Data;
 
-namespace com.ccvonline.CommandCenter.Data
+namespace church.ccv.CommandCenter.Data
 {
     /// <summary>
     /// 

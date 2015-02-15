@@ -1,6 +1,6 @@
 using System.Data.Entity;
 
-namespace com.ccvonline.Hr.Data
+namespace church.ccv.Hr.Data
 {
     /// <summary>
     /// HrContext

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 
-using com.ccvonline.CommandCenter.Model;
+using church.ccv.CommandCenter.Model;
 
 using Rock.Rest;
 using Rock.Rest.Filters;
 
-namespace com.ccvonline.CommandCenter.Rest
+namespace church.ccv.CommandCenter.Rest
 {
     /// <summary>
     /// Recordings REST API

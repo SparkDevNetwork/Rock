@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using com.ccvonline.CommandCenter.Data;
+using church.ccv.CommandCenter.Data;
 
-namespace com.ccvonline.CommandCenter.Model
+namespace church.ccv.CommandCenter.Model
 {
     /// <summary>
     /// 

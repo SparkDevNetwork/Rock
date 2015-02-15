@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReferralAgencyDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.SampleProject.ReferralAgencyDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReferralAgencyDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.SampleProject.ReferralAgencyDetail" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -16,23 +16,23 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Name" />
+                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="Name" />
                 </div>
                 <div class="col-md-6">
                 </div>
             </div>
 
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
             <div class="row">
                 <div class="col-md-6">
                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
-                    <Rock:DataDropDownList ID="ddlAgencyType" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="AgencyTypeValue" Label="Agency Type" />
+                    <Rock:DataDropDownList ID="ddlAgencyType" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="AgencyTypeValue" Label="Agency Type" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:DataTextBox ID="tbContactName" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="ContactName" />
-                    <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="PhoneNumber" />
-                    <Rock:DataTextBox ID="tbWebsite" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Website" />
+                    <Rock:DataTextBox ID="tbContactName" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="ContactName" />
+                    <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="PhoneNumber" />
+                    <Rock:DataTextBox ID="tbWebsite" runat="server" SourceTypeName="church.ccv.SampleProject.Model.ReferralAgency, church.ccv.SampleProject" PropertyName="Website" />
                 </div>
             </div>
 

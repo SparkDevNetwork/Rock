@@ -21,15 +21,15 @@
 // </copyright>
 //
 
-using com.ccvonline.Hr.Model;
+using church.ccv.Hr.Model;
 
-namespace com.ccvonline.Hr.Rest.Controllers
+namespace church.ccv.Hr.Rest.Controllers
 {
     /// <summary>
     /// TimeCardPayPeriods REST API
     /// </summary>
-    public partial class TimeCardPayPeriodsController : Rock.Rest.ApiController<com.ccvonline.Hr.Model.TimeCardPayPeriod>
+    public partial class TimeCardPayPeriodsController : Rock.Rest.ApiController<church.ccv.Hr.Model.TimeCardPayPeriod>
     {
-        public TimeCardPayPeriodsController() : base( new com.ccvonline.Hr.Model.TimeCardPayPeriodService( new com.ccvonline.Hr.Data.HrContext() ) ) { } 
+        public TimeCardPayPeriodsController() : base( new church.ccv.Hr.Model.TimeCardPayPeriodService( new church.ccv.Hr.Data.HrContext() ) ) { } 
     }
 }

@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace com.ccvonline.Residency.Data
+namespace church.ccv.Residency.Data
 {
     [DataContract]
     public abstract class NamedModel<T> : Rock.Data.Model<T> where T : Rock.Data.Model<T>, Rock.Security.ISecured, new()

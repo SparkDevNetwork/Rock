@@ -2,9 +2,9 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Web;
 
-using com.ccvonline.SampleProject.Model;
+using church.ccv.SampleProject.Model;
 
-namespace com.ccvonline.SampleProject.Data
+namespace church.ccv.SampleProject.Data
 {
     /// <summary>
     /// 

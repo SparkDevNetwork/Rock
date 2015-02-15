@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -29,7 +29,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Resident List" )]
     [Category( "CCV > Residency" )]

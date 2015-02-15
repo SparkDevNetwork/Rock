@@ -24,9 +24,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.ccvonline.Residency.Data;
+using church.ccv.Residency.Data;
 
-namespace com.ccvonline.Residency.Model
+namespace church.ccv.Residency.Model
 {
     /// <summary>
     /// 
@@ -53,7 +53,7 @@ namespace com.ccvonline.Residency.Model
         /// <value>
         /// The point of assessment type value id.
         /// </value>
-        [Rock.Data.DefinedValue( com.ccvonline.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
+        [Rock.Data.DefinedValue( church.ccv.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
         public int? PointOfAssessmentTypeValueId { get; set; }
 
         /// <summary>

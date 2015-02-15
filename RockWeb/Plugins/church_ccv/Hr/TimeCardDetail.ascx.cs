@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using com.ccvonline.Hr.Data;
-using com.ccvonline.Hr.Model;
+using church.ccv.Hr.Data;
+using church.ccv.Hr.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -15,7 +15,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.Hr
+namespace RockWeb.Plugins.church_ccv.Hr
 {
     /// <summary>
     /// 
@@ -44,7 +44,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_ccvonline/Hr/Styles/hr.css" ) );
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/church_ccv/Hr/Styles/hr.css" ) );
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace RockWeb.Plugins.com_ccvonline.Hr
 
         public List<DateTime> GetHolidayDates( TimeCard timeCard )
         {
-            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( com.ccvonline.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
+            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( church.ccv.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
 
             if ( timeCardHolidaySchedule != null )
             {

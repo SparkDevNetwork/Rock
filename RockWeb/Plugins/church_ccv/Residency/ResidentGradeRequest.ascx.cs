@@ -21,8 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Project Grading Request" )]
     [Category( "CCV > Residency" )]
@@ -318,7 +318,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             recipients.Add( new RecipientData( facilitator.Email, mergeObjects ) );
 
-            Email.Send( com.ccvonline.Residency.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
+            Email.Send( church.ccv.Residency.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
 
             var parentParams = new Dictionary<string, string>();
             parentParams.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );

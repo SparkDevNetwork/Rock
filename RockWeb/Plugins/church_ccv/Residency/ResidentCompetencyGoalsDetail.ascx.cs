@@ -17,13 +17,13 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Model;
 using Rock.Web.UI;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Resident Competency Goals Detail" )]
     [Category( "CCV > Residency" )]

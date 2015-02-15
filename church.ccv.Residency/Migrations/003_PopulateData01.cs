@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Plugin;
 
-namespace com.ccvonline.Residency.Migrations
+namespace church.ccv.Residency.Migrations
 {
     /// <summary>
     /// 
@@ -630,7 +630,7 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
 INSERT INTO [dbo].[PageContext]([IsSystem],[PageId],[Entity],[IdParameter],[CreatedDateTime],[Guid])
      VALUES(1
            ,(select [Id] from [Page] where [Guid] = '130FA92D-9D5F-45D1-84AA-B399F2E868E6')
-           ,'com.ccvonline.Residency.Model.CompetencyPerson'
+           ,'church.ccv.Residency.Model.CompetencyPerson'
            ,'competencyPersonId'
            ,SYSDATETIME()
            ,'13366F47-7AFD-430D-A0E5-9AF92347DAE1')

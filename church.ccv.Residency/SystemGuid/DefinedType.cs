@@ -1,9 +1,9 @@
 using System;
 
-namespace com.ccvonline.Residency.SystemGuid
+namespace church.ccv.Residency.SystemGuid
 {
     /// <summary>
-    /// System Defined Types used specifically by the com.ccvonline.* Plugins
+    /// System Defined Types used specifically by the church.ccv.* Plugins
     /// </summary>
     public static class DefinedType
     {

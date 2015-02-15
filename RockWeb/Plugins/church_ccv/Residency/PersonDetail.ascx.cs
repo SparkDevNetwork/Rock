@@ -18,7 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Web.UI;
-using com.ccvonline.Residency.Data;
+using church.ccv.Residency.Data;
 using Rock;
 using Rock.Model;
 using Rock.Web;
@@ -26,7 +26,7 @@ using Rock.Web.UI;
 using Rock.Data;
 using Rock.Constants;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Resident Name" )]
     [Category( "CCV > Residency" )]

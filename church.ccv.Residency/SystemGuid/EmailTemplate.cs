@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace com.ccvonline.Residency.SystemGuid
+namespace church.ccv.Residency.SystemGuid
 {
     /// <summary>
-    /// Email Templates used specifically by the com.ccvonline.* Plugins
+    /// Email Templates used specifically by the church.ccv.* Plugins
     /// </summary>
     public static class EmailTemplate
     {

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using com.ccvonline.SampleProject.Data;
-using com.ccvonline.SampleProject.Model;
+using church.ccv.SampleProject.Data;
+using church.ccv.SampleProject.Model;
 
 using Rock;
 using Rock.Constants;
@@ -18,7 +18,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Plugins.com_ccvonline.SampleProject
+namespace RockWeb.Plugins.church_ccv.SampleProject
 {
     /// <summary>
     /// Displays the details of a Referral Agency.
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            var definedType = DefinedTypeCache.Read( com.ccvonline.SampleProject.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Read( church.ccv.SampleProject.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
             if (definedType != null)
             {
                 ddlAgencyType.BindToDefinedType( definedType, true );

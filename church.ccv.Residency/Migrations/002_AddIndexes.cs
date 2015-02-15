@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Plugin;
 
-namespace com.ccvonline.Residency.Migrations
+namespace church.ccv.Residency.Migrations
 {
     [MigrationNumber( 2, "1.0.8" )]
     public class AddIndexes : Migration

@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System.Linq;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Model;
 
-namespace com.ccvonline.Residency.Data
+namespace church.ccv.Residency.Data
 {
     /// <summary>
     /// 

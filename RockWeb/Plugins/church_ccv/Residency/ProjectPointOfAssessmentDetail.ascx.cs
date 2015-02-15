@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using com.ccvonline.Residency.Data;
-using com.ccvonline.Residency.Model;
+using church.ccv.Residency.Data;
+using church.ccv.Residency.Model;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -30,7 +30,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Plugins.com_ccvonline.Residency
+namespace RockWeb.Plugins.church_ccv.Residency
 {
     [DisplayName( "Point of Assessment Detail" )]
     [Category( "CCV > Residency" )]
@@ -149,7 +149,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void LoadDropDowns()
         {
-            var definedTypeCache = DefinedTypeCache.Read( com.ccvonline.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
+            var definedTypeCache = DefinedTypeCache.Read( church.ccv.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
 
             var list = definedTypeCache.DefinedValues.OrderBy( a => a.Value ).ToList();
             foreach ( var item in list )

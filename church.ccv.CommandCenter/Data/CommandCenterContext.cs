@@ -2,9 +2,9 @@
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Web;
 
-using com.ccvonline.CommandCenter.Model;
+using church.ccv.CommandCenter.Model;
 
-namespace com.ccvonline.CommandCenter.Data
+namespace church.ccv.CommandCenter.Data
 {
     /// <summary>
     /// 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.CompetencyPersonProjectDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CompetencyPersonProjectDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Residency.CompetencyPersonProjectDetail" %>
 
 <asp:UpdatePanel ID="upCompetencyPersonProjectDetail" runat="server">
     <ContentTemplate>
@@ -26,7 +26,7 @@
                             <Rock:RockDropDownList ID="ddlProject" runat="server" DataTextField="Name" DataValueField="Id" Required="true" OnSelectedIndexChanged="ddlProject_SelectedIndexChanged" AutoPostBack="true" />
 
                             <Rock:RockLiteral ID="lblMinAssessmentCountDefault" runat="server" Label="Assessments Required - Default" />
-                            <Rock:DataTextBox ID="tbMinAssessmentCountOverride" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProject, com.ccvonline.Residency" PropertyName="MinAssessmentCount"
+                            <Rock:DataTextBox ID="tbMinAssessmentCountOverride" runat="server" SourceTypeName="church.ccv.Residency.Model.CompetencyPersonProject, church.ccv.Residency" PropertyName="MinAssessmentCount"
                                 Label="Assessments Required - Override" Help="Set this to specify the number of assessments of this project that a person must complete if it should be something other than the default." CssClass="input-mini" />
                         </asp:Panel>
                         <Rock:NotificationBox ID="nbAllProjectsAlreadyAdded" runat="server" NotificationBoxType="Info" Text="All projects for this competency have already been assigned to this resident." />
