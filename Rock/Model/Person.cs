@@ -276,15 +276,13 @@ namespace Rock.Model
         public DateTime? AnniversaryDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Person's projected or actual high school graduation date. The month and date will match the "Grade Transition Date" global attribute. This value is used to determine what grade a student is in.
+        /// Gets or sets the date of the Person's projected or actual high school graduation year. This value is used to determine what grade a student is in.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the Person's projected or actual high school graduation date.  This value will be null if a Graduation Date is an adult, not known, not applicable or the
-        /// Person has not entered school.
+        /// The Person's projected or actual high school graduation year
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime? GraduationDate { get; set; }
+        public int? GraduationYear { get; set; }
 
         /// <summary>
         /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
@@ -938,52 +936,80 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the grade level of the person based on their high school graduation date.  Grade levels are -1 for prekindergarten, 0 for kindergarten, 1 for first grade, etc. or null if they have no graduation date or if no 'GradeTransitionDate' is configured.
+        /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
         /// <value>
-        /// The Person's grade level based on their Graduation Date. If no graduation date is provided or the GradeTransitionDate is not provided, returns null.
+        /// The grade offset.
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual int? Grade
+        public virtual int? GradeOffset
         {
             get
             {
-                if ( !GraduationDate.HasValue )
+                if ( !GraduationYear.HasValue )
                 {
                     return null;
                 }
                 else
                 {
-                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade their in
-                    DateTime transitionDate;
+                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade (gradeOffset) they're in
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( !DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
+                    {
+                        // if the next graduation mm/dd won't happen until next year, refactor the graduationyear to the prior year
+                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationyear to the prior year
+                        // in other words, we are treating the grade transition date as the last day of the "school" year
+                        int graduationYearRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationYear.Value : ( this.GraduationYear.Value - 1 );
+
+                        int offsetYears = graduationYearRefactor - RockDateTime.Now.Year;
+                        return offsetYears;
+                    }
+                    else
                     {
                         return null;
                     }
-
-                    int gradeMaxFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                    return gradeMaxFactorReactor - ( GraduationDate.Value.Year - RockDateTime.Now.Year );
                 }
             }
 
             set
             {
-                if ( value.HasValue && value.Value <= 12 )
+                if ( value.HasValue && value >= 0 )
                 {
-                    DateTime transitionDate;
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
+                    if ( transitionDate.HasValue )
                     {
-                        int gradeFactorReactor = ( RockDateTime.Now < transitionDate ) ? 12 : 13;
-                        GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
+                        int gradeOffsetAdjustment = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value + 1;
+                        GraduationYear = transitionDate.Value.Year + gradeOffsetAdjustment;
                     }
                 }
                 else
                 {
-                    GraduationDate = null;
+                    GraduationYear = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the has graduated.
+        /// </summary>
+        /// <value>
+        /// The has graduated.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual bool? HasGraduated
+        {
+            get
+            {
+                if ( GradeOffset.HasValue )
+                {
+                    return GradeOffset < 0;
+                }
+
+                return null;
             }
         }
 
@@ -999,25 +1025,19 @@ namespace Rock.Model
         {
             get
             {
-                int? grade = Grade;
-                if ( grade.HasValue )
+                int? gradeOffset = GradeOffset;
+
+                if ( gradeOffset.HasValue && gradeOffset >= 0)
                 {
-                    switch ( grade.Value )
+                    var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                    if ( schoolGrades != null )
                     {
-                        case 0: { return "Kindergarten"; }
-                        case 1: { return "1st Grade"; }
-                        case 2: { return "2nd Grade"; }
-                        case 3: { return "3rd Grade"; }
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                        case 9:
-                        case 10:
-                        case 11:
-                        case 12: { return string.Format( "{0}th Grade", grade.Value ); }
-                        default: { return string.Empty; }
+                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                        if ( schoolGradeValue != null )
+                        {
+                            return schoolGradeValue.Description;
+                        }
                     }
                 }
 
@@ -1594,96 +1614,6 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// A person's possible grade levels
-    /// </summary>
-    public enum GradeLevel
-    {
-        /// <summary>
-        /// Kindergarten
-        /// </summary>
-        [Description( "Pre-K" )]
-        PreK = -1,
-
-        /// <summary>
-        /// Kindergarten
-        /// </summary>
-        [Description( "Kindergarten" )]
-        Kindergarten = 0,
-
-        /// <summary>
-        /// 1st Grade
-        /// </summary>
-        [Description( "1st Grade" )]
-        First = 1,
-
-        /// <summary>
-        /// 2nd Grade
-        /// </summary>
-        [Description( "2nd Grade" )]
-        Second = 2,
-
-        /// <summary>
-        /// 3rd Grade
-        /// </summary>
-        [Description( "3rd Grade" )]
-        Third = 3,
-
-        /// <summary>
-        /// 4th Grade
-        /// </summary>
-        [Description( "4th Grade" )]
-        Fourth = 4,
-
-        /// <summary>
-        /// 5th Grade
-        /// </summary>
-        [Description( "5th Grade" )]
-        Fifth = 5,
-
-        /// <summary>
-        /// 6th Grade
-        /// </summary>
-        [Description( "6th Grade" )]
-        Sixth = 6,
-
-        /// <summary>
-        /// 7th Grade
-        /// </summary>
-        [Description( "7th Grade" )]
-        Seventh = 7,
-
-        /// <summary>
-        /// 8th Grade
-        /// </summary>
-        [Description( "8th Grade" )]
-        Eighth = 8,
-
-        /// <summary>
-        /// 9th Grade
-        /// </summary>
-        [Description( "9th Grade" )]
-        Ninth = 9,
-
-        /// <summary>
-        /// 10th Grade
-        /// </summary>
-        [Description( "10th Grade" )]
-        Tenth = 10,
-
-        /// <summary>
-        /// 11th Grade
-        /// </summary>
-        [Description( "11th Grade" )]
-        Eleventh = 11,
-
-        /// <summary>
-        /// 12th Grade
-        /// </summary>
-        [Description( "12th Grade" )]
-        Twelfth = 12
-    }
-
-    /// <summary>
     /// The person's email preference
     /// </summary>
     public enum EmailPreference
@@ -1727,7 +1657,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static Location GetHomeLocation ( this Person person )
+        public static Location GetHomeLocation( this Person person )
         {
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
             foreach ( var family in person.GetFamilies() )

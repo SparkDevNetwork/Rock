@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -44,7 +45,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, Model.WorkflowAction action, object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
@@ -56,28 +57,45 @@ namespace Rock.Workflow.Action.CheckIn
 
                     foreach ( var person in family.People )
                     {
-                        int? personsGrade = person.Person.Grade;
+                        int? personsGradeOffset = person.Person.GradeOffset;
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string gradeRange = groupType.GroupType.GetAttributeValue( "GradeRange" ) ?? string.Empty;
-                            string[] gradeRangePair = gradeRange.Split( new char[] { ',' }, StringSplitOptions.None );
-                            string minGradeValue = null;
-                            string maxGradeValue = null;
-                            if ( gradeRangePair.Length == 2 )
+                            string gradeOffsetRange = groupType.GroupType.GetAttributeValue( "GradeRange" ) ?? string.Empty;
+                            var gradeOffsetRangePair = gradeOffsetRange.Split( new char[] { ',' }, StringSplitOptions.None ).AsGuidOrNullList().ToArray();
+                            DefinedValueCache minGradeDefinedValue = null;
+                            DefinedValueCache maxGradeDefinedValue = null;
+                            if ( gradeOffsetRangePair.Length == 2 )
                             {
-                                minGradeValue = gradeRangePair[0];
-                                maxGradeValue = gradeRangePair[1];
+                                minGradeDefinedValue = gradeOffsetRangePair[0].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[0].Value ) : null;
+                                maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue ? DefinedValueCache.Read( gradeOffsetRangePair[1].Value ) : null;
                             }
-                            
-                            // if the group type specifies a min grade then the person's grade MUST match
-                            if ( minGradeValue != null )
+
+                            /*
+                             * example (assuming defined values are the stock values):
+                             * minGrade,maxGrade of between 4th and 6th grade
+                             * 4th grade is 8 years until graduation
+                             * 6th grade is 6 years until graduation
+                             * GradeOffsetRange would be 8 and 6
+                             * if person is in:
+                             *      7th grade or older (gradeOffset 5 or smaller), they would be NOT included
+                             *      6th grade (gradeOffset 6), they would be included
+                             *      5th grade (gradeOffset 7), they would be included
+                             *      4th grade (gradeOffset 8), they would be included
+                             *      3th grade or younger (gradeOffset 9 or bigger), they would be NOT included
+                             *      NULL grade, not included
+                             */
+
+                            // if the group type specifies a min grade (max gradeOffset)...
+                            if ( maxGradeDefinedValue != null )
                             {
-                                int minGrade = 0;
-                                if ( int.TryParse( minGradeValue, out minGrade ) )
+                                // NOTE: minGradeOffset is actually based on the MAX Grade since GradeOffset's are Years Until Graduation
+                                int? minGradeOffset = maxGradeDefinedValue.Value.AsIntegerOrNull();
+                                if ( minGradeOffset.HasValue )
                                 {
-                                    // remove if the person does not have a grade or if their grade is less than the min
-                                    if ( !personsGrade.HasValue || personsGrade < minGrade )
+                                    // remove if the person does not have a grade or if their grade offset is more than the max offset (too young)
+                                    // example person is in 3rd grade (offset 9) and range is 4th to 6th (offset 6 to 8)
+                                    if ( !personsGradeOffset.HasValue || personsGradeOffset < minGradeOffset.Value )
                                     {
                                         if ( remove )
                                         {
@@ -87,19 +105,22 @@ namespace Rock.Workflow.Action.CheckIn
                                         {
                                             groupType.ExcludedByFilter = true;
                                         }
+
                                         continue;
                                     }
                                 }
                             }
-                            
-                            // if the group type specifies a min grade then the person's grade MUST match
-                            if ( maxGradeValue != null )
+
+                            // if the group type specifies a max grade (min gradeOffset)...
+                            if ( minGradeDefinedValue != null )
                             {
-                                int maxGrade = 0;
-                                if ( int.TryParse( maxGradeValue, out maxGrade ) )
+                                // NOTE: maxGradeOffset is actually based on the MIN Grade since GradeOffset's are Years Until Graduation
+                                int? maxGradeOffset = minGradeDefinedValue.Value.AsIntegerOrNull();
+                                if ( maxGradeOffset.HasValue )
                                 {
-                                    // remove if the person does not have a grade or if their grade is more than the max
-                                    if ( !personsGrade.HasValue || personsGrade > maxGrade )
+                                    // remove if the person does not have a grade or if their grade offset is less than the min offset (too old)
+                                    // example person is in 7rd grade (offset 5) and range is 4th to 6th (offset 6 to 8)
+                                    if ( !personsGradeOffset.HasValue || personsGradeOffset > maxGradeOffset )
                                     {
                                         if ( remove )
                                         {
@@ -109,6 +130,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         {
                                             groupType.ExcludedByFilter = true;
                                         }
+
                                         continue;
                                     }
                                 }

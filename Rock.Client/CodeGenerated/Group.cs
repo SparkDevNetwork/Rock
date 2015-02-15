@@ -80,6 +80,12 @@ namespace Rock.Client
         public int? ParentGroupId { get; set; }
 
         /// <summary />
+        public Schedule Schedule { get; set; }
+
+        /// <summary />
+        public int? ScheduleId { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

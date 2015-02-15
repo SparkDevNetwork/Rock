@@ -31,13 +31,13 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Adds a note to the workflow." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Note" )]
+    [ExportMetadata( "ComponentName", "Add Workflow Note" )]
     [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "", "", 0 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.WORKFLOW_NOTE_TYPE, "Note Type",
         "The type of the note. The type determines the icon to display with note.",
         true, false, Rock.SystemGuid.DefinedValue.WORKFLOW_NOTE_TYPE_SYSTEM_NOTE, "", 1 )]
     [BooleanField( "Is Alert", "Should this note be flagged as an alert", false, "", 2 )]
-    public class AddNote : ActionComponent
+    public class AddWorkflowNote : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.

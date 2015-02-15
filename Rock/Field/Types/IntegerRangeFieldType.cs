@@ -22,6 +22,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and display a pair of integer values
+    /// Stored as a comma-delimited pair of integers
     /// </summary>
     [Serializable]
     public class IntegerRangeFieldType : FieldType

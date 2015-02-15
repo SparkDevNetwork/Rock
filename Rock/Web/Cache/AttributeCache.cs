@@ -23,7 +23,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -42,6 +42,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [JsonConverter( typeof( Rock.Utility.AttributeCacheJsonConverter ) )]
     public class AttributeCache : ISecured, Lava.ILiquidizable
     {
         #region constructors

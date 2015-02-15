@@ -157,6 +157,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+
             if ( value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
             {
                 DateTime currentDate = RockDateTime.Today;
@@ -396,16 +401,17 @@ result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \''
             if ( filterValues.Count >= 2 )
             {
                 string comparisonValue = filterValues[0];
+                if ( comparisonValue != "0" )
+                {
+                    filterValues[1] = ParseRelativeValue( filterValues[1] );
+                    DateTime date = filterValues[1].AsDateTime() ?? DateTime.MinValue;
 
-                filterValues[1] = ParseRelativeValue( filterValues[1] );
+                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsDateTime" );
+                    ConstantExpression constantExpression = Expression.Constant( date, typeof( DateTime ) );
 
-                DateTime date = filterValues[1].AsDateTime() ?? DateTime.MinValue;
-
-                ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsDateTime" );
-                ConstantExpression constantExpression = Expression.Constant( date, typeof( DateTime ) );
-
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                }
             }
 
             return null;

@@ -166,7 +166,11 @@ namespace Rock.Reporting
                 if ( entityType == typeof( Group ) )
                 {
                     // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
-                    qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty || a.EntityTypeQualifierColumn == "GroupTypeId" );
+                    qryAttributes = qryAttributes
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn == null ||
+                            a.EntityTypeQualifierColumn == string.Empty || 
+                            a.EntityTypeQualifierColumn == "GroupTypeId" );
                 }
                 else
                 {

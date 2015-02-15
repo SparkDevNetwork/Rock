@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         familyMemberRow.Gender = familyMember.Person.Gender;
                         familyMemberRow.BirthDate = familyMember.Person.BirthDate;
                         familyMemberRow.ConnectionStatusValueId = familyMember.Person.ConnectionStatusValueId;
-                        familyMemberRow.Grade = familyMember.Person.Grade;
+                        familyMemberRow.GradeOffset = familyMember.Person.GradeOffset;
                     }
                 }
 
@@ -476,7 +476,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.BirthDate = birthdate;
 
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
-                groupMember.Person.Grade = row.Grade;
+                groupMember.Person.GradeOffset = row.GradeOffset;
 
                 NewFamilyContactInfoRow contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
                 if ( contactInfoRow != null )

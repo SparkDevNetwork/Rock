@@ -669,20 +669,14 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.EnableResponsiveTable )
                 {
-                    writer.AddAttribute( "data-pattern", "priority-columns" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
                 }
-
-                writer.AddAttribute( "data-add-focus-btn", "false" );
-                writer.AddAttribute( "data-add-display-all-btn", "false" );
 
                 if ( DisplayType == GridDisplayType.Light )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive table-no-border" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
                 }
-                else
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
-                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
             

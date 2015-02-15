@@ -62,6 +62,12 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int /* DayOfWeek*/? WeeklyDayOfWeek { get; set; }
+
+        /// <summary />
+        public TimeSpan? WeeklyTimeOfDay { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
