@@ -16,6 +16,11 @@
                     <asp:HyperLink ID="hlMyAccount" runat="server" Text="My Account" />
                 </li>
             </asp:PlaceHolder>
+            <asp:PlaceHolder ID="phMySettings" runat="server">
+                <li>
+                    <asp:HyperLink ID="hlMySettings" runat="server" Text="My Settings" />
+                </li>
+            </asp:PlaceHolder>
             <asp:PlaceHolder ID="phMyProfile" runat="server">
                 <li>
                     <asp:HyperLink ID="hlMyProfile" runat="server" Text="My Profile" />

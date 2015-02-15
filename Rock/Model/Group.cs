@@ -84,6 +84,16 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
@@ -183,6 +193,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Schedule Schedule { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -341,6 +360,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }
 

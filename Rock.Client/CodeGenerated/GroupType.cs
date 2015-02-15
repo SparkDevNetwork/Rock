@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int /* ScheduleType*/ AllowedScheduleTypes { get; set; }
+
+        /// <summary />
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary />

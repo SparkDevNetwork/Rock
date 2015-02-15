@@ -439,18 +439,34 @@ order by [parentTable], [columnName]
 
                 string parentTable = item.Table;
                 string columnName = item.Column;
+                string relationShipText;
+                string pluralizeCode;
+                
+                if ( columnName.StartsWith( "Parent" + type.Name ) )
+                {
+                    relationShipText = "contains one or more child";
+                    pluralizeCode = ".Pluralize().ToLower()";
+                }
+                else
+                {
+                    relationShipText = "is assigned to a";
+                    pluralizeCode = "";
+                }
+                
 
                 canDeleteMiddle += string.Format(
 @" 
             if ( new Service<{0}>( Context ).Queryable().Any( a => a.{1} == item.Id ) )
             {{
-                errorMessage = string.Format( ""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName );
+                errorMessage = string.Format( ""This {{0}} {3} {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName{4} );
                 return false;
             }}  
 ",
                     parentTable,
                     columnName,
-                    type.Name
+                    type.Name,
+                    relationShipText,
+                    pluralizeCode
                     );
             }
 

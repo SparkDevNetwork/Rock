@@ -209,5 +209,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string WORKFLOW_NOTE_TYPE = "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782";
 
+        /// <summary>
+        /// The school grades defined type which has values that determine which grade gext to display
+        /// </summary>
+        public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
+
     }
 }

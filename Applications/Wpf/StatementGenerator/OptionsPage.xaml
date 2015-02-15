@@ -25,8 +25,8 @@
                 <StackPanel Orientation="Horizontal">
                     
                     <Label Name="lblImageError"
-                           Width="137"
-                           Height="51"
+                           Width="300"
+                           Height="100"
                            Background="Gray"
                            HorizontalContentAlignment="Center"
                            VerticalContentAlignment="Center"
@@ -37,22 +37,23 @@
                            ToolTip="Error"
                            >
                     </Label>
-                    <Image Width="137"
-                           Height="51"
+                    <Image Width="300"
+                           Height="100"
                            Name="imgLogo"
-                           Source="logo.jpg"
-                           Stretch="Fill"
                            HorizontalAlignment="Left"
-                           Margin="6" />
+                           Source="logo.jpg"
+                           Margin="6" >
+                    </Image>
                     <Label Name="lblLogoHelp"
-                           Width="480"
+                           Width="320"
                            Style="{StaticResource labelStyleAlertInfo}"
-                           Content="Select a logo image to use instead of the default logo.jpg in the layout. An image size of 137 x 51px works best. ">
+                           Content="Select a logo image to use instead of the default logo.jpg in the layout. An image size of 600 x 200px works best. ">
                     </Label>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBox Name="txtLogoFile"
                              Style="{StaticResource textboxStyleUrl}"
+                             Margin="6,0,6,0"
                              IsReadOnly="True" />
                     <Button Style="{StaticResource buttonStyleMini}"
                             Margin="0,3,0,0"
