@@ -179,7 +179,7 @@ namespace Rock.Web.UI.Controls
         private TextBox _date;
         private TextBox _time;
         private CheckBox _cbCurrent;
-        private RockTextBox _nbDayOffset;
+        private RockTextBox _nbTimeOffset;
 
         #endregion
 
@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
                     DateTime? timeResult = _time.Text.AsDateTime();
                     if ( timeResult.HasValue )
                     {
-                        result.Value.Add( timeResult.Value.TimeOfDay );
+                        result = result.Value.Add( timeResult.Value.TimeOfDay );
                     }
 
                     return result;
@@ -295,7 +295,7 @@ namespace Rock.Web.UI.Controls
                 if ( DisplayCurrentOption )
                 {
                     EnsureChildControls();
-                    return _nbDayOffset.Text.AsIntegerOrNull() ?? 0;
+                    return _nbTimeOffset.Text.AsIntegerOrNull() ?? 0;
                 }
 
                 return 0;
@@ -304,7 +304,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _nbDayOffset.Text = value.ToString();
+                _nbTimeOffset.Text = value.ToString();
             }
         }
 
@@ -341,27 +341,27 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             _date = new TextBox();
-            _date.ID = "date";
+            _date.ID =  "tbDate";
             _date.AddCssClass( "form-control js-datetime-date" );
             Controls.Add( _date );
 
             _time = new TextBox();
-            _time.ID = "time";
+            _time.ID = "tbTime";
             _time.AddCssClass( "form-control js-datetime-time");
             Controls.Add( _time );
 
             _cbCurrent = new CheckBox();
-            _cbCurrent.ID = this.ID + "_cbCurrent";
+            _cbCurrent.ID = "cbCurrent";
             _cbCurrent.AddCssClass( "js-current-datetime-checkbox" );
             _cbCurrent.Text = "Current Time";
             this.Controls.Add( _cbCurrent );
 
-            _nbDayOffset = new RockTextBox();
-            _nbDayOffset.ID = this.ID + "_nbTimeOffset";
-            _nbDayOffset.Help = "Enter the number of minutes after the current time to use as the date. Use a negative number to specify minutes before.";
-            _nbDayOffset.AddCssClass( "input-width-md js-current-datetime-offset" );
-            _nbDayOffset.Label = "+- Minutes";
-            this.Controls.Add( _nbDayOffset );
+            _nbTimeOffset = new RockTextBox();
+            _nbTimeOffset.ID = "nbTimeOffset";
+            _nbTimeOffset.Help = "Enter the number of minutes after the current time to use as the date. Use a negative number to specify minutes before.";
+            _nbTimeOffset.AddCssClass( "input-width-md js-current-datetime-offset" );
+            _nbTimeOffset.Label = "+- Minutes";
+            this.Controls.Add( _nbTimeOffset );
 
             RequiredFieldValidator.ControlToValidate = _date.ID;
         }
@@ -415,13 +415,13 @@ namespace Rock.Web.UI.Controls
                     _date.Attributes["disabled"] = "true";
                     _date.AddCssClass( "aspNetDisabled" );
                     _time.Enabled = false;
-                    _nbDayOffset.Enabled = true;
+                    _nbTimeOffset.Enabled = true;
                 }
                 else
                 {
                     _date.Enabled = true;
                     _time.Enabled = true;
-                    _nbDayOffset.Enabled = false;
+                    _nbTimeOffset.Enabled = false;
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md" );
@@ -445,7 +445,7 @@ namespace Rock.Web.UI.Controls
                 if ( DisplayCurrentOption )
                 {
                     _cbCurrent.RenderControl( writer );
-                    _nbDayOffset.RenderControl( writer );
+                    _nbTimeOffset.RenderControl( writer );
                 }
 
                 writer.RenderEndTag();   // form-control-group

@@ -10,11 +10,9 @@
     7. Reusable classes
     8. Column Types
     9. Row Types
-    10. Responsive Overrides
+    10. Responsive Columns
 
 */
-
-@import "RwdTable/rwd-table.less";
 
 
 // 1. Bootstrap Overrides
@@ -357,16 +355,64 @@ tr.row-highlight {
     }
 }
 
-// 10. Responsive Overrides
+// 10. Responsive Columns
 // -------------------------
 
-// RWD changes it so whitespace never wraps... yuck
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+    position: relative;
+    width: 100%;
+    overflow-y: hidden;
+    overflow-x: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -webkit-overflow-scrolling: touch;
+}
 
-.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > th, 
-.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > th, 
-.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > th, 
-.table-responsive[data-pattern="priority-columns"] > .table > thead > tr > td, 
-.table-responsive[data-pattern="priority-columns"] > .table > tbody > tr > td, 
-.table-responsive[data-pattern="priority-columns"] > .table > tfoot > tr > td {
-    white-space: inherit;
+// classes to show and hide columns based on their priority
+.table-responsive {
+    
+    th[data-priority],
+    td[data-priority] {
+       display: none;
+    }
+
+    th[data-priority="1"], 
+    td[data-priority="1"] {
+        display: table-cell;
+    }
+
+    @media screen and (min-width: 480px) {
+        th[data-priority="2"], 
+        td[data-priority="2"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 640px) {
+        th[data-priority="3"], 
+        td[data-priority="3"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 800px) {
+        th[data-priority="4"], 
+        td[data-priority="4"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 960px) {
+        th[data-priority="5"], 
+        td[data-priority="5"] {
+            display: table-cell;
+        }
+    }
+
+    @media screen and (min-width: 1120px) {
+        th[data-priority="6"], 
+        td[data-priority="6"] {
+            display: table-cell;
+        }
+    }
 }

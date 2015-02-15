@@ -78,56 +78,9 @@ namespace RockWeb.Blocks.Crm
             ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
-            DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
-            if ( gradeTransitionDate.HasValue )
-            {
-                _gradeTransitionDate = gradeTransitionDate.Value;
-            }
+            ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
-            ddlGrade.Items.Clear();
-            ddlGrade.Items.Add( new ListItem( "", "" ) );
-            ddlGrade.Items.Add( new ListItem( "K", "0" ) );
-            ddlGrade.Items.Add( new ListItem( "1st", "1" ) );
-            ddlGrade.Items.Add( new ListItem( "2nd", "2" ) );
-            ddlGrade.Items.Add( new ListItem( "3rd", "3" ) );
-            ddlGrade.Items.Add( new ListItem( "4th", "4" ) );
-            ddlGrade.Items.Add( new ListItem( "5th", "5" ) );
-            ddlGrade.Items.Add( new ListItem( "6th", "6" ) );
-            ddlGrade.Items.Add( new ListItem( "7th", "7" ) );
-            ddlGrade.Items.Add( new ListItem( "8th", "8" ) );
-            ddlGrade.Items.Add( new ListItem( "9th", "9" ) );
-            ddlGrade.Items.Add( new ListItem( "10th", "10" ) );
-            ddlGrade.Items.Add( new ListItem( "11th", "11" ) );
-            ddlGrade.Items.Add( new ListItem( "12th", "12" ) );
-
-            int gradeFactorReactor = ( RockDateTime.Now < _gradeTransitionDate ) ? 12 : 13;
-
-            string script = string.Format( @"
-    $('#{0}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{1}').val('');
-        }} else {{
-            $('#{1}').val( {2} + ( {3} - parseInt( $(this).val() ) ) );
-        }} 
-    }});
-
-    $('#{1}').change(function(){{
-        if ($(this).val() == '') {{
-            $('#{0}').val('');
-        }} else {{
-            var grade = {3} - ( parseInt( $(this).val() ) - {4} );
-            if (grade >= 0 && grade <= 12) {{
-                $('#{0}').val(grade.toString());
-            }} else {{
-                $('#{0}').val('');
-            }}
-        }}
-    }});
-
-", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
-            ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
-
-            script = @"
+            string script = @"
     $('a.remove-all-individuals').click(function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
@@ -170,6 +123,7 @@ namespace RockWeb.Blocks.Crm
             if ( $(this).prop('id') == '{1}' ) {{
                 $('#{2}').toggleClass('aspNetDisabled', !enabled);
                 $('#{2}').prop('disabled', !enabled);
+                $('#{2}').closest('.form-group').toggleClass('bulk-item-selected', enabled)
             }}
 
         }});
@@ -186,7 +140,7 @@ namespace RockWeb.Blocks.Crm
         $('#{0}').val(newValue);            
 
     }});
-", hfSelectedItems.ClientID, ddlGrade.ClientID, ypGraduation.ClientID );
+", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );
             ScriptManager.RegisterStartupScript( hfSelectedItems, hfSelectedItems.GetType(), "select-items-" + BlockId.ToString(), script, true );
 
             ddlGroupAction.SelectedValue = "Add";
@@ -450,14 +404,14 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( newMaritalStatusId ) );
                 }
 
-                if ( SelectedFields.Contains( ddlGrade.ClientID ) )
+                if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
                 {
-                    DateTime? newGraduationDate = null;
+                    int? newGraduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        newGraduationYear = ypGraduation.SelectedYear.Value;
                     }
-                    EvaluateChange( changes, "Graduation Date", newGraduationDate );
+                    EvaluateChange( changes, "Graduation Year", newGraduationYear );
                 }
 
                 if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
@@ -719,10 +673,10 @@ namespace RockWeb.Blocks.Crm
                     Gender newGender = ddlGender.SelectedValue.ConvertToEnum<Gender>();
                     int? newMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
 
-                    DateTime? newGraduationDate = null;
+                    int? newGraduationYear = null;
                     if ( ypGraduation.SelectedYear.HasValue )
                     {
-                        newGraduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                        newGraduationYear = ypGraduation.SelectedYear.Value;
                     }
 
                     int? newCampusId = cpCampus.SelectedCampusId;
@@ -800,10 +754,10 @@ namespace RockWeb.Blocks.Crm
                             person.MaritalStatusValueId = newMaritalStatusId;
                         }
 
-                        if ( SelectedFields.Contains( ddlGrade.ClientID ) )
+                        if ( SelectedFields.Contains( ddlGradePicker.ClientID ) )
                         {
-                            History.EvaluateChange( changes, "Graduation Date", person.GraduationDate, newGraduationDate );
-                            person.GraduationDate = newGraduationDate;
+                            History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, newGraduationYear );
+                            person.GraduationYear = newGraduationYear;
                         }
 
                         if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
@@ -1272,8 +1226,8 @@ namespace RockWeb.Blocks.Crm
             SetControlSelection( ddlStatus, "Connection Status" );
             SetControlSelection( ddlGender, "Gender" );
             SetControlSelection( ddlMaritalStatus, "Marital Status" );
-            SetControlSelection( ddlGrade, "Grade" );
-            ypGraduation.Enabled = ddlGrade.Enabled;
+            SetControlSelection( ddlGradePicker, GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
+            ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
             SetControlSelection( ddlSuffix, "Suffix" );

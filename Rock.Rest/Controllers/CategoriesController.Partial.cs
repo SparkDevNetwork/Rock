@@ -221,7 +221,7 @@ namespace Rock.Rest.Controllers
 
                     if ( !showUnnamedEntityItems )
                     {
-                        result = result.Where( a => a.Name != string.Empty );
+                        result = result.Where( a => a.Name != null && a.Name != string.Empty );
                     }
 
                     return result;

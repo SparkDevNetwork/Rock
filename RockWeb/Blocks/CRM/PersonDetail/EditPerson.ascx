@@ -44,7 +44,7 @@
 
                             <div class="row">
                                 <div class="col-sm-3">
-                                    <Rock:RockDropDownList ID="ddlGrade" runat="server" CssClass="input-width-md" Label="Grade"/>
+                                    <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" CssClass="input-width-md" />
                                 </div>
                                 <div class="col-sm-3">
                                     <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />

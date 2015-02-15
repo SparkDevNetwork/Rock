@@ -287,7 +287,7 @@ namespace Rock.Reporting.DataFilter.Person
                                     ( a.Group.GroupTypeId == groupTypeId ) &&
                                     ( a.StartDateTime >= startDate )
                                 ) &&
-                                ( a.DidAttend == true )
+                                ( a.DidAttend.HasValue && a.DidAttend.Value )
                             )
                         ) == attended );
 

@@ -92,12 +92,15 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
+            target.DidNotOccur = source.DidNotOccur;
             target.EndDateTime = source.EndDateTime;
             target.GroupId = source.GroupId;
             target.LocationId = source.LocationId;
             target.Note = source.Note;
             target.PersonAliasId = source.PersonAliasId;
+            target.Processed = source.Processed;
             target.QualifierValueId = source.QualifierValueId;
+            target.RSVP = source.RSVP;
             target.ScheduleId = source.ScheduleId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.StartDateTime = source.StartDateTime;
