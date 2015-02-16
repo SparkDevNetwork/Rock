@@ -31,7 +31,7 @@ namespace church.ccv.Residency.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_Residency_Period" )]
+    [Table( "_church_ccv_Residency_Period" )]
     [DataContract]
     public partial class Period : NamedModel<Period>
     {

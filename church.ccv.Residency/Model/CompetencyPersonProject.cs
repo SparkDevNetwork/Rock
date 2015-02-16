@@ -31,7 +31,7 @@ namespace church.ccv.Residency.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_Residency_CompetencyPersonProject" )]
+    [Table( "_church_ccv_Residency_CompetencyPersonProject" )]
     [DataContract]
     public class CompetencyPersonProject : Model<CompetencyPersonProject>
     {

@@ -30,7 +30,7 @@ using Rock.Data;
 
 namespace church.ccv.Residency.Model
 {
-    [Table( "_com_ccvonline_Residency_Competency" )]
+    [Table( "_church_ccv_Residency_Competency" )]
     [DataContract]
     public class Competency : NamedModel<Competency>
     {

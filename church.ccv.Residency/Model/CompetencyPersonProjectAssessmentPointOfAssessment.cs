@@ -28,7 +28,7 @@ using church.ccv.Residency.Data;
 
 namespace church.ccv.Residency.Model
 {
-    [Table( "_com_ccvonline_Residency_CompetencyPersonProjectAssessmentPointOfAssessment" )]
+    [Table( "_church_ccv_Residency_CompetencyPersonProjectAssessmentPointOfAssessment" )]
     [DataContract]
     public class CompetencyPersonProjectAssessmentPointOfAssessment : Model<CompetencyPersonProjectAssessmentPointOfAssessment>
     {

@@ -31,7 +31,7 @@ namespace church.ccv.Residency.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_Residency_ProjectPointOfAssessment" )]
+    [Table( "_church_ccv_Residency_ProjectPointOfAssessment" )]
     [DataContract]
     public class ProjectPointOfAssessment : Model<ProjectPointOfAssessment>
     {

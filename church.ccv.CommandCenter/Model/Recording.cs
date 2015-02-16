@@ -17,7 +17,7 @@ namespace church.ccv.CommandCenter.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_CommandCenter_Recording" )]
+    [Table( "_church_ccv_CommandCenter_Recording" )]
     [DataContract]
     public class Recording : Model<Recording>
     {

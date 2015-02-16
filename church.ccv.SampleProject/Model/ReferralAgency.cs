@@ -16,7 +16,7 @@ namespace church.ccv.SampleProject.Model
     /// <summary>
     /// A Referral Agency
     /// </summary>
-    [Table( "_com_ccvonline_SampleProject_ReferralAgency" )]
+    [Table( "_church_ccv_SampleProject_ReferralAgency" )]
     [DataContract]
     public class ReferralAgency : NamedModel<ReferralAgency>
     {

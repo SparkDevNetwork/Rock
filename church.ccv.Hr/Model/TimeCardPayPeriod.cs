@@ -8,7 +8,7 @@ namespace church.ccv.Hr.Model
     /// <summary>
     /// NOTE: Table is populated on-demand. If the CurrentDate isn’t a TimeCardPayPeriod yet, a row will be created. 
     /// </summary>
-    [Table( "_com_ccvonline_Hr_TimeCardPayPeriod" )]
+    [Table( "_church_ccv_Hr_TimeCardPayPeriod" )]
     [DataContract]
     public class TimeCardPayPeriod : Model<TimeCardPayPeriod>
     {

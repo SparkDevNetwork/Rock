@@ -26,7 +26,7 @@
 
         <script type="text/javascript">
             // setup player
-            flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
+            flowplayer('<%# Eval("[0]") %>', "/Plugins/church_ccv/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
                 {
                     key: '#$392ba7eb81984ddb47a',
                     plugins: {
@@ -35,7 +35,7 @@
                             scrubber: false
                         },
                         rtmp: {
-                            url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf',
+                            url: '/Plugins/church_ccv/CommandCenter/Assets/flowplayer.rtmp-3.2.9.swf',
                         }
                     },
                     clip: {

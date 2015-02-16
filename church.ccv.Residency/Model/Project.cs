@@ -31,7 +31,7 @@ namespace church.ccv.Residency.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table("_com_ccvonline_Residency_Project")]
+    [Table( "_church_ccv_Residency_Project")]
     [DataContract]
     public class Project : NamedModel<Project>
     {

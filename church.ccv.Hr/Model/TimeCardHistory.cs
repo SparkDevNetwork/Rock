@@ -11,7 +11,7 @@ namespace church.ccv.Hr.Model
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_ccvonline_Hr_TimeCardHistory" )]
+    [Table( "_church_ccv_Hr_TimeCardHistory" )]
     [DataContract]
     public class TimeCardHistory : Model<TimeCardHistory>
     {

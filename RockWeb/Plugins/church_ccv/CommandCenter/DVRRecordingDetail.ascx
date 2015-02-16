@@ -122,12 +122,12 @@
         }
 
         // setup player
-        flowplayer('player', '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf',
+        flowplayer('player', '/Plugins/church_ccv/CommandCenter/Assets/flowplayer.commercial-3.2.18.swf',
 		{
 		    key: '#$392ba7eb81984ddb47a',
 			plugins: {
-			    f4m: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf' },
-			    httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf' },
+			    f4m: { url: '/Plugins/church_ccv/CommandCenter/Assets/flowplayer.f4m-3.2.9.swf' },
+			    httpstreaming: { url: '/Plugins/church_ccv/CommandCenter/Assets/flowplayer.httpstreaming-3.2.9.swf' },
 			},
 			clip: {
 			    url: recordingurl + '/manifest.f4m?DVR&wowzadvrplayliststart=' + clipStartEndUrl,
