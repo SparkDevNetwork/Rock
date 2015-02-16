@@ -61,6 +61,8 @@
         
         </script>
 
+        <Rock:NotificationBox ID="nbBlockConfigErrors" runat="server" NotificationBoxType="Danger" />
+
         <asp:Panel ID="pnlSearch" runat="server" CssClass="js-pnlsearch">
             <header>
                 <h1>Please Enter Your Phone Number</h1>
@@ -139,7 +141,29 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlRegister" runat="server" Visible="false">
-            Register Page
+            <header>
+                <h1>Register</h1>
+            </header>
+            <main>
+                <div class="row">
+                    <div class="col-md-8">
+                        <Rock:RockTextBox ID="tbFirstName" Label="First Name" runat="server" Required="true" />
+                        <Rock:RockTextBox ID="tbLastName" Label="Last Name" runat="server" Required="true" />
+                        <Rock:PhoneNumberBox ID="pnbHomePhone" Label="Home Phone" runat="server" Required="true" />
+                        <Rock:AddressControl ID="acAddress" ShowAddressLine2="false" runat="server" Required="true"/>
+                        <Rock:EmailBox ID="tbEmail" runat="server" Required="true" />
+                    </div>
+                    <div class="col-md-4">
+                        <asp:LinkButton ID="lbRegisterNext" runat="server" OnClick="lbRegisterNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
+                    </div>
+                </div>
+            </main>
+            <footer>
+                <div class="container">
+                    <asp:LinkButton ID="lbRegisterBack" runat="server" OnClick="lbRegisterBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
+                    <asp:LinkButton ID="lbRegisterCancel" runat="server" OnClick="lbRegisterCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
+                </div>
+            </footer>
         </asp:Panel>
 
         <asp:Panel ID="pnlAccountEntry" runat="server" CssClass="js-pnlaccountentry" Visible="false">
@@ -148,32 +172,42 @@
             </header>
             
             <main>
-                <asp:Label ID="lblGivingAs" runat="server"></asp:Label>
+                <div class="row">
+                    <div class="col-md-8">
+                        <Rock:NotificationBox ID="nbAccountEntry" runat="server" NotificationBoxType="Warning"></Rock:NotificationBox>
 
-                <asp:PlaceHolder id="phAccounts" runat="server"></asp:PlaceHolder>
+                        <asp:Label ID="lblGivingAs" runat="server"></asp:Label>
 
-                <div class="tenkey kiosk-phone-keypad">
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">1</a>
-                        <a href="#" class="btn btn-default btn-lg digit">2</a>
-                        <a href="#" class="btn btn-default btn-lg digit">3</a>
+                        <asp:PlaceHolder id="phAccounts" runat="server"></asp:PlaceHolder>
+
+                        <div class="tenkey kiosk-phone-keypad">
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg digit">1</a>
+                                <a href="#" class="btn btn-default btn-lg digit">2</a>
+                                <a href="#" class="btn btn-default btn-lg digit">3</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg digit">4</a>
+                                <a href="#" class="btn btn-default btn-lg digit">5</a>
+                                <a href="#" class="btn btn-default btn-lg digit">6</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg digit">7</a>
+                                <a href="#" class="btn btn-default btn-lg digit">8</a>
+                                <a href="#" class="btn btn-default btn-lg digit">9</a>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-default btn-lg digit">.</a>
+                                <a href="#" class="btn btn-default btn-lg digit">0</a>
+                                <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">4</a>
-                        <a href="#" class="btn btn-default btn-lg digit">5</a>
-                        <a href="#" class="btn btn-default btn-lg digit">6</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">7</a>
-                        <a href="#" class="btn btn-default btn-lg digit">8</a>
-                        <a href="#" class="btn btn-default btn-lg digit">9</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">.</a>
-                        <a href="#" class="btn btn-default btn-lg digit">0</a>
-                        <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                    <div class="col-md-4">
+                        <asp:LinkButton ID="lbAccountEntryNext" runat="server" OnClick="lbAccountEntryNext_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg">Next</asp:LinkButton>
                     </div>
                 </div>
+                
             </main>
             
             <footer>
@@ -186,7 +220,18 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlSwipe" runat="server" Visible="false">
+            <header>
+                <h1>Please Swipe Your Card</h1>
+            </header>
+            <main>
 
+            </main>
+            <footer>
+                <div class="container">
+                    <asp:LinkButton ID="lbSwipeBack" runat="server" OnClick="lbSwipeBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
+                    <asp:LinkButton ID="lbSwipeCancel" runat="server" OnClick="lbSwipeCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
+                </div>
+            </footer>
         </asp:Panel>
 
         <asp:Panel ID="pnlReceipt" runat="server" Visible="false">

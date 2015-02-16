@@ -1,14 +1,24 @@
 ﻿/*
     Used to manage styles for specific blocks.
 
-    1. Key Pad
-    2. Scroller
-    3. Kiosk Components
+    1. HTML Overrides
+    2. Kiosk Components
+    3. Scroller
+    
 
 */
 
+// 1. HTML Overrides
+// -------------------------
 
-// 1. Key Pad
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+// 2. Components
 // -------------------------
 
 .tenkey
@@ -33,7 +43,35 @@
      }
 } 
 
-// 2. Scroller
+.btn-kioskselect {
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: @font-weight-bold;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+
+    small {
+        font-weight: @font-weight-light;
+        margin-left: 16px;
+    }
+}
+
+.btn-kiosk {
+    font-weight: @font-weight-light;
+    font-size: 24px;
+}
+
+.btn-kiosk-lg {
+    min-height: 120px;
+    width: 100%;
+    font-weight: @font-weight-bold;
+    font-size: 36px;
+    line-height: 110px;
+}
+
+// 3. Scroller
 // -------------------------
 
 .scrollpanel {
@@ -95,35 +133,4 @@
     top: 2px; 
     right: 1px; 
     overflow: hidden;
-}
-
-// 3. Components
-// -------------------------
-
-.btn-kioskselect {
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-    font-weight: @font-weight-bold;
-    padding-top: 14px;
-    padding-bottom: 14px;
-    margin-bottom: 12px;
-
-    small {
-        font-weight: @font-weight-light;
-        margin-left: 16px;
-    }
-}
-
-.btn-kiosk {
-    font-weight: @font-weight-light;
-    font-size: 24px;
-}
-
-.btn-kiosk-lg {
-    min-height: 120px;
-    width: 100%;
-    font-weight: @font-weight-bold;
-    font-size: 36px;
-    line-height: 110px;
 }

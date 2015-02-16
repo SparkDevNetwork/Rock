@@ -49,9 +49,10 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 2 )]
     [PersonField("Anonymous Person", "Person in the database to assign anonymous giving to.", true, "", "", 3)]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use when creating a new individual.", true, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT, "", 4 )]
-    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4,"", 5 )]
-    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 6 )]
-    [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 7 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use when creating a new individual.", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 5 )]
+    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4,"", 6 )]
+    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
+    [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     #endregion
 
     public partial class KioskTransactionEntry : Rock.Web.UI.RockBlock
@@ -71,11 +72,35 @@ namespace RockWeb.Blocks.Finance
             set { ViewState["SelectedGivingUnit"] = value; }
         }
 
+        private Dictionary<int, string> Accounts
+        {
+            get { return ViewState["Accounts"] as Dictionary<int, string>; }
+            set { ViewState["Accounts"] = value; }
+        }
+
         private Dictionary<int, decimal> Amounts
         {
             get { return ViewState["Amounts"] as Dictionary<int, decimal>; }
             set { ViewState["Amounts"] = value; }
         }
+
+        private int Campus {
+            get {
+                if ( ViewState["Campus"] == null )
+                {
+                    return 1;
+                }
+                else
+                {
+                    return Int32.Parse( ViewState["Campus"].ToString() );
+                }
+            }
+            set { ViewState["Campus"] = value; }
+        }
+
+        DefinedValueCache _dvcConnectionStatus = null;
+        DefinedValueCache _dvcRecordStatus = null;
+
         #endregion
 
         #region Properties
@@ -112,17 +137,36 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            if ( !CheckSettings() )
+            {
+                pnlSearch.Visible = false;
+            }
+            else
+            {
+                pnlSearch.Visible = true;
+            }
+
             if ( !Page.IsPostBack )
             {
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
+
+                LoadAccounts();
+
+                // todo set campus
+                this.Campus = 1;
             }
             else
             {
                 if ( pnlGivingUnitSelect.Visible )
                 {
                     BuildGivingUnitControls();
+                }
+
+                if (pnlAccountEntry.Visible)
+                {
+                    BuildAccountControls();
                 }
             }
         }
@@ -169,6 +213,13 @@ namespace RockWeb.Blocks.Finance
             pnlSearch.Visible = true;
         }
 
+        // used to show the new registration page
+        protected void lbRegisterFamily_Click( object sender, EventArgs e )
+        {
+            HidePanels();
+            pnlRegister.Visible = true;
+        }
+
         //
         // Account Entry Events
         //
@@ -183,11 +234,85 @@ namespace RockWeb.Blocks.Finance
             GoHome();
         }
 
-        // used to show the new registration page
-        protected void lbRegisterFamily_Click( object sender, EventArgs e )
+        protected void lbAccountEntryNext_Click( object sender, EventArgs e )
+        {
+            // save account amounts
+            decimal totalAmount = 0;
+            this.Amounts = new Dictionary<int, decimal>();
+
+            foreach ( var account in this.Accounts )
+            {
+                CurrencyBox cb = phAccounts.FindControl( "tbAccount_" + account.Key.ToString() ) as CurrencyBox;
+                if ( cb != null )
+                {
+                    decimal fundAmount = 0;
+                    if ( !decimal.TryParse( cb.Text, out fundAmount ) )
+                        fundAmount = 0;
+                    fundAmount = Math.Round( fundAmount, 2 );
+
+                    if ( fundAmount >= 0 )
+                    {
+                        this.Amounts.Add( account.Key, fundAmount );
+                        totalAmount += fundAmount;
+                    }
+                }
+            }
+
+            if ( totalAmount <= 0 )
+            {
+                nbAccountEntry.Text = "Please enter a valid amount for one or more accounts.";
+            }
+            else
+            {
+                nbAccountEntry.Text = string.Empty;
+                HidePanels();
+                pnlSwipe.Visible = true;
+            }
+            
+        }
+
+        //
+        // Swipe Panel Events
+        //
+
+        protected void lbSwipeBack_Click( object sender, EventArgs e )
         {
             HidePanels();
-            pnlRegister.Visible = true;
+            ShowAccountPanel();
+        }
+        protected void lbSwipeCancel_Click( object sender, EventArgs e )
+        {
+            GoHome();
+        }
+
+        //
+        // Register Panel Events
+        //
+        protected void lbRegisterBack_Click( object sender, EventArgs e )
+        {
+
+        }
+        protected void lbRegisterCancel_Click( object sender, EventArgs e )
+        {
+
+        }
+        protected void lbRegisterNext_Click( object sender, EventArgs e )
+        {
+            // create new person / family
+            Person person = new Person();
+            person.FirstName = tbFirstName.Text.Trim();
+            person.LastName = tbLastName.Text.Trim();
+            person.Email = tbEmail.Text.Trim();
+            person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
+            person.RecordStatusValueId = _dvcRecordStatus.Id;
+            person.Gender = Gender.Unknown;
+
+            GroupService.SaveNewFamily( new RockContext(), person, this.Campus, false );
+
+            // set as selected giving unit
+            this.SelectedGivingUnit = new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName );
+
+            ShowAccountPanel();
         }
 
         /// <summary>
@@ -302,30 +427,19 @@ namespace RockWeb.Blocks.Finance
         // displays accounts
         private void BuildAccountControls()
         {
-            // get list of selected accounts filtered by the current campus
-            RockContext rockContext = new RockContext();
-            FinancialAccountService accountService = new FinancialAccountService( rockContext );
             
-            Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
-            int campusContext = 1;
-
-            var accounts = accountService.Queryable()
-                            .Where( a => selectedAccounts.Contains( a.Guid ) && (a.CampusId.Value == campusContext || a.CampusId == null) )
-                            .ToList();
-
-            if ( accounts.Count > 0 )
+            if ( this.Accounts != null )
             {
                 bool firstAccount = true;
                 
-                foreach ( var account in accounts )
+                foreach ( var account in this.Accounts )
                 {
                     HtmlGenericControl formGroup = new HtmlGenericControl( "div" );
                     formGroup.AddCssClass( "form-group" );
                     phAccounts.Controls.Add( formGroup );
 
-                    RockTextBox tb = new RockTextBox();
-                    tb.PrependText = "<i class='fa fa-dollar'></i>";
-                    tb.ID = "tbAccount_" + account.Id;
+                    CurrencyBox tb = new CurrencyBox();
+                    tb.ID = "tbAccount_" + account.Key;
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
 
@@ -337,8 +451,8 @@ namespace RockWeb.Blocks.Finance
 
                     Label label = new Label();
                     label.AssociatedControlID = tb.ID;
-                    label.ID = "labelFund_" + account.Id;
-                    label.Text = account.PublicName;
+                    label.ID = "labelFund_" + account.Key;
+                    label.Text = account.Value;
 
                     formGroup.Controls.Add( label );
                     formGroup.Controls.Add( tb );
@@ -391,7 +505,56 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "Homepage" );
         }
 
+        // loads accounts
+        private void LoadAccounts()
+        {
+            // get list of selected accounts filtered by the current campus
+            RockContext rockContext = new RockContext();
+            FinancialAccountService accountService = new FinancialAccountService( rockContext );
+
+            Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
+
+            var accounts = accountService.Queryable()
+                            .Where( a => selectedAccounts.Contains( a.Guid ));
+            
+            if (this.Campus != null) {
+                accounts = accounts.Where(a => a.CampusId.Value == this.Campus || a.CampusId == null);
+            }
+            
+            this.Accounts = new Dictionary<int, string>();
+
+            foreach ( var account in accounts.ToList() )
+            {
+                this.Accounts.Add( account.Id, account.PublicName );
+            }
+        }
+
+        // checks the settings provided
+        private bool CheckSettings()
+        {
+            nbBlockConfigErrors.Title = string.Empty;
+            nbBlockConfigErrors.Text = string.Empty;
+            
+            _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+            if ( _dvcConnectionStatus == null )
+            {
+                nbBlockConfigErrors.Heading = "Invalid Connection Status";
+                nbBlockConfigErrors.Text = "<p>The selected Connection Status setting does not exist.</p>";
+                return false;
+            }
+
+            _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            if ( _dvcRecordStatus == null )
+            {
+                nbBlockConfigErrors.Heading = "Invalid Record Status";
+                nbBlockConfigErrors.Text = "<p>The selected Record Status setting does not exist.</p>";
+                return false;
+            }
+
+            return true;
+        }
         #endregion
+        
 }
 
     [Serializable]
