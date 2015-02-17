@@ -21,6 +21,7 @@ namespace Rock
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class DateRange
     {
         /// <summary>

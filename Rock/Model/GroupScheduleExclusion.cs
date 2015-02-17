@@ -51,7 +51,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? StartDate { get; private set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets the end date.
@@ -61,7 +61,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EndDate { get; private set; }
+        public DateTime? EndDate { get; set; }
 
         #endregion
 
@@ -92,7 +92,7 @@ namespace Rock.Model
         /// </summary>
         public GroupScheduleExclusionConfiguration()
         {
-            this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.GroupType ).WithMany( g => g.GroupScheduleExclusions).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
         }
     }
 
