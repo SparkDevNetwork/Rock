@@ -36,7 +36,10 @@
         background-image: url(../assets/logo.svg);
         min-height: 50px;
         min-width: 235px;
-        margin-left: -@grid-gutter-width/2;
+        margin-left: -@grid-gutter-width;
+        @media @sm {
+          margin-left: -@grid-gutter-width/2;
+        }
       }
 
     .masthead-nav {
@@ -109,13 +112,20 @@
       text-transform: uppercase;
       color: @gray-light;
       font-weight: 600;
+      padding: 0 @grid-gutter-width/2;
+
+      @media @sm {
+        padding-left: @grid-gutter-width;
+      }
     }
     .masthead-lower .loginstatus a {
       color: @gray-light;
       font-style: italic;
+      padding: 0 @grid-gutter-width/4;
     }
 
-@media @sm {
-  .masthead-lower .contextsetter a { padding: 0 @grid-gutter-width; }
-  .masthead-lower .loginstatus a { padding: 0 @grid-gutter-width/4; }
-}
+  @media (max-width: @screen-sm-max) {
+    .masthead-lower .navbar-nav {
+      float: left;
+    }
+  }

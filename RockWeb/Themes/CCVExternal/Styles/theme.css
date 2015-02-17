@@ -5355,7 +5355,12 @@ div.aspNetDisabled {
   background-image: url(../assets/logo.svg);
   min-height: 50px;
   min-width: 235px;
-  margin-left: -15px;
+  margin-left: -30px;
+}
+@media (min-width: 768px) {
+  .masthead-brand .logo {
+    margin-left: -15px;
+  }
 }
 .navbar-collapse {
   box-shadow: none;
@@ -5426,17 +5431,21 @@ div.aspNetDisabled {
   text-transform: uppercase;
   color: #777777;
   font-weight: 600;
+  padding: 0 15px;
+}
+@media (min-width: 768px) {
+  .masthead-lower .contextsetter a {
+    padding-left: 30px;
+  }
 }
 .masthead-lower .loginstatus a {
   color: #777777;
   font-style: italic;
+  padding: 0 7.5px;
 }
-@media (min-width: 768px) {
-  .masthead-lower .contextsetter a {
-    padding: 0 30px;
-  }
-  .masthead-lower .loginstatus a {
-    padding: 0 7.5px;
+@media (max-width: 991px) {
+  .masthead-lower .navbar-nav {
+    float: left;
   }
 }
 .slide-control {

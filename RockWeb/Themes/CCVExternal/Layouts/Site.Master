@@ -69,9 +69,7 @@
                     </nav>
                 </div>
                 <div class="masthead-lower">
-                    <div class="navbar-collapse collapse">
-                        <Rock:Zone Name="Login" runat="server" />
-                    </div>
+                    <Rock:Zone Name="Login" runat="server" />
                 </div>
             </header>
         </div>
