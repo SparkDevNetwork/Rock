@@ -72,24 +72,24 @@
                                     <div class="col-md-6">
                                         <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" Help="The type of groups to look for."
                                             AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" ValidationGroup="GroupFinderSettings" />
-                                    </div>
-                                    <div class="col-md-6">
                                         <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type" 
                                             Help="An optional group type that contains groups with geographic boundary (fence). If specified, user will be prompted for their address, and only groups that are located in the same geographic boundary ( as defined by one or more groups of this type ) will be displayed." 
                                             ValidationGroup="GroupFinderSettings" />
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6">
                                         <Rock:RockCheckBoxList ID="cblSchedule" runat="server" Label="Display Schedule Filters" RepeatDirection="Horizontal" 
-                                            Help="Flags indicating if Day of Week and/or Time of Day filters be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
+                                            Help="Flags indicating if Day of Week and/or Time of Day filters should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
                                             <asp:ListItem Text="Day of Week" Value="Day" />
                                             <asp:ListItem Text="Time of Day" Value="Time" />
                                         </Rock:RockCheckBoxList>
-                                    </div>
-                                    <div class="col-md-6">
                                         <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Display Attribute Filters" RepeatDirection="Horizontal" 
                                             Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                    </div>
+                                    <div class="col-md-6">
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

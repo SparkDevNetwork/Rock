@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gtpGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindGroupAttributeList();
+            SetGroupTypeOptions();
         }
 
         /// <summary>
@@ -248,7 +248,15 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "GroupType", GetGroupTypeGuid( gtpGroupType.SelectedGroupTypeId ) );
             SetAttributeValue( "GeofencedGroupType", GetGroupTypeGuid( gtpGeofenceGroupType.SelectedGroupTypeId ) );
-            SetAttributeValue( "ScheduleFilters", cblSchedule.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+            if ( cblSchedule.Visible )
+            {
+                SetAttributeValue( "ScheduleFilters", cblSchedule.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+            }
+            else
+            {
+                SetAttributeValue( "ScheduleFilters", string.Empty );
+            }
+
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
@@ -370,7 +378,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            BindGroupAttributeList();
+            SetGroupTypeOptions();
             foreach ( string attr in GetAttributeValue( "AttributeFilters" ).SplitDelimitedValues() )
             {
                 var li = cblAttributes.Items.FindByValue( attr );
@@ -414,19 +422,30 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the group attribute list.
         /// </summary>
-        private void BindGroupAttributeList()
+        private void SetGroupTypeOptions()
         {
-            // Rebuild the checkbox list settings for both the filter and display in grid attribute lists
-            var group = new Group();
-            group.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
-            group.LoadAttributes();
+            cblSchedule.Visible = false;
 
+            // Rebuild the checkbox list settings for both the filter and display in grid attribute lists
             cblAttributes.Items.Clear();
             cblGridAttributes.Items.Clear();
-            foreach ( var attribute in group.Attributes )
+
+            if ( gtpGroupType.SelectedGroupTypeId.HasValue )
             {
-                cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
-                cblGridAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                var groupType = GroupTypeCache.Read( gtpGroupType.SelectedGroupTypeId.Value );
+                if ( groupType != null )
+                {
+                    cblSchedule.Visible = ( groupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly;
+
+                    var group = new Group();
+                    group.GroupTypeId = groupType.Id;
+                    group.LoadAttributes();
+                    foreach ( var attribute in group.Attributes )
+                    {
+                        cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                        cblGridAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                    }
+                }
             }
 
             cblAttributes.Visible = cblAttributes.Items.Count > 0;
