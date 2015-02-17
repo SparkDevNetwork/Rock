@@ -10,5 +10,42 @@
   </li>
 </ul>
 <div class="well well-dark">
-  Service times will go here later
+  <h4>Service Times</h4>
+
+  {% assign times = Context.Campus.ServiceTimes | Split: '|' %}
+
+  {% for time in times %}
+    {% assign split = time | Split: '^' %}
+    {% if split[0] == 'Saturday' %}
+      {% assign hasSaturday = true %}
+    {% endif %}
+    {% if split[0] == 'Sunday' %}
+      {% assign hasSunday = true %}
+    {% endif %}
+  {% endfor %}
+
+  {% if hasSaturday %}
+    <strong>Saturday</strong>
+    <ul class="list-inline">
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Saturday' %}
+          <li>{{ split[1] }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if hasSunday %}
+    <strong>Sunday</strong>
+    <ul class="list-inline margin-b-none">
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Sunday' %}
+          <li>{{ split[1] }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
 </div>
