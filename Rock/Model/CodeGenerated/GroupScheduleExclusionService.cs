@@ -88,7 +88,9 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupScheduleExclusion target, GroupScheduleExclusion source )
         {
             target.Id = source.Id;
+            target.EndDate = source.EndDate;
             target.GroupTypeId = source.GroupTypeId;
+            target.StartDate = source.StartDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
