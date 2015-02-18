@@ -39,16 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction List Liquid" )]
     [Category( "Finance" )]
     [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using liquid." )]
-    [CodeEditorField("Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
-<div class=""scheduledtransaction-summary"">
-    ${{ScheduledTransaction.ScheduledAmount}} on {{ScheduledTransaction.CurrencyType}}
-    {{ScheduledTransaction.FrequencyDescription | downcase}}. 
-     
-    {% if ScheduledTransaction.NextPaymentDate != null %}
-        Next gift will be on {{ScheduledTransaction.NextPaymentDate | Date:""MMMM d, yyyy""}}.
-    {% endif %}
-</div>
-", "", 1)]
+    [CodeEditorField( "Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}", "", 1 )]
     [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Scheduled Transaction Edit Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Scheduled Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 4 )]

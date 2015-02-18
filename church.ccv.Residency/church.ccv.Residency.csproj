@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{629A186E-1ED2-49BC-95D4-76D65950AE73}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>church.ccv.Residency</RootNamespace>
+    <AssemblyName>church.ccv.Residency</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Model.cs" />
+    <Compile Include="Data\NamedModel.cs" />
+    <Compile Include="Data\ResidencyContext.cs" />
+    <Compile Include="Data\ResidencyService.cs" />
+    <Compile Include="Migrations\002_AddIndexes.cs" />
+    <Compile Include="Migrations\008_RenameDomain.cs" />
+    <Compile Include="Migrations\004_AddIsPassFail.cs" />
+    <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Migrations\003_PopulateData01.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\005_ResidentPageUpdates.cs" />
+    <Compile Include="Migrations\006_GradeRequestEmail.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\007_ResidencySite.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\Competency.cs" />
+    <Compile Include="Model\CompetencyPerson.cs" />
+    <Compile Include="Model\Period.cs" />
+    <Compile Include="Model\CompetencyPersonProject.cs" />
+    <Compile Include="Model\CompetencyPersonProjectAssessment.cs" />
+    <Compile Include="Model\CompetencyPersonProjectAssessmentPointOfAssessment.cs" />
+    <Compile Include="Model\Project.cs" />
+    <Compile Include="Model\ProjectPointOfAssessment.cs" />
+    <Compile Include="Model\Track.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\DefinedValue.cs" />
+    <Compile Include="SystemGuid\EmailTemplate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock\Rock.csproj">
+      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
+      <Name>Rock</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

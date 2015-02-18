@@ -71,8 +71,16 @@
                                         </Rock:Grid>
                                     </div>
                                 </Rock:RockControlWrapper>
-                                <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
-                                    Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
+                                            Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options"
+                                            Help="The schedule option types to allow when editing groups of this type."/>
+                                    </div>
+                                </div>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
                                     Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
@@ -82,14 +90,14 @@
                                 </Rock:RockDropDownList>
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
-                                    Help="The location selection modes to allow when adding locations to groups of this type."/>
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
-                                            Help="Check this option if more than one location should be allowed for groups of this type." />
+                                         <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
+                                            Help="The location selection modes to allow when adding locations to groups of this type."/>
                                     </div>
                                     <div class="col-xs-6">
+                                       <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
+                                            Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
                                     </div>

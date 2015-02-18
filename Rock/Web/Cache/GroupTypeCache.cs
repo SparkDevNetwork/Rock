@@ -102,6 +102,15 @@ namespace Rock.Web.Cache
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the allowed schedule types.
+        /// </summary>
+        /// <value>
+        /// The allowed schedule types.
+        /// </value>
+        [DataMember]
+        public ScheduleType AllowedScheduleTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [allow multiple locations].
         /// </summary>
         /// <value>
@@ -371,6 +380,7 @@ namespace Rock.Web.Cache
                 this.GroupTerm = groupType.GroupTerm;
                 this.GroupMemberTerm = groupType.GroupMemberTerm;
                 this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+                this.AllowedScheduleTypes = groupType.AllowedScheduleTypes;
                 this.AllowMultipleLocations = groupType.AllowMultipleLocations;
                 this.ShowInGroupList = groupType.ShowInGroupList;
                 this.ShowInNavigation = groupType.ShowInNavigation;

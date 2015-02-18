@@ -45,10 +45,16 @@
                                 <ItemTemplate>
                                     <li class="member">
                                         <div class="person-image" id="divPersonImage" runat="server"></div>
-                                        <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
-                                        <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
-                                        <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
-                                        <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                        <div class="member-information">
+                                            <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
+                                            
+                                              <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
+                                            
+                                        </div>
+                                        <div class="actions">
+                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                        </div>
                                     </li>
                                 </ItemTemplate>
                             </asp:ListView>
@@ -82,7 +88,7 @@
                                             <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:AddressControl ID="acAddress" runat="server" />
+                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true"/>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
@@ -98,7 +104,8 @@
                                             <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
+                                            <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                            <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">

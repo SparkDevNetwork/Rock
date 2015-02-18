@@ -846,8 +846,8 @@ namespace Rock.Model
             foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
                 .Where( v =>
                     v.Attribute.EntityTypeId == PersonEntityTypeId &&
-                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
-                    v.Attribute.EntityTypeQualifierValue == string.Empty &&
+                    ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
+                    ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
                     v.EntityId == person.Id ) )
             {
                 values.Add(attributeValue.Attribute.Key, attributeValue.Value);

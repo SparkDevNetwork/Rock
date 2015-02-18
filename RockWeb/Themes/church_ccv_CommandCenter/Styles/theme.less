@@ -1,0 +1,158 @@
+﻿
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Responsive Overrides 
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+@font-face {
+    font-family: 'DINWeb';
+    src: url('../Assets/Fonts/DINWeb-CondLight.eot');
+    src: url('../Assets/Fonts/DINWeb-CondLight.eot?#iefix') format('embedded-opentype'),
+         url('../Assets/Fonts/DINWeb-CondLight.woff') format('woff'),
+         url('../Assets/Fonts/DINWeb-CondLight.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DINWeb';
+    src: url('../Assets/Fonts/DINWeb-CondBold.eot');
+    src: url('../Assets/Fonts/DINWeb-CondBold.eot?#iefix') format('embedded-opentype'),
+         url('../Assets/Fonts/DINWeb-CondBold.woff') format('woff'),
+         url('../Assets/Fonts/DINWeb-CondBold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+main {
+    display:block;
+}
+
+body {
+    background-color: #151515;
+    color: white;
+    letter-spacing: -.03em;
+    font-weight: @font-weight-light;
+}
+
+h1, h2, h3 {
+    font-family: DINWeb, Helvetica, Arial, sans-serif;
+}
+
+h1 {
+	font-weight: normal;
+	text-transform: uppercase;
+    text-align: center;
+    font-weight: @font-weight-bold;
+    
+    .light {
+        font-weight: @font-weight-light;
+    }
+}
+
+h3 {
+	margin: 0;
+	text-transform: uppercase;
+    text-align: center;
+    font-weight: @font-weight-light;
+}
+
+.panel {
+    background-color: #1F1E1E;
+    border-radius: 10px;
+    border: 0;
+    padding: 6px 24px 12px 24px;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+.panel-body h3 {
+    color: white;
+}
+
+
+
+.audio-toggle i:before {
+	content: "\f026"; 
+}
+
+.audio-toggle.enabled i:before {
+	content: "\f028";
+}
+
+.audio-toggle span:before, .audio-toggle.muted span:before {
+	content: "Listen";
+}
+
+.audio-toggle.enabled span:before {
+	content: "Mute";
+}
+
+.fullscreen-toggle i:before {
+	content: "\f065"; 
+}
+
+
+header {
+    background-color: #202020;
+    color: #878686;
+    min-height: 36px;
+    margin-bottom: 24px;
+}
+
+.header-logo {
+    position: absolute;
+    left: -15px;
+    top: 10px;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #202020;
+    color: #878686;
+    min-height: 36px;
+}
+
+
+
+// 4. Responsive Overrides 
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+    
+}
+
+// Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+    .container {
+        width: 100%;
+    }
+}
+
+// Large devices (large desktops, 1200px and up) 
+@media (min-width: @screen-lg-min) {
+
+}

@@ -136,7 +136,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Grade" );
+                writer.Write( GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );

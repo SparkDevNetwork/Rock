@@ -135,6 +135,7 @@
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Field\Types\AttributeFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\DateTimeFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
     <Compile Include="Field\Types\RatingFieldType.cs" />
     <Compile Include="Field\Types\SystemEmailFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
@@ -249,6 +251,7 @@
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\ContentChannel.cs">
@@ -264,6 +267,7 @@
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
@@ -316,8 +320,15 @@
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
     <Compile Include="Transactions\DeleteAttributeBinaryFile.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
+    <Compile Include="Utility\AttributeCacheJsonConverter.cs" />
+    <Compile Include="Utility\AttributeValueJsonConverter.cs" />
+    <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
+    <Compile Include="Utility\RockJsonTextWriter.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />
+    <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CallbackField.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRating.cs" />
     <Compile Include="Web\UI\RockBlockWrapper.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
@@ -840,7 +851,7 @@
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetWorkflowName.cs" />
     <Compile Include="Workflow\Action\LogError.cs" />
-    <Compile Include="Workflow\Action\AddNote.cs" />
+    <Compile Include="Workflow\Action\AddWorkflowNote.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -947,7 +958,7 @@
     <Compile Include="Field\Types\SelectMultiFieldType.cs" />
     <Compile Include="Field\Types\PersonFieldType.cs" />
     <Compile Include="Field\Types\DecimalFieldType.cs" />
-    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
     <Compile Include="Field\Types\DateFieldType.cs" />
     <Compile Include="Field\Types\ImageFieldType.cs" />

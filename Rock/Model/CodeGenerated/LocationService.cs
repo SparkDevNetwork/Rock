@@ -66,7 +66,7 @@ namespace Rock.Model
  
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
             return true;

@@ -6,7 +6,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localh
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.ccvonline.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|com.ccvonline.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|com.ccvonline.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|com.ccvonline.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|com.ccvonline.TimeCard.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.TimeCard.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -24,13 +24,13 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localh
 		SlnRelativePath = "RockWeb\"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.SampleProject", "com.ccvonline.SampleProject\com.ccvonline.SampleProject.csproj", "{496EC024-71ED-4AD1-B677-2A3FA60CCD05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.SampleProject", "church.ccv.SampleProject\church.ccv.SampleProject.csproj", "{496EC024-71ED-4AD1-B677-2A3FA60CCD05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Authentication", "com.ccvonline.Authentication\com.ccvonline.Authentication.csproj", "{10702916-BB67-4BE9-A507-E1F8932BD05F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Authentication", "church.ccv.Authentication\church.ccv.Authentication.csproj", "{10702916-BB67-4BE9-A507-E1F8932BD05F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.CommandCenter", "com.ccvonline.CommandCenter\com.ccvonline.CommandCenter.csproj", "{A5B47749-D8B2-4223-822B-26208BCE34F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.CommandCenter", "church.ccv.CommandCenter\church.ccv.CommandCenter.csproj", "{A5B47749-D8B2-4223-822B-26208BCE34F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Residency", "com.ccvonline.Residency\com.ccvonline.Residency.csproj", "{629A186E-1ED2-49BC-95D4-76D65950AE73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Residency", "church.ccv.Residency\church.ccv.Residency.csproj", "{629A186E-1ED2-49BC-95D4-76D65950AE73}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
 EndProject
@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Hr", "com.ccvonline.Hr\com.ccvonline.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Hr", "church.ccv.Hr\church.ccv.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

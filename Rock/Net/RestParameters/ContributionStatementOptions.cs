@@ -60,6 +60,14 @@ namespace Rock.Net.RestParameters
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [include individuals with no address].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeIndividualsWithNoAddress { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [order by postal code].
         /// </summary>
         /// <value>

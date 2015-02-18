@@ -1801,7 +1801,7 @@ namespace Rock
         #region ListControl Extensions
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value, if the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
@@ -1830,13 +1830,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Try's to set the selected value. If the value does not exist, will set the first item in the list.
+        /// Tries to set the selected value. If the value does not exist, will set the first item in the list.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="value">The value.</param>
         public static void SetValue( this ListControl listControl, int? value )
         {
             listControl.SetValue( value == null ? "0" : value.ToString() );
+        }
+
+        /// <summary>
+        /// Tries to set the selected value. If the value does not exist, will set the first item in the list.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this ListControl listControl, Guid? value )
+        {
+            listControl.SetValue( value == null ? "" : value.ToString() );
         }
 
         /// <summary>
@@ -2123,6 +2133,16 @@ namespace Rock
         public static List<Guid> AsGuidList( this IEnumerable<string> items )
         {
             return items.Select( a => a.AsGuidOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+        }
+
+        /// <summary>
+        /// Converts a List&lt;string&gt; to List&lt;guid&gt; return a null for items that could not be converted to a guid
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<Guid?> AsGuidOrNullList( this IEnumerable<string> items )
+        {
+            return items.Select( a => a.AsGuidOrNull() ).ToList();
         }
 
         /// <summary>
@@ -2599,6 +2619,45 @@ namespace Rock
             if ( !dictionary.ContainsKey( key ) )
             {
                 dictionary.Add( key, value );
+            }
+        }
+
+        /// <summary>
+        /// Gets value for the specified key, or null if the dictionary doesn't contain the key
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static TValue GetValueOrNull<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key)
+        {
+            if ( dictionary.ContainsKey( key ) )
+            {
+                return dictionary[key];
+            }
+            else
+            {
+                return default(TValue);
+            }
+        }
+
+        /// <summary>
+        /// Gets ConfigurationValue's Value for the specified key, or null if the dictionary doesn't contain the key or the ConfigurationValue is null
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string GetValueOrNull<TKey>( this Dictionary<TKey, Rock.Field.ConfigurationValue> dictionary, TKey key )
+        {
+            if ( dictionary.ContainsKey( key ) && dictionary[key] != null )
+            {
+                return dictionary[key].Value;
+            }
+            else
+            {
+                return null;
             }
         }
 
