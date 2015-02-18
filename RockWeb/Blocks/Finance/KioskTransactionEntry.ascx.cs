@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Text.RegularExpressions;
+using System.Dynamic;
 
 using Rock;
 using Rock.Data;
@@ -30,6 +31,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -53,6 +55,8 @@ namespace RockWeb.Blocks.Finance
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4,"", 6 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
+    [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     #endregion
 
     public partial class KioskTransactionEntry : Rock.Web.UI.RockBlock
@@ -82,6 +86,12 @@ namespace RockWeb.Blocks.Finance
         {
             get { return ViewState["Amounts"] as Dictionary<int, decimal>; }
             set { ViewState["Amounts"] = value; }
+        }
+
+        private int? AnonymousGiverPersonAliasId
+        {
+            get { return (int)ViewState["AnonymousGiverPersonAliasId"]; }
+            set { ViewState["AnonymousGiverPersonAliasId"] = value; }
         }
 
         private int Campus {
@@ -137,17 +147,17 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            if ( !CheckSettings() )
-            {
-                pnlSearch.Visible = false;
-            }
-            else
-            {
-                pnlSearch.Visible = true;
-            }
-
             if ( !Page.IsPostBack )
             {
+                if ( !CheckSettings() )
+                {
+                    pnlSearch.Visible = false;
+                }
+                else
+                {
+                    ShowSearchPanel();
+                }
+                 
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
@@ -174,9 +184,10 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Events
-                
+
+        #region Search Panel Events
         //
-        // Search Events
+        // Search Panel Events
         //
 
         protected void lbSearchNext_Click( object sender, EventArgs e )
@@ -189,8 +200,19 @@ namespace RockWeb.Blocks.Finance
             GoHome();
         }
 
+        protected void lbGiveAnonymously_Click( object sender, EventArgs e )
+        {
+            this.SelectedGivingUnit = new GivingUnit( this.AnonymousGiverPersonAliasId.Value, "Anonymous", "" );
+            lbAccountEntryBack.Attributes.Add( "back-to", "search" );
+            HidePanels();
+            ShowAccountPanel();
+        }
+
+        #endregion
+
+        #region Giving Unit Select Panel Events
         //
-        // Giving Unit Select Events
+        // Giving Unit Select Panel Events
         //
 
         // called when a giving unit is selected
@@ -199,6 +221,7 @@ namespace RockWeb.Blocks.Finance
             LinkButton lb = (LinkButton)sender;
             this.SelectedGivingUnit = new GivingUnit( lb.CommandArgument );
 
+            lbAccountEntryBack.Attributes.Add( "back-to", "giving-unit-select" );
             ShowAccountPanel();
         }
 
@@ -218,8 +241,11 @@ namespace RockWeb.Blocks.Finance
         {
             HidePanels();
             pnlRegister.Visible = true;
+            tbFirstName.Focus();
         }
+        #endregion
 
+        #region Account Entry Events
         //
         // Account Entry Events
         //
@@ -227,7 +253,16 @@ namespace RockWeb.Blocks.Finance
         protected void lbAccountEntryBack_Click( object sender, EventArgs e )
         {
             HidePanels();
-            ShowGivingUnitSelectPanel();
+            
+            switch ( lbAccountEntryBack.Attributes["back-to"] )
+            {
+                case "search":
+                    ShowSearchPanel();
+                    break;
+                case "giving-unit-select":
+                    ShowGivingUnitSelectPanel();
+                    break;
+            }
         }
         protected void lbAccountEntryCancel_Click( object sender, EventArgs e )
         {
@@ -239,6 +274,7 @@ namespace RockWeb.Blocks.Finance
             // save account amounts
             decimal totalAmount = 0;
             this.Amounts = new Dictionary<int, decimal>();
+            bool accountFieldsValid = true;
 
             foreach ( var account in this.Accounts )
             {
@@ -246,8 +282,15 @@ namespace RockWeb.Blocks.Finance
                 if ( cb != null )
                 {
                     decimal fundAmount = 0;
-                    if ( !decimal.TryParse( cb.Text, out fundAmount ) )
+                    if ( !decimal.TryParse( cb.Text.Trim(), out fundAmount ) )
+                    {
+                        if ( !string.IsNullOrEmpty( cb.Text ) )
+                        {
+                            accountFieldsValid = false;
+                        }
+                        
                         fundAmount = 0;
+                    }
                     fundAmount = Math.Round( fundAmount, 2 );
 
                     if ( fundAmount >= 0 )
@@ -258,7 +301,10 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            if ( totalAmount <= 0 )
+            if ( !accountFieldsValid )
+            {
+                nbAccountEntry.Text = "Please enter valid amounts in all fields.";
+            } else if ( totalAmount <= 0 )
             {
                 nbAccountEntry.Text = "Please enter a valid amount for one or more accounts.";
             }
@@ -270,10 +316,18 @@ namespace RockWeb.Blocks.Finance
             }
             
         }
+        #endregion
 
+        #region Swipe Panel Events
         //
         // Swipe Panel Events
         //
+
+        protected void lbSwipeNext_Click( object sender, EventArgs e )
+        {
+            HidePanels();
+            ShowReceiptPanel();            
+        }
 
         protected void lbSwipeBack_Click( object sender, EventArgs e )
         {
@@ -284,17 +338,30 @@ namespace RockWeb.Blocks.Finance
         {
             GoHome();
         }
+        #endregion
 
+        #region Receipt Panel Events
+        
+        // done, go home ET
+        protected void lbReceiptDone_Click( object sender, EventArgs e )
+        {
+            GoHome();
+        }
+
+        #endregion
+
+        #region Register Panel Events
         //
         // Register Panel Events
         //
         protected void lbRegisterBack_Click( object sender, EventArgs e )
         {
-
+            pnlRegister.Visible = false;
+            ShowGivingUnitSelectPanel();
         }
         protected void lbRegisterCancel_Click( object sender, EventArgs e )
         {
-
+            GoHome();
         }
         protected void lbRegisterNext_Click( object sender, EventArgs e )
         {
@@ -314,6 +381,7 @@ namespace RockWeb.Blocks.Finance
 
             ShowAccountPanel();
         }
+        #endregion
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -322,12 +390,22 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            if ( CheckSettings() )
+            {
+                HidePanels();
+                ShowSearchPanel();
+            }
         }
 
         #endregion
 
         #region Methods
+
+        // show search panel
+        private void ShowSearchPanel()
+        {
+            pnlSearch.Visible = true;
+        }
 
         // show giving unit select panel
         private void ShowGivingUnitSelectPanel()
@@ -424,6 +502,84 @@ namespace RockWeb.Blocks.Finance
 
         }
 
+        // show receipt panel
+        private void ShowReceiptPanel()
+        {
+            bool receiptEmailed = true;
+            
+            
+            // get giving unit
+            RockContext rockContext = new RockContext();
+            var givingUnit = new PersonAliasService( rockContext ).Queryable().Where( p => p.Id == this.SelectedGivingUnit.PersonAliasId ).FirstOrDefault().Person;
+            
+            
+            // setup lava
+            var mergeFields = new Dictionary<string, object>();
+
+            List<object> accountAmounts = new List<object>();
+            decimal totalAmount = 0;
+
+            foreach ( var amount in this.Amounts )
+            {
+                if ( amount.Value > 0 )
+                {
+                    dynamic expando = new ExpandoObject();
+                    //var accountAmount = expando as IDictionary<String, object>;
+                    expando.AccountId = amount.Key;
+                    expando.AccountName = this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value;
+                    expando.Amount = amount.Value;
+                    
+                    //accountAmount["AccountId"] = amount.Key;
+                    //accountAmount["AccountName"] = this.Accounts.Where( a => a.Key == amount.Key ).FirstOrDefault().Value;
+                    //accountAmount["Amount"] = amount.Value;
+
+                    accountAmounts.Add( expando );
+
+                    totalAmount += amount.Value;
+                }
+            }
+
+            // total amounts
+            mergeFields.Add( "TotalAmount", totalAmount );
+
+            // gave anonymous
+            if ( this.AnonymousGiverPersonAliasId == this.SelectedGivingUnit.PersonAliasId )
+            {
+                mergeFields.Add( "GaveAnonymous", "True" );
+                mergeFields.Add( "ReceiptEmail", "" );
+            }
+            else
+            {
+                mergeFields.Add( "GaveAnonymous", "False" );
+                mergeFields.Add( "ReceiptEmail", givingUnit.Email );
+            }
+
+            // whether a receipt was emailed
+            mergeFields.Add( "ReceiptEmailed", receiptEmailed.ToString() );
+
+            // names
+            mergeFields.Add( "LastName", this.SelectedGivingUnit.LastName );
+            mergeFields.Add( "FirstNames", this.SelectedGivingUnit.FirstNames );           
+            
+            mergeFields.Add( "Amounts", accountAmounts );
+            
+            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+            string template = GetAttributeValue( "ReceiptLava" );
+
+            // show debug info
+            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+
+            lReceiptContent.Text = template.ResolveMergeFields( mergeFields );
+            pnlReceipt.Visible = true;
+        }
+
         // displays accounts
         private void BuildAccountControls()
         {
@@ -442,10 +598,11 @@ namespace RockWeb.Blocks.Finance
                     tb.ID = "tbAccount_" + account.Key;
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
+                    tb.CssClass = "input-account";
 
                     if ( firstAccount )
                     {
-                        tb.CssClass = "active";
+                        tb.CssClass = "input-account active";
                         firstAccount = false;
                     }
 
@@ -551,9 +708,30 @@ namespace RockWeb.Blocks.Finance
                 return false;
             }
 
+            // get anonymous person
+            RockContext rockContext = new RockContext();
+            Person anonymousPerson = null;
+
+            Guid anonymousPersonAliasGuid;
+
+            if ( Guid.TryParse( GetAttributeValue( "AnonymousPerson" ), out anonymousPersonAliasGuid ) )
+            {
+                anonymousPerson = new PersonAliasService( rockContext ).Get(anonymousPersonAliasGuid ).Person;
+            } 
+            
+            if ( anonymousPerson != null )
+            {
+                this.AnonymousGiverPersonAliasId = anonymousPerson.PrimaryAliasId;
+                lbGiveAnonymously.Visible = true;
+            }
+            else
+            {
+                lbGiveAnonymously.Visible = false;
+            }
+
             return true;
         }
-        #endregion
+        #endregion 
         
 }
 
