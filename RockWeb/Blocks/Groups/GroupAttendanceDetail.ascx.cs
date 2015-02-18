@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -35,6 +36,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists the group members for a specific occurrence datetime and allows selecting if they attended or not." )]
 
+    [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 0 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -62,7 +64,11 @@ namespace RockWeb.Blocks.Groups
 
             _rockContext = new RockContext();
 
-            _group = new GroupService( _rockContext ).Get( PageParameter( "GroupId" ).AsInteger() );
+            int groupId = PageParameter( "GroupId" ).AsInteger();
+            _group = new GroupService( _rockContext )
+                .Queryable( "Schedule" )
+                .FirstOrDefault( g => g.Id == groupId );
+
             if ( _group != null && _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 _canEdit = true;
@@ -174,6 +180,52 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
+
+                WorkflowType workflowType = null;
+                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    if ( workflowType != null )
+                    {
+                        try
+                        {
+                            var workflowService = new WorkflowService( rockContext );
+                            var workflow = Workflow.Activate( workflowType, _group.Name );
+
+                            workflow.SetAttributeValue( "StartDateTime", _thisOccurrence.StartDateTime.ToString( "o" ) );
+                            workflow.SetAttributeValue( "Schedule", _group.Schedule.Guid.ToString() );
+
+                            List<string> workflowErrors;
+                            if ( workflow.Process( rockContext, _group, out workflowErrors ) )
+                            {
+                                if ( workflow.IsPersisted || workflow.IsPersisted )
+                                {
+                                    if ( workflow.Id == 0 )
+                                    {
+                                        workflowService.Add( workflow );
+                                    }
+
+                                    rockContext.WrapTransaction( () =>
+                                    {
+                                        rockContext.SaveChanges();
+                                        workflow.SaveAttributeValues( _rockContext );
+                                        foreach ( var activity in workflow.Activities )
+                                        {
+                                            activity.SaveAttributeValues( rockContext );
+                                        }
+                                    } );
+                                }
+                            }
+
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex, this.Context );
+                        }
+                    }
+                }
 
                 NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
             }

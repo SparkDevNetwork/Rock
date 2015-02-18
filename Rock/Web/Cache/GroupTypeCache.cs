@@ -269,6 +269,14 @@ namespace Rock.Web.Cache
         public List<GroupTypeRoleCache> Roles { get; set; }
 
         /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public List<DateRange> GroupScheduleExclusions { get; set; }
+
+        /// <summary>
         /// Gets the child group types.
         /// </summary>
         /// <value>
@@ -396,7 +404,16 @@ namespace Rock.Web.Cache
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
                 this.Roles = new List<GroupTypeRoleCache>();
-                groupType.Roles.OrderBy( r => r.Order ).ToList().ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+                groupType.Roles
+                    .OrderBy( r => r.Order )
+                    .ToList()
+                    .ForEach( r => Roles.Add( new GroupTypeRoleCache( r ) ) );
+
+                this.GroupScheduleExclusions = new List<DateRange>();
+                groupType.GroupScheduleExclusions
+                    .OrderBy( s => s.StartDate )
+                    .ToList()
+                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
             }
         }
 
