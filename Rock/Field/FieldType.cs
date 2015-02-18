@@ -468,7 +468,7 @@ namespace Rock.Field
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        public virtual Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression, string propertyName, Type propertyType )
+        public virtual Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
             if ( filterValues.Count >= 2 )
             {
@@ -484,15 +484,28 @@ namespace Rock.Field
                         type = Nullable.GetUnderlyingType( type );
                     }
 
-                    object value = Convert.ChangeType( filterValues[1], type );
-
-                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    ConstantExpression constantExpression = Expression.Constant( value, type );
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    object value = ConvertValueToPropertyType( filterValues[1], type );
+                    if ( value != null )
+                    {
+                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        ConstantExpression constantExpression = Expression.Constant( value, type );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Converts the type of the value to property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public virtual object ConvertValueToPropertyType( string value, Type propertyType )
+        {
+            return Convert.ChangeType( value, propertyType );
         }
 
         /// <summary>

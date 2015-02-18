@@ -318,6 +318,19 @@ namespace Rock.Model
         private ICollection<GroupTypeRole> _roles;
 
         /// <summary>
+        /// Gets or sets the group schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The group schedule exclusions.
+        /// </value>
+        public virtual ICollection<GroupScheduleExclusion> GroupScheduleExclusions
+        {
+            get { return _groupScheduleExclusions ?? ( _groupScheduleExclusions = new Collection<GroupScheduleExclusion>() ); }
+            set { _groupScheduleExclusions = value; }
+        }
+        private ICollection<GroupScheduleExclusion> _groupScheduleExclusions;
+
+        /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.GroupTypeLocationType">GroupTypeLocationTypes</see> that are associated with this GroupType.
         /// </summary>
         /// <value>
