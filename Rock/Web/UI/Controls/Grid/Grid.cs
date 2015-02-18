@@ -374,7 +374,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public virtual string CommunicationPageRoute
         {
-            get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
+            get { return ViewState["CommunicationPageRoute"] as string; }
             set { ViewState["CommunicationPageRoute"] = value; }
         }
 
@@ -1147,7 +1147,27 @@ namespace Rock.Web.UI.Controls
 
                     rockContext.SaveChanges();
 
-                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                    // Get the URL to communication page
+                    string url = CommunicationPageRoute;
+                    if ( string.IsNullOrWhiteSpace(url) )
+                    {
+                        var pageRef = rockPage.Site.CommunicationPageReference;
+                        if ( pageRef.PageId > 0 )
+                        {
+                            pageRef.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+                            url = pageRef.BuildUrl();
+                        }
+                        else
+                        {
+                            url = "~/Communication/{0}";
+                        }
+                    }
+                    if ( url.Contains("{0}"))
+                    {
+                        url = string.Format( url, communication.Id );
+                    }
+
+                    Page.Response.Redirect( url, false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }

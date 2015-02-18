@@ -166,7 +166,25 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PageNotFoundPageRouteId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the communication page identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page identifier.
+        /// </value>
+        [DataMember]
+        public int? CommunicationPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication page route identifier.
+        /// </summary>
+        /// <value>
+        /// The communication page route identifier.
+        /// </value>
+        [DataMember]
+        public int? CommunicationPageRouteId { get; set; }
+
         /// <summary>
         /// Gets or sets the path to the error page.
         /// </summary>
@@ -304,6 +322,24 @@ namespace Rock.Model
         [DataMember]
         public virtual PageRoute PageNotFoundPageRoute { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication page.
+        /// </summary>
+        /// <value>
+        /// The communication page.
+        /// </value>
+        [DataMember]
+        public virtual Page CommunicationPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication page route.
+        /// </summary>
+        /// <value>
+        /// The communication page route.
+        /// </value>
+        [DataMember]
+        public virtual PageRoute CommunicationPageRoute { get; set; }
+
         #endregion
 
         #region Methods
@@ -359,6 +395,8 @@ namespace Rock.Model
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PageNotFoundPage).WithMany().HasForeignKey(p => p.PageNotFoundPageId).WillCascadeOnDelete(false);
             this.HasOptional( p => p.PageNotFoundPageRoute).WithMany().HasForeignKey(p => p.PageNotFoundPageRouteId).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.CommunicationPage ).WithMany().HasForeignKey( p => p.CommunicationPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 

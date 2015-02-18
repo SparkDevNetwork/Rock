@@ -50,15 +50,15 @@ You can view an online version of this email here:
 ", "", 3 )]
     public class Email : MediumComponent
     {
+
         /// <summary>
-        /// Gets the control path.
+        /// Gets the control.
         /// </summary>
-        /// <value>
-        /// The control path.
-        /// </value>
-        public override MediumControl Control
+        /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>
+        /// <returns></returns>
+        public override MediumControl GetControl( bool useSimpleMode )
         {
-            get { return new Rock.Web.UI.Controls.Communication.Email(); }
+            return new Rock.Web.UI.Controls.Communication.Email( useSimpleMode );
         }
 
         /// <summary>
