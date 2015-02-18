@@ -38,6 +38,9 @@ namespace Rock.Client
         public ICollection<CommunicationRecipientActivity> Activities { get; set; }
 
         /// <summary />
+        public Dictionary<string, string> AdditionalMergeValues { get; set; }
+
+        /// <summary />
         public string AdditionalMergeValuesJson { get; set; }
 
         /// <summary />

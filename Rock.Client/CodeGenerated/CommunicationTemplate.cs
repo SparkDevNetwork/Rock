@@ -38,6 +38,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public Dictionary<string, string> MediumData { get; set; }
+
+        /// <summary />
         public EntityType MediumEntityType { get; set; }
 
         /// <summary />
