@@ -1,12 +1,5 @@
 $(document).ready(function(){
 
-
-  var isMobile = function() {
-    if ($(document).width() < 768) return true // @screen-sm-min
-    else return false
-  }
-
-
   // Fade in animation
   $('.js-fullmenu').on('show.bs.collapse', function () {
 
@@ -20,14 +13,4 @@ $(document).ready(function(){
     $('.js-fullmenu .fade').removeClass('in')
   })
 
-
-  // Scroll Prevention
-  $('.js-fullmenu').on('shown.bs.collapse', function () {
-    if (!isMobile())
-      $('html').addClass('has-open-fullmenu')
-  })
-
-  $('.js-fullmenu').on('hidden.bs.collapse', function () {
-    $('html').removeClass('has-open-fullmenu')
-  })
 })
