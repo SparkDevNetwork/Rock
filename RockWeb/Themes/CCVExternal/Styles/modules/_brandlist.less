@@ -1,0 +1,19 @@
+
+
+//
+// BRAND LIST (The lists with triangle bullets)
+// --------------------------------------------------
+
+
+.brandlist {
+  list-style: none;
+  padding-left: .25em;
+}
+  .brandlist-item {
+    &:before {
+      .fa-icon();
+      content: @fa-var-caret-right;
+      // margin-left: -2em;
+      margin-right: .5em;
+    }
+  }

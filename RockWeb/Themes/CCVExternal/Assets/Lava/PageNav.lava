@@ -1,16 +1,38 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
-    <ul class="masthead-navitems">
+  <ul class="masthead-navitems">
 
-		{% for childPage in Page.Pages %}
-      <li class="masthead-navitem{% if childPage.Current == 'true' %} active{% endif%}">
-				<a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
-      </li>
+	{% for childPage in Page.Pages %}
+    <li class="masthead-navitem{% if childPage.Current == 'true' %} active{% endif%}">
+      <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+    </li>
+
+    {% if childPage.Title == "Menu" %}
+      {% assign fullmenu = childPage %}
+    {% endif %}
+
+  {% endfor %}
+
+  </ul>
+{% endif %}
+
+{% if fullmenu.Pages != empty %}
+  <div class="masthead-fullmenu">
+
+    {% for childPage in fullmenu.Pages %}
+
+      <h2>{{ childPage.Title }}</h2>
+      <ul class="brandlist">
+        {% for gchildPage in childPage.Pages %}
+          {% if gchildPage.Title != "Sub" %}
+            <li class="brandlist-item"><a href="{{ childPage.Url }}">{{ gchildPage.Title }}</a></li>
+          {% else %}
+            {% for ggchildPage in gchildPage.Pages %}
+            <li class="brandlist-item brandlist-item-sub"><a href="{{ childPage.Url }}">{{ ggchildPage.Title }}</a></li>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </ul>
+
     {% endfor %}
-      <li class="masthead-navitem">
-        <a data-toggle="collapse" href="#subnav" aria-expanded="false" aria-controls="subnav">
-          <div class="menu-icon"><span class="lines"></span></div> Menu
-        </a>
-      </li>
-
-    </ul>
+  </div>
 {% endif %}
