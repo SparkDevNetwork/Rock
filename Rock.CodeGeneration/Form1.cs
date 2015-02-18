@@ -50,6 +50,15 @@ namespace Rock.CodeGeneration
             ofdAssembly.FileName = "Rock.dll";
             ofdAssembly.RestoreDirectory = true;
 
+            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
+            tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
+            tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
+            tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
+            if ( projectName != "Rock" )
+            {
+                tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
+            }
+
             if ( ofdAssembly.ShowDialog() == DialogResult.OK )
             {
                 Cursor = Cursors.WaitCursor;
@@ -97,39 +106,9 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
-            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
-            string serviceFolder = Path.Combine( RootFolder().FullName, projectName );
-            string restFolder = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
-            string rockClientFolder = Path.Combine( RootFolder().FullName, projectName + ".Client" );
-            if ( projectName != "Rock" )
-            {
-                restFolder = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
-                //rockClientFolder = Path.Combine( RootFolder().FullName, projectName + "\\Client" );
-            }
-            
-
-            if ( cbService.Checked )
-            {
-                fbdServiceOutput.SelectedPath = serviceFolder;
-                if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
-                {
-                    serviceFolder = fbdServiceOutput.SelectedPath;
-                }
-            }
-
-            if ( cbRest.Checked )
-            {
-                fbdRestOutput.SelectedPath = restFolder;
-                if (!Directory.Exists(restFolder))
-                {
-                    Directory.CreateDirectory( restFolder );
-                }
-
-                if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
-                {
-                    restFolder = fbdRestOutput.SelectedPath;
-                }
-            }
+            string serviceFolder = tbServiceFolder.Text;
+            string restFolder = tbRestFolder.Text;
+            string rockClientFolder = tbClientFolder.Text;
 
             Cursor = Cursors.WaitCursor;
 
@@ -804,6 +783,32 @@ order by [parentTable], [columnName]
             WriteFile( file, sb );
         }
 
+        private void tbServiceFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdServiceOutput.SelectedPath = tbServiceFolder.Text;
+            if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbServiceFolder.Text = fbdServiceOutput.SelectedPath;
+            }
+        }
+
+        private void tbRestFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdRestOutput.SelectedPath = tbRestFolder.Text;
+            if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbRestFolder.Text = fbdRestOutput.SelectedPath;
+            }
+        }
+
+        private void tbClientFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fdbRockClient.SelectedPath = tbClientFolder.Text;
+            if ( fdbRockClient.ShowDialog() == DialogResult.OK )
+            {
+                tbClientFolder.Text = fdbRockClient.SelectedPath;
+            }
+        }
     }
 
     public static class HelperExtensions
