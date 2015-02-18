@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -104,27 +105,48 @@ namespace Rock.Model
 
                 }
 
-                if ( loadAttendanceData && occurrences.Any() )
+                if ( occurrences.Any() )
                 {
-                    var minStartValue = occurrences.Min( o => o.StartDateTime );
-                    var maxEndValue = occurrences.Max( o => o.EndDateTime );
-
-                    var attendanceQry = attendanceService
-                        .Queryable( "PersonAlias" ).AsNoTracking()
-                        .Where( a =>
-                            a.GroupId == group.Id &&
-                            a.StartDateTime >= minStartValue &&
-                            a.StartDateTime < maxEndValue );
-
-                    var attendanceData = attendanceQry.ToList();
-
-                    foreach ( var occurrence in occurrences )
+                    // Filter Exclusions
+                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    foreach( var exclusion in  groupType.GroupScheduleExclusions )
                     {
-                        occurrence.Attendance = attendanceData
+                        if ( exclusion.Start.HasValue && exclusion.End.HasValue )
+                        {
+                            foreach ( var occurrence in occurrences.ToList() )
+                            {
+                                if ( occurrence.StartDateTime >= exclusion.Start.Value &&
+                                    occurrence.StartDateTime < exclusion.End.Value.AddDays( 1 ) )
+                                {
+                                    occurrences.Remove( occurrence );
+                                }
+                            }
+                        }
+                    }
+
+
+                    if ( loadAttendanceData )
+                    {
+                        var minStartValue = occurrences.Min( o => o.StartDateTime );
+                        var maxEndValue = occurrences.Max( o => o.EndDateTime );
+
+                        var attendanceQry = attendanceService
+                            .Queryable( "PersonAlias" ).AsNoTracking()
                             .Where( a =>
-                                a.StartDateTime >= occurrence.StartDateTime &&
-                                a.StartDateTime < occurrence.EndDateTime )
-                            .ToList();
+                                a.GroupId == group.Id &&
+                                a.StartDateTime >= minStartValue &&
+                                a.StartDateTime < maxEndValue );
+
+                        var attendanceData = attendanceQry.ToList();
+
+                        foreach ( var occurrence in occurrences )
+                        {
+                            occurrence.Attendance = attendanceData
+                                .Where( a =>
+                                    a.StartDateTime >= occurrence.StartDateTime &&
+                                    a.StartDateTime < occurrence.EndDateTime )
+                                .ToList();
+                        }
                     }
                 }
 

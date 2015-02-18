@@ -1027,7 +1027,7 @@ namespace Rock.Model
             {
                 int? gradeOffset = GradeOffset;
 
-                if ( gradeOffset.HasValue && gradeOffset >= 0)
+                if ( gradeOffset.HasValue && gradeOffset >= 0 )
                 {
                     var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
                     if ( schoolGrades != null )
@@ -1515,48 +1515,58 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
 
+            var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) );
+            var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
+
             var groupMemberService = new GroupMemberService( rockContext );
             var knownRelationshipGroup = groupMemberService.Queryable()
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    m.GroupRole.Guid.Equals( ownerRole.Guid ) )
                 .Select( m => m.Group )
                 .FirstOrDefault();
 
-            if ( knownRelationshipGroup != null )
+            if ( knownRelationshipGroup == null )
             {
-                int? canCheckInRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                if ( canCheckInRoleId.HasValue )
+                var groupMember = new GroupMember();
+                groupMember.PersonId = personId;
+                groupMember.GroupRoleId = ownerRole.Id;
+
+                knownRelationshipGroup = new Group();
+                knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
+                knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+                knownRelationshipGroup.Members.Add( groupMember );
+
+                new GroupService( rockContext ).Add( knownRelationshipGroup );
+            }
+
+            if ( canCheckInRole != null )
+            {
+                var canCheckInMember = groupMemberService.Queryable()
+                    .FirstOrDefault( m =>
+                        m.GroupId == knownRelationshipGroup.Id &&
+                        m.PersonId == relatedPersonId &&
+                        m.GroupRoleId == canCheckInRole.Id );
+
+                if ( canCheckInMember == null )
                 {
-                    var canCheckInMember = groupMemberService.Queryable()
-                        .FirstOrDefault( m =>
-                            m.GroupId == knownRelationshipGroup.Id &&
-                            m.PersonId == relatedPersonId &&
-                            m.GroupRoleId == canCheckInRoleId.Value );
-
-                    if ( canCheckInMember == null )
-                    {
-                        canCheckInMember = new GroupMember();
-                        canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                        canCheckInMember.PersonId = relatedPersonId;
-                        canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                        groupMemberService.Add( canCheckInMember );
-                        rockContext.SaveChanges();
-                    }
-
-                    var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                    if ( inverseGroupMember != null )
-                    {
-                        groupMemberService.Add( inverseGroupMember );
-                        rockContext.SaveChanges();
-                    }
-
+                    canCheckInMember = new GroupMember();
+                    canCheckInMember.GroupId = knownRelationshipGroup.Id;
+                    canCheckInMember.PersonId = relatedPersonId;
+                    canCheckInMember.GroupRoleId = canCheckInRole.Id;
+                    groupMemberService.Add( canCheckInMember );
                     rockContext.SaveChanges();
                 }
+
+                var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
+                if ( inverseGroupMember != null )
+                {
+                    groupMemberService.Add( inverseGroupMember );
+                    rockContext.SaveChanges();
+                }
+
+                rockContext.SaveChanges();
             }
         }
 

@@ -81,6 +81,23 @@
                                             Help="The schedule option types to allow when editing groups of this type."/>
                                     </div>
                                 </div>
+                                <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
+                                    Help="The date ranges that groups of this type do not meet (regardless of their individual schedules).">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gScheduleExclusions" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Exclusion">
+                                            <Columns>
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
+                                                        <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <Rock:EditField OnClick="gScheduleExclusions_Edit" />
+                                                <Rock:DeleteField OnClick="gScheduleExclusions_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </Rock:RockControlWrapper>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
                                     Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
@@ -304,6 +321,13 @@
         <Rock:ModalDialog ID="dlgChildGroupType" runat="server" OnSaveClick="dlgChildGroupType_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildGroupTypes">
             <Content>
                 <Rock:RockDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildGroupTypes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgScheduleExclusion" runat="server" OnSaveClick="dlgScheduleExclusion_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ScheduleExclusion">
+            <Content>
+                <asp:HiddenField ID="hfScheduleExclusion" runat="server" />
+                <Rock:DateRangePicker ID="drpScheduleExclusion" runat="server" Label="Schedule Exclusion" ValidationGroup="ScheduleExclusion" />
             </Content>
         </Rock:ModalDialog>
 

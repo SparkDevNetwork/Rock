@@ -130,6 +130,22 @@ namespace Rock.Field.Types
             get { return ComparisonHelper.DateFilterComparisonTypes; }
         }
 
+        /// <summary>
+        /// Converts the type of the value to property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override object ConvertValueToPropertyType( string value, Type propertyType )
+        {
+            var timeValue = TimeSpan.MinValue;
+            if ( TimeSpan.TryParse( value, out timeValue ) )
+            {
+                return timeValue;
+            }
+            return null;
+        }
+
         #endregion
 
     }
