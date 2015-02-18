@@ -239,6 +239,17 @@ namespace RockWeb.Blocks.Groups
                 group.Description = tbDescription.Text;
                 group.IsActive = cbIsActive.Checked;
 
+                if ( pnlSchedule.Visible )
+                {
+                    if ( group.Schedule == null )
+                    {
+                        group.Schedule = new Schedule();
+                        group.Schedule.iCalendarContent = null;
+                    }
+                    group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
+                    group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
+                }
+
                 // set attributes
                 group.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributes, group );
@@ -516,9 +527,9 @@ namespace RockWeb.Blocks.Groups
 
                 // add collection of allowed security actions
                 Dictionary<string, object> securityActions = new Dictionary<string, object>();
-                securityActions.Add( "View", group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
-                securityActions.Add( "Edit", group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
-                securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+                securityActions.Add( "View", group != null && group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                securityActions.Add( "Edit", group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
+                securityActions.Add( "Administrate", group != null && group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                 mergeFields.Add( "AllowedActions", securityActions );
 
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
@@ -563,7 +574,7 @@ namespace RockWeb.Blocks.Groups
                 GroupService groupService = new GroupService( rockContext );
 
                 var qry = groupService
-                        .Queryable( "GroupLocations" )
+                        .Queryable( "GroupLocations,GroupType,Schedule" )
                         .Where( g => g.Id == _groupId );
 
                 var group = qry.FirstOrDefault();
@@ -573,6 +584,25 @@ namespace RockWeb.Blocks.Groups
                     tbName.Text = group.Name;
                     tbDescription.Text = group.Description;
                     cbIsActive.Checked = group.IsActive;
+
+                    if ( ( group.GroupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly )
+                    {
+                        pnlSchedule.Visible = group.Schedule == null || group.Schedule.ScheduleType == ScheduleType.Weekly;
+                        if ( group.Schedule != null )
+                        {
+                            dowWeekly.SelectedDayOfWeek = group.Schedule.WeeklyDayOfWeek;
+                            timeWeekly.SelectedTime = group.Schedule.WeeklyTimeOfDay;
+                        }
+                        else
+                        {
+                            dowWeekly.SelectedDayOfWeek = null;
+                            timeWeekly.SelectedTime = null;
+                        }
+                    }
+                    else
+                    {
+                        pnlSchedule.Visible = false;
+                    }
 
                     group.LoadAttributes();
                     phAttributes.Controls.Clear();

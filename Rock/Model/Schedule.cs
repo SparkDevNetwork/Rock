@@ -290,6 +290,19 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
+        /// <summary>
+        /// Gets the friendly schedule text.
+        /// </summary>
+        /// <value>
+        /// The friendly schedule text.
+        /// </value>
+        [LavaInclude]
+        [NotMapped]
+        public virtual string FriendlyScheduleText
+        {
+            get { return ToFriendlyScheduleText(); }
+        }
+
         #endregion
 
         #region Public Methods
