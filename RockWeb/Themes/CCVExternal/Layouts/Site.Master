@@ -56,17 +56,20 @@
             <header class="masthead">
                 <div class="masthead-upper">
                     <div class="masthead-brand">
-                        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".js-all-collapse">
                             <i class="fa fa-bars"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
                     </div>
 
                     <nav class="masthead-nav">
-                        <div class="navbar-collapse collapse">
+                        <div class="navbar-collapse js-all-collapse collapse">
                             <Rock:Zone Name="Navigation" runat="server" />
                         </div>
                     </nav>
+                </div>
+                <div class="masthead-fullmenu js-fullmenu js-all-collapse collapse">
+                    <Rock:Zone Name="Full Menu" runat="server" />
                 </div>
                 <div class="masthead-lower">
                     <Rock:Zone Name="Login" runat="server" />

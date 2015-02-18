@@ -83,13 +83,105 @@
             }
           }
 
-        .masthead-fullmenu {
-          background: #fff;
+          .menu-btn {
+            cursor: pointer;
+            display: none;
+            @media @sm { display: inline-block; }
+            .menu-icon {
+              display: inline-block;
+              transition: .3s;
+            }
+            .lines {
+              display: inline-block;
+              width: 18px;
+              height: 2px;
+              background: #fff;
+              border-radius: 2px;
+              transition: 0.3s;
+              position: relative;
+              top: -5px;
+              &:before, &:after {
+                display: inline-block;
+                width: 18px;
+                height: 2px;
+                border-radius: 2px;
+                transition: 0.3s;
+                position: absolute;
+                left: 0;
+                content: '';
+              }
+              &:before { top: -6px; }
+              &:after { top: 6px; }
+            }
+            &:hover {
+              .opacity(1); // undoes regular menu mouseover
+            }
 
-          a {
-            color: inherit;
+            // slightly expand on hover
+            &.collapsed:hover a {
+              .opacity(1);
+
+              .lines:before { .translate(0, -2px); }
+              .lines:after { .translate(0, 2px); }
+            }
+
+            // activated state
+            & {
+              .lines { background: transparent; }
+              .lines:before, .lines:after {
+                transform-origin: 50% 50%;
+                top: 0;
+                background: lighten(@brand-primary, 20%);
+              }
+              .lines:before {
+                transform: rotate3d(0, 0, 1, -45deg);
+                -ms-transform: rotate(-45deg);
+              }
+              .lines:after {
+                transform: rotate3d(0, 0, 1, 45deg);
+                -ms-transform: rotate(45deg);
+              }
+            }
+
+            // inactive state
+            &.collapsed {
+              .lines { background: #fff; }
+              .lines:before, .lines:after {
+                transform-origin: 0.28571rem center;
+                background: #fff;
+              }
+              .lines:before {
+                transform: none;
+                -ms-transform: none;
+                top: -6px;
+              }
+              .lines:after {
+                transform: none;
+                -ms-transform: none;
+                top: 6px;
+              }
+            }
+          }
+
+        .masthead-fullmenu {
+          background: rgba(255,255,255,.98);;
+          @media @sm {
+            padding-top: 5%;
+            position: absolute;
+            top: 50px + (@grid-gutter-width*2);
+            bottom: 0; // in case user has scrolled a bit before opening menu
+            left: 0;
+            right: 0;
+            z-index: 100;
           }
         }
+          .masthead-fullmenu .container {
+            @media @sm {
+              height: 100vh; // setting the height explicity removes the BS animation jitter
+            }
+          }
+            .masthead-fullmenusection {
+            }
 
   .masthead-lower {
     .clearfix();

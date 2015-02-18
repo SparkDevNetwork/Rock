@@ -31,6 +31,10 @@ html {
   box-sizing: inherit;
 }
 
+body {
+  position: relative; // required by full menu overlay
+}
+
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
     text-transform: uppercase;
@@ -38,14 +42,10 @@ h1, h2, h3, h4, h5, h6,
 
 img { .img-responsive(); }
 
-html {
-  // background: #fff;
-}
 body {
   max-width: 1920px;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0 0 25px rgba(0,0,0,0.1);
 }
 
 main {
@@ -96,4 +96,10 @@ main {
   background: #555;
   border-color: #999;
   color: @gray-lighter;
+}
+
+// Type things
+.underline {
+  border-bottom: 1px solid @gray-lighter;
+  padding-bottom: .25em;
 }
