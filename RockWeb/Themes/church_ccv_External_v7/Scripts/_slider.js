@@ -32,7 +32,7 @@ $(document).ready(function() {
 })
 // Flexslider wants to load everything first, so images flicker around when using doc.ready
 $(window).load(function() {
-  var $sliderWrap = $('.promotion-slider')
+  var $sliderWrap = $('.announcement-rotator')
   if ($sliderWrap[0]) {
     $sliderWrap.removeClass('loading')
     CCVSlider.play()

@@ -5310,30 +5310,30 @@ div.aspNetDisabled {
     display: inline-block;
   }
 }
-.promotion-slider.loading {
+.announcement-rotator.loading {
   min-height: 702px;
 }
-.promotion-slider.loading .flex-viewport ul.slides li {
+.announcement-rotator.loading .flex-viewport ul.slides li {
   opacity: 0;
   filter: alpha(opacity=0);
 }
-.promotion-slider.loading .flex-viewport ul.slides li:nth-child(2) {
+.announcement-rotator.loading .flex-viewport ul.slides li:nth-child(2) {
   opacity: 100;
   filter: alpha(opacity=10000);
 }
-.promotion-slider.loading .slide-control {
+.announcement-rotator.loading .slide-control {
   opacity: 0;
   filter: alpha(opacity=0);
 }
-.promotion-slider .slide-control,
-.promotion-slider ul.slides li {
+.announcement-rotator .slide-control,
+.announcement-rotator ul.slides li {
   -webkit-transition: opacity 0.3s;
   -o-transition: opacity 0.3s;
   transition: opacity 0.3s;
 }
 .slide-control {
   color: #fff;
-  background: #555555;
+  background: #777777;
   overflow: auto;
   position: relative;
 }
